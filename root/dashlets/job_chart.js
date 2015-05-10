@@ -31,11 +31,26 @@
                      data: {
                          columns: res.data,
                          type : graph_type,
-                         colors: {'FINISHED':'#5cb85c','ERROR':'#d9534f'},
-                         onclick: function (d, i) { console.log("onclick", d, i); },
+                         colors: {'FINISHED':'#5cb85c','ERROR':'#d9534f'}
+                     },
+                     axis: {
+                       x : {
+                         tick: {
+                             format: function (x) { return ''; }
+                         }
+                       },
+                       y: {
+                         label: {
+                           text: '# ' + _('Jobs'),
+                           position: 'outer-middle'
+                         }
+                       }
                      },
                      donut: {
                          title: title
+                     },
+                     tooltip: {
+                        grouped: false // Default true
                      }
                 });
             });

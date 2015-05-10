@@ -8,22 +8,29 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-register 'dashlet.job.burndown' => {
-    form=> '/dashlets/job_burndown_config.js',
-    name=> 'Job Burndown', 
-    icon=> '/static/images/icons/job.png',
-    js_file => '/dashlets/job_burndown.js',
-    data => {
-        days_avg  => '1000D',
-        days_last => '100D',
-    }
+# register 'dashlet.job.burndown' => {
+#     form=> '/dashlets/job_burndown_config.js',
+#     name=> 'Job Burndown', 
+#     icon=> '/static/images/icons/job.png',
+#     js_file => '/dashlets/job_burndown.js',
+#     data => {
+#         days_avg  => '1000D',
+#         days_last => '100D',
+#     }
+# };
+
+register 'dashlet.job.last_jobs' => {
+    form=> '/dashlets/last_jobs_config.js',
+    name=> 'Last jobs by app', 
+    icon=> '/static/images/icons/report_default.png',
+    js_file => '/dashlets/last_jobs.js'
 };
 
-register 'dashlet.job.status_pie' => {
-    form=> '/dashlets/job_status_pie_config.js',
-    name=> 'Job Status pie chart', 
+register 'dashlet.job.chart' => {
+    form=> '/dashlets/job_chart_config.js',
+    name=> 'Job chart', 
     icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/job_status_pie.js'
+    js_file => '/dashlets/job_chart.js'
 };
 
 register 'dashlet.job.day_distribution' => {
@@ -67,76 +74,6 @@ register 'dashlet.iframe' => {
     icon=> '/static/images/silk/world.png',
     js_file => '/dashlets/iframe.js'
 };
-
-sub list_jobs : Local {
-    my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
-    my @datas;
-    my $SQL;
-
-    #Cogemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
-        username => $c->username
-    );
-    
-    if ( @ids_project ) {
-
-        my %jobs = map { $_->{mid} => $_ } ci->job->find
-             ->fields({ mid=>1, starttime=>1, endtime=>1, projects=>1, bl=>1, status=>1, jobid=>1 })->all; #{ endtime=>{ '$gt'=>'2013-11-31 00:00' } })->all;
-        my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
-        my %rep;
-        my $now = _ts();
-        # for all jobs
-        for my $job ( values %jobs ) {
-            my $bl = $job->{bl};
-            my $endt = Class::Date->new($job->{endtime});
-            my $days = int( ($now - $endt)->day );
-            my $status = $job->{status};
-            my $type = $status =~ /ERROR|KILLED/ ? 'err' 
-                : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
-            # for project in job
-            for my $prj ( _array( $job->{projects} ) ) {
-                my $name = $projects{$prj}->{name};
-                next unless $name;
-                my $r = $rep{ $name }{$bl} //= {};
-                # last error by type
-                if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
-                    $r->{"last_$type"} = $days;
-                    $r->{"id_$type"} = $job->{jobid};
-                    $r->{"mid_$type"} = $job->{mid};
-                    $r->{"name_$type"} = $job->{name};
-                    $r->{status} = $status;
-                }
-                # last durantion and top mid
-                if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
-                    my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
-                    $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
-                    $r->{top_mid} = $job->{mid};
-                }
-            }
-        }
-        
-        # now create something we can send to the template
-        @datas = sort {
-            #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
-            $b->{top_mid} <=> $a->{top_mid}
-        } map {
-            my $prj = $_;
-            my $bls = $rep{$prj};
-            my @rows;
-            for my $bl ( keys $bls ) {
-                my $r = $bls->{$bl};
-                push @rows, { project=>$prj, bl=>$bl, %$r };
-            }
-            @rows;
-        } keys %rep;
-        
-    } ## end if ( @ids_project )
-
-    $c->stash->{json} = { data=>\@datas };
-    $c->forward( 'View::JSON' );
-
-} 
 
 sub init : Local {
     my ($self,$c) = @_;
@@ -280,6 +217,151 @@ sub user_dashboards {
 
     return ($default_dashboard, @dashboard_list);
 }
+
+sub list_jobs: Private{
+    my ( $self, $c, $dashboard_id, $params ) = @_;
+    my $perm = Baseliner->model('Permissions');
+
+    #######################################################################################################
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $config = get_config_dashlet( 'list_lastjobs', $dashboard_id, $params );
+    ##########################################################################################################
+    $c->stash->{dashboard_id} = $config->{dashboard_id};
+
+    my @mid_filters = ();
+    my $limit = $config->{rows} // 10;
+    my $statuses = $config->{statuses} // 'ALL';
+    my $username = $c->username;
+
+    if( !$perm->is_root($username) ) {
+            @mid_filters = $perm->user_projects_with_action(username => $username,
+                                                                action => 'action.job.viewall',
+                                                                level => 1);
+            
+    }
+
+    my $where = {};
+    $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+    $where->{collection} = 'job';
+
+    my @filter_statuses;
+    if ( $statuses && $statuses ne 'ALL' ) {
+        @filter_statuses = split /,/,$statuses;
+        $where->{status} = mdb->in(@filter_statuses);
+    }
+    my $rs_search = mdb->master_doc->find( $where )->limit($limit)->sort({ starttime => -1 });
+
+    my $numrow = 0;
+    my @lastjobs;
+    my $default_config;
+    
+    while ( my $doc = $rs_search->next() ) {
+        try {
+            my $job = ci->new( $doc->{mid} );
+            push @lastjobs,
+                {
+                mid       => $job->mid,
+                name      => $job->name,
+                type      => $job->job_type,
+                rollback  => $job->rollback,
+                status    => $job->status,
+                starttime => $job->starttime,
+                endtime   => $job->endtime,
+                bl => $job->bl,
+                apps => join ",", _array($job->{job_contents}->{list_apps})
+                };
+            $numrow++;
+        } catch {
+            _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
+        };
+    }
+    $c->stash->{lastjobs} =\@lastjobs;
+}
+
+sub last_jobs : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $bls = $p->{bls};
+    my @datas;
+    
+    try {
+
+        my $where = {};
+
+        if ( _array($bls) ) {
+            my @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
+            $where->{bl} = mdb->in(@all_bls);
+            _warn $bls;
+        }
+        my $username = $c->username;
+
+        my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
+            username => $c->username
+        );
+        
+        if ( @ids_project ) {
+
+            my %jobs = map { $_->{mid} => $_ } ci->job->find($where)
+                 ->fields({ mid=>1, name=>1, starttime=>1, endtime=>1, projects=>1, bl=>1, status=>1, jobid=>1 })->all; #{ endtime=>{ '$gt'=>'2013-11-31 00:00' } })->all;
+            my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
+            my %rep;
+            my $now = _ts();
+            # for all jobs
+            for my $job ( values %jobs ) {
+                my $bl = $job->{bl};
+                my $endt = Class::Date->new($job->{endtime});
+                my $days = int( ($now - $endt)->day );
+                my $status = $job->{status};
+                my $type = $status =~ /ERROR|KILLED/ ? 'err' 
+                    : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
+                # for project in job
+                for my $prj ( _array( $job->{projects} ) ) {
+                    my $name = $projects{$prj}->{name};
+                    next unless $name;
+                    my $r = $rep{ $name }{$bl} //= {};
+                    # last error by type
+                    if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
+                        $r->{"last_$type"} = $days;
+                        $r->{"id_$type"} = $job->{jobid};
+                        $r->{"mid_$type"} = $job->{mid};
+                        $r->{"name_$type"} = $job->{name};
+                        $r->{status} = $status;
+                    }
+                    # last durantion and top mid
+                    if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
+                        my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
+                        $r->{last_duration} = sprintf '%dm %ds', int($secs/60), ($secs % 60);
+                        $r->{top_mid} = $job->{mid};
+                    }
+                }
+            }
+            
+            # now create something we can send to the template
+            @datas = sort {
+                $b->{top_mid} <=> $a->{top_mid}
+            } map {
+                my $prj = $_;
+                my $bls = $rep{$prj};
+                my @rows;
+                for my $bl ( keys $bls ) {
+                    my $r = $bls->{$bl};
+                    push @rows, { project=>$prj, bl=>$bl, %$r };
+                }
+                @rows;
+            } keys %rep;
+            
+        } ## end if ( @ids_project )
+
+    } catch {
+        _error _loc("Error listing last jobs: %1 ", shift);
+    };
+    $c->stash->{json} = { data=>\@datas };
+    $c->forward( 'View::JSON' );
+
+} 
+
 sub topics_by_category: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -1409,68 +1491,6 @@ sub list_baseline : Private {
     } ## end if ( $ids_project )
     $c->stash->{entornos} = \@datas;
 } ## end sub list_baseline:
-
-
-sub list_lastjobs: Private{
-    my ( $self, $c, $dashboard_id, $params ) = @_;
-    my $perm = Baseliner->model('Permissions');
-
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $config = get_config_dashlet( 'list_lastjobs', $dashboard_id, $params );
-    ##########################################################################################################
-    $c->stash->{dashboard_id} = $config->{dashboard_id};
-
-    my @mid_filters = ();
-    my $limit = $config->{rows} // 10;
-    my $statuses = $config->{statuses} // 'ALL';
-    my $username = $c->username;
-
-    if( !$perm->is_root($username) ) {
-            @mid_filters = $perm->user_projects_with_action(username => $username,
-                                                                action => 'action.job.viewall',
-                                                                level => 1);
-            
-    }
-
-    my $where = {};
-    $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
-    $where->{collection} = 'job';
-
-    my @filter_statuses;
-    if ( $statuses && $statuses ne 'ALL' ) {
-        @filter_statuses = split /,/,$statuses;
-        $where->{status} = mdb->in(@filter_statuses);
-    }
-    my $rs_search = mdb->master_doc->find( $where )->limit($limit)->sort({ starttime => -1 });
-
-    my $numrow = 0;
-    my @lastjobs;
-    my $default_config;
-    
-    while ( my $doc = $rs_search->next() ) {
-        try {
-            my $job = ci->new( $doc->{mid} );
-            push @lastjobs,
-                {
-                mid       => $job->mid,
-                name      => $job->name,
-                type      => $job->job_type,
-                rollback  => $job->rollback,
-                status    => $job->status,
-                starttime => $job->starttime,
-                endtime   => $job->endtime,
-                bl => $job->bl,
-                apps => join ",", _array($job->{job_contents}->{list_apps})
-                };
-            $numrow++;
-        } catch {
-            _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
-        };
-    }
-    $c->stash->{lastjobs} =\@lastjobs;
-}
 
 sub list_pending_jobs: Private{
     my ( $self, $c, $dashboard_id, $params ) = @_;

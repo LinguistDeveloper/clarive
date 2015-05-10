@@ -1,0 +1,107 @@
+<!--
+name: Jobs
+description: List of last jobs
+config: config.dashlet.lastjobs
+url: /dashboard/list_lastjobs
+html: /dashlets/lastjobs.html
+title: Jobs
+
+-->
+<%perl>
+    use Baseliner::Utils;
+    my @lastjobs = $c->stash->{lastjobs};
+    my $status_id = "status". _nowstamp;
+</%perl>
+
+    <div style="clear:left;border-width:1px;">
+        <h2><% _loc("Jobs") %></h2>
+        <script language="javascript">
+            function render_level ( obj, td_id ) {
+                var icon;
+                var bold = false;
+                var status = obj.status;
+                var type   = obj.type;
+                var rollback = obj.rollback;
+                var div1   = '<div style="white-space:normal !important;">';
+                var div2   = '</div>';
+                if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
+                else if( status=='READY' ) icon='log_d.gif';
+                else if( status=='APPROVAL' ) icon='verify.gif';
+                else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
+                else if( status=='IN-EDIT' ) icon='log_w.png';
+                 else if( status=='CANCELLED' ) icon='close.png';
+                else { icon='log_e.png'; bold=true; }
+                var value = (bold?'<b>' + _(status) + '</b>': _(status));
+        
+                // Rollback?
+                if( status == 'FINISHED' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback OK") %>)';
+                    icon = 'log_i.png';
+                }
+                else if( status == 'ERROR' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback Failed") %>)';
+                    icon = 'log_e.png';
+                }
+                //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
+                if( status == 'APPROVAL' ) { // add a link to the approval main
+                    value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", obj.mid, _(status) ); 
+                }
+                
+                
+                ////alert(icon);
+                var tdStatus = document.getElementById( td_id );
+                if( icon!=undefined ) {
+                    tdStatus.innerHTML = div1 
+                        + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/icons/"+icon+"' />"
+                        + value + div2 ;
+                } else {
+                    tdStatus.innerHTML = value;
+                }
+            };
+        </script>
+            <table style="font-size: 80%;">
+                <tr>
+                    <td>
+                        <table width="550" >
+                            <tr>
+                                <th style="width:15%"><% _loc("Job") %></th>
+                                <th style="width:20%"><% _loc("Status") %></th>
+                                <th style="width:15%"><% _loc("Projects") %></th>
+                                <th style="width:15%"><% _loc("Start") %></th>
+                                <th style="width:15%"><% _loc("End") %></th>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width:550px; height:353px; overflow-y:auto;">
+                            <table  class="table table-striped" width="550" >
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
+%my $row = 0;
+%foreach my $lastjob (_array @lastjobs){
+%$row = $row + 1;
+                                <tr>
+                                    <td style="width:15%"><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$lastjob->{mid}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
+                                    <td style="width:20%" id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
+                                    <td style="width:15%"><% length($lastjob->{apps}) ? $lastjob->{apps}: '' %></td>
+                                    <td style="width:15%"><% length($lastjob->{starttime}) ? $lastjob->{starttime}: '' %></td>
+                                    <td style="width:15%"><% length($lastjob->{endtime}) ? $lastjob->{endtime}: '' %> </td>
+                                </tr>
+                <script>
+                    var details_job = new Object();
+                    details_job.status = '<%$lastjob->{status}%>';
+                    details_job.type = '<%$lastjob->{type}%>';
+                    details_job.rollback = <%$lastjob->{rollback}%>;
+                    details_job.mid = '<%$lastjob->{mid}%>';
+                    render_level(details_job, 'row<%$row%>_<%$status_id%>');
+                </script>
+%}           
+%}           
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+        </table>
+    </div>
+
