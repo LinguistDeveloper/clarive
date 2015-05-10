@@ -724,7 +724,7 @@ sub burndown_new : Local {
         my $yesterday = substr($now - $period, 0, 10);
         my $where = { starttime => { '$gt' => $yesterday } };
 
-        my @all_bls = map {$_->{name} } ci->bl->find()->all;
+        my @all_bls = map {$_->{name} } grap { $_->{bl ne '*'} ci->bl->find()->all;
         if ( _array($bls) ) {
             @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
             $where->{bl} = mdb->in(@all_bls);
