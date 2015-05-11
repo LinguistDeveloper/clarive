@@ -608,8 +608,8 @@ sub topics_by_date: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    my $date_start;
     my $date_end = Class::Date->now();
+    my $date_start = $date_end - '1Y';
 
     my $now = Class::Date->now();
     if ( $days_from != 0 && $days_until != 0 ) {
