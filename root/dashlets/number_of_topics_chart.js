@@ -23,7 +23,7 @@
                     },
                 },
                 axis: {
-                 x : {
+                  x : {
                     tick: {
                         format: function (x) { return ''; }
                     }

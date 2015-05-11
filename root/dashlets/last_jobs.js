@@ -8,17 +8,16 @@ my $iid = Util->_md5;
     var bls = params.data.bls;
 
     Cla.ajax_json('/dashboard/last_jobs', { bls: bls }, function(res){
-    // Cla.ajax_json('/dashboard/lasst_jobs', { assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
         html = html + '    <table class="table display nowrap stripe order-column compact" style="width: 100%" id="<% $iid %>">';
         html = html + '        <thead>';
         html = html + '            <tr>';
-        html = html + '                <th><% _loc("Project") %></th>';
-        html = html + '                <th><% _loc("Baseline") %></th>';
-        html = html + '                <th><% _loc("Last success") %></th>';
-        html = html + '                <th><% _loc("Last failure") %></th>';
-        html = html + '                <th><% _loc("Last elapsed") %></th>';
+        html = html + '                <th>'+_("Project")+'</th>';
+        html = html + '                <th>'+_("Baseline")+'</th>';
+        html = html + '                <th>'+_("Last success")+'</th>';
+        html = html + '                <th>'+_("Last failure")+'</th>';
+        html = html + '                <th>'+_("Last elapsed")+'</th>';
         html = html + '            </tr>';
         html = html + '        </thead>';
         html = html + '        <tbody>';

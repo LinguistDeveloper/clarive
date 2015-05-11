@@ -26,6 +26,13 @@ register 'dashlet.job.last_jobs' => {
     js_file => '/dashlets/last_jobs.js'
 };
 
+register 'dashlet.job.list_jobs' => {
+    form=> '/dashlets/list_jobs_config.js',
+    name=> 'List jobs', 
+    icon=> '/static/images/icons/report_default.png',
+    js_file => '/dashlets/list_jobs.js'
+};
+
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart', 
@@ -218,65 +225,73 @@ sub user_dashboards {
     return ($default_dashboard, @dashboard_list);
 }
 
-sub list_jobs: Private{
-    my ( $self, $c, $dashboard_id, $params ) = @_;
+sub list_jobs: Local { 
+    my ( $self, $c ) = @_;
     my $perm = Baseliner->model('Permissions');
+    my $p = $c->req->params;
 
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $config = get_config_dashlet( 'list_lastjobs', $dashboard_id, $params );
-    ##########################################################################################################
-    $c->stash->{dashboard_id} = $config->{dashboard_id};
+    _warn $p;
+
+    my $states = $p->{states} || [];
+    my $not_in_states = $p->{not_in_states} || 'off';
+    my $limit = $p->{limit} || 100;
 
     my @mid_filters = ();
-    my $limit = $config->{rows} // 10;
-    my $statuses = $config->{statuses} // 'ALL';
     my $username = $c->username;
-
-    if( !$perm->is_root($username) ) {
-            @mid_filters = $perm->user_projects_with_action(username => $username,
-                                                                action => 'action.job.viewall',
-                                                                level => 1);
-            
-    }
-
-    my $where = {};
-    $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
-    $where->{collection} = 'job';
-
-    my @filter_statuses;
-    if ( $statuses && $statuses ne 'ALL' ) {
-        @filter_statuses = split /,/,$statuses;
-        $where->{status} = mdb->in(@filter_statuses);
-    }
-    my $rs_search = mdb->master_doc->find( $where )->limit($limit)->sort({ starttime => -1 });
-
-    my $numrow = 0;
     my @lastjobs;
-    my $default_config;
-    
-    while ( my $doc = $rs_search->next() ) {
-        try {
-            my $job = ci->new( $doc->{mid} );
-            push @lastjobs,
-                {
-                mid       => $job->mid,
-                name      => $job->name,
-                type      => $job->job_type,
-                rollback  => $job->rollback,
-                status    => $job->status,
-                starttime => $job->starttime,
-                endtime   => $job->endtime,
-                bl => $job->bl,
-                apps => join ",", _array($job->{job_contents}->{list_apps})
+    my $bls = $p->{bls} || [];
+
+    try {
+
+        my $where = {};
+
+        if ( _array($bls) ) {
+            my @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
+            $where->{bl} = mdb->in(@all_bls);
+        }
+
+        if( !$perm->is_root($username) ) {
+                @mid_filters = $perm->user_projects_with_action(username => $username,
+                                                                    action => 'action.job.viewall',
+                                                                    level => 1)            
+        }
+
+        $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+
+        my @filter_states;
+        if ( _array($states) ) {
+            if ( $not_in_states eq 'on' ) {
+                $where->{status} = mdb->nin(_array($states));
+            } else {
+                $where->{status} = mdb->in(_array($states));
+            }
+        }
+        _warn $where;
+        my $rs_search = ci->job->find( $where )->sort({ starttime => -1 })->limit($limit);
+
+        while ( my $job = $rs_search->next() ) {
+            try {
+                push @lastjobs, {
+                    mid       => $job->{mid},
+                    name      => $job->{name},
+                    type      => $job->{job_type},
+                    rollback  => $job->{rollback},
+                    status    => $job->{status},
+                    starttime => $job->{starttime},
+                    endtime   => $job->{endtime},
+                    bl => $job->{bl},
+                    apps => join ",", _array($job->{job_contents}->{list_apps})
                 };
-            $numrow++;
-        } catch {
-            _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
-        };
-    }
-    $c->stash->{lastjobs} =\@lastjobs;
+            } catch {
+                _log "FAILURE Searching job ".$job->{mid}.": " . shift;
+            };
+        }
+    } catch {
+        _error _loc("Error listing jobs: %1 ", shift);
+    };
+    $c->stash->{json} = { data=>\@lastjobs };
+    $c->forward( 'View::JSON' );
+
 }
 
 sub last_jobs : Local {
