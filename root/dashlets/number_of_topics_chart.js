@@ -40,7 +40,15 @@
                 },
                 tooltip: {
                    grouped: false // Default true
+                },
+                pie: {
+                    label: {
+                        format: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
                 }
+
 
             });
         });
