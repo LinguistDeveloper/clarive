@@ -3,7 +3,7 @@
 
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
     var date_type =  new Baseliner.ComboDouble({ allowBlank: false, fieldLabel: _('Date to be shown'), name:'date_type', value: data.date_type || 'today', data: [
-        ['today', _('Hoy')],
+        ['today', _('Today')],
         ['yesterday', _('Yesterday')],
         ['date', _('Date')]
       ] 
