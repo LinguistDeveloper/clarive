@@ -644,7 +644,7 @@ sub topics_by_date: Local {
     my $interval = '1D'; #### TODO: Can be variable depending on the group
     my %all_dates = ();
 
-    for (my $date = $date_start; $date < $date_end; $date = $date + $interval) {
+    for (my $date = $date_start; $date <= $date_end; $date = $date + $interval) {
         my $dt = DateTime->from_epoch( epoch => $date->epoch(), );
         my $fdate;
         if ( $group !~ /day|quarter/ ) {    
@@ -723,9 +723,11 @@ sub topics_by_date: Local {
 
     push $matrix, \@dates;
 
+    
     for ( keys %temp_data ) {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
+    # _warn $matrix;
 
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, matrix => $matrix} };
     $c->forward('View::JSON');
