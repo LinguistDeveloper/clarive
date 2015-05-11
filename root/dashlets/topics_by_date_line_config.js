@@ -10,7 +10,7 @@
     var days_from = new Ext.ux.form.SpinnerField({ 
         value: data.days_from, 
         name: "days_from",
-        fieldLabel: _("Days from today to start timeline. 0 means always")
+        fieldLabel: _("Days from today to start timeline. 0 means one year ago")
     });
 
     var days_until = new Ext.ux.form.SpinnerField({ 
