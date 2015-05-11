@@ -638,9 +638,30 @@ sub topics_by_date: Local {
     my %colors;
     my $quarters = { 'Q1' => '01-01', 'Q2' => '04-01', 'Q3' => '07-01', 'Q4' => '10-01'};
 
+
+    #### Let's fill all dates
     my @dates = ('x');
+    my $interval = '1D'; #### TODO: Can be variable depending on the group
+    my %all_dates = ();
 
+    for (my $date = $date_start; $date < $date_end; $date = $date + $interval) {
+        my $dt = DateTime->from_epoch( epoch => $date->epoch(), );
+        my $fdate;
+        if ( $group !~ /day|quarter/ ) {    
+            $dt->truncate( to => $group);
+            $fdate = substr(''.$dt,0,10);
+        } elsif ( $group eq 'quarter' ){
+            $fdate = $dt->year . "-". $quarters->{$dt->quarter_abbr};
+        } else {
+            $fdate = substr(''.$dt,0,10);
+        }
 
+        if ( !$all_dates{$fdate} ) {
+            push @dates, $fdate;
+            $all_dates{$fdate} = 1;
+        }
+    }
+    my %all_categories = ();
 
     while (my $topic = $rs_topics->next() ) {
         my $date = $topic->{$date_field};
@@ -649,6 +670,12 @@ sub topics_by_date: Local {
         use Class::Date;
         my $date_fmt = Class::Date->new($date);
 
+        if ( !$all_categories{$topic->{category_name}} ) {
+            for my $init_date ( keys %all_dates ) {
+                $topic_by_dates{$init_date}{ $topic->{category_name} } = 0;
+            }
+            $all_categories{$topic->{category_name}} = 1;
+        }
         if ($date_fmt) {
             my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
             if ( $group !~ /day|quarter/ ) {
@@ -673,7 +700,7 @@ sub topics_by_date: Local {
     my %keys = ();
     # my @dates = ('x');
     for my $rel_date ( keys %topic_by_dates ) {
-        push @dates, $rel_date;
+        # push @dates, $rel_date;
         for my $rel_type ( keys %{ $topic_by_dates{$rel_date} } ) {
             $keys{$rel_type} = 1;
         }
