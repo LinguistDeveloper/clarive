@@ -11,7 +11,17 @@
     var graph_title;
 
     Cla.ajax_json('/dashboard/'+group_by, { condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
+        document.getElementsByTagName('head')[0].appendChild(styleNode);            
         require(['d3','c3'], function(d3,c3){
+            var styleNode = document.createElement('style');
+            styleNode.type = "text/css";
+            // browser detection (based on prototype.js)
+            if(!!(window.attachEvent && !window.opera)) {
+                styleNode.styleSheet.cssText = '.c3-chart-arc text { font-size: 10px; }';
+            } else {
+                var styleText = document.createTextNode('.c3-chart-arc text { font-size: 10px; }');
+                styleNode.appendChild(styleText);
+            }
             c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -69,18 +79,17 @@
                 pie: {
                     label: {
                         format: function (value, ratio, id) {
-                            return value;
+                            return '<span style="font-size: 11px;">'+value + ' (' + Math.round(ratio*100) + '%)'+'</span>';
                         }
                     }
                 },
                 donut: {
                     label: {
                         format: function (value, ratio, id) {
-                            return value;
+                            return value + ' (' + Math.round(ratio*100) + '%)';
                         }
                     }
-                }
-
+                },
 
             });
         });
