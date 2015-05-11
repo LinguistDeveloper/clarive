@@ -5,7 +5,7 @@
     var graph_type = params.data.type || 'area';
     var joined = params.data.joined || '0';
     var stacked = false;
-    if ( graph_type.startsWith('stack-') ) {
+    if ( graph_type.indexOf('stack-') === 0 ) {
         graph_type = graph_type.replace('stack-','');
         stacked = true;
     }
