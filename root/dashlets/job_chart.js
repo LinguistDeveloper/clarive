@@ -26,16 +26,6 @@
 
         Cla.ajax_json('/job/by_status', { period: period }, function(res){
             require(['d3','c3'], function(d3,c3){
-                var styleNode = document.createElement('style');
-                styleNode.type = "text/css";
-                // browser detection (based on prototype.js)
-                if(!!(window.attachEvent && !window.opera)) {
-                    styleNode.styleSheet.cssText = '.c3-chart-arc text { font-size: 10px; }';
-                } else {
-                    var styleText = document.createTextNode('.c3-chart-arc text { font-size: 10px; }');
-                    styleNode.appendChild(styleText);
-                }
-                document.getElementsByTagName('head')[0].appendChild(styleNode);            
                 c3.generate({
                      bindto: '#'+id,
                      data: {
