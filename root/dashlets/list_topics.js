@@ -56,7 +56,7 @@ my $iid = Util->_md5;
               html = html +'</span>';
             } else if ( col.name == 'title' ) {
               var title = topic.title;
-              html = html + '<span title="'+title+'">'+title.substring(0,30)+'</span>'
+              html = html + '<span style="display:block;width:100%;" title="'+title+'">'+title+'</span>'
             } else if ( col.name == 'projects' ) {
                 var proj_names = new Array();
                 Ext.each(topic.projects, function(proj){

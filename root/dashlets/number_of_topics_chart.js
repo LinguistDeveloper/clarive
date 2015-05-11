@@ -31,7 +31,10 @@
                   y: {
                     label: {
                       text: '# ' + _('Topics'),
-                      position: 'outer-middle'
+                      position: 'outer-middle',
+                      format: function (value, ratio, id) {
+                          return value;
+                      }
                     }
                   }
                 },
