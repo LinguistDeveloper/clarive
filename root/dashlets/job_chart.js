@@ -49,22 +49,14 @@
                      pie: {
                          label: {
                              format: function (value, ratio, id) {
-                                if ( isNaN(ratio) ) {
-                                  return value;
-                                } else {
-                                  return value + ' (' + Math.round(ratio*100) + '%)';
-                                }
+                                return value + ' (' + Math.round(ratio*100) + '%)';
                              }
                          }
                      },
                      donut: {
                          label: {
                              format: function (value, ratio, id) {
-                                if ( isNaN(ratio) ) {
-                                  return value;
-                                } else {
-                                  return value + ' (' + Math.round(ratio*100) + '%)';
-                                }
+                                return value + ' (' + Math.round(ratio*100) + '%)';
                              }
                          },
                          title: title
@@ -91,7 +83,11 @@
 
                                 text += "<tr class='" + $$.CLASS.tooltipName + "-" + d[i].id + "'>";
                                 text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>&nbsp;" + name + "</td>";
-                                text += "<td class='value'>&nbsp;" + d[i].value + ' (' + Math.round(d[i].ratio*100) + "%)</td>";
+                                if ( isNaN(d[i].ratio) ) {
+                                 text += "<td class='value'>&nbsp;" + d[i].value + "</td>";
+                                } else {
+                                 text += "<td class='value'>&nbsp;" + d[i].value + ' (' + Math.round(d[i].ratio*100) + "%)</td>";
+                                }
                                 text += "</tr>";
                             }
                             return text + "</table>";
