@@ -75,6 +75,13 @@ register 'dashlet.topic.topics_burndown' => {
     js_file => '/dashlets/topics_burndown.js'
 };
 
+register 'dashlet.topic.gauge' => {
+    form=> '/dashlets/topics_gauge_config.js',
+    name=> 'Topics gauge', 
+    icon=> '/static/images/icons/gauge.png',
+    js_file => '/dashlets/topics_gauge.js'
+};
+
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
@@ -730,6 +737,79 @@ sub topics_by_date: Local {
     # _warn $matrix;
 
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, matrix => $matrix} };
+    $c->forward('View::JSON');
+}
+
+sub topics_gauge: Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $date_field_start = $p->{date_field_start};
+    my $date_field_end = $p->{date_field_end};
+
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+    my $days_from = $p->{days_from};
+    my $days_until = $p->{days_until};
+    my $condition = {};
+
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+            _error "JSON condition malformed (".$p->{condition}."): ".shift;
+        }
+    }
+
+    my $where = $condition;
+    if ( _array($statuses) ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( _array($categories) ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+    $where->{'category.id'} = mdb->in(@user_categories);
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
+
+    my @data = ();
+    my $max = 0;
+    my $min = 9999999999999999999999999;
+    while (my $topic = $rs_topics->next() ) {
+        next if !$topic->{$date_field_start} || !$topic->{$date_field_end};
+        my $date_start = Class::Date->new($topic->{$date_field_start});
+        my $date_end = Class::Date->new($topic->{$date_field_end});
+
+        my $rel = $date_end - $date_start;
+        my $days = $rel->day;
+        push @data, $days;
+        $max = $days if $days > $max;
+        $min = $days if $days < $min;
+    }
+    use List::Util qw(sum);
+    my $avg = sprintf("%.2f",sum(@data) / @data);
+
+    $c->stash->{json} = { data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');
 }
 

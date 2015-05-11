@@ -5,6 +5,22 @@ use v5.10;
 use strict;
 use Try::Tiny;
 
+sub closed_date {
+    my @close_status = map { $_->{name} } ci->status->find({ type => qr/^F/ })->all;
+    my $act = mdb->activity->find({ event_key => 'event.topic.change_status', 'vars.status' => mdb->in(@close_status)})->sort({ts => 1});
+    my $tot = $act->count;
+    my $cont = 0;
+
+    while ( my $event = $act->next() ) {
+        mdb->topic->update({mid=>$event->{mid}},{'$set'=>{ closed_on => $event->{ts}}});
+        if ( $cont%100 == 0 ) {
+            _log "Updated $cont/$tot";
+        }
+        $cont++;
+    }
+    _log "Updated $cont/$tot";
+}
+
 sub drop_all {
     say "Dropping Grid data for this DB...";
     mdb->grid->drop;

@@ -2016,6 +2016,7 @@ sub update_category_status {
     
     my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
         || _fail _loc 'Status `%1` not found', $id_category_status;
+
     
     $$category_status{seq} += 0 if defined $$category_status{seq};
     $$category_status{id} = $$category_status{id_status};
@@ -2032,6 +2033,7 @@ sub update_category_status {
         modified_by          => $username,
         modified_on          => $modified_on,
     };
+    $d->{closed_on} = $modified_on if ( $category_status->{type} =~ /^F/ );
 
     if( !ref $mid_or_doc ) {
         # save back to mongo
