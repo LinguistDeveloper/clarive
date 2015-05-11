@@ -19,11 +19,13 @@
     var not_in_status = params.data.not_in_status;
     var condition = params.data.condition || '';
     var group = params.data.group || 'day';
+    var days_from = params.data.days_from || 0;
+    var days_until = params.data.days_until || 0;
     var date_field = params.data.date_field || 'created_on';
 
     if (graph) graph.unload();
 
-    Cla.ajax_json('/dashboard/topics_by_date', { date_field: date_field, group: group, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_by_date', { days_from: days_from, days_until: days_until, date_field: date_field, group: group, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
         var groups = new Array();
         if ( stacked ) {
             groups = [res.data.groups];

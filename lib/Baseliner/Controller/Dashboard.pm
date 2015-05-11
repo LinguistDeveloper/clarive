@@ -558,6 +558,7 @@ sub topics_by_status: Local {
     $c->forward('View::JSON'); 
 }
 
+
 sub topics_by_date: Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -567,6 +568,8 @@ sub topics_by_date: Local {
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+    my $days_from = $p->{days_from};
+    my $days_until = $p->{days_until};
     my $condition = {};
 
     if ( $p->{condition} ) {
@@ -605,13 +608,41 @@ sub topics_by_date: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    my @topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    my $date_start;
+    my $date_end;
+
+    my $now = Class::Date->now();
+    if ( $days_from != 0 && $days_until != 0 ) {
+        my $inc_from = $days_from."D";
+        my $from = $now + $inc_from;
+        my $inc_until = $days_until."D";
+        my $until = $now + $inc_until;
+        $date_start = $from;
+        $date_end = $until;
+        $where->{'$and'} = [ {$date_field => {'$gte' => "$from"}}, {$date_field => {'$lte' => "$until"}}];
+    } elsif ( $days_from != 0 ) {
+        my $inc_from = $days_from."D";
+        my $from = $now + $inc_from;
+        $date_start = $from;
+        $where->{$date_field} = {'$gte' => "$from"};        
+    } elsif ( $days_until != 0 ) {
+        my $inc_until = $days_until."D";
+        my $until = $now + $inc_until;
+        $date_end = $until;
+        $where->{$date_field} = {'$lte' => "$until"};        
+    }
+
+    my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
     my %topic_by_dates = ();
     my %colors;
     my $quarters = { 'Q1' => '01-01', 'Q2' => '04-01', 'Q3' => '07-01', 'Q4' => '10-01'};
 
-    foreach my $topic ( _array @topics ) {
+    my @dates = ('x');
+
+
+
+    while (my $topic = $rs_topics->next() ) {
         my $date = $topic->{$date_field};
 
         use DateTime;
@@ -619,28 +650,28 @@ sub topics_by_date: Local {
         my $date_fmt = Class::Date->new($date);
 
         if ($date_fmt) {
+            my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
             if ( $group !~ /day|quarter/ ) {
-                my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
 
                 $dt->truncate( to => $group);
                 $date = substr(''.$dt,0,10);
             } elsif ( $group eq 'quarter' ){
-                my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
                 $date = $dt->year . "-". $quarters->{$dt->quarter_abbr};
+            } else {
+                $date = substr(''.$dt,0,10);
             }
 
             $topic_by_dates{$date}{ $topic->{category_name} }
                 = $topic_by_dates{$date}{ $topic->{category_name} }
                 ? $topic_by_dates{$date}{ $topic->{category_name} } + 1
                 : 1;
-
         }
 
         $colors{$topic->{category}->{name}}= $topic->{category}->{color};
     }
 
     my %keys = ();
-    my @dates = ('x');
+    # my @dates = ('x');
     for my $rel_date ( keys %topic_by_dates ) {
         push @dates, $rel_date;
         for my $rel_type ( keys %{ $topic_by_dates{$rel_date} } ) {
@@ -685,9 +716,6 @@ sub list_topics: Local {
     my $filter_user = $p->{assigned_to};
     my $condition = {};
     my $where = {};
-
-    _warn $p;
-
 
     if ( $p->{condition} ) {
         try {
