@@ -47,6 +47,13 @@
                             return value;
                         }
                     }
+                },
+                donut: {
+                    label: {
+                        format: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
                 }
 
 
