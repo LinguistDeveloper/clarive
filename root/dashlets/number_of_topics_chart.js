@@ -69,7 +69,7 @@
                 pie: {
                     label: {
                         format: function (value, ratio, id) {
-                            return '<span style="font-size: 11px;">'+value + ' (' + Math.round(ratio*100) + '%)'+'</span>';
+                            return value + ' (' + Math.round(ratio*100) + '%)';
                         }
                     }
                 },
