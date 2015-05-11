@@ -581,7 +581,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_ci = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/ci/ci-grey.png',
+            icon: '/static/images/icons/ci-grey.png',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -697,7 +697,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_menu = new Ext.Button({
             //cls: 'x-btn-icon',
-            //icon: '/static/images/icons/config.gif',
+            //icon: '/static/images/icons/wrench.gif',
             tooltip: _('Config'),
             menu: [
                 { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }

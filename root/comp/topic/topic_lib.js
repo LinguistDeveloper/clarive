@@ -918,7 +918,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
             
         self.btn_graph = new Ext.Toolbar.Button({
-            icon:'/static/images/ci/ci-grey.png',
+            icon:'/static/images/icons/ci-grey.png',
             cls: 'x-btn-icon',
             tooltip: _('Open CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,

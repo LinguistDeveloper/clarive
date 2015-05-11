@@ -625,7 +625,7 @@ To do:
             '->',
             _('Elapsed')+': ', elapsed,
             {   
-                icon:'/static/images/icons/config.gif',
+                icon:'/static/images/icons/wrench.gif',
                 cls: 'x-btn-text-icon',
                 menu: config_menu
             },

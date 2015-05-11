@@ -1899,7 +1899,7 @@ Cla.topic_grid = function(params){
             /* Changing node text
             node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
                 node.text,
-                '<img src="/static/images/icons/config.gif" onclick="Baseliner.aaa()" />'  )
+                '<img src="/static/images/icons/wrench.gif" onclick="Baseliner.aaa()" />'  )
             );
             */
             if(node.attributes.id == 'C' || node.attributes.id == 'L'){

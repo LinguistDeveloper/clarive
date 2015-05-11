@@ -683,7 +683,7 @@
     }
     var menu_tools = new Ext.Button({
       tooltip: _('Tools'),
-      icon: '/static/images/icons/wrench.png',
+      icon: '/static/images/icons/wrench.gif',
       menu: [
 % if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
             { text: _('Run In-process'), handler:function(){ run_inproc() },
