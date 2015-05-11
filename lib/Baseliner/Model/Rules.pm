@@ -205,7 +205,7 @@ sub tree_format {
         $chi = delete $n->{children} unless ref $chi eq 'ARRAY' && @$chi;
         delete $n->{attributes};
         delete $n->{disabled};
-        delete $n->{id};
+        delete $n->{id} unless $n->{id} =~/rule-/;
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->tree_format( _array($chi) );

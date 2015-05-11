@@ -21,6 +21,10 @@ window._bool = function(v,undef){
         : undef;
 }
 
+Cla.id = function(prefix) {
+    return (prefix||'cla') + '-' + Ext.id() + '-' + Date.now();
+}
+
 // File loader
 Baseliner.loadFile = function(filename, filetype){
 
