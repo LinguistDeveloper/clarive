@@ -5,9 +5,9 @@ my $iid = Util->_md5;
     var id = params.id_div;
 
     var graph;
-    var categories = params.data.categories || '';
+    var categories = params.data.categories || [];
     var assigned_to = params.data.assigned_to || '';
-    var statuses = params.data.statuses || '';
+    var statuses = params.data.statuses || [];
     var not_in_status = params.data.not_in_status;
     var condition = params.data.condition || '';
     var rows = params.data.rows;

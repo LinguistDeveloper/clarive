@@ -679,12 +679,14 @@ sub list_topics: Local {
 
     my (@topics, $colors, @data, %status );
     my $group_threshold = $p->{group_threshold};
-    my $categories = $p->{categories};
-    my $statuses = $p->{statuses};
+    my $categories = $p->{categories} || [];
+    my $statuses = $p->{statuses} || [];
     my $not_in_status = $p->{not_in_status};
     my $filter_user = $p->{assigned_to};
     my $condition = {};
     my $where = {};
+
+    _warn $p;
 
 
     if ( $p->{condition} ) {
@@ -698,7 +700,6 @@ sub list_topics: Local {
 
     $where = $condition;
 
-    _warn "Filter user:".$filter_user."*";
     if ( $filter_user && $filter_user ne 'Any') {
         _warn "Tengo filtro de usuario";
         if ( $filter_user eq _loc('Current')) {
@@ -718,11 +719,15 @@ sub list_topics: Local {
         }
     }
 
-    if ( $statuses ) {
+    my $main_conditions = {};
+
+    if ( _array($statuses) ) {
+        my @local_statuses = _array($statuses);
         if ( $not_in_status ) {
-            $where->{'category_status.id'} = mdb->nin($statuses);
+            @local_statuses = map { $_ * -1 } @local_statuses;
+            $main_conditions->{'statuses'} = \@local_statuses;
         } else {
-            $where->{'category_status.id'} = mdb->in($statuses);
+            $main_conditions->{'statuses'} = \@local_statuses;
         }
     }
     my $username = $c->username;
@@ -732,7 +737,7 @@ sub list_topics: Local {
         $_->{id};
     } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
-    if ( $categories ) {
+    if ( _array($categories) ) {
         use Array::Utils qw(:all);
         my @categories_ids = _array($categories);
         @user_categories = intersect(@categories_ids,@user_categories);
@@ -743,11 +748,11 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    $where->{'category.id'} = mdb->in(@user_categories);
+    $main_conditions->{'categories'} = \@user_categories;
 
     _warn $where;
     my $cnt = 0;
-    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ where => $where, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
     my @topic_cis = map {$_->{mid}} @topics;
     my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
     my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
