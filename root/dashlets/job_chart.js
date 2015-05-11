@@ -49,14 +49,22 @@
                      pie: {
                          label: {
                              format: function (value, ratio, id) {
-                                 return ' ' + value + ' (' + Math.round(ratio*100) + '%)';
+                                if ( isNaN(ratio) ) {
+                                  return value;
+                                } else {
+                                  return value + ' (' + Math.round(ratio*100) + '%)';
+                                }
                              }
                          }
                      },
                      donut: {
                          label: {
                              format: function (value, ratio, id) {
-                                 return ' ' + value + ' (' + Math.round(ratio*100) + '%)';
+                                if ( isNaN(ratio) ) {
+                                  return value;
+                                } else {
+                                  return value + ' (' + Math.round(ratio*100) + '%)';
+                                }
                              }
                          },
                          title: title
