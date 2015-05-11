@@ -247,14 +247,14 @@
         if( include ) {
             var attr = Baseliner.clone( root.attributes );
             delete attr.loader;
-            if ( !attr.id.startsWith('rule-') ) attr.id = Cla.id('rule');
+            if ( !attr.id.indexOf('rule-') === 0 ) attr.id = Cla.id('rule');
             delete attr.children;
             stmts.push({ attributes: attr, children: encode_tree( root ) });
         } else {
             root.eachChild( function(n){
                 var attr = Baseliner.clone( n.attributes );
                 delete attr.loader;
-                if ( !attr.id.startsWith('rule-') ) attr.id = Cla.id('rule');
+                if ( !attr.id.indexOf('rule-') === 0 ) attr.id = Cla.id('rule');
                 delete attr.children;
                 stmts.push({ attributes: attr, children: encode_tree( n ) });
             });
