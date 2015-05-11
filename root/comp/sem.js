@@ -148,13 +148,13 @@
     });
 
     var button_sem_refresh = new Ext.Button({
-        icon:'/static/images/icons/arrow_refresh.png',
+        icon:'/static/images/icons/refresh.png',
         cls: 'x-btn-text-icon',
         handler: function() { store_sem.load(); }
     });
 
     var button_queue_refresh = new Ext.Button({
-        icon:'/static/images/icons/arrow_refresh.png',
+        icon:'/static/images/icons/refresh.png',
         cls: 'x-btn-text-icon',
         handler: function() { store_queue.load(); }
     });
