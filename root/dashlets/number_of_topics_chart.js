@@ -33,7 +33,7 @@
                       text: '# ' + _('Topics'),
                       position: 'outer-middle',
                       format: function (value, ratio, id) {
-                          return value;
+                          return d3.format('')(value);
                       }
                     }
                   }
