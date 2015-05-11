@@ -609,7 +609,7 @@ sub topics_by_date: Local {
     }
 
     my $date_start;
-    my $date_end;
+    my $date_end = Class::Date->now();
 
     my $now = Class::Date->now();
     if ( $days_from != 0 && $days_until != 0 ) {
@@ -644,7 +644,7 @@ sub topics_by_date: Local {
     my $interval = '1D'; #### TODO: Can be variable depending on the group
     my %all_dates = ();
 
-    for (my $date = $date_start; $date <= $date_end; $date = $date + $interval) {
+    for (my $date = $date_start->clone; $date <= $date_end; $date = $date + $interval) {
         my $dt = DateTime->from_epoch( epoch => $date->epoch(), );
         my $fdate;
         if ( $group !~ /day|quarter/ ) {    
