@@ -705,7 +705,7 @@
 
     var button_submit = new Ext.Button({
         xtype:'button', text: _('Create'),
-        icon:'/static/images/icons/write.gif',
+        icon:'/static/images/icons/edit.gif',
         cls: 'x-btn-text-icon',
         handler: function(){
             if( check_no_cal.checked && comments.getValue().length == 0 ) {

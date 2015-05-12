@@ -564,14 +564,14 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.sm = new Ext.grid.RowSelectionModel({ singleSelect: true });
         self.tbar = [{
                 text: _('Add'),
-                icon: '/static/images/drop-add.gif',
+                icon: '/static/images/icons/add.gif',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     self.push_item( self.name, self.default_value );
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/del.gif',
+                icon: '/static/images/icons/delete.gif',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();
