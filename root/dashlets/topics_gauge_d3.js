@@ -96,7 +96,7 @@
                      .domain([config.minValue, config.maxValue]);
                      
                  ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
-                 tickData = [green/maxValue,yellow/maxValue,(maxValue - green - yellow)/maxValue];
+                 tickData = [1, yellow/maxValue, green/maxValue];
 
                  console.dir(tickData);
                  var last = 0;
@@ -104,13 +104,11 @@
                      .innerRadius(r - config.ringWidth - config.ringInset)
                      .outerRadius(r - config.ringInset)
                      .startAngle(function(d, i) {
-                         
-                         return deg2rad(config.minAngle + (last * range));
+                         console.log(d + " " + i)
+                         return deg2rad(config.minAngle);
                      })
                      .endAngle(function(d, i) {
-                         var ratio = last + d;
-                         last = last + d;
-                         return deg2rad(config.minAngle + (ratio * range));
+                         return deg2rad(config.minAngle + (d * range));
                      });
              }
              that.configure = configure;
@@ -141,7 +139,7 @@
                          .data(tickData)
                      .enter().append('path')
                          .attr('fill', function(d, i) {
-                            var colors = ['#60B044', '#F7D358', '#FA5858'];
+                            var colors = ['#FA5858','#F7D358','#60B044'  ];
                              return colors[i];
                          })
                          .attr('d', arc);
