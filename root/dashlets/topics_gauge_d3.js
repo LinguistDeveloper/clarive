@@ -17,7 +17,7 @@
 
     Cla.ajax_json('/dashboard/topics_gauge', { units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var div = document.getElementById(id);
-        var maxValue = res.max <= red ? red + ( red * 10 /100 ): res.max + ( res.max * 10 /100 )
+        var maxValue = res.max <= red ? yellow + ( yellow * 10 /100 ): res.max + ( res.max * 10 /100 )
        require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
