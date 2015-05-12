@@ -358,7 +358,7 @@
         });
         var acronym = new Ext.form.TextField({ 
             name:'acronym', fieldLabel:_('Acronym'),
-            allowBlank:false, emptyText:_('Short name for the category'),
+            allowBlank: true, emptyText:_('Short name for the category'),
             regex: /^[^\.]+$/,
             regexText: _('Character dot not allowed')
         });
