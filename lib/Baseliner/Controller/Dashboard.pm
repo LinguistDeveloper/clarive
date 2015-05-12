@@ -616,7 +616,7 @@ sub topics_by_date: Local {
     }
 
     my $date_end = Class::Date->now();
-    my $date_start = $date_end - '1Y';
+    my $date_start = $date_end - '1D';
 
     my $now = Class::Date->now();
     if ( $days_from != 0 && $days_until != 0 ) {
@@ -788,6 +788,23 @@ sub topics_gauge: Local {
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    my $now = Class::Date->now();
+    if ( $days_from != 0 && $days_until != 0 ) {
+        my $inc_from = $days_from."D";
+        my $from = $now + $inc_from;
+        my $inc_until = $days_until."D";
+        my $until = $now + $inc_until;
+        $where->{'$and'} = [ {$date_field_start => {'$gte' => "$from"}}, {$date_field_start => {'$lte' => "$until"}}];
+    } elsif ( $days_from != 0 ) {
+        my $inc_from = $days_from."D";
+        my $from = $now + $inc_from;
+        $where->{$date_field_start} = {'$gte' => "$from"};        
+    } elsif ( $days_until != 0 ) {
+        my $inc_until = $days_until."D";
+        my $until = $now + $inc_until;
+        $where->{$date_field_start} = {'$lte' => "$until"};        
     }
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
