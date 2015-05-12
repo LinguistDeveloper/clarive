@@ -31,7 +31,7 @@
                     max: res.max
                 },
                 color: {
-                    pattern: ['#60B044', '#F6C600', '#F97600'], // the three color levels for the percentage values.
+                    pattern: ['#60B044', '#F7D358', '#F97600'], // the three color levels for the percentage values.
                     threshold: {
                         unit: 'value', // percentage is default
                         values: [green,yellow]
