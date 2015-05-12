@@ -17,7 +17,7 @@
 
     Cla.ajax_json('/dashboard/topics_gauge', { units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var div = document.getElementById(id);
-
+        var maxValue = res.max <= red ? red + ( red * 10 /100 ): res.max + ( res.max * 10 /100 )
        require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
@@ -33,7 +33,7 @@
                  pointerHeadLengthPercent    : 0.9,
                  
                  minValue                    : 0,
-                 maxValue                    : res.max,
+                 maxValue                    : maxValue,
                  
                  minAngle                    : -90,
                  maxAngle                    : 90,
@@ -90,7 +90,7 @@
                      .domain([config.minValue, config.maxValue]);
                      
                  ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
-                 tickData = [green/res.max,yellow/res.max,(res.max - green - yellow)/res.max];
+                 tickData = [green/res.max,yellow/maxValue,(maxValue - green - yellow)/maxValue];
 
                  var last = 0;
                  arc = d3.svg.arc()
@@ -227,7 +227,7 @@
              // clipWidth: 300,
              // clipHeight: 300,
              ringWidth: 60,
-             maxValue: res.max,
+             maxValue: maxValue,
              transitionMs: 4000,
          });
          powerGauge.render();
