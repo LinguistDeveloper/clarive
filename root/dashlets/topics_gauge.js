@@ -29,7 +29,7 @@
                         },
                         // show: false // to turn off the min/max labels.
                     },
-                    units: '',
+                    units: 'ffff  saldkffsaj',
                     max: res.max
                 },
                 color: {
