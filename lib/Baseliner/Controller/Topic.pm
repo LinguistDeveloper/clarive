@@ -2060,5 +2060,13 @@ sub topic_drop : Local {
     }
     $c->forward('View::JSON');
 }
+sub leer_log : Local {
+     my ( $self, $c ) = @_;
+     my $p = $c->request->parameters;
+    _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
+    my @rows = (1,2,3);
+    $c->stash->{json} = { data=>\@rows};
+    $c->forward('View::JSON');    
+}
 
 1;

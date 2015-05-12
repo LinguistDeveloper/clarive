@@ -1,6 +1,7 @@
-Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
+Cla.Swarmgrupo3 = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
+        //var array = [];
         self.i = 0;
 
         self.tbar = [
@@ -14,7 +15,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             { text:_('Del'), handler:function(){ self.i++; self.del() } }
         ];
 
-        Cla.Swarmgrupo.superclass.initComponent.call(this);
+        Cla.Swarmgrupo3.superclass.initComponent.call(this);
          
         self.on('resize', function(p,w,h){
             if( self.svg ) {
@@ -34,7 +35,10 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.nodes2 = [];
         self.nodes3 = [];
 
-        self.array =  [
+
+        self.array = [];
+
+      /*  self.array =  [
         { t:'1000', ev:'add', who:'pedro', node: '#44343', parent:'Changeset' },
         { t:'2000', ev:'del', who:'pedro', node: '#44343', parent:'Changeset' },
         { t:'3000', ev:'add', who:'tot', node: '#44344', parent:'Changeset' },
@@ -548,7 +552,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         { t:'10000', ev:'del', who:'alex', node: '#44350', parent:'Changeset' },
         { t:'11000', ev:'add', who:'fran', node: '#44351', parent:'Changeset' },
         { t:'13000', ev:'add', who:'ana', node: '#52', parent:'BD' }
-        ];
+        ];*/
 
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
@@ -581,7 +585,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
         self.node = self.svg.selectAll(".node");
         self.link = self.svg.selectAll(".link");
-        self.link2 = self.svg.selectAll(".link");
+        self.link2 = self.svg.selectAll(".link2");
         self.node2 = self.svg.selectAll(".path");
         self.node3 = self.svg.selectAll(".path");
         self.node4 = self.svg.selectAll(".path");
@@ -590,13 +594,17 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.node7 = self.svg.selectAll(".path");
         self.node8 = self.svg.selectAll(".path");
 
+        self.datos(self.array);
+
+
+
     },
     start_anim : function(){
 
         var self = this;
 
         self.anim_running = true;
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1000);
     },
     stop_anim : function(){
 
@@ -610,7 +618,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
         if( !self.anim_running ) return;
         
-        if(self.array[self.i].ev == 'add') {
+        if(self.array.ev[self.i] == 'add') {
             self.useradd();
             self.add();
             self.i++;
@@ -619,11 +627,13 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             self.del();
             self.i++;
         }
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1000);
     },
     first : function(){
 
         var self = this;
+        alert("aqui llega primero");
+                
 
         var a = { id: "9999" , node: "raiz"}
         self.nodes.push(a);
@@ -649,8 +659,9 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         var i = 0;
         var h = 0;
 
-        for (i=0; i< self.array.length; i++){
-            arrayOriginal[i] = self.array[i].parent;
+
+        for (i=0; i< self.array.parent.length; i++){
+            arrayOriginal[i] = self.array.parent[i];
         }
         
         $.each(arrayOriginal, function(i, el){
@@ -667,6 +678,8 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         var self = this;
         var a = self.nodes[0];
         var d = {id: "#d"+Math.random(), node: array};
+
+
 
         if (!a){
              self.nodes.push(d)
@@ -725,7 +738,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             var j = 0;
             while (j < self.nodes.length){
 
-                if (self.nodes[j].node == self.array[self.i].parent){
+                if (self.nodes[j].node == self.array.parent[self.i]){
                         self.nodes.push(d);
                         self.links.push({source: d, target: self.nodes[j]});
                         j=self.nodes.length;
@@ -741,7 +754,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         var self = this;
 
         //var a = self.nodes2[0];
-        var d = {id: self.i, node: "d"+self.array[self.i].node, who: self.array[self.i].who};
+        var d = {id: self.i, node: "d"+self.array.node[self.i], who: self.array.who[self.i]};
         self.nodes2.push(d);
         self.userstart();
     },
@@ -781,10 +794,9 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.node8.exit().remove();
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","orange");
+        self.link.enter().insert("line", ".node").attr("class", "link");
         self.link.exit().remove();
 
-      
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr("fill","red").attr("fill-opacity",0.6).on("zoom", function(){self.rescale()}) 
         .on('dblclick', function (d){
@@ -812,23 +824,17 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
                     self.node7.exit().remove();
                     self.node8.remove();
                     self.node8.exit().remove();         
-                    self.node5.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array[d.id].t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","red").attr("fill-opacity",0.6);
-                    self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array[d.id].ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","red").attr("fill-opacity",0.6);
-                    self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array[d.id].who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","red").attr("fill-opacity",0.6);
-                    self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array[d.id].parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","red").attr("fill-opacity",0.6);
+                    self.node5.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array.t[d.id]).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","red").attr("fill-opacity",0.6);
+                    self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array.ev[d.id]).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","red").attr("fill-opacity",0.6);
+                    self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array.who[d.id]).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","red").attr("fill-opacity",0.6);
+                    self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.array.parent[d.id]).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","red").attr("fill-opacity",0.6);
                 }
         });
         ;
         self.node.exit().remove();
 
-        self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link2.enter().insert("line", ".node").attr("stroke","green").attr("class", "link").attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });       
-        self.link2.exit().remove();
-
-
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(self.array[self.i].node).attr("fill","red").attr("fill-opacity",0.6);//.transition().duration(16000).attr("fill","red").attr("fill-opacity",0.6);
+        self.node4.enter().append("text").text(self.array.node[self.i]).attr("fill","red").attr("fill-opacity",0.6);//.transition().duration(16000).attr("fill","red").attr("fill-opacity",0.6);
         self.node4.exit().remove();
 
         self.force.start();
@@ -841,24 +847,22 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         var randomValuey = Math.random()*200;
 
         //quitamos esto para quitar la linea de link2
-
+        self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("class", "link").attr("x2", randomValuex-150).attr("y2",randomValuey).transition().duration(6000).attr("x2",randomValuex).attr("stroke",'white').style("opacity", 50).ease("elastic").remove();
+        self.link2.exit().remove();
 
         self.node2 = self.node2.data(self.force.nodes(), function(d) { return d.id;});
-        self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
+        self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20).attr("x", randomValuex-150).attr("y",randomValuey).transition().duration(6000).attr("x",randomValuex).ease("elastic").remove();
         self.node2.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").text(self.array[self.i].who).attr("fill","#00CCFF")
+        self.node3.enter().append("text").attr("x", randomValuex-150).attr("y",randomValuey).text(self.array.who[self.i]).attr("fill","#00CCFF").transition().duration(6000).attr("x",randomValuex).ease("elastic").remove();
+        self.node3.exit().remove();
 
     }, 
     tick : function(){
 
-
-
         var self = this;
-        var aleatorio_x = Math.random();
-        var aleatorio_y = Math.random();
-
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
@@ -873,107 +877,54 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
         //podemos quitar link2 de aqui y ponemos los self completos
         self.link2.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; })
-
-            /*.attr("x2", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*1); })
-            .attr("y2", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*1); })
-
-            .transition().duration(6000)
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*150); })
-            .attr("y2", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*150); })
-            .ease("elastic")
-            .remove();*/
-            .transition().duration(1000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*50); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*50); })
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*100); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*100);})
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*-50); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
-
+          .attr("y1", function(d) { return d.source.y; });
 
         //estos se quitan con link2  
-        self.node2.transition().duration(1000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*50); })
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*100); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*100);})
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*-50); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
-
-      self.node3.transition().duration(1000)
-      .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*50); })
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*100); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*100); })
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*-50); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
-
-        self.borrar_nodo(function(d) { return d.x; },function(d) { return d.x; });
+        self.node2;
+        self.node3;
 
         //estos se ponen sin link2
         //self.node2.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
         //self.node3.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    },
+    datos : function(array) {
+        
+        var self = this;
+           
+            Baseliner.ajaxEval('/controllerlogdiego/leer_log/', { }, function(res){
+               
+            self.array = res;
+
+               alert("llego aqui"+ self.array.ev[0]);
+               console.log(self.array);
+               
+               /* self.links = [];
+                
+                var link = function(source){
+                    Ext.each( source.children, function(chi){
+                        self.links.push({ source: source.name, target: chi.name, type:"child" });
+                        link( chi );
+                    });
+                }
+                link( res.data );a
+
+                self.nodes = {};
+
+                // Compute the distinct nodes from the links.
+                self.links.forEach(function(link) {
+                  link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
+                  link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+                });
+                
+                self.draw();*/
+
+            });
     },
     rescale : function() {
 
         var self = this;
 
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-
-    },
-    calculo_direcciones_x : function(x){
-
-        if(x < 350){
-            x=1;
-        }else{
-            x=-1;
-        }
-        return x;
-    },
-    calculo_direcciones_y : function(y){
-
-        if(y < 250){
-            y=1;
-        }else{
-            y=-1;
-        }
-        return y;
-    },
-    borrar_nodo : function(x,y){
-
-        var self = this;
-
-        self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("class", "link").remove();
-        self.link2.exit().remove();
-
-        self.node2.enter().append("text").remove();
-        self.node2.exit().remove();
-
-        self.node3.enter().append("text").remove();
-        self.node3.exit().remove();
 
     }
 });

@@ -1,4 +1,4 @@
-Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
+Cla.Swarmgrupo4 = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         self.i = 0;
@@ -14,7 +14,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             { text:_('Del'), handler:function(){ self.i++; self.del() } }
         ];
 
-        Cla.Swarmgrupo.superclass.initComponent.call(this);
+        Cla.Swarmgrupo4.superclass.initComponent.call(this);
          
         self.on('resize', function(p,w,h){
             if( self.svg ) {
@@ -596,7 +596,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         var self = this;
 
         self.anim_running = true;
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1500);
     },
     stop_anim : function(){
 
@@ -619,7 +619,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             self.del();
             self.i++;
         }
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1500);
     },
     first : function(){
 
@@ -709,6 +709,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.node3.exit().remove();
 
         self.force.start();
+        self.borrar_nodo();
     },
     add : function(){
 
@@ -822,16 +823,16 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.node.exit().remove();
 
         self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link2.enter().insert("line", ".node").attr("stroke","green").attr("class", "link").attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });       
+        self.link2.enter().insert("line", ".node").attr("stroke","green").attr("class", "link");       
         self.link2.exit().remove();
 
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(self.array[self.i].node).attr("fill","red").attr("fill-opacity",0.6);//.transition().duration(16000).attr("fill","red").attr("fill-opacity",0.6);
+        self.node4.enter().append("text").text(self.array[self.i].node).attr("fill","red").attr("fill-opacity",0.6).transition().duration(1000).attr("fill","red").remove();
         self.node4.exit().remove();
 
         self.force.start();
+        self.borrar_nodo();
     },
     userstart : function(){
         
@@ -856,8 +857,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
 
         var self = this;
-        var aleatorio_x = Math.random();
-        var aleatorio_y = Math.random();
+
 
 
         self.node.attr("cx", function(d) { return d.x; })
@@ -874,39 +874,27 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         //podemos quitar link2 de aqui y ponemos los self completos
         self.link2.attr("x1", function(d) { return d.source.x; })
           .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; })
-
-            /*.attr("x2", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*1); })
-            .attr("y2", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*1); })
-
-            .transition().duration(6000)
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*150); })
-            .attr("y2", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*150); })
-            .ease("elastic")
-            .remove();*/
-            .transition().duration(1000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*50); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*50); })
+          .attr("x2", function(d) { return d.source.x+50; })
+          .attr("y2", function(d) { return d.source.y+50; });
+          /*.attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*50); })
+            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*50); })
+            .transition().duration(3000)
+            .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*aleatorio_x*100); })
+            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*aleatorio_y*100);})
             .ease("elastic")
             .transition().duration(3000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*100); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*100);})
-            .ease("elastic")
-            .transition().duration(3000)
-            .attr("x1", function(d) { return d.source.x-(self.calculo_direcciones_x(d.source.x)*aleatorio_x*-50); })
-            .attr("y1", function(d) { return d.source.y-(self.calculo_direcciones_y(d.source.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
+            .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*aleatorio_x*-50); })
+            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*aleatorio_y*-50); })
+            .ease("elastic");*/
+            //.remove();
 
 
         //estos se quitan con link2  
-        self.node2.transition().duration(1000)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
+        self.node2.attr("x", function(d) { return d.x+50; })
+          .attr("y", function(d) { return d.y+50; });
+
+        /*.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*50); })
-            .ease("elastic")
             .transition().duration(3000)
             .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*100); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*100);})
@@ -914,13 +902,15 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             .transition().duration(3000)
             .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*-50); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
+            .ease("elastic");*/
+            //.remove();
 
-      self.node3.transition().duration(1000)
-      .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
+      self.node3.attr("x", function(d) { return d.x+50; })
+          .attr("y", function(d) { return d.y+50; });
+
+
+      /*.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*50); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*50); })
-            .ease("elastic")
             .transition().duration(3000)
             .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*100); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*100); })
@@ -928,10 +918,10 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             .transition().duration(3000)
             .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*-50); })
             .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*-50); })
-            .ease("elastic")
-            .remove();
+            .ease("elastic");*/
+            //.remove();
 
-        self.borrar_nodo(function(d) { return d.x; },function(d) { return d.x; });
+
 
         //estos se ponen sin link2
         //self.node2.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
@@ -962,18 +952,41 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         }
         return y;
     },
-    borrar_nodo : function(x,y){
+    borrar_nodo : function(){
 
         var self = this;
 
-        self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("class", "link").remove();
-        self.link2.exit().remove();
+        var aleatorio_x = Math.random();
+        var aleatorio_y = Math.random();
 
-        self.node2.enter().append("text").remove();
-        self.node2.exit().remove();
+        self.link2.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*60); })
+            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*60); })
+            .transition().duration(1000)
+            .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*aleatorio_x*80); })
+            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*aleatorio_y*80);})
+            .ease("elastic")
 
-        self.node3.enter().append("text").remove();
-        self.node3.exit().remove();
+            .remove();
+
+        self.node2.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
+            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); })
+            .transition().duration(1000)
+            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*80); })
+            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*80);})
+            .ease("elastic")
+
+            .remove();
+
+      self.node3.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
+            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); })
+            .transition().duration(1000)
+            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*80); })
+            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*80); })
+            .ease("elastic")
+
+            .remove();
 
     }
 });
