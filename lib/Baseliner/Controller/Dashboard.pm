@@ -79,7 +79,7 @@ register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
     icon=> '/static/images/icons/gauge.png',
-    js_file => '/dashlets/topics_gauge.js'
+    js_file => '/dashlets/topics_gauge_d3.js'
 };
 
 register 'dashlet.iframe' => {
@@ -754,6 +754,7 @@ sub topics_gauge: Local {
     my $not_in_status = $p->{not_in_status};
     my $days_from = $p->{days_from};
     my $days_until = $p->{days_until};
+    my $units = $p->{units} || 'day';
     my $condition = {};
 
     if ( $p->{condition} ) {
@@ -825,7 +826,7 @@ sub topics_gauge: Local {
             my $date_end = !$topic->{$date_field_end} ? Class::Date->now() : Class::Date->new($topic->{$date_field_end});
 
             my $rel = $date_end - $date_start;
-            my $days = $rel->day;
+            my $days = $rel->$units;
             push @data, $days;
             $max = $days if $days > $max;
             $min = $days if $days < $min;
@@ -838,7 +839,7 @@ sub topics_gauge: Local {
     use List::Util qw(sum);
     my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
 
-    $c->stash->{json} = { data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
+    $c->stash->{json} = { units => $units.'s', data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');
 }
 

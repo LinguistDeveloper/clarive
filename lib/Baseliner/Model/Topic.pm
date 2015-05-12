@@ -2008,7 +2008,7 @@ sub update_category_status {
     my $doc =
         ref $mid_or_doc
         ? $mid_or_doc
-        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id' => 1 } );
+        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { _status_changes => 1, id_category_status => 1, 'category_status.name' => 1, 'category_status.id' => 1 } );
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
@@ -2017,7 +2017,6 @@ sub update_category_status {
     my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
         || _fail _loc 'Status `%1` not found', $id_category_status;
 
-    
     $$category_status{seq} += 0 if defined $$category_status{seq};
     $$category_status{id} = $$category_status{id_status};
 
@@ -2035,6 +2034,32 @@ sub update_category_status {
     };
     $d->{closed_on} = $modified_on if ( $category_status->{type} =~ /^F/ );
 
+    ### Update topic change status statistics
+    my $status_changes = $doc->{_status_changes};
+    my $now = Class::Date->now();
+
+    if ( $status_changes->{_name_to_id($$category_status{name})} ) {
+        $status_changes->{_name_to_id($$category_status{name})}->{count} += 1;
+        push @$status_changes->{_name_to_id($$category_status{name})}->{transition}, { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+    } else {
+        $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
+        $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
+        $status_changes->{_name_to_id($$category_status{name})}->{transition} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
+        $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+    }
+
+    if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
+        ### TODO: Fill total time in status
+        my $last = Class::Date->new($status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition}->{ts});
+        my $rel = $now - $last;
+        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
+        delete $status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition};
+        ### Remove last transition
+        ### Replicate update in topic_create
+    }
+
+    $d->{_status_changes} = $status_changes;
     if( !ref $mid_or_doc ) {
         # save back to mongo
         mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$d });
