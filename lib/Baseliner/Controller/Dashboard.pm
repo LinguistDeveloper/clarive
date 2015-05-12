@@ -824,7 +824,7 @@ sub topics_gauge: Local {
         $min = $days if $days < $min;
     }
     use List::Util qw(sum);
-    my $avg = sprintf("%.2f",sum(@data) / @data);
+    my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
 
     $c->stash->{json} = { data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');
