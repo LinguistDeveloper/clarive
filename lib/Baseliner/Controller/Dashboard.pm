@@ -813,9 +813,9 @@ sub topics_gauge: Local {
     my $max = 0;
     my $min = 9999999999999999999999999;
     while (my $topic = $rs_topics->next() ) {
-        next if !$topic->{$date_field_start} || !$topic->{$date_field_end};
+        next if !$topic->{$date_field_start};
         my $date_start = Class::Date->new($topic->{$date_field_start});
-        my $date_end = Class::Date->new($topic->{$date_field_end});
+        my $date_end = !$topic->{$date_field_end} ? Class::Date->now() : Class::Date->new($topic->{$date_field_end});
 
         my $rel = $date_end - $date_start;
         my $days = $rel->day;
