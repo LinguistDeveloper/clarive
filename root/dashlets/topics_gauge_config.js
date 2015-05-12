@@ -39,6 +39,7 @@
         { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
         { xtype:'textfield', fieldLabel: _('Date field in topics to use as start'), allowBlank: false, name: 'date_field_start', value: data.date_field_start },
         { xtype:'textfield', fieldLabel: _('Date field in topics to use as end'), allowBlank: false, name: 'date_field_end', value: data.date_field_end },
+        { xtype:'textfield', fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), allowBlank: false, name: 'date_field_end', value: data.date_field_end },
         days_from,
         days_until,
         green,

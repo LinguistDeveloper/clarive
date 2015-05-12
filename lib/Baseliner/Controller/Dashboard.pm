@@ -747,6 +747,8 @@ sub topics_gauge: Local {
     my $date_field_start = $p->{date_field_start};
     my $date_field_end = $p->{date_field_end};
 
+    my $numeric_field = $p->{numeric_field};
+
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
@@ -790,21 +792,24 @@ sub topics_gauge: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
+    my $date_condition = 'created_on';
+    $date_condition = $date_field_start if ( $date_field_start );
+
     my $now = Class::Date->now();
     if ( $days_from != 0 && $days_until != 0 ) {
         my $inc_from = $days_from."D";
         my $from = $now + $inc_from;
         my $inc_until = $days_until."D";
         my $until = $now + $inc_until;
-        $where->{'$and'} = [ {$date_field_start => {'$gte' => "$from"}}, {$date_field_start => {'$lte' => "$until"}}];
+        $where->{'$and'} = [ {$date_condition => {'$gte' => "$from"}}, {$date_condition => {'$lte' => "$until"}}];
     } elsif ( $days_from != 0 ) {
         my $inc_from = $days_from."D";
         my $from = $now + $inc_from;
-        $where->{$date_field_start} = {'$gte' => "$from"};        
+        $where->{$date_condition} = {'$gte' => "$from"};        
     } elsif ( $days_until != 0 ) {
         my $inc_until = $days_until."D";
         my $until = $now + $inc_until;
-        $where->{$date_field_start} = {'$lte' => "$until"};        
+        $where->{$date_condition} = {'$lte' => "$until"};        
     }
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
@@ -813,15 +818,22 @@ sub topics_gauge: Local {
     my $max = 0;
     my $min = 9999999999999999999999999;
     while (my $topic = $rs_topics->next() ) {
-        next if !$topic->{$date_field_start};
-        my $date_start = Class::Date->new($topic->{$date_field_start});
-        my $date_end = !$topic->{$date_field_end} ? Class::Date->now() : Class::Date->new($topic->{$date_field_end});
+        next if !$topic->{$date_field_start} && !$topic->{$numeric_field};
 
-        my $rel = $date_end - $date_start;
-        my $days = $rel->day;
-        push @data, $days;
-        $max = $days if $days > $max;
-        $min = $days if $days < $min;
+        if ( $topic->{$date_field_start} ) {
+            my $date_start = Class::Date->new($topic->{$date_field_start});
+            my $date_end = !$topic->{$date_field_end} ? Class::Date->now() : Class::Date->new($topic->{$date_field_end});
+
+            my $rel = $date_end - $date_start;
+            my $days = $rel->day;
+            push @data, $days;
+            $max = $days if $days > $max;
+            $min = $days if $days < $min;
+        } else {
+            push @data, $topic->{$numeric_field};
+            $max = $topic->{$numeric_field} if $topic->{$numeric_field} > $max;
+            $min = $topic->{$numeric_field} if $topic->{$numeric_field} < $min;
+        }
     }
     use List::Util qw(sum);
     my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
