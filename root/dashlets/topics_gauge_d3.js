@@ -97,6 +97,7 @@
                      
                  ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
                  tickData = [1, yellow/maxValue, green/maxValue];
+                 angles = new Array();
 
                  console.dir(tickData);
                  var last = 0;
@@ -174,7 +175,6 @@
                      .attr("dy", "1.2em")
                      .text(res.max);
 
-                 var accum = 0;
                  var lg = svg.append('g')
                          .attr('class', 'label')
                          .attr('transform', centerTx);
@@ -184,8 +184,7 @@
                          .attr('transform', function(d) {
                              var ratio = scale(d);
                              // alert(ratio);
-                             var newAngle = config.minAngle + accum + (ratio * range);
-                             accum += ratio * range;
+                             var newAngle = config.minAngle + (ratio * range);
                              return 'rotate(' +newAngle +') translate(0,' +(config.labelInset - r) +')';
                          })
                          .text(config.labelFormat);
