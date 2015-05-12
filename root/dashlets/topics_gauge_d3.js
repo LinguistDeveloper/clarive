@@ -12,12 +12,19 @@
     var numeric_field = params.data.numeric_field;
     var units = params.data.units;
 
-    var green = params.data.green || 10;
-    var yellow = params.data.yellow || 20;
+    var green = parseInt(params.data.green) || 10;
+    var yellow = parseInt(params.data.yellow) || 20;
 
     Cla.ajax_json('/dashboard/topics_gauge', { units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var div = document.getElementById(id);
-        var maxValue = res.max <= yellow ? yellow + ( yellow * 10 /100 ): res.max + ( res.max * 10 /100 )
+        var maxValue;
+        if ( res.max <= yellow ) {
+            maxValue = yellow + green + ( (yellow + green) * 10 /100 );
+        } else {
+            maxValue = res.max;
+        }
+        alert(maxValue);
+
        require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
@@ -90,8 +97,9 @@
                      .domain([config.minValue, config.maxValue]);
                      
                  ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
-                 tickData = [green/res.max,yellow/maxValue,(maxValue - green - yellow)/maxValue];
+                 tickData = [green/maxValue,yellow/maxValue,(maxValue - green - yellow)/maxValue];
 
+                 console.dir(tickData);
                  var last = 0;
                  arc = d3.svg.arc()
                      .innerRadius(r - config.ringWidth - config.ringInset)
