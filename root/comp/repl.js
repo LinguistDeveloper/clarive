@@ -545,7 +545,7 @@ To do:
             btn_out,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:'/static/images/scm/debug/write_obj.gif',
+                icon:'/static/images/icons/save.png',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
