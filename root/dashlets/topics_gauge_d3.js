@@ -19,12 +19,11 @@
         var div = document.getElementById(id);
         var maxValue;
         if ( res.max <= yellow ) {
-            maxValue = yellow + green + ( (yellow + green) * 10 /100 );
+            maxValue = yellow + green + ( (yellow + green) * 20 /100 );
         } else {
-            maxValue = res.max;
+            maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         }
-        alert(maxValue);
-
+        
        require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
