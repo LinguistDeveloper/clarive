@@ -79,7 +79,7 @@ register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
     icon=> '/static/images/icons/gauge.png',
-    js_file => '/dashlets/topics_gauge_d3.js'
+    js_file => '/dashlets/topics_gauge.js'
 };
 
 register 'dashlet.iframe' => {
