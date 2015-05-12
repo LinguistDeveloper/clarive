@@ -99,13 +99,11 @@
                  tickData = [1, yellow/maxValue, green/maxValue];
                  angles = new Array();
 
-                 console.dir(tickData);
                  var last = 0;
                  arc = d3.svg.arc()
                      .innerRadius(r - config.ringWidth - config.ringInset)
                      .outerRadius(r - config.ringInset)
                      .startAngle(function(d, i) {
-                         console.log(d + " " + i)
                          return deg2rad(config.minAngle);
                      })
                      .endAngle(function(d, i) {
