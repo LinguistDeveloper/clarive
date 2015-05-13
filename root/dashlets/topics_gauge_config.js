@@ -18,6 +18,7 @@
         name: "days_until",
         fieldLabel: _("Shift in days from today to end timeline. 0 or blank means today")
     });
+
     var green = new Ext.ux.form.SpinnerField({ 
         value: data.green, 
         name: "green",
@@ -37,6 +38,15 @@
         { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
         ccategory,
         { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
+        { xtype:'textfield', fieldLabel: _('Date field in topics to use as start'), name: 'date_field_start', value: data.date_field_start },
+        { xtype:'textfield', fieldLabel: _('Date field in topics to use as end'), name: 'date_field_end', value: data.date_field_end },
+        {
+            xtype: 'checkbox',
+            name: "end_remaining",
+            fieldLabel: _("Use end date as remaining time"),
+            checked: data.end_remaining == undefined ? false : data.end_remaining,
+            allowBlank: 1
+        },
         new Baseliner.ComboDouble({ fieldLabel: _('The result will be shown in ...'), name:'units', value: data.units || 'day', data: [
             ['minute', _('Minutes')],
             ['hour', _('Hours')],
@@ -44,11 +54,9 @@
             ['month', _('Months')]
           ] 
         }),
-        { xtype:'textfield', fieldLabel: _('Date field in topics to use as start'), name: 'date_field_start', value: data.date_field_start },
-        { xtype:'textfield', fieldLabel: _('Date field in topics to use as end'), name: 'date_field_end', value: data.date_field_end },
-        { xtype:'textfield', fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
         days_from,
         days_until,
+        { xtype:'textfield', fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
         green,
         yellow
     ]);

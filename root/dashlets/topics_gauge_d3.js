@@ -11,12 +11,17 @@
     var date_field_end = params.data.date_field_end;
     var numeric_field = params.data.numeric_field;
     var units = params.data.units;
+    var end_remaining = params.data.end_remaining;
+    var columns = params.data.columns;
 
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var div = document.getElementById(id);
+         if ( columns < 6 ) {
+            div.style.height = "210px";
+         }
         var maxValue;
         if ( res.max <= yellow ) {
             maxValue = yellow + green + ( (yellow + green) * 20 /100 );

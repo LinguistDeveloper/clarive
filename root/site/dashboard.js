@@ -75,7 +75,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                             });
                         };
                     }, [%= autorefresh %]);
-                }
+                };
             </script>
 
         */};
