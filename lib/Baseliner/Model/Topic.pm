@@ -706,7 +706,16 @@ sub update {
                     $meta = \@meta_filter;
                     $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
-                    
+
+                    # my $status_changes = {};
+                    # my $now = Class::Date->now();
+                    # my $status_name = ci->status->find_one({ id_status => $topic->id_category_status })->{name};
+                    # $status_changes->{_name_to_id($status_name)}->{count} = 1;
+                    # $status_changes->{_name_to_id($status_name)}->{total_time} = 0;
+                    # $status_changes->{_name_to_id($status_name)}->{transitions} = [{ ts => ''.Class::Date->now() }];
+                    # $status_changes->{_name_to_id($status_name)}->{last_transition} = { ts => ''.Class::Date->now() };
+                    # mdb->topic->update({ mid => "$topic->mid"},{'$set' => {_status_changes => $status_changes} });
+
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
@@ -2039,24 +2048,26 @@ sub update_category_status {
     my $now = Class::Date->now();
 
     if ( $status_changes->{_name_to_id($$category_status{name})} ) {
-        $status_changes->{_name_to_id($$category_status{name})}->{count} += 1;
-        push @$status_changes->{_name_to_id($$category_status{name})}->{transition}, { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{_name_to_id($$category_status{name})}->{count} = $status_changes->{_name_to_id($$category_status{name})}->{count} + 1;
+        my @transitions = _array($status_changes->{_name_to_id($$category_status{name})}->{transitions});
+        push @transitions, { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{_name_to_id($$category_status{name})}->{transitions} = \@transitions;
         $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
     } else {
         $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
         $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
-        $status_changes->{_name_to_id($$category_status{name})}->{transition} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
+        $status_changes->{_name_to_id($$category_status{name})}->{transitions} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
         $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
     }
 
     if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
-        ### TODO: Fill total time in status
         my $last = Class::Date->new($status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition}->{ts});
         my $rel = $now - $last;
         $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
         delete $status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition};
-        ### Remove last transition
-        ### Replicate update in topic_create
+        my @transitions = _array($status_changes->{_name_to_id($doc->{category_status}->{name})}->{transitions});
+        push @transitions, { to => _name_to_id($$category_status{name}), ts => ''.Class::Date->now() };
+        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{transitions} = \@transitions;
     }
 
     $d->{_status_changes} = $status_changes;
