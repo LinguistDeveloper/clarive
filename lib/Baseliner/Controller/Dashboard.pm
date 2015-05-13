@@ -818,6 +818,7 @@ sub topics_gauge: Local {
     my @data = ();
     my $max = 0;
     my $min = 9999999999999999999999999;
+    my $count = 0;
     while (my $topic = $rs_topics->next() ) {
         next if !$topic->{$date_field_start} && !$topic->{$numeric_field};
 
@@ -830,16 +831,22 @@ sub topics_gauge: Local {
             push @data, $days;
             $max = $days if $days > $max;
             $min = $days if $days < $min;
-        } else {
+        } elsif ( $topic->{$numeric_field} ){
+            $units = '';
             push @data, $topic->{$numeric_field};
             $max = $topic->{$numeric_field} if $topic->{$numeric_field} > $max;
             $min = $topic->{$numeric_field} if $topic->{$numeric_field} < $min;
+        } else {
+            $count += 1;
+            $max += 1;
         }
     }
+    $units = $units.'s' if $units;
+    
     use List::Util qw(sum);
     my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
 
-    $c->stash->{json} = { units => $units.'s', data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
+    $c->stash->{json} = { units => $units, data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');
 }
 
