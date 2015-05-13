@@ -32,7 +32,7 @@ register 'service.topic.update' => {
 };
 
 register 'service.topic.upload' => {
-    name => 'Asset topic file',
+    name => 'Attach file to a topic',
     handler => \&upload,
     job_service  => 0,
     icon => '/static/images/icons/upload.gif',
@@ -203,28 +203,32 @@ sub create {
     my ( $self, $c, $config ) = @_;
 
     my $stash = $c->stash;
-    my $category = $config->{category} // _fail( _loc 'Missing or invalid parameter category' );
-    my $data = $config->{data};
+    my $category = $config->{category} // _fail( _loc 'Missing parameter category' );
+    my $data = $config->{variables};
     my $username = $config->{username} // 'clarive';
-    my $new_status = $config->{new_status};
-
-    #Let's get the category id
-    ###### TODO: GET CATEGORY ID FROM MONGO ¿?¿? 
-    my $id_category = $category;
-
-    # if ( is_number( $category ) ) {
-    #     ($category_id) = map {$_->{id}} ci->status->find_one( {id_status => $new_status} );
-    # } else {
-    #     ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => $new_status} );
-    # }
-
-    # if ( !$new_status_id ) {
-    #     _fail _loc("Status %1 does not exist in the system", $new_status);
-    # }
-
-    #Let's get the new_status id
+    my $new_status = $config->{status} // _fail(_loc('Missing parameter status'));
+    my $title = $config->{title};
+    my $category_id;
     my $new_status_id;
 
+    #Let's get the category id
+    if ( !is_number( $category ) ) {
+        my $cat = mdb->category->find_one({ name => $category });
+        if ( $cat ) {
+            $category_id = $cat->{id};
+        } else {
+            _fail _loc("Category %1 does not exist in the system", $category);
+        }
+    } else {
+        my $cat = mdb->category->find_one({ id => $category });
+        if ( $cat ) {
+            $category_id = $cat->{id};
+        } else {
+            _fail _loc("Category %1 does not exist in the system", $category);
+        }        
+    }
+
+    #Let's get the new_status id
     if ( $new_status ) {
         if ( is_number( $new_status ) ) {
             ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => $new_status} );
@@ -238,11 +242,13 @@ sub create {
             $data->{id_category_status} = $new_status_id;
         }
     };
-
+    if ( !$new_status_id ) {
+        _fail _loc("Status %1 does not exist in the system", $new_status);
+    }
+    $data->{title} = $title;
     $data->{username} = $username;
     $data->{action} = 'add';
-    $data->{category} = $id_category;
-
+    $data->{category} = $category_id;
 
     Baseliner->model('Topic')->update( 
         $data
@@ -253,9 +259,24 @@ sub update {
     my ( $self, $c, $config ) = @_;
 
     my $stash = $c->stash;
-    my $data = $config->{data};
-    my $user = $config->{username} // 'clarive';
 
+    my $user = $config->{username} // 'clarive';
+    my $variables = $config->{variables};
+    my $mid = $config->{mid};
+
+    my $data = {};
+
+    $data->{topic_mid} = $mid;
+    $data->{action} = 'update';
+    $data->{username} = $user;
+
+    for my $field ( keys %$variables) {
+        $data->{$field} = $variables->{$field};
+    }
+
+    Baseliner->model('Topic')->update( 
+        $data
+    );
 }
 
 sub upload {

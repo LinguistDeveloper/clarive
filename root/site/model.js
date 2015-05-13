@@ -1714,6 +1714,7 @@ Baseliner.get_keys = function(obj){
 };
 
 Baseliner.DataEditor = function(c) {
+    console.dir(c);
     var self = this;
     self.addEvents('save');
     var Record = Ext.data.Record.create([  // Record is a Class
@@ -1981,11 +1982,11 @@ Baseliner.DataEditor = function(c) {
                 var rec = store.getAt(row);
                 editor = new Ext.form.TextField({ value: rec.get('key'), selectOnFocus: true });
             } 
-            else if( col == 1 ) {
+            else if( col == 1 && !c.hide_type) {
                 var rec = store.getAt(row);
                 editor = new Baseliner.ComboSingle({ value: rec.get('type'), data:['Value', 'Hash','Array', 'CI'] });
             }
-            else if( col == 2 ) {
+            else if( col == 2 || (col == 1 && c.hide_type)  ) {
                 var rec = store.getAt(row);
                 if( rec.get('type') == 'Value' ) {
                     editor = new Ext.form.TextArea({ value: rec.get('value'),
