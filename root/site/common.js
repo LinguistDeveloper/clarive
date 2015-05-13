@@ -3057,6 +3057,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     ct = ct(values);  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
+                    if( col_s[5] == 'readonly' ) ct.editor.readOnly = true;
                     ct.sortable = true;
                     // now test for Header[dataIndex]
                     var name_and_id = col_s[0].match(/^([^\[]+)\[([^\]]+)\]/);
