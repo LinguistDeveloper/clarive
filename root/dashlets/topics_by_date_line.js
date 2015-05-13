@@ -8,9 +8,7 @@
     var graph_type = params.data.type || 'area';
     var stacked = false;
     if ( graph_type.indexOf('stack-') === 0 ) {
-        console.log("Type before: "+graph_type);
         graph_type = graph_type.replace('stack-','');
-        console.log("Type after: "+graph_type);
         stacked = true;
     }
     var categories = params.data.categories || [];

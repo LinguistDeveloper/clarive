@@ -1,6 +1,5 @@
 (function(params){
     var common = Cla.dashlet_common(params);
-    console.dir(params);
     var data = params.data;
     return common.concat([
         { xtype:'textfield', fieldLabel: _('Days Average'), name: 'days_avg', value: data.days_avg?data.days_avg:'1000D' },

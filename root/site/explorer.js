@@ -1065,7 +1065,6 @@ Baseliner.edit_search = function(n){
 
 Baseliner.delete_search = function(n){
     var node = n;
-    console.log(n);
     if( ! node.attributes.mid){
         node.attributes.mid = node.attributes.data.id_report;
     }
