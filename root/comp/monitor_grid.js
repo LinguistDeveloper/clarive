@@ -569,7 +569,7 @@
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
     var refresh_button = new Ext.Button({ text: _('Auto Refresh'),
-        icon: '/static/images/icons/time.gif', 
+        icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -1068,7 +1068,7 @@
         tbar: is_portlet ? [] : [ 
                 search_field,
                 button_html,
-                menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
+                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.gif', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
@@ -1083,6 +1083,7 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.gif',
+                    text: _('Full log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

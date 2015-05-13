@@ -427,7 +427,7 @@
     var button_remove_item = new Ext.Button({
         text: _('Remove Job Item'),
         disabled: true,
-        icon:'/static/images/del.gif',
+        icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = jc_grid.getSelectionModel();
@@ -885,7 +885,7 @@
             '->',
             {
                 xtype:'button', text: _('Reset'),
-                icon:'/static/images/asterisk.gif',
+                icon:'/static/images/icons/wipe_cache.png',
                 cls: 'x-btn-text-icon',
                 handler: form_reset_all
             },
