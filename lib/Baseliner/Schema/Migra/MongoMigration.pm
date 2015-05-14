@@ -5,6 +5,80 @@ use v5.10;
 use strict;
 use Try::Tiny;
 
+sub activity_to_status_changes {
+    use Array::Utils qw(:all);
+
+    my $rs = mdb->activity->find({ event_key => 'event.topic.create'})->sort({ ts => 1 });
+    my $total = $rs->count;
+    my $cont = 1;
+    my %st = ();
+    my %initials = map {$_->{id_status} => _name_to_id($_->{name})} ci->status->find({ type => 'I'})->all;
+    my @initial_ids = sort keys %initials;
+
+    my %cat_initial = map {
+        my @statuses = _array($_->{statuses});
+        $_->{name} => intersect(@initial_ids,@statuses) || $initial_ids[0];
+    } mdb->category->find->fields({statuses => 1, name => 1})->all;
+
+    while ( my $act = $rs->next() ) {
+      my $status_changes = {};
+      my $doc = mdb->topic->find_one({ mid => "$act->{mid}"});
+      next if !$doc->{category}->{name};
+      #_log $initials{$cat_initial{$doc->{category}->{name}}};
+      $st{$act->{mid}} = $initials{$cat_initial{$doc->{category}->{name}}};
+      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{count} = 1;
+      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{total_time} = 0;
+      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{transitions} = [{ from => '', ts => $act->{ts} }];
+      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{last_transition} = { from => '', ts => $act->{ts} };
+      mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
+      if ( ($cont % 100) == 0 ) {
+        _log "Creation: Updated $cont/$total";
+      }
+      $cont++;
+    }  
+    _log "Creation: Updated $cont/$total";  
+
+    $rs = mdb->activity->find({ event_key => 'event.topic.change_status'})->sort({ ts => 1 });
+    $total = $rs->count;
+    $cont = 1;
+
+    while ( my $act = $rs->next() ) {
+      my $doc = mdb->topic->find_one({ mid => "$act->{mid}"});
+      my $status_changes = $doc->{_status_changes} // {};
+      next if !$doc->{category}->{name};
+      $st{$act->{mid}} = _name_to_id($act->{vars}->{status});
+
+      if ( $status_changes->{_name_to_id($act->{vars}->{status})} ) {
+          $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = $status_changes->{_name_to_id($act->{vars}->{status})}->{count} + 1;
+          my @transitions = _array($status_changes->{_name_to_id($act->{vars}->{status})}->{transitions});
+          push @transitions, { from => $st{$act->{mid}}, ts => $act->{ts} };
+          $status_changes->{_name_to_id($act->{vars}->{status})}->{transitions} = \@transitions;
+          $status_changes->{_name_to_id($act->{vars}->{status})}->{last_transition} = { from => $st{$act->{mid}}, ts => $act->{ts} };
+      } else {
+        $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = 1;
+        $status_changes->{_name_to_id($act->{vars}->{status})}->{total_time} = 0;
+        $status_changes->{_name_to_id($act->{vars}->{status})}->{transitions} = [{ from => '', ts => $act->{ts} }];
+        $status_changes->{_name_to_id($act->{vars}->{status})}->{last_transition} = { from => '', ts => $act->{ts} };
+      }
+
+      if ( $status_changes->{$st{$act->{mid}}} ) {
+          my $last = Class::Date->new($status_changes->{$st{$act->{mid}}}->{last_transition}->{ts});
+          my $rel = $act->{ts} - $last;
+          $status_changes->{$st{$act->{mid}}}->{total_time} = $status_changes->{$st{$act->{mid}}}->{total_time} + $rel->second;
+          delete $status_changes->{$st{$act->{mid}}}->{last_transition};
+          my @transitions = _array($status_changes->{$st{$act->{mid}}}->{transitions});
+          push @transitions, { to => _name_to_id($act->{vars}->{status}), ts => $act->{ts} };
+          $status_changes->{$st{$act->{mid}}}->{transitions} = \@transitions;
+      }
+      mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
+      if ( ($cont % 100) == 0 ) {
+        _log "Status changes: Updated $cont/$total";
+      }
+      $cont++;  
+    }
+    _log "Status changes: Updated $cont/$total";
+}
+
 sub closed_date {
     my @close_status = map { $_->{name} } ci->status->find({ type => qr/^F/ })->all;
     my $act = mdb->activity->find({ event_key => 'event.topic.change_status', 'vars.status' => mdb->in(@close_status)})->sort({ts => 1});
