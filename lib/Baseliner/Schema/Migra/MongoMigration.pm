@@ -14,6 +14,7 @@ sub activity_to_status_changes {
     my %st = ();
     my %initials = map {$_->{id_status} => _name_to_id($_->{name})} ci->status->find({ type => 'I'})->all;
     my @initial_ids = sort keys %initials;
+    my %category_names = map { $_->{id} => $_->{name}} mdb->category->find({})->all;
 
     my %cat_initial = map {
         my @statuses = _array($_->{statuses});
@@ -23,14 +24,17 @@ sub activity_to_status_changes {
     while ( my $act = $rs->next() ) {
       my $status_changes = {};
       my $doc = mdb->topic->find_one({ mid => "$act->{mid}"});
+      _debug "Doc $act->{mid} skipped. Probably deleted" if !$doc;
+      next if !$doc;
+      my $category_name = $category_names{$doc->{category}->{id}};
       _debug "Updating MID: $act->{mid}";
-      next if !$doc->{category}->{name};
-      #_log $initials{$cat_initial{$doc->{category}->{name}}};
-      $st{$act->{mid}} = $initials{$cat_initial{$doc->{category}->{name}}};
-      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{count} = 1;
-      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{total_time} = 0;
-      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{transitions} = [{ from => '', ts => $act->{ts} }];
-      $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{last_transition} = { from => '', ts => $act->{ts} };
+      next if !$category_name;
+      #_log $initials{$cat_initial{$category_name}};
+      $st{$act->{mid}} = $initials{$cat_initial{$category_name}};
+      $status_changes->{$initials{$cat_initial{$category_name}}}->{count} = 1;
+      $status_changes->{$initials{$cat_initial{$category_name}}}->{total_time} = 0;
+      $status_changes->{$initials{$cat_initial{$category_name}}}->{transitions} = [{ from => '', ts => $act->{ts} }];
+      $status_changes->{$initials{$cat_initial{$category_name}}}->{last_transition} = { from => '', ts => $act->{ts} };
       _debug "Status changes for $act->{mid}". _dump $status_changes;
       mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
       if ( ($cont % 100) == 0 ) {
@@ -47,7 +51,8 @@ sub activity_to_status_changes {
     while ( my $act = $rs->next() ) {
       my $doc = mdb->topic->find_one({ mid => "$act->{mid}"});
       my $status_changes = $doc->{_status_changes} // {};
-      next if !$doc->{category}->{name};
+      _debug "Doc $act->{mid} skipped. Probably deleted" if !$doc;
+      next if !$doc;
       $st{$act->{mid}} = _name_to_id($act->{vars}->{status});
 
       if ( $status_changes->{_name_to_id($act->{vars}->{status})} ) {
