@@ -14,12 +14,14 @@ sub activity_to_status_changes {
     my %st = ();
     my %initials = map {$_->{id_status} => _name_to_id($_->{name})} ci->status->find({ type => 'I'})->all;
     my @initial_ids = sort keys %initials;
-    my %category_names = map { $_->{id} => $_->{name}} mdb->category->find({})->all;
 
     my %cat_initial = map {
         my @statuses = _array($_->{statuses});
-        $_->{name} => intersect(@initial_ids,@statuses) || $initial_ids[0];
+        my @commons = intersect(@initial_ids,@statuses);
+        $_->{name} =>  $commons[0] || $initial_ids[0];
     } mdb->category->find->fields({statuses => 1, name => 1})->all;
+
+    my %category_names = map { $_->{id} => $_->{name}} mdb->category->find({})->all;
 
     while ( my $act = $rs->next() ) {
       my $status_changes = {};
