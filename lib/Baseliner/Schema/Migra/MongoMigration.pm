@@ -31,6 +31,7 @@ sub activity_to_status_changes {
       $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{total_time} = 0;
       $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{transitions} = [{ from => '', ts => $act->{ts} }];
       $status_changes->{$initials{$cat_initial{$doc->{category}->{name}}}}->{last_transition} = { from => '', ts => $act->{ts} };
+      _debug "Status changes for $act->{mid}". _dump $status_changes;
       mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
       if ( ($cont % 100) == 0 ) {
         _log "Creation: Updated $cont/$total";
