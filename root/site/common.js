@@ -2999,7 +2999,7 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
         var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.png', 
             handler: function() { self.load(ta.getValue(), true) }
         });
-        var button_close = new Ext.Button({ text: '', tooltip: _('Close'), icon:'/static/images/icons/close.png', 
+        var button_close = new Ext.Button({ text: '', text: _('Close'), icon:'/static/images/icons/close.png', 
             handler: function() { win.close() }
         });
         var win = new Baseliner.Window({
