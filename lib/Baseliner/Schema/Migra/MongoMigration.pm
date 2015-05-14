@@ -31,7 +31,7 @@ sub activity_to_status_changes {
       next if !$category_name;
       #_log $initials{$cat_initial{$category_name}};
       my $new_status = $initials{$cat_initial{$category_name}};
-      $new_status = $initials($initial_ids[0]) if !$new_status;
+      $new_status = $initials{$initial_ids[0]} if !$new_status;
       $st{$act->{mid}} = $initials{$cat_initial{$category_name}};
       $status_changes->{$initials{$cat_initial{$category_name}}}->{count} = 1;
       $status_changes->{$initials{$cat_initial{$category_name}}}->{total_time} = 0;
