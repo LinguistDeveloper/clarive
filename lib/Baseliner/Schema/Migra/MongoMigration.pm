@@ -23,6 +23,7 @@ sub activity_to_status_changes {
     while ( my $act = $rs->next() ) {
       my $status_changes = {};
       my $doc = mdb->topic->find_one({ mid => "$act->{mid}"});
+      _debug "Updating MID: $act->{mid}";
       next if !$doc->{category}->{name};
       #_log $initials{$cat_initial{$doc->{category}->{name}}};
       $st{$act->{mid}} = $initials{$cat_initial{$doc->{category}->{name}}};
