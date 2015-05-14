@@ -29,7 +29,6 @@ sub activity_to_status_changes {
       _debug "Doc $act->{mid} skipped. Probably deleted" if !$doc;
       next if !$doc;
       my $category_name = $category_names{$doc->{category}->{id}};
-      _debug "Updating MID: $act->{mid}";
       next if !$category_name;
       #_log $initials{$cat_initial{$category_name}};
       my $new_status = $initials{$cat_initial{$category_name}};
@@ -39,7 +38,6 @@ sub activity_to_status_changes {
       $status_changes->{$initials{$cat_initial{$category_name}}}->{total_time} = 0;
       $status_changes->{$initials{$cat_initial{$category_name}}}->{transitions} = [{ from => '', ts => $act->{ts} }];
       $status_changes->{$initials{$cat_initial{$category_name}}}->{last_transition} = { from => '', ts => $act->{ts} };
-      _debug "Status changes for $act->{mid}". _dump $status_changes;
       mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
       if ( ($cont % 100) == 0 ) {
         _log "Creation: Updated $cont/$total";
