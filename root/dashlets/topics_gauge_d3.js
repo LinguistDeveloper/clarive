@@ -100,9 +100,16 @@
                      .range([0,1])
                      .domain([config.minValue, config.maxValue]);
                      
-                 ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
-                 tickData = [1, yellow/maxValue, green/maxValue];
-                 angles = new Array();
+                 if ( end_remaining == 'on' ) {
+                     ticks = [0, yellow, green];//scale.ticks(config.majorTicks);
+                     tickData = [1, green/maxValue, yellow/maxValue ];
+                 } else {
+                     ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
+                     tickData = [1, yellow/maxValue, green/maxValue];
+                 }
+
+                 // ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
+                 // tickData = [1, yellow/maxValue, green/maxValue];
 
                  var last = 0;
                  arc = d3.svg.arc()
@@ -112,6 +119,7 @@
                          return deg2rad(config.minAngle);
                      })
                      .endAngle(function(d, i) {
+                         console.log("Arc "+ d + " "+ i);
                          return deg2rad(config.minAngle + (d * range));
                      });
              }
@@ -144,6 +152,7 @@
                      .enter().append('path')
                          .attr('fill', function(d, i) {
                             var colors = ['#FA5858','#F7D358','#60B044'  ];
+                            if ( end_remaining == 'on') colors = colors.reverse();
                              return colors[i];
                          })
                          .attr('d', arc);
