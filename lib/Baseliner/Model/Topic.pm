@@ -2047,27 +2047,27 @@ sub update_category_status {
     my $status_changes = $doc->{_status_changes};
     my $now = Class::Date->now();
 
+    if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
+        my $last = Class::Date->new($status_changes->{last_transition}->{ts});
+        my $rel = $now - $last;
+        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
+        delete $status_changes->{last_transition};
+        my @transitions = _array($status_changes->{transitions});
+        push @transitions, { to => _name_to_id($$category_status{name}), ts => ''.Class::Date->now() };
+        $status_changes->{transitions} = \@transitions;
+    }
+
     if ( $status_changes->{_name_to_id($$category_status{name})} ) {
         $status_changes->{_name_to_id($$category_status{name})}->{count} = $status_changes->{_name_to_id($$category_status{name})}->{count} + 1;
-        my @transitions = _array($status_changes->{_name_to_id($$category_status{name})}->{transitions});
+        my @transitions = _array($status_changes->{transitions});
         push @transitions, { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
-        $status_changes->{_name_to_id($$category_status{name})}->{transitions} = \@transitions;
-        $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{transitions} = \@transitions;
+        $status_changes->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
     } else {
         $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
         $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
-        $status_changes->{_name_to_id($$category_status{name})}->{transitions} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
-        $status_changes->{_name_to_id($$category_status{name})}->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
-    }
-
-    if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
-        my $last = Class::Date->new($status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition}->{ts});
-        my $rel = $now - $last;
-        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
-        delete $status_changes->{_name_to_id($doc->{category_status}->{name})}->{last_transition};
-        my @transitions = _array($status_changes->{_name_to_id($doc->{category_status}->{name})}->{transitions});
-        push @transitions, { to => _name_to_id($$category_status{name}), ts => ''.Class::Date->now() };
-        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{transitions} = \@transitions;
+        $status_changes->{transitions} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
+        $status_changes->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
     }
 
     $d->{_status_changes} = $status_changes;
