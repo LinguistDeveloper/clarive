@@ -755,8 +755,9 @@ sub topics_gauge: Local {
     my $days_from = $p->{days_from};
     my $days_until = $p->{days_until};
     my $units = $p->{units} || 'day';
+    my $input_units = $p->{input_units} || 'day';
     my $condition = {};
-    my $end_remaining = $p->{end_remaining};
+    my $end_remaining = $p->{end_remaining} || 'off';
 
     if ( $p->{condition} ) {
         try {
@@ -820,6 +821,7 @@ sub topics_gauge: Local {
     my $max = 0;
     my $min = 9999999999999999999999999;
     my $count = 0;
+    my $field_mode = 0;
     while (my $topic = $rs_topics->next() ) {
 
         if ( $date_field_start ) {
@@ -834,10 +836,11 @@ sub topics_gauge: Local {
             $min = $days if $days < $min;
             
         } elsif ( $topic->{$numeric_field} ){
-            $units = '';
             push @data, $topic->{$numeric_field};
             $max = $topic->{$numeric_field} if $topic->{$numeric_field} > $max;
             $min = $topic->{$numeric_field} if $topic->{$numeric_field} < $min;
+            $field_mode = 1;
+            _warn 'En field_mode';
         } elsif ( $end_remaining eq 'on' ) {
             my $date_end = Class::Date->new($topic->{$date_field_end});
             my $now = Class::Date->now();
@@ -852,10 +855,38 @@ sub topics_gauge: Local {
             $max += 1;
         }
     }
-    $units = $units.'s' if $units;
+
 
     use List::Util qw(sum);
     my $avg = @data? sprintf("%.2f",sum(@data) / @data): $count;
+
+    if ( $field_mode ){
+        if ( $input_units ne 'number' ) {
+            my $sec_res = $avg;
+            if ( $input_units eq 'minute') {
+                $sec_res = $avg * 60;
+            } elsif ( $input_units eq 'hour' ) {
+                $sec_res = $avg * 60 * 60;
+            } elsif ( $input_units eq 'day' ) {
+                $sec_res = $avg * 60 * 60 * 24;
+            }
+
+            if ( $units eq 'month') {
+                $sec_res = $sec_res / 30 / 24 / 60 / 60;
+            } elsif ( $units eq 'day') {
+                $sec_res = $sec_res / 24 / 60 / 60;
+            } elsif ( $units eq 'hour') {
+                $sec_res = $sec_res / 60 / 60;
+            } elsif ( $units eq 'minute') {
+                $sec_res = $sec_res / 60;
+            }
+            $avg = $sec_res;
+        } else {
+            $units = '';
+        }
+    }
+
+    $units = $units.'s' if $units;
 
     $c->stash->{json} = { units => $units, data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');

@@ -57,6 +57,14 @@
         days_from,
         days_until,
         { xtype:'textfield', fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
+        new Baseliner.ComboDouble({ fieldLabel: _('The field data units are ...'), name:'input_units', value: data.input_units || 'day', data: [
+            ['second', _('Seconds')],
+            ['minute', _('Minutes')],
+            ['hour', _('Hours')],
+            ['day', _('Days')],
+            ['number',_('Number')]
+          ] 
+        }),
         green,
         yellow
     ]);

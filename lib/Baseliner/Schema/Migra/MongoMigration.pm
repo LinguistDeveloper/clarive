@@ -61,18 +61,19 @@ sub activity_to_status_changes {
           $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = $status_changes->{_name_to_id($act->{vars}->{status})}->{count} + 1;
           my @transitions = _array($status_changes->{_name_to_id($act->{vars}->{status})}->{transitions});
           push @transitions, { from => $st{$act->{mid}}, ts => $act->{ts} };
-          $status_changes->{_name_to_id($act->{vars}->{status})}->{transitions} = \@transitions;
-          $status_changes->{_name_to_id($act->{vars}->{status})}->{last_transition} = { from => $st{$act->{mid}}, ts => $act->{ts} };
+          $status_changes->{_name_to_id($act->{vars})}->{transitions} = \@transitions;
+          $status_changes->{_name_to_id($act->{vars})}->{last_transition} = { from => $st{$act->{mid}}, ts => $act->{ts} };
       } else {
         $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = 1;
         $status_changes->{_name_to_id($act->{vars}->{status})}->{total_time} = 0;
-        $status_changes->{_name_to_id($act->{vars}->{status})}->{transitions} = [{ from => '', ts => $act->{ts} }];
-        $status_changes->{_name_to_id($act->{vars}->{status})}->{last_transition} = { from => '', ts => $act->{ts} };
+        $status_changes->{_name_to_id($act->{vars})}->{transitions} = [{ from => '', ts => $act->{ts} }];
+        $status_changes->{_name_to_id($act->{vars})}->{last_transition} = { from => '', ts => $act->{ts} };
       }
 
       if ( $status_changes->{$st{$act->{mid}}} ) {
           my $last = Class::Date->new($status_changes->{$st{$act->{mid}}}->{last_transition}->{ts});
-          my $rel = $act->{ts} - $last;
+          my $ts = Class::Date->new($act->{ts});
+          my $rel =  $ts - $last;
           $status_changes->{$st{$act->{mid}}}->{total_time} = $status_changes->{$st{$act->{mid}}}->{total_time} + $rel->second;
           delete $status_changes->{$st{$act->{mid}}}->{last_transition};
           my @transitions = _array($status_changes->{$st{$act->{mid}}}->{transitions});
