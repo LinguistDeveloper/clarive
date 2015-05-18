@@ -263,7 +263,6 @@ register 'registor.action.topic_category_fields' => {
                     $description = _loc($msg_view, $field->{name_field}, $category->{name});
                     $actions_category_fields{$id_action} = { id => $id_action, name => $description };
                     for my $status (@statuses2){
-                        next unless length($cat_to_id) && length($field_to_id) && length($status->{name_id});
                         $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
                         $description = _loc($msg_edit_s, $field->{name_field}, $category->{name}, $status->{name} );
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
@@ -698,7 +697,11 @@ sub update {
 
             event_new 'event.topic.create' => $stash => sub {
                 mdb->txn(sub{
-                    my $meta = $self->get_meta ($topic_mid , $p->{category});
+                    my $catalog_fieldlets = $p->{_catalog_fieldlets} ? $p->{_catalog_fieldlets} : undef;
+
+
+                    my $meta = $self->get_meta ($topic_mid , $p->{category}, $p->{username}, $catalog_fieldlets);
+
                     $stash->{topic_meta} = $meta; 
                     my @meta_filter;
                     push @meta_filter, $_
@@ -756,8 +759,8 @@ sub update {
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
                 $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
-                
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
                 my $id_category = $topic->id_category;
@@ -780,11 +783,12 @@ sub update {
                 };
                     
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+            }
 
-            } => sub {
-                my $e = shift;
-                _throw $e;
-            };
+            # } => sub {
+            #     my $e = shift;
+            #     _throw $e;
+            # };
         } 
         $self->cache_topic_remove( $topic_mid );
         when ( 'delete' ) {
@@ -922,15 +926,15 @@ sub next_status_for_user {
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my @to_status;
     
-    if ( !$is_root ) {
+    if ( !$is_root && $p{surrogate} ne 'clarive') {
         @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
         my %my_roles = map { $_=>1 } @user_roles;
-        my $_tos;
+    
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
-            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ mid=>1, _workflow=>1, category_status=>1 });
-            if( $doc->{_workflow} && ( $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
+            my $doc = mdb->topic->find_one({ mid=>$topic_mid },{ mid=>1, _workflow=>1, category_status=>1 });
+            if( $doc->{_workflow} && ( my $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
                 $where->{"workflow.id_status_to"} = mdb->in($_tos); 
             }
         }
@@ -966,11 +970,6 @@ sub next_status_for_user {
                 } 
                 grep { $my_roles{$$_{id_role}} && $$_{id_status_from} eq $p{id_status_from}}
                 grep { defined } _array( $cat->{workflow} );
-
-                if($_tos){
-                    my %tos = map { $_ => $_ } _array $_tos;
-                    @all_to_status = grep { $tos{$_->{id_status_to}}  } @all_to_status;
-                }
             
             my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
             my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
@@ -993,6 +992,7 @@ sub next_status_for_user {
         }
     } else {
         my @user_wf = $self->user_workflow( $username );
+
         @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
             $_->{id_category} eq $p{id_category}
                 && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
@@ -1261,23 +1261,33 @@ our %meta_types = (
 );
 
 sub get_meta {
-    my ($self, $topic_mid, $id_category, $username) = @_;
+    my ($self, $topic_mid, $id_category, $username, $catalog_fieldlets) = @_;
 
-    my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
+    my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if length $topic_mid;
     return $cached if $cached;
 
-    my $id_cat =  $id_category
-        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
+    my $id_cat =  $id_category;
+
+    my $topic;
+    if ($topic_mid){
+        $topic = mdb->topic->find_one( {mid => "$topic_mid"}, {_catalog_fieldlets => 1, 'category.id' => 1, _id => 0, ci_task_mid => 1 });
+        $id_cat = $topic->{category}{id};
+
+        $catalog_fieldlets = $topic->{_catalog_fieldlets};  
+
+    }
     
     my @cat_fields;
     
     if ($id_cat){
         my $catdoc = mdb->category->find_one({ id=>mdb->in($id_cat) });
         @cat_fields = _array( $catdoc->{fieldlets} );
+        push @cat_fields, _array($catalog_fieldlets) if $catalog_fieldlets;
     }else{
         if($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            @cat_fields = _array( mdb->category->find_one({ id=>mdb->in(@user_categories) })->{fieldlets} );
+            #@cat_fields = _array( mdb->category->find({ id=>mdb->in(@user_categories) })->{fieldlets} );
+            @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find({ id=>mdb->in(@user_categories) })->all);
         }else{
             @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find->all );
         }
@@ -1315,6 +1325,8 @@ sub get_meta_hash {
 sub get_data {
     my ($self, $meta, $topic_mid, %opts ) = @_;
     
+    #_log "######################TOPIC: " . _dump $topic_mid;
+
     # normalize to improve cache_hits:
     my $no_cache = delete( $opts{no_cache} ) || 0;
     my $with_meta = delete $opts{with_meta};
@@ -1346,6 +1358,7 @@ sub get_data {
         $data->{modified_on_epoch} = Class::Date->new( $data->{modified_on} )->epoch;
         $data->{deadline} = _loc('unassigned');
         
+        $data->{_catalog_stash} = _load $data->{_catalog_stash} if ( $data->{_catalog_stash} );
         ##*************************************************************************************************************************
         ###************************************************************************************************************************
         
@@ -1618,7 +1631,10 @@ sub save_data {
             #update last modified on ci!
             $topic->{ts} = mdb->now->string;
 
-            $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
+            my $name = $row{title} // $topic->{name};
+            $moniker //= $topic->{moniker};
+
+            $topic->update( name => $name, moniker => $moniker, modified_by => $data->{username}, %update_row );
             
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -2608,13 +2624,13 @@ sub set_labels {
 sub get_categories_permissions{
     my ($self, %param) = @_;
     
-    my $cache_key = { d=>'topic:meta', p=>\%param };
-    ref($_) && return @$_ for cache->get($cache_key);
+    # my $cache_key = { d=>'topic:meta', p=>\%param };
+    # ref($_) && return @$_ for cache->get($cache_key);
     
     my $username = delete $param{username};
     my $type = delete $param{type};
     my $order = delete $param{order};
-    my $topic_mid = delete $param{topic_mid};
+    my $topic_mid = delete $param{mid};
     
     my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
@@ -2650,7 +2666,7 @@ sub get_categories_permissions{
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
 
-    cache->set($cache_key, \@categories );
+    # cache->set($cache_key, \@categories );
     return @categories;
 }
 
@@ -2664,7 +2680,10 @@ sub get_meta_permissions {
     my $cache_key = { d=>'topic:meta', 
         st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
         cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
-    defined && return $_ for cache->get($cache_key);
+
+    if(!length $data->{_catalog_fieldlets}){
+        defined && return $_ for cache->get($cache_key);
+    }
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
@@ -2712,6 +2731,7 @@ sub get_meta_permissions {
             my $readonly = 0;
             if ( $is_root ) {
                     $_->{readonly} = \0;
+
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
                 my $has_action = $write_action ~~ @user_actions_for_topic;
@@ -2720,8 +2740,12 @@ sub get_meta_permissions {
                 if ( $has_action ){
                     $_->{readonly} = \0;
                 }else{
-                    $_->{readonly} = \1;    
+                    $_->{readonly} = \1;
                     $readonly = 1;
+                    if ( exists $_->{field_type_form} && $_->{field_type_form} eq 'topic' ){
+                        $_->{readonly} = \0;
+                        $readonly = 0;
+                    }
                 }
             }
             
@@ -2941,7 +2965,7 @@ sub change_status {
             if( $p{change} ) {
                 _fail( _loc('Id not found: %1', $mid) ) unless $doc;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status 
-                    if $doc->{category_status}{id} != $id_old_status;
+                if $doc->{category_status}{id} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
                 #my $modified_on = $doc->{modified_on};
@@ -2949,6 +2973,164 @@ sub change_status {
                 $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
                 
                 $self->cache_topic_remove( $mid );
+
+                #####################################################################################################################
+                #BEGIN CATALOG
+                #####################################################################################################################
+                if( $doc->{_catalog_stash}){
+                    my $stash = _load $doc->{_catalog_stash};
+                    $stash->{username} = $p{username};
+                    my $service_selected = $stash->{service_selected};
+
+                    my $config = Baseliner->model('ConfigStore')->get('config.catalog.settings');
+                    my $mid_category = mdb->category->find_one({name => $config->{service}})->{id};
+                    if ( $doc->{category}->{id} eq $mid_category) {
+                        $service_selected->{status_service} = $p{id_status};
+                    }
+
+                    my $index = 0;
+                    for my $task_selected ( _array $service_selected->{tasks} ){
+                        if ( $task_selected->{attributes}->{topic_mid} && $task_selected->{attributes}->{topic_mid} eq $mid ){
+                            last;
+                        }
+                        $index +=1;
+                    };
+
+                    my $final_status = Baseliner->model('Topic')->get_final_status_from_category({id_category => $doc->{category}->{id}});
+                    $service_selected->{tasks}->[$index]->{attributes}->{status_mid} = $p{id_status};
+
+                    my $key_task_mid_project = $service_selected->{tasks}->[$index]->{mid} . '_' . $service_selected->{tasks}->[$index]->{project}->{mid};
+                    if ( $p{id_status} eq $final_status) {
+                        $service_selected->{tasks}->[$index]->{attributes}->{sw_task_done} = 1;
+                        $stash->{tasks_status}->{$key_task_mid_project} = 1;
+
+                        if ($service_selected->{tasks}->[$index]->{attributes}->{variables_output}){
+                            my $output_attributes = $service_selected->{tasks}->[$index]->{attributes}->{variables_output}->{'*'};
+                            
+                            foreach my $output ( keys %$output_attributes ){
+                                if ( exists $doc->{$output} ){
+                                    $stash->{output_data}->{$service_selected->{tasks}->[$index]->{project}->{mid} . '_' . $output} = $doc->{$output};
+                                    my $variable_output = ci->variable->find_one({name => $output});
+                                    if ( $variable_output ) {
+                                        my $project_mid = $service_selected->{tasks}->[$index]->{project}->{mid};
+                                        my $bl = $stash->{bl};
+
+                                        my $project = ci->new($project_mid);
+                                        given ($variable_output->{var_type}) {
+                                            when ('value'){
+                                                given ($output_attributes->{$output . '_action'}) {
+                                                    when ('delete'){
+                                                        delete $project->{variables}->{$bl}->{$output};
+                                                    }
+                                                    default {
+                                                        $project->{variables}->{$bl}->{$output} = $doc->{$output};    
+                                                    }
+                                                };                                                
+                                            }
+                                            when ('array'){
+                                                given ($output_attributes->{$output . '_action'}) {
+                                                    my @output_values =  _array $doc->{$output};
+                                                    when ('add'){
+                                                        if (exists $project->{variables}->{$bl}->{$output} ){
+                                                            push @output_values, ref $project->{variables}->{$bl}->{$output} eq 'ARRAY' ? _array ($project->{variables}->{$bl}->{$output}) : [$project->{variables}->{$bl}->{$output}];
+                                                        }
+                                                        @output_values =  _unique @output_values;
+                                                        $project->{variables}->{$bl}->{$output} = \@output_values;
+                                                    }
+                                                    when ('modify'){
+                                                        $project->{variables}->{$bl}->{$output} = $doc->{$output};
+                                                    }
+                                                    when ('delete'){
+                                                        if ($variable_output->{var_ci_multiple}){
+                                                            if (exists $project->{variables}->{$bl}->{$output} ){
+                                                                my %project_values = map { $_ => 1}  _array $project->{variables}->{$bl}->{$output};
+                                                                foreach my $output_value ( _array $doc->{$output}){
+                                                                    if (exists $project_values{$output_value} ){
+                                                                        delete $project_values{$output_value};
+                                                                    }
+                                                                }
+                                                                my @output_values = keys %project_values;
+                                                                $project->{variables}->{$bl}->{$output} = \@output_values;
+                                                            }
+                                                            else {
+                                                                delete $project->{variables}->{$bl}->{$output};    
+                                                            } 
+                                                        }else{
+                                                            delete $project->{variables}->{$bl}->{$output};
+                                                        }
+                                                    }
+                                                };                                                
+                                            }
+                                            default {
+                                                given ($output_attributes->{$output . '_action'}) {
+                                                    when ('add'){
+                                                        if ($variable_output->{var_ci_multiple}){
+                                                            my @output_values =  _array $doc->{$output};
+                                                            if (exists $project->{variables}->{$bl}->{$output} ){
+                                                                push @output_values, ref $project->{variables}->{$bl}->{$output} eq 'ARRAY' ? _array ($project->{variables}->{$bl}->{$output}) : [$project->{variables}->{$bl}->{$output}];    
+                                                            }
+                                                            @output_values =  _unique @output_values;
+                                                            $project->{variables}->{$bl}->{$output} = \@output_values;
+                                                        }else{
+                                                            $project->{variables}->{$bl}->{$output} = $doc->{$output};
+                                                        }
+                                                    }
+                                                    when ('modify'){
+                                                        $project->{variables}->{$bl}->{$output} = $doc->{$output};
+                                                    }
+                                                    when ('delete'){
+                                                        if ($variable_output->{var_ci_multiple}){
+                                                            if (exists $project->{variables}->{$bl}->{$output} ){
+                                                                my %project_values = map { $_ => 1}  _array $project->{variables}->{$bl}->{$output};
+                                                                foreach my $output_value ( _array $doc->{$output}){
+                                                                    if (exists $project_values{$output_value} ){
+                                                                        delete $project_values{$output_value};
+                                                                    }
+                                                                }
+                                                                my @output_values = keys %project_values;
+                                                                $project->{variables}->{$bl}->{$output} = \@output_values;
+                                                            }
+                                                            else {
+                                                                delete $project->{variables}->{$bl}->{$output};    
+                                                            } 
+                                                        }else{
+                                                            delete $project->{variables}->{$bl}->{$output};
+                                                        }
+                                                    }
+                                                };                                                
+                                            }
+                                        };
+                                        $project->save;
+                                    }
+                                } 
+                            }
+                        } 
+                    }else{
+                        my @ids_status = Baseliner->model('Topic')->get_final_status_error_from_category({id_category => $doc->{category}->{id}});
+                        my @result = grep { /$p{id_status}/ } @ids_status;
+                        if (@result){
+                            $service_selected->{tasks}->[$index]->{attributes}->{sw_task_done} = 1;
+                            $stash->{tasks_status}->{$key_task_mid_project} = 1;
+                            $stash->{from_catalog_event_topic} = 1;
+                        }else{
+                            $service_selected->{tasks}->[$index]->{attributes}->{sw_task_done} = 0;
+                            $stash->{tasks_status}->{$key_task_mid_project} = 0;                            
+                        }
+                    }
+
+                    try{
+                        if ( !$stash->{from_catalog_event_topic}){
+                            $stash->{from_catalog_event_topic} = 1;
+                            $stash->{catalog_filter} = 1;
+                            $self->run_catalog( $stash );
+                        }
+                           
+                    };                  
+                    
+                }
+                #####################################################################################################################
+                #END CATALOG
+                #####################################################################################################################
             }
             # callback, if any
             $callback->() if ref $callback eq 'CODE';
@@ -2968,6 +3150,15 @@ sub change_status {
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
+}
+
+sub run_catalog { 
+    my ($self, $stash) = @_;
+    my $pid = fork;
+    return if $pid;
+    mdb->disconnect;
+    my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule => $stash->{id_rule}, stash => $stash, no_merge_variables => 1  ) if length $stash->{id_rule};
+    exit;
 }
 
 # fieldlet status_changes
@@ -3246,7 +3437,7 @@ sub get_status_history_topics{
                     push @mid_topics, $ed->{topic_mid};
                 }
             }catch{
-                _log ">>>>>>>>>>>>>>>>>>>>Error topic: $ed->{topic_mid} ";
+                #_log ">>>>>>>>>>>>>>>>>>>>Error topic: $ed->{topic_mid} ";
             }
     } @topics;
 
@@ -3429,6 +3620,58 @@ sub get_downloadable_files {
         }
     }
     return $available_docs;
+}
+
+sub get_initial_status_from_category{
+    my ($self, $p) = @_;
+
+    my $id_category = $p->{id_category};
+
+    my @statuses = map { $_->{statuses}} mdb->category->find({id => $id_category})->all;
+    my %initial_statuses = map {$_->{id_status} => $_->{mid}} ci->status->find({type => 'I'})->all;
+
+    my @id = grep {$initial_statuses{$_}} _array @statuses;
+
+    return $id[0];
+}
+
+sub get_final_status_from_category{
+    my ($self, $p) = @_;
+
+    my $id_category = $p->{id_category};
+
+    my @statuses = map { $_->{statuses}} mdb->category->find({id => $id_category})->all;
+    my %final_statuses = map {$_->{id_status} => $_->{mid}} ci->status->find({type => 'F'})->all;
+
+    my @id = grep {$final_statuses{$_}} _array @statuses;
+
+    return $id[0];
+}
+
+sub get_final_status_error_from_category{
+    my ($self, $p) = @_;
+
+    my $id_category = $p->{id_category};
+
+    my @statuses = map { $_->{statuses}} mdb->category->find({id => $id_category})->all;
+    my %final_statuses = map {$_->{id_status} => $_->{mid}} ci->status->find({type => 'FC'})->all;
+
+    my @ids = keys %final_statuses;
+
+    return @ids;
+}
+
+sub get_dependency_status_from_category{
+    my ($self, $p) = @_;
+
+    my $id_category = $p->{id_category};
+
+    my @statuses = map { $_->{statuses}} mdb->category->find({id => $id_category})->all;
+    my %final_statuses = map {$_->{id_status} => $_->{mid}} ci->status->find({type => 'W'})->all;
+
+    my @id = grep {$final_statuses{$_}} _array @statuses;
+
+    return $id[0];
 }
 
 sub getCategoryAcronyms {
