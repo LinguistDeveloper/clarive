@@ -40,12 +40,10 @@ params:
 		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
 		hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         display_field: display_field,
-        tpl_cfg: tpl_cfg
+        tpl_cfg: tpl_cfg,
+        hidden_value : data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : ''
 	});	
-	
-//    release_box_store.on('load',function(){
-		release_box.setValue (data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : '');
-//    });
+ 	release_box.value = data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : '';
 
 	return [
 		release_box

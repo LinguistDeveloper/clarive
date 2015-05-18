@@ -55,7 +55,7 @@
     var button_new_schedule = new Ext.Toolbar.Button({
         text: _('New task'),
         hidden: false,
-        icon:'/static/images/silk/clock_add.png',
+        icon:'/static/images/icons/add.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             var next_exec = new Date( Date.now() ).format('Y-m-d H:i:s');
@@ -66,7 +66,7 @@
     var button_edit_schedule = new Ext.Toolbar.Button({
         text: _('Edit task'),
         hidden: true,
-        icon:'/static/images/silk/clock_edit.png',
+        icon:'/static/images/icons/edit.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             bl_edit = true;
@@ -99,7 +99,7 @@
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete task'),
         hidden: true,
-        icon:'/static/images/silk/clock_delete.png',
+        icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             delete_schedule();
@@ -109,7 +109,7 @@
     var button_duplicate_schedule = new Ext.Toolbar.Button({
         text: _('Duplicate task'),
         hidden: true,
-        icon:'/static/images/silk/clock_red.png',
+        icon:'/static/images/icons/copy.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             bl_edit = true;

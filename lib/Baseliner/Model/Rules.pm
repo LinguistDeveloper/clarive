@@ -205,7 +205,7 @@ sub tree_format {
         $chi = delete $n->{children} unless ref $chi eq 'ARRAY' && @$chi;
         delete $n->{attributes};
         delete $n->{disabled};
-        delete $n->{id};
+        delete $n->{id} unless $n->{id} =~/rule-/;
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->tree_format( _array($chi) );
@@ -953,7 +953,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB"); 
     },
-    icon => '/static/images/icons/group2.gif',
+    icon => '/static/images/icons/shortcut.png',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -965,7 +965,7 @@ register 'statement.sub' => {
 register 'statement.fail' => {
     text => 'FAIL',
     data => { msg => 'abort here' },
-    icon => '/static/images/icons/delete.gif',
+    icon => '/static/images/icons/log_e.png',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{

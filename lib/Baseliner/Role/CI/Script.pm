@@ -4,7 +4,7 @@ with 'Baseliner::Role::CI';
 with 'Baseliner::Role::ErrorThrower';
 with 'Baseliner::Role::CI::Infrastructure';
 
-sub icon { '/static/images/ci/script.png' }
+sub icon { '/static/images/icons/script.png' }
 
 requires 'script';
 requires 'run';

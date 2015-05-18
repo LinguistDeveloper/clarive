@@ -163,7 +163,7 @@ sub tree_project_jobs : Local {
             leaf => \1,
             menu => [
                 {
-                  icon => '/static/images/icons/job.png',
+                  icon => '/static/images/icons/open.png',
                   text => _loc('Open...'),
                   page => {
                       url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->{mid}, $_->{name} ),
@@ -448,7 +448,7 @@ sub list_repo_contents : Local {
         push @tree, { 
             text => substr($msg,0,255), 
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         };
@@ -507,7 +507,7 @@ sub branches : Local {
             push @tree, { 
                 text => substr($msg,0,255),
                 data => {},
-                icon => '/static/images/icons/error.png',
+                icon => '/static/images/icons/log_e.png',
                 leaf=>\1,
                 expandable => \0
             };
@@ -750,7 +750,7 @@ sub changeset : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         }; 
@@ -810,12 +810,26 @@ sub promotes_and_demotes {
     my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
-    #_warn $topic;
 
     $id_status_from //= $topic->{category_status}{id};
     my %statuses = ci->status->statuses;
 
     _fail _loc 'Missing topic parameter' unless $topic;
+
+    #Personalized _workflow!
+    if($topic->{_workflow}){
+        my @_workflow;
+        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+        use Array::Utils qw(:all);
+    
+        @_workflow = map { _array(values $_) } $topic->{_workflow} ;
+    
+        my %final = map { $_ => 1 } intersect(@_workflow,@user_workflow);
+
+        my @final_key = keys %final;
+        map { my $st= $_; delete $statuses{$st} if !( $st ~~ @final_key); } keys %statuses;
+    }
+    #end Personalized _workflow!
     
     my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
     my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
@@ -1241,7 +1255,7 @@ sub tree : Local {
         $c->stash->{json} = [{ 
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         }]; 

@@ -418,7 +418,7 @@
                 ]
             },
 	       '->',
-            { icon:'/static/images/ci/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
+            { icon:'/static/images/icons/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
         ],
         viewConfig: {
             //headersDisabled: true,

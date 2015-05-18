@@ -1059,7 +1059,7 @@ if( Prefs.routing ) {
         // control that if the message is visible, don't show it again 
         if( $('#'+_id).length > 0 ) return; 
         if( Baseliner.system_message_rcvd[ _id ] != undefined ) return; 
-        Baseliner.ajax_json('/message/sms_get', { _id: _id }, function(res){
+        Baseliner.ajax_json('/systemmessages/sms_get', { _id: _id }, function(res){
             var msg_data = res.msg;
            if( !msg_data ) msg_data={};
            msg_data = Ext.apply({ title: _('Attention'), text: _('Unknown') }, msg_data);
@@ -1078,7 +1078,7 @@ if( Prefs.routing ) {
             */}.tmpl(msg_data);
             $(msg).appendTo("#main-alert").hide().fadeIn();
             $('#'+msg_data.div_id).on('remove',function(){ 
-                Baseliner.ajax_json('/message/sms_ack', { _id: _id }, function(res){ },function(){ });
+                Baseliner.ajax_json('/systemmessages/sms_ack', { _id: _id }, function(res){ },function(){ });
             });
         });
     };

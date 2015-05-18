@@ -63,8 +63,8 @@
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'drop-yes.gif' : 'close-small.gif';
-		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+		    value == '1' ? 'start.png' : 'stop.png';
+		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 
 
@@ -77,7 +77,7 @@
  
         var btn_start = new Ext.Toolbar.Button({
 	    text: _('Start'),
-	    icon:'/static/images/start.gif',
+	    icon:'/static/images/icons/start.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
 	    handler: function() {
@@ -99,7 +99,7 @@
 
         var btn_stop = new Ext.Toolbar.Button({
 	    text: _('Stop'),
-	    icon:'/static/images/stop.gif',
+	    icon:'/static/images/icons/stop.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
 	    handler: function() {

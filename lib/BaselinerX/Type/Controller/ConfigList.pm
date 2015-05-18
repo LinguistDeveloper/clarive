@@ -5,7 +5,7 @@ use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
 register 'action.admin.config_list' => { name => 'Administer configuration variables'};
-register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/config.gif', action => 'action.admin.config_list' };
+register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/wrench.gif', action => 'action.admin.config_list' };
 
 sub grid : Local {
     my ($self,$c)=@_;
@@ -63,9 +63,9 @@ sub json : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
 
-    if( $p->{original} eq 'true' ) {
+    if( $p->{original} && $p->{original} eq 'true' ) {
         $c->forward('json_original') ;
-    } elsif( $p->{modified} eq 'true' ) {
+    } elsif( $p->{modified} && $p->{modified} eq 'true' ) {
         $c->forward('json_modified') ;
     } else {
         $c->forward('json_combined');

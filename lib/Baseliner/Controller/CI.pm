@@ -146,7 +146,7 @@ sub tree_roles {
                 item       => $name,
                 class      => $role,
                 classname  => $role,
-                icon       => '/static/images/ci/class.gif',
+                icon       => '/static/images/icons/class.gif',
                 versionid  => 1,
                 ts         => '-',
                 tags       => [],

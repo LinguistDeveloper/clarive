@@ -148,13 +148,13 @@
     });
 
     var button_sem_refresh = new Ext.Button({
-        icon:'/static/images/icons/arrow_refresh.png',
+        icon:'/static/images/icons/refresh.png',
         cls: 'x-btn-text-icon',
         handler: function() { store_sem.load(); }
     });
 
     var button_queue_refresh = new Ext.Button({
-        icon:'/static/images/icons/arrow_refresh.png',
+        icon:'/static/images/icons/refresh.png',
         cls: 'x-btn-text-icon',
         handler: function() { store_queue.load(); }
     });
@@ -205,7 +205,7 @@
         if( value == 'waiting' ) 
             img = '<img src="/static/images/icons/waiting.png" alt="'+value+'"/>';
         else if( value == 'granted' ) 
-            img = '<img src="/static/images/icons/asterisk_orange.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/asterisk_orange.gif" alt="'+value+'"/>';
         else if( value == 'busy' ) 
             img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 

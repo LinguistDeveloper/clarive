@@ -364,7 +364,7 @@ sub job_icon {
         when( 'READY' ) { 'waiting.png'; }
         when( 'APPROVAL' ) { 'user_delete.gif'; }
         when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.png' } }
-        when( 'IN-EDIT' ) { 'log_w.gif'; }
+        when( 'IN-EDIT' ) { 'log_w.png'; }
         when( 'WAITING' ) { 'waiting.png'; }
         when( 'PAUSED' ) { 'paused.png'; }
         when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
@@ -1436,13 +1436,13 @@ sub parse_vars_raw {
                     $str = $vars->{$1} // $2;
                     last;
                 }
-                if( $k =~ /^ci\(([^\)]+)\)/ ) {
-                    $str = ci->new( $1 );   # better than ci->find, this way it fails when mid not found
+                if( $k =~ /^ci\(([^\)]+)\)\.(.+)/ ) {
+                    my $ci = ci->new( $vars->{$1} );
+                    $str = $ci->can($2) ? $ci->$2 : $ci->{$2};
                     last;
                 }
-                if( $k =~ /^ci\(([^\)]+)\)\.(.+)/ ) {
-                    my $ci = ci->new( $1 );
-                    $str = $ci->can($2) ? $ci->$2 : $ci->{$2};
+                if( $k =~ /^ci\(([^\)]+)\)/ ) {
+                    $str = ci->new( $vars->{$1} );   # better than ci->find, this way it fails when mid not found
                     last;
                 }
             }

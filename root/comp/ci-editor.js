@@ -133,7 +133,7 @@
         
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
-            icon:'/static/images/icons/left.png',
+            icon:'/static/images/icons/close.png',
             cls: 'x-btn-icon-text',
             type: 'submit',
             handler: function() { cardpanel.destroy() }

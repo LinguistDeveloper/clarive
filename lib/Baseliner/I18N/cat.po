@@ -4432,8 +4432,8 @@ msgstr "Per defecte"
 msgid "Edit notification"
 msgstr "Editar notificació"
 
-msgid "full log"
-msgstr "log completo"
+msgid "Full log"
+msgstr "Log completo"
 
 msgid "noun:Run"
 msgstr "Execució"

@@ -211,7 +211,7 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
-            { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
+            { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
                 '-',
@@ -247,14 +247,14 @@
         if( include ) {
             var attr = Baseliner.clone( root.attributes );
             delete attr.loader;
-            delete attr.id;
+            if ( !attr.id.indexOf('rule-') === 0 ) attr.id = Cla.id('rule');
             delete attr.children;
             stmts.push({ attributes: attr, children: encode_tree( root ) });
         } else {
             root.eachChild( function(n){
                 var attr = Baseliner.clone( n.attributes );
                 delete attr.loader;
-                delete attr.id;
+                if ( !attr.id.indexOf('rule-') === 0 ) attr.id = Cla.id('rule');
                 delete attr.children;
                 stmts.push({ attributes: attr, children: encode_tree( n ) });
             });
@@ -290,7 +290,9 @@
     
     var clipboard;
     var clone_node = function(node){    
-        var copy = new Ext.tree.TreeNode( Ext.apply({}, node.attributes) ) 
+        var nn = Ext.apply({}, node.attributes);
+        nn.id = Cla.id('rule');
+        var copy = new Ext.tree.TreeNode( nn );
         node.eachChild( function( chi ){
             copy.appendChild( clone_node( chi ) );
         });
@@ -329,25 +331,25 @@
                 data: { call_shortcut: clipboard.node.attributes.sub_name, source_key: clipboard.node.attributes.key },
                 key: 'statement.shortcut', 
                 leaf: true,
-                icon: '/static/images/icons/shortcut.png'
+                icon: '/static/images/icons/shortcut.png',
+                id: Cla.id('rule')
             });
         } else if( clipboard ) {
             // paste normal
             var p = clipboard.node;
-            p.id = Ext.id();
             if( clipboard.mode=='copy' ) {
                 if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
             }
             p.cascade(function(n_chi){
-                n_chi.id = Ext.id();
+                n_chi.attributes.id = Cla.id('rule');
                 if( clipboard.mode=='copy' ) {
                     if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
                     delete n_chi.attributes.has_shortcut;
                 }
             });
             node.getOwnerTree().is_dirty = true;
-            node.appendChild( p );
+            var new_node = node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
@@ -387,7 +389,7 @@
             var processnode = function(n){
                 var at = n.attributes;
                 delete at.loader;
-                at.id = Ext.id();
+                at.id = Cla.id('rule'); 
                 return Ext.apply({ 
                     children: n.children.map(function(chi){ return processnode(chi) }),
                 }, at );
@@ -597,6 +599,7 @@
                     }
                 }
                 //n2.getOwnerTree().is_dirty = true;
+                copy.attributes.id = Cla.id('rule');
                 e.dropNode = copy;
             }
             return true;
@@ -750,7 +753,7 @@
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.gif' },
                     { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.png' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
-                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
+                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.gif' },
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
                     { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
@@ -761,7 +764,7 @@
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
-        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
+        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.gif', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
             if( this.checked ) {
                 rule_tree.blame_time = this.tdiff;
@@ -999,7 +1002,6 @@
             Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
                 if( res.success ) {
                     var editor;
-                    var idtxt = Ext.id();
                     var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';

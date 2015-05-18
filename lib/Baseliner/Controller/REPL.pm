@@ -47,7 +47,7 @@ register 'menu.development.cache_clear' => {
     url_run  => '/cache_clear',
     title    => 'Wipe Cache',
     action   => 'action.development.cache_clear',
-    icon     => '/static/images/icons/asterisk_orange.png',
+    icon     => '/static/images/icons/wipe_cache.png',
     index      => 30,
 };
 
