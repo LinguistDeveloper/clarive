@@ -23,5 +23,6 @@ has on_drop        => ( is => 'rw', isa => 'CodeRef' );
 has sub_name       => ( is => 'rw', isa => 'Str' );
 has sub_mode       => ( is => 'rw', isa => 'Str', default=>'none' );
 has has_shortcut   => ( is => 'rw', isa => 'Bool', default=>0 );
+has filter  	   => ( is => 'rw', isa => 'Bool', default => 0 ); 
 
 1;

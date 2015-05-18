@@ -198,6 +198,7 @@ sub semaphore {
 
 sub tree_format {
     my ($self, @tree_in)=@_;
+
     my @tree_out;
     for my $n ( @tree_in ) {
         my $chi = delete $n->{children};
@@ -241,8 +242,7 @@ sub build_tree {
         if( $rule->{rule_type} eq 'chain' ) {
             return $self->init_job_tasks;
         }
-        _warn _loc 'Rule tree is empty for rule %1', $id_rule;
-        return ();
+        _fail _loc 'Rule tree is empty for rule %1', $id_rule;
     }
 }
 
@@ -274,12 +274,19 @@ sub dsl_build {
     require Data::Dumper;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
+    my $cnt = 0;
     local $Data::Dumper::Terse = 1;
     local $Data::Dumper::Deparse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
         my $children = $s->{children} || {};
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
+
+     #    if ( $attr->{key} eq 'statement.catalog.folder' && $attr->{text} =~ /Base/){
+     # _log _dump $attr->{prueba};
+     #        #_error _dump $s;    
+     #    }
+
         # is active ?
         next if defined $attr->{active} && !$attr->{active}; 
         #next if (ref $attr->{disabled} eq 'SCALAR' && ${$attr->{disabled}} ) || $attr->{disabled} eq 'true' || $attr->{disabled};
@@ -288,6 +295,8 @@ sub dsl_build {
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
         my $name_id = Util->_name_to_id( $name );
+        my $id_task = sprintf '%s-%09d', $name_id, $cnt;
+        $cnt++; 
         my $data = $attr->{data} || {};
         
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
@@ -332,7 +341,29 @@ sub dsl_build {
         }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
+
+        #my $key_filter = $data->{task}->[0] ? $data->{task}->[0] : 1 ;
+        # my $filter = $task_id; #$attr->{filter} ? $attr->{filter} : $key_filter;
+
+
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
+        
+
+        my $key;
+        my $reg;
+        if( length $attr->{key} ) {
+            $key = $attr->{key};
+            $reg = Baseliner->registry->get( $key );
+        }else{
+            _debug $s;
+            _fail _loc 'Missing dsl/service key for node %1', $name;            
+        }
+        ###############################################################################################
+        if ($reg->{filter}) {
+            push @dsl, sprintf( '$stash->{id_task} = q{%s};', $id_task ) . "\n"; 
+            push @dsl, sprintf( 'if ( !$stash->{catalog_filter} || exists $stash->{filters}{q{%s}} ){', $id_task) . "\n";    
+        }
+        ###############################################################################################
         if( $closure ) {
             push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s}, sub{', $id_rule, $rule_name, $name )."\n";
         } elsif( ! $attr->{nested} ) {
@@ -346,8 +377,8 @@ sub dsl_build {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = $stash->{job_step};', $needs_rollback_key || $name_id) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
-            my $key = $attr->{key};
-            my $reg = Baseliner->registry->get( $key );
+            # my $key = $attr->{key};
+            # my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 if( length $attr->{sub_name} ) {
@@ -377,6 +408,11 @@ sub dsl_build {
             push @dsl, "};\n";
             push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} && $attr->{sub_mode} eq 'run';
         }
+        ###############################################################################
+        if ($reg->{filter}) {
+            push @dsl, "};\n";
+        }        
+        ###############################################################################
     }
 
     my $dsl = join "\n", @dsl;
@@ -422,21 +458,23 @@ sub wait_for_children {
 
 sub dsl_run {
     my ($self, %p ) = @_;
-    my $id_rule = $p{id_rule};
+
     local $@;
+    my $id_rule = $p{id_rule};
+    
     my $ret;
     my $stash = $p{stash} // {};
-    
-    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
-    
+
+    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ) unless $p{no_merge_variables}; 
+
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
     my $rule = Baseliner::CompiledRule->new( ( $id_rule ? (id_rule=>$id_rule):() ), dsl=>$p{dsl} );
     $rule->compile;
+
     $rule->run(stash=>$stash);  # if there's a compile error it wont run
     ##############################
-    
-    
+
     if( my $err = $rule->errors ) {
         if( $p{simple_error} ) {
             _error( _loc("Error during DSL Execution: %1", $err) ) unless $p{simple_error} > 1;
@@ -534,13 +572,13 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $ret = try {
+    #my $ret = try {
         ################### RUN THE RULE DSL ######################
         $self->dsl_run( id_rule=>$rule_id, stash=>$p{stash}, %p );
-    } catch {
-        _fail( _loc("Error running rule '%1': %2", $rule->{rule_name}, shift() ) ); 
-    };
-    return { ret=>$ret, dsl=>'' };
+    #} catch {
+    #    _fail( _loc("Error running rule '%1': %2", $rule->{rule_name}, shift() ) ); 
+    #};
+    #return { ret=>$ret, dsl=>'' };
 }
 
 sub dsl_listing {
@@ -593,8 +631,9 @@ sub current_task {
     $stash->{current_rule_id} = $id_rule;
     $stash->{current_rule_name} = $rule_name;
     $stash->{current_task_name} = $name;
+
     if( my $job = $stash->{job} ) {
-        $job->start_task( $name );
+        $job->start_task( $name ) if $job->can('start_task');
     }
     $code->() if $code;
 }
@@ -616,10 +655,9 @@ sub cut_nature_items {
 
 # launch runs service, merge return into stash and returns what the service returns
 sub launch {  
-    my ($key, $task, $stash, $config, $data_key )=@_;
-    
-    $task = parse_vars( $task, $stash );
+    my ($key, $task, $stash, $config, $data_key )=@_;   
     my $reg = Baseliner->registry->get( $key );
+    $task = parse_vars( $task, $stash ) if $reg->{parse_vars};
     #_log "running container for $key";
     my $return_data = try { 
         $reg->run_container( $stash, $config );
@@ -799,7 +837,7 @@ register 'statement.if.var.list' => {
 };
 
 register 'statement.try' => {
-    text => 'TRY statement (without catch)', 
+    text => 'TRY statement', 
     type => 'if',
     data => { },
     dsl => sub { 
@@ -839,7 +877,6 @@ register 'statement.catch' => {
             catch {
                 %s
             };
-            
         }, $self->dsl_build( $n->{children}, %p) );
     },
 };
@@ -953,7 +990,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB"); 
     },
-    icon => '/static/images/icons/group2.gif',
+    icon => '/static/images/icons/group.gif',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{

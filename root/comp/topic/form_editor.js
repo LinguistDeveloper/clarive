@@ -1,4 +1,5 @@
 Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
+    btn_save_hidden: false,
     frame: true,
     get_save_data : function(){
         var self = this;
@@ -91,12 +92,11 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
             self.category_fields_store.add( r );
             self.category_fields_store.commitChanges();
         }
-        
-        self.category_fields_store = new Baseliner.JsonStore({
+
+
+        var config_store = {
             root: 'data' , 
-            remoteSort: true,
             id: 'id', 
-            url: '/topicadmin/get_conf_fields',
             fields: [
                 {  name: 'id' },                     
                 {  name: 'id_field' },
@@ -104,15 +104,30 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                 {  name: 'params' },
                 {  name: 'img' },
                 {  name: 'meta' }
-            ]           
-        });
-        
-        self.category_fields_store.load({params: {id_category: self.id_category}});
+            ]            
+        }
+
+        if(self.fields){
+             var mydata = {
+                 data: []
+             };
+
+            mydata.data = self.fields;
+            config_store.data = mydata;
+
+            self.category_fields_store = new Baseliner.JsonStore(config_store);
+        }else{
+            config_store.url = '/topicadmin/get_conf_fields';
+            self.category_fields_store = new Baseliner.JsonStore(config_store);
+            
+            self.category_fields_store.load({params: {id_category: self.id_category}});
+        }
         
         var btn_save_config = new Ext.Toolbar.Button({
             text: _('Save'),
             icon: '/static/images/icons/save.png',
             cls: 'x-btn-text-icon',
+            hidden: self.btn_save_hidden,
             handler: function() {
                 var fields = new Array();
                 var params = new Array();
@@ -141,7 +156,9 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                 forceFit: true
             },
             columns: [
-                { header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ return '<img style="float:right" src="' + rec.data.img + '" />'} },
+                { header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ 
+                    return '<img style="float:right" src="' + rec.data.img + '" />'} 
+                },
                 { header: _('Name'), width: 240, dataIndex: 'name'},
                 { width: 40, dataIndex: 'id',
                         renderer: function(v,meta,rec,rowIndex){
@@ -182,7 +199,14 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                     
                                     var form = form_template_field.getForm();
                                     var name_field = form.findField("name_field").getValue();
+
+
                                     var id_field = Baseliner.name_to_id( name_field );
+                                    var obj_variable = form.findField("combo_variables");
+
+                                    if (obj_variable){
+                                        id_field = obj_variable.getValue();
+                                    }    
                                     
                                     var recordIndex = self.category_fields_store.findBy(
                                         function(record, id){
@@ -236,6 +260,16 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                             objTemp.bd_field = id_field;
                                             objTemp.origin = 'custom';
                                             
+                                            if (obj_variable){
+                                                var store_variable = obj_variable.getStore();
+
+                                                var index_variable = store_variable.find('name', obj_variable.getValue());
+                                                var current_variable = store_variable.getAt( index_variable );
+                                                if (current_variable.data.data.var_type == 'ci') objTemp.html = '/fields/system/html/field_cis.html';
+                                                var obj_scope = form.findField("combo_scope");
+                                                objTemp.scope = obj_scope.getValue();
+                                            }
+
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
                                         }
                                         
@@ -315,6 +349,37 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                             txt_filters
                                         ]
                             });
+
+                            if (attr.id_field == 'Variable'){
+                                var store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'name' } });
+
+                                var combo_variables = new Ext.form.ComboBox({
+                                    name: 'combo_variables',
+                                    fieldLabel: _('Variable'),
+                                    valueField: 'name', 
+                                    hiddenField: 'name', 
+                                    displayField: 'name',
+                                    mode:'remote',
+                                    emptyText: _('<select variable>'),
+                                    typeAhead: false,
+                                    minChars: 1, 
+                                    store: store_vars, 
+                                    editable: true, forceSelection: true, triggerAction: 'all',
+                                    allowBlank: true
+
+                                });
+
+                                var combo_scope = new Baseliner.ComboDouble({ 
+                                    fieldLabel: _('Scope'), name:'combo_scope', value: 'global',
+                                    data: [ 
+                                        ['global', _('Global')], 
+                                        ['project', _('Project')]
+                                    ]
+                                });
+
+                                form_template_field.add(combo_variables);
+                                form_template_field.add(combo_scope);
+                            } 
         
                             var winCustomField = new Baseliner.Window({
                                 modal: true,

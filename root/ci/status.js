@@ -28,6 +28,7 @@
                 {boxLabel: _('General'), inputValue: 'G', checked: params.rec.type == undefined || params.rec.type == 'G'},
                 {boxLabel: _('Initial'), inputValue: 'I', checked: params.rec.type == 'I'},
                 {boxLabel: _('Deployable'), inputValue: 'D', checked: params.rec.type == 'D'},
+                {boxLabel: _('Dependency'), inputValue: 'W', checked: params.rec.type == 'W'},
                 {boxLabel: _('Canceled'), inputValue: 'FC', checked: params.rec.type == 'FC'},
                 {boxLabel: _('Final'), inputValue: 'F', checked: params.rec.type == 'F'}
             ]

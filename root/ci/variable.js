@@ -1,24 +1,34 @@
 (function(params){
     var data = {};
     data[ 'var_default' ] = params.rec.var_default;
+
     var mf = new Baseliner.MetaForm({
         data: data
     });
-    
+
     var pnid = 'variables-' + Ext.id();
     var fieldid = pnid + '-field';
     var field;
-    var creating_field = false;
+    //var creating_field = false;
 
     var create_default_field = function(meta){
-        if( creating_field ) return;
-        creating_field = true;
+        //if( creating_field ) return;
+        //creating_field = true;
         var_default.removeAll();
+        var_default.show();
+        if ( meta.type == 'combo' ) {
+            var_default.hide();
+            return;
+        }
         if( field ) {
             if( Ext.isFunction( field.get_save_data ) ) {
                 data[ 'var_default' ] = field.get_save_data();
             } else if( Ext.isFunction( field.getValue ) ) {
-                data[ 'var_default' ] = field.getValue();
+                try{
+                    data[ 'var_default' ] = field.getValue();
+                }catch(err){
+                    data[ 'var_default' ] = [];
+                }
             } else {
                 delete data['var_default'];
             }
@@ -38,12 +48,13 @@
         }, meta);
         
         // now the MetaForm will generate the default field
-        field = mf.to_field(meta); 
+        field = mf.to_field(meta);
 
         field.columnWidth = .9;
         field.allowBlank = true;
         field.submitValue = true;
-        
+
+       
         var panel_default = new Ext.Panel({ 
             layout:'column', 
             border: false, items:[
@@ -53,12 +64,13 @@
                             handler: function(){ create_default_field() } }) } 
             ]
         });
+
         var_default.add(panel_default);
-        field.on('afterrender', function(){
+        //field.on('afterrender', function(){
             //panel_default.doLayout();
-            var_default.doLayout();
-        });
-        creating_field = false;
+        var_default.doLayout();
+        //});
+        //creating_field = false;
     }
     
     var load_on_type = function( ty ) {
@@ -66,43 +78,65 @@
         if( ty == 'ci' ) {
             ci_class.enable(); ci_class.show();
             ci_role.enable(); ci_role.show();
+            var_ci_mandatory.setFieldLabel(_('CI Mandatory'));
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.enable(); var_ci_multiple.show();
             combo_opts.disable(); combo_opts.hide();
+            var_columns_editor_grid.hide();
         } else if( ty == 'combo' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
             var_ci_mandatory.disable(); var_ci_mandatory.hide();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.enable(); combo_opts.show();
+            var_columns_editor_grid.hide();
         } else if( ty == 'array' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
             var_ci_mandatory.disable(); var_ci_mandatory.hide();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
+            var_columns_editor_grid.hide();
         } else if( ty == 'textarea' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
             var_ci_mandatory.disable(); var_ci_mandatory.hide();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
-        } else {
+            var_columns_editor_grid.hide();
+        } else if( ty == 'grid editor') {
             ci_class.disable(); ci_class.hide();
-            ci_role.disable(); ci_role.hide();
+            ci_role.disable(); ci_role.hide();    
             var_ci_mandatory.disable(); var_ci_mandatory.hide();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
+            var_default.hide();
+            var_columns_editor_grid.show();
+            var_columns_editor_grid.doLayout(); 
+        } else {
+            ci_class.disable(); ci_class.hide();
+            ci_role.disable(); ci_role.hide();
+            //var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_mandatory.setFieldLabel(_('Mandatory'));
+            var_ci_mandatory.enable(); var_ci_mandatory.show();
+            var_ci_multiple.disable(); var_ci_multiple.hide();
+            combo_opts.disable(); combo_opts.hide();
+            var_columns_editor_grid.hide();
         }
-        create_default_field({ 
-            type: params.rec.var_type,
-            classname: params.rec.var_ci_class,
-            role: params.rec.var_ci_role,
-            field_attributes: {
-                singleMode: !( params.rec.var_ci_multiple )
-            },
-            options: params.rec.var_combo_options
-        });
+
+        if ( ty != 'grid editor' || params.rec.var_columns ){
+            create_default_field({ 
+                type: ty, //params.rec.var_type,
+                columns: params.rec.var_columns,
+                classname: params.rec.var_ci_class,
+                role: params.rec.var_ci_role,
+                field_attributes: {
+                    singleMode: !( params.rec.var_ci_multiple )
+                },
+                options: params.rec.var_combo_options ? params.rec.var_combo_options : [] 
+            });            
+        }
+
     }
 
     var var_type = new Baseliner.ComboSingle({ 
@@ -111,11 +145,11 @@
         name: 'var_type',
         allowBlank: false,
         value: params.rec.var_type,
-        data: ['value','combo','array','textarea','password','ci']
+        data: ['value','combo','array','textarea','password','ci','grid editor']
     });
     
     var var_default = new Ext.Container({ fieldLabel: _('Default') });
-    
+
     var_type.on('select', function(){
         load_on_type( var_type.getValue() );
     });
@@ -163,16 +197,60 @@
         default_value:'option1' 
     }); 
     
-    load_on_type( params.rec.var_type ) ;
-    
+    var txt_columns = new Ext.form.TextField({
+        columnWidth: .9,
+        name: 'txt_columns',
+        anchor: '100%',
+        value: params.rec.var_columns
+    });
+
+    var panel_columns_editor_grid = new Ext.Panel({ 
+        layout:'column', 
+        get_save_data : function(){
+            return txt_columns.getValue();
+        },        
+        border: false, items:[
+            txt_columns, 
+            {   
+                columnWidth: .1, border: false, 
+                items: new Ext.Button({ 
+                    text: _('Apply'), 
+                    style:'padding-left: 10px', 
+                    handler: function(){ 
+                        var obj = Ext.getCmp('var_default');
+                        create_default_field({ 
+                            type: var_type.getValue(),
+                            columns: txt_columns.getValue(),
+                            field_attributes: {},
+                            options: params.rec.var_combo_options ? params.rec.var_combo_options : [] 
+                        }) 
+                    } 
+                })
+            } 
+        ]
+    });
+
+    var var_columns_editor_grid = new Ext.Container({ 
+        name: 'var_columns',
+        fieldLabel: _('Columns'),
+        get_save_data : function(){
+            return txt_columns.getValue();
+        }
+    });    
+    var_columns_editor_grid.add(panel_columns_editor_grid);
+    var_columns_editor_grid.doLayout();    
+
+    load_on_type( params.rec.var_type ? params.rec.var_type : var_type.getValue() ) ;
+
     return [
         var_type,
+        var_columns_editor_grid,
         var_default,
         ci_role,
         ci_class,
         var_ci_multiple,
         var_ci_mandatory,
-        combo_opts
+        combo_opts,
        // name is now the variable name { xtype:'textfield', fieldLabel: _('Variable'), name:'variable', allowBlank: true, value: params.rec.variable }
        //{ xtype: 'textarea', fieldLabel: _('Description'), height: 200, name:'description', allowBlank: true, value: params.rec.description }
     ]
