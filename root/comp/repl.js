@@ -545,7 +545,7 @@ To do:
             btn_out,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:'/static/images/scm/debug/write_obj.gif',
+                icon:'/static/images/icons/save.png',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
@@ -625,7 +625,7 @@ To do:
             '->',
             _('Elapsed')+': ', elapsed,
             {   
-                icon:'/static/images/icons/config.gif',
+                icon:'/static/images/icons/wrench.gif',
                 cls: 'x-btn-text-icon',
                 menu: config_menu
             },

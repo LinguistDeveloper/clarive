@@ -211,7 +211,7 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
-            { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
+            { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
                 '-',
@@ -753,7 +753,7 @@
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.gif' },
                     { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.png' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
-                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
+                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.gif' },
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
                     { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
@@ -764,7 +764,7 @@
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
-        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
+        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.gif', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
             if( this.checked ) {
                 rule_tree.blame_time = this.tdiff;

@@ -1148,7 +1148,7 @@
     });
     
     var btn_tools_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.png',
+        icon:'/static/images/icons/wrench.gif',
         cls: 'x-btn-text-icon',
         disabled: false,
         menu: [

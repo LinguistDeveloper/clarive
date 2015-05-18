@@ -953,7 +953,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB"); 
     },
-    icon => '/static/images/icons/group2.gif',
+    icon => '/static/images/icons/shortcut.png',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{

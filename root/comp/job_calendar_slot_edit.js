@@ -128,22 +128,22 @@ for(my $hh=0; $hh<=24; $hh++) {
         url: '/job/calendar_submit', 
         buttons: [
 %if($c->stash->{create}){		
-            {  icon:'/static/images/icons/calendar_add.png', text: 'Crear Ventana', handler: function(){ modify_window('A') } }
-            ,{ icon:'/static/images/icons/cerrar.png', text: 'Crear Inactiva', handler: function(){ modify_window('AD') } }
+            {  icon:'/static/images/icons/add.gif', text: 'Crear Ventana', handler: function(){ modify_window('A') } }
+            ,{ icon:'/static/images/icons/stop.png', text: 'Crear Inactiva', handler: function(){ modify_window('AD') } }
 %} else {
-            {  icon:'/static/images/icons/calendar_edit.png', text: 'Modificar Ventana', handler: function(){ modify_window('A') } }
-            ,{  icon:'/static/images/icons/calendar_add.png', text: 'Solapar', handler: function(){ modify_window('A', true) } }
+            {  icon:'/static/images/icons/edit.gif', text: 'Modificar Ventana', handler: function(){ modify_window('A') } }
+            ,{  icon:'/static/images/icons/add.gif', text: 'Solapar', handler: function(){ modify_window('A', true) } }
 
 %}
 % unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
-            ,{  icon:'/static/images/icons/calendar_delete.png', text: 'Borrar', handler: function(){ modify_window('B') } }
+            ,{  icon:'/static/images/icons/delete.gif', text: 'Borrar', handler: function(){ modify_window('B') } }
 %   if( $activa ) {
-            ,{ icon:'/static/images/icons/cerrar.png', text: 'Desactivar (No pase)', handler: function(){  modify_window('C0')   } }
+            ,{ icon:'/static/images/icons/stop.png', text: 'Desactivar (No pase)', handler: function(){  modify_window('C0')   } }
 %   } else {
-            ,{ icon:'/static/images/icons/checkbox.png', text: 'Activar (Ventana)', handler: function(){  modify_window('C1')   } }
+            ,{ icon:'/static/images/icons/start.png', text: 'Activar (Ventana)', handler: function(){  modify_window('C1')   } }
 % 	}
 % }
-            ,{ icon:'/static/images/icons/clear.png',  text: 'Cancelar', handler: function(){ win.close(); } }
+            ,{ icon:'/static/images/icons/close.png',  text: 'Cancelar', handler: function(){ win.close(); } }
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: '<% $id %>' },

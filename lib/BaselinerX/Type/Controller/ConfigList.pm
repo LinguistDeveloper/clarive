@@ -5,7 +5,7 @@ use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
 register 'action.admin.config_list' => { name => 'Administer configuration variables'};
-register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/config.gif', action => 'action.admin.config_list' };
+register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/wrench.gif', action => 'action.admin.config_list' };
 
 sub grid : Local {
     my ($self,$c)=@_;

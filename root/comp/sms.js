@@ -34,7 +34,7 @@
             });
         }
     } });
-    var btn_cancel = new Ext.Button({ icon:IC('delete.png'), hidden: false, text:_('Cancel'), handler:function(){
+    var btn_cancel = new Ext.Button({ icon:IC('close.png'), hidden: false, text:_('Cancel'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
