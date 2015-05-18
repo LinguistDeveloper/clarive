@@ -111,8 +111,8 @@
     });
 
     // AutoRefresh
-    var button_autorefresh = new Ext.Button({ text: _('Auto Refresh'),
-        icon: '/static/images/icons/time.gif', 
+    var button_autorefresh = new Ext.Button({ tooltip: _('Auto Refresh'),
+        icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -283,7 +283,7 @@
         var icon;
         if( value=='debug' ) icon='log_d.gif';
         else if( value=='info' ) icon='log_i.png';
-        else if( value=='warning' || value=='warn' ) icon='log_w.gif';
+        else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
         else if( value=='comment' ) icon='post.gif';
         if( icon!=undefined ) {
@@ -375,8 +375,8 @@
         menu_exec_list.push({ text: exec, value: exec, checked: (exec==job_exec?true:false), group: 'exec', checkHandler: menu_exec_change });
     }
     var menu_exec = new Ext.Toolbar.Button({ text : _('Execution %1/%2', job_exec, job_exec_max), menu: { items: menu_exec_list } });
-    var menu_exec_left  = new Ext.Toolbar.Button({ icon: '/static/images/icons/arrow_left.gif', cls: 'x-btn-text-icon', handler: exec_left  });
-    var menu_exec_right = new Ext.Toolbar.Button({ icon: '/static/images/icons/arrow_right.gif', cls: 'x-btn-text-icon', handler: exec_right  });
+    var menu_exec_left  = new Ext.Toolbar.Button({tooltip: _('Demote'),icon: '/static/images/icons/arrow_left.gif', cls: 'x-btn-text-icon', handler: exec_left  });
+    var menu_exec_right = new Ext.Toolbar.Button({tooltip: _('Promote'), icon: '/static/images/icons/arrow_right.gif', cls: 'x-btn-text-icon', handler: exec_right  });
     var menu_exec_review = function() {
         if( job_exec <= 1 ) menu_exec_left.disable();
            else menu_exec_left.enable();
@@ -389,6 +389,7 @@
     }
 
     var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+        tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
             var par = '';
@@ -427,14 +428,14 @@
                  }
     };
 
-    var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/page.gif', cls: 'x-btn-text-icon', hidden: false,
+    var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/post.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
                     var mid = current_job().mid;
                     Baseliner.add_tabcomp( "/comp/job_logfile.js", _("Logfile %1", mid ), { mid: mid } );
                  }
     };
 
-    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: false,
+    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/start.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ci_call( current_job().mid, 'resume', { confirm: _('Do you wish to resume job %1',current_job().job) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );

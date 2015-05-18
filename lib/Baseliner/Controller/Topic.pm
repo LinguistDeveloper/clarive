@@ -158,7 +158,9 @@ sub get_items {
     if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
         my $report = Baseliner->registry->get( $p->{id_report} );
         my $config = undef; # TODO get config from custom forms
+        my $sort = $p->{sort};
         $p->{dir} = uc($p->{dir}) eq 'DESC' ? -1 : 1;
+        $p->{sort} = { $sort => $p->{dir} } if ($p->{sort});
         my $rep_data = $report->data_handler->($report,$config,$p);
         $data = {
             data=>$rep_data->{rows},
@@ -1161,7 +1163,7 @@ sub filters_list : Local {
     my @categories;
     my $category_id = $c->req->params->{category_id};
     my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username=>$c->username, type=>'view', all_fields=>1 );
-    
+
     if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {
             push @categories,
@@ -1231,6 +1233,7 @@ sub filters_list : Local {
     
     # intersect statuses with a reduced set?
     my $status_id = $c->req->params->{status_id};
+
     if ($status_id) {
         my @status_id = _array( $status_id );
         push @{ $where->{'$and'} }, { id_status=>mdb->in(@status_id) };
@@ -1241,8 +1244,10 @@ sub filters_list : Local {
     my %tmp;
 
     if ( !$is_root ) {
+        my %p;
+        $p{categories} = \@id_categories;
         map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
-                    Baseliner->model('Topic')->user_workflow( $c->username );        
+                    Baseliner->model('Topic')->user_workflow( $c->username, %p );        
     };
 
     my %id_categories_hash = map { $_ => '1' } @id_categories;
@@ -1259,7 +1264,7 @@ sub filters_list : Local {
                     $checked = \0;
                 }
             } else {
-                #$checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+                # $checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
                 $checked = exists $tmp{$r->{id_status}} && $id_categories_hash{$tmp{$r->{id_status}}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
 
 

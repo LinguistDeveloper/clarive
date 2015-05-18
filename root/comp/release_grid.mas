@@ -159,7 +159,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: _('Edit'),
-                icon:'/static/images/drop-yes.gif',
+                icon:'/static/images/icons/drop-yes.gif',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();

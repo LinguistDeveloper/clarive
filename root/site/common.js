@@ -21,6 +21,10 @@ window._bool = function(v,undef){
         : undef;
 }
 
+Cla.id = function(prefix) {
+    return (prefix||'cla') + '-' + Ext.id() + '-' + Date.now();
+}
+
 // File loader
 Baseliner.loadFile = function(filename, filetype){
 
@@ -560,14 +564,14 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.sm = new Ext.grid.RowSelectionModel({ singleSelect: true });
         self.tbar = [{
                 text: _('Add'),
-                icon: '/static/images/drop-add.gif',
+                icon: '/static/images/icons/add.gif',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     self.push_item( self.name, self.default_value );
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/del.gif',
+                icon: '/static/images/icons/delete.gif',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();
@@ -1099,7 +1103,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Activate'),
-            icon:'/static/images/start.gif',
+            icon:'/static/images/icons/start.png',
             cls: 'x-btn-text-icon',         
             disabled: true
         }, config);
@@ -1111,7 +1115,7 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Deactivate'),
-            icon:'/static/images/stop.gif',
+            icon:'/static/images/icons/stop.png',
             disabled: true,
             cls: 'x-btn-text-icon'
         }, config);
@@ -2995,7 +2999,7 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
         var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.png', 
             handler: function() { self.load(ta.getValue(), true) }
         });
-        var button_close = new Ext.Button({ text: '', tooltip: _('Close'), icon:'/static/images/icons/close.png', 
+        var button_close = new Ext.Button({ text: '', text: _('Close'), icon:'/static/images/icons/close.png', 
             handler: function() { win.close() }
         });
         var win = new Baseliner.Window({

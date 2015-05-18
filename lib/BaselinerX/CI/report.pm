@@ -78,7 +78,7 @@ sub report_list {
                 data => [],
                 menu => [
                     {   text=> _loc('New search') . '...',
-                        icon=> '/static/images/icons/report.png',
+                        icon=> '/static/images/icons/search_grey.png',
                         eval=> { handler=> 'Baseliner.new_search'},
                     } 
                 ],
@@ -252,12 +252,12 @@ sub my_searches {
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
-                        icon   => '/static/images/icons/report.png',                        
+                        icon   => '/static/images/icons/edit.gif',                        
                         eval   => { handler => 'Baseliner.edit_search' }
                     },
                     {
                         text   => _loc('Delete') . '...',
-                        icon   => '/static/images/icons/folder_delete.gif',
+                        icon   => '/static/images/icons/delete.gif',
                         eval   => { handler => 'Baseliner.delete_search' }
                     }                    
                 ],
@@ -1030,7 +1030,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         } else{
                                             $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' ));
                                             delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }

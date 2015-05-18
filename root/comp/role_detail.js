@@ -235,7 +235,7 @@
             search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Delete'),
-                icon:'/static/images/del.gif',
+                icon:'/static/images/icons/delete.gif',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid_role.getSelectionModel();							

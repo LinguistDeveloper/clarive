@@ -193,7 +193,7 @@ Ext.onReady(function(){
                 }  
             },
             { xtype:'button', text: _('Validate'),
-                icon:'/static/images/drop-yes.gif',
+                icon:'/static/images/icons/drop-yes.gif',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     last_valid_value = ''; // force alert

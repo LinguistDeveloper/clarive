@@ -111,7 +111,6 @@ sub git : Path('/git/') {
         $c->response->status( 401 );
         return;
     }
-    
     # Check permissions
     if( ! length $c->username ) {
         if( ! exists $c->req->params->{service} ) {  # first request has param 'service'
@@ -134,7 +133,9 @@ sub git : Path('/git/') {
             return;
         }
     } elsif( $ci_prj ) {
-        if( !$ci_prj->user_has_action(username=>$c->username,action=>'action.git.repository_access') ) {
+        my $id_project = $ci_prj->{mid};
+        my @project_ids = Baseliner->model('Permissions')->user_projects_ids(username=>$c->username);
+        if( !$ci_prj->user_has_action(username=>$c->username,action=>'action.git.repository_access') || (!$id_project ~~ @project_ids) ) {
             $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project ) );
             return;
         } 

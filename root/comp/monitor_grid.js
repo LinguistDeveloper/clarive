@@ -221,6 +221,7 @@
 
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/exports.png',
+        tooltip: _('Export'),
         iconCls: 'x-btn-icon',
         menu: [ btn_csv ]
     });
@@ -281,6 +282,7 @@
     
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
+      tooltip: _('Natures'),
       icon: '/static/images/nature/nature.png',
       menu: nature_menu
     });
@@ -384,6 +386,7 @@
     );
     var menu_bl = new Ext.Button({
       //text: _("Baseline"),
+      tooltip: _("Baseline"),
       icon: '/static/images/icons/baseline.gif',
       menu: menu_list
     });
@@ -568,8 +571,9 @@
     var autorefresh = new Ext.util.TaskRunner();
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
-    var refresh_button = new Ext.Button({ text: _('Auto Refresh'),
-        icon: '/static/images/icons/time.gif', 
+    var refresh_button = new Ext.Button({ tooltip: _('Refresh'),
+
+        icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -631,7 +635,8 @@
         trap_win.show();
     }
                 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif', 
+        tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
             var sm = grid.getSelectionModel();
@@ -683,7 +688,7 @@
     }
     var menu_tools = new Ext.Button({
       tooltip: _('Tools'),
-      icon: '/static/images/icons/wrench.png',
+      icon: '/static/images/icons/wrench.gif',
       menu: [
 % if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
             { text: _('Run In-process'), handler:function(){ run_inproc() },
@@ -691,7 +696,7 @@
             },
 % }
             {
-                text: _('Export'),
+                text: _('Job Export'),
                 icon:'/static/images/download.gif',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -811,7 +816,8 @@
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
-        icon:'/static/images/del.gif',
+        hidden: true,
+        icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -836,6 +842,12 @@
                             //console.log( res );
                             if( res.success ) {
                                 grid.getStore().reload();
+% if( $c->stash->{user_action}->{'action.job.delete'} ) {
+                                button_cancel.show();
+                                button_cancel.setText( msg_cancel_delete[1] );    
+% } else {
+                                button_cancel.hide();
+% }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
                             }
@@ -894,7 +906,7 @@
         else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='user_delete.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w.gif';
+        else if( status=='IN-EDIT' ) icon='log_w.png';
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
@@ -906,7 +918,7 @@
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
-            icon = 'log_e.png';
+            icon = 'log_i.png';
         } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
@@ -929,7 +941,7 @@
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.gif" />' : '';
+            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.png" />' : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
@@ -1061,7 +1073,7 @@
         tbar: is_portlet ? [] : [ 
                 search_field,
                 button_html,
-                menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
+                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.gif', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
@@ -1076,6 +1088,7 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.gif',
+                    text: _('Full log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -1300,8 +1313,14 @@
         var sc = rec.data.status_code;
         button_resume.hide();
         if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
-            button_cancel.setText( msg_cancel_delete[1] );
+% if( $c->stash->{user_action}->{'action.job.delete'} ) {
+            button_cancel.show();
+            button_cancel.setText( msg_cancel_delete[1] );    
+% } else {
+            button_cancel.hide();
+% }
         } else {
+            button_cancel.show();
             button_cancel.setText( msg_cancel_delete[0] );
         }
         if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' || rec.data.status_code === 'TRAPPED_PAUSED' ) {
