@@ -199,6 +199,34 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
+sub dashboard_list: Local {
+    my ($self,$c) = @_;
+    
+    my @trees;
+    my ($default, @dashboards) = $self->user_dashboards({ username => $c->username});
+
+    for my $dash ( @dashboards ) {
+        push @trees, {
+                text    => $dash->{name},
+                icon    => '/static/images/icons/dashboard.png',
+                data    => {
+                    title => $dash->{name},
+                    id => $dash->{id},
+                    click   => {
+                        icon    => '/static/images/icons/dashboard.png',
+                        url  => '/comp/dashboard.js',
+                        type    => 'comp',
+                        title   => $dash->{name},
+                    }
+                },
+                leaf    => \1
+            };
+    }
+
+    $c->stash->{json} = \@trees;
+    $c->forward('View::JSON');
+}
+
 sub user_dashboards {
     my ($self,$p) = @_;
 
@@ -815,15 +843,28 @@ sub topics_gauge: Local {
         $where->{$date_condition} = {'$lte' => "$until"};        
     }
 
-    my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
+
+    my $rs_topics;
+    my $field_mode = 0;
+
+    if ( $numeric_field ) {
+        $field_mode = 1;
+        $rs_topics = mdb->topic->aggregate(
+                    [
+                        {'$match' => $where},
+                        {'$project' => { _id => 0, mid => '$mid', 'res_time' => '$'.$numeric_field}}
+                    ],
+                    { cursor => 1}
+                );
+    } else {
+        $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
+    }
 
     my @data = ();
     my $max = 0;
     my $min = 9999999999999999999999999;
     my $count = 0;
-    my $field_mode = 0;
     while (my $topic = $rs_topics->next() ) {
-
         if ( $date_field_start ) {
             next if !$topic->{$date_field_start};
             my $date_start = Class::Date->new($topic->{$date_field_start});
@@ -835,11 +876,11 @@ sub topics_gauge: Local {
             $max = $days if $days > $max;
             $min = $days if $days < $min;
             
-        } elsif ( $topic->{$numeric_field} ){
-            push @data, $topic->{$numeric_field};
-            $max = $topic->{$numeric_field} if $topic->{$numeric_field} > $max;
-            $min = $topic->{$numeric_field} if $topic->{$numeric_field} < $min;
-            $field_mode = 1;
+        } elsif ( $field_mode ){
+            next if !$topic->{res_time};
+            push @data, $topic->{res_time};
+            $max = $topic->{res_time} if $topic->{res_time} > $max;
+            $min = $topic->{res_time} if $topic->{res_time} < $min;        
             _warn 'En field_mode';
         } elsif ( $end_remaining eq 'on' ) {
             my $date_end = Class::Date->new($topic->{$date_field_end});
@@ -863,24 +904,33 @@ sub topics_gauge: Local {
     if ( $field_mode ){
         if ( $input_units ne 'number' ) {
             my $sec_res = $avg;
+            my $max_res = $max;
             if ( $input_units eq 'minute') {
                 $sec_res = $avg * 60;
+                $max_res = $max * 60;
             } elsif ( $input_units eq 'hour' ) {
                 $sec_res = $avg * 60 * 60;
+                $max_res = $max * 60 * 60;
             } elsif ( $input_units eq 'day' ) {
                 $sec_res = $avg * 60 * 60 * 24;
+                $max_res = $max * 60 * 60 * 24;
             }
 
             if ( $units eq 'month') {
                 $sec_res = $sec_res / 30 / 24 / 60 / 60;
+                $max_res = $max_res / 30 / 24 / 60 / 60;
             } elsif ( $units eq 'day') {
                 $sec_res = $sec_res / 24 / 60 / 60;
+                $max_res = $max_res / 24 / 60 / 60;
             } elsif ( $units eq 'hour') {
                 $sec_res = $sec_res / 60 / 60;
+                $max_res = $max_res / 60 / 60;
             } elsif ( $units eq 'minute') {
                 $sec_res = $sec_res / 60;
+                $max_res = $max_res / 60;
             }
-            $avg = $sec_res;
+            $avg = sprintf("%.2f",$sec_res);
+            $max = sprintf("%.2f",$max_res);
         } else {
             $units = '';
         }

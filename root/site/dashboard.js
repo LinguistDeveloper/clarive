@@ -82,14 +82,6 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
                  <div id="boot" class="[%= id_class %]" style="width: 100%">
-                    <div class="btn-group" style="float:left;margin-right:10px;">
-                      <button class="btn dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
-                      <ul class="dropdown-menu">
-                        [% for(var i=0; i<dashboards.length; i++){ %]
-                            <li><a onClick="javascript:Baseliner.addNewTabItem( new Cla.Dashboard({ title: _('[%= dashboards[i].name %]'), dashboard_id: [%= dashboards[i].id %] }), _('[%= dashboards[i].name %]'), { tab_icon:'/static/images/icons/dashboard.png' });">[%= dashboards[i].name %]</a></li>
-                        [% } %]
-                      </ul>
-                    </div>
                  </div>
             */}.tmpl({ id_class: id_class, dashboards: res.dashboards }));
 

@@ -3,6 +3,7 @@ Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( userna
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_releases', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_dashboards = <% $c->model('Permissions')->user_has_any_action( action=>'action.dashboards.view', username=>$c->username ) ? 'true' : 'false' %>;
 
 var base_menu_items = [ ];
 
@@ -507,6 +508,16 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.$tree_reports.onload = callback;
         };
         
+        var show_dashboards = function(callback) {
+            if( !self.$tree_dashboards ) {
+                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', baseParams: { show_reports: true } });
+                self.add( self.$tree_dashboards );
+                self.$tree_dashboards.on('favorite_added', function() { self.$tree_favorites.refresh() } );
+            }
+            self.getLayout().setActiveItem( self.$tree_dashboards );
+            self.$tree_dashboards.onload = callback;
+        };
+        
 
         var toggle_stick = function( button, e) {
             if ( button_stick.enableToggle ) {
@@ -639,6 +650,26 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });        
 
+        var button_dashboards = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/dashboard.png',
+            handler: function(){
+                this.disable();
+                var that = this;
+                show_dashboards(function(){that.enable();});
+            },
+            tooltip: _('dashboards'),
+            toggleGroup: 'explorer-card',
+            pressed: false,
+            allowDepress: false,
+            hidden: ! Baseliner.user_can_dashboards,
+            enableToggle: true,
+            refresh_all: function(callback){
+                if( self.$tree_dashboards ) self.$tree_dashboards.refresh_all(callback);
+            },
+            listeners: Baseliner.gen_btn_listener()
+        });        
+
 	var button_collapseall = new Ext.Button({
 	    cls: 'x-btn-icon',
             icon: '/static/images/icons/collapseall.png',
@@ -751,6 +782,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_workspaces,
                 button_ci,
                 button_search_folders,
+                button_dashboards,
                 button_collapseall,        
                 '->',
                 button_menu,
