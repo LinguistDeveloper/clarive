@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use DateTime;
 use Try::Tiny;
+use Text::Unaccent::PurePerl;
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
@@ -135,6 +136,25 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
+    my $data = $self->get_items($p);
+
+    if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, config=>$data->{config} };
+    } elsif( $p->{id_report} ) {
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount} };
+    } elsif( my $id = $p->{id_report_rule} ) {
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}};
+    } else {
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query} };
+    }
+   $c->forward('View::JSON');
+}
+
+sub get_items {
+
+    my ($self, $p ) = @_;
+    my $data;
+
     if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
         my $report = Baseliner->registry->get( $p->{id_report} );
         my $config = undef; # TODO get config from custom forms
@@ -142,7 +162,12 @@ sub list : Local {
         $p->{dir} = uc($p->{dir}) eq 'DESC' ? -1 : 1;
         $p->{sort} = { $sort => $p->{dir} } if ($p->{sort});
         my $rep_data = $report->data_handler->($report,$config,$p);
-        $c->stash->{json} = { data=>$rep_data->{rows}, totalCount=>$rep_data->{total}, config=>$rep_data->{config} };
+        $data = {
+            data=>$rep_data->{rows},
+            totalCount=>$rep_data->{total},
+            config=>$rep_data->{config}
+        };
+        _log "total "._dump $rep_data->{total};
     } elsif( $p->{id_report} ) {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
@@ -152,9 +177,12 @@ sub list : Local {
             $f->{category} = $temp[$#temp];
         }
         my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;        
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query}, sort=>$p->{sort}, sortdir=>$dir );
-           
-        $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$p->{username}, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query}, sort=>$p->{sort}, sortdir=>$dir );
+        $data = {
+            data=>\@rows,
+            totalCount=>$cnt 
+        }  
+
     } elsif( my $id = $p->{id_report_rule} ) {
         my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
         my $stash = { 
@@ -171,12 +199,24 @@ sub list : Local {
         $cr->run( stash=>$stash ); 
         my $report_data = ref $$stash{report_data} eq 'CODE' ? $$stash{report_data}->(%$p) : $$stash{report_data};
         _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
-        $c->stash->{json} = { data=>$report_data->{data}, totalCount=>$report_data->{cnt} || []};
+        $data = {
+            data=>$report_data->{data},
+            totalCount=>$report_data->{cnt} || []
+        }
+       
     } else {
-        my ($info, @rows ) = $c->model('Topic')->topics_for_user( $p );
-        $c->stash->{json} = { data=>\@rows, totalCount=>$$info{count}, last_query=>$$info{last_query} };
+        my ($info, @rows ) = Baseliner->model('Topic')->topics_for_user( $p );
+
+        $data = {
+            data=>\@rows, 
+            totalCount=>$$info{count}, 
+            last_query=>$$info{last_query} 
+        };
+        #_log "data  "._dump $data;
+
     }
-   $c->forward('View::JSON');
+
+    return $data;
 }
 
 sub update : Local {
@@ -1734,32 +1774,97 @@ sub report_csv : Local {
     my $p = $c->req->params;
     my $json = $p->{data_json};
     my $data = _decode_json $json;
-    
+    my $params = _decode_json $p->{params};
+    $params->{username} = $c->username;
+    $params->{categories} ='' if !scalar @{$params->{categories}};
+    $params->{limit} = $p->{total_rows};
+
+   my $rows = $self->get_items($params);
+   
     my @csv;
     my @cols;
-    for( grep { length $_->{name} } _array( $data->{columns} ) ) {
+
+    my $charset = "iso-8859-1";
+    # Topics are related to categories, remove accents from category name to check for mongo fields and extract data.    
+    my @cats = map { +{ id => $_->{id}, name => lc(unac_string($_->{name}) )} } mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+    push my @names_category, map {$_->{name}} @cats;
+    # _log "categories "._dump @cats;
+
+    # Columns are taken from user grid.
+    for( grep { length $_->{name} } _array( $data->{columns} ) ) { 
         push @cols, qq{"$_->{name}"}; #"
     }
     for(@cols){s/Comentarios/Mas info/g};
     
     push @csv, join ';', @cols;
 
-    for my $row ( _array( $data->{rows} ) ) {
+    for my $row (_array $rows->{data}){      
+        my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
         my @cells;
         for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-            my $v = $row->{ $col->{id} };
-            if( ref $v eq 'ARRAY' ) {
-                $v = join ',', @$v;
-            } elsif( ref $v eq 'HASH' ) {
-                $v = Util->hash_flatten($v);
-                $v = Util->_encode_json($v);
-                $v =~ s/{|}//g;
+            my ($col_id, $field1, $tail);
+            if ( $params->{id_report} || $params->{id_report_rule}) {
+
+                # Remove _<related Category> to the column id in reports
+                ( $field1, $tail) = ($col->{id} =~ m/^(.*[^_])_(.*)$/);
+                $col_id = ($tail && grep /^$tail$/i, @names_category )? $field1 : $col->{id};
+            } else { 
+                $col_id = $col->{id}
             }
+            my $v = $row->{ $col_id };
+            if( ref $v eq 'ARRAY' ) {
+                if ($col->{id} eq 'projects') {
+                    my @projects;
+                    for (@{$v}){
+                        push @projects, ( split';', $_)[1];
+                    }
+                    @$v = @projects;
+                }
+                (my $du) = _array $v;
+                if( ref $du eq 'HASH' && exists $du->{mid}) {
+                        $v = $du->{mid};
+                } else {        
+                    $v = join ',', @$v;
+                }
+            } elsif( ref $v eq 'HASH' ) {
+                $v = $v->{mid};
+                #$v = Util->hash_flatten($v);
+                #$v = Util->_encode_json($v);
+                #$v =~ s/{|}//g;
+            };
+            if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
+                my $rel_category; 
+
+                if (ref $row->{$col_id} eq 'HASH' ){            
+                     $rel_category = $row->{$col_id}->{category}->{name};
+                     $v = $rel_category.' #'.$v ;
+                    
+                } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
+                    (my $du) = _array $row->{$col_id};
+                    if( ref $du eq 'HASH' && exists $du->{category}) {
+                        $rel_category = $du->{category}->{name};
+                        $v = $rel_category.' #'.$v ; 
+                    }
+                } else {
+                    ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
+                    $tail = lc(unac_string($tail) ) if ($tail);
+                    if ($tail && grep /^$tail$/i, @names_category) {
+                        (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
+                        $rel_category = mdb->category->find_one({id => $id})->{name};
+                        $v = $rel_category.' #'.$v ;
+                    }
+                }
+            }
+            $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
+            $v = _strip_html ($v); # HTML Code 
             #_debug "V=$v," . ref $v;
-            $v =~ s{"}{""}g;
+            $v =~ s/\t//g if $v;
+            $v =~ s{"}{""}g if $v;
             # utf8::encode($v);
             # Encode::from_to($v,'utf-8','iso-8859-15');
-            push @cells, qq{"$v"}; 
+            if ($v || ($v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
+                 push @cells, qq{"$v"};
+            } else { push @cells, qq{""} }; 
         }
         push @csv, join ';', @cells; 
     }
@@ -1871,7 +1976,9 @@ sub grid_count : Local {
     my ($self,$c)=@_;
     if( my $lq = $c->req->params->{lq} ) {
         my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
-        $c->stash->{json} = { count=>$cnt };
+        my @rows = mdb->topic->find($lq)->all;
+        $c->stash->{json} = { data =>\@rows, count=>$cnt };
+
     } else {
         $c->stash->{json} = { count=>9999999 };
     }
