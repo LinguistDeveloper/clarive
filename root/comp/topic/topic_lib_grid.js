@@ -117,7 +117,7 @@ Cla.topic_grid = function(params){
             //     this.superclass().sort.call(this, sorters, direction);
             // }           
         };          
-    }else{
+    } else{
 		store_config = {
 			baseParams: base_params,
 			remoteSort: true,
@@ -144,6 +144,7 @@ Cla.topic_grid = function(params){
     store_topics.proxy.conn.timeout = 600000;
     var loading;
     store_topics.on('beforeload',function(){
+
         if( custom_form_url && custom_form.is_loaded ) {
             var fvalues = custom_form.getValues();
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
@@ -413,7 +414,8 @@ Cla.topic_grid = function(params){
            { xtype:'hidden', name:'data_json'},
            { xtype:'hidden', name:'title' },
            { xtype:'hidden', name:'rows' },
-           { xtype:'hidden', name:'total_rows' }
+           { xtype:'hidden', name:'total_rows' },
+           { xtype:'hidden', name:'params' }
         ]
     });
     
@@ -421,10 +423,12 @@ Cla.topic_grid = function(params){
         var data = { rows:[], columns:[] };
         // find current columns
         var cfg = grid_topics.getColumnModel().config;
-        
+
         if( !args.store_data ) { 
+        
             var row=0, col=0;
             var gv = grid_topics.getView();
+            
             for( var row=0; row<9999; row++ ) {
                 if( !gv.getRow(row) ) break;
                 var d = {};
@@ -441,6 +445,7 @@ Cla.topic_grid = function(params){
                 }
                 data.rows.push( d ); 
             }
+            
         } else {
             // get the grid store data
             store_topics.each( function(rec) {
@@ -449,6 +454,7 @@ Cla.topic_grid = function(params){
                 d.topic_name = topic_name;
                 data.rows.push( d ); 
             });
+
         }
         
         for( var i=0; i<cfg.length; i++ ) {
@@ -456,13 +462,13 @@ Cla.topic_grid = function(params){
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
-        
         // report so that it opens cleanly in another window/download
         var form = form_report.getForm(); 
         form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
         form.findField('title').setValue( make_title() );
         form.findField('rows').setValue( store_topics.getCount() );
         form.findField('total_rows').setValue( store_topics.getTotalCount() );
+        form.findField('params').setValue(Ext.util.JSON.encode( store_topics.baseParams));
         var el = form.getEl().dom;
         var target = document.createAttribute("target");
         target.nodeValue = args.target || "_blank";
@@ -491,7 +497,7 @@ Cla.topic_grid = function(params){
         icon: '/static/images/icons/csv.png',
         text: _('CSV'),
         handler: function() {
-            form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
+            form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload'});
         }
     };
 
@@ -1451,7 +1457,6 @@ Cla.topic_grid = function(params){
     text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
     ui: sb
 */
-
     // count() is a slow business, so we defer it to after it's all loaded
     //   we also recount on every page, so that we can reset paging on results changing (TODO?)
     var deferred_count = function(st,r,o){
@@ -1465,6 +1470,8 @@ Cla.topic_grid = function(params){
             }
         });
     }
+
+
     grid_topics.store.on('load', function(st,r,o) {
         deferred_count(st,r,o);
         for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
@@ -1965,6 +1972,7 @@ Cla.topic_grid = function(params){
     }
         
     grid_topics.on('afterrender', function(){
+
         grid_topics.loadMask = new Ext.LoadMask(grid_topics.bwrap, { msg: _('Loading'), store: store_topics });
         store_topics.load({
             params: {
