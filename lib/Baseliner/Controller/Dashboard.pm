@@ -1030,10 +1030,11 @@ sub list_topics: Local {
 
     $main_conditions->{'categories'} = \@user_categories;
 
-    _warn $where;
     my $cnt = 0;
     ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+
     my @topic_cis = map {$_->{mid}} @topics;
+    @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
     my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
     my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
 
