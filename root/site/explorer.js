@@ -783,9 +783,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_ci,
                 button_search_folders,
                 button_dashboards,
-                button_collapseall,        
                 '->',
                 button_menu,
+                button_collapseall,        
                 button_collapse,
                 ' ',
                 button_stick
