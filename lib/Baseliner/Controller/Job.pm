@@ -701,7 +701,6 @@ sub by_status : Local {
         for ( keys %st ) {
             push @data, [$_,$st{$_}];
         }
-        _warn \@data;
         $c->stash->{json} = { success => \1, data=>\@data };
     } catch {
         my $err = shift;
@@ -716,41 +715,73 @@ sub burndown_new : Local {
 
     my $date = $p->{date} // "".Class::Date->now;
     my $period = $p->{period} // '1D';
+    my $bls = $p->{bls};
+    my $joined = $p->{joined} // '1';
     
     try {
 
         my $now = Class::Date->new($date);
         my $yesterday = substr($now - $period, 0, 10);
+        my $where = { starttime => { '$gt' => $yesterday } };
 
-        my $jobs = ci->job->find( { starttime => { '$gt' => $yesterday } } );
+        my @all_bls = map {$_->{name} } grep { $_->{bl} ne '*'} ci->bl->find()->all;
+        if ( _array($bls) ) {
+            @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
+            $where->{bl} = mdb->in(@all_bls);
+            _warn $bls;
+        }
+        my $jobs = ci->job->find( $where );
 
         my %job_stats;
         my @hours = ('x');
         
-        map { $job_stats{$_} = 0; push @hours, ($_)} 0 .. 23;
+        
+        my %matrix = ();
+
+        map { push @hours,"$_" } 0 .. 23;
+        $matrix{'x'} = \@hours;
+
+        for my $bl ( @all_bls ) {
+            my @bl_data = ($bl);
+            map { push @bl_data,0 } 0 .. 23;
+            $matrix{$bl} = \@bl_data;
+        }
+
 
         while ( my $job = $jobs->next() ) {
             next if !$job->{endtime};
+            next if !$job->{bl} || $job->{bl} eq 'null';
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
-            for ( @hours ) {
-                # _warn "Start: ".$start->hour.", End: ".$end->hour;
-                if ( $start->hour <= $_ && $end->hour >= $_ ) {
-                    $job_stats{$_}++;
-                } else {
-                    if ( $end->hour < $start->hour && $_ <= $end->hour) {
-                        $job_stats{$_}++;
-                    }
+            my $rel = $end - $start;
+            my $hour = int($rel->hour) + 1;
+
+            for ( my $i = 0; $i <= $hour; $i++ ) {
+                if ( $matrix{$job->{bl}} ) {
+                    my $hour_otd = ($start->hour + $i) % 24;
+                    $job_stats{$hour_otd}++;
+                    $matrix{$job->{bl}}[$hour_otd+1]++;
                 }
             }
         }
 
-        my @data = ('last '.$period);
+        my @data = (' Last '.$period.' ');
         for (@hours) {
             next if $_ eq 'x';
             push @data, $job_stats{$_};
         }
-        $c->stash->{json} = { success => \1, data=>[\@hours,\@data] };
+        my @last_matrix;
+
+        for (keys %matrix) {
+            push @last_matrix, $matrix{$_};
+        };
+        my $last_data = [];
+        if ( !$joined ) {
+            $last_data = \@last_matrix;
+        } else {
+            $last_data = [\@data,\@hours];
+        }
+        $c->stash->{json} = { success => \1, data=>$last_data, group=>\@all_bls };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
@@ -782,8 +813,8 @@ sub burndown : Local {
             \%ret;
         };
         # now send 7D against 30D average
-        my $data0 = $burndown->('1000D');
-        my $data1 = $burndown->('100D');
+        my $data0 = $burndown->($p->{days_avg} || '1000D');
+        my $data1 = $burndown->($p->{days_last} || '100D');
         $c->stash->{json} = { success => \1, data0=>$data0, data1=>$data1 };
     } catch {
         my $err = shift;

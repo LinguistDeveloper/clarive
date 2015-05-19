@@ -2999,7 +2999,7 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
         var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.png', 
             handler: function() { self.load(ta.getValue(), true) }
         });
-        var button_close = new Ext.Button({ text: '', tooltip: _('Close'), icon:'/static/images/icons/close.png', 
+        var button_close = new Ext.Button({ text: '', text: _('Close'), icon:'/static/images/icons/close.png', 
             handler: function() { win.close() }
         });
         var win = new Baseliner.Window({
@@ -3057,6 +3057,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     ct = ct(values);  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
+                    if( col_s[5] == 'readonly' ) ct.editor.readOnly = true;
                     ct.sortable = true;
                     // now test for Header[dataIndex]
                     var name_and_id = col_s[0].match(/^([^\[]+)\[([^\]]+)\]/);
@@ -3931,8 +3932,8 @@ Baseliner.datatable = function( el, opts, cb) {
                 "search":         _("Search:"),
                 "zeroRecords":    _("No matching records found"),
                 "paginate": {
-                    "first":      _("First"),
-                    "last":       _("Last"),
+                    "first":      '',
+                    "last":       '',
                     "next":       '',
                     "previous":   ''
                 },

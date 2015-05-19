@@ -7,7 +7,8 @@
           hide_save: true, 
           hide_cancel: true,
           height: 560, 
-          data: data.variables || {} 
+          data: data.variables || {},
+          hide_type: true
       })
     ]
 })

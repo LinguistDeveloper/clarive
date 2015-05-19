@@ -221,6 +221,7 @@
 
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/exports.png',
+        tooltip: _('Export'),
         iconCls: 'x-btn-icon',
         menu: [ btn_csv ]
     });
@@ -281,6 +282,7 @@
     
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
+      tooltip: _('Natures'),
       icon: '/static/images/nature/nature.png',
       menu: nature_menu
     });
@@ -384,6 +386,7 @@
     );
     var menu_bl = new Ext.Button({
       //text: _("Baseline"),
+      tooltip: _("Baseline"),
       icon: '/static/images/icons/baseline.gif',
       menu: menu_list
     });
@@ -568,8 +571,9 @@
     var autorefresh = new Ext.util.TaskRunner();
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
-    var refresh_button = new Ext.Button({ text: _('Auto Refresh'),
-        icon: '/static/images/icons/time.gif', 
+    var refresh_button = new Ext.Button({ tooltip: _('Refresh'),
+
+        icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -631,7 +635,8 @@
         trap_win.show();
     }
                 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif', 
+        tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
             var sm = grid.getSelectionModel();
@@ -691,7 +696,7 @@
             },
 % }
             {
-                text: _('Export'),
+                text: _('Job Export'),
                 icon:'/static/images/download.gif',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -812,7 +817,7 @@
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         hidden: true,
-        icon:'/static/images/del.gif',
+        icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -1068,7 +1073,7 @@
         tbar: is_portlet ? [] : [ 
                 search_field,
                 button_html,
-                menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
+                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.gif', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
@@ -1083,6 +1088,7 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.gif',
+                    text: _('Full log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

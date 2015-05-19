@@ -471,6 +471,37 @@ sub palette : Local {
         @services ]
     };
 
+    ############ Dashlets
+    my @dashlets = sort $c->registry->starts_with('dashlet');
+    push @tree, {
+        id=>$cnt++,
+        leaf=>\0,
+        text=>_loc('Dashlets'),
+        icon => '/static/images/icons/dashboard.png',
+        draggable => \0,
+        expanded => \1,
+        children=> [ 
+          sort { uc $a->{text} cmp uc $b->{text} }
+          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
+          map {
+            my $n = $_;
+            +{
+                isTarget  => \0,
+                leaf      => \1,
+                key       => $n->{key},
+                icon      => $n->{icon},
+                html      => $n->{html},
+                palette   => \1,
+                text      => $n->{name} // $n->{key},
+            }
+        } 
+        map { 
+            $c->registry->get( $_ );
+        }
+        @dashlets ]
+    };
+
+
     my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
     push @tree, {
         id=>$cnt++,
