@@ -163,25 +163,56 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
     show_config : function(id_dashlet){
         var self = this;
         var dashlet = self.dashlets[ id_dashlet ];
-        var form = new Baseliner.FormPanel({ 
-            frame: false, forceFit: true, defaults: { msgTarget: "under", anchor:"100%" },
-            labelWidth: 150,
-            width: 800, height: 600,
-            labelAlign: "right",
-            autoScroll: true,
-            tbar: [
-                "->",
-                { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ form.destroy() } },
-                { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
-            ],
-            bodyStyle: { padding: "4px", "background-color": "#fff" }
+        
+        Baseliner.ajaxEval( dashlet.form, { data: dashlet.data }, function(comp){
+
+            var save_form = function(){
+                form.data = form.getValues();
+
+                Baseliner.ci_call('user', 'save_dashlet_config', { data: form.data, id_dashlet:id_dashlet}, function(res){
+                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    win.close();
+                    self.dashlets[ id_dashlet ].data = res.data;
+                    self.refresh_dashlet(id_dashlet);
+                });
+
+                win.destroy();
+            };
+
+            var restore_originals = function(){
+                Baseliner.ci_call('user', 'remove_dashlet_config', {id_dashlet:id_dashlet}, function(res){
+                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    win.close();
+                    self.dashlets[ id_dashlet ].data = dashlet.data_orig;
+                    self.refresh_dashlet(id_dashlet);
+                });
+
+                win.destroy();
+            };
+
+            var form = new Baseliner.FormPanel({ 
+                frame: false, forceFit: true, defaults: { msgTarget: "under", anchor:"100%" },
+                labelWidth: 150,
+                width: 800, height: 600,
+                labelAlign: "right",
+                autoScroll: true,
+                tbar: [
+                    "->",
+                    { xtype:"button", text:_("Restore originals"), icon:"/static/images/icons/left.png", handler: function(){ restore_originals() } },
+                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ win.destroy() } },
+                    { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
+                ],
+                bodyStyle: { padding: "4px", "background-color": "#fff" },
+                items: comp
+            });
+
+            var win = new Baseliner.Window(Ext.apply({
+                layout: "fit",
+                title: _("Configure"),
+                items: form
+            }));
+            win.show();
         });
-        var win = new Baseliner.Window(Ext.apply({
-            layout: "fit",
-            title: _("Configure"),
-            items: form
-        }));
-        win.show();
     }
 });
 
