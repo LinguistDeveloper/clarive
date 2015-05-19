@@ -3,6 +3,7 @@ Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( userna
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_releases', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_dashboards = <% $c->model('Permissions')->user_has_any_action( action=>'action.dashboards.view', username=>$c->username ) ? 'true' : 'false' %>;
 
 var base_menu_items = [ ];
 
@@ -507,6 +508,16 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.$tree_reports.onload = callback;
         };
         
+        var show_dashboards = function(callback) {
+            if( !self.$tree_dashboards ) {
+                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', baseParams: { show_reports: true } });
+                self.add( self.$tree_dashboards );
+                self.$tree_dashboards.on('favorite_added', function() { self.$tree_favorites.refresh() } );
+            }
+            self.getLayout().setActiveItem( self.$tree_dashboards );
+            self.$tree_dashboards.onload = callback;
+        };
+        
 
         var toggle_stick = function( button, e) {
             if ( button_stick.enableToggle ) {
@@ -581,7 +592,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_ci = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/ci-grey.png',
+            icon: '/static/images/icons/class.gif',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -601,7 +612,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var button_releases = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/release.gif',
+            icon: '/static/images/icons/release_explorer.png',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -635,6 +646,26 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             enableToggle: true,
             refresh_all: function(callback){
                 if( self.$tree_reports ) self.$tree_reports.refresh_all(callback);
+            },
+            listeners: Baseliner.gen_btn_listener()
+        });        
+
+        var button_dashboards = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/dashboard.png',
+            handler: function(){
+                this.disable();
+                var that = this;
+                show_dashboards(function(){that.enable();});
+            },
+            tooltip: _('dashboards'),
+            toggleGroup: 'explorer-card',
+            pressed: false,
+            allowDepress: false,
+            hidden: ! Baseliner.user_can_dashboards,
+            enableToggle: true,
+            refresh_all: function(callback){
+                if( self.$tree_dashboards ) self.$tree_dashboards.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
         });        
@@ -751,9 +782,10 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_workspaces,
                 button_ci,
                 button_search_folders,
-                button_collapseall,        
+                button_dashboards,
                 '->',
                 button_menu,
+                button_collapseall,        
                 button_collapse,
                 ' ',
                 button_stick
@@ -1065,7 +1097,6 @@ Baseliner.edit_search = function(n){
 
 Baseliner.delete_search = function(n){
     var node = n;
-    console.log(n);
     if( ! node.attributes.mid){
         node.attributes.mid = node.attributes.data.id_report;
     }

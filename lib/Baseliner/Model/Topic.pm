@@ -311,7 +311,7 @@ sub topics_for_user {
     $limit ||= 100;
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
-    my $where = {};
+    my $where = $p->{where} // {};
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
@@ -706,7 +706,16 @@ sub update {
                     $meta = \@meta_filter;
                     $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
-                    
+
+                    # my $status_changes = {};
+                    # my $now = Class::Date->now();
+                    # my $status_name = ci->status->find_one({ id_status => $topic->id_category_status })->{name};
+                    # $status_changes->{_name_to_id($status_name)}->{count} = 1;
+                    # $status_changes->{_name_to_id($status_name)}->{total_time} = 0;
+                    # $status_changes->{_name_to_id($status_name)}->{transitions} = [{ ts => ''.Class::Date->now() }];
+                    # $status_changes->{_name_to_id($status_name)}->{last_transition} = { ts => ''.Class::Date->now() };
+                    # mdb->topic->update({ mid => "$topic->mid"},{'$set' => {_status_changes => $status_changes} });
+
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
@@ -1277,7 +1286,8 @@ sub get_meta {
     }else{
         if($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            @cat_fields = _array( mdb->category->find_one({ id=>mdb->in(@user_categories) })->{fieldlets} );
+            #@cat_fields = _array( mdb->category->find({ id=>mdb->in(@user_categories) })->{fieldlets} );
+            @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find({ id=>mdb->in(@user_categories) })->all);
         }else{
             @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find->all );
         }
@@ -2008,7 +2018,7 @@ sub update_category_status {
     my $doc =
         ref $mid_or_doc
         ? $mid_or_doc
-        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id' => 1 } );
+        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { _status_changes => 1, id_category_status => 1, 'category_status.name' => 1, 'category_status.id' => 1 } );
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
@@ -2016,7 +2026,7 @@ sub update_category_status {
     
     my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
         || _fail _loc 'Status `%1` not found', $id_category_status;
-    
+
     $$category_status{seq} += 0 if defined $$category_status{seq};
     $$category_status{id} = $$category_status{id_status};
 
@@ -2032,7 +2042,36 @@ sub update_category_status {
         modified_by          => $username,
         modified_on          => $modified_on,
     };
+    $d->{closed_on} = $modified_on if ( $category_status->{type} =~ /^F/ );
 
+    ### Update topic change status statistics
+    my $status_changes = $doc->{_status_changes};
+    my $now = Class::Date->now();
+
+    if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
+        my $last = Class::Date->new($status_changes->{last_transition}->{ts});
+        my $rel = $now - $last;
+        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
+        delete $status_changes->{last_transition};
+        my @transitions = _array($status_changes->{transitions});
+        push @transitions, { to => _name_to_id($$category_status{name}), ts => ''.Class::Date->now() };
+        $status_changes->{transitions} = \@transitions;
+    }
+
+    if ( $status_changes->{_name_to_id($$category_status{name})} ) {
+        $status_changes->{_name_to_id($$category_status{name})}->{count} = $status_changes->{_name_to_id($$category_status{name})}->{count} + 1;
+        my @transitions = _array($status_changes->{transitions});
+        push @transitions, { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{transitions} = \@transitions;
+        $status_changes->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+    } else {
+        $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
+        $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
+        $status_changes->{transitions} = [{ from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() }];
+        $status_changes->{last_transition} = { from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+    }
+
+    $d->{_status_changes} = $status_changes;
     if( !ref $mid_or_doc ) {
         # save back to mongo
         mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$d });
