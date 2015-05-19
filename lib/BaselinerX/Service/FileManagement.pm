@@ -350,6 +350,7 @@ sub run_ship {
     my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_path';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_path';
     my $user        = $config->{user};
+    my $copy_attrs  = $config->{copy_attrs} // 0;
     my $chmod       = $config->{'chmod'};
     my $chown       = $config->{'chown'};
     my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
@@ -490,6 +491,7 @@ sub run_ship {
             my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files, but faster than _md5
             my $local_key = "$job_exec|$local|$local_stat|$local_chksum";  # job exec included, forces reship on every exec
             my $local_key_md5 = Util->_md5( $local_key );
+            $agent->copy_attrs($copy_attrs);
             my $hostname = $agent->server->hostname;
             my $sent = $sent_files->{$hostname}{$local_key_md5}{"$remote"}; 
             if( $sent && $exist_mode ne 'reship' ) {
