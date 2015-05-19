@@ -218,6 +218,7 @@ sub serve_file : Private {
     my $file= $c->stash->{serve_file};
     my $body= $c->stash->{serve_body};
     my $status = $c->stash->{serve_status} // 0;
+    my $content_type = $c->stash->{content_type} || 'application-download;charset=utf-8';
     if( defined $file ) {
         $c->serve_static_file( $file );
     } 
@@ -231,7 +232,8 @@ sub serve_file : Private {
     $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
     $c->res->header('X-UA-Compatible', 'chrome=1');
     $c->res->headers->remove_header('Pragma');
-    $c->res->content_type('application-download;charset=utf-8');
+    #$c->res->content_type('application-download;charset=utf-8');
+    $c->res->content_type($content_type);
     if(0+$status < 0){
         $c->res->headers->remove_header('Cache-Control');
         $c->res->headers->remove_header('Pragma');
@@ -242,7 +244,8 @@ sub serve_file : Private {
         $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
         $c->res->header('X-UA-Compatible', 'chrome=1');
         $c->res->headers->remove_header('Pragma');
-        $c->res->content_type('application-download;charset=utf-8');
+        $c->res->content_type($content_type);
+        #$c->res->content_type('application-download;charset=utf-8');
     }
 }
 
