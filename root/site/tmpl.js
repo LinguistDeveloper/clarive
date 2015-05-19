@@ -1,7 +1,7 @@
 // Simple JavaScript Templating
 // John Resig - http://ejohn.org/ - MIT Licensed
 // rgo: heredoc quote fix, XXX heredoc comment only works in FF >= 17
-Baseliner.HEREDOC_SLICE_START = Ext.isSafari ? 15 : Ext.isChrome || Ext.isGecko ? 14 : 13;  // 13 is for IE
+Baseliner.HEREDOC_SLICE_START = Ext.isSafari ? 15 : (Ext.isChrome || Ext.isGecko) && !Cla.isIE ? 14 : 13;  // 13 is for IE
 Baseliner.HEREDOC_SLICE_END   = Ext.isSafari ? -4 : -3;
 Function.prototype.heredoc = function(s){ return this.toString().slice(Baseliner.HEREDOC_SLICE_START,Baseliner.HEREDOC_SLICE_END) };
 Function.prototype.tmpl = function(data){ return Baseliner.tmpl(this.heredoc(),data) };
@@ -35,7 +35,8 @@ Baseliner.tmpl = function (str, data){
           .split("\t").join(he[1]+");")
           .split("%]").join("p.push("+he[0])
           .split("\r").join("")
-      + he[1]+");}return p.join('');");
+          + he[1]+");}return p.join('');"
+      );
 
     // Provide some basic currying to the user
     return data ? fn( data ) : fn;

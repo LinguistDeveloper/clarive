@@ -74,6 +74,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         */};
         Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
+                <style>
+                    img:hover {
+                        opacity: 1.0;
+                        filter: alpha(opacity=100);
+                    }
+                </style>
                  <div id="boot" class="[%= id_class %]" style="width: 100%">
                  </div>
             */}.tmpl({ id_class: id_class, dashboards: res.dashboards }));
@@ -89,11 +95,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             Ext.each( res.dashlets, function(dashlet){
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = function(){/*
-                    <img style='cursor:pointer' 
+                    <img style='cursor:pointer;opacity: 0.4;' 
                         src='/static/images/icons/config.gif' 
                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.show_config("[%= id_dashlet %]")'
                     />
-                    <img style='cursor:pointer' 
+                    <img style='cursor:pointer;opacity: 0.4;'
+                         on 
                          src='/static/images/icons/refresh.gif' 
                          onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' />
                 */};
@@ -123,13 +130,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
-                html += dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
+                var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
                     id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
                     colspan: dashlet.data.columns, 
                     dashlet: dashlet, id_div: id_div });
+                html += dh;
                 Cla.ajaxEval(dashlet.js_file, { id_div: id_div, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
-                    icons.innerHTML = buttons_tpl.tmpl({
+                    if(icons) icons.innerHTML = buttons_tpl.tmpl({
                         id_dashlet : dashlet.id,
                         id_cmp     : self.id
                     });
@@ -152,12 +160,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var dashlet = self.dashlets[ id_dashlet ];
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
-        div.innerHTML= "<img src=/static/images/loading.gif />";
+        if(div) div.innerHTML= "<img src=/static/images/loading.gif />";
         Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();
             var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
-            update.innerHTML=last_update;
+            if(update) update.innerHTML=last_update;
         });
     },
     show_config : function(id_dashlet){
@@ -222,7 +230,7 @@ Cla.dashlet_common = (function(params){
     var data = params.data || {};
     return [
         new Cla.ComboSingle({ fieldLabel: _('Height of dashlet (rows)'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2] }),
-        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,4,6,8,10,12] }),
+        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] }),
         new Baseliner.ComboDouble({ fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
             [0, 0],
             [60000, 1],

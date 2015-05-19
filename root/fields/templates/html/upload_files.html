@@ -4,28 +4,32 @@
 </%args>
 
 % if( _array( $data->{$meta->{id_field}} ) ) {
-    <ul class="nav nav-list">
-        <li class="nav-header">
-            <% _loc( $meta->{id_field} ) %>
-        </li>
-    </ul>
-    <ul class="" style="margin-left: 20px">
+    <tr>
+        <td colspan=2>
+            <ul class="nav nav-list">
+                <li class="nav-header">
+                    <% _loc( $meta->{id_field} ) %>
+                </li>
+            </ul>
+            <ul class="" style="margin-left: 20px">
 % foreach my $file ( _array( $data->{ $meta->{id_field} } ) ) {
 %   my $fii = $data->{ii} . '_' . $file->{mid};
 %   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FrameDownload';  # download or try to show on next tab?
 %   my ($size,$units) = Util->_size_unit( $file->{filesize} );
-        <li id="<% $fii %>">
-            <table>
-                <tr>
-                    <td style="border:0"><i class="icon-file"></i></td>
-                    <td class="bl-text-over"  style="border:0"><div class="bl-text-over" style="width:220px" title="<% Util->_html_escape( $file->{filename} ) %>"><a href="/topic/download_file/<% $file->{mid} %>/<% $file->{filename} %>" target="<% $target %>">
-                    <% Util->_html_escape( $file->{filename} ) %>
-                    </a></div></td>
-                    <td  style="border:0">(<% $size %> <% $units %>) v.<% $file->{versionid} %></td>
-                </tr>
-             </table>
-        </li>
+                <li id="<% $fii %>">
+                    <table>
+                        <tr>
+                            <td style="border:0;"><i class="icon-file"></i></td>
+                            <td class="bl-text-over"  style="border:0"><div class="bl-text-over" style="100%" title="<% Util->_html_escape( $file->{filename} ) %>"><a href="/topic/download_file/<% $file->{mid} %>/<% $file->{filename} %>" target="<% $target %>">
+                            <% Util->_html_escape( $file->{filename} ) %>
+                            </a></div></td>
+                            <td  style="border:0;">(<% $size %> <% $units %>) v.<% $file->{versionid} %></td>
+                        </tr>
+                     </table>
+                </li>
 % }
-    </ul>
+            </ul>
+        </td>
+    </tr>
 % }
 

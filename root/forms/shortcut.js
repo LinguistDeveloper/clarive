@@ -7,7 +7,7 @@
         data: data.stash_data || {} 
     });
 
-    var tabpanel = new Ext.TabPanel({ activeTab: 0, height: 500, fieldLabel: _('Stash Data'), items: [ stash_data] });
+    var tabpanel = new Ext.TabPanel({ activeTab: 0, height: 500, fieldLabel: _('Stash Data'), plugins: [ new Ext.ux.panel.DraggableTabs()],  items: [ stash_data] });
     tabpanel.on('afterrender', function(){
          //tabpanel.hideTabStripItem( stash_data );
     });

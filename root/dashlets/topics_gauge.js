@@ -15,7 +15,6 @@
     var yellow = params.data.yellow || 20;
 
     Cla.ajax_json('/dashboard/topics_gauge', { numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
-        require(['d3','c3'], function(d3,c3){
               c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -44,7 +43,6 @@
                 }
 
             });
-        });
     });
 
 });

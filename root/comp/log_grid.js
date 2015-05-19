@@ -253,7 +253,7 @@
                 }
                 }, '->', new Ext.Toolbar.TextItem (_("Severity")), severity
             ],
-            items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data, field_file ] } ] 
+            items : [ { xtype:'tabpanel', activeTab:0,  plugins: [new Ext.ux.panel.DraggableTabs()], items: [ field_annotate, field_data, field_file ] } ] 
         });
 
         win.show();

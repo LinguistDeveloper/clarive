@@ -943,12 +943,8 @@ sub list_category : Local {
                 my @statuses = _array( $category->{statuses} );
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
-                my @fieldlets =
-                    map { $_->{name_field} }
-                    sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }
-                    map { $_->{params} }
-                    _array( mdb->category->find_one({ id => ''.$category->{id} })->{fieldlets} );
-                    
+                my @fieldlets;
+
                 my $forms = $self->form_build( $category->{forms} );
                 
                 push @rows, {
@@ -964,6 +960,7 @@ sub list_category : Local {
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
                     default_grid  => $category->{default_grid},
+                    default_field => $category->{default_field},
                     statuses      => \@statuses,
                     fields        => \@fieldlets,
                     #priorities    => \@priorities

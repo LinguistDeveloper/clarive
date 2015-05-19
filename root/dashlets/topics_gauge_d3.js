@@ -19,9 +19,21 @@
     var yellow = parseInt(params.data.yellow) || 20;
 
     Cla.ajax_json('/dashboard/topics_gauge', { input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+        var needle_length = 0.85;
+        var value_font = "18px";
         var div = document.getElementById(id);
-         if ( columns < 6 ) {
+         if ( columns < 3 ) {
+            div.style.height = "140px";
+            needle_length = 0.6;
+            value_font = "12px";
+         } else if ( columns < 4 ) {
+            div.style.height = "160px";
+            needle_length = 0.7;
+            value_font = "14px";
+         } else if ( columns < 6 ) {
             div.style.height = "210px";
+            needle_length = 0.8;
+            value_font = "16px";
          }
         var maxValue;
         if ( res.max <= yellow ) {
@@ -30,7 +42,6 @@
             maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         }
         
-       require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
              var config = {
@@ -40,9 +51,9 @@
                  ringInset                   : 40,
                  ringWidth                   : 40,
                  
-                 pointerWidth                : 8,
-                 pointerTailLength           : 5,
-                 pointerHeadLengthPercent    : 0.9,
+                 pointerWidth                : 6,
+                 pointerTailLength           : 4,
+                 pointerHeadLengthPercent    : needle_length,
                  
                  minValue                    : 0,
                  maxValue                    : maxValue,
@@ -162,7 +173,7 @@
                      .attr("class", 'c3-chart-arcs-gauge-unit')
                      .style("text-anchor", "middle")
                      .style("font-weight", "bold")
-                     .style("font-size", "18px")
+                     .style("font-size", value_font)
                      .style("pointer-events", "none");
                  arcs.append("text")
                      .attr("class", 'c3-chart-arcs-gauge-min')
@@ -238,7 +249,7 @@
              return that;
          };
 
-         div.innerHTML = "";
+         if(div) div.innerHTML = "";
          var powerGauge = gauge('#'+id, {
              size: div.offsetWidth,
              // clipWidth: 300,
@@ -249,6 +260,5 @@
          });
          powerGauge.render();
          powerGauge.update(res.data[0][1]);
-       }); 
     });
 });

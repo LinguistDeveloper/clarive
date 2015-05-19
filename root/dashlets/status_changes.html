@@ -37,7 +37,8 @@ html: /dashlets/status_changes.html
                             category_color: '<% $topics->{$ch->{mid}}->{color} %>',
                             short_name: true
                         });
-                        document.getElementById('<%$topic_mid%>').innerHTML = name;
+                        var div = document.getElementById('<%$topic_mid%>');
+                        if(div) div.innerHTML = name;
                     </script> 
                     <td style="font: 13px OpenSans, Lato, Calibxri, Tahoma; background-color: #fff; color: #111; "><% Util->ago( $ch->{when} )  %></td> 
                     <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{old_status}  %></td>

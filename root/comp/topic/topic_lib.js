@@ -437,6 +437,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'color' },
                 {  name: 'description' },
                 {  name: 'default_grid' },
+                {  name: 'default_field' },
                 {  name: 'type' },
                 {  name: 'statuses' },
                 {  name: 'forms' },
@@ -984,7 +985,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         Baseliner.TopicMain.superclass.initComponent.call(this);
 
-        self.on('afterrender', function(){
+        self.on('afterrender', function(){      
             new Ext.KeyMap( self.el, {
                 key: 's', ctrl: true, scope: self.el,
                 stopEvent: true,
@@ -1095,7 +1096,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         if( self.form_topic ) self.remove( self.form_topic );
         self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15, id_title: self.id_title });
-        
         if( ! self.form_is_loaded ) {
             self.add( self.form_topic );
             self.set_original_record();
@@ -1952,6 +1952,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             }
         }  // for fields
 
+
         self.on( 'afterrender', function(){
             var form2 = self.getForm();
             var id_category = rec.new_category_id ? rec.new_category_id : data.id_category;
@@ -1965,7 +1966,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                 });
                 obj_store_category.load();
             }
-        
+
             var obj_combo_status = form2.findField("status_new");
             var obj_store_category_status;                
             

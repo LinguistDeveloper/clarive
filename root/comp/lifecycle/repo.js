@@ -109,6 +109,7 @@
     var properties = new Ext.TabPanel({
         //collapsible: true,
         defaults: { closable: true, autoScroll: true }, 
+         plugins: [ new Ext.ux.panel.DraggableTabs()],
         split: true,
         activeTab: 0,
         enableTabScroll: true,

@@ -22,3 +22,5 @@ IC = function(icon){
     var path = '/static/images/icons/';
     return /\./.test(icon) ? path+icon : path+icon+'.png'; 
 }
+
+Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;

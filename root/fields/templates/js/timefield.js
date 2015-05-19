@@ -22,8 +22,8 @@ params:
 			name: meta.id_field,
 			format: meta.format,
 			value: data ? eval('data.' + meta.bd_field): '',
-			readOnly: meta ? meta.readonly : true,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true
+			readOnly: Baseliner.eval_boolean(meta.readonly),
+			hidden: Baseliner.eval_boolean(meta.hidden)
 		}
     ]
 })

@@ -49,7 +49,7 @@
     //var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
         //title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
     
-    var tabs = new Ext.TabPanel({ width: '705', height: '200',
+    var tabs = new Ext.TabPanel({ width: '705', height: '200',  plugins: [ new Ext.ux.panel.DraggableTabs()],
                 items: [ include.grid, exclude.grid ] });
 
     tabs.setActiveTab( include.grid );

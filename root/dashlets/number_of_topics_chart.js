@@ -7,11 +7,10 @@
     var group_threshold = params.data.group_threshold || '5';
     var not_in_status = params.data.not_in_status;
     var condition = params.data.condition || '';
-    var group_by = params.data.group_by || 'topics_by_status';
+    var group_by = params.data.group_by || 'category.name';
     var graph_title;
 
-    Cla.ajax_json('/dashboard/'+group_by, { condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
-        require(['d3','c3'], function(d3,c3){
+    Cla.ajax_json('/dashboard/topics_by_field', { group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
               c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -86,7 +85,6 @@
                 },
 
             });
-        });
     });
 
 });

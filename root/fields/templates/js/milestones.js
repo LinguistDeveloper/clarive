@@ -29,8 +29,8 @@ params:
         columns = String.format('{0}[slotname],textfield,400;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
     }
     
-    var allow = meta.allowBlank == 'false' ? false : true;
-    var readonly = meta.readonly == undefined ? true : meta.readonly;
+    var allow = Baseliner.eval_boolean(meta.allowBlank);
+    var readonly = Baseliner.eval_boolean(meta.readonly);
     
     var editor = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
@@ -47,7 +47,7 @@ params:
         value: value || '',
         readOnly: readonly,
         disabled: readonly,
-        hidden : meta ? (meta.hidden ? meta.hidden : false): true,
+        hidden : Baseliner.eval_boolean(meta.hidden),
         enableDragDrop: !readonly,
         use_row_editor: !readonly
     });

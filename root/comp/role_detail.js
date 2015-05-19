@@ -83,7 +83,7 @@
                         child.removeListener('expand', tree_check );
                         child.on({ 'expand': { fn: tree_check } });
                         if( child.hasChildNodes() )  {
-                            tree_check_folder_enabled(child);
+                            // tree_check_folder_enabled(child);
                         }
                     }
                 });
@@ -187,6 +187,7 @@
 
     var role_navigator = new Ext.TabPanel({
         region:'west',
+        plugins: [new Ext.ux.panel.DraggableTabs()],
         split: true,
         width: '45%',
         colapsible: true,

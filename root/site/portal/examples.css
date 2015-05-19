@@ -58,3 +58,37 @@ pre.code{
 .x-grid3-row-body p {
     margin:5px 5px 10px 5px !important;
 }
+
+.dd-arrow-down.dd-arrow-down-invisible {
+    display: url( /static/ext/examples/shared/icons/fam/folder_wrench.png );
+    visibility: hidden;
+
+	}
+	 
+.dd-arrow-down {
+  background-image:url(/static/images/icons/arrow_down.png );
+  display: block;
+  visibility: visible;
+  z-index: 20000;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+}
+.x-dd-drag-ghost{
+	color:black;
+	font:normal 11px arial,helvetica,sans-serif;
+	-moz-opacity:0.85;
+	opacity:.85;filter:alpha(opacity=85);
+	border-top:1px solid #ddd;
+	border-left:1px solid #ddd;
+	border-right:1px solid #bbb;
+	border-bottom:1px solid #bbb;
+	padding:3px;padding-left:20px;
+	background-color:white;
+	background-repeat:no-repeat !important;
+	white-space:nowrap;
+    list-style: none outside none;}
+
+

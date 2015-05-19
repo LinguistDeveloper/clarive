@@ -18,10 +18,6 @@ params:
     
     var options = meta[ 'options' ];
 
-    if (meta.allowBlank == 'false') allowBlank = false;
-    if (meta.allowBlank == 'true') allowBlank = true;
-    if (meta.allowBlank == undefined) allowBlank = true;
-    
     var opt_arr = [];
     if( options != undefined  ) {
         var vv = options.split(',');
@@ -41,16 +37,16 @@ params:
         store: store,
         triggerAction: 'all',
         valueField: meta.id_field,
-        editable: meta.editable || false,
+        editable: Baseliner.eval_boolean(meta.editable),
         displayField: meta.id_field,
         mode: 'local',
         anchor: meta.anchor || '100%',
         value: value || meta['default_value'],
         forceSelection: true,
         selectOnFocus: true,
-        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-        disabled: meta && meta.readonly ? meta.readonly : false,
-        allowBlank: allowBlank
+        hidden: Baseliner.eval_boolean(meta.hidden),
+        disabled: Baseliner.eval_boolean(meta.readonly),
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank)
     });  
     
     combo.on('afterrender', function(){

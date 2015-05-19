@@ -390,6 +390,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
 
             var field_config = new Ext.TabPanel({ 
                 activeTab: 0,
+                plugins: [ new Ext.ux.panel.DraggableTabs()], 
                 items: props
             });
         

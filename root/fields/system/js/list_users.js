@@ -18,13 +18,9 @@ params:
 	var data = params.topic_data;
 	var meta = params.topic_meta;
 	
-    var allowBlank;
-    if (meta.allowBlank == 'false') allowBlank = false;
-    if (meta.allowBlank == 'true') allowBlank = true;
-    if (meta.allowBlank == undefined) allowBlank = true;
-
+    
     var single_mode = true;
-    if (meta.single_mode == 'false') single_mode = false;
+    if (!Baseliner.eval_boolean(meta.single_mode)) single_mode = false;
 	
     var users = new Array();
 	
@@ -50,9 +46,9 @@ params:
         name: meta.id_field,
         hiddenName: meta.id_field,		
         store: user_box_store,
-		disabled: meta ? meta.readonly : true,
+		disabled: Baseliner.eval_boolean(meta.readonly),
 		singleMode: single_mode,
-		allowBlank: allowBlank
+		allowBlank: Baseliner.eval_boolean(meta.allowBlank, true)
     });
     
     user_box_store.on('load',function(){

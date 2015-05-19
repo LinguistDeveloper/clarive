@@ -49,8 +49,10 @@
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
                   [ 'report', _('Report') ],
+                  [ 'webservice', _('Webservice') ],
+                  [ 'independent', _('Independent') ],
                   [ 'dashboard', _('Dashboard') ],
-                  [ 'independent', _('Independent') ]
+                  [ 'fieldlets', _('Fields') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
                allowBlank: false
@@ -72,6 +74,14 @@
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
+            webservice_form.hide();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
+        } else if( v == 'webservice' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
             webservice_form.show();
             msg_job.hide();
             msg_ev.hide();
@@ -84,7 +94,7 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else if( v == 'dashboard' ) {
+        } else if( v == 'fieldlets' || v == 'dashboard' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
