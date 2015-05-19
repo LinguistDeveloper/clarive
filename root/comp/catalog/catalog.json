@@ -1,0 +1,76 @@
+<%perl>
+    use Baseliner::Utils;
+    my @tree;
+    
+    my $k=0;
+    my $stash = { catalog_forms=>[] };
+    my @rules;
+    for my $rule ( mdb->rule->find({ rule_type=>'catalog', rule_active=>mdb->true })->all ){
+        my @rule_tree = Baseliner->model('Rules')->build_tree( $rule->{id}, undef );
+        my $dsl = Baseliner->model('Rules')->dsl_build( \@rule_tree, no_tidy=>1 ); 
+        push @rules, { dsl=>$dsl };
+        #my $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$rule->{id}, stash=>$stash );
+    }
+    # processor for rule results
+    my %parents;
+    my $process = sub{ 
+        for my $st ( _array( $stash->{catalog} ) ) {
+            $parents{ $st->{parent} } = 1 if length $st->{parent};
+            my $desc = $st->{description};
+            push @tree, { 
+                _id=> $st->{id}, service=>$st->{name}, 
+                    description=>(length $desc ? Util->_markdown($desc) : ''), type=>$st->{type}, 
+                collapse => $st->{collapse},
+                _parent=>$st->{parent}, forms=>$st->{forms},
+            };
+        }
+    };
+    # non project tasks
+    {
+        local $stash->{catalog} = [];
+        local $stash->{realm} = 'global';
+        for my $rule ( @rules ) {
+            Baseliner->model('Rules')->dsl_run( dsl=>$rule->{dsl}, stash=>$stash );
+        }
+        $process->();
+    }
+    # project tasks
+    my $list_projects;
+    $list_projects = sub{
+        my ($parentid, $parent_project) = @_;
+        for my $project ( ci->project->find({ parent_project=>{'$in'=>[$parent_project]} })->all ) {
+            my $id = $k++;
+            push @tree, {
+                _id      => "$id",
+                service  => $project->{name},
+                _is_leaf => \0,
+                _parent  => $parentid,
+                type     => 'project',
+                icon     => '/static/images/icons/project.png'
+            };
+            
+            local $stash->{realm} = 'project';
+            local $stash->{catalog_parent} = $id; 
+            local $stash->{catalog} = [];
+            for my $rule ( @rules ) {
+                Baseliner->model('Rules')->dsl_run( dsl=>$rule->{dsl}, stash=>$stash );
+            }
+            $process->();
+            $list_projects->($id,$project->{mid});
+        }
+    };
+    $list_projects->();
+    # if we have children, not leaf
+    for( @tree ) {
+        $_->{_is_leaf} = $parents{ $_->{_id} } ? \0 : \1;
+    }
+    #_warn \@tree;
+    ##push @tree, { _id=> ''.$k++, expanded=>\1, service=>'VT', _is_leaf=> \0, _parent=>undef, icon=>'/static/images/icons/project.png' };
+    #push @tree, { _id=> ''.$k++, service=> 'Oracle', description=>$desc, type=>'folder', _parent=>'0', _is_leaf=> \0 };
+    # for( $k..$k+20 ) {
+    #push @tree, { _id=> ''.$_, service=> 'Servicio1', description=>$desc, type=>'service', _parent=> '1', _is_leaf=> \1 };
+    #}
+    my $ret = Util->_to_json({ data=>\@tree, success=>\1, totalCount=>scalar(@tree) });
+    $ret = Encode::decode_utf8( $ret );
+    print $ret;
+</%perl>

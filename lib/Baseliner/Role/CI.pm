@@ -307,7 +307,7 @@ sub field_is_ci {
 sub save_data {
     my ( $self, $master_row, $master_doc, $opts, $master_old ) = @_;
     return unless ref $master_doc;
-    
+
     # To fix not saving attributes modified in "before save_data"
     #$master_doc = { %$self, %$master_doc };
 
@@ -343,7 +343,7 @@ sub save_data {
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
         # delete all records related 
-        my $mr_where ={ $my_rel=>''.$master_row->{mid}, rel_type=>$rel_type_name };
+        my $mr_where ={ $my_rel=>''.$master_row->{mid}, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
@@ -374,9 +374,11 @@ sub save_fields {
     # update mongo master
     mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1, safe=>1 });
     # update master_doc
+
     if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
-        my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $master_doc || {} } };
+        #my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $master_doc || {} } };
+        my $doc = { ( $master_row ? %$master_row : () ), %{ $master_doc || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
@@ -458,22 +460,22 @@ sub load {
             next unless defined $rel_type;
             my $my_mid = $rel_type->[0];
             my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
-            $field_rel_mids{ $rel_type->[1] } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, opts=>{splice @$rel_type,2} };
+            $field_rel_mids{ $field } = { field=>$field, rel_type=>$rel_type->[1], my_mid => $my_mid, other_mid => $other_mid, opts=>{splice @$rel_type,2} };
             delete $data->{$field}; # delete yaml junk
             #$data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
         }
         # get rel data
         if( my @fields = keys %field_rel_mids ) {
-            my @rel_type_data = ref $rel_data eq 'ARRAY' 
+            my @rel_field_data = ref $rel_data eq 'ARRAY' 
                 ? @$rel_data 
                 : ref $rel_data eq 'HASH' 
                     ? @{ $rel_data->{$mid} || [] }
                     : mdb->master_rel
-                        ->find({ '$or'=>[{ to_mid=>"$mid" },{ from_mid=>"$mid" }], rel_type =>mdb->in(@fields) })
-                        ->fields({ from_mid=>1,to_mid=>1,rel_type=>1 })->all;
+                        ->find({ '$or'=>[{ to_mid=>"$mid" },{ from_mid=>"$mid" }], rel_field =>mdb->in(@fields) })
+                        ->fields({ from_mid=>1,to_mid=>1,rel_type=>1,rel_field=>1 })->all;
                     
-            for my $rel_row ( @rel_type_data ) {
-                my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
+            for my $rel_row ( @rel_field_data ) {
+                my $f = $field_rel_mids{ $rel_row->{rel_field} }; 
                 next unless $f;
                 next if $rel_row->{ $f->{my_mid} } ne $mid;
                 my $other_mid = $rel_row->{ $f->{other_mid} };

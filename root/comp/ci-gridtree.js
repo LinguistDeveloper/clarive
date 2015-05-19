@@ -455,7 +455,7 @@
             { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
             { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags, sortable: true },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties, sortable: true },
-            { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
+            //{ header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
         ],
         bbar: bbar
     });

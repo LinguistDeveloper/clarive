@@ -12,12 +12,13 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var color = meta.color ? meta.color: '#99CCFF';
+    var size = meta.size ? meta.size : '10px'
     
     var separator = new Ext.Component({
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         labelSeparator: '',
-        labelStyle: 'color:'+ color + ';font-weight:bold',
+        labelStyle: 'color:'+ color + ';font-weight:bold;font-size:' + size,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         autoEl: {html:'<hr style="background-color:' + color + ';height:2px;border:none;>"'},
         readOnly: false

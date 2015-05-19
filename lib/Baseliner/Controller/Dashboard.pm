@@ -597,7 +597,7 @@ sub list_baseline : Private {
 
     my $bl_days = $config->{bl_days};
 
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
+    #Cogemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
         username => $c->username
     );
