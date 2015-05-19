@@ -51,7 +51,7 @@ my $iid = Util->_md5;
           Ext.each( columns, function(col) {
             html = html + '<td>';
             if ( col.name == 'name' ) {
-              html = html + '<span id="topic_'+topic.mid+'_<% $iid %>" class="label" onclick="javascript:Baseliner.show_topic_colored('+topic.mid+', \''+topic.category_name+'\', \''+topic.category.color+'\')" style="cursor:pointer;background:'+topic.category.color+'">'
+              html = html + '<span id="topic_'+topic.mid+'_<% $iid %>" class="label" onclick="javascript:Baseliner.show_topic_colored('+topic.mid+', \''+topic.category_name+'\', \''+topic.category_color+'\')" style="cursor:pointer;background:'+topic.category_color+'">'
               html = html + Baseliner.topic_title(topic.mid,topic.category_name,topic.category_color,true);
               html = html +'</span>';
             } else if ( col.name == 'title' ) {
