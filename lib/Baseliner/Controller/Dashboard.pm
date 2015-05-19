@@ -33,6 +33,13 @@ register 'dashlet.job.list_jobs' => {
     js_file => '/dashlets/list_jobs.js'
 };
 
+register 'dashlet.job.list_baseline' => {
+    form=> '/dashlets/baselines_config.js',
+    name=> 'List baselines', 
+    icon=> '/static/images/icons/report_default.png',
+    js_file => '/dashlets/baselines.js'
+};
+
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart', 
@@ -1174,6 +1181,175 @@ sub list_emails: Local {
     $c->forward('View::JSON');
 }
 
+sub list_baseline : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $days     = $p->{days}     // 7;
+    my $projects = $p->{projects} // 'ALL';
+    my $bls      = $p->{bls}      // 'ALL';
+
+    my $username = $c->username;
+    my ( @jobs, $job, @datas, @temps, $SQL );
+
+    #Cojemos los proyectos que el usuario tiene permiso para ver
+    my @ids_project = $c->model('Permissions')
+        ->user_projects_ids( username => $c->username );
+
+    if ( $projects ne 'ALL' ) {
+        use Array::Utils qw(:all);
+        my @filter_projects = _array($projects);
+        @ids_project = intersect( @filter_projects, @ids_project );
+    }
+
+    my @filter_bls;
+    if ( $bls ne 'ALL' ) {
+        @filter_bls = _array($bls);
+    }
+    else {
+        @filter_bls = map { $_->{name} }
+            ci->bl->find( { bl => { '$ne' => '*' } } )->all;
+    }
+    if (@ids_project) {
+
+        my $date        = Class::Date->now();
+        my $date_tocero = Class::Date->new(
+            [ $date->year, $date->month, $date->day, "00", "00", "00" ] );
+        my $days = $days . 'D';
+        $date = $date_tocero - $days;
+        my $date_str = $date->ymd;
+        $date_str =~ s/\//\-/g;
+
+        my @jobs_ok = _array(
+            mdb->master_doc->aggregate(
+                [   {   '$match' => {
+                            bl           => mdb->in(@filter_bls),
+                            'projects'   => mdb->in(@ids_project),
+                            'collection' => 'job',
+                            'status'     => 'FINISHED',
+                            'endtime'    => { '$gte' => '' . $date_str }
+                        }
+                    },
+                    {   '$group' => {
+                            _id      => '$bl',
+                            'result' => { '$max' => 'OK' },
+                            'tot'    => { '$sum' => 1 }
+                        }
+                    }
+                ]
+            )
+        );
+
+        my @jobs_ko = _array(
+            mdb->master_doc->aggregate(
+                [   {   '$match' => {
+                            bl           => mdb->in(@filter_bls),
+                            'projects'   => mdb->in(@ids_project),
+                            'collection' => 'job',
+                            'status'     => mdb->in(
+                                (   'ERROR', 'CANCELLED', 'KILLED',
+                                    'REJECTED'
+                                )
+                            ),
+                            'endtime' => { '$gte' => '' . $date_str }
+                        }
+                    },
+                    {   '$group' => {
+                            _id      => '$bl',
+                            'result' => { '$max' => 'ERROR' },
+                            'tot'    => { '$sum' => 1 }
+                        }
+                    }
+                ]
+            )
+        );
+
+        @jobs = ( @jobs_ok, @jobs_ko );
+
+        foreach my $entorno (@filter_bls) {
+            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl )
+                = ( 0, 0, 0, 0, 0 );
+            @temps = grep { $_->{_id} eq $entorno } @jobs;
+            foreach my $temp (@temps) {
+                $bl = $temp->{_id};
+                if ( $temp->{result} eq 'OK' ) {
+                    $totOk = $temp->{tot};
+                }
+                else {
+                    $totError = $temp->{tot};
+                }
+            } ## end foreach my $temp ( @temps )
+            $total = $totOk + $totError;
+            if ($total) {
+                $porcentOk    = $totOk * 100 / $total;
+                $porcentError = $totError * 100 / $total;
+            }
+            else {
+                $bl           = $entorno;
+                $totOk        = '';
+                $totError     = '';
+                $porcentOk    = 0;
+                $porcentError = 0;
+            } ## end else [ if ( $total ) ]
+            push @datas,
+                {
+                bl           => $bl,
+                porcentOk    => $porcentOk,
+                totOk        => $totOk,
+                total        => $total,
+                totError     => $totError,
+                porcentError => $porcentError
+                };
+        }
+    }
+    $c->stash->{json} = {
+        success => \1,
+        data    => \@datas
+    };
+    $c->forward('View::JSON');
+}
+
+sub viewjobs : Local {
+    my ( $self, $c, $days, $type, $bl ) = @_;
+    my $p = $c->request->parameters;
+
+    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
+    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
+                                                                            action => 'action.job.viewall',
+                                                                            level => 1);
+    
+    #Filtramos por la parametrización cuando no son todos
+    # if($config->{projects} ne 'ALL'){
+    #     @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
+    # }
+    
+    my @jobs;
+    
+    if($type){
+        my @status;
+        given ($type) {
+            when ('ok') {
+                @status = ('FINISHED');
+            }
+            when ('nook'){
+                @status = ('ERROR','CANCELLED','KILLED','REJECTED');
+            }
+        }
+        
+        my $days = $days . 'D';
+        my $start = mdb->now - $days; 
+        $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
+
+        @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
+        
+    }else{
+        @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(($bl)) })->all;
+    }
+
+    $c->stash->{jobs} = @jobs ? join(',', map {$_->{mid}} @jobs) : -1;
+    $c->forward('/job/monitor/Dashboard');
+}
+
 
 ##################### DEPRECATED
 ##Configuración del dashboard
@@ -1713,102 +1889,6 @@ sub get_config_dashlet{
     return $default_config;
 }
 
-sub list_baseline : Private {
-    my ( $self, $c, $dashboard_id, $params ) = @_;
-    my $username = $c->username;
-    my ( @jobs, $job, @datas, @temps, $SQL );
-
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $config = get_config_dashlet( 'list_baseline', $dashboard_id, $params );
-    ##########################################################################################################
-    $c->stash->{dashboard_id} = $config->{dashboard_id};
-
-    my $bl_days = $config->{bl_days};
-
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
-        username => $c->username
-    );
-    my $ids;
-    $c->stash->{projects} = $config->{projects};
-
-    # my $is_root = $c->model('Permissions')->is_root( $c->username );
-
-    #if (!$is_root) {  
-        if ( $config->{projects} ne 'ALL' ) {
-            $ids = 'MID=' . join( '', grep { $_ =~ $config->{projects} } grep { length }  @ids_project ). ' AND' if grep { length } @ids_project;
-
-        } else {
-            $ids = 'MID=' . join( ' OR MID=', grep { length } @ids_project ). ' AND' if grep { length } @ids_project;
-        }
-    #} else {
-    #    $ids = '';
-    #}
-
-    if ( @ids_project ) {
-
-        my $date = Class::Date->now();
-        my $date_tocero = Class::Date->new( [$date->year,$date->month,$date->day,"00","00","00"]);
-        my $days = $bl_days.'D';
-        $date = $date_tocero - $days;
-        my $date_str = $date->ymd;
-        $date_str  =~ s/\//\-/g;
-
-
-        my @jobs_ok = _array(mdb->master_doc->aggregate([
-            { '$match' => { 'collection' => 'job', 'status' => 'FINISHED', 'endtime' => {'$gte' => ''.$date_str} } },
-            { '$group' => { _id => '$bl', 'result' => {'$max' => 'OK'} , 'tot' => {'$sum' => 1} } }
-        ]));
-
-        my @jobs_ko = _array(mdb->master_doc->aggregate([
-            { '$match' => { 'collection' => 'job', 'status' => mdb->in( ('ERROR','CANCELLED','KILLED','REJECTED') ), 'endtime' => {'$gte' => ''.$date_str} } },
-            { '$group' => { _id => '$bl', 'result' => {'$max' => 'ERROR'} , 'tot' => {'$sum' => 1} } }
-        ])); 
-
-        @jobs = ( @jobs_ok, @jobs_ko );
-
-        #my @entornos = ('TEST', 'PREP', 'PROD');
-        my $states = $config->{states};
-        my @entornos = split ",", $states;
-
-        foreach my $entorno ( @entornos ) {
-            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl ) = ( 0, 0, 0, 0, 0);
-            @temps = grep { $_->{_id} eq $entorno } @jobs;
-            foreach my $temp ( @temps ) {
-                $bl = $temp->{_id};
-                if ( $temp->{result} eq 'OK' ) {
-                    $totOk = $temp->{tot};
-                } else {
-                    $totError = $temp->{tot};
-                }
-            } ## end foreach my $temp ( @temps )
-            $total = $totOk + $totError;
-            if ( $total ) {
-                $porcentOk    = $totOk * 100 / $total;
-                $porcentError = $totError * 100 / $total;
-            } else {
-                $bl           = $entorno;
-                $totOk        = '';
-                $totError     = '';
-                $porcentOk    = 0;
-                $porcentError = 0;
-            } ## end else [ if ( $total ) ]
-            push @datas,
-                {
-                bl           => $bl,
-                porcentOk    => $porcentOk,
-                totOk        => $totOk,
-                total        => $total,
-                totError     => $totError,
-                porcentError => $porcentError
-                };
-        } ## end foreach my $entorno ( @entornos)
-    } ## end if ( $ids_project )
-    $c->stash->{entornos} = \@datas;
-} ## end sub list_baseline:
-
 sub list_pending_jobs: Private{
     my ( $self, $c, $dashboard_id, $params ) = @_;
     my $perm = Baseliner->model('Permissions');
@@ -2026,56 +2106,6 @@ sub list_my_topics: Private{
 
     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{my_topics} = \@rows ;
-}
-
-sub viewjobs : Local {
-    my ( $self, $c, $dashboard_id, $projects, $type, $bl ) = @_;
-    my $p = $c->request->parameters;
-
-    my $config = get_config_dashlet('list_baseline', $dashboard_id);
-    $config->{projects} = $projects;
-
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
-    
-    #Filtramos por la parametrización cuando no son todos
-    if($config->{projects} ne 'ALL'){
-        @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
-    }
-    
-    my $states    = $config->{states};
-    my @baselines = split ",", $states;
-    
-    
-    my @jobs;
-    
-    if($type){
-        my @status;
-        given ($type) {
-            when ('ok') {
-                @status = ('FINISHED');
-            }
-            when ('nook'){
-                @status = ('ERROR','CANCELLED','KILLED');
-            }
-        }
-        
-        my $days = ( $config->{bl_days} // 7 ) . 'D';
-        my $start = mdb->now - $days; 
-        $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
-
-        @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
-        
-    }else{
-        @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(@baselines) })->all;
-    }
-    
-    #my $jobsid = join(',', map {$_->{id_job}} @jobs);
-
-    $c->stash->{jobs} = @jobs ? join(',', map {$_->{mid}} @jobs) : -1;
-    $c->forward('/job/monitor/Dashboard');
 }
 
 sub topics_open_by_category: Local{

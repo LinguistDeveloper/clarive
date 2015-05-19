@@ -10,7 +10,7 @@
             ['1Y', _('Year')]
           ] 
         }),
-        new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'pie', data: [
+        new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'donut', data: [
             ['pie', _('Pie')],
             ['donut', _('Donut')],
             ['bar', _('Bar')]
