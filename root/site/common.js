@@ -96,6 +96,7 @@ Baseliner.js_reload = function(msg) {
     Baseliner.loadFile( '/site/model.js', 'js' );
     Baseliner.loadFile( '/site/kanban.js', 'js' );
     Baseliner.loadFile( '/site/explorer.js', 'js' ); 
+    Baseliner.loadFile( '/site/dashboard.js', 'js' ); 
     Baseliner.loadFile( '/site/editors.js', 'js' ); 
     Baseliner.loadFile( '/site/graph.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
@@ -3057,6 +3058,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     ct = ct(values);  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
+                    if( col_s[5] == 'readonly' ) ct.editor.readOnly = true;
                     ct.sortable = true;
                     // now test for Header[dataIndex]
                     var name_and_id = col_s[0].match(/^([^\[]+)\[([^\]]+)\]/);
@@ -3931,8 +3933,8 @@ Baseliner.datatable = function( el, opts, cb) {
                 "search":         _("Search:"),
                 "zeroRecords":    _("No matching records found"),
                 "paginate": {
-                    "first":      _("First"),
-                    "last":       _("Last"),
+                    "first":      '',
+                    "last":       '',
                     "next":       '',
                     "previous":   ''
                 },

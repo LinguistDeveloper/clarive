@@ -1,8 +1,6 @@
 (function(node) {
     if( node == undefined ) node = {};
 
-    console.dir(node);
-
     var branch = node.data.name;
     var repository = node.data.repo_name;
     var repo_mid = node.data.repo_mid;

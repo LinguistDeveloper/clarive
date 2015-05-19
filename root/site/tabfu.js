@@ -1287,7 +1287,7 @@ if( Prefs.routing ) {
             // I have my own "cloner"
             var clone = panel.refresh_tab();
             tabpanel.remove( panel );
-            var new_comp = tabpanel.insert( tab_index, clone );
+            var new_comp = tabpanel.insert( activeTabIndex, clone );
             if( clone.tab_icon ) tabpanel.changeTabIcon( clone, clone.tab_icon );
             tabpanel.setActiveTab( new_comp );
         }

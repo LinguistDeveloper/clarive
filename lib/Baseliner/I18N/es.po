@@ -7914,3 +7914,6 @@ msgstr "Pases por estado (7 días)"
 
 msgid "Job Burndown"
 msgstr "Pases por franja horaria"
+
+msgid "Other"
+msgstr "Otro"

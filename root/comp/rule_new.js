@@ -49,6 +49,7 @@
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
                   [ 'report', _('Report') ],
+                  [ 'dashboard', _('Dashboard') ],
                   [ 'independent', _('Independent') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
@@ -76,6 +77,14 @@
             msg_ev.hide();
             grid_events.hide();
         } else if( v == 'report' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
+            webservice_form.hide();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
+        } else if( v == 'dashboard' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
