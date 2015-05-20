@@ -64,10 +64,9 @@ while( my ($k,$v) = each %ARGV ) {
     $args{$k} = $v;
 }
 
-print "Clarive Worker v6.1\n" unless $args{h};
+print "Clarive Worker v6.2\n" unless $args{h};
 
 # config
-my $server = $ARGV{'--server'} || 'localhost:6379';
 my $script_home = Cwd::realpath( $Bin );
 my $config_file = $ARGV{'--config'} || File::Spec->catfile($script_home,'cla-worker.conf');
 
@@ -80,12 +79,15 @@ require Sys::Hostname;
     script_home    => $script_home,
     encode_format  => 'yaml',
     os             => $^O,
-    arch           => do { $a=`uname -m`; chomp $a; $a }, 
+    arch           => ( $^O =~ /win/i 
+        ? do{ use Config; $Config{"archname"} } 
+        : do{ $a=`uname -m`; chomp $a; $a } ), 
     home           => $script_home,
     pid_dir        => $script_home,
     log_dir        => $script_home,
     pid            => $$,
     verbose        => 0,
+    server         => 'localhost:6379',
     timeout        => 600,
     reconnect_wait => 5,
     chunk_size     => 64 * 1024,
@@ -146,10 +148,10 @@ sub start {
     my $recon_count = 1;
     # connect
     CONNECT:
-    print "connecting to server $server...";
+    print "connecting to server $conf{server}...";
     $redis = try {
         Redis->new( 
-            server=>$server,
+            server=>$conf{server},
             encoding => undef,
             on_connect => sub {
                 print "db connected";
@@ -169,7 +171,7 @@ sub start {
 
     $queue = try {
         Redis->new(
-            server     => $server,
+            server     => $conf{server},
             encoding   => undef,
             on_connect => sub {
                 print ", queue connected.\n";
@@ -267,7 +269,7 @@ sub start {
     }
 
     # loop on messages
-    _log "waiting for messages, loop each $timeout seconds";
+    _log "waiting for messages, restarting each $timeout seconds";
     while( 1 ) {
         try {
             $queue->wait_for_messages($timeout);
@@ -280,7 +282,7 @@ sub start {
                 goto CONNECT;  # start over
             }
         };
-        _log "done waiting, loop again." if $conf{verbose};
+        _log "done waiting, restarting again." if $conf{verbose};
     }
 }
 
@@ -403,10 +405,16 @@ sub run_cmd {
         my ($code,$stash) = ($msg->{code}, $msg->{stash});
         my $ret = eval $code;
         #die $@ if $@;
-        return $ret;
+        return $@ || $ret;
     }
     elsif( $cmd eq 'put_file' ) {
-        open my $ff, '>:raw', $msg->{filepath};
+        _log "writing file: $msg->{filepath}" if $conf{verbose};
+        open my $ff, '>:raw', $msg->{filepath} or do{
+            my $msg = "error writing file `$msg->{filepath}`: $!" ;
+            _log $msg;
+            $? = -1;
+            return { error=>$msg };
+        };
         my $key = "queue:$id_msg:file";
         my $k = 1;
         while( my $chunk = $redis->blpop( $key, $timeout_file ) ) {
@@ -415,11 +423,19 @@ sub run_cmd {
             #print $ff join '', pack 'H*', $chunk->[1]; #decode_base64( $chunk->[1] );
         }
         close $ff;
+        _log "done writing file: $msg->{filepath}" if $conf{verbose};
         my $stat = stat $msg->{filepath};
+        $? = 0;
         return { stat => $stat };
     }
     elsif( $cmd eq 'get_file' ) {
-        open my $ff, '<:raw', $msg->{filepath};
+        open my $ff, '<:raw', $msg->{filepath} or do{
+            my $msg = "error reading file `$msg->{filepath}`: $!" ;
+            _log $msg;
+            $? = -1;
+            return { error=>$msg };
+        };
+
         my $chunk = '';
         my $bytes = 0;
         while( sysread $ff, $chunk, $chunk_size ) {
@@ -427,6 +443,7 @@ sub run_cmd {
             $bytes += length( $chunk );
         }
         close $ff;
+        $? = 0;
         return $bytes;
     }
     elsif( $cmd eq 'ping' ) {
@@ -487,7 +504,7 @@ examples:
 
     cla-worker start --server 192.168.1.2:6379 
     cla-worker stop 
-    curl -fsL http://vasslabs.com/downloads/cla-worker | perl - start --server 192.168.1.2:6379 --id centos
+    curl -fsL http://clarive.com/downloads/cla-worker | perl - start --server 192.168.1.2:6379 --id centos
     
 };
 }
@@ -512,7 +529,7 @@ q{
     88888888  888888888888      888  88      888  88      8888       888888888 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Clarive Worker v6.1 - Copyright (c) 2013 vasslabs.com
+Clarive Worker v6.2 - Copyright (c) 2015 clarive.com
 
 }
 }

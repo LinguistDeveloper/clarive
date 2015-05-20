@@ -21,12 +21,16 @@ has queue => qw(is ro lazy 1), default => sub {
     Redis->new;
 };
 
+has error => qw(is rw isa Any), default=>'';
+
 has_array 'destroy_list';
 
 has chunk_size => qw(is ro lazy 1), default => sub{ 64 * 1024 }; # 64K
 has timeout_file => qw(is ro default 10);  # if we don't get blpop stuff in x seconds, the file is done - careful with large chunk_sizes, may take more
 has wait_frequency => qw(is rw default 5);
 has cap_wait => qw(is rw default 2);   # how long to wait for worker responses
+
+has throw_errors => qw(is rw isa Bool default 1);
 
 with 'Baseliner::Role::CI::Agent';
 
@@ -75,7 +79,17 @@ method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data
                         MIME::Base64::encode_base64( substr($data,$pos,$chunk_size) ) );
                 }
             }
-        }
+        },
+        done => sub {
+           my ($msg_id, $res ) = @_;
+           my $ret = $res->{ret} || {};
+           $self->output( $res->{output} );
+           $self->ret( $ret );
+           $self->rc( $ret->{rc} || $res->{rc} );
+           $self->error( $ret->{error} ) if $ret->{error};
+           $self->_throw_on_error;
+           return $ret;
+        },
     );
 }
 
@@ -162,13 +176,23 @@ method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
                 print $ff MIME::Base64::decode_base64( $chunk->[1] );
             }
             close $ff;
-        }
+        },
+        done => sub {
+           my ($msg_id, $res ) = @_;
+           my $ret = $res->{ret} || {};
+           $self->output( $res->{output} );
+           $self->ret( $ret );
+           $self->rc( $ret->{rc} || $res->{rc} );
+           $self->error( $ret->{error} ) if $ret->{error};
+           $self->_throw_on_error;
+           return $ret;
+        },
     );
 }
 
 method file_exists( $file_or_dir ) {
-    $self->execute( 'test', '-r', $file_or_dir ); # check it exists
-    return !$self->rc; 
+    $self->remote_eval(q{-e $stash->{file}}, { file=>$file_or_dir }); # check it exists
+    return $self->ret; 
 }
 
 =head2
@@ -222,17 +246,27 @@ sub chmod {
 
 sub chown {
     my ($self,$perm,@files)=@_;
-    $self->execute( 'chown', $perm, @files );
+    if( $self->_os eq 'win' ) {
+        $self->execute( 'cacls', $perm, @files );
+    } else {
+        $self->execute( 'chown', $perm, @files );
+    }
     return $self->tuple;
 }
 
-sub error {}
 sub get_dir {}
 sub mkpath {}
 sub rmpath {}
 
 sub _msgid {
     Data::UUID->new->create_from_name_b64( 'clarive', 'worker-agent');
+}
+
+sub _os {
+    my $self = shift;
+    my $os = $self->remote_eval( '$^O' )  =~ /win/i ? 'win' : 'unix';
+    $self->os( $os );
+    return $os;
 }
 
 sub remote_eval {
