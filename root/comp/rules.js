@@ -520,7 +520,7 @@
             win.close(); 
         }});
         var tbar = [ '->', 
-            { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
+            { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
             btn_save_meta ];
         opts.doLayout();
         de.doLayout();

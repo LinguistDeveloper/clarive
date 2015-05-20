@@ -120,7 +120,7 @@
                          return deg2rad(config.minAngle);
                      })
                      .endAngle(function(d, i) {
-                         console.log("Arc "+ d + " "+ i);
+                         // console.log("Arc "+ d + " "+ i);
                          return deg2rad(config.minAngle + (d * range));
                      });
              }

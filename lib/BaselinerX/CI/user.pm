@@ -17,6 +17,7 @@ has dashboard           => qw(is rw isa Any);
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
 has prefs      => qw(is rw isa HashRef), default => sub { +{} };
+has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
 
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1, 
 default=>sub{ [ Util->_array(Baseliner->config->{default_lang} // 'en') ] });
@@ -149,6 +150,28 @@ method has_action( $action ) {
 method roles( $username=undef ) {
     return grep { defined } map { $$_{id} } 
         Baseliner->model('Permissions')->user_roles( ref $self ? $self->username : $username );
+}
+
+method save_dashlet_config ( :$username=undef, :$data, :$id_dashlet) {
+
+    my $user = ci->user->search_ci( name => $username );
+
+    if ( $user ) {    
+        $user->dashlet_config->{$id_dashlet} = $data; 
+        $user->save;
+    }
+    { ok => \1, data => $data, msg => _loc('Dashlet config saved') }
+}
+
+method remove_dashlet_config ( :$username=undef, :$id_dashlet) {
+
+    my $user = ci->user->search_ci( name => $username );
+
+    if ( $user ) {    
+        delete $user->dashlet_config->{$id_dashlet}; 
+        $user->save;
+    }
+    { ok => \1, msg => _loc('Dashlet config saved') }
 }
 
 1;
