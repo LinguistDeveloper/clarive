@@ -346,14 +346,14 @@
         var store_fields = new Baseliner.JsonStore({
             url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
             fields:['id','rule_name'],
-            baseParams: Ext.apply({ rule_type: 'fieldlets' }),
+            baseParams: Ext.apply({ rule_type: 'form' }),
         });
 
         var combo_fields =new Baseliner.SuperBox({ 
             name: 'default_field',
             id: 'default_field',
             hiddenName: 'default_field',
-            fieldLabel: _("Fieldlets"), 
+            fieldLabel: _("Form"), 
             valueField: 'id',
             displayField: 'rule_name',
             value: rec ? rec.data.default_field : '',

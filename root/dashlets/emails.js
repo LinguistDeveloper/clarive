@@ -18,7 +18,6 @@ my $iid = Util->_md5;
         html = html + '       <tbody>';
 
         Ext.each(res.data, function(msg) {
-            console.log(msg.subject)
             html = html + '            <tr>';
             html = html + '                <td class="title-html" title="'+ msg.subject +'"><b><a href="javascript:Baseliner.addNewTabComp(\'/message/inbox\' );">'+ msg.subject +'</a></b></td>';
             html = html + '                <td class="sent-html">'+ msg.sent +'</td>';

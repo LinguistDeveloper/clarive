@@ -1271,11 +1271,12 @@ sub get_meta {
     my $field_order = 0;
     my @system_fields = Baseliner->registry->starts_with( "fieldlet.required" );
     foreach my $sys_field (@system_fields){
-        my $res;
         my $fieldRegistry = Baseliner->registry->get($sys_field);
-        $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id};
-        map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-        $res->{params}->{field_order} = $field_order;
+        my $reg_params = $fieldRegistry->{registry_node}{param};
+        my $res = {};
+        $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
+        $res->{id_field} = $reg_params->{id};
+        $res->{params}{field_order} = $field_order;
         $field_order++;
         push @cat_fields, $res;
     }
@@ -1287,19 +1288,16 @@ sub get_meta {
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
         $cr->run(stash=>$stash);
         @fieldlets = _array $stash->{fieldlets};
+        # now merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
         foreach my $fieldlet (@fieldlets){
-            my $res;
+            my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
             my $fieldType = $fieldlet->{fieldletType};
             my $fieldRegistry;
-            try {
+            try { 
                 $fieldRegistry = Baseliner->registry->get( $fieldType );
-                foreach my $field (keys $fieldlet){
-                    $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
-                }
-                $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
-                map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-                $res->{params}->{field_order} = $field_order;
-                $field_order++;
+                my $reg_params = $fieldRegistry->{registry_node}{param};
+                $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
+                $res->{params}{field_order} = $field_order++;
                 push @cat_fields, $res;
             } catch {
                 _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;

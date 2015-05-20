@@ -55,6 +55,14 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
     has registor_key => ( is => 'rw', isa => 'Str' ), default=>'';
     has actions  => ( is => 'rw', isa => 'ArrayRef' );  # TODO deprecated
     has all_actions  => ( is => 'rw', isa => 'HashRef' );   # my actions, parent actions, etc. (cache)
+
+    sub raw {
+        my $self = shift;
+        my $raw = {};
+        my $param = $self->param;
+        $raw->{$_} = $param->{$_} for grep !/^registry_node$/, keys $param;
+        return $raw;
+    }
 }	
 
 sub registors {

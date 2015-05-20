@@ -52,7 +52,7 @@
                   [ 'webservice', _('Webservice') ],
                   [ 'independent', _('Independent') ],
                   [ 'dashboard', _('Dashboard') ],
-                  [ 'fieldlets', _('Fields') ]
+                  [ 'form', _('Form') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
                allowBlank: false
@@ -94,7 +94,7 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else if( v == 'fieldlets' || v == 'dashboard' ) {
+        } else if( v == 'form' || v == 'dashboard' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();

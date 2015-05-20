@@ -174,7 +174,7 @@
             v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         var type = rec.data.rule_type;
         var icon = type=='dashboard' ? IC('dashboard') 
-                : type=='fieldlets' ? IC('form') 
+                : type=='form' ? IC('form') 
                 : type=='event' ? IC('event') 
                 : type=='report' ? IC('report') 
                 : type=='chain' ? IC('job') 
@@ -233,7 +233,8 @@
                 { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
                 { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
             ]}
-        ]
+        ],
+
     });
     rules_store.load();
     
@@ -250,7 +251,7 @@
                     if( tab_arr.length > 0 ) {
                         tabpanel.setActiveTab( tab_arr[0] );
                     } else {
-                        rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts, rec.icon );
+                        rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts, rec.icon);
                     }
                 }
             }
@@ -589,23 +590,31 @@
                 Baseliner.error( _('Error'), res.msg );
             }
         });
-    };    
+    }; 
 
     var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type, old_ts, icon ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
             var n2 = e.target;
-            if( n1 == undefined || n2 == undefined ) return false;
             var attr1 = n1.attributes;
             var attr2 = n2.attributes;
+            if( n1 == undefined || n2 == undefined ) return false;
             if( attr1.palette ) {
-                console.log(attr1);
                 if( attr1.holds_children ) {
                     attr1.leaf = false;
                 } 
                 var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
+                copy.attributes.id = Cla.id('rule');
                 copy.attributes.palette = false;
-                copy.setText( copy.attributes.name );  // keep original node text name
+                if (/fieldlet./.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
+                    var name_field = prompt(_('Name'));
+                    if (!name_field) { return false };
+                    var id_field = Baseliner.name_to_id( name_field );
+                    copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
+                    copy.setText( name_field );  // keep original node text name
+                }else {
+                    copy.setText( copy.attributes.name );  // keep original node text name
+                }
                 if( !copy.attributes.data ) copy.attributes.data={};
                 if( copy.attributes.on_drop_js ) {
                     try {
@@ -617,8 +626,6 @@
                     }
                 }
                 //n2.getOwnerTree().is_dirty = true;
-                copy.attributes.id = Cla.id('rule');
-                console.log(copy);
                 e.dropNode = copy;
             }
             return true;
@@ -840,6 +847,7 @@
                 }
             }
         });
+
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
@@ -856,6 +864,18 @@
             loader: rule_tree_loader,
             listeners: {
                 beforenodedrop: { fn: drop_handler },
+                // beforenodedrop: function(object){
+                    // var data = object.data;
+                    // Ext.Msg.prompt(_('Name'), _('Save as:'), function(btn, text){
+                    //     if (btn == 'ok'){
+                    //         alert("ok!" + text);
+                    //     }
+                    // });
+
+                    // object.dropNode.attributes.name = "JOEEEEEEEE";
+                    // console.log(object.dropNode.attributes);
+                    // drop_handler(object);
+                // },
                 contextmenu: menu_click
             },
             rootVisible: true,
@@ -878,6 +898,7 @@
                 id: 'root', 
                 icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
         });
+       
         rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
         rule_tree.on('movenode', rule_tree.make_dirty );
         rule_tree.on('nodedrop', rule_tree.make_dirty );

@@ -11,7 +11,7 @@
     $val = join( ',', @$val ) if ref $val eq 'ARRAY';
     my $hidden = $meta->{hidden} eq '0' ? 0 : 1;
 </%perl>
-% if( length($val) && not $hidden ) {  # This is the 'Status' right column field:
+% if( length($val) && !$hidden ) {  # This is the 'Status' right column field:
     <tr>
       <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 

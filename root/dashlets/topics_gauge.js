@@ -10,11 +10,13 @@
     var date_field_start = params.data.date_field_start;
     var date_field_end = params.data.date_field_end;
     var numeric_field = params.data.numeric_field;
+    var start = params.data.start;
+    var end = params.data.end;
 
     var green = params.data.green || 10;
     var yellow = params.data.yellow || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { start: start, end: end, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
               c3.generate({
                 bindto: '#'+id,
                 data: {
