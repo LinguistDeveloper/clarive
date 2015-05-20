@@ -22,6 +22,7 @@ Ext.namespace('Ext.ux.panel');
  * @version 2.0.1 (Jan 11, 2013)
  */
 Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
+    block_first_tab: false,
     constructor: function (config) {
         if (config) {
             Ext.apply(this, config);
@@ -85,8 +86,9 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
         this.tabPanel.arrow.hide();
         // Create a drop target for this tab panel
         var tabsDDGroup = this.tabPanel.ddGroupId;
+
         this.dd = new Ext.ux.panel.DraggableTabs.DropTarget(this, {
-            ddGroup: tabsDDGroup
+            ddGroup: tabsDDGroup, block_first_tab: this.block_first_tab
         });
 
         // needed for the onRemove-Listener
@@ -158,9 +160,13 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
             }
         });
 
-        /*if( index == 0 && tab.title == "Dashboard"){
+       
+        //disable dragging in tab1:
+       if( index == 0){
             tab.disableTabDrag();
-        }*/
+
+        }
+
 
         // Initial dragging state
         if (tab.allowDrag) {
@@ -220,6 +226,7 @@ Ext.preg('draggabletabs', Ext.ux.panel.DraggableTabs);
 // Implements the drop behavior of the tab panel
 /** @private */
 Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
+    block_first_tab: false,
     constructor: function (dd, config) {
         this.tabpanel = dd.tabPanel;
         // The drop target is the tab strip wrap
@@ -230,7 +237,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         var tabs = this.tabpanel.items;
         var last = tabs.length;
 
-        if (!e.within(this.getEl()) || dd.dropEl == this.tabpanel) {
+        if (!e.within(this.getEl()) || dd.dropEl == this.tabpanel ) {
             return 'x-dd-drop-nodrop';
         }
 
@@ -242,7 +249,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         var left, prevTab, tab;
         var eventPosX = e.getPageX();
 
-        for (var i = 0; i < last; i++) {
+        for (var i = this.block_first_tab?1:0; i < last; i++) {
             prevTab = tab;
             tab = tabs.itemAt(i);
             // Is this tab target of the drop operation?
@@ -265,11 +272,11 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
             left = (new Ext.Element(dom).getX() + dom.clientWidth) + 3;
         }
 
-       /*else if (tab == dd.dropEl ) {
+       else if (tab == dd.dropEl && prevTab == tabs.itemAt(1) ) {
             this.tabpanel.arrow.hide();
             return 'x-dd-drop-nodrop';
         }
-
+/*
         else if (tab == dd.dropEl || prevTab == dd.dropEl || prevTab == tabs.itemAt(-1)) {
             this.tabpanel.arrow.hide();
             return 'x-dd-drop-nodrop';
@@ -336,7 +343,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         var dragLeft=true;
 
 //blocking drag&drop for dashboard tab:
-        for(var i = 0; i < tabs.length; i++){            
+        for(var i = this.block_first_tab?1:0; i < tabs.length; i++){            
             var tab = tabs.itemAt(i);
 
             if( dd.dropEl.id==tab.id ){

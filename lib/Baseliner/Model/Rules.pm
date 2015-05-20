@@ -234,7 +234,7 @@ sub tree_format {
             $n->{children} = \@chi;
             $n->{leaf} = \0;
             $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
-        } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
+        } elsif( ($n->{leaf} && $n->{leaf} eq 'false') ||(! ${$n->{leaf} // \1}) ) {  # may be a folder with no children
             $n->{children} = []; 
             $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         }
