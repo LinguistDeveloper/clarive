@@ -154,11 +154,19 @@ sub init : Local {
     my $dashlets = $$stash{dashlets} // [];
 
     my $k = 1;
+    my $user_config = ci->user->search_ci( name => $c->username )->dashlet_config;
+# _warn $user_config;
+
     $dashlets = [ map{ 
         $$_{order} = $k++;
         # merge default data with node
         if( $$_{key} && (my $reg = $c->registry->get($$_{key})) ){
-            $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
+            $$_{data_orig} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
+            if ( keys %$user_config && keys %{$user_config->{$$_{id}}} ) {
+                $$_{data} = +{ %{ $reg->{data} || {} }, %{ $user_config->{$$_{id}} || {} } } ;
+            } else {
+                $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
+            }
             $$_{js_file} = $reg->{js_file}; # overwrite important stuff
             $$_{form} = $reg->{form}; # overwrite important stuff
         }
@@ -166,7 +174,7 @@ sub init : Local {
     } _array($dashlets) ];
 
     ## TODO merge user configurations to dashlets
-    _debug( $dashlets );
+    # _debug( $dashlets );
 
     # now list the dashboards for user
     #my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
@@ -895,7 +903,6 @@ sub topics_gauge: Local {
             push @data, $topic->{res_time};
             $max = $topic->{res_time} if $topic->{res_time} > $max;
             $min = $topic->{res_time} if $topic->{res_time} < $min;        
-            _warn 'En field_mode';
         } elsif ( $end_remaining eq 'on' ) {
             my $date_end = Class::Date->new($topic->{$date_field_end});
             my $now = Class::Date->now();

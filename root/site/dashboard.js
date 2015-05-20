@@ -13,6 +13,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
     },
     init : function(){
         var self = this;
+        self.dashlets = {};
         var id_class = 'dashboard-' + self.body.id;
         var dashlet_tpl_bootstrap=function(){/*            
             <div class="span[%= dashlet.data.columns || 24 %]" style='padding-top:5px'>
@@ -37,7 +38,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             </div>
         */};
         var dashlet_tpl=function(){/*            
-            <td rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;'>
+            <td id="[%= id_div %]_td" rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;'>
               <div style='width: 100%;background-color: #FFF;border-radius: 25px;'>
                 <div style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
                     <table width='100%'>
@@ -47,7 +48,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                             </td>
                             <td style='font-weight:bold;'>
                                 <div id="[%= id_div %]_update" style='color:#BBB;width: 100%;padding:3px;text-align:center;font-size: 75%;'>
-                                        (Updated: [%= last_update %])
+                                        [%= last_update %]
                                 </div>
                             </td>
                             <td id="[%= id_div %]_icons" style='text-align:right;'>
@@ -64,16 +65,8 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             <script>
                 if ( "[%= autorefresh %]" != "0" ) {
                     setInterval(function () {
-                        var div = document.getElementById("[%= id_div %]");
-                        if ( div && div.offsetWidth > 0 && div.offsetHeight > 0 ) {
-                            div.innerHTML= "<img src=/static/images/loading.gif />";
-                            Cla.ajaxEval("[%= js_file %]", { id_div: "[%= id_div %]", data: [%= data %] }, function(){
-                                var update = document.getElementById("[%= id_div %]_update");
-                                var now = new moment();
-                                var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
-                                update.innerHTML=last_update;
-                            });
-                        };
+                        var obj = Ext.getCmp("[%= id_cmp %]");
+                        if( obj ) obj.refresh_dashlet("[%= id_dashlet %]", true);
                     }, [%= autorefresh %]);
                 };
             </script>
@@ -95,56 +88,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             var rows = new Array();
             Ext.each( res.dashlets, function(dashlet){
                 if ( !rows[cont] ) rows.push(0);
-                console.log(dashlet.id);
-                var buttons_tpl_with_config = function(){/*
-                    <img style='cursor:pointer' 
-                        src='/static/images/icons/config.gif' 
-                        onClick='javascript:
-                            var form = new Baseliner.FormPanel({ 
-                                frame: false, forceFit: true, defaults: { msgTarget: "under", anchor:"100%" },
-                                labelWidth: 150,
-                                width: 800, height: 600,
-                                labelAlign: "right",
-                                autoScroll: true,
-                                tbar: [
-                                    "->",
-                                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ form.destroy() } },
-                                    { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
-                                ],
-                                bodyStyle: { padding: "4px", "background-color": "#fff" }
-                            });
-                            var win = new Baseliner.Window(Ext.apply({
-                                layout: "fit",
-                                title: _("Configure"),
-                                items: form
-                            }));
-
-                            win.show(win);
-                        '
-                    />
-                    <img style='cursor:pointer' 
-                         src='/static/images/icons/refresh.gif' 
-                         onClick='javascript:
-                            var div = document.getElementById("[%= id_div %]");
-                            div.innerHTML= "<img src=/static/images/loading.gif />";
-                            Cla.ajaxEval("[%= js_file %]", { id_div: "[%= id_div %]", data: [%= data %] }, function(){});
-                         '
-                    />
-                */};
                 var buttons_tpl = function(){/*
                     <img style='cursor:pointer' 
-                         src='/static/images/icons/refresh.gif' 
-                         onClick='javascript:
-                            var div = document.getElementById("[%= id_div %]");
-                            div.innerHTML= "<img src=/static/images/loading.gif />";
-                            Cla.ajaxEval("[%= js_file %]", { id_div: "[%= id_div %]", data: [%= data %] }, function(){
-                                var update = document.getElementById("[%= id_div %]_update");
-                                var now = new moment();
-                                var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
-                                update.innerHTML=last_update;
-                            });
-                         '
+                        src='/static/images/icons/config.gif' 
+                        onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.show_config("[%= id_dashlet %]")'
                     />
+                    <img style='cursor:pointer' 
+                         src='/static/images/icons/refresh.gif' 
+                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' />
                 */};
                 var id_div = Ext.id();
                 var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
@@ -171,23 +122,97 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 }
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
-                html += dashlet_tpl.tmpl({ autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, data:Ext.util.JSON.encode( dashlet.data ), js_file: dashlet.js_file, rowspan: dashlet.data.rows, colspan: dashlet.data.columns, dashlet: dashlet, id_div: id_div });
+                dashlet.id_div = id_div;
+                html += dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
+                    id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
+                    colspan: dashlet.data.columns, 
+                    dashlet: dashlet, id_div: id_div });
                 Cla.ajaxEval(dashlet.js_file, { id_div: id_div, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
                     icons.innerHTML = buttons_tpl.tmpl({
-                        js_file: dashlet.js_file,
-                        form: dashlet.form,
-                        id_div:id_div,
-                        data:Ext.util.JSON.encode( dashlet.data ),
-                        last_update: last_update 
+                        id_dashlet : dashlet.id,
+                        id_cmp     : self.id
                     });
                 });
+                self.dashlets[ dashlet.id ] = dashlet; 
             });
             $('.'+id_class).append(html+"</div>");
+        });
+        self.on('resize', function(){
+            for(var id_dashlet in self.dashlets) {
+                self.refresh_dashlet(id_dashlet);
+            };
         });
     },
     refresh_tab : function(){
         return new Cla.Dashboard(this);
+    },
+    refresh_dashlet : function(id_dashlet, check_visible) {
+        var self = this;
+        var dashlet = self.dashlets[ id_dashlet ];
+        var div = document.getElementById(dashlet.id_div);
+        if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
+        div.innerHTML= "<img src=/static/images/loading.gif />";
+        Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, data: dashlet.data }, function(){
+            var update = document.getElementById(dashlet.id_div + "_update");
+            var now = new moment();
+            var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
+            update.innerHTML=last_update;
+        });
+    },
+    show_config : function(id_dashlet){
+        var self = this;
+        var dashlet = self.dashlets[ id_dashlet ];
+        
+        Baseliner.ajaxEval( dashlet.form, { data: dashlet.data }, function(comp){
+
+            var save_form = function(){
+                form.data = form.getValues();
+
+                Baseliner.ci_call('user', 'save_dashlet_config', { data: form.data, id_dashlet:id_dashlet}, function(res){
+                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    win.close();
+                    self.dashlets[ id_dashlet ].data = res.data;
+                    self.refresh_dashlet(id_dashlet);
+                });
+
+                win.destroy();
+            };
+
+            var restore_originals = function(){
+                Baseliner.ci_call('user', 'remove_dashlet_config', {id_dashlet:id_dashlet}, function(res){
+                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    win.close();
+                    self.dashlets[ id_dashlet ].data = dashlet.data_orig;
+                    self.refresh_dashlet(id_dashlet);
+                });
+
+                win.destroy();
+            };
+
+            var form = new Baseliner.FormPanel({ 
+                frame: false, forceFit: true, defaults: { msgTarget: "under", anchor:"100%" },
+                labelWidth: 150,
+                width: 800, height: 600,
+                labelAlign: "right",
+                autoScroll: true,
+                tbar: [
+                    "->",
+                    { xtype:"button", text:_("Restore originals"), icon:"/static/images/icons/left.png", handler: function(){ restore_originals() } },
+                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ win.destroy() } },
+                    { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
+                ],
+                bodyStyle: { padding: "4px", "background-color": "#fff" },
+                items: comp
+            });
+
+            var win = new Baseliner.Window(Ext.apply({
+                layout: "fit",
+                title: _("Configure"),
+                items: form
+            }));
+            win.show();
+        });
     }
 });
 
@@ -212,4 +237,3 @@ Cla.dashlet_common = (function(params){
 
     ];
 });
-
