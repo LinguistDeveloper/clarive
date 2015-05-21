@@ -36,8 +36,8 @@ sub activity_to_status_changes {
       $st{$act->{mid}} = $initials{$cat_initial{$category_name}};
       $status_changes->{$initials{$cat_initial{$category_name}}}->{count} = 1;
       $status_changes->{$initials{$cat_initial{$category_name}}}->{total_time} = 0;
-      $status_changes->{transitions} = [{ from => '', ts => $act->{ts} }];
-      $status_changes->{last_transition} = { from => '', ts => $act->{ts} };
+      $status_changes->{transitions} = [{ from => '', to => $cat_initial{$category_name}, ts => $act->{ts} }];
+      $status_changes->{last_transition} = { from => '', to => $cat_initial{$category_name}, ts => $act->{ts} };
       mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
       if ( ($cont % 100) == 0 ) {
         _log "Creation: Updated $cont/$total";
@@ -57,28 +57,22 @@ sub activity_to_status_changes {
       next if !$doc;
 
       if ( $status_changes->{$st{$act->{mid}}} ) {
-          my $last = Class::Date->new($status_changes->{last_transition}->{ts});
-          my $ts = Class::Date->new($act->{ts});
-          my $rel =  $ts - $last;
-          $status_changes->{$st{$act->{mid}}}->{total_time} = $status_changes->{$st{$act->{mid}}}->{total_time} + $rel->second;
-          delete $status_changes->{last_transition};
-          my @transitions = _array($status_changes->{transitions});
-          push @transitions, { to => _name_to_id($act->{vars}->{status}), ts => $act->{ts} };
-          $status_changes->{transitions} = \@transitions;
+        my $last = Class::Date->new($status_changes->{last_transition}->{ts});
+        my $ts = Class::Date->new($act->{ts});
+        my $rel =  $ts - $last;
+        $status_changes->{$st{$act->{mid}}}->{total_time} = $status_changes->{$st{$act->{mid}}}->{total_time} + $rel->second;
       }
 
       if ( $status_changes->{_name_to_id($act->{vars}->{status})} ) {
-          $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = $status_changes->{_name_to_id($act->{vars}->{status})}->{count} + 1;
-          my @transitions = _array($status_changes->{transitions});
-          push @transitions, { from => $st{$act->{mid}}, ts => $act->{ts} };
-          $status_changes->{transitions} = \@transitions;
-          $status_changes->{last_transition} = { from => $st{$act->{mid}}, ts => $act->{ts} };
+        $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = $status_changes->{_name_to_id($act->{vars}->{status})}->{count} + 1;
       } else {
         $status_changes->{_name_to_id($act->{vars}->{status})}->{count} = 1;
         $status_changes->{_name_to_id($act->{vars}->{status})}->{total_time} = 0;
-        $status_changes->{transitions} = [{ from => '', ts => $act->{ts} }];
-        $status_changes->{last_transition} = { from => '', ts => $act->{ts} };
       }
+      my @transitions = _array($status_changes->{transitions});
+      push @transitions, { to => _name_to_id($act->{vars}->{status}), from => $st{$act->{mid}}, ts => $act->{ts} };
+      $status_changes->{transitions} = \@transitions;
+      $status_changes->{last_transition} = { to => _name_to_id($act->{vars}->{status}), from => $st{$act->{mid}}, ts => $act->{ts} };
 
       mdb->topic->update({ mid => "$act->{mid}"},{ '$set' => { '_status_changes' => $status_changes} });
       $st{$act->{mid}} = _name_to_id($act->{vars}->{status});

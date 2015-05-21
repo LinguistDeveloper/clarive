@@ -524,6 +524,135 @@ sub topics_by_category: Local {
     $c->forward('View::JSON'); 
 }
 
+sub topics_by_field: Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    my (@topics_by_category, $colors, @data );
+    my $group_threshold = $p->{group_threshold};
+    my $group_by = $p->{group_by};
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+    my $condition = {};
+
+    if ( $group_by eq 'topics_by_category') {
+        $group_by = 'category.name';
+    } elsif ( $group_by eq 'topics_by_status') {
+        $group_by = 'category_status.name';
+    }
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+
+        }
+    }
+
+    my $where = $condition;
+    if ( $statuses ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( $categories ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    $where->{'category.id'} = mdb->in(@user_categories);
+
+    @topics_by_category = _array(mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { 
+            _id => '$'.$group_by, 
+            'field' => {'$max' => '$'.$group_by},
+            'category_color' => {'$max' => '$category.color'}, 
+            'status_color' => {'$max' => '$category_status.color'}, 
+            'total' => { '$sum' => 1 },
+            'topics_list' => { '$push' => '$mid'}
+          } 
+        },
+        { '$sort' => { total => -1}}
+    ]));
+    
+    my $total = 0;
+    my $topics_list;
+    map { $total += $_->{total} } @topics_by_category;
+    my $others = 0;
+    my @other_topics = ();
+    my $ci_colors = cache->get('ci::colors');
+
+    foreach my $topic (@topics_by_category){
+
+        my $name = $topic->{field};
+
+        if ( $topic->{total}*100/$total <= $group_threshold ) {
+            $others += $topic->{total};
+            push @other_topics, _array($topic->{topics_list});
+        } else {
+            if ( Util->is_number($topic->{field}) ) {
+                try {
+                    $name = mdb->master->find_one({mid=>"$topic->{field}"})->{name};#ci->new($topic->{field})->name;
+                } catch {
+
+                };
+            } elsif ( ref $topic->{field} ) {
+                my ($val) = _array($topic->{field});
+                try {
+                    $name = mdb->master->find_one({mid=>"$val"})->{name};#ci->new($val)->name;
+                } catch {
+
+                };                
+            };
+            push @data, [
+                $name,$topic->{total}
+            ];
+            $topics_list->{$name} = $topic->{topics_list};
+        }
+        my $color;
+        if ( $group_by eq 'category.name' ) {
+            $color = $topic->{category_color};
+        } elsif ( $group_by eq 'category_status.name' ) {
+            $color = $topic->{status_color};
+        } else {
+            if ( $ci_colors->{$name} ) {
+                $color = $ci_colors->{$name};
+            } else {
+                $color = sprintf "#%06X", rand(0xffffff);
+                $ci_colors->{$name} = $color;
+                cache->set('ci::colors',$ci_colors);
+            }
+        }
+        $colors->{$name} = $color;
+    }
+    if ( $others ) {
+        push @data, [
+            _loc('Other'),$others
+        ];                    
+        $topics_list->{_loc('Other')} = \@other_topics;
+        $colors->{_loc('Other')} = "#DDDDDD";
+    }
+    $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
+    $c->forward('View::JSON'); 
+}
+
 sub topics_by_status: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;

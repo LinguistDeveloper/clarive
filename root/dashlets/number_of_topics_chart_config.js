@@ -25,16 +25,23 @@
                 {boxLabel: _('Bar'), inputValue: 'bar', checked: data.type == 'bar'}
             ]
         },
-        {
-            xtype: 'radiogroup',
-            name: 'group_by',
-            anchor:'50%',
-            fieldLabel: _('Number of topics grouped by ...'),
-            defaults: {xtype: "radio",name: "group_by"},
-            items: [
-                {boxLabel: _('Category'), inputValue: 'topics_by_category', checked: data.group_by  == 'topics_by_category'},
-                {boxLabel: _('Status'), inputValue: 'topics_by_status', checked: data.group_by == undefined || data.group_by == 'topics_by_status'}
-            ]
-        }
+        new Baseliner.ComboSingle({ forceSelection: false, allowBlank: false, fieldLabel: _('Select or type the grouping field'), editable: true, name: 'group_by', value: data.group_by || 'category.name', data: [
+            ['category.name'],
+            ['category_status.name'],
+            ['created_by'],
+            ['modified_by']
+          ] 
+        })
+        // {
+        //     xtype: 'radiogroup',
+        //     name: 'group_by',
+        //     anchor:'50%',
+        //     fieldLabel: _('Number of topics grouped by ...'),
+        //     defaults: {xtype: "radio",name: "group_by"},
+            // items: [
+            //     {boxLabel: _('Category'), inputValue: 'topics_by_category', checked: data.group_by  == 'topics_by_category'},
+            //     {boxLabel: _('Status'), inputValue: 'topics_by_status', checked: data.group_by == undefined || data.group_by == 'topics_by_status'}
+            // ]
+        // }
     ]);
 })

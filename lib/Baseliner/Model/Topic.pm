@@ -1855,7 +1855,7 @@ sub save_doc {
     
     # expanded data
     $self->update_category( $doc, $ci_topic->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) );
-    $self->update_category_status( $doc, $ci_topic->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $ci_topic->{modified_on} );
+    $self->update_category_status( $doc, $ci_topic->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $ci_topic->{modified_on}, 0 );
 
     # detect modified fields
     require Hash::Diff;
@@ -2014,7 +2014,7 @@ sub update_category {
 
 # update status in mongo
 sub update_category_status {
-    my ($self, $mid_or_doc, $id_category_status, $username, $modified_on ) = @_; 
+    my ($self, $mid_or_doc, $id_category_status, $username, $modified_on, $update_change_status ) = @_; 
     my $doc =
         ref $mid_or_doc
         ? $mid_or_doc
@@ -2045,27 +2045,31 @@ sub update_category_status {
     $d->{closed_on} = $modified_on if ( $category_status->{type} =~ /^F/ );
 
     ### Update topic change status statistics
-    my $status_changes = $doc->{_status_changes};
-    my $now = Class::Date->now();
+    if ($update_change_status) {
+        my $status_changes = $doc->{_status_changes};
 
-    if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
-        my $last = Class::Date->new($status_changes->{last_transition}->{ts});
-        my $rel = $now - $last;
-        $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
+        my $now = Class::Date->now();
+
+        if ( $status_changes->{_name_to_id($doc->{category_status}->{name})} ) {
+            my $last = Class::Date->new($status_changes->{last_transition}->{ts});
+            my $rel = $now - $last;
+            $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} = $status_changes->{_name_to_id($doc->{category_status}->{name})}->{total_time} + $rel->second;
+        }
+
+        if ( $status_changes->{_name_to_id($$category_status{name})} ) {
+            $status_changes->{_name_to_id($$category_status{name})}->{count} = $status_changes->{_name_to_id($$category_status{name})}->{count} + 1;
+        } else {
+            $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
+            $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
+        }
+        my @transitions = _array($status_changes->{transitions});
+        push @transitions, { to=> _name_to_id($$category_status{name}), from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+        $status_changes->{transitions} = \@transitions;
+        $status_changes->{last_transition} = { to=> _name_to_id($$category_status{name}), from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
+
+        $d->{_status_changes} = $status_changes;
     }
-
-    if ( $status_changes->{_name_to_id($$category_status{name})} ) {
-        $status_changes->{_name_to_id($$category_status{name})}->{count} = $status_changes->{_name_to_id($$category_status{name})}->{count} + 1;
-    } else {
-        $status_changes->{_name_to_id($$category_status{name})}->{count} = 1;
-        $status_changes->{_name_to_id($$category_status{name})}->{total_time} = 0;
-    }
-    my @transitions = _array($status_changes->{transitions});
-    push @transitions, { to=> _name_to_id($$category_status{name}), from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
-    $status_changes->{transitions} = \@transitions;
-    $status_changes->{last_transition} = { to=> _name_to_id($$category_status{name}), from => _name_to_id($doc->{category_status}->{name}), ts => ''.Class::Date->now() };
-
-    $d->{_status_changes} = $status_changes;
+    
     if( !ref $mid_or_doc ) {
         # save back to mongo
         mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$d });
@@ -2987,7 +2991,7 @@ sub change_status {
                 # update mongo
                 #my $modified_on = $doc->{modified_on};
                 my $modified_on = mdb->ts;
-                $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
+                $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on, 1 );
                 
                 $self->cache_topic_remove( $mid );
             }

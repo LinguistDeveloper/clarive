@@ -74,6 +74,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         */};
         Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
+                <style>
+                    img:hover {
+                        opacity: 1.0;
+                        filter: alpha(opacity=100);
+                    }
+                </style>
                  <div id="boot" class="[%= id_class %]" style="width: 100%">
                  </div>
             */}.tmpl({ id_class: id_class, dashboards: res.dashboards }));
@@ -89,11 +95,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             Ext.each( res.dashlets, function(dashlet){
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = function(){/*
-                    <img style='cursor:pointer' 
+                    <img style='cursor:pointer;opacity: 0.4;' 
                         src='/static/images/icons/config.gif' 
                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.show_config("[%= id_dashlet %]")'
                     />
-                    <img style='cursor:pointer' 
+                    <img style='cursor:pointer;opacity: 0.4;'
+                         on 
                          src='/static/images/icons/refresh.gif' 
                          onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' />
                 */};
@@ -222,7 +229,7 @@ Cla.dashlet_common = (function(params){
     var data = params.data || {};
     return [
         new Cla.ComboSingle({ fieldLabel: _('Height of dashlet (rows)'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2] }),
-        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,4,6,8,10,12] }),
+        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] }),
         new Baseliner.ComboDouble({ fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
             [0, 0],
             [60000, 1],

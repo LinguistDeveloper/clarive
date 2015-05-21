@@ -237,6 +237,7 @@ POD.tabs =
     new Ext.TabPanel({
         region:'center',
         activeTab:0,
+        plugins: [ new Ext.ux.panel.DraggableTabs()], 
         autoScroll: true,
         margins: "5 5 5 5",
         enableTabScroll: true,
