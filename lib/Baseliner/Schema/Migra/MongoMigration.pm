@@ -54,7 +54,11 @@ sub topic_categories_to_rules {
                     $fieldlet->{params}->{id_field} eq 'category' or $fieldlet->{params}->{id_field} eq 'labels' or
                     $fieldlet->{params}->{id_field} eq 'include_into' or $fieldlet->{params}->{id_field} eq 'progress';
             foreach my $key (keys $fieldlet->{params}){
-                $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+                if($key eq '_html'){
+                    $data->{html} = $fieldlet->{params}->{$key};
+                }else{
+                    $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+                }
             }
             #_log $fieldlet;
             my $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
