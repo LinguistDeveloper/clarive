@@ -24,7 +24,7 @@
          if ( columns < 3 ) {
             div.style.height = "140px";
             needle_length = 0.6;
-         } elseif ( columns < 4 ) {
+         } else if ( columns < 4 ) {
             div.style.height = "160px";
             needle_length = 0.7;
          } else if ( columns < 6 ) {
