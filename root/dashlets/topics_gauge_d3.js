@@ -42,9 +42,9 @@
                  ringInset                   : 40,
                  ringWidth                   : 40,
                  
-                 pointerWidth                : 8,
-                 pointerTailLength           : 5,
-                 pointerHeadLengthPercent    : 0.9,
+                 pointerWidth                : 6,
+                 pointerTailLength           : 4,
+                 pointerHeadLengthPercent    : 0.6,
                  
                  minValue                    : 0,
                  maxValue                    : maxValue,
