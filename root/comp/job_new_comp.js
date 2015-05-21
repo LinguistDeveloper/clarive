@@ -347,6 +347,7 @@
     //------ Tabbed Job Item list
     var tabpanel = new Ext.TabPanel({
         region: 'center',
+         plugins: [ new Ext.ux.panel.DraggableTabs()],
         defaults: { closable: true, autoScroll: true },
         autoScroll: true,
         activeTab: 0

@@ -53,6 +53,7 @@
 
     var config_tabs = new Ext.TabPanel({
         region: 'center',
+        plugins: [ new Ext.ux.panel.DraggableTabs()], 
         layoutOnTabChange:true,
         deferredRender: false,
         autoScroll: true,

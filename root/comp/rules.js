@@ -524,7 +524,7 @@
             btn_save_meta ];
         opts.doLayout();
         de.doLayout();
-        var tabs = new Ext.TabPanel({ activeTab: goto_tab==undefined?0:goto_tab, items:[ opts,de,note ] });
+        var tabs = new Ext.TabPanel({ activeTab: goto_tab==undefined?0:goto_tab,  plugins: [ new Ext.ux.panel.DraggableTabs()], items:[ opts,de,note ] });
         var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
             //node.attributes=d;
             //node.setText( d.text );
@@ -1039,7 +1039,7 @@
                         items: [
                            stash_txt,
                            { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
-                           { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, region:'south', split: true, height: 200 }
+                           { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, plugins: [ new Ext.ux.panel.DraggableTabs()], region:'south', split: true, height: 200 }
                         ]
                     });
                     win.on('beforeclose', function(){
@@ -1160,7 +1160,7 @@
     var tabpanel = new Ext.TabPanel({
         region: 'center',
         enableTabScroll: true,
-        plugins: [ menu_tab ],
+        plugins: [ new Ext.ux.panel.DraggableTabs()],
         items: []
     });
     var search_palette = new Baseliner.SearchSimple({ 

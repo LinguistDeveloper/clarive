@@ -1014,7 +1014,7 @@ if( Prefs.routing ) {
             layout:'border', 
             items:[
                 main_field,
-                { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
+                { xtype:'tabpanel', height: 160, region:'south',  plugins: [ new Ext.ux.panel.DraggableTabs()], split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
                   collapsed: collapsed,  items: [
                       { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
                       { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },

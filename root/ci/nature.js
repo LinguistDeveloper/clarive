@@ -32,6 +32,7 @@
 
     var tabs = new Ext.TabPanel({
         activeTab: 0,
+        plugins: [ new Ext.ux.panel.DraggableTabs()], 
         fieldLabel: _('Configuration'),
         height: 430,
         items: [
