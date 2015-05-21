@@ -599,7 +599,7 @@
     var seltab = new Ext.Panel({ layout:'border', items:[ form_value, selector ], title: _('Query') });
     //var sql = new Baseliner.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
     
-    var tabs = new Ext.TabPanel({ height: 600,activeTab: 0, items:[ options, seltab ]});
+    var tabs = new Ext.TabPanel({ height: 600,activeTab: 0, plugins: [ new Ext.ux.panel.DraggableTabs()], items:[ options, seltab ]});
     
 
     var save_form = function(){

@@ -187,6 +187,7 @@
 
     var role_navigator = new Ext.TabPanel({
         region:'west',
+        plugins: [new Ext.ux.panel.DraggableTabs()],
         split: true,
         width: '45%',
         colapsible: true,

@@ -159,6 +159,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             });
             var preftabs = new Ext.TabPanel({ 
                 activeTab: 0, 
+                plugins: [ new Ext.ux.panel.DraggableTabs()], 
                 items: [
                     { xtype:'panel', layout:'form', frame: false, border: false,
                         title: _('Avatar'),
