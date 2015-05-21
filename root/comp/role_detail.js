@@ -83,7 +83,7 @@
                         child.removeListener('expand', tree_check );
                         child.on({ 'expand': { fn: tree_check } });
                         if( child.hasChildNodes() )  {
-                            tree_check_folder_enabled(child);
+                            // tree_check_folder_enabled(child);
                         }
                     }
                 });
