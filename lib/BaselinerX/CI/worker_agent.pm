@@ -213,21 +213,51 @@ sub execute {
     local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
+    # windows: use open, which merges STDOUT AND STDERR; Unix: use Capture::Tiny to merge both
     my $res = $self->remote_eval( q{ 
-        my $merged = Capture::Tiny::tee_merged(sub{ 
             my $olddir = Cwd::cwd;
-            my $cr = chdir $stash->{chdir};
-            die $! if !$cr; 
-            print "Changed dir to " . $stash->{chdir}, "\n";
-            system @{ $stash->{cmd} };
-            my $rc = $?;
-            print "Changed dir back to " . $olddir, "\n";
-            chdir $olddir;
-            die $! if $rc;
-        });
+            if( length $stash->{chdir} ) {
+                my $cr = chdir $stash->{chdir};
+                die $! if !$cr; 
+                print "Changed dir to " . $stash->{chdir}, "\n";
+            }
+            my $rc=-1;
+            my $merged = '';
+            if( "$^O" =~ /win/i ) {
+                open(EX, '-|', @{ $stash->{cmd} || [] }); 
+                $merged = join '',<EX>; 
+                close EX;
+                $rc = $?;
+            } else {
+                $merged = Capture::Tiny::tee_merged(sub{ 
+                    system  @{ $stash->{cmd} || [] }; 
+                    $rc = $? 
+                });
+            }
+                
+            if( length $stash->{chdir} ) {
+                print "Changed dir back to " . $olddir, "\n";
+                chdir $olddir;
+            }
+            die $! || $merged if $rc;
+            $merged;
     }, { cmd=>\@cmd, chdir=>$p{chdir} } );
     alarm 0;
     return $self->ret;
+}
+
+sub check_os {
+    my $self = shift;
+    my $tmout = $self->timeout;
+    alarm $tmout if $tmout; 
+    local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
+    my %p = %{ shift() } if ref $_[0] eq 'HASH';
+    my @cmd = @_;
+    my $res = $self->remote_eval( q{$^O}, { });
+    alarm 0;
+    my $os = $res =~ /win/i ? 'win' : 'unix';
+    $self->os( $os );
+    return $os;
 }
 
 sub chmod {
@@ -276,6 +306,7 @@ sub remote_eval {
         eval => { code=>$code//'print "pong"', stash=>$stash }, 
         done => sub {
            my ($msg_id, $res ) = @_;
+           #say "RES=".Util->_dump($res);
            #say "DONE!!!!=". $out->{output};
         }
     );
