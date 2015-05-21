@@ -56,6 +56,7 @@ sub topic_categories_to_rules {
             foreach my $key (keys $fieldlet->{params}){
                 if($key eq '_html'){
                     $data->{html} = $fieldlet->{params}->{$key};
+                    $fieldlet->{params}->{html} = $fieldlet->{params}->{$key};
                 }else{
                     $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
                 }
@@ -111,6 +112,8 @@ sub topic_categories_to_rules {
                 }else{
                     $attributes->{key} = 'fieldlet.html_editor';
                 }
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
+              $attributes->{key} = 'fieldlet.text';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
