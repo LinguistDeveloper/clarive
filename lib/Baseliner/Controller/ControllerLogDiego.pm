@@ -20,5 +20,23 @@ sub leer_log : Local {
     $c->forward('View::JSON');    
 }
 
+sub activity : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    my @ev = mdb->activity->find->sort({ ts=>-1 })->limit(20)->all;
+    my @data;
+    for my $ev ( @ev ) {
+        next unless $ev->{mid};
+        my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
+            $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
+        my $actor = $ev->{username} || 'clarive';
+        push @data, { node=>$ev->{mid}, action=>$action, ts=>$ev->{ts}, actor=>$actor };
+    }
+     
+    $c->stash->{json} = { data=>\@data };
+    $c->forward('View::JSON');    
+}
+
 1;
 
