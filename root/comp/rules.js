@@ -180,6 +180,7 @@
                 : type=='chain' ? IC('job') 
                 : type=='webservice' ? IC('webservice') 
                 : '/static/images/icons/rule.png';
+        rec.icon = icon;
         return String.format(
             '<div style="float:left"><img src="{0}" /></div>&nbsp;'
             + '<b>{2}: {1}</b>',
@@ -249,7 +250,7 @@
                     if( tab_arr.length > 0 ) {
                         tabpanel.setActiveTab( tab_arr[0] );
                     } else {
-                        rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts );
+                        rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts, rec.icon );
                     }
                 }
             }
@@ -590,7 +591,7 @@
         });
     };    
 
-    var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type, old_ts ) {
+    var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type, old_ts, icon ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
             var n2 = e.target;
@@ -1146,7 +1147,7 @@
             return true;
         });
         tabpanel.setActiveTab( tab );
-        tabpanel.changeTabIcon( tab, '/static/images/icons/rule.png' );
+        tabpanel.changeTabIcon( tab, icon || '/static/images/icons/rule.png' );
     };
     
     /* 
