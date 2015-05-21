@@ -19,7 +19,6 @@
         }else{
             groups= []
         }
-        require(['d3','c3'], function(d3,c3){
            graph_jobs_burndown_day = c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -67,6 +66,5 @@
                     show: false
                 }
            });
-        });
     });
 });

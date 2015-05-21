@@ -130,13 +130,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
-                html += dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
+                var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
                     id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
                     colspan: dashlet.data.columns, 
                     dashlet: dashlet, id_div: id_div });
+                html += dh;
                 Cla.ajaxEval(dashlet.js_file, { id_div: id_div, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
-                    icons.innerHTML = buttons_tpl.tmpl({
+                    if(icons) icons.innerHTML = buttons_tpl.tmpl({
                         id_dashlet : dashlet.id,
                         id_cmp     : self.id
                     });
@@ -159,12 +160,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var dashlet = self.dashlets[ id_dashlet ];
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
-        div.innerHTML= "<img src=/static/images/loading.gif />";
+        if(div) div.innerHTML= "<img src=/static/images/loading.gif />";
         Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();
             var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
-            update.innerHTML=last_update;
+            if(update) update.innerHTML=last_update;
         });
     },
     show_config : function(id_dashlet){

@@ -634,12 +634,10 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         }
         var w = 960, h = 500;
         Baseliner.loadFile('/static/d3/d3.css', 'css' );
-        require(['d3'], function(){
-            self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction });
-            self.add( self.d3g );
-            self.d3g.which = 'd3g';
-            self.getLayout().setActiveItem( self.d3g );
-        });
+        self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction });
+        self.add( self.d3g );
+        self.d3g.which = 'd3g';
+        self.getLayout().setActiveItem( self.d3g );
     },
     to_img : function(){
         var self = this;
