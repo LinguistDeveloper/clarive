@@ -21,7 +21,10 @@
     Cla.ajax_json('/dashboard/topics_gauge', { input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var needle_length = 0.85;
         var div = document.getElementById(id);
-         if ( columns < 4 ) {
+         if ( columns < 3 ) {
+            div.style.height = "140px";
+            needle_length = 0.6;
+         } elseif ( columns < 4 ) {
             div.style.height = "160px";
             needle_length = 0.7;
          } else if ( columns < 6 ) {
