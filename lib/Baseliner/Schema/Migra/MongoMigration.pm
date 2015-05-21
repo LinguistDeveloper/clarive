@@ -38,7 +38,7 @@ sub list_roles {
 }
 
 sub topic_categories_to_rules {
-    my ($c) = @_;
+    mdb->rule->remove({rule_type=>'fieldlets'});
     my @topic_category = mdb->category->find->all;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
