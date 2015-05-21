@@ -49,6 +49,7 @@
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
                   [ 'report', _('Report') ],
+                  [ 'webservice', _('Webservice') ],
                   [ 'independent', _('Independent') ],
                   [ 'dashboard', _('Dashboard') ],
                   [ 'fieldlets', _('Fields') ]
@@ -70,6 +71,14 @@
             msg_ev.hide();
             grid_events.hide();
         } else if( v == 'independent' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
+            webservice_form.hide();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
+        } else if( v == 'webservice' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();

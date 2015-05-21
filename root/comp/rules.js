@@ -3,7 +3,8 @@
     var rules_store = new Baseliner.JsonStore({
         url: '/rule/grid', root: 'data',
         id: 'id', totalProperty: 'totalCount', 
-        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id' ]
+        remoteSort: true,
+        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id','ts' ]
     });
     var search_field = new Baseliner.SearchField({
         store: rules_store,
@@ -164,19 +165,31 @@
         tree.root.expand();
     };
 
+    var render_rule_ts = function( v,metadata,rec ) {
+        return String.format('<span style="color:#888; font-size:.8em">{0}</span>', Cla.moment(v).fromNow() );
+    }
+
     var render_rule = function( v,metadata,rec ) {
         if( rec.data.rule_active == 0 ) 
             v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
+        var type = rec.data.rule_type;
+        var icon = type=='dashboard' ? IC('dashboard') 
+                : type=='fieldlets' ? IC('form') 
+                : type=='event' ? IC('event') 
+                : type=='report' ? IC('report') 
+                : type=='chain' ? IC('job') 
+                : type=='webservice' ? IC('webservice') 
+                : '/static/images/icons/rule.png';
         return String.format(
             '<div style="float:left"><img src="{0}" /></div>&nbsp;'
             + '<b>{2}: {1}</b>',
-            '/static/images/icons/rule.png',
+            icon,
             v, rec.data.id
         );
     };
     var rules_grid = new Ext.grid.GridPanel({
         region: 'west',
-        width: 300,
+        width: 320,
         split: true,
         selModel: new Ext.grid.RowSelectionModel({ singleSelect : true }),
         collapsible: true,
@@ -201,8 +214,9 @@
         header: false,
         store: rules_store,
         columns:[
-            { header: _('Rule'), width: 160, dataIndex: 'rule_name', renderer: render_rule },
-            { header: _('Type'), width: 40, dataIndex: 'rule_type' }
+            { header: _('Rule'), width: 160, dataIndex: 'rule_name', sortable: true, renderer: render_rule },
+            { header: _('Type'), hidden: true, width: 40, dataIndex: 'rule_type' },
+            { header: _('When'), width: 60, dataIndex: 'ts', sortable: true, renderer: render_rule_ts }
         ],
         tbar: [ 
             search_field,
