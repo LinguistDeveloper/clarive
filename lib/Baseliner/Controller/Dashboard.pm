@@ -601,7 +601,7 @@ sub topics_by_field: Local {
 
     foreach my $topic (@topics_by_category){
 
-        my $name = $topic->{field};
+        my $name = $topic->{field} // _loc('Empty');
 
         if ( $topic->{total}*100/$total <= $group_threshold ) {
             $others += $topic->{total};
@@ -633,11 +633,11 @@ sub topics_by_field: Local {
             $color = $topic->{status_color};
         } else {
             if ( $ci_colors->{$name} ) {
-                $color = $ci_colors->{$name};
+                # $color = $ci_colors->{$name};
             } else {
-                $color = sprintf "#%06X", rand(0xffffff);
-                $ci_colors->{$name} = $color;
-                cache->set('ci::colors',$ci_colors);
+                # $color = sprintf "#%06X", rand(0xffffff);
+                # $ci_colors->{$name} = $color;
+                # cache->set('ci::colors',$ci_colors);
             }
         }
         $colors->{$name} = $color;
