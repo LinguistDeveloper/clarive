@@ -222,7 +222,7 @@ Cla.dashlet_common = (function(params){
     var data = params.data || {};
     return [
         new Cla.ComboSingle({ fieldLabel: _('Height of dashlet (rows)'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2] }),
-        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,4,6,8,10,12] }),
+        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] }),
         new Baseliner.ComboDouble({ fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
             [0, 0],
             [60000, 1],
