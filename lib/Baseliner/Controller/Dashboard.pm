@@ -601,7 +601,8 @@ sub topics_by_field: Local {
 
     foreach my $topic (@topics_by_category){
 
-        my $name = $topic->{field} // _loc('Empty');
+        my $name = $topic->{field};
+        $name = _loc('Empty') if (!_array($topic->{field}));
 
         if ( $topic->{total}*100/$total <= $group_threshold ) {
             $others += $topic->{total};
