@@ -1917,8 +1917,8 @@ Baseliner.DataEditor = function(c) {
         btn_editor,
         btn_json,
         '-',
-        { icon:'/static/images/icons/add.gif', handler: add_row },
-        { icon:'/static/images/icons/delete.gif', handler: self.del_row },
+        { icon:'/static/images/icons/add.gif',  tooltip: _('Create'), handler: add_row },
+        { icon:'/static/images/icons/delete.gif',  tooltip: _('Delete'), handler: self.del_row },
         '->' 
     ];
 

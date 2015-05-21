@@ -4620,3 +4620,7 @@ msgstr "Processant.  Esperi per favor"
 
 msgid "Problem found opening topic %1.  Perhaps it's been removed from the system.  The error message is: %2"
 msgstr "S'ha trobat un problema obrint el tòpic %1.  Probablement s'hagi esborrat del sistema.  El missatge d'error és: %2"
+
+msgid "Activate"
+msgstr "Activar"
+
