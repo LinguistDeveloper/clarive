@@ -607,7 +607,7 @@ sub topics_by_field: Local {
             $others += $topic->{total};
             push @other_topics, _array($topic->{topics_list});
         } else {
-            if ( Util->is_number($topic->{field}) ) {
+            if ( Util->is_number($topic->{field}) && $topic->{field} > 1 ) {
                 try {
                     $name = mdb->master->find_one({mid=>"$topic->{field}"})->{name};#ci->new($topic->{field})->name;
                 } catch {
