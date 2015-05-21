@@ -11,6 +11,7 @@
     </ul>
     <ul style="margin-left: 20px">
 % foreach my $project ( _array( $data->{$meta->{id_field}} ) ) {
+% _warn $project;
         <li style="margin: 6px 0px 6px 0px">
             <h4><img src="<% ci->new($project->{mid})->icon %>"> <% $project->{name}%></h4>
         </li>

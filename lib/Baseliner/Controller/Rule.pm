@@ -53,7 +53,10 @@ sub begin : Private {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my @rows = mdb->rule->find({ rule_active => mdb->true })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
+    my %query;
+    $query{rule_active} = mdb->true;
+    $query{rule_type} = $p->{rule_type} if ($p->{rule_type});
+    my @rows = mdb->rule->find({ %query })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
 }
@@ -526,6 +529,35 @@ sub palette : Local {
             }
         } @rules ]
     };
+    my @fieldlets = grep { $_ !~ /required/ } sort $c->registry->starts_with('fieldlet.');
+    my $default_icon = '/static/images/icons/detail.png';
+    push @tree, {
+        id=>$cnt++,
+        leaf=>\0,
+        text=>_loc('Fieldlets'),
+        icon => $default_icon,
+        draggable => \0,
+        expanded => \1,
+        children=> [
+            grep { !$query || join(',',grep{defined}%$_) =~ $query }  
+            map {
+                my $n = $_;
+                my $service_key = $n->{key};
+                +{
+                    isTarget => \0,
+                    leaf=>\1,
+                    key => $service_key,
+                    icon => $n->{icon} // $default_icon,
+                    palette => \1,
+                    text => _loc($n->{name}) // $service_key,
+                }
+            } 
+        map { 
+            $c->registry->get( $_ );
+        }
+        @fieldlets ]
+    };
+
     $c->stash->{json} = \@tree;
     $c->forward("View::JSON");
 }
@@ -543,6 +575,13 @@ sub stmts_save : Local {
         my $previous_user = $returned_ts->{previous_user};
         if ($returned_ts->{old_ts} ne ''){
             my ($short_errors) = $detected_errors =~ m/^([^\n]+)/s;
+            my $rule_type = mdb->rule->find_one({id=>"$p->{id_rule}"});
+            if ($rule_type->{rule_type} eq 'fieldlets'){
+                cache->remove_like( qr/^topic:/ );
+                cache->remove_like( qr/^roles:/ );
+                cache->remove({ d=>"topic:meta" });
+                $c->registry->reload_all;
+            }
             my $msg = $detected_errors ? _loc('Rule statements saved with errors: %1', $short_errors) : _loc('Rule statements saved ok');
             $c->stash->{json} = { success=>\1, msg =>$msg, old_ts => $old_ts, actual_ts=> $actual_ts, username=>$c->username, detected_errors=>$detected_errors };
         } else {

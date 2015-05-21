@@ -52,8 +52,8 @@ params:
         selectOnFocus: true,
         anchor: meta.anchor || '100%',
         store: store,
-        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-        disabled: meta && meta.readonly ? meta.readonly : false
+        hidden: Baseliner.eval_boolean(meta.hidden),
+        disabled: Baseliner.eval_boolean(meta.readonly)
     });
     
     

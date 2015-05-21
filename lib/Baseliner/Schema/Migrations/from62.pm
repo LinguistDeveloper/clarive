@@ -8,6 +8,7 @@ sub upgrade {
     mdb->migra->activity_to_status_changes;
     mdb->migra->closed_date;
     mdb->cache->drop;
+    mdb->migra->topic_categories_to_rules;
 }
 
 sub downgrade {

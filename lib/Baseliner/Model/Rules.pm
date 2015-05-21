@@ -61,6 +61,26 @@ sub init_job_tasks {
     } qw(CHECK INIT PRE RUN POST);
 }
 
+sub init_fieldlets_tasks {
+    my ($self)=@_;
+    return +{ 
+        isTarget => \0,
+        leaf=>\1,
+        key => "fieldlet.system.status_new",
+        icon => "/static/images/icons/lock_small.png",
+        palette => \1,
+        text => _loc('status'),
+    },
+    +{ 
+        isTarget => \0,
+        leaf=>\1,
+        key => "fieldlet.system.title",
+        icon => "/static/images/icons/lock_small.png",
+        palette => \1,
+        text => _loc('title'),
+    };
+}
+
 sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
     
@@ -205,7 +225,7 @@ sub tree_format {
         $chi = delete $n->{children} unless ref $chi eq 'ARRAY' && @$chi;
         delete $n->{attributes};
         delete $n->{disabled};
-        delete $n->{id} unless $n && $n->{id} =~/rule-/;
+        delete $n->{id} unless $n && $n->{id} && $n->{id} =~/rule-/;
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->tree_format( _array($chi) );
@@ -240,6 +260,9 @@ sub build_tree {
     } else {
         if( $rule->{rule_type} eq 'chain' ) {
             return $self->init_job_tasks;
+        }
+        if ( $rule->{rule_type} eq 'fieldlets') {
+            return $self->init_fieldlets_tasks;
         }
         _warn _loc 'Rule tree is empty for rule %1', $id_rule;
         return ();

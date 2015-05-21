@@ -2795,6 +2795,7 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.store = self.buildStore(data);
 
         self.fieldLabel = self.fieldLabel || self.name;
+        if ( self.helpText ) { self.fieldLabel = self.fieldLabel + ' <img src="/static/images/icons/help.png" title='+self.helpText+' />' };
         self.valueField = self.field || self.name;
         self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
@@ -2911,7 +2912,53 @@ Baseliner.cols_templates = {
         ed.on('afterrender', function(cmp){ cmp.el.set({ autocomplete:'off'}) });
         return { editor: ed, default_value:'', renderer: function(v){ if (v) { return '********'; } else { return ''; } } } 
       },
-      textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
+      textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } },
+      colorComboPalette : function(){ 
+            var color_btn_gen = function(color){
+                return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: #{0}">#{1}</span></div>', 
+                    color, color  );
+            };
+            
+            //var mi_combo = new Baseliner.ComboDouble( store_colors );
+
+            var combo_origin = new Ext.form.ComboBox({
+                //store: store_colors,
+                displayField: 'name',
+                value: '',
+                valueField: 'origin',
+                hiddenName: 'origin',
+                name: 'origin',
+                editable: false,
+                mode: 'local',
+                forceSelection: true,
+                triggerAction: 'all', 
+                fieldLabel: _('Origin'),
+                emptyText: _('select origin...'),
+                //displayFieldTpl = new Ext.XTemplate( '<tpl>{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
+                autoLoad: true,
+                initComponent: function(){
+                    var store_colors =new Ext.data.SimpleStore({
+                        fields: ['origin', 'name'],
+                        data:[ 
+                            [ '8E44AD', color_btn_gen('8E44AD') ],
+                            [ '800000', color_btn_gen('800000') ],
+                            [ 'FF0000', color_btn_gen('FF0000') ]
+                        ]
+                    });
+                    this.store = store;
+                    var tpl_list = new Ext.XTemplate(
+                        '<tpl for=".">',
+                        '<div>'+color_btn_gen()+'</div>',
+                        '</tpl>'
+                    );
+                    this.tpl = tpl_list;
+                    this.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
+                    Baseliner.model.ComboBaseline.superclass.initComponent.call(this);
+                }
+            });
+
+        return { editor: combo_origin, default_value:'' }; 
+      }
 };
 
 
@@ -3985,4 +4032,111 @@ Baseliner.datatable_toggle = function(el,show){
     } else {
         foo();
     }
+};
+
+Baseliner.generic_fields = function(params){
+    var data = params || {};
+    if(data.fieldletType == /system/){
+        data.origin = 'system';
+    }
+  
+    var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
+
+    var combo_section = new Baseliner.ComboDouble({
+        name: 'section',
+        editable: false,
+        helpText: 'Header: ',
+        fieldLabel: _('Section to view'),
+        emptyText: _('Select one'),
+        data:[ 
+            [ 'head', _('Header') ],
+            [ 'body', _('Body') ],
+            [ 'details', _('Details') ],
+            [ 'more', _('More info') ],
+            [ 'between', _('Between') ]
+        ],
+        value: data.section || 'body',
+    });
+
+    var combo_colspan = new Baseliner.ComboDouble({
+        name: 'colspan',
+        editable: false,
+        fieldLabel: _('Row width'),
+        emptyText: _('Select one'),
+        data:[ 
+            [ '0', '0' ],
+            [ '1', '1' ],
+            [ '2', '2' ],
+            [ '3', '3' ],
+            [ '4', '4' ],
+            [ '5', '5' ],
+            [ '6', '6' ],
+            [ '7', '7' ],
+            [ '8', '8' ],
+            [ '9', '9' ],
+            [ '10', '10' ],
+            [ '11', '11' ],
+            [ '12', '12' ],
+        ],
+        value: data.colspan || '12',
+    });
+    var mandatory_cb = new Baseliner.CBox({ name: 'mandatory_cb', checked: !Baseliner.eval_boolean(data.allowBlank), fieldLabel: _('Mandatory field') });
+    mandatory_cb.on('check', function(cb){
+        allowBlank_field.setValue(!cb.checked);
+    });
+    return [
+        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', allowBlank: false, value: data.id_field },
+        combo_section,
+        combo_colspan,
+        new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
+        new Baseliner.CBox({ name: 'editable', checked: data.editable ? data.editable : '1', fieldLabel: _('View from edit view') }),
+        mandatory_cb,
+        allowBlank_field
+    ]
+};
+
+Baseliner.eval_boolean = function(d, default_value){
+    default_value = typeof default_value !== 'undefined' ? default_value : true;
+    if(d == '0' || d == 'false' || d == 0 || d == false || d=='off') return false;
+    if(d == '1' || d == 'true' || d == 1 || d == true || d=='on') return true;
+    if(d == '' || d == undefined) return default_value;
+};
+
+
+Baseliner.generic_list_fields = function(params){
+    var data = params || {};
+    var list_type = new Ext.form.Hidden({ name:'list_type', value: data.list_type });
+
+    var store_values = new Ext.data.SimpleStore({
+        fields: ['value_type', 'name'],
+        data:[ 
+            [ 'single', _('Single') ],
+            [ 'multiple', _('Multiple') ],
+            [ 'grid', _('Grid') ]
+        ]
+    });
+
+    var value_combo = new Ext.form.ComboBox({
+        store: store_values,
+        displayField: 'name',
+        value: data.list_type || 'single',
+        valueField: 'value_type',
+        hiddenName: 'value_type',
+        name: 'value_type',
+        editable: false,
+        mode: 'local',
+        allowBlank: false,
+        forceSelection: true,
+        triggerAction: 'all', 
+        fieldLabel: _('Type'),
+        emptyText: _('Select one'),
+        autoLoad: true
+    });
+
+    value_combo.on('select', function(combo,rec,ix) {
+        list_type.setValue(rec.data.value_type);
+        ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
+    });
+    var ret = [ value_combo, list_type, { xtype:'textfield', name:'filter', fieldLabel: _('Advanced Filter JSON'), value: data.filter } ];
+    return ret;
 };

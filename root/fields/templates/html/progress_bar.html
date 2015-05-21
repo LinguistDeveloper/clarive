@@ -3,7 +3,7 @@
     $data
 </%args>
 
-% if( !$meta->{hidden} ) {
+% if( !($meta->{hidden}+0) ) {
     <tr>
         <th><% _loc($meta->{name_field}) %>:</th>
         <td>

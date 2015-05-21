@@ -341,7 +341,28 @@
             autoLoad: true
         });
 
-        var combo_grid = Cla.ci_box({ name:'default_grid', isa:'report', fieldLabel:_('Default Grid'), value: rec ? rec.data.default_grid : '' })
+        var combo_grid = Cla.ci_box({ name:'default_grid', isa:'report', fieldLabel:_('Default Grid'), value: rec ? rec.data.default_grid : '' });
+
+        var store_fields = new Baseliner.JsonStore({
+            url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
+            fields:['id','rule_name'],
+            baseParams: Ext.apply({ rule_type: 'fieldlets' }),
+        });
+
+        var combo_fields =new Baseliner.SuperBox({ 
+            name: 'default_field',
+            id: 'default_field',
+            hiddenName: 'default_field',
+            fieldLabel: _("Fieldlets"), 
+            valueField: 'id',
+            displayField: 'rule_name',
+            value: rec ? rec.data.default_field : '',
+            singleMode: true, 
+            store: store_fields,
+            forceSelection: true,
+        });
+
+        store_fields.load();
 
         var ta = new Ext.form.TextArea({
             name: 'description',
@@ -419,7 +440,7 @@
                 },
                 color_button,
                 { xtype: 'panel', style: { 'margin-top': '20px' }, defaults:{ anchor:'100%' }, layout: 'form', 
-                    items: [ combo_grid, combo_providers ] },
+                    items: [ combo_grid, combo_fields, combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
                         { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
@@ -498,7 +519,7 @@
                             var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
                             
                             if (form.isValid()) {
-                                
+
                                 var statuses_checked = new Array();
                                 check_category_status_sm.each(function(rec){
                                     statuses_checked.push(rec.get('id'));
@@ -1216,7 +1237,7 @@
                 btn_duplicate_category,
                 '->',
                 //btn_update_fields,
-                btn_edit_fields,
+                // btn_edit_fields,
                 //btn_form_category,
                 btn_admin_category,
                 btn_tools_category

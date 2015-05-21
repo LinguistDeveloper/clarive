@@ -3450,6 +3450,15 @@ msgstr "Administración Tópicos"
 msgid "Fields"
 msgstr "Campos"
 
+msgid "fields"
+msgstr "campos"
+
+msgid "Fieldlets"
+msgstr "Campos"
+
+msgid "fieldlets"
+msgstr "campos"
+
 msgid "Priority"
 msgstr "Prioridad"
 
@@ -7917,3 +7926,6 @@ msgstr "Pases por franja horaria"
 
 msgid "Other"
 msgstr "Otro"
+
+msgid "Mandatory field"
+msgstr "Campo obligatorio"

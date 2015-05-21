@@ -252,12 +252,12 @@ params:
         {
           xtype: 'box',
           autoEl: {cn: '<br>' + _(meta.name_field) + ':'},
-          hidden: meta ? (meta.hidden ? meta.hidden : false): true
+          hidden: Baseliner.eval_boolean(meta.hidden)
         },
         {
           xtype: 'box',
           autoEl: {cn: '<br>'},
-          hidden: meta ? (meta.hidden ? meta.hidden : false): true        
+          hidden: Baseliner.eval_boolean(meta.hidden)        
         },          
         grid_tasks,
         field

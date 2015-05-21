@@ -63,10 +63,10 @@ params:
         listEmptyText: no_items, 
         emptyText: _( meta.emptyText ),
         field_ready: false,
-        allowBlank: meta.allowBlank == 'false' ? false : true,
-        disabled: meta.readonly!=undefined ? meta.readonly : false,
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank),
+        disabled: Baseliner.eval_boolean(meta.readonly),
         store: project_box_store,
-        singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
+        singleMode: Baseliner.eval_boolean(meta.single_mode)
     });
     
     project_box.field_ready = false;

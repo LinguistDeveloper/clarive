@@ -20,12 +20,6 @@ params:
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
     
-    
-    var allowBlank;
-    if (meta.allowBlank == 'false') allowBlank = false;
-    if (meta.allowBlank == 'true') allowBlank = true;
-    if (meta.allowBlank == undefined) allowBlank = true;
-
     var maxValue;
     if ( meta.maxValue == 'none' || meta.maxValue == undefined ) {
         maxValue = Number.MAX_SAFE_INTEGER;
@@ -43,8 +37,8 @@ params:
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: allowBlank,
-            readOnly: meta ? meta.readonly : true,
+            allowBlank: Baseliner.eval_boolean(meta.allowBlank),
+            readOnly: Baseliner.eval_boolean(meta.readonly),
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
@@ -55,7 +49,7 @@ params:
                     this.preventMark = false;
                 }
             },
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            hidden: Baseliner.eval_boolean(meta.hidden),
             maxValue: maxValue,
             msgTarget: 'under'
         }

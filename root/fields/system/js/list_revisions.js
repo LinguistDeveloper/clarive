@@ -20,7 +20,7 @@ params:
     
     var topic_data = data;
 
-    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var allow = Baseliner.eval_boolean(meta.allowBlank);
     
     var revision_store = new Ext.data.SimpleStore({
         fields: ['mid','name','id']
@@ -33,7 +33,7 @@ params:
         store: revision_store,
         layout: 'form',
         height: meta.height ? parseInt(meta.height) : 200,
-        readOnly:  meta && meta.readonly ? meta.readonly : false,
+        readOnly:  Baseliner.eval_boolean(meta.readonly),
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
         viewConfig: {
@@ -99,7 +99,7 @@ params:
         //if( c.value != undefined ) {
             // TODO no loader from mids yet 
         //}
-        var read_only = meta && meta.readonly ? meta.readonly : false;
+        var read_only = Baseliner.eval_boolean(meta.readonly);
         
         if( !read_only ){
             var el = revision_grid.el.dom; 
@@ -107,7 +107,7 @@ params:
                 comp: revision_grid,
                 ddGroup: 'explorer_dd',
                 copy: true,
-                available: meta ? meta.readonly : false,
+                available: Baseliner.eval_boolean(meta.readonly),
                 notifyDrop: function(dd, e, id) {
                     var n = dd.dragData.node;
                     //var s = project_box.store;

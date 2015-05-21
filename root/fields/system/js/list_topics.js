@@ -65,7 +65,7 @@ params:
             singleSelect: false
         });
 		
-		var readonly = meta && meta.readonly ? meta.readonly : false,
+		var readonly = Baseliner.eval_boolean(meta.readonly),
 		
         topic_box = new Baseliner.TopicGrid({
 			fieldLabel: _(meta.name_field),
@@ -79,10 +79,10 @@ params:
             name: meta.id_field,
             height: meta.height || 250,
             value: data[ meta.id_field ],
-			enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
+			enableDragDrop:  Baseliner.eval_boolean(meta.readonly),
 			readOnly:  readonly,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-			allowBlank: readonly ? true : meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
+			hidden: Baseliner.eval_boolean(meta.hidden),
+			allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
         });
 		
 
