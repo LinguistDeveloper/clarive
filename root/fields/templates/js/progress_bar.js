@@ -19,8 +19,8 @@ params:
 			anchor: '40%', tipText: function(thumb){
 					return String(thumb.value) + '%';
 			},
-			disabled: meta ? meta.readonly : true,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true
+			disabled: Baseliner.eval_boolean(meta.readonly),
+			hidden: Baseliner.eval_boolean(meta.hidden)
 		}
     ]
 })

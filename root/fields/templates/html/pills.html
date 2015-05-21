@@ -7,7 +7,7 @@
         split /;/, $meta->{options};
     my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
 </%perl>
-% if( defined $val && !$meta->{hidden} ) {
+% if( defined $val && !($meta->{hidden}+0) ) {
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>
       <td> 

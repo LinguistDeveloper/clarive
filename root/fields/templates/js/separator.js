@@ -18,7 +18,7 @@ params:
         name: meta.id_field,
         labelSeparator: '',
         labelStyle: 'color:'+ color + ';font-weight:bold',
-        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        hidden: Baseliner.eval_boolean(meta.hidden),
         autoEl: {html:'<hr style="background-color:' + color + ';height:2px;border:none;>"'},
         readOnly: false
 

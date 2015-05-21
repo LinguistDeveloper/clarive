@@ -543,8 +543,10 @@
                     Baseliner.ajaxEval( res.form, { data: node.attributes.data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
-                            form.data = form.getValues();
-                            form.destroy();
+                            if(form.is_valid()){
+                                form.data = form.getValues();
+                                form.destroy();
+                            }
                         };
                         var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },

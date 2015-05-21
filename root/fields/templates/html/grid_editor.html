@@ -2,7 +2,7 @@
     $meta
     $data
 </%args>
-% if( !$meta->{hidden} ) {
+% if( !($meta->{hidden}+0) ) {
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>

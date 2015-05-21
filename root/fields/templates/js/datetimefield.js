@@ -31,9 +31,9 @@ params:
 			format:  df || Prefs.js_date_format,
 			width: 165,
 			//height: 30,
-			allowBlank: meta.allowBlank == 'false' ? false : true,
-			readOnly: meta ? meta.readonly : true,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true
+			allowBlank: Baseliner.eval_boolean(meta.allowBlank),
+			readOnly: Baseliner.eval_boolean(meta.readonly),
+			hidden: Baseliner.eval_boolean(meta.hidden)
 		}
     ]
 })

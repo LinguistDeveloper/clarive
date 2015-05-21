@@ -7,7 +7,10 @@ register_class 'fieldlet' => __PACKAGE__;
 sub service_noun { 'fieldlet' }
 
 has name		=> (is=>'rw', isa=>'Str', default=>'');
-has name_field 	=> (is=>'rw', isa=>'Str', default=>'');
+has name_field 	=> (is=>'rw', isa=>'Str', default=>sub{ 
+    my $self = shift;
+    return $self->name;
+});
 has id_field   	=> (is=>'rw', isa=>'Str', default=>'');
 has form		=> (is=>'rw', isa=>'Str', default=>'');
 has html_file	=> (is=>'rw', isa=>'Str', default=>'');
@@ -20,9 +23,11 @@ has bd_field   	=> ( is=> 'rw', isa=> 'Str', default=>sub{
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	return sub{
 	    my ($self, $n, %p ) = @_;
+	    my %data = %{ $n->{data} || {} };
+	    $data{name_field} = $n->{text};
 	    sprintf(q{
 	        push @{ $stash->{fieldlets} }, %s; 
-	    }, Data::Dumper::Dumper($n->{data}));
+	    }, Data::Dumper::Dumper(\%data));
 	};
 });
 

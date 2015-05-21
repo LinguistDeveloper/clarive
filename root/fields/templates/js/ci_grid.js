@@ -31,7 +31,7 @@ params:
         title: null,
         columns: meta.columns || [],
         //labelAlign: 'top', 
-        readOnly: ( meta.readOnly == 'true' ? true : false ),
+        readOnly: Baseliner.eval_boolean(meta.readOnly,false),
         //style: 'margin-top: 20px', 
         height: ( meta.height ? parseInt(meta.height) : 200 ),
         value: value, 

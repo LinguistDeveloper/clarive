@@ -5,6 +5,254 @@ use v5.10;
 use strict;
 use Try::Tiny;
 
+sub roles {
+    my ($self, $p) = @_;
+    my $name_format = $p->{name_format};
+    my @roles = sort { $a->{name} cmp $b->{name} } list_roles(
+name_format=>$name_format );
+    return _encode_json { data=>\@roles, totalCount=>scalar(@roles) };
+}
+
+
+sub list_roles {
+    my (%p) = @_;
+    $p{name_format} //= 'lc';
+    my $name_transform = sub {
+        my $name = shift;
+        return $name if $p{name_format} eq 'full';
+        ($name) = $name =~ /^.*::CI::(.*)$/;
+        return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
+        $name =~ s{::}{}g if $name;
+        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name;
+        my $return = $name || 'ci';
+        return lc $return;
+    };
+    my %cl=Class::MOP::get_all_metaclasses;
+    map {
+        my $role = $_;
+        +{
+            role => $role,
+            name => $name_transform->( $role ),
+        }
+    } grep /^Baseliner::Role::CI/, keys %cl;
+}
+
+sub topic_categories_to_rules {
+    my ($c) = @_;
+    my @topic_category = mdb->category->find->all;
+    foreach my $topic_category (@topic_category){
+        my @fieldlets = _array $topic_category->{fieldlets};
+        my @fields;
+        my $registers = map_registors();
+        #_log $registers;
+        foreach my $fieldlet (@fieldlets){
+            my $f;
+            my $attributes;
+            my $data;
+            next if $fieldlet->{params}->{id_field} eq 'created_on' or $fieldlet->{params}->{id_field} eq 'created_by' or 
+                    $fieldlet->{params}->{id_field} eq 'modified_on' or $fieldlet->{params}->{id_field} eq 'modified_by' or
+                    $fieldlet->{params}->{id_field} eq 'category' or $fieldlet->{params}->{id_field} eq 'labels' or
+                    $fieldlet->{params}->{id_field} eq 'include_into' or $fieldlet->{params}->{id_field} eq 'progress';
+            foreach my $key (keys $fieldlet->{params}){
+                $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+            }
+            #_log $fieldlet;
+            my $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
+            #_log $reg_key;
+            my $icon = Baseliner->model('Registry')->get($registers->{$reg_key})->{icon};
+            $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
+            $data->{editable} = '1' if not $fieldlet->{editable};
+            $data->{hidden} = '0' if not $fieldlet->{hidden};
+            
+         
+            $attributes->{active} = '1';
+            $attributes->{disabled} = \0;
+            $attributes->{expanded} = \0;
+            $attributes->{icon} = $icon ;#// '/static/images/icons/lock_small.png';
+            if($fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
+                if($fieldlet->{params}->{bd_field} eq 'moniker'){
+                    $attributes->{key} = 'fieldlet.system.moniker';    
+                }else{
+                    $attributes->{key} = 'fieldlet.text';    
+                } 
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js'){
+                $attributes->{key} = 'fieldlet.milestones';
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
+                if($fieldlet->{params}->{bd_field} eq 'progress'){
+                    $attributes->{key} = 'fieldlet.system.progress';    
+                }else{
+                    $attributes->{key} = 'fieldlet.progressbar';    
+                }        
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && !$fieldlet->{params}->{js}){
+                if($fieldlet->{params}->{type} eq 'numberfield'){
+                    $attributes->{key} = 'fieldlet.number';
+                }
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html' && !$fieldlet->{params}->{js}){
+              $attributes->{key} = 'fieldlet.system.list_topics';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_cis.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.cis';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.topics';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_users.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.users';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_projects.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.projects';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_release.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.release';
+            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html' && !$fieldlet->{params}->{js}){
+                $attributes->{key} = 'fieldlet.system.revisions';
+            }else{
+                $attributes->{key} = $registers->{$reg_key};
+            }
+
+            if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
+                if ($data->{ci_class}){
+                    $data->{ci_role} = 'Baseliner::Role::CI';
+                    my @ar = split (',', $data->{ci_class});
+                    $data->{ci_class_box} = \@ar;
+                }
+                if($data->{ci_role}){
+                    my @elems = split ',', $data->{ci_role};
+                    my @ret;
+                    my $b = _decode_json(roles(''))->{data};
+                    for my $name (@elems){
+                        map{ push @ret, $_->{name} if $_->{role} =~ /Baseliner::Role::.*::$name/} _array $b;
+                    }
+                    $data->{var_ci_role} = \@ret;
+                }          
+            }
+            
+            $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
+            $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
+            $data->{fieldletType} = $attributes->{key};
+            
+            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> ISA CALLING YOU!!!!!!! ==> ( $data->{name_field} ) "; _log $data }
+            
+            $attributes->{data} = $data;
+            
+            $attributes->{leaf} = \1;
+            $attributes->{name} = $fieldlet->{params}->{name_field};
+            $attributes->{palette} = \0;
+            $attributes->{text} = $fieldlet->{params}->{name_field};
+            $attributes->{ts} = mdb->ts;
+            $attributes->{who} = 'root';
+              $f->{attributes} = $attributes;
+            $f->{children} = [];
+            push @fields, $f;    
+        }
+        my $rule;
+        $rule->{id} = mdb->seq('rule');
+        $rule->{detected_errors} = '';
+        $rule->{authtype} = 'required';
+        $rule->{rule_active} = '1';
+        $rule->{rule_desc} = '';
+        $rule->{rule_event} = '';
+        $rule->{rule_name} = $topic_category->{name};
+        $rule->{rule_sec} = mdb->seq('rule_seq');
+        $rule->{rule_tree} = _encode_json(\@fields);
+        $rule->{rule_type} = 'fieldlets';
+        $rule->{rule_when} = 'post-offline';
+        $rule->{subtype} = '-';
+        $rule->{ts} = mdb->ts;
+        $rule->{username} = 'root';
+        $rule->{wsdl} = '';
+        #map{_log _dump $_->{attributes}->{key}}_array _decode_json($rule->{rule_tree});
+        #_decode_json($rule->{rule_tree});
+        #$rule;
+        mdb->rule->insert($rule);
+        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_field=>"$rule->{id}"} });
+        generate_dsl($rule);
+    }
+}
+
+sub generate_dsl {
+    my ($rule) = @_;
+    my ( $detected_errors, $returned_ts, $error_checking_dsl ) =
+      Baseliner::Controller::Rule->local_stmts_save(
+        {
+            username => 'root',
+            id_rule  => $rule->{id},
+            stmts    => $rule->{rule_tree},
+            old_ts   => $rule->{ts}
+        }
+      );
+    my $old_ts        = $returned_ts->{old_ts};
+    my $actual_ts     = $returned_ts->{actual_ts};
+    my $previous_user = $returned_ts->{previous_user};
+    my $msg;
+    if ( $returned_ts->{old_ts} ne '' ) {
+        my ($short_errors) = $detected_errors =~ m/^([^\n]+)/s;
+        my $rule_type = mdb->rule->find_one( { id => "$rule->{id}" } );
+        if ( $rule_type->{rule_type} eq 'fieldlets' ) {
+            cache->remove_like(qr/^topic:/);
+            cache->remove_like(qr/^roles:/);
+            cache->remove( { d => "topic:meta" } );
+            Baseliner->registry->reload_all;
+        }
+        $msg =
+          $detected_errors
+          ? _loc( 'Rule statements saved with errors: %1', $short_errors )
+          : _loc('Rule statements saved ok');
+    }
+    return $msg;
+}
+    
+sub map_registors {
+    my @categories  = mdb->category->find->all;
+    my $find_directos;
+    my $find_propios;
+    map {
+        my $cat = $_;
+        map {
+            if ($_->{params}->{html} and $_->{params}->{js}){
+                $find_propios->{ $_->{params}->{html} . $_->{params}->{js} } = '1';
+                if($_->{params}->{html} eq '/fields/templates/html/ucm_files.html' and $_->{params}->{js} eq '/fields/templates/js/ucm_files.js'){
+                    #_log "LA CATEGORIA ES "._dump $cat;
+                }
+            }elsif($_->{params}->{html} and not $_->{params}->{js}){
+                $find_propios->{ $_->{params}->{html}} = '1';
+                if($_->{params}->{html} eq '/fields/templates/html/row_body.html' ){
+                    #_log "LA CATEGORIA ES "._dump $cat;
+                }
+            }elsif(not $_->{params}->{html} and $_->{params}->{js}){
+                $find_propios->{ $_->{params}->{js} } = '1';
+                if($_->{params}->{js} eq '/fields/system/js/field_category.js'){
+                    #_log "LA CATEGORIA ES "._dump $cat;
+                }
+            }      
+          } _array $_->{fieldlets}
+    } @categories;
+    
+    my @reg_fieldlets = Baseliner->registry->starts_with('fieldlet');
+    map {
+        my $reg = Baseliner->model('registry')->get($_);
+        
+        #if ( $reg->{registry_node}->{key} =~ /.*required.*/ ) {
+            
+        #}else {
+            my $unique_key;
+           # _log "==>".$reg->{registry_node}->{param}->{html}."===>".$reg->{registry_node}->{param}->{js};
+            if($reg->{registry_node}->{param}->{html} and $reg->{registry_node}->{param}->{js}){
+                if($reg->{registry_node}->{param}->{html} eq '/fields/templates/html/status_chart_pie.html' 
+                    and $find_propios->{'/fields/templates/html/status_chart_pie.html'} ){     
+                    $unique_key = '/fields/templates/html/status_chart_pie.html';
+                }else{
+                    $unique_key = $reg->{registry_node}->{param}->{html} . $reg->{registry_node}->{param}->{js};
+                }
+            }elsif($reg->{registry_node}->{param}->{html} && !$reg->{registry_node}->{param}->{js}){
+                $unique_key = $reg->{registry_node}->{param}->{html};
+            }elsif(not $reg->{registry_node}->{param}->{html} and $reg->{registry_node}->{param}->{js}){
+                $unique_key = $reg->{registry_node}->{param}->{js};
+            }
+            
+            if($find_propios->{$unique_key}){
+                $find_propios->{$unique_key} = $reg->{registry_node}->{key};
+            }
+       # }
+    } @reg_fieldlets;
+    return $find_propios;
+}
+
 sub activity_to_status_changes {
     use Array::Utils qw(:all);
 

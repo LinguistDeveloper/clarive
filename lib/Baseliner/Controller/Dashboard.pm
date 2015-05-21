@@ -602,12 +602,13 @@ sub topics_by_field: Local {
     foreach my $topic (@topics_by_category){
 
         my $name = $topic->{field};
+        $name = _loc('Empty') if (!_array($topic->{field}));
 
         if ( $topic->{total}*100/$total <= $group_threshold ) {
             $others += $topic->{total};
             push @other_topics, _array($topic->{topics_list});
         } else {
-            if ( Util->is_number($topic->{field}) ) {
+            if ( Util->is_number($topic->{field}) && $topic->{field} > 1 ) {
                 try {
                     $name = mdb->master->find_one({mid=>"$topic->{field}"})->{name};#ci->new($topic->{field})->name;
                 } catch {
@@ -633,11 +634,11 @@ sub topics_by_field: Local {
             $color = $topic->{status_color};
         } else {
             if ( $ci_colors->{$name} ) {
-                $color = $ci_colors->{$name};
+                # $color = $ci_colors->{$name};
             } else {
-                $color = sprintf "#%06X", rand(0xffffff);
-                $ci_colors->{$name} = $color;
-                cache->set('ci::colors',$ci_colors);
+                # $color = sprintf "#%06X", rand(0xffffff);
+                # $ci_colors->{$name} = $color;
+                # cache->set('ci::colors',$ci_colors);
             }
         }
         $colors->{$name} = $color;
