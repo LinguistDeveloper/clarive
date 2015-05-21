@@ -693,7 +693,6 @@ sub update {
 
         when ( 'add' ) {
             my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
-
             $p->{cancelEvent} = 1;
 
             event_new 'event.topic.create' => $stash => sub {
@@ -706,16 +705,6 @@ sub update {
                     $meta = \@meta_filter;
                     $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
-
-                    # my $status_changes = {};
-                    # my $now = Class::Date->now();
-                    # my $status_name = ci->status->find_one({ id_status => $topic->id_category_status })->{name};
-                    # $status_changes->{_name_to_id($status_name)}->{count} = 1;
-                    # $status_changes->{_name_to_id($status_name)}->{total_time} = 0;
-                    # $status_changes->{_name_to_id($status_name)}->{transitions} = [{ ts => ''.Class::Date->now() }];
-                    # $status_changes->{_name_to_id($status_name)}->{last_transition} = { ts => ''.Class::Date->now() };
-                    # mdb->topic->update({ mid => "$topic->mid"},{'$set' => {_status_changes => $status_changes} });
-
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
@@ -758,8 +747,7 @@ sub update {
                 $topic_mid = $p->{topic_mid};
                 $self->cache_topic_remove( $topic_mid );
                 my $meta = $self->get_meta ($topic_mid, $p->{category});
-                $stash->{topic_meta} = $meta; 
-                
+                $stash->{topic_meta} = $meta;
                 my @meta_filter;
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
@@ -1002,7 +990,7 @@ sub next_status_for_user {
         }
     } else {
         my @user_wf = $self->user_workflow( $username );
-        @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
+        @to_status = sort { ($a->{seq} || 0 ) <=> ( $b->{seq} || 0 ) } grep {
             $_->{id_category} eq $p{id_category}
                 && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
                 && (( defined $_->{id_status_to}   && defined $p{id_status_from} && $_->{id_status_to}   ne $p{id_status_from} ) || ( !( defined $_->{id_status_to} && defined $p{id_status_from})))
@@ -1271,28 +1259,84 @@ our %meta_types = (
 
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
-
     my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
     return $cached if $cached;
 
-    my $id_cat =  $id_category
-        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
-    
+    my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
+
+    $id_category = $id_cat;
+    my @fieldlets;
     my @cat_fields;
-    
-    if ($id_cat){
-        my $catdoc = mdb->category->find_one({ id=>mdb->in($id_cat) });
-        @cat_fields = _array( $catdoc->{fieldlets} );
+
+    my $field_order = 0;
+    my @system_fields = Baseliner->registry->starts_with( "fieldlet.required" );
+    foreach my $sys_field (@system_fields){
+        my $res;
+        my $fieldRegistry = Baseliner->registry->get($sys_field);
+        $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id};
+        map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
+        $res->{params}->{field_order} = $field_order;
+        $field_order++;
+        push @cat_fields, $res;
+    }
+
+    if($id_category){
+        my $cat = mdb->category->find_one({ id=>$id_category });
+        my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+        $cr->compile;
+        my $stash = {id_category=>$id_category};
+        $cr->run(stash=>$stash);
+        @fieldlets = _array $stash->{fieldlets};
+        foreach my $fieldlet (@fieldlets){
+            my $res;
+            my $fieldType = $fieldlet->{fieldletType};
+            my $fieldRegistry = Baseliner->registry->get( $fieldType );
+            foreach my $field (keys $fieldlet){
+                $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
+            }
+            $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
+            map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
+            $res->{params}->{field_order} = $field_order;
+            $field_order++;
+            push @cat_fields, $res;
+        }
     }else{
-        if($username){
+        if ($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            #@cat_fields = _array( mdb->category->find({ id=>mdb->in(@user_categories) })->{fieldlets} );
-            @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find({ id=>mdb->in(@user_categories) })->all);
-        }else{
-            @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find->all );
+            foreach my $category (@user_categories){
+                my $cat = mdb->category->find_one({ id=>$category });
+                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+                $cr->compile;
+                my $stash = {id_category=>$category};
+                $cr->run(stash=>$stash);
+                push @fieldlets, _array $stash->{fieldlets};
+            }
+        } else {
+            my @user_categories =  map { $_->{id} } mdb->category->find->all;
+            foreach my $category (@user_categories){
+                my $cat = mdb->category->find_one({ id=>$category });
+                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+                $cr->compile;
+                my $stash = {id_category=>$category};
+                $cr->run(stash=>$stash);
+                push @fieldlets, _array $stash->{fieldlets};
+            }
+        }
+        foreach my $fieldlet (_array @fieldlets){
+            my $res;
+            my $fieldType = $fieldlet->{fieldletType};
+            my $fieldRegistry = Baseliner->registry->get( $fieldType );
+            foreach my $field (keys $fieldlet){
+                $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
+            }
+            $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
+            map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
+            $res->{params}->{field_order} = $field_order;
+            $field_order++;
+            push @cat_fields, $res;
         }
     }
-    
+
     my @meta =
         sort { $a->{field_order} <=> $b->{field_order} }
         map  { 
@@ -1301,19 +1345,21 @@ sub get_meta {
             if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
                 $d->{default_value} = eval $1;
             }
-            $d->{field_order} //= 1;
-            $d->{editable} //= length $d->{js} ? 1 : 0;
-            $d->{meta_type} = 'history' if $d->{js} && $d->{js} eq '/fields/templates/js/status_changes.js';  # for legacy only
+            $d->{editable} //= (length $d->{js} || $d->{editable} eq '1') ? '1' : '0';
+            $d->{field_order_html} ||= 0;
+            $d->{bd_field} ||= $d->{id_field};
             $d->{meta_type} ||= $d->{set_method} 
                 ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
                 : $d->{get_method} ? $meta_types{ $d->{get_method} } : '';
             $d
         } @cat_fields;
     
-    cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
-    
+   cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
+# _log _dump @meta;
     return \@meta;
 }
+
+
 
 sub get_meta_hash {
     my $self = shift;
@@ -1334,7 +1380,8 @@ sub get_data {
     my $data;
     if ($topic_mid){
         if( !$meta && $with_meta ) {
-            $meta = $self->get_meta( $topic_mid );  
+            $meta = $self->get_meta( $topic_mid );
+            # _debug $meta;
         }
         my $cache_key = { d=>'topic:data', mid=>"$topic_mid", opts=>\%opts }; # ["topic:data:$topic_mid:", \%opts];
         my $cached = cache->get( $cache_key ) unless $no_cache; 
@@ -1387,7 +1434,7 @@ sub get_data {
         }
         cache->set( $cache_key, $data );
     }
-    
+
     return $data;
 }
 
@@ -2785,7 +2832,6 @@ sub get_meta_permissions {
     my %hidden_field = map { $_ => 1} @hidden_field;
     $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
-    #_debug $meta;
     cache->set($cache_key,$meta);
     return $meta
 }

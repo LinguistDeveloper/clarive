@@ -41,8 +41,8 @@ params:
         store: store_category_status,
         anchor: data.anchor,
         value: data ? data.name_status : '',
-        readOnly: meta ? meta.readonly : true,
-        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        readOnly: Baseliner.eval_boolean(meta.readonly),
+        hidden: Baseliner.eval_boolean(meta.hidden),
         singleMode: true
     });
     

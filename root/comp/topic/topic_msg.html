@@ -81,6 +81,16 @@ padding: 2px 4px 2px 7px;
 }
 
 </style>
+<script>
+$('.bali-topic-editor-image').click(function(){
+    var imagen = $(this);
+    imagen.css('display', 'block');
+    var src = $(this).attr('src');
+    var captura = new Baseliner.Window({ title:'Zoom image', width: ($(window).width() - 20), height: ($(window).height() - 20),
+        closable: true, autoScroll: true, layout:'fit', html: "<img src="+src+"/>" });
+if (imagen.width()>600) { captura.show(); }
+});
+</script>
 % 
 % my @form = grep { $_->{fields} } _array( $topic_meta );
 % my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
@@ -97,7 +107,7 @@ padding: 2px 4px 2px 7px;
 % }
 % }else {
 <div id="boot">
-        <table width="100%">
+    <table width="100%">
         <tr>
         <td width="60%">
         <!-- div class="span7" style="xwidth: 60%" -->
@@ -115,61 +125,53 @@ padding: 2px 4px 2px 7px;
         </td>
 
 <!-- ******** right box ********** -->
-        <td width="40%" style="padding-left: 15px">
+        <td width="40%" style="padding-left: 15px;">
             <table style="width: 100%" class="table table-bordered table-condensed">
                 <tbody>
-% foreach my $field ( @body ) {
-% if ($field->{html}){
-    <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
-%}    
-% }
+%foreach my $field ( @body ) {
+     <!--    <tr>
+            <td colspan=2 > -->
+%   if ($field->{html}){
+        <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%   } 
+<!--             </td>
+        </tr>    -->
+%}
 
 % if( @between ) {
-                    <tr>
-                        <td colspan=2 >
-% foreach my $field ( @between ) {
-% if ($field->{html}){
-    <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
-%}
-% }                                 
-                            
-                        </td>
-                    </tr>
+        <tr>
+            <td colspan=2>
+%foreach my $field ( @between ) {
+%   if ($field->{html}){
+        <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%   }
+%}                                 
+            </td>
+        </tr>
 % } 
 
 
 % if( @details ) {
 %    my $did = int rand 999999;
-                    <tr>
-                        <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none">
+        <tr>
+            <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none;">
 % foreach my $field ( @details ) {
-% if ($field->{html}){
-    <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
-%}
-% }                                 
-                        </td>
-                    </tr>
+%   if ($field->{html}){
+        <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%   }
+%}                                 
+            </td>
+        </tr>
         <script>
             var dtd = Ext.fly( '<% $did %>' );
             if( dtd.dom.innerHTML.trim().length > 0 ) dtd.show();
-            $('.bali-topic-editor-image').click(function(){
-            var imagen = $(this);
-            imagen.css('display', 'block');
-            var src = $(this).attr('src');
-            var captura = new Baseliner.Window({ title:'Zoom image', width: ($(window).width() - 20), height: ($(window).height() - 20),
-                closable: true, autoScroll: true, layout:'fit', html: "<img src="+src+"/>" });
-            if (imagen.width()>600) { captura.show(); }
-            });
         </script>
 % }
                 </tbody>
             </table>
         </td>
-        </tr>
-        </table>
+    </tr>
+</table>
 %}
 
 % if( @more ) {

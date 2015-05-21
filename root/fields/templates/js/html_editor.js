@@ -16,15 +16,15 @@ params:
     var data = params.topic_data;
     var meta = params.topic_meta;
     
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
+    allow = Baseliner.eval_boolean(meta.allowBlank);
+    readonly = Baseliner.eval_boolean(meta.readonly);
 
     var editor = new Baseliner.CLEditor({
         width: '99%',
         value: data ? data[meta.bd_field] : '',
         height: meta.height ? parseInt(meta.height) : 397,
         submitValue: false, 
-        readOnly:  meta && meta.readonly ? meta.readonly : false
+        readOnly: Baseliner.eval_boolean(meta.readonly)
     });
 
 
@@ -35,12 +35,12 @@ params:
             margin: 0, padding: 0,
             fieldLabel: _(meta.name_field),
             allowBlank: allow,
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            hidden: Baseliner.eval_boolean(meta.hidden),
             //style: 'margin-bottom: 15px',
             readOnly : readonly,
             listeners: {
                 'afterrender':function(){
-                    var disable = meta && meta.readonly ? meta.readonly : false;
+                    var disable = Baseliner.eval_boolean(meta.readonly);
                     if(disable){
                         var mask = this.el.mask();
                         mask.setStyle('opacity', 0.6);

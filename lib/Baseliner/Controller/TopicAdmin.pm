@@ -72,6 +72,7 @@ sub update_category : Local {
                         statuses => $idsstatus // [], 
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
+                        default_field => $p->{default_field}
                     };
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
@@ -99,6 +100,7 @@ sub update_category : Local {
                         color         => $p->{category_color},
                         description   => $p->{description},
                         default_grid  => $p->{default_grid},
+                        default_field => $p->{default_field},
                         ( $idsstatus ? (statuses=>$idsstatus) : () ),
                         %$iss
                     }

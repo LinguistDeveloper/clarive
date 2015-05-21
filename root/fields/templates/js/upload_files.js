@@ -17,8 +17,9 @@ params:
     var data = params.topic_data;
     var form = params.form;
 	
-    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    var readonly = meta.readonly == undefined ? true : meta.readonly;	
+    var allow = Baseliner.eval_boolean(meta.allowBlank);
+    var readonly = Baseliner.eval_boolean(meta.readonly);   
+    var editable = Baseliner.eval_boolean(meta.editable);	
 
     var up = new Baseliner.UploadFilesPanel({
 		name:  meta.id_field,
@@ -26,6 +27,7 @@ params:
         allowBlank  : allow,
         height: ( meta.height ? parseInt(meta.height) : 200 ),
         readOnly    : readonly,
+        hidden: editable,
 		disabled: readonly,
         id_field    : meta.id_field,
         form : form

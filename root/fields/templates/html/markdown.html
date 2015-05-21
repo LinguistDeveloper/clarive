@@ -6,7 +6,7 @@
     my $val = $data->{$meta->{display_field}} || $data->{$meta->{bd_field}};
     $val = Util->_markdown( $val, {}, mid=>$$data{mid} );
 </%perl>
-% if( !$meta->{hidden} ) {
+% if( !($meta->{hidden}+0) ) {
 %  if( !$meta->{hide_title} ) {
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>

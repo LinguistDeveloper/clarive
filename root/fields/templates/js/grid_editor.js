@@ -15,8 +15,8 @@ params:
 	var data = params.topic_data;
 	var ff = params.form.getForm();
 
-    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    var readonly = meta.readonly == undefined ? true : meta.readonly;
+    var allow = Baseliner.eval_boolean(meta.allowBlank);
+    var readonly = Baseliner.eval_boolean(meta.readonly);
 	
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({

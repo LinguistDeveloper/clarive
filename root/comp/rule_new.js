@@ -49,8 +49,9 @@
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
                   [ 'report', _('Report') ],
+                  [ 'independent', _('Independent') ],
                   [ 'dashboard', _('Dashboard') ],
-                  [ 'independent', _('Independent') ]
+                  [ 'fieldlets', _('Fields') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
                allowBlank: false
@@ -84,7 +85,7 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else if( v == 'dashboard' ) {
+        } else if( v == 'fieldlets' || v == 'dashboard' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
