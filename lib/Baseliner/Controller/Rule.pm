@@ -557,18 +557,19 @@ sub palette : Local {
                 my $n = $_;
                 my $service_key = $n->{key};
                 +{
-                    isTarget => \0,
-                    leaf=>\1,
+                    isTarget => $n->{holds_children}? \1: \0,
+                    leaf=> \1,
+                    holds_children=>$n->{holds_children}? \1: \0,
                     key => $service_key,
                     icon => $n->{icon} // $default_icon,
                     palette => \1,
                     text => _loc($n->{name}) // $service_key,
                 }
             } 
-        map { 
-            $c->registry->get( $_ );
-        }
-        @fieldlets ]
+            map { 
+                $c->registry->get( $_ );
+            } @fieldlets
+        ]
     };
 
     $c->stash->{json} = \@tree;
