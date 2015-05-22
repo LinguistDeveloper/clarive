@@ -1013,7 +1013,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $tmp_data->{$relation} = $field;  
                         for my $select (@selects){
                             if ($i % 2 == 0){  
-                                if (exists $categories_queries->{$select}){
+                                if (exists $categories_queries->{$select}->{$field}){
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $categories_queries->{$select}->{$field};
                                     for my $inner_field ( @fields ) {
@@ -1029,9 +1029,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                         if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         } else{
-                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' ));
-                                            delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
+                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};
+                                            delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
+                                            # delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }
                                     $tmp_ref->{'mid' . "_$select"} = $categories_queries->{$select}->{$field}->{mid} // $tmp_data->{mid};
@@ -1056,12 +1057,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         }
                                         else{
-                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};# if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
                                             # delete $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field . "_$select"});
 
                                         }
-                                    }   
+                                    }
                                     # $tmp_ref->{$relation . "_$select"} = $field; 
                                 }
                                 $value = '';
@@ -1155,12 +1157,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 my @status_changes = Baseliner->model('Topic')->status_changes( $data );
                 my $html = '<div style="width:250px">';
                 for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
-                    $html .= '<p style="font: 11px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
+                    $html .= '<p style="font: 10px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
                 }
                 $html .= '</div>';
-                for my $category (@All_Categories){
-                    $row{$k. "_$category"} = $html;
-                }
+                $row{$k} = $html;
             }
 
             #my $parse_key =  Util->_unac($k); 

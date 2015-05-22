@@ -111,6 +111,11 @@ sub monitor {
                                                             action => 'action.job.viewall',
                                                             level => 1);
         $where->{projects} = mdb->in( sort @ids_project );
+        my @bl;
+        my $user = ci->user->find_one({ name=>$username });
+        my @roles = keys $user->{project_security};
+        @bl = @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
+        $where->{bl} = mdb->in(@bl) if(@bl);
     }
     
     if( length $p->{job_state_filter} ) {
@@ -166,7 +171,7 @@ sub monitor {
         }
         $where = { %$where, %$where_filter };
     }
-    
+
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(mdb->ixhash( @order_by ));
     
     if( $p->{list_only} ) {    # used by the refresh auto, for speed

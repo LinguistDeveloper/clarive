@@ -53,7 +53,7 @@ register 'service.ci.change_task' => {
 
 
 sub change_task {
-    my ($self, $c, $config ) = @_;
+    my ($self, $c, $p ) = @_;
 
     my $stash = $c->stash;
     my $topic_mid =  $stash->{task_current}->{attributes}->{topic_mid};

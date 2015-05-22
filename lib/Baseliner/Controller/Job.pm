@@ -494,8 +494,16 @@ sub job_states : Path('/job/states') {
 }
 
 sub envs_json {
-  #my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
-    my @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
+    my ($self, $username) = @_;
+    my @data;
+    if (!Baseliner->model('Permissions')->is_root( $username )){
+        my $user = ci->user->find_one({ name=>$username });
+        my @roles = keys $user->{project_security};
+        my @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
+        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis(bl=>mdb->in(@bl));
+    } else {
+        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
+    }
   _encode_json \@data;
 }
 
@@ -517,7 +525,7 @@ sub monitor : Path('/job/monitor') {
     
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
-    $c->stash->{envs_json}       = $self->envs_json;
+    $c->stash->{envs_json}       = $self->envs_json($c->username);
     $c->stash->{types_json}      = $self->types_json; # Tipo de elementos en Monitor. SCM|SQA.
 
     $c->stash->{template} = '/comp/monitor_grid.js';
@@ -596,8 +604,8 @@ sub jc_store : Local  {
         
         my @chi;
         if( $ci->is_release ) {
-            my @changesets = grep { $_->is_changeset } $ci->children( where=>{collection=>'topic'}, no_rels=>1 );
-            my @cs_mids = map { $_->mid } @changesets;
+            my @changesets = $ci->children( where=>{collection=>'topic'}, 'category.is_changeset' => 1, no_rels=>1, depth => 2, mids_only => 1 );
+            my @cs_mids = map { $_->{mid} } @changesets;
             my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids });
             @chi = map {
                my $cs_data = $_;

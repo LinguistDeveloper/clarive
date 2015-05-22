@@ -150,7 +150,6 @@ sub user_has_action {
         return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
         $ret = scalar grep {$action eq $_ } Baseliner->model('Users')->get_actions_from_user($username, @bl);      
     }
-    
     if( $p{fail} && !$ret ) {
         _fail _loc 'User %1 does not have permissions to action %2', $username, $action;
     }
