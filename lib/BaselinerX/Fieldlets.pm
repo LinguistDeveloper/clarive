@@ -244,9 +244,9 @@ register 'fieldlet.system.status_new' => {
     icon        => '/static/images/icons/lock_small.png',
     display_field => 'name_status',
     bd_field    => 'id_category_status',
-    id_field    => 'id_category_status',
+    id_field    => 'status_new',
     framed      => 1,
-    section     => 'details',
+    section     => 'body',
     origin      => 'system',
     relation    => 'status',
     meta_type   => 'status'
@@ -259,7 +259,7 @@ register 'fieldlet.system.moniker' => {
     form        => '/fields/templates/config/moniker.js',
     icon        => '/static/images/icons/lock_small.png',
     html        => '/fields/templates/html/row_body.html',
-    section     => 'details',
+    section     => 'body',
     origin      => 'system',
     bd_field    => 'moniker',
     id_field    => 'moniker'
@@ -295,7 +295,8 @@ register 'fieldlet.system.description' => {
     icon        => '/static/images/icons/lock_small.png',
     id_field    => 'description',
     bd_field    => 'description',
-    origin      => 'system'
+    origin      => 'system',
+    section     => 'head',
 };
 
 ########################################################################################
@@ -428,12 +429,11 @@ register 'fieldlet.required.category' => {
     bd_field    => 'id_category',
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/system/js/field_category.js',
-    # form        => '/fields/templates/config/description.js', ############# MODIFICAR
     icon        => '/static/images/icons/lock_small.png',
-    section     => 'details',
+    origin      => 'system',
+    section     => 'body',
     relation    => 'categories',
     hidden      => '1',
-    origin      => 'system',
     system_force => 'true',
 };
 
@@ -479,8 +479,8 @@ register 'fieldlet.required.modified_on' => {
 register 'fieldlet.required.include_into' => {
     name_field  => _loc('Include into'),
     html        => '/fields/system/html/field_include_into.html',
-    section     => 'details',
     origin      => 'default',
+    section     => 'details',
     editable    => 0,
     field_order => 1,
     id_field    => 'include_into',
@@ -492,10 +492,10 @@ register 'fieldlet.required.progress' => {
     name_field  => _loc('Progress'),
     html        => '/fields/templates/html/progress_bar.html',
     js          => '/fields/templates/js/progress_bar.js',
-    section     => 'details',
     editable    => '0',
     hidden      => '1',
     origin      => 'system',
+    section     => 'details',
     id_field    => 'progress',
     bd_field    => 'progress'
 };
