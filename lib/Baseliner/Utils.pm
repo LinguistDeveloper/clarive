@@ -1138,8 +1138,8 @@ sub zip_files {
     }
     $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
         or _throw "Error writing zip file $p{to}: $!";
-    return $p{to};
 	}
+    return $p{to};
 }
 sub zip_tree {
 my (%p) =@_;
