@@ -191,7 +191,7 @@
               columnWidth: .50, 
               bodyStyle: 'background:transparent;',
               items: [
-                { xtype:'textfield', fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
+                { xtype:'textfield', anchor: '100%',fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
                 new Baseliner.ComboDouble({ anchor: '100%',fieldLabel: _('The field data units are'), name:'input_units', value: data.input_units || 'day', data: [
                     ['second', _('Seconds')],
                     ['minute', _('Minutes')],

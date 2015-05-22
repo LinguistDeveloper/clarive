@@ -1018,7 +1018,7 @@ sub topics_gauge: Local {
     my $count = 0;
     while (my $topic = $rs_topics->next() ) {
         if ( $date_field_start ) {
-            next if !$topic->{$date_field_start};
+            next if !_array($topic->{$date_field_start});
             my $date_start = Class::Date->new($topic->{$date_field_start});
             my $date_end = !$topic->{$date_field_end} ? Class::Date->now() : Class::Date->new($topic->{$date_field_end});
 
@@ -1029,7 +1029,7 @@ sub topics_gauge: Local {
             $min = $days if $days < $min;
             
         } elsif ( $field_mode ){
-            next if !$topic->{res_time};
+            next if !_array($topic->{res_time});
             push @data, $topic->{res_time};
             $max = $topic->{res_time} if $topic->{res_time} > $max;
             $min = $topic->{res_time} if $topic->{res_time} < $min;        
