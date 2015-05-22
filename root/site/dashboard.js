@@ -47,7 +47,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                                 [%= dashlet.title %]
                             </td>
                             <td style='font-weight:bold;'>
-                                <div id="[%= id_div %]_update" style='color:#BBB;width: 100%;padding:3px;text-align:center;font-size: 75%;'>
+                                <div class='update-time' id="[%= id_div %]_update" style='font-size: 75%;'>
                                         [%= last_update %]
                                 </div>
                             </td>
@@ -95,14 +95,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             Ext.each( res.dashlets, function(dashlet){
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = function(){/*
-                    <img style='cursor:pointer;opacity: 0.4;' 
+                    <img class='dashboard-buttons'
                         src='/static/images/icons/config.gif' 
                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.show_config("[%= id_dashlet %]")'
                     />
-                    <img style='cursor:pointer;opacity: 0.4;'
-                         on 
+                    <img class='dashboard-buttons'
                          src='/static/images/icons/refresh.gif' 
-                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' />
+                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' 
+                    />
                 */};
                 var id_div = Ext.id();
                 var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
