@@ -208,7 +208,9 @@ register 'fieldlet.separator' => {
     html        => '',
     js          => '/fields/templates/js/separator.js',
     form        => '/fields/templates/config/separator.js',
-    icon        => '/static/images/icons/separator.png'
+    icon        => '/static/images/icons/separator.png',
+    holds_children => 1,
+    isTarget => 1
 };
 
 register 'fieldlet.text' => {

@@ -584,6 +584,7 @@
             var attr1 = n1.attributes;
             var attr2 = n2.attributes;
             if( attr1.palette ) {
+                console.log(attr1);
                 if( attr1.holds_children ) {
                     attr1.leaf = false;
                 } 
@@ -602,6 +603,7 @@
                 }
                 //n2.getOwnerTree().is_dirty = true;
                 copy.attributes.id = Cla.id('rule');
+                console.log(copy);
                 e.dropNode = copy;
             }
             return true;

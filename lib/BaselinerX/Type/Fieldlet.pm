@@ -20,14 +20,18 @@ has bd_field   	=> ( is=> 'rw', isa=> 'Str', default=>sub{
     return $self->id_field;
 });
 
+has leaf        => ( is => 'rw', isa => 'Bool', default => 1);
+has holds_children => ( is => 'rw', isa => 'Bool', default => 0);
+
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	return sub{
 	    my ($self, $n, %p ) = @_;
 	    my %data = %{ $n->{data} || {} };
 	    $data{name_field} = $n->{text};
-	    sprintf(q{
-	        push @{ $stash->{fieldlets} }, %s; 
-	    }, Data::Dumper::Dumper(\%data));
+        sprintf(q{
+            push @{ $stash->{fieldlets} }, %s;
+            %s
+        }, Data::Dumper::Dumper(\%data), $self->dsl_build( $n->{children}));
 	};
 });
 
