@@ -7930,5 +7930,9 @@ msgstr "Pases por franja horaria"
 msgid "Other"
 msgstr "Otro"
 
+msgid "Activate"
+msgstr "Activar"
+
 msgid "Mandatory field"
 msgstr "Campo obligatorio"
+
