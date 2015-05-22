@@ -1288,16 +1288,16 @@ sub get_meta {
         $cr->run(stash=>$stash);
         @fieldlets = _array $stash->{fieldlets};
         foreach my $fieldlet (@fieldlets){
-            my $res;
+            my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
             my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry = Baseliner->registry->get( $fieldType );
-            foreach my $field (keys $fieldlet){
-                $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
-            }
-            $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
-            map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-            $res->{params}->{field_order} = $field_order;
-            $field_order++;
+            my $fieldRegistry = try { 
+                Baseliner->registry->get( $fieldType ) 
+            } catch {
+                _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;
+            };
+            my $reg_params = $fieldRegistry->{registry_node}{param};
+            $res->{params}{$_} = $reg_params->{$_} for keys $reg_params;
+            $res->{params}{field_order} = $field_order++;
             push @cat_fields, $res;
         }
     }else{
@@ -1325,15 +1325,20 @@ sub get_meta {
         foreach my $fieldlet (_array @fieldlets){
             my $res;
             my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry = Baseliner->registry->get( $fieldType );
-            foreach my $field (keys $fieldlet){
-                $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
-            }
-            $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
-            map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-            $res->{params}->{field_order} = $field_order;
-            $field_order++;
-            push @cat_fields, $res;
+            my $fieldRegistry;
+            try {
+                $fieldRegistry = Baseliner->registry->get( $fieldType );
+                foreach my $field (keys $fieldlet){
+                    $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
+                }
+                $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
+                map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
+                $res->{params}->{field_order} = $field_order;
+                $field_order++;
+                push @cat_fields, $res;
+            } catch {
+                _error "FieldType $fieldType not found in registry: ".shift;
+            };
         }
     }
 

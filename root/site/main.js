@@ -165,7 +165,7 @@ Ext.onReady(function(){
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
             defaults: { autoScroll: true }, 
             //plugins: [menuTab],
-            plugins: [menuTab,  new Ext.ux.panel.DraggableTabs()],
+            plugins: [menuTab,  new Ext.ux.panel.DraggableTabs({  block_first_tab: true })],
             enableTabScroll: true,
             layoutOnTabChange: true,
             listeners:{
@@ -187,7 +187,7 @@ Ext.onReady(function(){
                 region: 'center',
                 id:'main-panel',
                 defaults: { closable: false, autoScroll: true }, 
-                 plugins: [menuTab,  new Ext.ux.panel.DraggableTabs()],
+                 plugins: [menuTab,  new Ext.ux.panel.DraggableTabs({ block_first_tab: true })],
                 resizeTabs: true,
                 enableTabScroll: true,
                 layoutOnTabChange: true,

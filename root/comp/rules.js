@@ -221,11 +221,11 @@
         ],
         tbar: [ 
             search_field,
-            { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
-            { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
-            { xtype:'button', icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
-            { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
+            { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
+            { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
+            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
@@ -789,7 +789,7 @@
             stmts_menu.showAt(event.xy);
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
-        var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
+        var btn_refresh_tree = new Ext.Button({ tooltip: _('Refresh'), icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.gif', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
             if( this.checked ) {
@@ -828,7 +828,7 @@
             }
         });
         
-        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
+        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, tooltip: _('History'), icon:'/static/images/icons/history.png', 
             handler: function() { 
                 if( btn_version_tree.pressed ) {
                     var ok = rule_load( btn_refresh_tree, true );
@@ -889,7 +889,7 @@
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
                 btn_version_tree,
-                { xtype:'button', icon:'/static/images/icons/html.png', handler: function() { rule_tree.view_docs() } }
+                { xtype:'button', icon:'/static/images/icons/html.png', tooltip:_('HTML'),  handler: function() { rule_tree.view_docs() } }
             ],
             root: { 
                 text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 

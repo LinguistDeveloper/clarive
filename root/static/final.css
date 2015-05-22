@@ -391,3 +391,27 @@
 a {
     -webkit-touch-callout: none; 
 }
+
+.dashboard-buttons:hover {
+    opacity: 1.0;
+    filter: alpha(opacity=100);
+}
+
+.dashboard-buttons {
+    cursor: pointer;
+    opacity: 0.1; 
+}
+
+.update-time:hover {
+    opacity: 1.0;
+    filter: alpha(opacity=100);
+}
+
+.update-time {
+    color:#000;
+    opacity: 0.1;
+    width: 100%;
+    padding: 3px;
+    text-align: center;
+    font-size: .5em;
+}
