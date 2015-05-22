@@ -224,6 +224,7 @@ register 'fieldlet.text' => {
 
 register 'fieldlet.number' => {
     name        => _loc('Numberfield'),
+    section     => 'body',
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/numberfield.js',
     form        => '/fields/templates/config/numberfield.js',
@@ -378,6 +379,7 @@ register 'fieldlet.system.list_topics' => {
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
+    section_allowed => ['head','more'],
     html        => '/fields/system/html/list_topics.html',
     js          => '/fields/system/js/list_topics.js',
     form        => '/fields/templates/config/list_topics.js',
