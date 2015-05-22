@@ -276,10 +276,23 @@ sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $where = {};
+    my $sort = $p->{sort} || 'ts';
+    $sort = 'name_insensitive' if $sort eq 'rule_name';
+    my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
     if( $p->{query} ) {
         mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type)] ); 
     }
-    my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( _id=>-1 ) );
+    # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
+    my $rs = mdb->rule->aggregate([
+            { '$match'=>$where },
+            { '$project'=>{ 
+                    rule_name=>1, rule_type=>1, 
+                    rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, 
+                    id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
+                } 
+            },
+            { '$sort'=>mdb->ixhash( $sort=>$dir ) } 
+    ],{ cursor=>1 });
     my @rules;
     while (my $rule = $rs->next) {
         $rule->{event_name} = $c->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};

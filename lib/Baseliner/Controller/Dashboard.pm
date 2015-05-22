@@ -131,7 +131,7 @@ sub init : Local {
         my $default_dashboards = Util->_load(join '',<DATA>);# || _fail _loc 'Could not find default dashboard data!';
         for my $dashboard ( _array($default_dashboards) ) {
             my $id = mdb->seq('rule');
-            mdb->rule->insert({ %$dashboard, rule_seq=>0+$id, id=>"$id" });
+            mdb->rule->insert({ %$dashboard, ts=>mdb->ts, rule_seq=>0+$id, id=>"$id" });
             if ( $dashboard->{default_dashboard} ) {
                 $id_rule = $id;
             }

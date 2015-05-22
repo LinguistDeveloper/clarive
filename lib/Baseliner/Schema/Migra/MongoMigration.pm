@@ -54,7 +54,12 @@ sub topic_categories_to_rules {
                     $fieldlet->{params}->{id_field} eq 'category' or $fieldlet->{params}->{id_field} eq 'labels' or
                     $fieldlet->{params}->{id_field} eq 'include_into' or $fieldlet->{params}->{id_field} eq 'progress';
             foreach my $key (keys $fieldlet->{params}){
-                $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+                if($key eq '_html'){
+                    $data->{html} = $fieldlet->{params}->{$key};
+                    $fieldlet->{params}->{html} = $fieldlet->{params}->{$key};
+                }else{
+                    $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+                }
             }
             #_log $fieldlet;
             my $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
@@ -101,6 +106,14 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.system.release';
             }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.revisions';
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+                if($fieldlet->{params}->{bd_field} eq 'description'){
+                    $attributes->{key} = 'fieldlet.system.description';
+                }else{
+                    $attributes->{key} = 'fieldlet.html_editor';
+                }
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
+              $attributes->{key} = 'fieldlet.text';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
