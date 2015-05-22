@@ -1290,7 +1290,12 @@ sub get_meta {
         foreach my $fieldlet (@fieldlets){
             my $res;
             my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry = Baseliner->registry->get( $fieldType );
+            my $fieldRegistry;
+            try {
+                $fieldRegistry = Baseliner->registry->get( $fieldType );
+            } catch {
+                _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;
+            };
             foreach my $field (keys $fieldlet){
                 $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
             }
