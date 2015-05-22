@@ -3,11 +3,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         self.i = 0;
+
         self.identificador_nodos = 00000000;
         self.posicionx = 0;
         self.posiciony = 0;
 
-        self.cuenta = 0;
+        self.titulos = 0;
+
         self.origen=0;
 
         self.tbar = [
@@ -34,8 +36,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     init : function(){
         var self = this;
 
-        //var color = d3.scale.category10();
-
         self.nodes = [];
         self.links = [];
         self.nodes2 = [];
@@ -47,16 +47,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
 
         for(cnt = 0 ; cnt < self.array.length; cnt++){
-            self.array[cnt].t = 1000*(cnt+1);
+            self.array.data[cnt].t = 1000*(cnt+1);
         }
 
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
             //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
-            //".node.a": { "fill": "red" },
-            //".node.b": { "fill": "green" },
-            //".node3": { "fill": "#1f77b4" }
         });
 
         var id = self.body.id; 
@@ -101,13 +97,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
  
 
         //COLORES DE LOS NODOS  
-
-        //self.getRandomColor();
-                         //alert(" el color es " +self.nodos_ini);
-        //self.getLuxColor(self.getRandomColor(),0.8);
-                 //alert(" y los nodos inciales son " +self.nodos_ini);
-
-
+/*
         var Color_Nodos_Raiz = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
         Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
@@ -131,7 +121,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FF1919").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
-        
+        */
 
         var Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -164,17 +154,17 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
 
         if( !self.anim_running ) return;
-        
-        if(self.array.ev[self.i] == 'add') {
+
+        if(self.array.data[self.i].ev == 'add') {
             self.add();
             self.i++;
-        }else if(self.array.ev[self.i] == 'modify')
+        }else if(self.array.data[self.i].ev == 'mod')
 
         {
             //self.userdel();
             self.modify();
             self.i++;
-        }else if(self.array.ev[self.i] == 'del'){
+        }else if(self.array.data[self.i].ev == 'del'){
             //self.userdel();
             self.del();
             self.i++;
@@ -202,7 +192,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         //Nos pasa igual que con el circulo. Si hacemos visible el .text vemos el texto del nodo raiz.
         self.node5.enter().append("text");//.text(a.node);
-        self.node5.exit().remove();
+        self.node5.exit().remove(); 
 
         //TRUCO SE NOS MUEVEN LOS COLORES TODOS UNA POSICION
         //self.nodes[0].color = "white";
@@ -218,8 +208,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var i = 0;
         var h = 0;
 
-        for (i=0; i< self.array.parent.length; i++){
-            arrayOriginal[i] = self.array.parent[i];
+        for (i=0; i< self.array.data.length; i++){
+            arrayOriginal[i] = self.array.data[i].parent;
         }
         
         $.each(arrayOriginal, function(i, el){
@@ -236,8 +226,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
         var a = self.nodes[0];
-        var d = {id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "iniciales", parent: array, color: "blue", posicionx: 0, posiciony: 0};           
-        //var d = {id: "#d"+Math.random(), node: array};
+        var d = {id: "#d"+self.titulos + "d"+ Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "iniciales", parent: array, color: "blue", posicionx: 0, posiciony: 0};           
 
         if (!a){
              self.nodes.push(d)
@@ -248,24 +237,34 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.links.push({source: d, target: a});
             }
         
+        self.titulos++;
         self.start_inicial();
     },
     start_inicial : function(){
 
         var self = this;
 
+
+
+
         //Damos colores
+        var colores = ['#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#A52A2A','#FFA500','#4682B4','#FFC0CB','#CD5C5C','#CC99FF','#808080'];
+        //var colores = ['white','red','blue','green','yellow','brown','orange','steelblue','ping','indianRed','purple','gray'];
 
-        var color = self.getRandomColor();
-        var color_brillo = self.getLuxColor(color,0.8);
+        //OJO HAY QUE TENER EN CUENTA QUE EL NODO RAIZ ESTA AUNQUE NO SE PINTE
+        var color = colores[self.nodes.length-2];//self.nodes.length-2 es la posicion 0
+        //alert(colorRE);
 
-        self.nodes[self.nodes.length-1].color = color;
+        self.nodes[self.nodes.length-2].color = color;//self.nodes.length-1 es la posicion 1
+        //var color_brillo = self.getLuxColor(color,0.8);
+
+
 
         var Color_Nodos_Raiz = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
         Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos_Raiz.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color steelblue
-        Color_Nodos_Raiz.append("stop").attr("offset", "100%").attr("stop-color", color_brillo ).attr("stop-opacity", 0).attr("brighter",1); // Color steelblue aclarado + 4
+        Color_Nodos_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF" ).attr("stop-opacity", 0).attr("brighter",1); // Color steelblue aclarado + 4
 
         var Color_texto_Raiz = self.svg.append("defs").append("linearGradient").attr("id", "Color_texto_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -275,17 +274,17 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         //Creamos los links y los nodos.
 
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4).attr("stroke-width",3).attr("globalCompositeOperation", "lighter");
-        self.link.exit().remove();
+        self.node = self.node.data(self.force.nodes(), function(d) { nodoid= d.id ; return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
+        self.node.exit().remove();
 
 
         self.texto_nodos_iniciales = self.texto_nodos_iniciales.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
         self.texto_nodos_iniciales.enter().append('text').attr("fill","url(#Color_texto_Raiz)").text(function(d) { return d.source.parent;});   
 
-        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
-        self.node.exit().remove();
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4).attr("stroke-width",3).attr("globalCompositeOperation", "lighter");
+        self.link.exit().remove();
 
         //INICIAMOS EL RESTO DE NODOS PERO NO LE DAMOS VALORES PARA QUE NO SE MUESTREN
 
@@ -312,17 +311,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.enter().append("text");
         self.node3.exit().remove();
 
-
-
-        //TRUCO SE NOS MUEVEN LOS COLORES TODOS UNA POSICION
-        //self.nodes[0].color = self.nodes[self.nodes.length-1].color;
-               
-
-        //alert("el nodo " + (self.nodes.length-1) + " tiene estos colores "+self.nodes[self.nodes.length-1].color + " es este nodo "+self.nodes[self.nodes.length-2].id);
-
-
         self.force.start();
-        //self.borrar_nodo(self.timer);
+
     },
     add : function(){
 
@@ -332,14 +322,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var nodos_ini = 0;
 
-        var d = {id: self.identificador_nodos, t: self.array.t[self.i], ev: self.array.ev[self.i], who: self.array.who[self.i], node: self.array.node[self.i], parent: self.array.parent[self.i], color: "blue", posicionx: 0, posiciony: 0};           
-        //var d = {id: self.i, node: self.array[self.i].parent};
+        var d = {id: self.identificador_nodos, t: self.array.data[self.i].t, ev: self.array.data[self.i].ev, who: self.array.data[self.i].who, node: self.array.data[self.i].node, parent: self.array.data[self.i].parent, color: "blue", posicionx: 0, posiciony: 0};           
 
         //CONTADOR DE APLICACION
        if((self.i-1) <0){
-            self.timer = self.array.t[self.i];
+            self.timer = self.array.data[self.i].t;
         }else{
-            self.timer = self.array.t[self.i]-self.array.t[self.i-1];
+            self.timer = self.array.data[self.i].t-self.array.data[self.i-1].t;
 
         }
 
@@ -352,7 +341,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             var j = 0;
             while (j < self.nodes.length){
 
-                if (self.nodes[j].parent == self.array.parent[self.i]){
+                if (self.nodes[j].parent == self.array.data[self.i].parent){
                         self.nodes.push(d);
                         self.links.push({source: d, target: self.nodes[j]});
                         j=self.nodes.length;
@@ -369,12 +358,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
         var a = self.nodes[0];
-        var d = {id: self.identificador_nodos, t: self.array.t[self.i], ev: self.array.ev[self.i], who: self.array.who[self.i], node: self.array.node[self.i], parent: self.array.parent[self.i], color: "blue", posicionx: 0, posiciony: 0};                    
+
+        var d = {id: self.identificador_nodos, t: self.array.data[self.i].t, ev: self.array.data[self.i].ev, who: self.array.data[self.i].who, node: self.array.data[self.i].node, parent: self.array.data[self.i].parent, color: "blue", posicionx: 0, posiciony: 0};                    
         var j = 0;
 
         while (j < self.nodes.length){
                 //Buscamos el nodo a borrar.
-                if (self.nodes[j].node == self.array.node[self.i]){
+                if (self.nodes[j].node == self.array.data[self.i].node){
                     //alert("borro el nodo  " + self.nodes[j].node + "  tamano nodo " + self.nodes.length + "posicion  "+ j );
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
                     self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
@@ -394,7 +384,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             var k = 0;
             while (k < self.nodes.length){
 
-                if (self.nodes[k].parent == self.array.parent[self.i]){
+                if (self.nodes[k].parent == self.array.data[self.i].parent){
                         self.nodes.push(d);
                         self.links.push({source: d, target: self.nodes[k]});
                         k=self.nodes.length;
@@ -405,16 +395,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         /* while (j < self.nodes.length){
             //Buscamos el nodo a borrar.
-            if (self.nodes[j].node == self.array[self.i].node){
+            if (self.nodes[j].node == self.array.data[self.i].node){
 
                 //alert("borro el nodo  " + self.nodes[j].node + "  tamano nodo " + self.nodes.length + "posicion  "+ j );
                 self.nodes[j].node
                 //alert("nodo antes del cambio"+ self.nodes[j].id);
-                self.nodes[j].t = self.array[self.i].t;
-                self.nodes[j].ev = self.array[self.i].ev;
-                self.nodes[j].who = self.array[self.i].who;
-                self.nodes[j].node = self.array[self.i].node;
-                self.nodes[j].parent = self.array[self.i].parent;
+                self.nodes[j].t = self.array.data[self.i].t;
+                self.nodes[j].ev = self.array.data[self.i].ev;
+                self.nodes[j].who = self.array.data[self.i].who;
+                self.nodes[j].node = self.array.data[self.i].node;
+                self.nodes[j].parent = self.array.data[self.i].parent;
 
                 self.node_modify = self.nodes[j]
 
@@ -429,13 +419,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.userstart();
         self.start_modify();
 
-
-        //self.force.start();
-
-        //self.start();
-        //alert("tamano nodos despues  "+ self.nodes.length);
-        //self.modify_start();
-
     },
     del : function(){
 
@@ -445,7 +428,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         while (j < self.nodes.length){
                 //Buscamos el nodo a borrar.
-                if (self.nodes[j].node == self.array.node[self.i]){
+                if (self.nodes[j].node == self.array.data[self.i].node){
                     //alert("borro el nodo  " + self.nodes[j].node + "  tamano nodo " + self.nodes.length + "posicion  "+ j );
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
                     self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
@@ -455,43 +438,28 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             j++;
         }
 
-
-        //self.nodes.splice(self.nodes.indexOf(self.nodes[self.i]),1);
-        //self.links.splice(self.links.indexOf(self.links[self.i]),1);
-        //self.nodes.splice(self.nodes.length-1); // borra el ultimo nodo creado
-        //self.links.pop(); // remove b-c
         self.userstart();
         self.start();
     },
     start : function(){
 
         var self = this;
-
-
-        //alert("color de release " + self.nodes[1].color);
         var color = 0;
 
         var col = 0;
-            while (col < self.nodes.length){
+            while (col <= self.nodes.length){
 
                 if (self.nodes[col].parent == self.nodes[self.nodes.length-1].parent && self.nodes[col].node=="iniciales"){
-                        //alert(" parent " +self.nodes[self.nodes.length-1].parent +" color "+self.nodes[col].color +" color2 "+self.nodes[col].parent +"posicion " + col);
-                        //alert(self.nodes[col].parent);
-                        var color = self.nodes[col].color;
-                        var color_brillo = self.getLuxColor(color,0.8);
-                        self.nodes[self.nodes.length-1].color = color;
-                        //alert(col);
+                        color = self.nodes[col].color;
+                        var color_brillo = self.getLuxColor(self.nodes[col].color,0.8);
+                        self.nodes[self.nodes.length-1].color = self.nodes[col].color;
+
 
                         col=self.nodes.length;
-                        //alert(col);
-
                 }   
                 col++;
             }
 
-        //alert (color);
-
-        
 
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -506,7 +474,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
         
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(self.array.node[self.i]).attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");
+        self.node5.enter().append("text").text(self.array.data[self.i].node).attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");
         self.node5.exit().remove();
        
         self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
@@ -591,7 +559,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(self.array.node[self.i]).attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");
+        self.node5.enter().append("text").text(self.array.data[self.i].node).attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");
         self.node5.exit().remove();
        
         self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
@@ -688,7 +656,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node2.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").text(self.array.who[self.i]).attr("fill","#00CCFF");
+        self.node3.enter().append("text").text(self.array.data[self.i].who).attr("fill","#00CCFF");
         self.node3.exit().remove();
 
     }, 
@@ -795,75 +763,49 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .ease("elastic")
             .remove();
         self.node3_copia.exit().remove();
-
-
-
       
     },    
     datos : function(array) {
         
         var self = this;
            
-            Baseliner.ajaxEval('/controllerlogdiego/leer_log/', { }, function(res){
-               
-            self.array = res;
+        Baseliner.ajaxEval('/controllerlogdiego/leer_log/', { }, function(res){
+           
+        self.array = res;
+               //alert("llego aqui"+ self.array.data[0].ev);
+               console.log(self.array);
 
-               //alert("llego aqui"+ self.array.ev[0]);
-               //console.log(self.array);
-               
-               /* self.links = [];
-                
-                var link = function(source){
-                    Ext.each( source.children, function(chi){
-                        self.links.push({ source: source.name, target: chi.name, type:"child" });
-                        link( chi );
-                    });
-                }
-                link( res.data );a
-
-                self.nodes = {};
-
-                // Compute the distinct nodes from the links.
-                self.links.forEach(function(link) {
-                  link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
-                  link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
-                });
-                
-                self.draw();*/
-
-            });
+        });
     },
     getLuxColor : function(hex,lum) {
 
         // validate hex string
-    hex = String(hex).replace(/[^0-9a-f]/gi, '');
-    if (hex.length < 6) {
-        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-    }
-    lum = lum || 0;
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        }
+        lum = lum || 0;
 
-    // convert to decimal and change luminosity
-    var rgb = "#", c, i;
-    for (i = 0; i < 3; i++) {
-        c = parseInt(hex.substr(i*2,2), 16);
-        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-        rgb += ("00"+c).substr(c.length);
-    }
+        // convert to decimal and change luminosity
+        var rgb = "#", c, i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i*2,2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ("00"+c).substr(c.length);
+        }
 
     //alert(rgb);
     return rgb;
-
-
     },
     getRandomColor : function() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
+    
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
 
     //alert(color);
     return color;
     }
 });
-

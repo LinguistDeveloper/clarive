@@ -11,12 +11,23 @@ sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
     _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
-    my @rows = (1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000);
-    my @ev = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add');
-    my @who = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
-    my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#55350','#55351','#55352','#55353','#55354','#55355','#55356','#55357','#55358','#55359','#55360','#55361','#55362','#55363','#55364','#55365','#55366','#55367','#55368','#55369','#55350','#55351','#55352','#55353','#55354','#55355','#55356','#55357','#55358','#55359','#55360','#55361','#55362','#55363','#55364','#55365','#55366','#55367','#55368','#55369','#55350','#55351','#55352','#55353','#55354','#55355','#55356','#55357','#55358','#55359','#55360','#55361','#55362','#55363','#55364','#55365','#55366','#55367','#55368','#55369');
-    my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Release','Email','Hostage','Changeset','Emergency','BD','Hostage','Email','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Release','Email','Hostage','Changeset','Emergency','BD','Hostage','Email','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Release','Email','Hostage','Changeset','Emergency','BD','Hostage','Email','Copiar','basess','resetear','host','Email','empty','Copiar','basess','resetear','host','Email','empty','empty','Email','host','Copiar','basess','resetear','host','Email','Copiar','basess','resetear','host','Email','empty','Copiar','basess','resetear','host','Email','empty','empty','Email','host','Copiar','basess','resetear','host','Email','Copiar','basess','resetear','host','Email','empty','Copiar','basess','resetear','host','Email','empty','empty','Email','host','Copiar','basess','resetear','host','Email');
-    $c->stash->{json} = { t=>\@rows, ev=>\@ev, who=>\@who, node=>\@nodes, parent=>\@parent};
+    my @ev = (1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000);
+    my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add');
+    my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
+    my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
+    my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
+    
+    my @data;
+    for my $i ( 1 .. 20 ) {
+        my $parent = $parent[$i];
+        my $nodes = $nodes[$i];
+		my $action = $action[$i];
+        my $ev = $ev[$i];
+        my $actor = $actor[$i];
+        push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$ev, who=>$actor };
+    }
+     
+    $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
 
@@ -24,14 +35,17 @@ sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-    my @ev = mdb->activity->find->sort({ ts=>-1 })->limit(20)->all;
+my @ev = mdb->activity->find->sort({ ts=>-1 })->limit(20)->all;
+my @mids = map { $_->{mid}} @ev;
+my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;
     for my $ev ( @ev ) {
         next unless $ev->{mid};
+        my $parent = $cats{$ev->{mid}};
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
         my $actor = $ev->{username} || 'clarive';
-        push @data, { node=>$ev->{mid}, action=>$action, ts=>$ev->{ts}, actor=>$actor };
+        push @data, { parent => $parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
     }
      
     $c->stash->{json} = { data=>\@data };
