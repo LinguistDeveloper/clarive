@@ -63,22 +63,23 @@ sub init_job_tasks {
 
 sub init_fieldlets_tasks {
     my ($self)=@_;
-    return +{ 
-        isTarget => \0,
-        leaf=>\1,
-        key => "fieldlet.system.status_new",
-        icon => "/static/images/icons/lock_small.png",
-        palette => \1,
-        text => _loc('status'),
-    },
-    +{ 
-        isTarget => \0,
-        leaf=>\1,
-        key => "fieldlet.system.title",
-        icon => "/static/images/icons/lock_small.png",
-        palette => \1,
-        text => _loc('title'),
-    };
+    return map {
+        my $node;
+        $node->{leaf} = \1;
+        $node->{text} = _loc( $_->{name} );
+        $node->{key} = $_->{key};
+        $node->{icon} = $_->{icon};
+        $node->{name} = $_->{name};
+        $node->{data} = $_;
+        $node->{data}{fieldletType} = $_->{key};
+        $node->{data}{hidden} = 0;
+        $node->{data}{allowBlank} = 0;
+        $node->{data}{editable} = 1;
+        $node->{ts} = mdb->ts;
+        # $node->{who} = 'root'; # TODO get user from $c->username
+        $node 
+    } Baseliner->registry->get('fieldlet.system.status_new')->registry_node->raw, 
+    Baseliner->registry->get('fieldlet.system.title')->registry_node->raw;
 }
 
 sub parallel_run {
