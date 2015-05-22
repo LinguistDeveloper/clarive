@@ -52,12 +52,14 @@ title: Pending jobs
                 
                 ////alert(icon);
                 var tdStatus = document.getElementById( td_id );
-                if( icon!=undefined ) {
-                    tdStatus.innerHTML = div1 
-                        + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/icons/"+icon+"' />"
-                        + value + div2 ;
-                } else {
-                    tdStatus.innerHTML = value;
+                if( tdStatus ){
+                    if( icon!=undefined ) {
+                        tdStatus.innerHTML = div1 
+                            + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/icons/"+icon+"' />"
+                            + value + div2 ;
+                    } else {
+                        tdStatus.innerHTML = value;
+                    }
                 }
             };
         </script>

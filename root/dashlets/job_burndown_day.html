@@ -58,7 +58,6 @@ html: /dashlets/job_burndown_day.html
       var id = "#<% $graph_id %>";
       Cla.ajax_json('/job/burndown_new', { period: period }, function(res){
        period_<% $graph_id %> = period;
-       require(['d3','c3'], function(d3,c3){
            graph_jobs_burndown_day_<% $graph_id %> = c3.generate({
                 bindto: id,
                 data: {
@@ -99,7 +98,6 @@ html: /dashlets/job_burndown_day.html
                     {axis: 'x', start: 8, end: 18, class: 'workhours'}
                 ]
            });
-       });
       });
 
     };

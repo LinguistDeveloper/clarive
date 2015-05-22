@@ -25,7 +25,6 @@
         if (graph) graph.unload();
 
         Cla.ajax_json('/job/by_status', { period: period }, function(res){
-            require(['d3','c3'], function(d3,c3){
                 c3.generate({
                      bindto: '#'+id,
                      data: {
@@ -94,7 +93,6 @@
                         }
                      }
                 });
-            });
         });
     };
 

@@ -11,7 +11,6 @@
     var graph_title;
 
     Cla.ajax_json('/dashboard/topics_by_field', { group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
-        require(['d3','c3'], function(d3,c3){
               c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -86,7 +85,6 @@
                 },
 
             });
-        });
     });
 
 });

@@ -2250,8 +2250,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                 }
             });
         });
-        self.on('dblclick', function(n, ev){    
-            if( n.leaf ) 
+        self.on('click', function(n, ev){    
                 self.click_handler({ node: n });
         });
         self.loader.on('load', function(n){
@@ -2307,6 +2306,8 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var n = item.node;
         var c = n.attributes.data.click;
         var params = n.attributes.data;
+
+        if( !c ) return;
         
         if(n.attributes.text == _('Topics')){
             params.id_project = n.parentNode.attributes.data.id_project;

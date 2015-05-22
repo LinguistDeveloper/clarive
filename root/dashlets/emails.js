@@ -26,7 +26,7 @@ my $iid = Util->_md5;
         });
         html = html + '    </tbody>';
         html = html + '</table>';
-        div.innerHTML = html;
+        if(div) div.innerHTML = html;
 
         Baseliner.datatable("#<% $iid %>",{
           "scrollY": (parseInt(rows)*260),

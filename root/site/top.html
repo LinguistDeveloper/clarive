@@ -5,13 +5,11 @@
 <%perl>
     my $debug = $c->debug ? '-debug' : '';
 </%perl>
-
     <title><% _loc( $c->config->{name} ) %></title>
 % if( my $favicon = $c->config->{favicon} ) {
     <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
 % }
 
-    <script src="/static/require/require.js"></script>
 
     <!-- Twitter Bootstrap -->
     <link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/960_24_col.css" />
@@ -61,6 +59,16 @@
     <!-- <script type="text/javascript" src="/static/ext/build/locale/ext-lang-es-min.js"></script> -->
     <script type="text/javascript" src="/static/ext/src/locale/ext-lang-<% $c->language %>.js"></script>
 
+    <!-- D3 and C3, before use strict makes it impossible to load window.d3 and window.c3 -->
+    <script src="/static/d3/d3.min.js"></script>
+    <script src="/static/c3/c3.min.js"></script>
+
+    <!-- C3 Stylesheet -->
+    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
+
+    <!-- requirejs makes it all strict, careful -->
+    <script src="/static/require/require.js"></script>
+
     <!-- site is the global stylesheet -->
     <link rel="stylesheet" type="text/css" href="/static/site.css" />
 
@@ -80,19 +88,6 @@
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
 % }
-
-    <!-- D3 and C3 -->
-    <script type="text/javascript" src="/static/d3/d3.min.js"></script>
-    <script>
-        requirejs.config({
-            paths:{
-                'd3': '/static/d3/d3.min',
-                'c3': '/static/c3/c3.min'
-            }
-        });
-    </script>
-    <!-- C3 Stylesheet -->
-    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
 
 
 %# consider including templates <& /site/templates.html &>, and adding it to JS Reload menu option for testing

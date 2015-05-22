@@ -198,6 +198,9 @@ msgstr "Refrescar"
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
 
+msgid "Job By Status"
+msgstr "Pases por Estado"
+
 msgid "grammar"
 msgstr "gramática"
 

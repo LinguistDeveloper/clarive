@@ -30,7 +30,6 @@
         }else{
             groups= []
         }
-        require(['d3','c3'], function(d3,c3){
             graph = c3.generate({
                  bindto: '#'+id,
                  data: {
@@ -95,6 +94,5 @@
                      show: false
                  }
             });
-        });
     });
 });

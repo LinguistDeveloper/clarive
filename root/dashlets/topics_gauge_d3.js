@@ -42,7 +42,6 @@
             maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         }
         
-       require(['d3'], function(d3){
          var gauge = function(container, configuration) {
              var that = {};
              var config = {
@@ -250,7 +249,7 @@
              return that;
          };
 
-         div.innerHTML = "";
+         if(div) div.innerHTML = "";
          var powerGauge = gauge('#'+id, {
              size: div.offsetWidth,
              // clipWidth: 300,
@@ -261,6 +260,5 @@
          });
          powerGauge.render();
          powerGauge.update(res.data[0][1]);
-       }); 
     });
 });
