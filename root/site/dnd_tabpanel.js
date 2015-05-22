@@ -162,10 +162,11 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
 
        
         //disable dragging in tab1:
-       if( this.block_first_tab &&  index == 0){
+       if( index == 0){
             tab.disableTabDrag();
 
         }
+
 
         // Initial dragging state
         if (tab.allowDrag) {
