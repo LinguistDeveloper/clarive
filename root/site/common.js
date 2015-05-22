@@ -4086,7 +4086,7 @@ Baseliner.generic_fields = function(params){
         allowBlank_field.setValue(!cb.checked);
     });
     return [
-        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', allowBlank: false, value: data.id_field },
+        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', allowBlank: false, readOnly:true, value: data.id_field },
         combo_section,
         combo_colspan,
         new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
