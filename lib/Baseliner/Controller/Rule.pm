@@ -590,7 +590,7 @@ sub stmts_save : Local {
         if ($returned_ts->{old_ts} ne ''){
             my ($short_errors) = $detected_errors =~ m/^([^\n]+)/s;
             my $rule_type = mdb->rule->find_one({id=>"$p->{id_rule}"});
-            if ($rule_type->{rule_type} eq 'fieldlets'){
+            if ($rule_type->{rule_type} eq 'form'){
                 cache->remove_like( qr/^topic:/ );
                 cache->remove_like( qr/^roles:/ );
                 cache->remove({ d=>"topic:meta" });

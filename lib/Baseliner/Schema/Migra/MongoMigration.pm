@@ -38,7 +38,7 @@ sub list_roles {
 }
 
 sub topic_categories_to_rules {
-    mdb->rule->remove({rule_type=>'fieldlets'});
+    mdb->rule->remove({rule_type=>mdb->in('form','fieldlets') });
     my @topic_category = mdb->category->find->all;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
@@ -163,7 +163,7 @@ sub topic_categories_to_rules {
         $rule->{rule_name} = $topic_category->{name};
         $rule->{rule_sec} = mdb->seq('rule_seq');
         $rule->{rule_tree} = _encode_json(\@fields);
-        $rule->{rule_type} = 'fieldlets';
+        $rule->{rule_type} = 'form';
         $rule->{rule_when} = 'post-offline';
         $rule->{subtype} = '-';
         $rule->{ts} = mdb->ts;
@@ -196,7 +196,7 @@ sub generate_dsl {
     if ( $returned_ts->{old_ts} ne '' ) {
         my ($short_errors) = $detected_errors =~ m/^([^\n]+)/s;
         my $rule_type = mdb->rule->find_one( { id => "$rule->{id}" } );
-        if ( $rule_type->{rule_type} eq 'fieldlets' ) {
+        if ( $rule_type->{rule_type} eq 'form' ) {
             cache->remove_like(qr/^topic:/);
             cache->remove_like(qr/^roles:/);
             cache->remove( { d => "topic:meta" } );

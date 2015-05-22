@@ -174,7 +174,7 @@
             v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         var type = rec.data.rule_type;
         var icon = type=='dashboard' ? IC('dashboard') 
-                : type=='fieldlets' ? IC('form') 
+                : type=='form' ? IC('form') 
                 : type=='event' ? IC('event') 
                 : type=='report' ? IC('report') 
                 : type=='chain' ? IC('job') 

@@ -261,7 +261,7 @@ sub build_tree {
         if( $rule->{rule_type} eq 'chain' ) {
             return $self->init_job_tasks;
         }
-        if ( $rule->{rule_type} eq 'fieldlets') {
+        if ( $rule->{rule_type} eq 'form') {
             return $self->init_fieldlets_tasks;
         }
         _warn _loc 'Rule tree is empty for rule %1', $id_rule;
