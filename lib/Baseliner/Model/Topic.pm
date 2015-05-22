@@ -1292,15 +1292,16 @@ sub get_meta {
         foreach my $fieldlet (@fieldlets){
             my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
             my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry = try { 
-                Baseliner->registry->get( $fieldType ) 
+            my $fieldRegistry;
+            try { 
+                $fieldRegistry = Baseliner->registry->get( $fieldType );
+                my $reg_params = $fieldRegistry->{registry_node}{param};
+                $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
+                $res->{params}{field_order} = $field_order++;
+                push @cat_fields, $res;
             } catch {
                 _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;
             };
-            my $reg_params = $fieldRegistry->{registry_node}{param};
-            $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
-            $res->{params}{field_order} = $field_order++;
-            push @cat_fields, $res;
         }
     }else{
         if ($username){

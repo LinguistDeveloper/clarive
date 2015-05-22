@@ -2796,7 +2796,6 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.store = self.buildStore(data);
 
         self.fieldLabel = self.fieldLabel || self.name;
-        if ( self.helpText ) { self.fieldLabel = self.fieldLabel + ' <img src="/static/images/icons/help.png" title='+self.helpText+' />' };
         self.valueField = self.field || self.name;
         self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
@@ -4046,7 +4045,6 @@ Baseliner.generic_fields = function(params){
     var combo_section = new Baseliner.ComboDouble({
         name: 'section',
         editable: false,
-        helpText: 'Header: ',
         fieldLabel: _('Section to view'),
         emptyText: _('Select one'),
         data:[ 
@@ -4086,7 +4084,7 @@ Baseliner.generic_fields = function(params){
         allowBlank_field.setValue(!cb.checked);
     });
     return [
-        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', allowBlank: false, value: data.id_field },
+        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', allowBlank: false, disabled:true, value: data.id_field },
         combo_section,
         combo_colspan,
         new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
