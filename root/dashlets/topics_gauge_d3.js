@@ -14,11 +14,16 @@
     var input_units = params.data.input_units;
     var end_remaining = params.data.end_remaining;
     var columns = params.data.columns;
+    var start = params.data.start || 0;
+    var end = params.data.end || 0;
+    var reverse = params.data.reverse || 0;
+    var result_type = params.data.result_type || 'avg';
+
 
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var needle_length = 0.85;
         var value_font = "18px";
         var div = document.getElementById(id);
@@ -35,13 +40,29 @@
             needle_length = 0.8;
             value_font = "16px";
          }
+        //Configure gauge range
         var maxValue;
         if ( res.max <= yellow ) {
             maxValue = yellow + green + ( (yellow + green) * 20 /100 );
         } else {
             maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         }
+        if ( parseInt(end) > maxValue ) {
+            maxValue = parseInt(end) + ( parseInt(end) * 20 / 100);
+        }
+        if ( parseInt(res.data[result_type]) > maxValue ) {
+            maxValue = parseInt(res.data[result_type]) + (parseInt(res.data[result_type]) * 20 / 100);
+        }
+
         
+        var minValue;
+
+        if ( start > res.max ) {
+            minValue = res.max;
+        } else {
+            minValue = start;
+        }
+
          var gauge = function(container, configuration) {
              var that = {};
              var config = {
@@ -55,7 +76,7 @@
                  pointerTailLength           : 4,
                  pointerHeadLengthPercent    : needle_length,
                  
-                 minValue                    : 0,
+                 minValue                    : minValue,
                  maxValue                    : maxValue,
                  
                  minAngle                    : -90,
@@ -65,9 +86,7 @@
                  
                  majorTicks                  : 3,
                  labelFormat                 : d3.format(',g'),
-                 labelInset                  : 30,
-                 
-                 arcColorFn                  : d3.interpolateHsl(d3.rgb('#60B044'), d3.rgb('#FA5858'))
+                 labelInset                  : 30
              };
              var range = undefined;
              var r = undefined;
@@ -112,12 +131,12 @@
                      .range([0,1])
                      .domain([config.minValue, config.maxValue]);
                      
-                 if ( end_remaining == 'on' ) {
-                     ticks = [0, yellow, green];//scale.ticks(config.majorTicks);
-                     tickData = [1, green/maxValue, yellow/maxValue ];
+                 if ( end_remaining == 'on' || reverse == 'on') {
+                     ticks = [minValue, yellow, green];//scale.ticks(config.majorTicks);
+                     tickData = [scale(maxValue), scale(green), scale(yellow) ];
                  } else {
-                     ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
-                     tickData = [1, yellow/maxValue, green/maxValue];
+                     ticks = [minValue,green,yellow];//scale.ticks(config.majorTicks);
+                     tickData = [scale(maxValue), scale(yellow), scale(green)];
                  }
 
                  // ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
@@ -189,7 +208,7 @@
                  arcs.select('.c3-chart-arcs-gauge-unit')
                      .attr("dy", ".75em")
                      .attr("dy", "2em")
-                     .text(res.data[0][1] + ' ' + _(res.units) );
+                     .text(res.data[result_type] + ' ' + _(res.units) );
                  arcs.select('.c3-chart-arcs-gauge-min')
                      .attr("dx", -1 * (innerRadius + ((outerRadius - innerRadius) / 2)) + "px")
                      .attr("dy", "1.2em")
@@ -197,7 +216,7 @@
                  arcs.select('.c3-chart-arcs-gauge-max')
                      .attr("dx", innerRadius + ((outerRadius - innerRadius) / 2) + "px")
                      .attr("dy", "1.2em")
-                     .text(res.max);
+                     .text(maxValue);
 
                  var lg = svg.append('g')
                          .attr('class', 'label')
@@ -259,6 +278,6 @@
              transitionMs: 4000,
          });
          powerGauge.render();
-         powerGauge.update(res.data[0][1]);
+         powerGauge.update(res.data[result_type]);
     });
 });

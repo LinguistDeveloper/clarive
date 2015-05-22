@@ -1050,7 +1050,9 @@ sub topics_gauge: Local {
 
 
     use List::Util qw(sum);
-    my $avg = @data? sprintf("%.2f",sum(@data) / @data): $count;
+    my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
+    my $sum = @data? sprintf("%.2f",sum(@data)): 0; 
+
 
     if ( $field_mode ){
         if ( $input_units ne 'number' ) {
@@ -1089,7 +1091,7 @@ sub topics_gauge: Local {
 
     $units = $units.'s' if $units;
 
-    $c->stash->{json} = { units => $units, data=> [ ['Avg',$avg] ], max => sprintf("%.2f",$max) };
+    $c->stash->{json} = { units => $units, data=> { avg => $avg, sum => $sum, min => $min, max => $max, count => $count }, max => sprintf("%.2f",$max) };
     $c->forward('View::JSON');
 }
 

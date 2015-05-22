@@ -199,7 +199,9 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             };
 
             var form = new Baseliner.FormPanel({ 
-                frame: false, forceFit: true, defaults: { msgTarget: "under", anchor:"100%" },
+                frame: false, 
+                forceFit: true, 
+                defaults: { msgTarget: "under", anchor:"100%" },
                 labelWidth: 150,
                 width: 800, height: 600,
                 labelAlign: "right",
@@ -210,7 +212,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ win.destroy() } },
                     { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
                 ],
-                bodyStyle: { padding: "4px", "background-color": "#fff" },
+                bodyStyle: { padding: "4px", "background-color": "#eee" },
                 items: comp
             });
 
@@ -229,19 +231,47 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
 Cla.dashlet_common = (function(params){
     var data = params.data || {};
     return [
-        new Cla.ComboSingle({ fieldLabel: _('Height of dashlet (rows)'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2] }),
-        new Cla.ComboSingle({ fieldLabel: _('Width of dashlet (columns)'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] }),
-        new Baseliner.ComboDouble({ fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
-            [0, 0],
-            [60000, 1],
-            [300000, 5],
-            [600000, 10],
-            [900000, 15],
-            [1800000, 30],
-            [3600000, 60],
-            [7200000, 120],
-          ] 
-        })
-
+        {
+            xtype: 'label',
+            id: 'myFieldId',
+            text: _('General dashlet'),
+            bodyStyle: 'margin: 10px;',
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 5px; padding: 5px 3px;background:transparent;',
+          items:[
+                {layout:'form', 
+                 columnWidth: .48, 
+                 bodyStyle: 'background:transparent;',
+                 items: [
+                    new Cla.ComboSingle({ anchor: '100%',fieldLabel: _('Height in canvas rows'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2,3,4] }),
+                    new Cla.ComboSingle({ anchor: '100%',fieldLabel: _('Width in canvas columns'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] })
+                  ]
+                },
+                {layout:'form', 
+                 columnWidth: .48, 
+                 bodyStyle: 'background:transparent;',
+                 items:
+                    new Baseliner.ComboDouble({ anchor: '100%',fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
+                        [0, 0],
+                        [60000, 1],
+                        [300000, 5],
+                        [600000, 10],
+                        [900000, 15],
+                        [1800000, 30],
+                        [3600000, 60],
+                        [7200000, 120],
+                      ] 
+                    })
+                }
+            ]
+        }
     ];
 });
