@@ -1125,18 +1125,17 @@ sub zip_files {
             $file = File::Spec->catfile( $p{pathprefix}, $file );
         };
         _log "ZIP ADD $file, $filepath";
- if(grep /compressed/, qx{file $file}) #evitar fallo en caso de fichero comprimido
-                {
-                        $zip->addFile( $file, $filepath )->desiredCompressionLevel(0);
-                }
-                else
-                {
-                        $zip->addFileOrDirectory( $file, $filepath );
+        if (-d $file) {
+            $zip->addTree ($file, $filepath) == $Archive::Zip::AZ_OK
+            or _throw "Error adding directory $file: $!";
+            
+        } elsif (grep /compressed/, qx{file $file}) { #evitar fallo en caso de fichero comprimido   
 
-
-       # $zip->addFile( $file, $filepath );
-    }
-    $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
+            $zip->addFile( $file, $filepath )->desiredCompressionLevel(0);
+        } else {   
+            $zip->addFileOrDirectory( $file, $filepath );
+        }
+        $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
         or _throw "Error writing zip file $p{to}: $!";
 	}
     return $p{to};
