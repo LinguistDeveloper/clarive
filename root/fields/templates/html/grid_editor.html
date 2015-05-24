@@ -86,17 +86,6 @@
                                         $val
                                     }
                                   } 
-                            : $$h{type} eq 'ci_box'
-                                ?  do{ 
-                                        my $ci_box = ci->new($val);
-                                        my $img = $ci_box->icon;
-                                        if ($img){
-                                            '<img src="' . $img . '">&nbsp;' . $ci_box->{name};
-                                        }else{
-                                                $ci_box->{name};    
-                                        }
-                                        
-                                   }
                                 : Util->_markdown($val, { tab_width=>2 })
                         %></td>
 % }

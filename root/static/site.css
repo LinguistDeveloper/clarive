@@ -340,9 +340,9 @@ pre { font-family: Consolas, Courier New, mono; }
 .x-form-spinner-proxy{
         /*background-color:#ff00cc;*/
 }
-/*.x-form-field-wrap {
+.x-form-field-wrap {
         position: relative;
-}*/
+}
 .x-form-element .x-form-field-wrap {    /* ie6 fix within ext-form */
         position: relative !important;
         position: absolute;     /* ie6 */

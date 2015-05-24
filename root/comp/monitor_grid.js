@@ -1006,7 +1006,7 @@
                     var link = '<span style="text-align: center;vertical-align: middle;"><a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
                     var comments = '';
                     if ( record.data.cs_comments[cs.mid] ) {
-                      comments = "<img src='/static/images/icons/paperclip.gif' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\" }))'/>";
+                      comments = "<img src='/static/images/icons/paperclip.gif' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\", title: \"" + cs.category.name + ' #' + cs.mid + ' - ' + cs.title + "\" }))'/>";
                     }
                     return_value.push(link + '&nbsp' + comments + '</span>');
                   });

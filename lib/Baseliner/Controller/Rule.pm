@@ -378,7 +378,6 @@ sub palette : Local {
         sort { ($a->{text}//'') cmp ($b->{text}//'') } 
         grep { !$query || join(',',grep{defined}%$_) =~ $query } 
         map {
-
             my $key = $_;
             my $s = $c->registry->get( $key );
             my $n= { palette => 1 };
@@ -410,38 +409,6 @@ sub palette : Local {
         };
 
     my @services = sort $c->registry->starts_with('service');
-    my @generic_services = ( 
-          sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
-          map {
-            my $n = $_;
-            my $service_key = $n->{key};
-            +{
-                isTarget => \0,
-                leaf=>\1,
-                key => $service_key,
-                icon => $n->{icon},
-                palette => \1,
-                text=>$n->{name} // $service_key,
-            }
-        } 
-        grep { ! $_->{job_service} }
-        map { $c->registry->get( $_ ); }
-        @services 
-    );
-    
-    ## CATALOG
-    push @tree, {
-        icon     => '/static/images/icons/catalog.png',
-        text     => _loc('Catalog'),
-        draggable => \0,
-        expanded => \1, 
-        isTarget => \0,
-        leaf     => \0,
-        children => [ grep { $_->{key} =~ /^(statement|service).catalog./ } (@control,@generic_services) ],
-    };
-    
-    ## JOB SERVICES
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -464,12 +431,15 @@ sub palette : Local {
                 text=>$n->{name} // $service_key,
             }
         } 
-        grep { $_->{job_service} }
-        map { $c->registry->get( $_ ) }
+        grep {
+            $_->{job_service}
+        }
+        map { 
+            $c->registry->get( $_ );
+        }
         @services ]
     };
-    
-    ## GENERIC SERVICES
+
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -478,9 +448,27 @@ sub palette : Local {
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [ 
-          grep { $_->{key} !~ /^(statement|service).catalog./ } 
-          @generic_services, 
-        ]
+          sort { uc $a->{text} cmp uc $b->{text} }
+          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
+          map {
+            my $n = $_;
+            my $service_key = $n->{key};
+            +{
+                isTarget => \0,
+                leaf=>\1,
+                key => $service_key,
+                icon => $n->{icon},
+                palette => \1,
+                text=>$n->{name} // $service_key,
+            }
+        } 
+        grep {
+            ! $_->{job_service}
+        }
+        map { 
+            $c->registry->get( $_ );
+        }
+        @services ]
     };
 
     my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
@@ -690,21 +678,6 @@ sub stmts_load : Local {
                     is_version=>\1, version_id=>''.$rv->{_id}, leaf=>\0, children=>\@ver_tree };
             } 
         }
-
-        my $type = mdb->rule->find_one({ id=>"$id_rule" })->{rule_type};
-        if ( $type eq 'catalog'){
-            my @exist_catalog_folder = grep { $_->{name} eq '_catalog_folder' } @tree;
-
-            my @catalog_tree = grep { $_->{name} ne '_catalog_folder' } @tree;
-            my %task_children = map { 
-                $_->{data}->{task}->[0] => { children => $_->{children}, data => $_->{data} };
-            } _array $exist_catalog_folder[0]->{children};
-
-            my $catalog_folder = BaselinerX::Service::Catalog->build_catalog_folder({id_rule => $id_rule, task_children => \%task_children, _catalog_folder => $exist_catalog_folder[0] ? $exist_catalog_folder[0] : undef});
-            @tree = @catalog_tree;
-            push @tree, $catalog_folder;
-        }
-
         $c->stash->{json} =  \@tree;
     } catch {
         my $err = shift;

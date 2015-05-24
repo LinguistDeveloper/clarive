@@ -13,11 +13,11 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-	//var ff = params.form.getForm();
+	var ff = params.form.getForm();
 
     var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    var readonly = meta.readonly == undefined ? true : ( meta.readonly == 'false' || !meta.readonly  ? false : true );
-
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
+	
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({
 		fieldLabel: _(meta.name_field),
