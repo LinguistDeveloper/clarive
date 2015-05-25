@@ -10,7 +10,7 @@ use Baseliner::Moose;
 
 with 'Baseliner::Role::CI';
 
-sub icon { '/static/images/icons/views.png' }
+sub icon { '/static/images/icons/catalog-folder.png' }
 
 has_ci 'parent_folder';
 has_cis 'cis';

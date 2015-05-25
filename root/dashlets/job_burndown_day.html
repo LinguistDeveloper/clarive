@@ -56,7 +56,7 @@ html: /dashlets/job_burndown_day.html
 
     var reload_jobs_<% $graph_id %> = function( period ) {
       var id = "#<% $graph_id %>";
-      Cla.ajax_json('/job/burndown_new', { period: period }, function(res){
+      Cla.ajax_json('/job/burndown_new', { period: period, _ignore_conn_errors: true  }, function(res){
        period_<% $graph_id %> = period;
            graph_jobs_burndown_day_<% $graph_id %> = c3.generate({
                 bindto: id,

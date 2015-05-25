@@ -76,7 +76,7 @@
     } 
  
         var btn_start = new Ext.Toolbar.Button({
-	    text: _('Start'),
+	    text: _('Activate'),
 	    icon:'/static/images/icons/start.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
@@ -98,7 +98,7 @@
         });
 
         var btn_stop = new Ext.Toolbar.Button({
-	    text: _('Stop'),
+	    text: _('Deactivate'),
 	    icon:'/static/images/icons/stop.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
@@ -222,7 +222,7 @@
 		    records: rec && rec.data ? rec.data.instances: [],
 		    preventMark: false,        
 		    columns: [
-		        Ext.apply({ dataIndex:'instance', header: _('Instance') }, tf() )
+		        Ext.apply({ dataIndex:'instance', header: _('Instances') }, tf() )
 		    ],
 		    viewConfig: { forceFit: true }
 		});
@@ -234,7 +234,8 @@
 		    url:'/daemon/update',
 		    buttons: [
 			    {
-			    text: _('Accept'),
+			    text: _('Save'),
+			    icon: '/static/images/icons/save.png',
 			    type: 'submit',
 			    handler: function() {
 				    var form = form_daemon.getForm();
@@ -258,6 +259,7 @@
 			    },
 			    {
 			    text: _('Close'),
+			    icon: '/static/images/icons/close.png',
 			    handler: function(){ 
 					    win.close();
 				    }
@@ -301,6 +303,7 @@
     
     // create the grid
     var grid = new Ext.grid.GridPanel({
+    	renderTo: 'main-panel',
 	    title: _('Daemons'),
 	    header: false,
 	    stripeRows: true,
@@ -334,12 +337,13 @@
 			    store: store,
 			    params: {start: 0, limit: ps},
 			    emptyText: _('<Enter your search string>')
-		    }),
-		    btn_start,
-		    btn_stop,
+		    }),' ',' ',
+		   
 		    btn_add,
 		    btn_edit,
-		    btn_delete,
+		    btn_delete, 
+		    btn_start,
+		    btn_stop,
 		    '->'
 	    ]
     });

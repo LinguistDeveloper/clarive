@@ -32,7 +32,7 @@ register 'service.git.newjob' => {
 
 register 'service.git.checkout' => {
     name    =>_loc('Checkout a Git Revision'),
-    icon    => '/gitweb/images/icons/git.png',
+    icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&checkout,
 };

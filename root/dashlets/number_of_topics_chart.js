@@ -1,6 +1,7 @@
 (function(params){ 
     var id = params.id_div;
 
+    var project_id = params.project_id;
     var graph_type = params.data.type || 'donut';
     var categories = params.data.categories || '';
     var statuses = params.data.statuses || '';
@@ -10,7 +11,7 @@
     var group_by = params.data.group_by || 'category.name';
     var graph_title;
 
-    Cla.ajax_json('/dashboard/topics_by_field', { group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_by_field', { project_id: project_id, group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
               c3.generate({
                 bindto: '#'+id,
                 data: {

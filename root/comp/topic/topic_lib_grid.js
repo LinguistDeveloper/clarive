@@ -479,7 +479,7 @@ Cla.topic_grid = function(params){
 
     var btn_html = {
         icon: '/static/images/icons/html.png',
-        text: _('HTML Report'),
+        text: _('HTML'),
         handler: function() {
             form_report_submit({ url: '/topic/report_html' });
         }
@@ -503,6 +503,7 @@ Cla.topic_grid = function(params){
 
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/exports.png',
+        tooltip: _('Export'),
         iconCls: 'x-btn-icon',
         menu: [ btn_html, btn_csv, btn_yaml ]
     });
@@ -571,6 +572,7 @@ Cla.topic_grid = function(params){
     
     var btn_mini = new Ext.Toolbar.Button({
         icon:'/static/images/icons/updown_.gif',
+        tooltip: _('Collapse Rows'),
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: mini_mode || false, allowDepress: true,
         handler: function() {
@@ -594,6 +596,7 @@ Cla.topic_grid = function(params){
     
     var btn_kanban = new Ext.Toolbar.Button({
         icon:'/static/images/icons/kanban.png',
+        tooltip:_('Open Kanban'),
         cls: 'x-btn-text-icon',
         //enableToggle: true,
         pressed: false,
@@ -945,7 +948,7 @@ Cla.topic_grid = function(params){
         //#####################################################
         
         Ext.each( value, function(topic){
-            if( !Ext.isObject(topic) ) console.log('nnnnnnnn');
+            // if( !Ext.isObject(topic) ) console.log('nnnnnnnn');
             arr.push( Baseliner.topic_name({
                 link: true,
                 parent_id: grid_topics.id,
@@ -1350,9 +1353,9 @@ Cla.topic_grid = function(params){
     });
     
     // toolbar
-    var tbar=[ search_field ];
+    var tbar=[_('Search')+': ', ' ', search_field ];
     if( !typeApplication ) {
-        tbar = tbar.concat([ btn_add, btn_edit, btn_custom, btn_delete ]);
+        tbar = tbar.concat([ ' ',' ', btn_add, btn_edit, btn_custom, btn_delete ]);
     }
     tbar = tbar.concat([ '->', btn_clear_state, btn_reports, btn_kanban, btn_mini ]);
     

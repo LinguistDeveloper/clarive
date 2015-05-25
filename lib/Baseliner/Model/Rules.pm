@@ -372,6 +372,7 @@ sub dsl_build {
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
+            _fail _loc 'Could not find rule key `%1`', $key unless blessed $reg;
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 if( length $attr->{sub_name} ) {
@@ -1048,6 +1049,27 @@ register 'service.echo' => {
         $data->{hello} = $data->{msg} || 'world';
         _info (_loc "%1", $data->{hello});
         $data;
+    }
+};
+
+register 'service.get_date' => {
+    data => { date => '' },
+    form => '/forms/get_date.js',
+    icon => '/static/images/icons/calendar.png',
+    name => 'Get date',
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        my $return_date;
+        if ($data->{date}) {
+            try {
+                $return_date = "".Class::Date->new($data->{date});
+            } catch {
+                _fail _loc("Date %1 is not a valid date: %2",$data->{date},shift);
+            }
+        } else {
+            $return_date = "".Class::Date->now();
+        }
+        $return_date;
     }
 };
 

@@ -32,23 +32,23 @@
         value: data.yellow, 
         anchor: '100%',
         name: "yellow",
-        fieldLabel: _("Switch to RED when value reaches")
+        fieldLabel: _("Switch away from YELLOW when the value reaches")
     });
 
-    var start = new Ext.ux.form.SpinnerField({ 
+    var start = new Ext.form.TextField({ 
         value: data.start || 0,
         allowBlank: false,
         anchor: '100%',
         name: "start",
-        fieldLabel: _("START value for gauge"),
+        fieldLabel: _("START value for gauge. Blank defaults to 0"),
         emptyText: 'Default = 0 (see reverse)'
     });
 
-    var end = new Ext.ux.form.SpinnerField({ 
+    var end = new Ext.form.TextField({ 
         value: data.end, 
         anchor: '100%',
         name: "end",
-        fieldLabel: _("END value for gauge"),
+        fieldLabel: _("END value for gauge. Blank defaults to 100"),
         emptyText: 'Default = max returned value or YELLOW + 20% (see reverse)'
     });
 
@@ -74,14 +74,6 @@
                     green,
                     yellow,
                     {
-                      xtype: 'label',
-                      text: _('* Gauge start color is GREEN'),
-                      style: {
-                          // 'margin': '10px',
-                          'color': '#888888'
-                      }
-                    },
-                    {
                         xtype: 'checkbox',
                         name: "reverse",
                         fieldLabel: _("Reverse gauge"),
@@ -90,7 +82,7 @@
                     },
                     {
                       xtype: 'label',
-                      text: _('(* default color = RED, switch away from yellow means GREEN)'),
+                      text: _('(* default color = RED instead of GREEN, switch away from yellow color = GREEN instead of RED)'),
                       style: {
                           // 'margin': '10px',
                           'color': '#888888'
@@ -111,7 +103,14 @@
                         ['count', _('Count')],
                         ['sum', _('Total sum')]
                       ] 
-                    })
+                    }),
+                    {
+                        xtype: 'checkbox',
+                        name: "show_pct",
+                        fieldLabel: _("Use as Percentage gauge"),
+                        checked: data.show_pct == undefined ? false : data.show_pct,
+                        allowBlank: 1
+                    }
 
               ]
             }

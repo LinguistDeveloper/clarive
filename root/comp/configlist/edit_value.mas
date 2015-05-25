@@ -55,6 +55,7 @@ var edit_config = function(rec) {
           ],
         buttons: [{
             text: '<% _loc('Save') %>', 
+            icon: '/static/images/icons/save.png', 
             handler: function() {
                 var ff = form.getForm();
                 ff.submit({
@@ -67,13 +68,15 @@ var edit_config = function(rec) {
             }
         },{
             text: '<% _loc('Reset') %>',
+            icon: '', 
             handler: function() {
                 if( rec!=undefined ) {
                     form.getForm().loadRecord(rec);
                 }
             }
         },{
-            text: '<% _loc('Cancel') %>',
+            text: '<% _loc('Close') %>',
+            icon: '/static/images/icons/close.png', 
             handler: function() {
                 win.close();
             }

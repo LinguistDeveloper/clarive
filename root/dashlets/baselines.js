@@ -3,9 +3,11 @@ my $iid = Util->_md5;
 </%perl>
 (function(params){ 
     var id = params.id_div;
+
+    var project_id = params.project_id;
     var rows = params.data.rows;
     var days = params.data.days || 1000;
-    var bls = params.data.bls || 'ALL';
+    var bls = params.data.bls;
     var style_tpl = function(){/*
     <style>
         .progress {
@@ -87,17 +89,17 @@ my $iid = Util->_md5;
     var bl_tpl = function(){/*
         <span style="text-align:left;"><h4>[%=bl%]</h4></span>
         <div class="progress">
-          <div class="progress-bar progress-bar-success" style="width: [%=porcentOk%]%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/[%=days%]/ok/[%=bl%]', _('[%=bl%] - [%=totOk%]/[%=total%] OK'));">
+          <div class="progress-bar progress-bar-success" style="width: [%=porcentOk%]%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/[%=days%]/ok/[%=bl%]/[%=project_id%]', _('[%=bl%] - [%=totOk%]/[%=total%] OK'));">
             <span class="sr-only">[%=totOk%]</span>
           </div>
-          <div class="progress-bar progress-bar-danger" style="width: [%=porcentError%]%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/[%=days%]/nook/[%=bl%]', _('[%=bl%] - [%=totError%]/[%=total%] ERROR'));">
+          <div class="progress-bar progress-bar-danger" style="width: [%=porcentError%]%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/[%=days%]/nook/[%=bl%]/[%=project_id%]', _('[%=bl%] - [%=totError%]/[%=total%] ERROR'));">
             <span class="sr-only" >[%=totError%]</span>
           </div>
         </div>        
     */};
-    Cla.ajax_json('/dashboard/list_baseline', {days: days, bls: bls}, function(res){
+    Cla.ajax_json('/dashboard/list_baseline', {project_id: project_id, days: days, bls: bls, _ignore_conn_errors: true }, function(res){
       Ext.each(res.data, function(bl) {
-        html = html + bl_tpl.tmpl({total: bl.total, bl: bl.bl, porcentOk: bl.porcentOk, totOk: bl.totOk, porcentError: bl.porcentError, totError: bl.totError, days:days});
+        html = html + bl_tpl.tmpl({project_id:project_id, total: bl.total, bl: bl.bl, porcentOk: bl.porcentOk, totOk: bl.totOk, porcentError: bl.porcentError, totError: bl.totError, days:days});
       });
 
       div.innerHTML = html;

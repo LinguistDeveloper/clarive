@@ -660,6 +660,7 @@
         return (true); 
     };
     function add_node(data,project) {
+        Baseliner.showLoadingMask(main_form.getEl(), _("Calculating topic contents..." ) );
         jc_store_topics[ data.topic_mid ] = { text:data.text, data:data, project: project };
         topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
         var topics_json = '[' + topics.join(',') + ']';
@@ -685,7 +686,6 @@
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, data) {
-                Baseliner.showLoadingMask(main_form.getEl(), _("Calculating topic contents..." ) );
                 var n = dd.dragData.node;
                 var d = n.attributes.data;
                 return jc_add_node({ 

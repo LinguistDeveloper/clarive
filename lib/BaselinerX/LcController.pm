@@ -12,6 +12,13 @@ __PACKAGE__->config->{namespace} = 'lifecycle';
 
 register 'action.project.see_lc' => { name => 'User can access the project lifecycle' };
 
+register 'config.releases' => {
+    name => _loc('Config lifecycle releases'),
+    metadata => [
+        { id=>'by_project', label=>'Group by project', default=>0 },    
+    ],
+};
+
 sub tree_topic_get_files : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -46,7 +53,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/folder.png',
+               icon       => '/static/images/icons/delete.png',
                leaf       => \0,
                expandable => \1
            };           
@@ -104,8 +111,9 @@ sub category_contents : Local {
     my %seen = ();
     my $p = $c->req->params;
     my ($category_id) = _array($p->{category_id});
+    my ($id_project) = _array($p->{id_project});
     my $query = $p->{query};
-    my ($info,@user_topics) = model->Topic->topics_for_user({ username=>$c->username, categories=>$category_id, clear_filter=>1, ($query?(query=>$query):()) });
+    my ($info,@user_topics) = model->Topic->topics_for_user({ username=>$c->username, categories=>$category_id, clear_filter=>1, ($query?(query=>$query):()), ($id_project?(id_project=>$id_project):()) });
     @user_topics = map { $_->{mid}} @user_topics;
  
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
@@ -319,11 +327,12 @@ sub tree_releases : Local {
     my %seen = ();
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
     my @rels = mdb->category->find({ id =>mdb->in(@categories), is_release=>mdb->true })->fields({ fields=>0, workflow=>0 })->all;
+    my $config_releases = config_get('config.releases.by_project');
     my @tree = map {
        +{
             text => $_->{name},
             icon => '/static/images/icons/release.png',
-            url  => '/lifecycle/category_contents?category_id='.$_->{id},
+            url  => $config_releases && $config_releases->{by_project} eq '1' ? 'lifecycle/tree_projects?category_id='.$_->{id} : '/lifecycle/category_contents?category_id='.$_->{id},
             has_query => 1,
             category_name => {
                 category_id => $_->{id},
@@ -344,15 +353,16 @@ sub tree_releases : Local {
 
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my ($category_id) = _array($p->{category_id});
     my @tree;
-
     my @projects_ids= Baseliner->model('Permissions')->user_projects_ids( username=>$c->username );
     my $projects =  ci->project->find({ active => mdb->true, mid => mdb->in(@projects_ids)})->sort({name=>1});
 
     while( my $r = $projects->next ) {
         push @tree, {
             text       => $r->{name},
-            url        => '/lifecycle/tree_project',
+            url        => $category_id ? '/lifecycle/category_contents?category_id='.$category_id.'&id_project='.$r->{mid} : '/lifecycle/tree_project',
             data       => {
                 id_project => $r->{mid},
                 project    => $r->{name},
@@ -1494,7 +1504,7 @@ sub build_topic_tree {
         children => [
             {
                 text => _loc('Files'),
-                icon => '/static/images/icons/folder.png',
+                icon => '/static/images/icons/folder.gif',
                 url  => '/lifecycle/tree_topic_get_files',
                 leaf => \0,
                 data => {

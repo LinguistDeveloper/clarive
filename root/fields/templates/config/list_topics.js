@@ -4,10 +4,24 @@
     var value_type = Baseliner.generic_list_fields(data);
     ret.push(value_type);
 
+    var combo_datatable = new Baseliner.ComboDouble({
+        name: 'datatable',
+        editable: false,
+        fieldLabel: _('Table format?'),
+        emptyText: _('Select one'),
+        data:[ 
+            [ 'always', _('Always') ],
+            [ 'never', _('Never') ],
+        ],
+        value: data.datatable,
+    });
+
     ret.push([ 
     	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.list_topics' },
+        { xtype:'textfield', fieldLabel: _('List of columns to show in grid'), name: 'columns', value: data.columns },
     	{ xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size },
-    	{ xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field }
+    	{ xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field },
+        combo_datatable
     ]);
     return ret;
 })

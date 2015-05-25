@@ -644,6 +644,7 @@
 
     var btn_delete_category = new Ext.Toolbar.Button({
         icon:'/static/images/icons/delete.gif',
+        tooltip:_('Delete'),
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

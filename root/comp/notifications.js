@@ -843,8 +843,10 @@
 					}					
 				],
 				buttons: [
-					{  text: _('Cancel') , handler: function(){  win_recipients.close(); } },
-					{  text: _('Accept') , handler: function(){  add_recipients(); } }
+					{  text: _('Cancel') , icon:'/static/images/icons/close.png', handler: function(){  win_recipients.close(); } },
+					{  text: _('Save') ,
+					//text: _('Accept') , 
+					icon:'/static/images/icons/save.png',handler: function(){  add_recipients(); } }
 				]
 			});
 			
@@ -1085,8 +1087,13 @@
 				{ xtype: 'hidden', name: 'notification_id', value: rec && rec.data ? rec.data.id : -1 }
 			],
 			buttons: [
-				{  text: _('Close') , handler: function(){  win.close(); } },
-				{  text: _('Accept') , handler: function(){  save_notification(); } }
+				{  text: _('Close') ,
+				icon:'/static/images/icons/close.png',
+				 handler: function(){  win.close(); } },
+				{  text: _('Save') , 
+				icon:'/static/images/icons/save.png',
+			     //text: _('Accept') , 
+				handler: function(){  save_notification(); } }
 			]			
 		});	
         
@@ -1231,6 +1238,10 @@
         });
     };
     
+
+	var export_button = new Baseliner.button.CSVExport();
+
+
     var notify_import = function(){
         var data_paste = new Baseliner.MonoTextArea({ flex:1 });
         var results = new Baseliner.MonoTextArea({ flex:1 });
@@ -1380,13 +1391,13 @@
 			//{ header: _('Digest frequency'), width: 60, dataIndex: 'digest_freq' },
 			{ header: _('Active'), width: 40, dataIndex: 'is_active', renderer: show_active  }
         ],
-        tbar: [ 
-            search_field,
-            btn_start,
-            btn_stop,
-			btn_add,
+        tbar: [ _('Search') + ': ', ' ',
+            search_field,' ',' ',
+           	btn_add,
 			btn_edit,
-			btn_delete,
+			btn_delete, 
+			btn_start,
+            btn_stop,
 			btn_tools_notify
         ],
 		bbar: ptool

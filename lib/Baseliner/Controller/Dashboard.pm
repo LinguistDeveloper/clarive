@@ -110,12 +110,12 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
+    my $project_id = $p->{project_id};
 
     # find a default dashboard
-    my ($default_rule, @all_rules) = $self->user_dashboards({ username => $c->username });
-
+    my @all_rules = $self->user_dashboards({ username => $c->username });
     if( !$id_rule ) {
-        $id_rule = $default_rule || @all_rules?$all_rules[0]->{id}:'';
+        $id_rule = @all_rules?$all_rules[0]->{id}:'';
         if( !$id_rule ) {
             _warn _loc 'No default rule found for user %1', $c->username;
         }
@@ -123,7 +123,7 @@ sub init : Local {
 
     # Remove old data
     if ( !mdb->rule->count({rule_type=>'dashboard'}) ) {
-        mdb->role->update({},{ '$rename'=>{ dashboard => 'dashboards_old'}},{multiple=>1} );
+        mdb->role->update({},{ '$rename'=>{ dashboards => 'dashboards_old'}},{multiple=>1} );
         for my $user ( ci->user->search_cis() ) {
             $user->dashboard('');
             $user->save;
@@ -136,14 +136,15 @@ sub init : Local {
                 $id_rule = $id;
             }
         }
-        ($default_rule, @all_rules) = $self->user_dashboards({ username => $c->username });
+        @all_rules = $self->user_dashboards({ username => $c->username });
     }
 
     $id_rule or _fail _loc 'No dashboard defined';
 
     # now run the dashboard rule
     my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
-    my $stash = { 
+    my $stash = {
+        project_id => $project_id,
         dashboard_data => { data=>[], count=>0 },
         dashboard_params => {
             %$p,
@@ -223,22 +224,26 @@ sub json : Local {
 
 sub dashboard_list: Local {
     my ($self,$c) = @_;
-    
+
+    my $p = $c->req->params;
     my @trees;
-    my ($default, @dashboards) = $self->user_dashboards({ username => $c->username});
+    my @dashboards = $self->user_dashboards({ username => $c->username});
 
     for my $dash ( @dashboards ) {
+        my $dash_name = $dash->{name};
+        $dash_name .= ' - '.$p->{project} if $p->{project};
         push @trees, {
                 text    => $dash->{name},
                 icon    => '/static/images/icons/dashboard.png',
                 data    => {
                     title => $dash->{name},
                     id => $dash->{id},
+                    project_id => $p->{id_project},
                     click   => {
                         icon    => '/static/images/icons/dashboard.png',
                         url  => '/comp/dashboard.js',
                         type    => 'comp',
-                        title   => $dash->{name},
+                        title   => $dash_name,
                     }
                 },
                 leaf    => \1
@@ -257,18 +262,18 @@ sub user_dashboards {
     my @dashboard_list;
 
     my $where = {};
-    my @dashboard_ids;
-    my $default_dashboard = $user_ci->default_dashboard->{dashboard} || '';
+    my @dashboard_ids = ($user_ci->default_dashboard->{dashboard}) || ();
 
     if ( !Baseliner->model('Permissions')->is_root( $username ) ) {
         my @roles = map { $_->{id} } Baseliner->model('Permissions')->user_roles( $username );
         $where = { id => mdb->in(@roles) };
-        @dashboard_ids = map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
+        push @dashboard_ids, map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
+
     } else {
-        @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
+        push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
     }
     if ( !@dashboard_ids ) {
-        @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
+        push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
     }
 
     push @dashboard_list,
@@ -279,7 +284,7 @@ sub user_dashboards {
             }
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->all;
 
-    return ($default_dashboard, @dashboard_list);
+    return @dashboard_list;
 }
 
 sub list_jobs: Local { 
@@ -287,7 +292,7 @@ sub list_jobs: Local {
     my $perm = Baseliner->model('Permissions');
     my $p = $c->req->params;
 
-    _warn $p;
+    my $project_id = $p->{project_id};
 
     my $states = $p->{states} || [];
     my $not_in_states = $p->{not_in_states} || 'off';
@@ -313,7 +318,11 @@ sub list_jobs: Local {
                                                                     level => 1)            
         }
 
-        $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+        $where->{'projects'} = mdb->in(@mid_filters) if @mid_filters;
+
+        if ( $project_id ) {
+            $where->{'projects'} = $project_id;
+        }
 
         my @filter_states;
         if ( _array($states) ) {
@@ -323,7 +332,6 @@ sub list_jobs: Local {
                 $where->{status} = mdb->in(_array($states));
             }
         }
-        _warn $where;
         my $rs_search = ci->job->find( $where )->sort({ starttime => -1 })->limit($limit);
 
         while ( my $job = $rs_search->next() ) {
@@ -355,6 +363,8 @@ sub last_jobs : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
+    my $project_id = $p->{project_id};
+
     my $bls = $p->{bls};
     my @datas;
     
@@ -365,13 +375,16 @@ sub last_jobs : Local {
         if ( _array($bls) ) {
             my @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
             $where->{bl} = mdb->in(@all_bls);
-            _warn $bls;
         }
         my $username = $c->username;
 
-        my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
-            username => $c->username
-        );
+        my @ids_project;
+        if ($project_id) {
+            @ids_project = $project_id;
+        } else {
+            @ids_project = $c->model('Permissions')
+                ->user_projects_ids( username => $c->username );
+        }
         
         if ( @ids_project ) {
 
@@ -577,6 +590,14 @@ sub topics_by_field: Local {
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
+
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
 
     @topics_by_category = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -819,6 +840,14 @@ sub topics_by_date: Local {
         $where->{$date_field} = {'$lte' => "$until"};        
     }
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
     my %topic_by_dates = ();
@@ -999,6 +1028,14 @@ sub topics_gauge: Local {
     my $rs_topics;
     my $field_mode = 0;
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     if ( $numeric_field ) {
         $field_mode = 1;
         $rs_topics = mdb->topic->aggregate(
@@ -1105,6 +1142,7 @@ sub list_topics: Local {
     my $statuses = $p->{statuses} || [];
     my $not_in_status = $p->{not_in_status};
     my $filter_user = $p->{assigned_to};
+    my $limit = $p->{limit} // 100;
     my $condition = {};
     my $where = {};
 
@@ -1120,9 +1158,7 @@ sub list_topics: Local {
     $where = $condition;
 
     if ( $filter_user && $filter_user ne 'Any') {
-        _warn "Tengo filtro de usuario";
         if ( $filter_user eq _loc('Current')) {
-            _warn "El usuario es current";
             $filter_user = $c->username;
         }
         my $ci_user = ci->user->find_one({ name=>$filter_user });
@@ -1167,10 +1203,18 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     $main_conditions->{'categories'} = \@user_categories;
 
     my $cnt = 0;
-    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
 
     my @topic_cis = map {$_->{mid}} @topics;
     @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
@@ -1185,19 +1229,12 @@ sub topics_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
-    my $date_type = $p->{date_type};
+    my $days_from = $p->{days_from} || 0;
 
     my $date;
 
-    if ($date_type eq 'yesterday') {
-        $date = Class::Date->now();
-        $date = $date - '1D';
-    } elsif ( $date_type eq 'today' ) {
-        $date = Class::Date->now();
-    } else {
-        ### TODO: Get specific date
-        $date = Class::Date->new( $p->{date} )
-    }
+    $date = Class::Date->now();
+    $date = $date + ($days_from .'D');
 
     my $today    = substr( $date,        0, 10 );
     my $tomorrow = substr( $date + "1D", 0, 10 );
@@ -1233,13 +1270,22 @@ sub topics_burndown : Local {
         mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
         ->fields( { mid => 1 } )->all;
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     my $remaining_backlog = mdb->topic->find(
         {   'category.id' => mdb->in(@user_categories),
             '$and'          => [
                 { $date_field => { '$lt' => $tomorrow } },
                 { $date_field => { '$ne' => '' } }
             ],
-            'category_status.name' => mdb->nin(@closed_status)
+            'category_status.name' => mdb->nin(@closed_status),
+            %$where
         }
     )->fields( { _id => 0, mid => 1 } )->all;
 
@@ -1250,7 +1296,8 @@ sub topics_burndown : Local {
         {   mid           => mdb->in(@all_tasks),
             event_key     => 'event.topic.change_status',
             'vars.status' => mdb->in(@closed_status),
-            ts            => { '$gte' => $today }
+            ts            => { '$gte' => $today },
+            %$where
         }
 
         )->fields( { _id => 0, ts => 1 } )->all;
@@ -1268,7 +1315,8 @@ sub topics_burndown : Local {
                 { $date_field => { '$lt' => $tomorrow } },
                 { $date_field => { '$ne' => '' } }
             ],
-            created_on => { '$gte' => $today }
+            created_on => { '$gte' => $today },
+            %$where
         }
 
         )->fields( { _id => 0, created_on => 1 } )->all;
@@ -1327,7 +1375,9 @@ sub list_baseline : Local {
 
     my $days     = $p->{days}     // 7;
     my $projects = $p->{projects} // 'ALL';
-    my $bls      = $p->{bls}      // 'ALL';
+    my $bls      = $p->{bls};
+    my $project_id = $p->{project_id};
+
 
     my $username = $c->username;
     my ( @jobs, $job, @datas, @temps, $SQL );
@@ -1336,14 +1386,12 @@ sub list_baseline : Local {
     my @ids_project = $c->model('Permissions')
         ->user_projects_ids( username => $c->username );
 
-    if ( $projects ne 'ALL' ) {
-        use Array::Utils qw(:all);
-        my @filter_projects = _array($projects);
-        @ids_project = intersect( @filter_projects, @ids_project );
+    if ( $project_id ) {
+        @ids_project = ($project_id);
     }
 
     my @filter_bls;
-    if ( $bls ne 'ALL' ) {
+    if ( _array($bls) ) {
         @filter_bls = _array($bls);
     }
     else {
@@ -1450,14 +1498,16 @@ sub list_baseline : Local {
 }
 
 sub viewjobs : Local {
-    my ( $self, $c, $days, $type, $bl ) = @_;
+    my ( $self, $c, $days, $type, $bl, $project_id ) = @_;
     my $p = $c->request->parameters;
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
-    
+    if ( $project_id ) {
+        @ids_project = ($project_id);
+    }
     #Filtramos por la parametrización cuando no son todos
     # if($config->{projects} ne 'ALL'){
     #     @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
@@ -1480,7 +1530,7 @@ sub viewjobs : Local {
         my $start = mdb->now - $days; 
         $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
 
-        @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
+        @jobs = ci->job->find({ projects => mdb->in(@ids_project), endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
         
     }else{
         @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(($bl)) })->all;

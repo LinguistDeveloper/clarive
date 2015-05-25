@@ -1,12 +1,16 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
-    background_color: '#fff',
+    
+    background_color: '#000',
     start_mode: 'manual',
+    limit: '60',
+
     initComponent : function(){
         var self = this;
-        self.cuenta = 0;
+        //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
-        self.origen=0;
+        self.i=0;
+        //self.origen=0;
 
         self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim() } });
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
@@ -37,11 +41,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
-            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
-            ".node.a": { "fill": "red" },
-            ".node.b": { "fill": "green" },
-            ".node3": { "fill": "#1f77b4" }
+            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' }
         });
 
         var id = self.body.id; 
@@ -60,7 +60,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .nodes(self.nodes)
             .links(self.links)
             .charge(-80)
-            .linkDistance(50)
+            .friction(.6)
+            .linkDistance(     
+                function(lnk){
+                    return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 1 : 80;
+                }
+            )
+            //.linkStrength(.1)
             .size([self.width, self.height])
             .on("tick", function(){ self.tick() });
 
@@ -91,13 +97,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_texto_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
         Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
-
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
         Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF6666").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
-
 
         var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -119,19 +123,24 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     start_anim : function(){
         var self = this;
-        Cla.ajax_json('/swarm/activity', {}, function(res){
+        if(self.i==0){
+        Cla.ajax_json('/swarm/activity', {limit:self.limit}, function(res){
             self.res = res;
+            //alert("coge valores"+self.res.data.length);
             self.i = 0;
-            if( !self.initiated ) {
-                self.first();
-                self.initiated = true;
-            }
-            self.anim_running = true;
-            self.btn_start.disable();
-            self.btn_pause.enable();
-            self.btn_stop.enable();
-            setTimeout(function(){ self.anim() }, 100 );
         });
+        }
+        if( !self.initiated ) {
+            //alert("inicializa");
+            self.first();
+            self.initiated = true;
+        }
+        self.anim_running = true;
+        self.btn_start.disable();
+        self.btn_pause.enable();
+        self.btn_stop.enable();
+        setTimeout(function(){ self.anim() }, 100 );
+
     },
     pause_anim : function(){
         var self = this;
@@ -146,33 +155,74 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
+        self.i=self.res.data.length;  
     },
     anim : function(){
         var self = this;
+
         if( !self.anim_running ) return;
 
+        //##############################################################
+        //##############################################################
+        if(self.i==self.res.data.length){
+
+            self.i=0;
+            self.initiated=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
+            self.init();
+            self.start_anim();
+            return;
+        }
+        //##############################################################
+        //##############################################################
+
         var row = self.res.data[ self.i++ ];
+
         if( !row ) {
             // no more rows? stop animation
             self.stop_anim();
             return;
         }
         row.id = Ext.id();
-        var next_timer = 1000;
+        var next_timer = 500;
 
         if( row.parent ) {
             if( !self.parents[row.parent] ) {
                 self.parents[row.parent] = true;
                 self.add_inicial( row.parent );
-            }
-            
-            if(row.ev == 'add') {
-                // self.useradd(row);
-                self.add(row);
-            }else {
-                self.userdel(row);
-                self.del(row);
-            }
+                var row = self.res.data[ self.i-- ];
+            }else{
+                if(row.ev == 'add') {
+                    self.comprobar_timer_usuario();
+                    self.add(row);
+                }else if(row.ev == 'mod') {
+                    self.comprobar_timer_usuario();
+                    self.modify(row);
+                }else {
+                    self.comprobar_timer_usuario();
+                    self.del(row);
+                }
+        }
         }
         setTimeout(function(){ self.anim() }, next_timer);
     },
@@ -184,7 +234,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         //quitamos la parte de el nodo para que no aparezca, solo definimos el elemento circulo
-        self.node.enter().append("circle");//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
+        self.node.enter().append("circle").attr("r",500);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
         
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
@@ -202,7 +252,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
         var a = self.nodes[0];
         var d = { id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", 
-            who: "iniciales", node: parent_node, parent: parent_node };
+            who: "iniciales", node: "iniciales", parent: parent_node };
 
         if (!a){
              self.nodes.push(d)
@@ -223,24 +273,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
-
         self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-        self.texto.enter().append('text').attr("fill","url(#Color_Nodos_Raiz)").text(function(d) { return d.source.node;});   
+        self.texto.enter().append('text').attr("fill","url(#Color_texto_Raiz)").text(function(d) { return d.source.parent;});   
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
         self.node.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(function(d) { return d.node;}).attr("fill","url(#Color_texto_Raiz)");
+        self.node4.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
         self.node4.exit().remove();
 
-
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(function(d) { return d.node;}).attr("fill","url(#Color_texto_Raiz)");
+        self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
         self.node5.exit().remove();
-
-
 
         //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
         self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
@@ -256,7 +302,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.exit().remove();
 
         self.force.start();
-        //self.borrar_nodo(self.timer);
+
     },
     add : function(row){
         var self = this;
@@ -273,55 +319,170 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             var j = 0;
             while (j < self.nodes.length){
 
-                if (self.nodes[j].node ==  row.parent){
+                if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
                         self.nodes.push(row);
                         self.links.push({source: row, target: self.nodes[j]});
+                        
                         j=self.nodes.length;
                 }   
                 j++;
             }
-            // self.useradd(row);
-            self.userstart(row);
+
             self.start({ row: row, timer: timer });
+            self.add_user(row);
+
         }
     },
-    useradd  : function(row){
+    modify : function(row){
         var self = this;
-        //var a = self.nodes2[0];
-        var d = row; // {id: self.i, node: "d"+row.node, who: row.who};
-        row.node = "d" + row.node;
+        var a = self.nodes[0];
+        var d = row; //{id: self.i, node:  row.parent};
 
-        self.nodes2.push(d);
-        //self.link2.push({source: d, target: d});
-        //self.userstart(row);
-    },
-    //ESTE METODO DE MOMENTO NO SE USA...
-    userdel : function(){
+        var timer = 1000;  // TODO calculate from previous and next events
 
-        var self = this;        
+        var j = 0;
 
-        self.nodes2.splice(self.nodes2.length-1); // borra el ultimo nodo creado
-        //self.link2.pop();
-        //self.userstart(row);
-    },
-    //FALTA CAPTURAR FICHERO Y COMPROBAR EL NODO A BORRAR
+        while (j < self.nodes.length){
+                //Buscamos el nodo a borrar.
+                if (self.nodes[j].node == row.node){
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
+                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
+                    j=self.nodes.length;
+                }   
+            j++;
+        }
+
+        if (!a){
+             self.nodes.push(row);
+             self.links.push({source: row, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+
+                if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.links.push({source: row, target: self.nodes[j]});
+                        
+                        j=self.nodes.length;
+                }   
+                j++;
+            }
+
+            self.start_modify({ row: row, timer: timer });
+            self.add_user(row);
+
+        }
+    },     
     del : function(row){
+
         var self = this;
 
-        self.nodes.splice(self.nodes.length-1); // borra el ultimo nodo creado
-        self.links.pop(); // remove b-c
-        // self.userdel();
+        var j = 0;
+
+        while (j < self.nodes.length){
+                //Buscamos el nodo a borrar.
+                if (self.nodes[j].node == row.node){
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
+                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
+                    j=self.nodes.length;
+                }   
+            j++;
+        }
+
+        self.userstart(row);
         self.start({ row: row, timer: 1000 });
     },
-    start : function(dt){
+    add_user : function(row){
         var self = this;
+        var a = self.nodes[0];
+
+        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios" };
+
+        if (!a){
+             self.nodes.push(d);
+             self.links.push({source: d, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+                    //alert("llega al while usuario "+d.who +"  el row es  "+row.who + " el usuario  "+self.nodes[j].node);
+                if (self.nodes[j].who ==  row.who && self.nodes[j].node == "usuarios"){
+
+                        self.nodes[j].t = 5;//Reinicia el timer del usuario cuando crea un nodo
+                        var i = 0;
+                        while(i < self.links.length){
+                            if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
+                                //alert("entra");
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
+                            } 
+                            i++;
+                        }
+                        self.links.push({source: self.nodes[j], target: row });
+                        j=self.nodes.length;
+                }
+                j++;
+            }
+         if(j==self.nodes.length){
+                        self.nodes.push(d);
+                        self.links.push({source: d, target: row });
+                }      
+        }
+        self.userstart(d);
+    },
+    comprobar_timer_usuario : function(){
+
+        var self = this;
+
+        var j = 0;
+        while (j < self.nodes.length){
+
+            if (self.nodes[j].node == "usuarios"){
+                    
+                    self.nodes[j].t = self.nodes[j].t-1;
+                    if(self.nodes[j].t <= 0){
+
+                        var i = 0;
+                        while(i < self.links.length){
+                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                    self.links.splice(self.links.indexOf(self.links[i]),1);
+                                    i=self.links.length;
+                                } 
+                                i++;
+                        }
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+
+                    }
+            }
+            j++;
+        }
+        self.force.start();
+
+    },
+    start : function(dt){
+
+        var self = this;
+        
         var row = dt.row;
         var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
         self.node5.exit().remove();
        
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
         self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
         self.node6.enter().append("text").style("visibility", "hidden");
         self.node6.exit().remove();
@@ -334,10 +495,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
         self.node9.enter().append("text").style("visibility", "hidden");
         self.node9.exit().remove();
-        
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node").attr("class", "link");//.attr("stroke","green");
-        self.link.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
@@ -352,10 +509,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
-                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.res.data[d.id].t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.res.data[d.id].ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.res.data[d.id].who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(self.res.data[d.id].parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
                             return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
                          })
                          .on("mouseout", function()
@@ -374,52 +531,129 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          .call(self.force.drag)
                          .transition().duration(timer).attr("fill","url(#Color_Nodos)").attr("fill-opacity",0.6);
         self.node.exit().remove();
-        self.force.start();
-        //self.pintar_usuario();
 
-        self.node2.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); });
-        self.node2.exit().remove();
-
-        self.node3.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); });
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
         self.node3.exit().remove();
 
+        self.force.start();
 
-        self.link2.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*60); })
-            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*60); });
-        self.link2.exit().remove();
+    },
+    start_modify : function(dt){
 
-        self.origen = 50;
+        var self = this;
+        
+        var row = dt.row;
+        var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
+
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.exit().remove();
+       
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
+        self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
+        self.node6.enter().append("text").style("visibility", "hidden");
+        self.node6.exit().remove();
+        self.node7 = self.node7.data(self.force.nodes(), function(d) { return d.id;});
+        self.node7.enter().append("text").style("visibility", "hidden");
+        self.node7.exit().remove();
+        self.node8 = self.node8.data(self.force.nodes(), function(d) { return d.id;});
+        self.node8.enter().append("text").style("visibility", "hidden");
+        self.node8.exit().remove();
+        self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
+        self.node9.enter().append("text").style("visibility", "hidden");
+        self.node9.exit().remove();
+
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.exit().remove();
+      
+        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
+                         .on('mouseover', function(d)
+                         {
+                            d3.select(this).transition()
+                            .duration(750)
+                            .attr("r", 55)
+                            .attr("fill","url(#Amarillo)")
+                            //.attr("fill-opacity",0.6);
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                         })
+                         .on("mouseout", function()
+                         {
+                         d3.select(this).transition()
+                         .duration(750)
+                         .attr("r", 10)
+                         .attr("fill","url(#Verde)")
+                         .attr("fill-opacity",0.6);
+                         self.node6.style("visibility", "hidden");
+                         self.node7.style("visibility", "hidden");
+                         self.node8.style("visibility", "hidden");
+                         self.node9.style("visibility", "hidden");
+                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         })
+                         .call(self.force.drag)
+                         .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
+        self.node.exit().remove();
+
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
+
+        self.force.start();
+
     },
     userstart : function(row){
+        
         var self = this;
 
-        var randomValuex = Math.random()*200;
-        var randomValuey = Math.random()*200;
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text'); 
 
-        //quitamos esto para quitar la linea de link2
-        self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");       
-        self.link2.exit().remove();
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text");
+        self.node4.exit().remove();
 
-        self.node2 = self.node2.data(self.force.nodes(), function(d) { return d.id;});
-        self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
-        self.node2.exit().remove();
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text");
+        self.node5.exit().remove();
+
+        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
+        self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+        self.link.exit().remove();
+
+        self.node= self.node.data(self.force.nodes(), function(d) { return d.id;});
+        //self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
+        self.node.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
+        self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
         self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF")
+        self.node3.exit().remove();
+
+        self.force.start();
 
     }, 
     tick : function(){
+
         var self = this;
-        self.origen= self.origen-1;
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
-            
+   
         self.node4.attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
 
@@ -434,34 +668,17 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
           .attr("x2", function(d) { return d.target.x; })
           .attr("y2", function(d) { return d.target.y; });
 
-        self.node2.attr("x", function(d) { return d.x+(self.calculo_direcciones_x(d.x)*self.origen); })
-            .attr("y", function(d) { return d.y+(self.calculo_direcciones_y(d.y)*self.origen); });
-        self.node2.exit().remove();
+        self.node.attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
 
-        self.node3.attr("x", function(d) { return d.x+(self.calculo_direcciones_x(d.x)*self.origen); })
-            .attr("y", function(d) { return d.y+(self.calculo_direcciones_y(d.y)*self.origen); });
-        self.node3.exit().remove();
+        self.node3.attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
 
-        self.link2.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x+(self.calculo_direcciones_x(d.source.x)*self.origen); })
-            .attr("y2", function(d) { return d.source.y+(self.calculo_direcciones_y(d.source.y)*self.origen); });
-
-        if(self.origen < 0 ){
-            self.link2.transition().duration(0).remove();       
-            self.link2.exit().remove();
-
-            self.node2.transition().duration(0).remove();       
-            self.node2.exit().remove();
-
-            self.node3.transition().duration(0).remove();       
-            self.node3.exit().remove();
-        }
     },
     rescale : function() {
         var self = this;
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-    },
+    }/*,
     calculo_direcciones_x : function(x){
         if(x < 350){
             x=1;
@@ -478,51 +695,5 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             y=-1;
         }
         return y;
-    },
-    pintar_usuario : function(){
-        //console.log(self.timer);
-        var self = this;
-
-        var aleatorio_x = Math.random();
-        var aleatorio_y = Math.random();
-
-//if (self.node[self.i].who)
-
-//alert("nodo actual" + self.nodes[self.i].node + "nodo anterior" + self.nodes[self.i-1].node);
-//console.log(self.nodes);
-
-
-        self.node2.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); })
-            .transition().duration(self.timer)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*80); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*80);})
-            .ease("elastic")
-            .remove();
-        self.node2.exit().remove();
-
-      self.node3.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); })
-            .transition().duration(self.timer)
-            .attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*aleatorio_x*80); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*aleatorio_y*80); })
-            .ease("elastic")
-            .remove();
-         self.node3.exit().remove();
-
-
-        self.link2.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*60); })
-            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*60); })
-            .transition().duration(self.timer)
-            .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*aleatorio_x*80); })
-            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*aleatorio_y*80);})
-            .ease("elastic") 
-            .remove();
-        self.link2.exit().remove();
-
-
-    }
+    }*/
 });
-

@@ -44,7 +44,7 @@
             });
         }
     } });
-    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('add.gif'), handler:function(){ 
+    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.gif'), handler:function(){ 
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -72,8 +72,11 @@
             card.getLayout().setActiveItem( form );
         }
     };
-    var btn_grid = new Ext.Button({ text:_('View Messages'), icon:IC('catalog.gif'), pressed: true, toggleGroup:'sms-btn', handler:function(){ card_show(true) } });
-    var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('sms.gif'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
+    var btn_grid = new Ext.Button({ text:_('View Messages'),
+     //icon:IC('catalog.gif'), 
+     icon:IC('sms.gif'), 
+     pressed: true, toggleGroup:'sms-btn', handler:function(){ card_show(true) } });
+    var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('edit.gif'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
     Baseliner.sms_read = function(ix,grid_id){
         var gr = Ext.getCmp(grid_id);
         if( gr ) {
@@ -130,7 +133,8 @@
     var win = new Baseliner.Window({ 
         title:_('System Messages'),
         layout:'fit', width:800, height:600, 
-        tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_cancel, btn_del, btn_new ],
+        //tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_cancel, btn_del, btn_new ],
+        tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_del, btn_cancel, btn_new ],
         items: card
     });
     win.show();
