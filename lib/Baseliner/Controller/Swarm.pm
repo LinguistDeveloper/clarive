@@ -42,7 +42,11 @@ sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>-1 })->limit(20)->all;
+    _warn $p;
+    
+    my $limit = $p->{limit} // 20;
+
+    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>-1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;

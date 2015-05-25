@@ -1,6 +1,7 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
     background_color: '#fff',
     start_mode: 'manual',
+    limit: '20',
     initComponent : function(){
         var self = this;
         self.cuenta = 0;
@@ -59,10 +60,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force = d3.layout.force()
             .nodes(self.nodes)
             .links(self.links)
-            .charge(-100)
+            .charge(-80)
             .linkDistance(     
                 function(lnk){
-                    return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 1 : 100;
+                    return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 1 : 80;
                 }
             )
             //.linkStrength(.1)
@@ -124,7 +125,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     start_anim : function(){
         var self = this;
-        Cla.ajax_json('/swarm/activity', {}, function(res){
+        Cla.ajax_json('/swarm/activity', {limit:self.limit}, function(res){
             self.res = res;
             self.i = 0;
             if( !self.initiated ) {
