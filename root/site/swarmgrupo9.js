@@ -47,7 +47,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
 
         for(cnt = 0 ; cnt < self.array.length; cnt++){
-            self.array.data[cnt].t = 1000*(cnt+1);
+            self.array.data[cnt].t = 10*(cnt+1);
         }
 
         $.injectCSS({

@@ -264,31 +264,26 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
-    add_user_mover : function(a,d,anterior){
+    add_user_mover : function(a,nuevo,anterior){
         
        var self = this;
 
-       var jas = 0;
-       if(jas!=self.nodes.length){
-       alert(a.node + self.nodes.length);
-        while (jas < self.nodes.length){
+              var self = this;
+
+        var j = 0;
+
+        //EL WHILE NOS MUEVE EL NODO DE POSICION SI LO COMENTAMOS VEMOS POSICION INICIAL DEL NODO
+        while (j < self.links.length){
+
                 //Buscamos el nodo a borrar.
-                if (self.nodes[jas].node == a.node){
-                    //alert("borro el nodo  " + self.nodes[j].node + "  tamano nodo " + self.nodes.length + "posicion  "+ j );
-                    self.links.splice(self.links.indexOf(3),1);//borro el link - posicion y nº de links a borrar.
-                    //alert("tamano nodo " + self.nodes.length);
-                    jas=self.nodes.length;
+                if (self.links[j].target == anterior){
+
+                    self.links[j].target = nuevo;
+
+                    j=self.links.length;
                 }   
-            jas++;
+            j++;
         }
-
-        }
-
-        alert("pasa de mi");
-
-        self.links.splice(self.links.indexOf(3),1);
-
-        self.links.push({source: a, target: anterior},{source: a, target: anterior});
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
@@ -317,7 +312,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.add_user_node( self.nodes[0],{id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "usuario", 
             parent: 'xxx', color: "green", posicionx: 0, posiciony: 0} ); 
       
-        self.add_user_mover( self.nodes[3],self.node[2], self.nodes[0] ); 
+        self.add_user_mover( self.nodes[0],self.nodes[1],self.nodes[2] ); 
     },
     
 

@@ -18,7 +18,7 @@ sub leer_log : Local {
     my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
     
     my @data;
-    for my $i ( 1 .. 20 ) {
+    for my $i ( 0 .. 19 ) {
         my $parent = $parent[$i];
         my $nodes = $nodes[$i];
 		my $action = $action[$i];
