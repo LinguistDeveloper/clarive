@@ -322,7 +322,7 @@ sub topics_for_user {
         my @mids_query;
         if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
             @mids_query = map { $_->{obj}{mid} } 
-                _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
+                _array( mdb->topic->search( query=>$query, project=>{mid=>1})->{results} );
         }
         
         if( @mids_query == 0 ) {
@@ -534,6 +534,7 @@ sub topics_for_user {
     $rs->sort( $order_by );
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
+    _warn "Limit ->>>>> ".$limit;
     my @topics = $rs->all;
     my %mid_docs = map { $_->{mid}=>$_ } @topics; 
     my @mids = map { $$_{mid} } @topics;  # keep order
