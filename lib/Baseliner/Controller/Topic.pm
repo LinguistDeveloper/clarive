@@ -1900,6 +1900,7 @@ sub report_csv : Local {
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
+    $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
 }
 
