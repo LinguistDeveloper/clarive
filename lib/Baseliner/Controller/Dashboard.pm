@@ -1165,7 +1165,6 @@ sub list_topics: Local {
 
     my $cnt = 0;
     ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
-    _warn "Cuenta:". _dump $cnt;
 
     my @topic_cis = map {$_->{mid}} @topics;
     @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;

@@ -534,7 +534,7 @@ sub topics_for_user {
     $rs->sort( $order_by );
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
-    _warn "Limit ->>>>> ".$limit;
+    # _warn "Limit ->>>>> ".$limit;
     my @topics = $rs->all;
     my %mid_docs = map { $_->{mid}=>$_ } @topics; 
     my @mids = map { $$_{mid} } @topics;  # keep order
