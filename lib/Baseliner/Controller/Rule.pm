@@ -932,7 +932,7 @@ sub default : Path {
     my $run_rule = sub{
         try {
             my $rule = $self->rule_from_url( $id_rule );
-            _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
+            _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
             my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response} 
