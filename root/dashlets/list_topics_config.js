@@ -12,7 +12,7 @@
         { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
         ccategory,
         // { xtype:'textfield', fieldLabel: _('User assigned to topics'), name: 'assigned_to', value: data.assigned_to },
-        new Baseliner.ComboSingle({ allowBlank: true, fieldLabel: _('User assigned to topics'), editable: true, name: 'assigned_to', value: data.assigned_to || '', data: [
+        new Baseliner.ComboSingle({ forceSelection: false, allowBlank: true, fieldLabel: _('User assigned to topics'), editable: true, name: 'assigned_to', value: data.assigned_to || '', data: [
             [''],
             [_('Current')],
             [_('Any')]
