@@ -32,22 +32,22 @@ register 'report.clarive.jobs' => {
                     'usuario',     'estado',     {name => 'ejecuciones', type => 'int', sortType => 'asInt'}
                 ],
                 columns => [
-                    {id => 'job_id', text => 'JOB ID', meta_type => 'job_ID'},
-                    {id => 'nombre_job',  text => 'Nombre'},
-                    {id => 'cambios',     text => 'Cambios'},
-                    {id => 'bl',     text => 'Entorno'},
-                    {id => 'sistemas',    text => 'Sistemas'},
-                    {id => 'naturalezas', text => 'Naturalezas'},
-                    {id => 'releases',    text => 'Releases'},
-                    {id => 'inicio',      text => 'Inicio', meta_type => 'date', sortable => \1},
-                    {id => 'fin',         text => 'Fin', meta_type => 'date', sortable => \1},
-                    {id => 'pre_inicio',      text => 'PRE Inicio', meta_type => 'date', sortable => \1},
-                    {id => 'pre_fin',         text => 'PRE Fin', meta_type => 'date', sortable => \1},
-                    {id => 'run_inicio',      text => 'RUN Inicio', meta_type => 'date', sortable => \1},
-                    {id => 'run_fin',         text => 'RUN Fin', meta_type => 'date', sortable => \1},
-                    {id => 'usuario',     text => 'Usuario'},
-                    {id => 'estado',      text => 'Estado'},
-                    {id => 'ejecuciones', text => 'Ejecuciones', meta_type => 'number'}
+                    {id => 'job_id', text => 'Job ID', meta_type => 'job_ID'},
+                    {id => 'nombre_job',  text => _loc('Name')},
+                    {id => 'cambios',     text => _loc('Changes')},
+                    {id => 'bl',     text => _loc('bl')},
+                    {id => 'sistemas',    text => _loc('System')},
+                    {id => 'naturalezas', text => _loc('Natures')},
+                    {id => 'releases',    text => _loc('releases')},
+                    {id => 'inicio',      text => _loc('Start'), meta_type => 'date', sortable => \1},
+                    {id => 'fin',         text => _loc('End'), meta_type => 'date', sortable => \1},
+                    {id => 'pre_inicio',      text => 'PRE '. _loc('Start'), meta_type => 'date', sortable => \1},
+                    {id => 'pre_fin',         text => 'PRE '. _loc('End'), meta_type => 'date', sortable => \1},
+                    {id => 'run_inicio',      text => 'PRE '. _loc('Start'), meta_type => 'date', sortable => \1},
+                    {id => 'run_fin',         text => 'PRE '. _loc('End'), meta_type => 'date', sortable => \1},
+                    {id => 'usuario',     text => _loc('Username')},
+                    {id => 'estado',      text => _loc('Status')},
+                    {id => 'ejecuciones', text => _loc('Executions'), meta_type => 'number'}
                 ],
             },
             report_name => _loc('Job List'), 
@@ -75,7 +75,7 @@ register 'report.clarive.jobs' => {
         };
 
         # Condiciones customizables
-        if ( $p->{chk_inicio} eq 1 ) {
+        if ( $p->{chk_inicio} && $p->{chk_inicio} eq 1 ) {
           $where->{starttime} = {
               '$ne'  => undef,
               '$nin' => [ '' ],
@@ -88,7 +88,7 @@ register 'report.clarive.jobs' => {
           }
         };
 
-        if ( $p->{chk_fin} eq 1 ) {
+        if ( $p->{chk_fin} && $p->{chk_fin} eq 1 ) {
           $where->{endtime} = {
               '$ne'  => undef,
               '$nin' => [ '' ],
@@ -101,7 +101,7 @@ register 'report.clarive.jobs' => {
           }
         };
 
-        if ( $p->{chk_projects} eq 1 ) {
+        if ( $p->{chk_projects} && $p->{chk_projects} eq 1 ) {
           if ( $p->{chk_projects_and} eq 1 ) {
               my @ands;
               for my $project ( _array $p->{projects} ) {
@@ -113,12 +113,12 @@ register 'report.clarive.jobs' => {
             }
         };
 
-        if ( $p->{chk_bl} eq 1 ) {
+        if ( $p->{chk_bl} && $p->{chk_bl} eq 1 ) {
           $where->{bl} = mdb->in( [_array $p->{bl}] )
         };
 
-        if ( $p->{chk_natures} eq 1 ) {
-          if ( $p->{chk_natures_and} eq 1 ) {
+        if ( $p->{chk_natures} && $p->{chk_natures} eq 1 ) {
+          if ( $p->{chk_natures_and} && $p->{chk_natures_and} eq 1 ) {
               my @ands;
               for my $nature ( _array $p->{natures} ) {
                 push @ands, {natures => mdb->in([$nature])};
@@ -129,16 +129,16 @@ register 'report.clarive.jobs' => {
             }
         };
 
-        if ( $p->{chk_users} eq 1 ) {
+        if ( $p->{chk_users} && $p->{chk_users} eq 1 ) {
             my @usernames = map {$_->{name}} BaselinerX::CI::user->search_cis( mid => mdb->in(_array $p->{users}));
             $where->{username} = mdb->in( @usernames )
         };
 
-        if ( $p->{chk_states} eq 1 ) {
+        if ( $p->{chk_states} && $p->{chk_states} eq 1 ) {
             $where->{status} = mdb->in( _array $p->{states} )
         };
 
-        if ( $p->{chk_releases} eq 1 ) {
+        if ( $p->{chk_releases} && $p->{chk_releases} eq 1 ) {
           if ( $p->{chk_releases_and} eq 1 ) {
               my @ands;
               for my $release ( _array $p->{releases} ) {
@@ -149,8 +149,8 @@ register 'report.clarive.jobs' => {
               $where->{releases} = mdb->in( [_array $p->{releases}] )
             }
         };
-
         _warn $where;
+
         my @rows;
         Baseliner->model('Jobs')->build_field_query( $query, $where, $username ) if length $query;
         # Baseliner->model('Topic')->build_project_security( $where, $username );
@@ -160,7 +160,7 @@ register 'report.clarive.jobs' => {
         $start = 0 if length $start && $start >= $cnt;    # reset paging if offset
         $rs->skip($start)  if length $start;
         $rs->limit($limit) if $limit ne -1;
-        $rs->sort( $sort ? $sort : { start_time => 1 } );
+        $rs->sort( $sort ? $sort : { starttime => 1 } );
 
         my @docs = $rs->all;
 
@@ -179,7 +179,7 @@ register 'report.clarive.jobs' => {
             ];
             my $cambios = [
                 grep { defined }
-                map { my $r = $cis{$_}; $r->{name} if $r } _array( $d->{changesets} )
+                map { my $r = $cis{$_}; $r->{title} if $r } _array( $d->{changesets} )
             ];
             my $natures = [
                 grep { defined }
@@ -187,7 +187,7 @@ register 'report.clarive.jobs' => {
             ];
             my $releases = [
                 grep { defined }
-                map { my $r = $cis{$_}; $r->{name} if $r } _array( $d->{releases} )
+                map { my $r = $cis{$_}; $r->{title} if $r } _array( $d->{releases} )
             ];
 
             my ($last_exec) = sort { $b cmp $a } keys %{$$d{milestones}};
@@ -212,7 +212,14 @@ register 'report.clarive.jobs' => {
                 ejecuciones => $$d{exec}
               };
         }
-        return {
+        if ($sort){
+            my $field = (keys $sort)[0];
+            my $dir = $p->{dir};
+            @rows = sort { 
+                $dir eq '1'? lc($a->{$field}) cmp ($b->{$field}) : lc($b->{$field}) cmp ($a->{$field})
+            } @rows;
+        }
+         return {
             rows=>\@rows, total=>$cnt, config=>$config,
         };
     },

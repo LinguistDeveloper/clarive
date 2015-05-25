@@ -811,6 +811,7 @@
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
+        hidden: true,
         icon:'/static/images/del.gif',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -836,6 +837,12 @@
                             //console.log( res );
                             if( res.success ) {
                                 grid.getStore().reload();
+% if( $c->stash->{user_action}->{'action.job.delete'} ) {
+                                button_cancel.show();
+                                button_cancel.setText( msg_cancel_delete[1] );    
+% } else {
+                                button_cancel.hide();
+% }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
                             }
@@ -1300,8 +1307,14 @@
         var sc = rec.data.status_code;
         button_resume.hide();
         if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
-            button_cancel.setText( msg_cancel_delete[1] );
+% if( $c->stash->{user_action}->{'action.job.delete'} ) {
+            button_cancel.show();
+            button_cancel.setText( msg_cancel_delete[1] );    
+% } else {
+            button_cancel.hide();
+% }
         } else {
+            button_cancel.show();
             button_cancel.setText( msg_cancel_delete[0] );
         }
         if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' || rec.data.status_code === 'TRAPPED_PAUSED' ) {

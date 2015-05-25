@@ -128,7 +128,7 @@ sub get {
     }
 
     # if no data found, use default values
-    my $config = $self->config_for_key( $key );
+    my $config = $self->config_for_key( $key ) // {};
     if( defined $config && blessed($config) eq 'BaselinerX::Type::Config' ) {
         foreach my $item ( @{ $config->metadata || [] } ) {
             my $data_key = $long_key ? $key.$item->{id} : $item->{id};
@@ -139,7 +139,7 @@ sub get {
     
             # expand key type
             $data->{$data_key} = $self->_expand( $item->{type}, $data->{ $data_key } );
-                #TODO no expasion needed when already of type: unless ref $data->{$data_key} =~ /HASH|ARRAY/ || blessed($data->{$data_key});
+            #TODO no expasion needed when already of type: unless ref $data->{$data_key} =~ /HASH|ARRAY/ || blessed($data->{$data_key});
 
             # resolve vars
             my $new_value = $data->{ $data_key } // '';
@@ -289,13 +289,13 @@ sub search {
 
     # sorting
     my $dir;
-    if($p->{dir} eq 'desc'){
+    if($p->{dir} && $p->{dir} eq 'desc'){
         $dir = -1;
     }else{
         $dir = 1;
     }
     my $sort = $p->{sort} ? {$p->{sort} => $dir} : {key => 1}
-        unless $p->{sort} =~ /^config_/i;   
+        unless  $p->{sort} && $p->{sort} =~ /^config_/i;   
     $rs->sort($sort);
 
     my $count = 0;
@@ -304,7 +304,7 @@ sub search {
             my $config = $self->config_for_key( $r->{key} ) or warn 'No config for ' . $r->{key};
             my $metadata = { type=>'?', default=>'', label=>$r->{label} };  # default values
             if( $config ) {
-                try { $metadata = $config->metadata_for_key( $r->{key} ) or warn 'No metadata for ' . $r->{key}; } catch {_log $r->{key};};
+                try { $metadata = $config->metadata_for_key( $r->{key} ) or warn 'No metadata for ' . $r->{key}; } catch { _debug $r->{key};};
             }
             my $value = $self->get( $r->{key}, ns=>$r->{ns}, bl=>$r->{bl}, value=>1, long_key=>1 );
             my $data = {
@@ -332,7 +332,7 @@ sub search {
     my @registry = grep { not $already{ $_->{key} } } $self->search_registry; # XXX dead code, delete?
 
     # manual sorting
-    if( $p->{sort} =~ /^config_/i ) {
+    if( $p->{sort} && $p->{sort} =~ /^config_/i ) {
         my $col = $p->{sort};
         @rows = sort { $a->{$col} cmp $b->{$col} } @rows;
     }

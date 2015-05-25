@@ -110,28 +110,32 @@ sub run_once {
             #_log "Condition to delete job_dir and job_log  ".$max_job_time->datetime."<------>$temp[0]T$temp[1]";
             if ( length $endtime && $endtime < $limitdate && !$job->{purged} ) {
                 next if $ci_job->is_active;
-                _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
-                $job_purge_count++;
-                $ci_job->update( purged=>1 );
-                next if $opts->{dry_run};              
-                # delete job logs
-                _log "\tDeleting log $purged_job_log_path"; 
-                unlink $purged_job_log_path;
-                my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
-                while( my $actual = $deleted_job_logs->next ) {
-                    my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
-                    my $data;
-                    mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} eq 'debug';
-                    if(ref $query){
-                        _log "\tDeleting field data of ".$job->{mid}."....";
-                        $data = $query->{data};
-                        mdb->grid->delete($data);
-                    } else {
-                        if ( $actual->{more} eq 'jes' ) {
-                            _log "\tRemoving jes data of ".$job->{mid}."....";
-                            mdb->jes_log->remove({ id_log => 0+$actual->{id}});
+                try {
+                    _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
+                    $job_purge_count++;
+                    $ci_job->update( purged=>1 );
+                    next if $opts->{dry_run};              
+                    # delete job logs
+                    _log "\tDeleting log $purged_job_log_path"; 
+                    unlink $purged_job_log_path;
+                    my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
+                    while( my $actual = $deleted_job_logs->next ) {
+                        my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
+                        my $data;
+                        mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} eq 'debug';
+                        if(ref $query){
+                            _log "\tDeleting field data of ".$job->{mid}."....";
+                            $data = $query->{data};
+                            mdb->grid->delete($data);
+                        } else {
+                            if ( $actual->{more} eq 'jes' ) {
+                                _log "\tRemoving jes data of ".$job->{mid}."....";
+                                mdb->jes_log->remove({ id_log => 0+$actual->{id}});
+                            }
                         }
                     }
+                } catch {
+                    _log "Error trying to delete job $job_name. Job skipped: ".shift;
                 }
             } elsif( !$job->{purged} ) {
                 _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid});

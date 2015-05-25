@@ -74,6 +74,7 @@
         rollback_mode,
         { xtype:'textfield', fieldLabel: _('Chown'), name: 'chown', value: data.chown },
         { xtype:'textfield', fieldLabel: _('Chmod'), name: 'chmod', value: data.chmod },
+        new Baseliner.CBox({ fieldLabel: _('Copy File Attributes'), name: 'copy_attrs', checked: data.copy_attrs, default_value: false }),
         { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
             new Baseliner.ArrayGrid({ 
                 title:_('Include Paths'), 
