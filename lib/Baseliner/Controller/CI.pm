@@ -539,14 +539,14 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    if(ref $p->{role} ne 'ARRAY' && $p->{role}){
-        my @a = split(',', $p->{role});
-        $p->{role} = \@a;
-    }
-    # if(ref $p->{class} ne 'ARRAY' && $p->{class}){
-    #     my @a = split(',', $p->{class});
-    #     $p->{class} = \@a;
+    # if(ref $p->{role} ne 'ARRAY' && $p->{role}){
+    #     my @a = split(',', $p->{role});
+    #     $p->{role} = \@a;
     # }
+    # # if(ref $p->{class} ne 'ARRAY' && $p->{class}){
+    # #     my @a = split(',', $p->{class});
+    # #     $p->{class} = \@a;
+    # # }
     _warn $p;
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
