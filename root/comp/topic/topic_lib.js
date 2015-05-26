@@ -766,7 +766,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
-            type: 'submit',
+            // type: 'submit',
             hidden: true,
             handler: function(){ return self.save_topic() }
         });
@@ -775,9 +775,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text: _('Delete'),
             icon:'/static/images/icons/delete.gif',
             cls: 'x-btn-icon-text',
-            type: 'submit',
+            // type: 'submit',
             hidden: self.permDelete,
-            handler: function(){ return self.delete_topic() }
+            handler: function(a){ 
+                // console.dir(a);
+                // alert("han pulsado el botón");
+                return self.delete_topic();
+            }
         });
     
         // Detail Panel
@@ -1416,7 +1420,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         }else{
                                             self.getTopToolbar().enable();
                                             if( self.permDelete ) {
-                                                self.btn_delete_form.enable();                                    
+                                                self.btn_delete_form.enable();
                                             }
                                         }
                                     }
@@ -1428,7 +1432,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             Baseliner.error( _('Error'), res.msg );
                             self.getTopToolbar().enable();
                             if( self.permDelete ) {
-                                self.btn_delete_form.enable();                              
+                                self.btn_delete_form.enable();
                             }
                         }
                     }
