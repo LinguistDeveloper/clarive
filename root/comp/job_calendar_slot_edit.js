@@ -9,8 +9,6 @@ my $inicio = $c->stash->{inicio};
 my $fin = $c->stash->{fin};
 my $tipo = $c->stash->{tipo};
 my $date = $c->stash->{date};
-my $title = 'Editar ventana';
-$title = 'Editar ventana para el ' . $date if($date);
 
 my $loc = DateTime::Locale->load( $c->language );
 my $day_wide = $loc->day_format_wide;
@@ -55,6 +53,7 @@ for(my $hh=0; $hh<=24; $hh++) {
 </%init>
 (function(){
     var id_cal = "<% $id_cal %>";
+    var slot_date = "<% $date %>";
 
     var modify_window = function(cmd, create) {
         var form = fpanel.getForm();
@@ -109,7 +108,7 @@ for(my $hh=0; $hh<=24; $hh++) {
     );
     var ven_tipo_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
-       data : <% js_dumper( [ ['N', _loc('Normal') ],[ 'U', _loc('Urgent') ] ,[ 'X', _loc('No Job') ] ] ) %>
+       data : <% js_dumper( [ ['N', _loc('Normal') ],[ 'U', _loc('Urgent Only') ] ,[ 'X', _loc('No Job') ] ] ) %>
     }); 
     var ven_ini_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
@@ -128,22 +127,22 @@ for(my $hh=0; $hh<=24; $hh++) {
         url: '/job/calendar_submit', 
         buttons: [
 %if($c->stash->{create}){		
-            {  icon:'/static/images/icons/add.gif', text: 'Crear Ventana', handler: function(){ modify_window('A') } }
-            ,{ icon:'/static/images/icons/stop.png', text: 'Crear Inactiva', handler: function(){ modify_window('AD') } }
+            {  icon:'/static/images/icons/add.gif', text: _('Create Slot'), handler: function(){ modify_window('A') } }
+            ,{ icon:'/static/images/icons/stop.png', text: _('Create Inactive'), handler: function(){ modify_window('AD') } }
 %} else {
-            {  icon:'/static/images/icons/edit.gif', text: 'Modificar Ventana', handler: function(){ modify_window('A') } }
-            ,{  icon:'/static/images/icons/add.gif', text: 'Solapar', handler: function(){ modify_window('A', true) } }
+            {  icon:'/static/images/icons/edit.gif', text: _('Modify Slot'), handler: function(){ modify_window('A') } }
+            ,{  icon:'/static/images/icons/add.gif', text: _('Overwrite'), handler: function(){ modify_window('A', true) } }
 
 %}
 % unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
-            ,{  icon:'/static/images/icons/delete.gif', text: 'Borrar', handler: function(){ modify_window('B') } }
+            ,{  icon:'/static/images/icons/delete.gif', text: _('Delete'), handler: function(){ modify_window('B') } }
 %   if( $activa ) {
-            ,{ icon:'/static/images/icons/stop.png', text: 'Desactivar (No pase)', handler: function(){  modify_window('C0')   } }
+            ,{ icon:'/static/images/icons/stop.png', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {
-            ,{ icon:'/static/images/icons/start.png', text: 'Activar (Ventana)', handler: function(){  modify_window('C1')   } }
+            ,{ icon:'/static/images/icons/start.png', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
 % 	}
 % }
-            ,{ icon:'/static/images/icons/close.png',  text: 'Cancelar', handler: function(){ win.close(); } }
+            ,{ icon:'/static/images/icons/close.png',  text: _('Cancel'), handler: function(){ win.close(); } }
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: '<% $id %>' },
@@ -218,7 +217,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                        readOnly: true,
                        style: { 'color' : '#ccc' },
                        hidden: <% length $date ? 'false' : 'true' %>,
-                       value: '<% $date %>',
+                       value: slot_date,
                        displayField:'date', 
                        width: 150 
            }		   
@@ -227,7 +226,7 @@ for(my $hh=0; $hh<=24; $hh++) {
     var win = new Ext.Window({
         layout: 'fit',
         height: 230, width: 650,
-        title: '<% $title %>',
+        title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'), 
         items: fpanel
     });
     return win;
