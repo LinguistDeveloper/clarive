@@ -5,7 +5,7 @@ my $iid = Util->_md5;
     var id = params.id_div;
     var rows = params.data.rows;
     var days = params.data.days || 1000;
-    var bls = params.data.bls || 'ALL';
+    var bls = params.data.bls;
     var style_tpl = function(){/*
     <style>
         .progress {

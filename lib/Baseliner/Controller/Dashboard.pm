@@ -1321,7 +1321,7 @@ sub list_baseline : Local {
 
     my $days     = $p->{days}     // 7;
     my $projects = $p->{projects} // 'ALL';
-    my $bls      = $p->{bls}      // 'ALL';
+    my $bls      = $p->{bls};
 
     my $username = $c->username;
     my ( @jobs, $job, @datas, @temps, $SQL );
@@ -1337,7 +1337,7 @@ sub list_baseline : Local {
     }
 
     my @filter_bls;
-    if ( $bls ne 'ALL' ) {
+    if ( _array($bls) ) {
         @filter_bls = _array($bls);
     }
     else {
