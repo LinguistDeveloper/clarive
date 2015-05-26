@@ -1,3 +1,4 @@
+
 (function(params){
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
@@ -56,7 +57,7 @@
             }
             ci_role_field.setValue(selected);
             if(class_selected){
-                ci_store.load({params:{'role': ci_role_field.value}});
+                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
              }
         },
         store: roles_store,
@@ -119,7 +120,7 @@
         role_box_multiselect.show();
         ci_class_box.disable();
     }else if(ci_class_field.value){
-        ci_store.load({params:{'role': ci_role_field.value}});
+        ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
         class_selected = true;
         role_box_multiselect.allowBlank = true;
         ci_class_box.allowBlank = false;
@@ -149,7 +150,7 @@
                                 class_selected = false;
                                ci_class_box.disable();
                             }else{
-                                ci_store.load({params:{'role': ci_role_field.value}});            
+                                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});            
                                 class_selected=true;
                                 ci_class_box.allowBlank = false;
                                 role_box_multiselect.allowBlank = true;
