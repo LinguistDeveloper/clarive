@@ -35,7 +35,7 @@
         fieldLabel: _("Switch to RED when value reaches")
     });
 
-    var start = new Ext.ux.form.SpinnerField({ 
+    var start = new Ext.form.TextField({ 
         value: data.start || 0,
         allowBlank: false,
         anchor: '100%',
@@ -44,7 +44,7 @@
         emptyText: 'Default = 0 (see reverse)'
     });
 
-    var end = new Ext.ux.form.SpinnerField({ 
+    var end = new Ext.form.TextField({ 
         value: data.end, 
         anchor: '100%',
         name: "end",
@@ -74,14 +74,6 @@
                     green,
                     yellow,
                     {
-                      xtype: 'label',
-                      text: _('* Gauge start color is GREEN'),
-                      style: {
-                          // 'margin': '10px',
-                          'color': '#888888'
-                      }
-                    },
-                    {
                         xtype: 'checkbox',
                         name: "reverse",
                         fieldLabel: _("Reverse gauge"),
@@ -90,7 +82,7 @@
                     },
                     {
                       xtype: 'label',
-                      text: _('(* default color = RED, switch away from yellow means GREEN)'),
+                      text: _('(* default color = RED instead of GREEN, switch away from yellow color = GREEN instead of RED)'),
                       style: {
                           // 'margin': '10px',
                           'color': '#888888'
@@ -111,7 +103,14 @@
                         ['count', _('Count')],
                         ['sum', _('Total sum')]
                       ] 
-                    })
+                    }),
+                    {
+                        xtype: 'checkbox',
+                        name: "show_pct",
+                        fieldLabel: _("Show value as % of max"),
+                        checked: data.show_pct == undefined ? false : data.show_pct,
+                        allowBlank: 1
+                    }
 
               ]
             }
