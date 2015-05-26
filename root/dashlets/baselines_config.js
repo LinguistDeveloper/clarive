@@ -4,7 +4,8 @@
     var days = new Ext.ux.form.SpinnerField({ 
         value: data.days, 
         name: "days",
-        fieldLabel: _("Number of days before today to list jobs")
+        fieldLabel: _("Number of days before today to list jobs"),
+        anchor:'100%'
     });
 
     return common.concat([
@@ -23,16 +24,10 @@
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
             { layout:'form', 
-              columnWidth: .50, 
+              columnWidth: 1, 
               bodyStyle: 'background:transparent;',
               items: [
-                  Baseliner.ci_box({ name:'bls', fieldLabel:_('Which bls do you want to see'), allowBlank: true,'class':'bl', valueField: 'name', value: data.bls, force_set_value: true, singleMode: false })
-              ]
-            },
-            { layout:'form', 
-              columnWidth: .50, 
-              bodyStyle: 'background:transparent;',
-              items: [
+                  Baseliner.ci_box({ name:'bls', fieldLabel:_('Which bls do you want to see'), allowBlank: true,'class':'bl', valueField: 'name', value: data.bls, force_set_value: true, singleMode: false }),
                   days
               ]
             }

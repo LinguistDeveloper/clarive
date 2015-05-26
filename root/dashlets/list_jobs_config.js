@@ -45,17 +45,11 @@
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
             { layout:'form', 
-              columnWidth: .50, 
+              columnWidth: 1, 
               bodyStyle: 'background:transparent;',
               items: [
                 states,
-                { xtype : "checkbox", name : "not_in_states", checked: data.not_in_states=='on' ? true : false, boxLabel : _('Exclude selected states?') }
-              ]
-            },
-            { layout:'form', 
-              columnWidth: .50, 
-              bodyStyle: 'background:transparent;',
-              items: [
+                { xtype : "checkbox", name : "not_in_states", checked: data.not_in_states=='on' ? true : false, boxLabel : _('Exclude selected states?') },
                 Baseliner.ci_box({ name:'bls', fieldLabel:_('Which bls do you want to see'), allowBlank: true,'class':'bl', value: data.bls, force_set_value: true, singleMode: false }),
                 { xtype:'numberfield', fieldLabel: _('Maximum number of jobs to list'), allowBlank: false, name: 'limit', value: data.limit || 100}
               ]
