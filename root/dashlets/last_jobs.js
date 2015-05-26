@@ -7,7 +7,7 @@ my $iid = Util->_md5;
     var rows = params.data.rows;
     var bls = params.data.bls;
 
-    Cla.ajax_json('/dashboard/last_jobs', { bls: bls }, function(res){
+    Cla.ajax_json('/dashboard/last_jobs', { bls: bls, _ignore_conn_errors: true  }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
         html = html + '    <table class="table display stripe order-column compact" style="font-size: 85%;width: 100%" id="<% $iid %>">';

@@ -8,7 +8,7 @@
     var date_field = params.data.date_field || 'created_on';
     var date_type = params.data.date_type || 'today';
 
-      Cla.ajax_json('/dashboard/topics_burndown', { date_type: date_type, date: date, categories: categories, date_field: date_field }, function(res){
+      Cla.ajax_json('/dashboard/topics_burndown', { date_type: date_type, date: date, categories: categories, date_field: date_field, _ignore_conn_errors: true  }, function(res){
            graph = c3.generate({
                 bindto: '#'+id,
                 data: {

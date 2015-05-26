@@ -12,7 +12,7 @@
     var period = params.data.period || '1Y';
     var bls = params.data.bls;
 
-    Cla.ajax_json('/job/burndown_new', { joined: joined, bls: bls, period: period }, function(res){
+    Cla.ajax_json('/job/burndown_new', { joined: joined, bls: bls, period: period, _ignore_conn_errors: true  }, function(res){
         var groups = new Array();
         if ( stacked ) {
             groups = [res.group];

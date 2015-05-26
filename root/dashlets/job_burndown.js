@@ -56,6 +56,7 @@
       var data0 = [];
       var data1 = [];
       var ticks = [];
+      params.data._ignore_conn_errors = true;
       Cla.ajax_json('/job/burndown', params.data, function(res){
           for( var k in res.data0 ) {
               // if( k==0 || k==23 )   // FIXME fake trendline

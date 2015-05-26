@@ -95,7 +95,7 @@ my $iid = Util->_md5;
           </div>
         </div>        
     */};
-    Cla.ajax_json('/dashboard/list_baseline', {days: days, bls: bls}, function(res){
+    Cla.ajax_json('/dashboard/list_baseline', {days: days, bls: bls, _ignore_conn_errors: true }, function(res){
       Ext.each(res.data, function(bl) {
         html = html + bl_tpl.tmpl({total: bl.total, bl: bl.bl, porcentOk: bl.porcentOk, totOk: bl.totOk, porcentError: bl.porcentError, totError: bl.totError, days:days});
       });

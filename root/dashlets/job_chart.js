@@ -24,7 +24,7 @@
         graph_period = period;
         if (graph) graph.unload();
 
-        Cla.ajax_json('/job/by_status', { period: period }, function(res){
+        Cla.ajax_json('/job/by_status', { period: period, _ignore_conn_errors: true  }, function(res){
                 c3.generate({
                      bindto: '#'+id,
                      data: {

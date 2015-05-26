@@ -45,7 +45,7 @@ html: /dashlets/jobs_by_status_pie.html
         graph_period_<% $graph_id %> = period;
         if (graph_<% $graph_id %>) graph_<% $graph_id %>.unload();
 
-        Cla.ajax_json('/job/by_status', { period: period }, function(res){
+        Cla.ajax_json('/job/by_status', { period: period, _ignore_conn_errors: true  }, function(res){
                 graph_<% $graph_id %> = c3.generate({
                      bindto: id,
                      data: {

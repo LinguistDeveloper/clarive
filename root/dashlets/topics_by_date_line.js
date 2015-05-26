@@ -23,7 +23,7 @@
 
     if (graph) graph.unload();
 
-    Cla.ajax_json('/dashboard/topics_by_date', { days_from: days_from, days_until: days_until, date_field: date_field, group: group, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_by_date', { days_from: days_from, days_until: days_until, date_field: date_field, group: group, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var groups = new Array();
         if ( stacked ) {
             groups = [res.data.groups];
