@@ -60,7 +60,15 @@
               columnWidth: .5, 
               bodyStyle: 'background:transparent;',
               items: [
-                { xtype:'textfield', anchor:'100%',allowBlank: false, fieldLabel: _('Date field with scheduled start date'), name: 'date_field', value: data.date_field }
+                { xtype:'textfield', anchor:'100%',allowBlank: false, fieldLabel: _('Date field with scheduled start date'), name: 'date_field', value: data.date_field },
+                new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'area', data: [
+                    ['area', _('Area')],
+                    ['stack-area-step', _('Area step')],
+                    ['line', _('Line')],
+                    ['bar', _('Bar')], 
+                    ['scatter', _('Scatter')]
+                  ] 
+                })              
               ]
             },
             { layout:'form', 

@@ -8,6 +8,7 @@
     var date_field = params.data.date_field || 'created_on';
     var date_type = params.data.date_type || 'today';
     var days_from = params.data.days_from || 0;
+    var graph_type = params.data.type || 'area';
 
       Cla.ajax_json('/dashboard/topics_burndown', { days_from: days_from, date_type: date_type, date: date, categories: categories, date_field: date_field, _ignore_conn_errors: true  }, function(res){
            graph = c3.generate({
@@ -16,7 +17,7 @@
                     x: 'x',
                     columns: res.data,
                     types: {
-                      Topics: 'area',
+                      Topics: graph_type,
                       Trend: 'line'
                     }
                 },
