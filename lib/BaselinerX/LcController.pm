@@ -248,7 +248,7 @@ sub topic_children_for_state {
     # push @chi_topics, map { mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$$_{mid}" }, to_mid => mid => topic=>[{},{mid=>1}] ) } @chi_topics;
 
     my @changeset_categories = map { $_->{id} } mdb->category->find({ is_changeset => '1'})->fields({id=>1, _id =>0})->all;
-    my @chi_topics = ci->new($topic_mid)->children( where => { collection => 'topic', id_category => mdb->in(@changeset_categories)}, mids_only => 1);
+    my @chi_topics = ci->new($topic_mid)->children( where => { collection => 'topic', id_category => mdb->in(@changeset_categories)}, mids_only => 1, depth => 2);
 
     # now filter them thru user visibility, current state 
     my $where = {
@@ -613,11 +613,14 @@ sub changeset : Local {
                     from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
                 
         # find releases for each changesets
-        my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
+        #my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
+        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic' }, 'category.is_release' => 1, mids_only => 1, depth => 2 ) } @changes;
         my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{$$_{from_mid}}@topic_topic), is_release=>mdb->true })->all;
         my %releases;
         push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
-            
+        
+        _warn \%releases;
+
         $bind_releases = ci->status->find_one({ id_status=>''. $p->{id_status} })->{bind_releases};
         my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
@@ -1007,12 +1010,17 @@ sub job_transitions : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my $topic_projects = Util->_decode_json($p->{topics});
+
+    #_warn $topic_projects;
+
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @promotes_and_demotes;
     my $cont=0;
     for my $topic_project ( _array $topic_projects ) {
         my ( $topic_mid, $project_mid, $id_status_from ) = ($topic_project->{topic_mid}, $topic_project->{project}, $topic_project->{state});
+
+        $project_mid = '' if ( $project_mid eq 'all' );
 
         my $topic = mdb->topic->find_one({ mid => "$topic_mid"},{ _txt => 0});
         my $id_project = $project_mid;
