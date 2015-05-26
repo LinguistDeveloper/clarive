@@ -42,6 +42,8 @@ sub topic_categories_to_rules {
     my @topic_category = mdb->category->find->all;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
+        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order} } @fieldlets;
+        #map { _log "===>". $_->{params}{field_order} } @fieldlets;
         my @fields;
         my $registers = map_registors();
         #_log $registers;
@@ -77,6 +79,8 @@ sub topic_categories_to_rules {
             if($fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
                 if($fieldlet->{params}->{bd_field} eq 'moniker'){
                     $attributes->{key} = 'fieldlet.system.moniker';    
+                    $data->{editable} = '1';
+                    $data->{hidden} = '0';
                 }else{
                     $attributes->{key} = 'fieldlet.text';    
                 } 
@@ -139,7 +143,7 @@ sub topic_categories_to_rules {
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
             
-            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> ISA CALLING YOU!!!!!!! ==> ( $data->{name_field} ) "; _log $data }
+            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> ERROR MIGRATING FIELD ==> $data->{name_field} WHITH CATEGORY $topic_category->{name} "; _log $data }
             
             $attributes->{data} = $data;
             
