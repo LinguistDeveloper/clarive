@@ -1179,19 +1179,12 @@ sub topics_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
-    my $date_type = $p->{date_type};
+    my $days_from = $p->{days_from} || 0;
 
     my $date;
 
-    if ($date_type eq 'yesterday') {
-        $date = Class::Date->now();
-        $date = $date - '1D';
-    } elsif ( $date_type eq 'today' ) {
-        $date = Class::Date->now();
-    } else {
-        ### TODO: Get specific date
-        $date = Class::Date->new( $p->{date} )
-    }
+    $date = Class::Date->now();
+    $date = $date + ($days_from .'D');
 
     my $today    = substr( $date,        0, 10 );
     my $tomorrow = substr( $date + "1D", 0, 10 );
