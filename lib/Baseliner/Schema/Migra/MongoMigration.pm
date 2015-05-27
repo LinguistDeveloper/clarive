@@ -84,7 +84,7 @@ sub topic_categories_to_rules {
                 }else{
                     $attributes->{key} = 'fieldlet.text';    
                 } 
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js'){
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && ($fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js' || $fieldlet->{params}->{bd_field} eq 'hitos')){
                 $attributes->{key} = 'fieldlet.milestones';
             }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
                 if($fieldlet->{params}->{bd_field} eq 'progress'){
