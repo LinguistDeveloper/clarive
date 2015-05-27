@@ -8,17 +8,61 @@
     var common = Cla.dashlet_common(params);
 
     return common.concat([
-        cstatus,
-        { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-        ccategory,
-        // { xtype:'textfield', fieldLabel: _('User assigned to topics'), name: 'assigned_to', value: data.assigned_to },
-        new Baseliner.ComboSingle({ forceSelection: false, allowBlank: true, fieldLabel: _('User assigned to topics'), editable: true, name: 'assigned_to', value: data.assigned_to || '', data: [
-            [''],
-            [_('Current')],
-            [_('Any')]
-          ] 
-        }),
-        { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
-        { xtype:'textfield', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields }
+        {
+            xtype: 'label',
+            text: _('Topics selection criteria'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                ccategory,
+                cstatus,
+                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
+                // { xtype:'textfield', fieldLabel: _('User assigned to topics'), name: 'assigned_to', value: data.assigned_to },
+                new Baseliner.ComboSingle({ forceSelection: false, allowBlank: true, fieldLabel: _('User assigned to topics'), editable: true, name: 'assigned_to', value: data.assigned_to || '', data: [
+                    [''],
+                    [_('Current')],
+                    [_('Any')]
+                  ] 
+                }),
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
+              ]
+            }
+          ]
+        },
+        {
+            xtype: 'label',
+            text: _('List topics options'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields }
+              ]
+            }
+          ]
+        }
     ]);
 })

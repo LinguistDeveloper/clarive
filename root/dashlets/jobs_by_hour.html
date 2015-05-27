@@ -24,7 +24,7 @@ html: /dashlets/jobs_by_hour.html
         var id = "#<% $graph_id %>";
         var data = [];
         var ticks = [];
-        Cla.ajax_json('/job/by_hour', { }, function(res){
+        Cla.ajax_json('/job/by_hour', { _ignore_conn_errors: true }, function(res){
             for( var k in res.data ) {
                 data.push([k,res.data[k] ]);
             };

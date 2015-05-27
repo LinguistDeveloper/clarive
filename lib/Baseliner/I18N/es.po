@@ -1626,6 +1626,9 @@ msgstr "Día"
 msgid "Urgent"
 msgstr "Urgente"
 
+msgid "Urgent Only"
+msgstr "Solo Urgente"
+
 msgid "Calendar Name"
 msgstr "Nombre del Calendario"
 

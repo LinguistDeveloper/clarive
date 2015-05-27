@@ -78,7 +78,17 @@ sub git : Path('/git/') {
         _log ">>> GIT HOME REPO: $home"; 
     } elsif( length $project && length $reponame ) {
         ($ci_prj)  = ci->search_cis( '$or'=>[ {name=>$project}, {moniker=>$project} ], collection=>'project' );
+        unless( $ci_prj ) {
+            $self->git_error( $c, 'internal error', _loc('Project `%1` not found', $project) );
+            $c->response->status( 404 );
+            return;
+        }
         ($ci_repo) = ci->search_cis( '$or'=>[ {name=>$reponame}, {moniker=>$reponame}, {moniker=>lc($project)."_".$reponame} ], collection=>'GitRepository' );
+        unless( $ci_repo ) {
+            $self->git_error( $c, 'internal error', _loc('Repository `%1` not found for project `%2`', $reponame, $project) );
+            $c->response->status( 404 );
+            return;
+        }
         my $repo_dir = _dir( $ci_repo->repo_dir );
         $home = $repo_dir->parent;
         # build the CGI path needed

@@ -36,7 +36,7 @@ my $iid = Util->_md5;
        })
     }
 
-    Cla.ajax_json('/dashboard/topic_activity', { assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topic_activity', { assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
         html = html + '<table class="table display nowrap stripe order-column compact" style="width: 100%" id="<% $iid %>"><thead><tr>';
@@ -58,7 +58,6 @@ my $iid = Util->_md5;
               var title = topic.title;
               html = html + '<span title="'+title+'">'+title.substring(0,15)+'</span>'
             } else if ( col.name == 'projects' ) {
-              console.log(topic.projects);
               var projects = topic.projects.split(';');
               var proj_names = new Array();
               Ext.each(projects, function(proj){

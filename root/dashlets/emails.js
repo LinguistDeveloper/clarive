@@ -4,7 +4,7 @@ my $iid = Util->_md5;
 (function(params){ 
     var id = params.id_div;
     var rows = params.data.rows;
-    Cla.ajax_json('/dashboard/list_emails', {}, function(res){
+    Cla.ajax_json('/dashboard/list_emails', { _ignore_conn_errors: true }, function(res){
 
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);

@@ -79,6 +79,14 @@ sub lc_for_project {
             has_query => 1,
           }
     );
+    push @nodes,
+    {
+        node => 'Dashboards',
+        icon => '/static/images/icons/dashboard.png',
+        url => '/dashboard/dashboard_list',
+        has_query => 1,
+        type => 'component'
+    };
     my $is_root = Baseliner->model('Permissions')->is_root($username);
     my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
     if ($has_permission || $is_root){

@@ -945,7 +945,7 @@ Cla.topic_grid = function(params){
         //#####################################################
         
         Ext.each( value, function(topic){
-            if( !Ext.isObject(topic) ) console.log('nnnnnnnn');
+            // if( !Ext.isObject(topic) ) console.log('nnnnnnnn');
             arr.push( Baseliner.topic_name({
                 link: true,
                 parent_id: grid_topics.id,
