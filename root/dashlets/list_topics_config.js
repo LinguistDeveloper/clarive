@@ -10,6 +10,30 @@
     return common.concat([
         {
             xtype: 'label',
+            text: _('General control'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields },
+                { xtype:'numberfield', fieldLabel: _('Maximum number of topics to list'), allowBlank: false, name: 'limit', value: data.limit || 100}
+              ]
+            }
+          ]
+        },
+        {
+            xtype: 'label',
             text: _('Topics selection criteria'),
             style: {
                 // 'margin': '10px',
@@ -37,29 +61,6 @@
                   ] 
                 }),
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
-              ]
-            }
-          ]
-        },
-        {
-            xtype: 'label',
-            text: _('List topics options'),
-            style: {
-                // 'margin': '10px',
-                'font-size': '12px',
-                'font-weight': 'bold'
-            }
-        },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
-          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-          items:[
-            { layout:'form', 
-              columnWidth: 1, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields }
               ]
             }
           ]

@@ -46,13 +46,21 @@
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
             { layout:'form', 
-              columnWidth: 1, 
+              columnWidth: .70, 
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory,
                 cstatus,
                 { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
+              ]
+            },
+            { layout:'form', 
+              columnWidth: .30, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                days_from,
+                days_until
               ]
             }
           ]
@@ -84,7 +92,13 @@
                     ['year', _('Year')]
                   ] 
                 }),
-                new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'area', data: [
+                ]
+            },
+            { layout:'form', 
+              columnWidth: .5, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                new Baseliner.ComboDouble({ anchor: '100%', fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'area', data: [
                     ['area', _('Area')],
                     ['stack-area', _('Stacked area')],
                     ['stack-area-step', _('Area step')],
@@ -94,14 +108,6 @@
                     ['scatter', _('Scatter')]
                   ] 
                 })
-              ]
-            },
-            { layout:'form', 
-              columnWidth: .5, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                days_from,
-                days_until
               ]
             }
           ]

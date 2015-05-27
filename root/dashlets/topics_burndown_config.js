@@ -21,30 +21,7 @@
     return common.concat([
         {
             xtype: 'label',
-            text: _('Topics selection criteria'),
-            style: {
-                // 'margin': '10px',
-                'font-size': '12px',
-                'font-weight': 'bold'
-            }
-        },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
-          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-          items:[
-            { layout:'form', 
-              columnWidth: 1, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                ccategory
-              ]
-            }
-          ]
-        },
-        {
-            xtype: 'label',
-            text: _('Chart options'),
+            text: _('General control'),
             style: {
                 // 'margin': '10px',
                 'font-size': '12px',
@@ -76,6 +53,29 @@
               bodyStyle: 'background:transparent;',
               items: [
                 days_from
+              ]
+            }
+          ]
+        },
+        {
+            xtype: 'label',
+            text: _('Topics selection criteria'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                ccategory
               ]
             }
           ]

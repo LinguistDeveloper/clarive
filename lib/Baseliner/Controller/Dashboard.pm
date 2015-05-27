@@ -1142,7 +1142,7 @@ sub list_topics: Local {
     my $statuses = $p->{statuses} || [];
     my $not_in_status = $p->{not_in_status};
     my $filter_user = $p->{assigned_to};
-    my $limit = $p->{limit} // 1000;
+    my $limit = $p->{limit} // 100;
     my $condition = {};
     my $where = {};
 

@@ -10,32 +10,6 @@
     return common.concat([
         {
             xtype: 'label',
-            text: _('Topics selection criteria'),
-            style: {
-                // 'margin': '10px',
-                'font-size': '12px',
-                'font-weight': 'bold'
-            }
-        },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
-          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-          items:[
-            { layout:'form', 
-              columnWidth: 1, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                ccategory,
-                cstatus,
-                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-                { xtype:'textfield', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
-              ]
-            }
-          ]
-        },
-        {
-            xtype: 'label',
             text: _('Chart options'),
             style: {
                 // 'margin': '10px',
@@ -71,7 +45,33 @@
               columnWidth: .5, 
               bodyStyle: 'background:transparent;',
               items: [
-                { xtype:'numberfield', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5}
+                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5}
+              ]
+            }
+          ]
+        },
+        {
+            xtype: 'label',
+            text: _('Topics selection criteria'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                ccategory,
+                cstatus,
+                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
+                { xtype:'textfield', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
               ]
             }
           ]
