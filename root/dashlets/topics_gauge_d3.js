@@ -148,7 +148,6 @@
                  // ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
                  // tickData = [1, yellow/maxValue, green/maxValue];
 
-                 var last = 0;
                  arc = d3.svg.arc()
                      .innerRadius(r - config.ringWidth - config.ringInset)
                      .outerRadius(r - config.ringInset)
@@ -157,7 +156,12 @@
                      })
                      .endAngle(function(d, i) {
                          // console.log("Arc "+ d + " "+ i);
-                         return deg2rad(config.minAngle + (d * range));
+                         var label = d;
+                         if ( show_pct == 'on' ) {
+                            if (i != 0) label = d * maxValue / 100;
+                         }
+
+                         return deg2rad(config.minAngle + (label * range));
                      });
              }
              that.configure = configure;
@@ -212,8 +216,11 @@
                      .style("pointer-events", "none");
 
                  var result = parseFloat(res.data[result_type]).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
+                 var maxLabel = parseFloat(maxValue).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
+
                  if ( show_pct == 'on') {
                     result = ( res.data[result_type] / maxValue * 100 ).toFixed(2).toLocaleString({},{style:'decimal'}) + '%';
+                    maxLabel = '100%';
                  }
                  arcs.select('.c3-chart-arcs-gauge-unit')
                      .attr("dy", ".75em")
@@ -226,34 +233,27 @@
                  arcs.select('.c3-chart-arcs-gauge-max')
                      .attr("dx", innerRadius + ((outerRadius - innerRadius) / 2) + "px")
                      .attr("dy", "1.2em")
-                     .text(maxValue);
+                     .text(maxLabel);
 
                  var lg = svg.append('g')
                          .attr('class', 'label')
                          .attr('transform', centerTx);
                  lg.selectAll('text')
                          .data(ticks)
-                     .enter().append('text')
+                         .enter()
+                         .append('text')
                          .attr('transform', function(d) {
-                             var ratio = scale(d);
+                             var label = d;
+                             if ( show_pct == 'on' ) {
+                                label = ( d * maxValue / 100 ).toFixed(2);
+                             }
+                             var ratio = scale(label);
                              // alert(ratio);
                              var newAngle = config.minAngle + (ratio * range);
                              return 'rotate(' +newAngle +') translate(0,' +(config.labelInset - r) +')';
                          })
                          .text(config.labelFormat);
 
-                 if ( parseInt(end) < maxValue ) {
-                     lg.selectAll('text')
-                             .data(end)
-                         .enter().append('text')
-                             .attr('transform', function(d) {
-                                 var ratio = scale(d);
-                                 // alert(ratio);
-                                 var newAngle = config.minAngle + (ratio * range);
-                                 return 'rotate(' +newAngle +') translate(0,' +(config.labelInset - r) +')';
-                             })
-                             .text(config.labelFormat);
-                 };
                  var lineData = [ [config.pointerWidth / 2, 0], 
                                  [0, -pointerHeadLength],
                                  [-(config.pointerWidth / 2), 0],

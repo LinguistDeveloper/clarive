@@ -25,14 +25,14 @@
         value: data.green,
         anchor: '100%',
         name: "green",
-        fieldLabel: _("Switch away from YELLOW when the value reaches")
+        fieldLabel: _("Switch to YELLOW when value reaches")
     });
 
     var yellow = new Ext.ux.form.SpinnerField({ 
         value: data.yellow, 
         anchor: '100%',
         name: "yellow",
-        fieldLabel: _("Switch to RED when value reaches")
+        fieldLabel: _("Switch away from YELLOW when the value reaches")
     });
 
     var start = new Ext.form.TextField({ 
@@ -107,7 +107,7 @@
                     {
                         xtype: 'checkbox',
                         name: "show_pct",
-                        fieldLabel: _("Show value as % of max"),
+                        fieldLabel: _("Use as Percentage gauge"),
                         checked: data.show_pct == undefined ? false : data.show_pct,
                         allowBlank: 1
                     }
