@@ -16,7 +16,7 @@
     var end_remaining = params.data.end_remaining;
     var columns = params.data.columns;
     var start = params.data.start || 0;
-    var end = params.data.end || 0;
+    var end = params.data.end || 100;
     var reverse = params.data.reverse || 0;
     var result_type = params.data.result_type || 'avg';
     var show_pct = params.data.show_pct || 'off';
