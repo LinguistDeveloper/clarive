@@ -53,13 +53,14 @@ sub activity : Local {
         $where->{mid} = mdb->in(@mids_in) if @mids_in;
     }
 
-    my $rs = mdb->activity->find($where)->sort({ ts=>-1 })->limit($limit);
+    my $rs = mdb->activity->find($where)->sort({ ts=>1 })->limit($limit);
     my $total = $rs->count;
     my @ev = $rs->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;
     for my $ev ( @ev ) {
+        _debug $ev;
         my $parent = $cats{$ev->{mid}};
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
