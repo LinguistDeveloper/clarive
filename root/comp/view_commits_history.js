@@ -40,7 +40,10 @@
         return "<div style='color: blue;cursor: pointer;' onclick=Baseliner.add_tabcomp('/comp/view_diff.js','" + str_title + "'," + str_params + ");>"+_('DIFF')+"</div>";
     };
 
-    var search_form = new Ext.form.TextField({ enableKeyEvents : true });
+    var search_form = new Baseliner.SearchField({ 
+        enableKeyEvents : true,
+        emptyText: _('<Enter your search string>')
+    });
     search_form.on('keypress', function(obj,e){ 
 		if(e.which == 13 || e.keyCode == 13){
 			if(this.getValue() == ''){
@@ -71,8 +74,9 @@
 		return store.getAt(rowIndex).data.ago;
 	};
 
+    var gittree_title = [ search_form, _('Git formats supported: [ <b>--since="text"</b> ] [ <b>--until="text"</b> ] [ <b>--author="text"</b> ] [ <b>--comment="text"</b> ] Defaults search by ID Revision') ];
 	var grid = new Ext.grid.GridPanel({
-		tbar : [ _('Search'),search_form ],
+		tbar : controller == 'gittree' ? gittree_title : [ search_form  ],
         store: store_history,
         columns: [
             {header: _("Ago"), width: 75, dataIndex: 'date', sortable: true, dataIndex: 'date', renderer: render_ago },

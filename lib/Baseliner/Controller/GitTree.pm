@@ -715,7 +715,11 @@ sub commit_search {
     }
     push @query_commit, "\"$1\"", "-n", "1" if $query =~ /--commit="([^".]+)"/;
     try{
-        push @array_logs, $g->git->exec( 'log', @query_params, '-i', { cmd_unquoted=>1 } ) if scalar @query_params;
+        if (scalar @query_params){
+            push @array_logs, $g->git->exec( 'log', @query_params, '-i', { cmd_unquoted=>1 } );
+        } else {
+            push @array_logs, $g->git->exec( 'log', $query, '-i', { cmd_unquoted=>1 } );
+        }
         push @array_logs, $g->git->exec( 'log', @query_commit, { cmd_unquoted=>1 } ) if scalar @query_commit;
     }catch{};
     my @commits;
