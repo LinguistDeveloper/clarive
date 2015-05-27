@@ -2113,7 +2113,7 @@ msgid "Auto Refresh"
 msgstr "Refresco Auto"
 
 msgid "Start"
-msgstr "Inicio"
+msgstr "Iniciar"
 
 msgid "Stop"
 msgstr "Parar"
@@ -7939,3 +7939,11 @@ msgstr "Activar"
 msgid "Mandatory field"
 msgstr "Campo obligatorio"
 
+msgid "Remove Selection"
+msgstr "Descartar Selección"
+
+msgid "Remove All"
+msgstr "Descartar Todos"
+
+msgid "Remove Invalid Actions"
+msgstr "Descartar Acciones Inválidas"

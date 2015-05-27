@@ -105,26 +105,7 @@
                         };
                     }
                 }),
-                new Ext.Toolbar.Button({
-                    text: _('Duplicate'),
-                    icon:'/static/images/icons/copy.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection()) {
-                            var sel = sm.getSelected();
-                            var conn = new Ext.data.Connection();
-                            conn.request({
-                                url: '/role/duplicate',
-                                params: { id_role: sel.data.id },
-                                success: function(resp,opt) { grid.getStore().load(); },
-                                failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not duplicate the role')); }
-                            });	
-                        } else {
-                            Ext.Msg.alert('Error', _('Select at least one row'));	
-                        };
-                    }
-                }),
+               
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
                     icon:'/static/images/icons/delete.gif',
@@ -144,6 +125,27 @@
                                     });	
                                 }
                             } );
+                    }
+                }),
+
+                 new Ext.Toolbar.Button({
+                    text: _('Duplicate'),
+                    icon:'/static/images/icons/copy.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection()) {
+                            var sel = sm.getSelected();
+                            var conn = new Ext.data.Connection();
+                            conn.request({
+                                url: '/role/duplicate',
+                                params: { id_role: sel.data.id },
+                                success: function(resp,opt) { grid.getStore().load(); },
+                                failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not duplicate the role')); }
+                            }); 
+                        } else {
+                            Ext.Msg.alert('Error', _('Select at least one row'));   
+                        };
                     }
                 }),
                 '->'
@@ -175,7 +177,7 @@
         var wt = invalid ? _('Invalid actions for role %1', row.data.role) : _('Actions for role %1', row.data.role);
         var btn_cleanup = !invalid ? '' : new Ext.Button({ 
             icon:'/static/images/icons/delete.png', 
-            text:_('Delete Invalid Actions'), 
+            text:_('Remove Invalid Actions'), 
             handler: function(){
                 var sm = agrid.getSelectionModel();						
                 var sel = sm.getSelected();

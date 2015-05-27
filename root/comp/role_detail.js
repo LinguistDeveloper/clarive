@@ -235,8 +235,8 @@
         tbar: [ 
             search_grid, '->',
             new Ext.Toolbar.Button({
-                text: _('Delete'),
-                icon:'/static/images/icons/delete.gif',
+                text: _('Remove Selection'),
+                icon:'/static/images/icons/delete.png',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid_role.getSelectionModel();							
@@ -248,7 +248,7 @@
                 }
             }),
             new Ext.Toolbar.Button({
-                text: _('Delete All'),
+                text: _('Remove All'),
                 icon:'/static/images/del.gif',
                 cls: 'x-btn-text-icon',
                 handler: function() {

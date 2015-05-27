@@ -335,11 +335,12 @@
 			    params: {start: 0, limit: ps},
 			    emptyText: _('<Enter your search string>')
 		    }),
-		    btn_start,
-		    btn_stop,
+		   
 		    btn_add,
 		    btn_edit,
-		    btn_delete,
+		    btn_delete, 
+		    btn_start,
+		    btn_stop,
 		    '->'
 	    ]
     });
