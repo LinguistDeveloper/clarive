@@ -82,7 +82,7 @@
                     store: store,
                     params: {start: 0, limit: ps},
                     emptyText: _('<Enter your search string>')
-                }),
+                }),' ',' ',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
                     icon:'/static/images/icons/add.gif',

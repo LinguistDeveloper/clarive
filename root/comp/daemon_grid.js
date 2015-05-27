@@ -234,7 +234,8 @@
 		    url:'/daemon/update',
 		    buttons: [
 			    {
-			    text: _('Accept'),
+			    text: _('Save'),
+			    icon: '/static/images/icons/save.png',
 			    type: 'submit',
 			    handler: function() {
 				    var form = form_daemon.getForm();
@@ -258,6 +259,7 @@
 			    },
 			    {
 			    text: _('Close'),
+			    icon: '/static/images/icons/close.png',
 			    handler: function(){ 
 					    win.close();
 				    }
@@ -301,6 +303,7 @@
     
     // create the grid
     var grid = new Ext.grid.GridPanel({
+    	renderTo: 'main-panel',
 	    title: _('Daemons'),
 	    header: false,
 	    stripeRows: true,
@@ -334,7 +337,7 @@
 			    store: store,
 			    params: {start: 0, limit: ps},
 			    emptyText: _('<Enter your search string>')
-		    }),
+		    }),' ',' ',
 		   
 		    btn_add,
 		    btn_edit,

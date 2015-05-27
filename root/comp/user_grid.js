@@ -848,11 +848,12 @@
                     displayMsg: _('Rows {0} - {1} of {2}'),
                     emptyMsg: _('There are no rows available')
             }),        
-            tbar: [ 
+            tbar: [ _('Search') + ': ', ' ',
                 new Baseliner.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps}
-                }),
+                    params: {start: 0, limit: ps},
+                    emptyText: _('<Enter your search string>')
+                }),' ',' ',
 
 
                 

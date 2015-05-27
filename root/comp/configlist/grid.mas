@@ -54,6 +54,7 @@
 
         // create the grid
         var grid = new Ext.grid.GridPanel({
+            renderTo: 'main-panel',
             title: _('Config'),
             header: false,
             stripeRows: true,
