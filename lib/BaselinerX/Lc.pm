@@ -73,7 +73,7 @@ sub lc_for_project {
           },
           {
             node => 'Releases',
-            icon => '/static/images/icons/release.gif',
+            icon => '/static/images/icons/release_explorer.png',
             url => '/lifecycle/tree_project_releases',
             type => 'component',
             has_query => 1,

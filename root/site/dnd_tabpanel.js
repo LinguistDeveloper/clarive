@@ -162,7 +162,8 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
 
        
         //disable dragging in tab1:
-       if( index == 0){
+      // if( this.block_first_tab &&  index == 0){
+     if( index == 0 ){
             tab.disableTabDrag();
 
         }
@@ -271,17 +272,19 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
             var dom = lastTab.ds.dropElHeader.dom;
             left = (new Ext.Element(dom).getX() + dom.clientWidth) + 3;
         }
-
-       else if (tab == dd.dropEl && prevTab == tabs.itemAt(1) ) {
+/*    else if (tab == dd.dropEl && prevTab == tabs.itemAt(-1) ) {
             this.tabpanel.arrow.hide();
             return 'x-dd-drop-nodrop';
         }
-/*
-        else if (tab == dd.dropEl || prevTab == dd.dropEl || prevTab == tabs.itemAt(-1)) {
+
+        else if (tab == dd.dropEl || prevTab == this.block_first_tab) {
             this.tabpanel.arrow.hide();
             return 'x-dd-drop-nodrop';
         }*/
-
+ else if (tab == dd.dropEl || prevTab == dd.dropEl) {
+            this.tabpanel.arrow.hide();
+            return 'x-dd-drop-nodrop';
+        }
         larrow.setTop(tabPanelTop + this.tabpanel.arrowOffsetY).setLeft(left + this.tabpanel.arrowOffsetX).show();
 
         return 'x-dd-drop-ok';
