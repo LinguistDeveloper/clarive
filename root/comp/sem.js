@@ -69,7 +69,7 @@
 
     var button_cancel = new Ext.Button({
         text: _('Cancel'),
-        icon:'/static/images/icons/delete.png',
+        icon:'/static/images/icons/close.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -149,12 +149,14 @@
 
     var button_sem_refresh = new Ext.Button({
         icon:'/static/images/icons/refresh.png',
+         tooltip:_('Refresh'),
         cls: 'x-btn-text-icon',
         handler: function() { store_sem.load(); }
     });
 
     var button_queue_refresh = new Ext.Button({
         icon:'/static/images/icons/refresh.png',
+         tooltip:_('Refresh'),
         cls: 'x-btn-text-icon',
         handler: function() { store_queue.load(); }
     });
@@ -274,7 +276,7 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { width: 1, sortable: false, renderer: function() { return '<img src="/static/images/icons/traffic_lights.png" width="16px" />' } },    
+            { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.gif" width="16px"/>' } },    
             { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem }, 
             { width: 50, dataIndex: 'key', renderer: render_sem_actions  }
         ]

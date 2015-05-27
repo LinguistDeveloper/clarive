@@ -151,7 +151,7 @@ Ext.onReady(function(){
         //tabs.push({xtype:'panel',title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
         //var dash = new Ext.Panel({ title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png'  }); // new Cla.Dashboard({});
         //dash.closable = false; 
-        tabs.push( new Cla.Dashboard({ closable: false }) );
+        tabs.push( new Cla.Dashboard({ closable: false}) );
 
     }
 
