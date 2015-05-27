@@ -27,7 +27,7 @@ params:
         allowBlank  : allow,
         height: ( meta.height ? parseInt(meta.height) : 200 ),
         readOnly    : readonly,
-        hidden: !editable,
+        hidden: !editable, 
 		disabled: readonly,
         id_field    : meta.id_field,
         form : form
