@@ -110,6 +110,9 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
+    my $project_id = $p->{project_id};
+
+    _warn "el proyecto --------> ".$project_id;
 
     # find a default dashboard
     my @all_rules = $self->user_dashboards({ username => $c->username });
@@ -142,7 +145,8 @@ sub init : Local {
 
     # now run the dashboard rule
     my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
-    my $stash = { 
+    my $stash = {
+        project_id => $project_id,
         dashboard_data => { data=>[], count=>0 },
         dashboard_params => {
             %$p,
@@ -222,22 +226,27 @@ sub json : Local {
 
 sub dashboard_list: Local {
     my ($self,$c) = @_;
-    
+
+    my $p = $c->req->params;
     my @trees;
     my @dashboards = $self->user_dashboards({ username => $c->username});
+    _warn $p;
 
     for my $dash ( @dashboards ) {
+        my $dash_name = $dash->{name};
+        $dash_name .= ' - '.$p->{project} if $p->{project};
         push @trees, {
                 text    => $dash->{name},
                 icon    => '/static/images/icons/dashboard.png',
                 data    => {
                     title => $dash->{name},
                     id => $dash->{id},
+                    project_id => $p->{id_project},
                     click   => {
                         icon    => '/static/images/icons/dashboard.png',
                         url  => '/comp/dashboard.js',
                         type    => 'comp',
-                        title   => $dash->{name},
+                        title   => $dash_name,
                     }
                 },
                 leaf    => \1
@@ -286,6 +295,8 @@ sub list_jobs: Local {
     my $perm = Baseliner->model('Permissions');
     my $p = $c->req->params;
 
+    my $project_id = $p->{project_id};
+
     my $states = $p->{states} || [];
     my $not_in_states = $p->{not_in_states} || 'off';
     my $limit = $p->{limit} || 100;
@@ -310,7 +321,11 @@ sub list_jobs: Local {
                                                                     level => 1)            
         }
 
-        $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+        $where->{'projects'} = mdb->in(@mid_filters) if @mid_filters;
+
+        if ( $project_id ) {
+            $where->{'projects'} = $project_id;
+        }
 
         my @filter_states;
         if ( _array($states) ) {
@@ -351,6 +366,8 @@ sub last_jobs : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
+    my $project_id = $p->{project_id};
+
     my $bls = $p->{bls};
     my @datas;
     
@@ -364,9 +381,13 @@ sub last_jobs : Local {
         }
         my $username = $c->username;
 
-        my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
-            username => $c->username
-        );
+        my @ids_project;
+        if ($project_id) {
+            @ids_project = $project_id;
+        } else {
+            @ids_project = $c->model('Permissions')
+                ->user_projects_ids( username => $c->username );
+        }
         
         if ( @ids_project ) {
 
@@ -572,6 +593,14 @@ sub topics_by_field: Local {
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
+
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
 
     @topics_by_category = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -814,6 +843,14 @@ sub topics_by_date: Local {
         $where->{$date_field} = {'$lte' => "$until"};        
     }
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
     my %topic_by_dates = ();
@@ -994,6 +1031,14 @@ sub topics_gauge: Local {
     my $rs_topics;
     my $field_mode = 0;
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     if ( $numeric_field ) {
         $field_mode = 1;
         $rs_topics = mdb->topic->aggregate(
@@ -1161,6 +1206,14 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     $main_conditions->{'categories'} = \@user_categories;
 
     my $cnt = 0;
@@ -1220,13 +1273,22 @@ sub topics_burndown : Local {
         mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
         ->fields( { mid => 1 } )->all;
 
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
     my $remaining_backlog = mdb->topic->find(
         {   'category.id' => mdb->in(@user_categories),
             '$and'          => [
                 { $date_field => { '$lt' => $tomorrow } },
                 { $date_field => { '$ne' => '' } }
             ],
-            'category_status.name' => mdb->nin(@closed_status)
+            'category_status.name' => mdb->nin(@closed_status),
+            %$where
         }
     )->fields( { _id => 0, mid => 1 } )->all;
 
@@ -1237,7 +1299,8 @@ sub topics_burndown : Local {
         {   mid           => mdb->in(@all_tasks),
             event_key     => 'event.topic.change_status',
             'vars.status' => mdb->in(@closed_status),
-            ts            => { '$gte' => $today }
+            ts            => { '$gte' => $today },
+            %$where
         }
 
         )->fields( { _id => 0, ts => 1 } )->all;
@@ -1255,7 +1318,8 @@ sub topics_burndown : Local {
                 { $date_field => { '$lt' => $tomorrow } },
                 { $date_field => { '$ne' => '' } }
             ],
-            created_on => { '$gte' => $today }
+            created_on => { '$gte' => $today },
+            %$where
         }
 
         )->fields( { _id => 0, created_on => 1 } )->all;
@@ -1315,6 +1379,8 @@ sub list_baseline : Local {
     my $days     = $p->{days}     // 7;
     my $projects = $p->{projects} // 'ALL';
     my $bls      = $p->{bls};
+    my $project_id = $p->{project_id};
+
 
     my $username = $c->username;
     my ( @jobs, $job, @datas, @temps, $SQL );
@@ -1323,9 +1389,9 @@ sub list_baseline : Local {
     my @ids_project = $c->model('Permissions')
         ->user_projects_ids( username => $c->username );
 
-    if ( $projects ne 'ALL' ) {
+    if ( $project_id ) {
         use Array::Utils qw(:all);
-        my @filter_projects = _array($projects);
+        my @filter_projects = _array($project_id);
         @ids_project = intersect( @filter_projects, @ids_project );
     }
 

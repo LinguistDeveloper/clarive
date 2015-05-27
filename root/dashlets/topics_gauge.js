@@ -1,6 +1,7 @@
 (function(params){ 
     var id = params.id_div;
 
+    var project_id = params.project_id;
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
     var not_in_status = params.data.not_in_status;
@@ -16,7 +17,7 @@
     var green = params.data.green || 10;
     var yellow = params.data.yellow || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { start: start, end: end, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { project_id: project_id, start: start, end: end, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
               c3.generate({
                 bindto: '#'+id,
                 data: {

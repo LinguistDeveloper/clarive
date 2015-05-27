@@ -3,6 +3,8 @@ my $iid = Util->_md5;
 </%perl>
 (function(params){ 
     var id = params.id_div;
+
+    var project_id = params.project_id;
     var rows = params.data.rows;
     var days = params.data.days || 1000;
     var bls = params.data.bls;
@@ -95,7 +97,7 @@ my $iid = Util->_md5;
           </div>
         </div>        
     */};
-    Cla.ajax_json('/dashboard/list_baseline', {days: days, bls: bls, _ignore_conn_errors: true }, function(res){
+    Cla.ajax_json('/dashboard/list_baseline', {projecct_id: project_id, days: days, bls: bls, _ignore_conn_errors: true }, function(res){
       Ext.each(res.data, function(bl) {
         html = html + bl_tpl.tmpl({total: bl.total, bl: bl.bl, porcentOk: bl.porcentOk, totOk: bl.totOk, porcentError: bl.porcentError, totError: bl.totError, days:days});
       });

@@ -72,7 +72,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             </script>
 
         */};
-        Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
+        Cla.ajax_json('/dashboard/init', {project_id: self.project_id, dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
                 <style>
                     img:hover {
@@ -135,7 +135,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     colspan: dashlet.data.columns, 
                     dashlet: dashlet, id_div: id_div });
                 html += dh;
-                Cla.ajaxEval(dashlet.js_file, { id_div: id_div, data: dashlet.data }, function(){
+                Cla.ajaxEval(dashlet.js_file, { id_div: id_div, project_id: self.project_id, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
                     if(icons) icons.innerHTML = buttons_tpl.tmpl({
                         id_dashlet : dashlet.id,

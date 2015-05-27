@@ -1,5 +1,6 @@
 (function(params){ 
     var id = params.id_div;
+    var project_id = params.project_id;
 
     var graph_jobs_burndown_day;
     var graph_type = params.data.type || 'area';
@@ -12,7 +13,7 @@
     var period = params.data.period || '1Y';
     var bls = params.data.bls;
 
-    Cla.ajax_json('/job/burndown_new', { joined: joined, bls: bls, period: period, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/job/burndown_new', { project_id: project_id, joined: joined, bls: bls, period: period, _ignore_conn_errors: true  }, function(res){
         var groups = new Array();
         if ( stacked ) {
             groups = [res.group];

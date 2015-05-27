@@ -3,6 +3,7 @@ my $iid = Util->_md5;
 </%perl>
 (function(params){ 
     var id = params.id_div;
+    var project_id = params.project_id;
     var graph;
     var rows = params.data.rows;
     var bls = params.data.bls;
@@ -52,7 +53,7 @@ my $iid = Util->_md5;
         return ret;
     };
 
-    Cla.ajax_json('/dashboard/list_jobs', { not_in_states: not_in_states, limit: limit, bls: bls, states: states, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/dashboard/list_jobs', { project_id: project_id, not_in_states: not_in_states, limit: limit, bls: bls, states: states, _ignore_conn_errors: true  }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
         html = html + '    <table class="table display stripe order-column compact" style="font-size: 85%;width: 100%" id="<% $iid %>">';
