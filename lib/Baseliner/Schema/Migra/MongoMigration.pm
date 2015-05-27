@@ -118,6 +118,8 @@ sub topic_categories_to_rules {
                 }
             }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
               $attributes->{key} = 'fieldlet.text';
+            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_ci.js'){
+                $attributes->{key} = 'fieldlet.ci_grid';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
