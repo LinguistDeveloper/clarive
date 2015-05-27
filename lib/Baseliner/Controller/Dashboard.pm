@@ -1390,9 +1390,7 @@ sub list_baseline : Local {
         ->user_projects_ids( username => $c->username );
 
     if ( $project_id ) {
-        use Array::Utils qw(:all);
-        my @filter_projects = _array($project_id);
-        @ids_project = intersect( @filter_projects, @ids_project );
+        @ids_project = ($project_id);
     }
 
     my @filter_bls;
