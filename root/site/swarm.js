@@ -163,7 +163,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             return;
         }
         row.id = Ext.id();
-        var next_timer = 1000;
+        var next_timer = 500;
 
         //alert("llego aqui "+row.parent + "posicion" + self.i);
         if( row.parent ) {
