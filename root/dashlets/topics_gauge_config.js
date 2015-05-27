@@ -25,7 +25,7 @@
         value: data.green,
         anchor: '100%',
         name: "green",
-        fieldLabel: _("Switch to YELLOW when value reaches")
+        fieldLabel: _("Switch away from YELLOW when the value reaches")
     });
 
     var yellow = new Ext.ux.form.SpinnerField({ 
