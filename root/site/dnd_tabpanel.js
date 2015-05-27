@@ -121,7 +121,7 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
 
                         var el = this.getProxy().getGhost().select(".x-tab-strip-text");
                        el.addClass('x-panel-inline-icon');
-                        console.log(el);
+                        // console.log(el);
                         var proxyText = el.elements[0].innerHTML;
                         proxyText = Ext.util.Format.stripTags(proxyText);
                         el.elements[0].innerHTML = proxyText;

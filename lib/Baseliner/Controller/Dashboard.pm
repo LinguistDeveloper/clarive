@@ -112,8 +112,6 @@ sub init : Local {
     my $id_rule = $p->{dashboard_id};
     my $project_id = $p->{project_id};
 
-    _warn "el proyecto --------> ".$project_id;
-
     # find a default dashboard
     my @all_rules = $self->user_dashboards({ username => $c->username });
     if( !$id_rule ) {
@@ -230,7 +228,6 @@ sub dashboard_list: Local {
     my $p = $c->req->params;
     my @trees;
     my @dashboards = $self->user_dashboards({ username => $c->username});
-    _warn $p;
 
     for my $dash ( @dashboards ) {
         my $dash_name = $dash->{name};
