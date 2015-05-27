@@ -149,6 +149,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
+        self.svg.selectAll("*").remove();
+        self.initiated = false;
     },
     anim : function(){
         var self = this;
