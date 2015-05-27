@@ -693,7 +693,7 @@ sub update {
         $p->{_cis} = _decode_json( $p->{_cis} ) if $p->{_cis};
 
         when ( 'add' ) {
-            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            my $stash = { %$p, topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
             $p->{cancelEvent} = 1;
 
             event_new 'event.topic.create' => $stash => sub {
@@ -742,7 +742,7 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             my $rollback = 1;
-            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            my $stash = { %$p, topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
             event_new 'event.topic.modify' => $stash => sub {
                 my @field;
                 $topic_mid = $p->{topic_mid};
