@@ -40,7 +40,7 @@
         allowBlank: false,
         anchor: '100%',
         name: "start",
-        fieldLabel: _("START value for gauge"),
+        fieldLabel: _("START value for gauge. Blank defaults to 0"),
         emptyText: 'Default = 0 (see reverse)'
     });
 
@@ -48,7 +48,7 @@
         value: data.end, 
         anchor: '100%',
         name: "end",
-        fieldLabel: _("END value for gauge"),
+        fieldLabel: _("END value for gauge. Blank defaults to 100"),
         emptyText: 'Default = max returned value or YELLOW + 20% (see reverse)'
     });
 
