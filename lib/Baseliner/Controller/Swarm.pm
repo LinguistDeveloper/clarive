@@ -54,7 +54,7 @@ sub activity : Local {
     }
 
     my $rs = mdb->activity->find($where)->sort({ ts=>-1 })->limit($limit);
-    my $total = $ts->count;
+    my $total = $rs->count;
     my @ev = $rs->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
