@@ -1501,14 +1501,16 @@ sub list_baseline : Local {
 }
 
 sub viewjobs : Local {
-    my ( $self, $c, $days, $type, $bl ) = @_;
+    my ( $self, $c, $days, $type, $bl, $project_id ) = @_;
     my $p = $c->request->parameters;
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
-    
+    if ( $project_id ) {
+        @ids_project = ($project_id);
+    }
     #Filtramos por la parametrización cuando no son todos
     # if($config->{projects} ne 'ALL'){
     #     @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
@@ -1531,7 +1533,7 @@ sub viewjobs : Local {
         my $start = mdb->now - $days; 
         $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
 
-        @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
+        @jobs = ci->job->find({ projects => mdb->in(@ids_project), endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
         
     }else{
         @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(($bl)) })->all;

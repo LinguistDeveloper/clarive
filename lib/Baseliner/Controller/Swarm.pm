@@ -41,12 +41,20 @@ sub leer_log : Local {
 sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-
-    _warn $p;
     
     my $limit = $p->{limit} // 20;
 
-    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>-1 })->limit($limit)->all;
+    my $where = { mid=>{'$ne'=>undef} };
+
+    if($p->{project_id}){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+
+    my @ev = mdb->activity->find($where)->sort({ ts=>-1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;
@@ -58,7 +66,6 @@ sub activity : Local {
         $action = 'add';
         push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
     }
-    _log( \@data ); 
     $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
