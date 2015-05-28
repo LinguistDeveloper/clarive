@@ -3,14 +3,14 @@
 
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> - ({description})</span></div></tpl>' );
 
-    // var states_store = new Baseliner.JsonStore({ 
-    //     id: 'id', 
-    //     baseParams: {},
-    //     root: 'data',
-    //     autoLoad: true,
-    //     url: '/job/states',
-    //     fields: ['id','name'] 
-    // });
+    var states_store = new Baseliner.JsonStore({ 
+        id: 'id', 
+        baseParams: {},
+        root: 'data',
+        autoLoad: true,
+        url: '/job/states',
+        fields: ['id','name'] 
+    });
 
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
 
@@ -18,7 +18,7 @@
         msgTarget: 'under',
         addNewDataOnBlur: true, 
         triggerAction: 'all',
-        //store: states_store,
+        store: states_store,
         mode: 'remote',
         fieldLabel: 'Estados',
         typeAhead: true,
@@ -52,7 +52,7 @@
         tpl: tpl,
         name: 'projects',
         hiddenName: 'projects',
-        //store: project_box_store,
+        store: project_box_store,
         value: data['projects'],
         singleMode: false
     });
