@@ -128,6 +128,7 @@
     
     var btn_cerrar = new Ext.Toolbar.Button({
         text: _('Close'),
+        icon:'/static/images/icons/close.png',
         width: 50,
         handler: function() {
             win.close();

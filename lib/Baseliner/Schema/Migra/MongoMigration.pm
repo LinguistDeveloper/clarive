@@ -51,10 +51,11 @@ sub topic_categories_to_rules {
             my $f;
             my $attributes;
             my $data;
-            next if $fieldlet->{params}->{id_field} eq 'created_on' or $fieldlet->{params}->{id_field} eq 'created_by' or 
-                    $fieldlet->{params}->{id_field} eq 'modified_on' or $fieldlet->{params}->{id_field} eq 'modified_by' or
-                    $fieldlet->{params}->{id_field} eq 'category' or $fieldlet->{params}->{id_field} eq 'labels' or
-                    $fieldlet->{params}->{id_field} eq 'include_into' or $fieldlet->{params}->{id_field} eq 'progress';
+            next if $fieldlet->{params}->{id_field} eq 'created_on' || $fieldlet->{params}->{id_field} eq 'created_by' || 
+                    $fieldlet->{params}->{id_field} eq 'modified_on' || $fieldlet->{params}->{id_field} eq 'modified_by' ||
+                    $fieldlet->{params}->{id_field} eq 'category' || $fieldlet->{params}->{id_field} eq 'labels' ||
+                    $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' || 
+                    $fieldlet->{params}->{id_field} eq 'moniker';
             foreach my $key (keys $fieldlet->{params}){
                 if($key eq '_html'){
                     $data->{html} = $fieldlet->{params}->{$key};

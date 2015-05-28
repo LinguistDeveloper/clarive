@@ -42,8 +42,7 @@ sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     
-    my $limit = $p->{limit} // 20;
-
+    my $limit = $p->{limit} || 100;
     my $where = { mid=>{'$ne'=>undef} };
 
     if($p->{project_id}){
@@ -54,11 +53,14 @@ sub activity : Local {
         $where->{mid} = mdb->in(@mids_in) if @mids_in;
     }
 
-    my @ev = mdb->activity->find($where)->sort({ ts=>-1 })->limit($limit)->all;
+    my $rs = mdb->activity->find($where)->sort({ ts=>1 })->limit($limit);
+    my $total = $rs->count;
+    my @ev = $rs->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;
     for my $ev ( @ev ) {
+        _debug $ev;
         my $parent = $cats{$ev->{mid}};
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
@@ -66,7 +68,7 @@ sub activity : Local {
         $action = 'add';
         push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
     }
-    $c->stash->{json} = { data=>\@data };
+    $c->stash->{json} = { data=>\@data, total=>$total };
     $c->forward('View::JSON');    
 }
 
