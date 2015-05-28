@@ -61,7 +61,7 @@ Default: true
 =cut
 has overwrite_on => qw(is ro isa Bool default 1);
 
-has copy_attrs => qw(is ro isa Bool default 0);
+has copy_attrs => qw(is rw isa Bool default 0);
 
 sub is_win { $_[0]->os eq 'win' }
 sub is_unix { $_[0]->os eq 'unix' }
