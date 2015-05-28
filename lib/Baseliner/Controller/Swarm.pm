@@ -44,9 +44,10 @@ sub activity : Local {
 
     #_warn $p;
     
-    my $limit = $p->{limit} // 20;
+    my $limit = $p->{limit} || 10000;
+    my $where = { mid=>{'$ne'=>undef} };
 
-    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>-1 })->limit($limit)->all;
+    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my @data;
