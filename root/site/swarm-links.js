@@ -77,12 +77,14 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force = d3.layout.force()
             .nodes(self.nodes)
             .links(self.links)
-            .charge(function(lnk,cnt){
-                return lnk.type=="real"? 0 : lnk.type=="actor"?lnk.charge-- : -40;
-            })
+            .charge(-80
+                /*function(lnk,cnt){
+                    return lnk.source.node =='usuario' || lnk.source.node=='usuario'  ? lnk.charge-- : 80;
+                }*/
+            )
             .linkDistance(
                     function(lnk){
-                        return lnk.source.type=='real' || lnk.source.type=='real'  ? 10 : 80;
+                        return lnk.source.node=='usuario' || lnk.source.node=='usuario'  ? 1 : 80;
                     }
             )
             //.linkStrength(.1)
@@ -303,6 +305,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.add_group_node( self.nodes[0],{id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "iniciales", 
             parent: 'xxx', color: "yellow", posicionx: 0, posiciony: 0} ); 
 
+        self.add_group_node( self.nodes[0],{id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "iniciales", 
+            parent: 'xxx', color: "green", posicionx: 0, posiciony: 0} ); 
+
+
           for( var i=0; i<1; i++) {
             self.add_single_node( self.nodes[1],{id: "#d"+Math.random(), type:"real", t: "iniciales", ev: "iniciales", who: "iniciales", node: "iniciales", 
                 parent: 'xxx', color: "blue", posicionx: 0, posiciony: 0} ); 
@@ -311,10 +317,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.add_user_node( self.nodes[0],{id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", who: "iniciales", node: "usuario", 
             parent: 'xxx', color: "green", posicionx: 0, posiciony: 0} ); 
-      
+
+        setTimeout(function(){ self.mover() },2000);
+
+    },
+    mover : function(){
+        var self = this;
+        
         self.add_user_mover( self.nodes[0],self.nodes[1],self.nodes[2] ); 
     },
-    
 
     tick : function(){
         var self = this;

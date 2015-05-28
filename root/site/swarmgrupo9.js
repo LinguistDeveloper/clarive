@@ -773,7 +773,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
            
         self.array = res;
                //alert("llego aqui"+ self.array.data[0].ev);
-               console.log(self.array);
+               console.log(self.array.data.length);
 
         });
     },
