@@ -53,7 +53,7 @@ sub topic_categories_to_rules {
             my $data;
             next if $fieldlet->{params}->{id_field} eq 'created_on' || $fieldlet->{params}->{id_field} eq 'created_by' || 
                     $fieldlet->{params}->{id_field} eq 'modified_on' || $fieldlet->{params}->{id_field} eq 'modified_by' ||
-                    $fieldlet->{params}->{id_field} eq 'categ||y' || $fieldlet->{params}->{id_field} eq 'labels' ||
+                    $fieldlet->{params}->{id_field} eq 'category' || $fieldlet->{params}->{id_field} eq 'labels' ||
                     $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' || 
                     $fieldlet->{params}->{id_field} eq 'moniker';
             foreach my $key (keys $fieldlet->{params}){
