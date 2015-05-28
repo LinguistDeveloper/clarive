@@ -211,12 +211,14 @@ sub get_actions_from_user{
         my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
         @actions = grep {%{$_}} @actions; ######### DELETE RESULTS OF ACTIONS OF ROLES WITHOUT ACTIONS
         foreach my $f (map { values $_->{actions} } @actions){
-            if(@bl && scalar(@bl) eq 1 && '*' ~~ @bl){
-            push @final, $f->{action};
-        }else{
-            if($f->{bl} ~~ @bl){
-                push @final, $f->{action};
+            if(@bl){
+                if(scalar(@bl) eq 1 && '*' ~~ @bl){
+                    push @final, $f->{action};
+                } elsif ($f->{bl} ~~ @bl) {
+                    push @final, $f->{action};
                 }
+            }else{
+                push @final, $f->{action};
             }
         }
     }
