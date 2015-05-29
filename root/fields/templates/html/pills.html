@@ -12,7 +12,7 @@
       <th><% _loc($meta->{name_field}) %>:</th>
       <td> 
          <span class="badge" style="font-size: 12px; color: #fff; background-color: <% $opts{$val} %>" >
-                <% _loc( $val ) %>
+                <% _loc( _array($val)[0] ) %>
          </span></td>
     </tr>
 % }
