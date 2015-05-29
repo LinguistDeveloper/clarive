@@ -1380,13 +1380,13 @@
 			//{ header: _('Digest frequency'), width: 60, dataIndex: 'digest_freq' },
 			{ header: _('Active'), width: 40, dataIndex: 'is_active', renderer: show_active  }
         ],
-        tbar: [ 
-            search_field,
-            btn_start,
-            btn_stop,
-			btn_add,
+        tbar: [ _('Search') + ': ', ' ',
+            search_field,' ',' ',
+           	btn_add,
 			btn_edit,
-			btn_delete,
+			btn_delete, 
+			btn_start,
+            btn_stop,
 			btn_tools_notify
         ],
 		bbar: ptool

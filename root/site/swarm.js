@@ -2,14 +2,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     
     background_color: '#000',
     start_mode: 'manual',
-    limit: '20',
+    limit: '60',
 
     initComponent : function(){
         var self = this;
-        self.cuenta = 0;
+        //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
-        self.origen=0;
+        self.i=0;
+        //self.origen=0;
 
         self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim() } });
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
@@ -122,19 +123,24 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     start_anim : function(){
         var self = this;
+        if(self.i==0){
         Cla.ajax_json('/swarm/activity', {limit:self.limit}, function(res){
             self.res = res;
+            //alert("coge valores"+self.res.data.length);
             self.i = 0;
-            if( !self.initiated ) {
-                self.first();
-                self.initiated = true;
-            }
-            self.anim_running = true;
-            self.btn_start.disable();
-            self.btn_pause.enable();
-            self.btn_stop.enable();
-            setTimeout(function(){ self.anim() }, 100 );
         });
+        }
+        if( !self.initiated ) {
+            //alert("inicializa");
+            self.first();
+            self.initiated = true;
+        }
+        self.anim_running = true;
+        self.btn_start.disable();
+        self.btn_pause.enable();
+        self.btn_stop.enable();
+        setTimeout(function(){ self.anim() }, 100 );
+
     },
     pause_anim : function(){
         var self = this;
@@ -149,14 +155,49 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
-        self.svg.selectAll("*").remove();
-        self.initiated = false;
+        self.i=self.res.data.length;  
     },
     anim : function(){
         var self = this;
+
         if( !self.anim_running ) return;
 
+        //##############################################################
+        //##############################################################
+        if(self.i==self.res.data.length){
+
+            self.i=0;
+            self.initiated=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
+            self.init();
+            self.start_anim();
+            return;
+        }
+        //##############################################################
+        //##############################################################
+
         var row = self.res.data[ self.i++ ];
+
         if( !row ) {
             // no more rows? stop animation
             self.stop_anim();
@@ -165,23 +206,22 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         row.id = Ext.id();
         var next_timer = 500;
 
-        //alert("llego aqui "+row.parent + "posicion" + self.i);
         if( row.parent ) {
             if( !self.parents[row.parent] ) {
                 self.parents[row.parent] = true;
                 self.add_inicial( row.parent );
                 var row = self.res.data[ self.i-- ];
             }else{
-            if(row.ev == 'add') {
-                self.comprobar_timer_usuario();
-                self.add(row);
-
-                //self.adduser(row.who);
-            }else {
-                self.comprobar_timer_usuario();
-                self.del(row);
-
-            }
+                if(row.ev == 'add') {
+                    self.comprobar_timer_usuario();
+                    self.add(row);
+                }else if(row.ev == 'mod') {
+                    self.comprobar_timer_usuario();
+                    self.modify(row);
+                }else {
+                    self.comprobar_timer_usuario();
+                    self.del(row);
+                }
         }
         }
         setTimeout(function(){ self.anim() }, next_timer);
@@ -293,7 +333,49 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         }
     },
-     
+    modify : function(row){
+        var self = this;
+        var a = self.nodes[0];
+        var d = row; //{id: self.i, node:  row.parent};
+
+        var timer = 1000;  // TODO calculate from previous and next events
+
+        var j = 0;
+
+        while (j < self.nodes.length){
+                //Buscamos el nodo a borrar.
+                if (self.nodes[j].node == row.node){
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
+                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
+                    j=self.nodes.length;
+                }   
+            j++;
+        }
+
+        if (!a){
+             self.nodes.push(row);
+             self.links.push({source: row, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+
+                if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.links.push({source: row, target: self.nodes[j]});
+                        
+                        j=self.nodes.length;
+                }   
+                j++;
+            }
+
+            self.start_modify({ row: row, timer: timer });
+            self.add_user(row);
+
+        }
+    },     
     del : function(row){
 
         var self = this;
@@ -457,6 +539,80 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
+    start_modify : function(dt){
+
+        var self = this;
+        
+        var row = dt.row;
+        var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
+
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.exit().remove();
+       
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
+        self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
+        self.node6.enter().append("text").style("visibility", "hidden");
+        self.node6.exit().remove();
+        self.node7 = self.node7.data(self.force.nodes(), function(d) { return d.id;});
+        self.node7.enter().append("text").style("visibility", "hidden");
+        self.node7.exit().remove();
+        self.node8 = self.node8.data(self.force.nodes(), function(d) { return d.id;});
+        self.node8.enter().append("text").style("visibility", "hidden");
+        self.node8.exit().remove();
+        self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
+        self.node9.enter().append("text").style("visibility", "hidden");
+        self.node9.exit().remove();
+
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.exit().remove();
+      
+        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
+                         .on('mouseover', function(d)
+                         {
+                            d3.select(this).transition()
+                            .duration(750)
+                            .attr("r", 55)
+                            .attr("fill","url(#Amarillo)")
+                            //.attr("fill-opacity",0.6);
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                         })
+                         .on("mouseout", function()
+                         {
+                         d3.select(this).transition()
+                         .duration(750)
+                         .attr("r", 10)
+                         .attr("fill","url(#Verde)")
+                         .attr("fill-opacity",0.6);
+                         self.node6.style("visibility", "hidden");
+                         self.node7.style("visibility", "hidden");
+                         self.node8.style("visibility", "hidden");
+                         self.node9.style("visibility", "hidden");
+                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         })
+                         .call(self.force.drag)
+                         .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
+        self.node.exit().remove();
+
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
+
+        self.force.start();
+
+    },
     userstart : function(row){
         
         var self = this;
@@ -472,9 +628,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5.enter().append("text");
         self.node5.exit().remove();
 
-        //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
+        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
 
-        //quitamos esto para quitar la linea de link2
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
         self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       

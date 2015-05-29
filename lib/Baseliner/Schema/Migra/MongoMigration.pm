@@ -8,8 +8,7 @@ use Try::Tiny;
 sub roles {
     my ($self, $p) = @_;
     my $name_format = $p->{name_format};
-    my @roles = sort { $a->{name} cmp $b->{name} } list_roles(
-name_format=>$name_format );
+    my @roles = sort { $a->{name} cmp $b->{name} } list_roles(name_format=>$name_format );
     return _encode_json { data=>\@roles, totalCount=>scalar(@roles) };
 }
 
@@ -42,6 +41,7 @@ sub topic_categories_to_rules {
     my @topic_category = mdb->category->find->all;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
+        map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
         @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order} } @fieldlets;
         #map { _log "===>". $_->{params}{field_order} } @fieldlets;
         my @fields;
@@ -60,14 +60,28 @@ sub topic_categories_to_rules {
                 if($key eq '_html'){
                     $data->{html} = $fieldlet->{params}->{$key};
                     $fieldlet->{params}->{html} = $fieldlet->{params}->{$key};
+                }elsif($key eq 'name_field'){
+                    $fieldlet->{params}->{$key} =~ s/\n//;
+                    $data->{$key} = $fieldlet->{params}->{$key}; 
                 }else{
                     $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
                 }
             }
             #_log $fieldlet;
-            my $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
-            #_log $reg_key;
+            my $reg_key;
+            if($fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
+                $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
+            }elsif($fieldlet->{params}->{html} && !$fieldlet->{params}->{js}){
+                $reg_key = $fieldlet->{params}->{html};
+            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
+                $reg_key = $fieldlet->{params}->{js};
+            }else{
+                  _log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ; 
+                  next;
+            }
+            #_log _dump $fieldlet;
             my $icon = Baseliner->model('Registry')->get($registers->{$reg_key})->{icon};
+
             $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
             $data->{editable} = '1' if not $fieldlet->{editable};
             $data->{hidden} = '0' if not $fieldlet->{hidden};
@@ -76,8 +90,8 @@ sub topic_categories_to_rules {
             $attributes->{active} = '1';
             $attributes->{disabled} = \0;
             $attributes->{expanded} = \0;
-            $attributes->{icon} = $icon ;#// '/static/images/icons/lock_small.png';
-            if($fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
+            $attributes->{icon} = $icon; #;// '/static/images/icons/lock_small.png';
+            if($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
                 if($fieldlet->{params}->{bd_field} eq 'moniker'){
                     $attributes->{key} = 'fieldlet.system.moniker';    
                     $data->{editable} = '1';
@@ -85,46 +99,59 @@ sub topic_categories_to_rules {
                 }else{
                     $attributes->{key} = 'fieldlet.text';    
                 } 
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && ($fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js' || $fieldlet->{params}->{bd_field} eq 'hitos')){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js'){
                 $attributes->{key} = 'fieldlet.milestones';
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+                $attributes->{key} = 'fieldlet.html_editor';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{bd_field} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && $fieldlet->{params}->{bd_field} eq 'hitos'){
+                $attributes->{key} = 'fieldlet.milestones';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
                 if($fieldlet->{params}->{bd_field} eq 'progress'){
                     $attributes->{key} = 'fieldlet.system.progress';    
                 }else{
                     $attributes->{key} = 'fieldlet.progressbar';    
                 }        
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && !$fieldlet->{params}->{js}){
                 if($fieldlet->{params}->{type} eq 'numberfield'){
                     $attributes->{key} = 'fieldlet.number';
+                }elsif($fieldlet->{params}->{type} eq 'datefield'){
+                    $attributes->{key} = 'fieldlet.datetime';
+                }elsif($fieldlet->{params}->{type} eq 'combo'){
+                    $attributes->{key} = 'fieldlet.combo';
+                }elsif($fieldlet->{params}->{type} eq 'textfield'){
+                    $attributes->{key} = 'fieldlet.text';
+                }elsif($fieldlet->{params}->{type} eq 'timefield'){
+                    $attributes->{key} = 'fieldlet.time';
                 }
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html' && !$fieldlet->{params}->{js}){
               $attributes->{key} = 'fieldlet.system.list_topics';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_cis.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_cis.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.cis';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.topics';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_users.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_users.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.users';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_projects.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_projects.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.projects';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_release.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_release.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.release';
-            }elsif($fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html' && !$fieldlet->{params}->{js}){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html' && !$fieldlet->{params}->{js}){
                 $attributes->{key} = 'fieldlet.system.revisions';
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
                 if($fieldlet->{params}->{bd_field} eq 'description'){
                     $attributes->{key} = 'fieldlet.system.description';
                 }else{
                     $attributes->{key} = 'fieldlet.html_editor';
                 }
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
               $attributes->{key} = 'fieldlet.text';
-            }elsif($fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_ci.js'){
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_ci.js'){
                 $attributes->{key} = 'fieldlet.ci_grid';
+            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js'){
+                $attributes->{key} = 'fieldlet.system.topics';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
-
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
                 if ($data->{ci_class}){
                     $data->{ci_role} = 'Baseliner::Role::CI';
@@ -146,7 +173,7 @@ sub topic_categories_to_rules {
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
             
-            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> ERROR MIGRATING FIELD ==> $data->{name_field} WHITH CATEGORY $topic_category->{name} "; _log $data }
+            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} "; _log $data }
             
             $attributes->{data} = $data;
             
@@ -178,9 +205,10 @@ sub topic_categories_to_rules {
         $rule->{wsdl} = '';
         #map{_log _dump $_->{attributes}->{key}}_array _decode_json($rule->{rule_tree});
         #_decode_json($rule->{rule_tree});
-        #$rule;
+        #_log "LA REGLA "._dump $rule;
         mdb->rule->insert($rule);
         mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_field=>"$rule->{id}"} });
+        _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
         generate_dsl($rule);
     }
 }
@@ -264,8 +292,8 @@ sub map_registors {
             }elsif(not $reg->{registry_node}->{param}->{html} and $reg->{registry_node}->{param}->{js}){
                 $unique_key = $reg->{registry_node}->{param}->{js};
             }
-            
-            if($find_propios->{$unique_key}){
+            $unique_key = $unique_key // '';
+            if($unique_key && $find_propios->{$unique_key}){
                 $find_propios->{$unique_key} = $reg->{registry_node}->{key};
             }
        # }

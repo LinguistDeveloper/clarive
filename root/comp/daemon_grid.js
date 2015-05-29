@@ -76,7 +76,7 @@
     } 
  
         var btn_start = new Ext.Toolbar.Button({
-	    text: _('Start'),
+	    text: _('Activate'),
 	    icon:'/static/images/icons/start.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
@@ -98,7 +98,7 @@
         });
 
         var btn_stop = new Ext.Toolbar.Button({
-	    text: _('Stop'),
+	    text: _('Deactivate'),
 	    icon:'/static/images/icons/stop.png',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
