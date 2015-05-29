@@ -1056,7 +1056,7 @@ register 'service.get_date' => {
     data => { date => '' },
     form => '/forms/get_date.js',
     icon => '/static/images/icons/calendar.png',
-    text => 'Get date',
+    name => 'Get date',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         my $return_date;
