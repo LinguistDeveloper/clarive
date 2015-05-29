@@ -7947,3 +7947,10 @@ msgstr "Descartar Todos"
 
 msgid "Remove Invalid Actions"
 msgstr "Descartar Acciones Inválidas"
+
+msgid "Collapse Rows"
+msgstr "Colapsar Filas"
+
+
+msgid "Detail View"
+msgstr "Vista detalle"

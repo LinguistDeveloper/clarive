@@ -145,6 +145,7 @@
     });
 
     var grid = new Ext.ux.maximgb.tg.GridPanel({ 
+        renderTo: 'main-panel',
         store: store_events,
         master_column_id : '_id',
         autoExpandColumn: '_id',
@@ -167,8 +168,10 @@
         tbar: [  _('Search') + ': ', ' ',
             search_field,' ',' ',
             { icon:'/static/images/icons/refresh.png', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
-            { icon:'/static/images/icons/delete.gif', handler: del_event , text:_('Delete event')},
-            { icon:'/static/images/icons/hourglass.png', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
+            { icon:'/static/images/icons/delete.gif', handler: del_event , 
+            //text:_('Delete event')},
+            text:_('Delete')},
+            { icon:'/static/images/icons/restart_new.png', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
         ],
         bbar: ptool
     });
