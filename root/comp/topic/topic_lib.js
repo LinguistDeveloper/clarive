@@ -639,6 +639,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
     });
     var btn_submit = {
         xtype: 'button',
+        icon:'/static/images/icons/comment_new.gif',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
@@ -824,6 +825,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     
         self.btn_detail = new Ext.Toolbar.Button({
             icon:'/static/images/icons/detail.png',
+            tooltip:_('Detail View'),
             cls: 'x-btn-icon',
             enableToggle: true, 
             hidden: self.topic_mid==undefined,
@@ -836,7 +838,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_edit = new Ext.Toolbar.Button({
             name: 'edit',
             text:_('Edit'),
-            icon:'/static/images/icons/edit.png',
+            icon:'/static/images/icons/edit.gif',
             cls: 'x-btn-text-icon',
             enableToggle: true, 
             pressed: self.topic_mid==undefined,
@@ -1176,13 +1178,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: [
                 self.btn_detail,
                 self.btn_edit,
-                '-',
-                self.btn_comment,
+                //'-',
+                ' ',
                 self.btn_delete_form,
+                self.btn_comment,
                 self.btn_save_form,
                 '->',
                 self.btn_deploy,
-                '-',
+               // '-',
                 self.btn_change_status,
                 self.btn_docgen,
                 self.btn_graph,

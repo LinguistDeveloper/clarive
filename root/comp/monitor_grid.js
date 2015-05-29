@@ -1116,7 +1116,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Rerun'),
-                    icon:'/static/images/icons/restart.gif',
+                    icon:'/static/images/icons/restart_new.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

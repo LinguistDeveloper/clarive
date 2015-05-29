@@ -315,7 +315,7 @@
             },
             '->',
             { text: _('Restart Server'),
-                icon: '/static/images/icons/server_restart.png',
+                icon: '/static/images/icons/restart_new.png',
                 handler: function(){
                     Baseliner.confirm( _('You are about to attempt to restart the server. Are you sure?'), function(){
                         $.ajax({ type:'POST', url: '/feature/restart_server' });
