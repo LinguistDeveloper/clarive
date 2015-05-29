@@ -1052,6 +1052,27 @@ register 'service.echo' => {
     }
 };
 
+register 'service.get_date' => {
+    data => { date => '' },
+    form => '/forms/get_date.js',
+    icon => '/static/images/icons/calendar.png',
+    text => 'Get date',
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        my $return_date;
+        if ($data->{date}) {
+            try {
+                $return_date = "".Class::Date->new($data->{date});
+            } catch {
+                _fail _loc("Date %1 is not a valid date: %2",$data->{date},shift);
+            }
+        } else {
+            $return_date = "".Class::Date->now();
+        }
+        $return_date;
+    }
+};
+
 register 'service.fail' => {
     data => { msg => 'dummy fail' },
     handler=>sub{
