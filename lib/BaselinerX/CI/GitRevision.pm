@@ -78,7 +78,7 @@ sub items {
                 }
                 my $cs = $topics[0];
 
-                my ($last_job) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq 'IT' } ci->new($cs)->jobs;
+                my ($last_job) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
 
                 my $job = ci->new($last_job);
                 my $st = $job->stash;
