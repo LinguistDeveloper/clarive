@@ -53,7 +53,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/delete.png',
+               icon       => '/static/images/icons/delete_red.png',
                leaf       => \0,
                expandable => \1
            };           
@@ -625,7 +625,7 @@ sub changeset : Local {
         # find releases for each changesets
         #my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
         my @releases = map { $_->{id}} mdb->category->find({ is_release => mdb->true})->all;
-        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'category.id' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;
+        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'id_category' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;    
         my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{"$$_{from_mid}"}@topic_topic), is_release=>mdb->true })->all;
         my %releases;
         push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
@@ -644,7 +644,7 @@ sub changeset : Local {
             my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
             my ( $deployable, $promotable, $demotable, $menu );
             my %category_data;
-            if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
+            if ( ($topic->{_workflow} && $topic->{_workflow}->{$p->{id_status}}) || !$category_data{$topic_row->{id_category}}) {
                 ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
                 $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
             } else {
@@ -827,7 +827,7 @@ sub promotes_and_demotes {
     _fail _loc 'Missing topic parameter' unless $topic;
 
     #Personalized _workflow!
-    if($topic->{_workflow}){
+    if($topic->{_workflow} && $topic->{_workflow}->{$id_status_from}){
         my @_workflow;
         my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
         use Array::Utils qw(:all);

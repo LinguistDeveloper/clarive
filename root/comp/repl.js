@@ -538,7 +538,7 @@ To do:
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:'/static/images/icons/debug_view.gif',
+                icon:'/static/images/icons/debug_view.png',
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
@@ -572,7 +572,7 @@ To do:
             },
             {   xtype: 'button',
                 text: _('Delete'),
-                icon:'/static/images/icons/delete.gif',
+                icon:'/static/images/icons/delete_.png',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();

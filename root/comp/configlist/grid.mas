@@ -42,7 +42,7 @@
     };
     var menu_view = new Ext.Toolbar.Button({
         text: _('View'),
-        width: 80,
+        width: 60,
         icon: '/static/images/icons/watch.png',
         menu: [
             { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
@@ -97,6 +97,7 @@
                 }),
                 //menu_view,
                  //'-',
+                 ' ',' ',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
                     icon:'/static/images/icons/add.gif',
@@ -120,7 +121,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/delete.gif',
+                    icon:'/static/images/icons/delete_.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();						
@@ -139,7 +140,9 @@
                             } );
                     }
                 }),
-
+                ' ',
+                //'-',
+                ' ',
                 new Ext.Toolbar.Button({
         icon:'/static/images/icons/wrench.gif',
         cls: 'x-btn-text-icon',
@@ -212,8 +215,7 @@
               //      }
              //   }),
                // new Baseliner.button.CSVExport(),
-                ' ',
-                '-',
+                //' ',
                 menu_view,
                  
                 '->'

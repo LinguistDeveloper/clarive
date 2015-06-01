@@ -403,7 +403,7 @@
                             }
                             node.remove();
                         }, 
-                        icon:'/static/images/icons/delete.gif' });
+                        icon:'/static/images/icons/delete_.png' });
             var stmts_menu = new Ext.menu.Menu({
             items: its 
         });
@@ -547,7 +547,7 @@
         title: _('Options'),
         bodyStyle: { 'padding':'10px 10px 10px 10px' },
         items : [
-            { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
+            { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New Report') : lc_node.text },
             { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 50 },
             { fieldLabel: _('Recursive level'), name: 'recursivelevel', xtype: 'textfield', anchor:'50%', emptyText: _('Default: 2 - No limit: -1'), allowBlank: false, value: lc_node.attributes.recursivelevel || "2" },
             new Baseliner.ComboDouble({

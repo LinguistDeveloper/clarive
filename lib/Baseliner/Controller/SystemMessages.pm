@@ -6,7 +6,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 # System messages
 register 'action.admin.sms' =>  { name=> 'System Messages' };
-register 'menu.admin.sms' => { label => 'System Messages', icon=>'/static/images/icons/sms.gif', actions=>['action.admin.sms'], url_eval=>'/comp/sms.js', index=>1000 };
+register 'menu.admin.sms' => { label => 'System Messages', icon=>'/static/images/icons/sms.png', actions=>['action.admin.sms'], url_eval=>'/comp/sms.js', index=>1000 };
 
 sub sms_create : Local {
     my ( $self, $c ) = @_;

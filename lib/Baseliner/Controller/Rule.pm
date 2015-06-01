@@ -566,6 +566,7 @@ sub palette : Local {
                     text => _loc($n->{name}) // $service_key,
                 }
             } 
+            grep { $_->{show_in_palette} }
             map { 
                 $c->registry->get( $_ );
             } @fieldlets
@@ -801,6 +802,10 @@ sub edit_key : Local {
             } else {
                 $config_data = {};
             }
+        } elsif ( $r->isa( 'BaselinerX::Type::Fieldlet' )){
+            $config_data = $config ? $self->config_to_data( $config ) : {};
+            $config_data = { %$config_data, %{ $r->data } } ;
+            $config_data->{section_allowed} = $r->registry_node->param->{section_allowed};
         } else {
             # statement
             $config_data = $config ? $self->config_to_data( $config ) : {};

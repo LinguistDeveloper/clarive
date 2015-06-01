@@ -113,7 +113,7 @@
     });
     store_types.load();
     var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.gif', cls: 'x-btn-text-icon' });
-    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.gif', function(){
+    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete_.png', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         var row = sel.data;

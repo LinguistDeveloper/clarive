@@ -148,6 +148,7 @@
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
+            {  name: 'job_family' },
             {  name: 'natures' }, 
             {  name: 'subapps' } 
         ]
@@ -626,7 +627,7 @@
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
                 { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.gif', 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete_.png', 
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
                 { flex:1, layout:'hbox', padding: 20, 
@@ -820,7 +821,7 @@
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         hidden: true,
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -1100,6 +1101,7 @@
                 { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
+                { header: _('Family'), width: 120, dataIndex: 'job_family', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
                 { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },	

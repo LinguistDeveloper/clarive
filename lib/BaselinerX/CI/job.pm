@@ -7,6 +7,7 @@ use v5.10;
 use utf8;
 with 'Baseliner::Role::CI::Internal';
 
+has job_name           => qw(is rw isa Str);   # initial job_name, overwrites the gen_job_mask system
 has id_stash           => qw(is rw isa Any);
 has jobid              => qw(is rw isa Any);   # mdb->seq('job')
 has bl                 => qw(is rw isa Any);
@@ -22,12 +23,10 @@ has current_service    => qw(is rw isa Any default Core);
 has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
 has starttime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
-has maxstarttime       => qw(is rw isa TS coerce 1), default => sub { 
-    my ($self) = @_;
-    return ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) 
-};
+has maxstarttime       => qw(is rw isa TS coerce 1);  # default is in _create
 has maxapprovaltime    => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
+has job_family         => qw(is rw isa Any default pipeline);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
@@ -206,18 +205,10 @@ sub _create {
     my $config = model->ConfigStore->get( 'config.job', bl=>$self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
-    #$now->set_time_zone('CET');
-    my $now = mdb->now;
-    my $end = $now + $self->expiry_time ;
 
-    $p{starttime}    ||= "$now";
-    $p{maxstarttime} ||= "$end";
-
-    ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $now, $end );
-    ($starttime, $maxstarttime ) = $p{starttime} < $now
-        ? ( $now , $end )
-        : ($p{starttime} , $p{maxstarttime} );
+    if( !$self->maxstarttime ) {
+        $self->maxstarttime( ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) );
+    }
 
     my $type = $p{job_type} || $p{type} || $config->{type};
     
@@ -226,7 +217,7 @@ sub _create {
     $self->jobid( $job_seq );
 
     # setup name
-    my $name = $config->{name}
+    my $name = $self->job_name || $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
     Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
@@ -247,7 +238,7 @@ sub _create {
     
     # create a hash stash
     my $stash = +{ %{ $self->stash_init || {} }, %topic_stash };
-    $self->stash_init({});
+    $self->stash_init($stash);
     
     # separate releases into changesets
     my @releases; 
@@ -325,7 +316,7 @@ sub _create {
             push @cs_list, $cs->topic_name ."\n";
         }
     }
-    _fail _loc('Missing job contents') unless @cs_list > 0;
+    _fail _loc('Missing job contents') if !@cs_list && $self->job_family eq 'pipeline';
 
     # log job items
     # if( @cs_list > 10 ) {

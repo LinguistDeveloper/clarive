@@ -129,8 +129,11 @@ msgstr "Comunes"
 msgid "Dynamic"
 msgstr "Dinámico"
 
-msgid "New search"
-msgstr "Nueva búsqueda"
+msgid "New Report"
+msgstr "Nuevo Informe"
+
+msgid "New Search"
+msgstr "Nueva Búsqueda"
 
 msgid "Select field %1 first or reload"
 msgstr "Seleccione el campo %1 primero o recargue"

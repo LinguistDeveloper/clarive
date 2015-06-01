@@ -209,7 +209,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 tbar: [
                     "->",
                     { xtype:"button", text:_("Restore originals"), icon:"/static/images/icons/left.png", handler: function(){ restore_originals() } },
-                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete.gif", handler: function(){ win.destroy() } },
+                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete_.png", handler: function(){ win.destroy() } },
                     { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
                 ],
                 bodyStyle: { padding: "4px", "background-color": "#eee" },

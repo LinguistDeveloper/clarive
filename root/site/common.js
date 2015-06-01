@@ -572,7 +572,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/delete.gif',
+                icon: '/static/images/icons/delete_.png',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();
@@ -719,7 +719,7 @@ Baseliner.array_field = function( args ) {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/del.gif',
+                icon: '/static/images/icons/del_all.png',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = fgrid.getSelectionModel().getSelected();
@@ -1092,7 +1092,7 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Delete'),
-            icon: IC('delete.gif'),
+            icon: IC('delete_.png'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1630,7 +1630,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        this.btns = {
            download: new Ext.Button({ text:_('Download'), icon: ic, handler: function(){ self.download() } }),
            get: new Ext.Button({ text:_('Get'), icon: ic, hidden: true, handler: function(){ self.get() } }),
-           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete.gif', 
+           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete_.png', 
                hidden: true, handler: function(){ self.del() } }),
            install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.png',
                hidden: true, handler: function(){ self.install() } })
@@ -2226,28 +2226,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         // auto Topic drawing
         self.on('beforechildrenrendered', function(node){
             node.eachChild(function(n) {
-                if(n.attributes.topic_name ) {
-                    var tn = n.attributes.topic_name;
-                    n.setIconCls('no-icon');  // no icon on this node
-                    if( !tn.category_color ) 
-                        tn.category_color = '#999';
-                    var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-                    n.setText( String.format( '{0}<span title="{4}"  style="font-weight:bold;">{1} #{2}: {3}</span><span title="{4}">{4}</span>', span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
-                    n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
-                } else if(n.attributes.category_name ) {
-                    var tn = n.attributes.category_name;
-                    n.setIconCls('no-icon');  // no icon on this node
-                    var span = String.format( Baseliner.tree_topic_style, tn.category_color);
-                    n.setText( String.format( '{0}<b>{1}</b>', span, tn.category_name ) );
-                } else if(n.attributes.category_color ) {
-                    // color box and nothing else
-                    var span = String.format( Baseliner.tree_topic_style, n.attributes.category_color);
-                    n.setIconCls('no-icon');  // no icon on this node
-                    n.setText( String.format( '{0}{1}', span, n.text ) );
-                    n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
-                } else if(n.attributes.data && n.attributes.data.desc && !n.attributes.id_favorite ) {
-                    n.setText( String.format( '<span title="{1}">{0}</span>', n.text, n.attributes.data.desc) );
-                }
+                Cla.style_topic_node(n);
             });
         });
         self.on('click', function(n, ev){    
@@ -2886,7 +2865,7 @@ Baseliner.render_date = function(v){
 Baseliner.render_checkbox = function(v){
     return v 
         ? '<img src="/static/images/icons/checkbox.png">'
-        : '<img src="/static/images/icons/delete.gif">';
+        : '<img src="/static/images/icons/delete_.png">';
 };
         
 Baseliner.render_ago = function(t,p){
@@ -3669,7 +3648,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             tbar: [
                 { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
                 '->',
-                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.gif', handler: file_del }
+                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete_.png', handler: file_del }
             ],
             viewConfig: {
                 headersDisabled: true,
@@ -3886,7 +3865,7 @@ Baseliner.request_approval = function(mid,id_grid){
         });
         var btn_reject = new Ext.Button({
             text: _('Reject'),
-            icon: '/static/images/del.gif',
+            icon: '/static/images/icons/del_all.png',
             handler: function(){
                 var comments = user_comments.getValue();
                 if( comments.length == 0 ) {
@@ -4039,22 +4018,29 @@ Baseliner.generic_fields = function(params){
     if(data.fieldletType == /system/){
         data.origin = 'system';
     }
-  
     var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
 
+    var all_sections = { 
+        'head': _('Header'),
+        'body': _('Body'),
+        'details': _('Details'),
+        'more': _('More info'),
+        'between': _('Between')
+    };
+    var final_sections = [];
+    var available_sections = data.config.section_allowed ? data.config.section_allowed : ['head','body','details','more','between']; 
+    available_sections.forEach( function(element){
+        final_sections.push([ element, all_sections[element] ]);
+    });
+
+    //all_sections
     var combo_section = new Baseliner.ComboDouble({
         name: 'section',
         editable: false,
         fieldLabel: _('Section to view'),
         emptyText: _('Select one'),
-        data:[ 
-            [ 'head', _('Header') ],
-            [ 'body', _('Body') ],
-            [ 'details', _('Details') ],
-            [ 'more', _('More info') ],
-            [ 'between', _('Between') ]
-        ],
-        value: data.section || 'body',
+        data: final_sections,
+        value: data.section || available_sections[0],
     });
 
     var combo_colspan = new Baseliner.ComboDouble({
@@ -4136,9 +4122,35 @@ Baseliner.generic_list_fields = function(params){
         list_type.setValue(rec.data.value_type);
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
     });
-    var ret = [ value_combo, list_type, { xtype:'textfield', name:'filter', fieldLabel: _('Advanced Filter JSON'), value: data.filter } ];
+    var json_field = new Ext.form.TextArea({ name:'filter', fieldLabel: _('Advanced Filter JSON'), height: 60, anchor:'100%', value: data.filter });
+    var ret = [ 
+        value_combo, 
+        list_type, 
+        json_field ,
+        { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
+            handler: function(){ Cla.json_filter_builder(json_field) } } 
+    ];
     return ret;
 };
+
+Cla.json_filter_builder = function(json_field){
+    Cla.ajaxEval( '/comp/topic/topic_grid.js', {}, function(grid) {
+        var prev = json_field.getValue();
+        if( prev ) {
+            grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev); 
+        }
+        delete grid.title;
+        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit'), handler:function(){
+            var curr_filter = grid.get_grid().store.baseParams;
+            delete curr_filter.last_count;
+            var json = Ext.util.JSON.encode( curr_filter );
+            json_field.setValue( json );
+            win.close();
+        }});
+        var btn_cancel = { xtype:'button', icon: IC('cancel'), text:_('Cancel'), handler: function(){ win.close() } };
+        var win = new Cla.Window({ width:800, height:600, layout:'fit', modal: true, items:[grid], tbar:['->', btn_cancel,btn_save] }).show();
+    });
+}
 
 Baseliner.view_field_content = function(params) {
     if (!params.mid) return;

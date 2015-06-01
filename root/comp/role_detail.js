@@ -32,7 +32,7 @@
             sortable: true // columns are not sortable by default           
         },
         columns: [
-                { header: '', width: 20, dataIndex: 'action', sortable: false, renderer: function(){ return String.format('<img src="{0}"/>', IC('action.gif')) } },
+                { header: '', width: 20, dataIndex: 'action', sortable: false, renderer: function(){ return String.format('<img src="{0}"/>', IC('lock_small.png')) } },
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: render_action },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true,
                           renderer: Baseliner.render_bl,
@@ -236,7 +236,7 @@
             search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Remove Selection'),
-                icon:'/static/images/icons/delete.png',
+                icon:'/static/images/icons/delete_red.png',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid_role.getSelectionModel();							
@@ -249,7 +249,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: _('Remove All'),
-                icon:'/static/images/del.gif',
+                icon:'/static/images/icons/del_all.png',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     grid_role.getStore().removeAll();

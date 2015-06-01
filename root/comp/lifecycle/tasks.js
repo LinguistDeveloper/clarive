@@ -56,7 +56,7 @@
 				    handler: function(){ alert('add') }				}),
 			    new Ext.Toolbar.Button({
 				    text: _('Delete'),
-				    icon:'/static/images/del.gif',
+				    icon:'/static/images/icons/del_all.png',
 				    cls: 'x-btn-text-icon',
 				    handler: function() {
 					    var sm = grid.getSelectionModel();

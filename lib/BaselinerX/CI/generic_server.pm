@@ -9,6 +9,21 @@ has connect_ssh    => qw(is rw isa Bool default 1);
 
 with 'Baseliner::Role::CI::Server';
 
+service 'connect' => {
+    name    => 'Test Server Connection',
+    form    => '/forms/test_server_connect.js',
+    handler => sub{
+        my ($self,$c,$config) = @_;
+        try { 
+            my $ag = $self->connect( user=>$config->{user} );
+            $ag->execute('nope');
+            _log("OK. Connected.");
+        } catch {
+            die "ERROR: Could not connect: " . shift();
+        };
+    },
+};
+
 sub error {}
 sub rc {}
 sub ping {

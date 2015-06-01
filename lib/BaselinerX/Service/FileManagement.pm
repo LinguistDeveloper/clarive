@@ -245,8 +245,19 @@ sub run_tar_nature {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $clean_path_mode = $config->{clean_path_mode} // 'none';
     
     my @files = _array( $stash->{nature_item_paths} );
+    # check if there are absolute nature file paths (starting with /)
+    #    maybe caused by missing IF NATURE op "cut path"
+    for my $f( @files ) {
+        next unless $f =~ /^\//; 
+        if( $clean_path_mode eq 'force' ) {
+            $f =~ s{^/}{}g; 
+        } else {
+            _warn _loc 'Nature path not relative for file `%1`. This file will not be included in the tar. Check your IF NATURE `Cut Path` has at least a slash `/`', $f;
+        }
+    }
     $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config, files=>\@files ); 

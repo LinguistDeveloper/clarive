@@ -111,7 +111,7 @@
     });
 
     // AutoRefresh
-    var button_autorefresh = new Ext.Button({ tooltip: _('Auto Refresh'),
+    var button_autorefresh = new Ext.Button({ tooltip: _('Refresh'),
         icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
@@ -233,7 +233,8 @@
             tbar: [
                 { 
                     text: _('Save'),
-                    icon:'/static/images/download.gif',
+                    //icon:'/static/images/download.gif',
+                    icon:'/static/images/icons/save.png',
                     cls: 'x-btn-text-icon',
                     handler: function(){
                         if( field_annotate.getValue().length > 2000 ) {
@@ -281,11 +282,13 @@
 
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
-        if( value=='debug' ) icon='log_d.gif';
+        //if( value=='debug' ) icon='log_d.gif';
+        if( value=='debug' ) icon='debug_view.png';
         else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
-        else if( value=='comment' ) icon='post.gif';
+        //else if( value=='comment' ) icon='post.gif';
+        else if( value=='comment' ) icon='sms.png';
         if( icon!=undefined ) {
             return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
         } else {
@@ -412,7 +415,7 @@
         } 
     });
 
-    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', hidden: false,
+    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ajaxEval( '/job/log/delete', { mid: current_job().mid, job_exec: job_exec,
                 confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().mid, job_exec) }, function(res) {
@@ -421,7 +424,7 @@
         } 
     };
 
-    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.gif', cls: 'x-btn-text-icon', hidden: false,
+    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
                     var mid = current_job().mid;
                     Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", mid ), { mid: mid } );
@@ -512,7 +515,7 @@
                 menu_exec_right,
                 {
                     text: _('Annotate'),
-                    icon: '/static/images/icons/post.gif', 
+                    icon: '/static/images/icons/comment_new.png', 
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
@@ -520,7 +523,7 @@
 % if( $user_action->{'action.admin.default'} ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
-                    icon: '/static/images/icons/advanced.png', 
+                    icon: '/static/images/icons/password.png', 
                     cls: 'x-btn-text-icon',
                     menu: { 
                         items: [ menu_stash, menu_delete, menu_logfile ]

@@ -275,7 +275,12 @@ sub tree_objects {
         push @mids_query, map { $_->{mid} } mdb->master_doc->find({ '$or'=>[ {name=>qr/$q/i}, {moniker=>qr/$q/i} ] })->fields({ mid=>1 })->all;
         $where->{mid}=mdb->in(@mids_query);
     }
-    
+
+    if ( _array($collection) ) {
+        ($collection) = _array($collection);
+    } else {
+        $collection = '';
+    }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     my $mids = $p{mids};
@@ -543,12 +548,16 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-# _log "1--->"._dump $p;
-    my @a = split(',', $p->{role});
-    if(ref $p->{role} ne 'ARRAY' && $p->{role} ){
+
+    if(ref $p->{role} ne 'ARRAY' && $p->{role}){
+        my @a = split(',', $p->{role});
         $p->{role} = \@a;
     }
-# _log "2--->"._dump $p;
+    elsif(ref $p->{class} ne 'ARRAY' && $p->{class}){
+        my @a = split(',', $p->{class});
+        $p->{class} = \@a;
+    }
+
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
     
@@ -616,7 +625,9 @@ sub store : Local {
             }
             $mids = [ _array($mids), _unique @security];
         }
-
+        if ( ref $class ) {
+           ($class) = _array($class);
+        }
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
@@ -640,7 +651,13 @@ sub store : Local {
 
     # variables
     if( $p->{with_vars} ) {  # $p->{no_vars} ) {  # show variables always, with_vars deprecated
-        my %vp = ( $p->{role} ? (role=>$p->{role}) : ($p->{classname} || $p->{class} || $p->{isa}) ? (classname=>$p->{class}||$p->{classname}) : () );
+        my %vp = ( 
+            $p->{role} 
+            ? (role=>$p->{role}) 
+            : ($p->{classname} || $p->{class} || $p->{isa}) 
+                ? (classname=>$p->{class}||$p->{classname}) 
+                : () 
+            );
         
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
         push @data, grep { defined } map { 

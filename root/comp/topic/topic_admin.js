@@ -58,6 +58,7 @@
             buttons: [
                     {
                         text: _('Accept'),
+                        icon:'/static/images/icons/save.png',
                         type: 'submit',
                         handler: function() {
                             var form = form_status.getForm();
@@ -87,6 +88,7 @@
                     },
                     {
                     text: _('Close'),
+                    icon:'/static/images/icons/close.png',
                     handler: function(){ 
                             win.close();
                         }
@@ -175,7 +177,7 @@
     
     var btn_delete_status = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -592,7 +594,8 @@
     //});
     
     var btn_add_category = new Baseliner.Grid.Buttons.Add({    
-        text: null,
+        //text: null,
+        text: _('Create'),
         handler: function() {
             add_edit_category();
         }
@@ -643,8 +646,9 @@
     });     
 
     var btn_delete_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/delete.gif',
-        tooltip:_('Delete'),
+        icon:'/static/images/icons/delete_.png',
+        text:_('Delete'),
+        //tooltip:_('Delete'),
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -882,7 +886,7 @@
         
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete.gif',
+            icon:'/static/images/icons/delete_.png',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -1231,10 +1235,11 @@
         deferredRender:true,    
         tbar: [ 
                 btn_add_category,
-                '-',
-                btn_delete_category,
-                '-',
                 btn_edit_category,
+                //'-',
+                btn_delete_category,
+                //'-',
+                //btn_edit_category,
                 btn_duplicate_category,
                 '->',
                 //btn_update_fields,
@@ -1336,7 +1341,7 @@
 
     var btn_delete_label = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

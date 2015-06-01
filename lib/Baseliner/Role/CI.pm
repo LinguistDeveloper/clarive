@@ -976,17 +976,20 @@ sub variables_like_me {
     if( $class eq 'Baseliner::Role::CI' ) {
         if( my $classname = $p{classname} ) {
             @final = grep { defined $_->var_ci_class && $_->var_ci_class eq $classname } @vars;
-        } elsif( my $role = $p{role} ) {
-            my $cn = Util->to_role_class($role);
-            if( $cn->can('meta') ) {
-                my %consumers = map { $_=>1 } $cn->meta->consumers; 
-                @final = grep {
-                    defined $_->var_ci_role
-                        && ( $_->var_ci_role eq $role 
-                            || $consumers{ Util->to_ci_class($_->var_ci_class) }
-                            || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
-                } @vars;
+        } elsif( my $roles = $p{role} ) {
+            for my $role ( _array( $roles ) ) {
+                my $cn = Util->to_role_class($role);
+                if( $cn->can('meta') ) {
+                    my %consumers = map { $_=>1 } $cn->meta->consumers; 
+                    @final = grep {
+                        defined $_->var_ci_role
+                            && ( $_->var_ci_role eq $role 
+                                || $consumers{ Util->to_ci_class($_->var_ci_class) }
+                                || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
+                    } @vars;
+                }
             }
+            @final = _unique( @final );
         } else {
             @final = @vars;
         }

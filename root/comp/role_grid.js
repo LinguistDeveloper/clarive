@@ -108,7 +108,7 @@
                
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/delete.gif',
+                    icon:'/static/images/icons/delete_.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();						
@@ -176,7 +176,7 @@
         });
         var wt = invalid ? _('Invalid actions for role %1', row.data.role) : _('Actions for role %1', row.data.role);
         var btn_cleanup = !invalid ? '' : new Ext.Button({ 
-            icon:'/static/images/icons/delete.png', 
+            icon:'/static/images/icons/delete_red.png', 
             text:_('Remove Invalid Actions'), 
             handler: function(){
                 var sm = agrid.getSelectionModel();						

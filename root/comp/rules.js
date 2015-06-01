@@ -10,7 +10,7 @@
         store: rules_store,
         width: 140,
         params: {start: 0, limit: ps },
-        emptyText: _('<search>')
+        emptyText: _('<Search>')
     });
 
     var rule_del = function(){
@@ -224,7 +224,7 @@
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
-            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
@@ -578,7 +578,9 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {}, attributes: node.attributes }, function(comp){
+                    var data = node.attributes.data;
+                    data.config = res.config;
+                    Baseliner.ajaxEval( res.form, { data: data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
                             if(form.is_valid()){
@@ -595,7 +597,7 @@
                             autoScroll: true,
                             tbar: [
                                 '->',
-                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
+                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete_.png', handler: function(){ form.destroy() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
                             bodyStyle: { padding: '4px', "background-color": '#eee' },
@@ -643,7 +645,10 @@
                     copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
                     copy.setText( name_field );  // keep original node text name
                     if (is_ok == false ) { return false };
-                }else {
+                } else if (/dashlet.swarm/.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
+                    copy.attributes.data = { 'autorefresh':"0", 'background_color':'#fff', 'columns':"6",'rows':"1",'start_mode':'auto',limit:'' };
+                    copy.setText( copy.attributes.name );  // keep original node text name
+                } else {
                     copy.setText( copy.attributes.name );  // keep original node text name
                 }
                 if( !copy.attributes.data ) copy.attributes.data={};
@@ -806,8 +811,8 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
-                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
-                    { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
+                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/rename_.png' },
+                    { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/properties.png' },
                     { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.png' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.gif' },
@@ -816,8 +821,8 @@
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.gif' },
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
                     { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
-                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
-                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.gif' } 
+                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/restart_new.png' },
+                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete_.png' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -842,9 +847,9 @@
             ] });
         
         // node search system
-        var btn_search = new Ext.Button({ icon:IC('search.png'), menu:[
-            { text: _('Search'), hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
-            { text: _('Clear'), hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
+        var btn_search = new Ext.Button({ icon:IC('wrench.gif'), menu:[
+            { text: _('Search'), icon:'/static/images/icons/search-small.png',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
+            { text: _('Clear'), icon:'/static/images/icons/wipe_cache.png', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } },
             '-',
@@ -914,12 +919,16 @@
                 dblClick: node_dbl_click
             },
             rootVisible: true,
-            tbar: [ 
-                btn_save_tree,
+            tbar: [
+                search_box, 
+                //btn_search, 
                 btn_refresh_tree,
+                btn_save_tree,
+                //btn_refresh_tree,
                 btn_dsl,
-                '-',
-                search_box, btn_search,
+                btn_search, 
+                //'-',
+                //search_box, btn_search,
                 '->',
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
