@@ -607,11 +607,20 @@
                 copy.attributes.id = Cla.id('rule');
                 copy.attributes.palette = false;
                 if (/fieldlet./.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
+                    var is_ok = true;
                     var name_field = prompt(_('Name'));
                     if (!name_field) { return false };
                     var id_field = Baseliner.name_to_id( name_field );
+                    n2.eachChild(function(node){
+                        var data = node.attributes.data;
+                        if(data.id_field == id_field) { 
+                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
+                            is_ok = false;
+                        };
+                    });
                     copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
                     copy.setText( name_field );  // keep original node text name
+                    if (is_ok == false ) { return false };
                 }else {
                     copy.setText( copy.attributes.name );  // keep original node text name
                 }
