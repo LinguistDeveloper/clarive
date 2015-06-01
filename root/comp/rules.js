@@ -353,7 +353,28 @@
         } else if( clipboard ) {
             // paste normal
             var p = clipboard.node;
-            if( clipboard.mode=='copy' ) {
+            var is_ok = true;
+            if (/fieldlet./.test(p.attributes.key) && clipboard.mode=='copy'){
+                // var is_ok = true;
+                var name_field = prompt(_('Name'));
+                if (!name_field) { 
+                    Ext.Msg.alert(_('Error'), _('empty')) 
+                } else {
+                    var id_field = Baseliner.name_to_id( name_field );
+                    node.eachChild(function(child){
+                        var data = child.attributes.data;
+                        if(data.id_field == id_field) { 
+                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
+                            is_ok = false;
+                        };
+                    });
+                    p.setText( name_field );  // keep original node text name
+                    p.attributes.data.id_field = id_field;
+                    p.attributes.data.bd_field = id_field;
+                    p.attributes.data.name_field = name_field;
+                }
+            }
+            if( is_ok == true && clipboard.mode=='copy' ) {
                 if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
             }
