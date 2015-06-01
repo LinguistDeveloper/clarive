@@ -358,7 +358,8 @@
                 // var is_ok = true;
                 var name_field = prompt(_('Name'));
                 if (!name_field) { 
-                    Ext.Msg.alert(_('Error'), _('empty')) 
+                    Ext.Msg.alert(_('Error'), _('empty'));
+                    is_ok = false;
                 } else {
                     var id_field = Baseliner.name_to_id( name_field );
                     node.eachChild(function(child){
@@ -377,16 +378,16 @@
             if( is_ok == true && clipboard.mode=='copy' ) {
                 if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
+                p.cascade(function(n_chi){
+                    n_chi.attributes.id = Cla.id('rule');
+                    if( clipboard.mode=='copy' ) {
+                        if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
+                        delete n_chi.attributes.has_shortcut;
+                    }
+                });
+                node.getOwnerTree().is_dirty = true;
+                var new_node = node.appendChild( p );
             }
-            p.cascade(function(n_chi){
-                n_chi.attributes.id = Cla.id('rule');
-                if( clipboard.mode=='copy' ) {
-                    if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
-                    delete n_chi.attributes.has_shortcut;
-                }
-            });
-            node.getOwnerTree().is_dirty = true;
-            var new_node = node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
