@@ -64,5 +64,59 @@ sub activity : Local {
     $c->forward('View::JSON');    
 }
 
+sub grouped_activity : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    #_warn $p;
+    
+    my $limit = $p->{limit} || 10000;
+    my $days = $p->{days} || 30;
+
+    my $where = { mid=>{'$ne'=>undef} };
+
+    my $date = Class::Date->now();
+    my $filter_date = $date - ($days . 'D');
+
+    my @dates = _array(
+        mdb->activity->aggregate(
+            [
+                {'$match' => { mid=>{'$ne'=>undef}, event_key => qr/topic/, ts => { '$gte' => ''.$filter_date} }},
+                
+                {
+                    '$group' => {
+                        _id    => { '$substr' => [ '$ts',0,16] },
+                        'activity' => {
+                            '$push' => { ts => '$ts', event_key => '$event_key', mid => '$mid'}
+                        }
+                    }
+                },
+                {'$sort' => {_id => 1}}
+            ]
+        )
+    );
+
+
+    my %result_dates;
+    for my $date ( @dates ) {
+        my @mids = map { $_->{mid}} _array($date->{activity});
+        my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+        my @data;
+        for my $ev ( _array($date->{activity} )) {
+            my $parent = $cats{$ev->{mid}};
+            my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
+                $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
+            my $actor = $ev->{username} || 'clarive';
+            $action = 'add';
+            push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
+        }
+
+        $result_dates{$date->{_id}} = \@data;
+    }
+
+    $c->stash->{json} = { data=>\%result_dates };
+    $c->forward('View::JSON');    
+}
+
 1;
 
