@@ -6,6 +6,7 @@
   $query_id        => '-1'
 </%args>
 <%perl>
+    my $iid = Util->_md5;
     use Baseliner::Sugar;
     my $view_natures = config_value('job_new.view_natures');
 </%perl>
@@ -121,6 +122,7 @@
             {  name: 'last_log' },
             {  name: 'contents' },
             {  name: 'changesets' },
+            {  name: 'changeset_cis' },
             {  name: 'releases' },
             {  name: 'applications' },
             {  name: 'maxstarttime' },
@@ -858,6 +860,23 @@
     });
     //------------ Renderers
     var render_contents = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var return_value = new Array();
+        if ( rec.data.changeset_cis && rec.data.changeset_cis.length > 0 ) {
+          Ext.each(rec.data.changeset_cis, function(cs) {
+            // console.log(cs);
+            var link = '<a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer;">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
+            return_value.push(link);
+          });
+        } else {
+          return_value = value;
+        }
+            // console.log(return_value[0]);
+        if( return_value.length < 2 ) return return_value[0];
+        var str = return_value.join('<li>');
+        return '<li>' + str;
+    };
+
+    var render_releases = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value.length < 2 ) return value[0];
         var str = value.join('<li>');
         return '<li>' + str;
@@ -983,7 +1002,24 @@
                     p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded '; 
                 }
-                var cont = record.data.contents;
+                console.dir(record.data);
+                var return_value = new Array();
+                if ( record.data.changeset_cis && record.data.changeset_cis.length > 0 ) {
+                  Ext.each(record.data.changeset_cis, function(cs) {
+                    // console.log(cs);
+                    var link = '<a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
+                    return_value.push(link);
+                  });
+                  if ( record.data.releases ) {
+                    Ext.each( record.data.releases, function(rel) {
+                      return_value.push(rel);
+                    });
+                  }
+                } else {
+                  return_value = record.data.contents;
+                }
+
+                var cont = return_value;
                 if( cont != undefined ) {
                     p.body +='<div style="color: #505050; margin: 0px 0px 5px 20px;">';
                     for( var i=0; i<cont.length; i++ ) {
@@ -1050,7 +1086,7 @@
                 { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
                 { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
                 { header: _('Changesets'), width: 100, dataIndex: 'changesets', renderer: render_contents, sortable: true, hidden: true },
-                { header: _('Releases'), width: 100, dataIndex: 'releases', renderer: render_contents, sortable: true, hidden: true },
+                { header: _('Releases'), width: 100, dataIndex: 'releases', renderer: render_releases, sortable: true, hidden: true },
                 { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, hidden: true }, 
