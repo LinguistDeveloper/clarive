@@ -88,6 +88,7 @@ sub items {
 
                     for $last_job ( @last_jobs ) {
                         $job = ci->new($last_job);
+                        $st = $job->stash;
                         if ( $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
                             $found = 1;
                             last;
@@ -95,7 +96,6 @@ sub items {
                     }
 
                     if ( $found ) {                    
-                        $st = $job->stash;
                         $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
                         _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
                         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
