@@ -1,5 +1,6 @@
 <%perl>
     use Baseliner::Utils;
+    my $iid = Util->_md5;
     my $mid = $c->stash->{mid};
     my $namejob = $c->stash->{name_job};
     my $status_id = "status". _nowstamp;
@@ -94,7 +95,27 @@
                     </tr>
 %       }
 <%perl>
-            if ( $contenido->{list_changesets} ) {
+            if ( $contenido->{list_changeset_cis} ) {
+                my @paquetes = _array $contenido->{list_changeset_cis};
+                my $tot_paquetes = scalar @paquetes;
+                my $first = 1;
+                for my $changeset ( @paquetes ) {
+                    if ( $first ) {
+</%perl>                        
+                    <tr>
+                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %></b></td>
+<%perl>
+                        $first = 0;
+                    }
+</%perl>                            
+                        <td>
+                          <span id="topic_<% $changeset->{mid} %>_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored('<% $changeset->{mid} %>', '<% $changeset->{category}->{name} %>', '<% $changeset->{category}->{color} %>')" style="cursor:pointer;background:'<% $changeset->{category}->{color} %>'"><a><% $changeset->{category}->{name} %> #<% $changeset->{mid} %> - <% $changeset->{title} %></a>
+                          </span>
+                        </td>
+                    </tr>
+<%perl>
+                }
+            } elsif ( $contenido->{list_changesets} ) {
                 my @paquetes = _array $contenido->{list_changesets};
                 my $tot_paquetes = scalar @paquetes;
                 my $first = 1;

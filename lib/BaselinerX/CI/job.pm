@@ -714,6 +714,7 @@ sub build_job_contents {
     my ($self, $save_this) =@_;
     my $jc = {};
     $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
+    $jc->{list_changeset_cis} //= $self->changesets ;
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
