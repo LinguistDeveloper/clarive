@@ -225,7 +225,7 @@
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
@@ -353,19 +353,41 @@
         } else if( clipboard ) {
             // paste normal
             var p = clipboard.node;
-            if( clipboard.mode=='copy' ) {
+            var is_ok = true;
+            if (/fieldlet./.test(p.attributes.key) && clipboard.mode=='copy'){
+                // var is_ok = true;
+                var name_field = prompt(_('Name'));
+                if (!name_field) { 
+                    Ext.Msg.alert(_('Error'), _('empty'));
+                    is_ok = false;
+                } else {
+                    var id_field = Baseliner.name_to_id( name_field );
+                    node.eachChild(function(child){
+                        var data = child.attributes.data;
+                        if(data.id_field == id_field) { 
+                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
+                            is_ok = false;
+                        };
+                    });
+                    p.setText( name_field );  // keep original node text name
+                    p.attributes.data.id_field = id_field;
+                    p.attributes.data.bd_field = id_field;
+                    p.attributes.data.name_field = name_field;
+                }
+            }
+            if( is_ok == true && clipboard.mode=='copy' ) {
                 if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
+                p.cascade(function(n_chi){
+                    n_chi.attributes.id = Cla.id('rule');
+                    if( clipboard.mode=='copy' ) {
+                        if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
+                        delete n_chi.attributes.has_shortcut;
+                    }
+                });
+                node.getOwnerTree().is_dirty = true;
+                var new_node = node.appendChild( p );
             }
-            p.cascade(function(n_chi){
-                n_chi.attributes.id = Cla.id('rule');
-                if( clipboard.mode=='copy' ) {
-                    if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
-                    delete n_chi.attributes.has_shortcut;
-                }
-            });
-            node.getOwnerTree().is_dirty = true;
-            var new_node = node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
@@ -607,11 +629,20 @@
                 copy.attributes.id = Cla.id('rule');
                 copy.attributes.palette = false;
                 if (/fieldlet./.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
+                    var is_ok = true;
                     var name_field = prompt(_('Name'));
                     if (!name_field) { return false };
                     var id_field = Baseliner.name_to_id( name_field );
+                    n2.eachChild(function(node){
+                        var data = node.attributes.data;
+                        if(data.id_field == id_field) { 
+                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
+                            is_ok = false;
+                        };
+                    });
                     copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
                     copy.setText( name_field );  // keep original node text name
+                    if (is_ok == false ) { return false };
                 }else {
                     copy.setText( copy.attributes.name );  // keep original node text name
                 }

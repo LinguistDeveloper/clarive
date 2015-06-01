@@ -127,8 +127,8 @@ for(my $hh=0; $hh<=24; $hh++) {
         url: '/job/calendar_submit', 
         buttons: [
 %if($c->stash->{create}){		
-            {  icon:'/static/images/icons/add.gif', text: _('Create Slot'), handler: function(){ modify_window('A') } }
-            ,{ icon:'/static/images/icons/stop.png', text: _('Create Inactive'), handler: function(){ modify_window('AD') } }
+            {  icon:'/static/images/icons/slot.png', text: _('Create Slot'), handler: function(){ modify_window('A') } }
+            ,{ icon:'/static/images/icons/add.gif', text: _('Create Inactive'), handler: function(){ modify_window('AD') } }
 %} else {
             {  icon:'/static/images/icons/edit.gif', text: _('Modify Slot'), handler: function(){ modify_window('A') } }
             ,{  icon:'/static/images/icons/add.gif', text: _('Overwrite'), handler: function(){ modify_window('A', true) } }
@@ -142,7 +142,7 @@ for(my $hh=0; $hh<=24; $hh++) {
             ,{ icon:'/static/images/icons/start.png', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
 % 	}
 % }
-            ,{ icon:'/static/images/icons/close.png',  text: _('Cancel'), handler: function(){ win.close(); } }
+            ,{ icon:'/static/images/icons/close.png',  text: _('Close'), handler: function(){ win.close(); } }
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: '<% $id %>' },
