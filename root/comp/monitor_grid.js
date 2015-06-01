@@ -1168,7 +1168,7 @@
                                     step_buttons
                                 ],
                                 buttons: [
-                                    {text:_('Rerun'), handler:function(f){ 
+                                    {text:_('Rerun'),  icon: '/static/images/icons/restart_new.png', handler:function(f){ 
                                         var but = this;
                                         but.disable();
                                         var form_data = form_res.getForm().getValues();                                     
@@ -1190,7 +1190,11 @@
                                             }
                                         );
                                      }},
-                                    {text:_('Cancel'), handler:function(f){ win_res.close() }}
+                                    {
+                                      text:_('Close'), 
+                                      icon: '/static/images/icons/close.png',
+                                      //text:_('Cancel'), 
+                                    handler:function(f){ win_res.close() }}
                                 ]
                             });
                             var win_res=new Ext.Window({

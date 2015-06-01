@@ -63,7 +63,8 @@
                     labelWidth: 150, 
                     defaults: { width: 350 },
                     buttons: [
-                        {  text: _('OK'),
+                        {  text: _('Save'),
+                           icon:'/static/images/icons/save.png',
                             handler: function(){ 
                                 var ff = new_cal.getForm();
                                 var comboCopy = ff.findField('copyof');
@@ -90,7 +91,7 @@
                                 }
                             }
                         },
-                        {  text: _('Cancel') , handler: function(){  win.close() } }
+                        {  text: _('Close') , icon:'/static/images/icons/close.png', handler: function(){  win.close() } }
                     ],
                     items: [
                         {  xtype: 'hidden', name: 'action', value: 'create' },

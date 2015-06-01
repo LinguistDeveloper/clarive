@@ -225,7 +225,7 @@
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
