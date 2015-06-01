@@ -787,6 +787,9 @@
             return;
         }
         var short_name = name.length > 10 ? name.substring(0,20) : name;
+        var node_dbl_click = function(node,event){
+            edit_node( node );
+        };
         var menu_click = function(node,event){
             if( node.attributes.is_current ) return false;
             if( node.attributes.is_version ) {
@@ -907,7 +910,8 @@
                     // console.log(object.dropNode.attributes);
                     // drop_handler(object);
                 // },
-                contextmenu: menu_click
+                contextmenu: menu_click,
+                dblClick: node_dbl_click
             },
             rootVisible: true,
             tbar: [ 
