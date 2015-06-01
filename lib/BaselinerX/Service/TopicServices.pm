@@ -62,6 +62,14 @@ register 'service.topic.inactivity_daemon' => {
     handler => \&inactivity_daemon,
 };
 
+register 'service.topic.get_with_condition' => {
+    name => 'Get topics that matches conditions',
+    handler => \&get_with_condition,
+    job_service  => 0,
+    icon => '/static/images/icons/report_default.png',
+    form => '/forms/topic_get_with_condition.js' 
+};
+
 register 'config.topic.inactivity_daemon' => {
     metadata=> [
         {  id=>'frequency', label=>'Inactivity daemon Frequency', type=>'int', default=>600 }
@@ -340,4 +348,89 @@ sub related {
     return \@related;
 
 }
+
+sub get_with_condition {
+    my ( $self, $c, $config ) = @_;
+
+    _warn $c;
+    my $categories = $config->{categories} || [];
+    my $statuses = $config->{statuses} || [];
+    my $not_in_status = $config->{not_in_status};
+    my $filter_user = $config->{assigned_to};
+    my $limit = $config->{limit} // 100;
+    my $condition = {};
+    my $where = {};
+
+    if ( $config->{condition} ) {
+        try {
+            my $cond = eval('q/'.$config->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+            _error "JSON condition malformed (".$config->{condition}."): ".shift;
+        }
+    }
+
+    $where = $condition;
+
+    if ( $filter_user && $filter_user ne 'Any') {
+        if ( $filter_user eq _loc('Current')) {
+            $filter_user = $c->username;
+        }
+        my $ci_user = ci->user->find_one({ name=>$filter_user });
+        if ($ci_user) {
+            my @topic_mids = 
+                map { $_->{from_mid} }
+                mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
+            if (@topic_mids) {
+                $where->{'mid'} = mdb->in(@topic_mids);
+            } else {
+                $where->{'mid'} = -1;
+            }
+        }
+    }
+
+    my $main_conditions = {};
+
+    if ( _array($statuses) ) {
+        my @local_statuses = _array($statuses);
+        if ( $not_in_status ) {
+            @local_statuses = map { $_ * -1 } @local_statuses;
+            $main_conditions->{'statuses'} = \@local_statuses;
+        } else {
+            $main_conditions->{'statuses'} = \@local_statuses;
+        }
+    }
+    my $username = $c->{username} || 'root';
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( _array($categories) ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    $main_conditions->{'categories'} = \@user_categories;
+
+    my ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+
+    my @topic_cis = map {$_->{mid}} @topics;
+    @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
+    # my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
+    # my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
+
+    # $c->stash->{json} = { success => \1, data=>\@topics, cis=>\%ci_names };
+    return \@topics;
+
+}
+
+
 1;
