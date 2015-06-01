@@ -78,14 +78,40 @@ sub items {
                 }
                 my $cs = $topics[0];
 
-                my ($last_job) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
+                my (@last_jobs) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
 
-                my $job = ci->new($last_job);
-                my $st = $job->stash;
-                $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
-                _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
-                @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
-                $diff_shas = [ $tag_sha, $rev_sha ];
+                if ( @last_jobs ) {
+                    my $last_job;
+                    my $job;
+                    my $st;
+                    my $found;
+
+                    for $last_job ( @last_jobs ) {
+                        $job = ci->new($last_job);
+                        if ( $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
+                            $found = 1;
+                            last;
+                        }
+                    }
+
+                    if ( $found ) {                    
+                        $st = $job->stash;
+                        $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
+                        _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
+                        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
+                        $diff_shas = [ $tag_sha, $rev_sha ];
+                    } else {
+                        _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                        @items = map { my $item = 'M   ' . $_; } @items;
+                        $diff_shas = [ $tag_sha ];
+                    }
+                } else {
+                    _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                    @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                    @items = map { my $item = 'M   ' . $_; } @items;
+                    $diff_shas = [ $tag_sha ];
+                }
             } else {
                 @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
                 @items = map { my $item = 'M   ' . $_; } @items;
