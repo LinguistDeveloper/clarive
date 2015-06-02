@@ -127,8 +127,8 @@ for(my $hh=0; $hh<=24; $hh++) {
         url: '/job/calendar_submit', 
         buttons: [
 %if($c->stash->{create}){		
-            {  icon:'/static/images/icons/slot.png', text: _('Create Slot'), handler: function(){ modify_window('A') } }
-            ,{ icon:'/static/images/icons/add.gif', text: _('Create Inactive'), handler: function(){ modify_window('AD') } }
+            {  icon:'/static/images/icons/slot.png', text: _('Create Active Slot'), handler: function(){ modify_window('A') } }
+            ,{ icon:'/static/images/icons/add.gif', text: _('Create Inactive Slot'), handler: function(){ modify_window('AD') } }
 %} else {
             {  icon:'/static/images/icons/edit.gif', text: _('Modify Slot'), handler: function(){ modify_window('A') } }
             ,{  icon:'/static/images/icons/add.gif', text: _('Overwrite'), handler: function(){ modify_window('A', true) } }
