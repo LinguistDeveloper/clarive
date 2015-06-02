@@ -1798,20 +1798,13 @@ sub report_csv : Local {
     
     push @csv, join ';', @cols;
 
-    for my $row (_array $rows->{data}){      
+    for my $row (_array $rows->{data}){    
         my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
         my @cells;
         for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-            my ($col_id, $field1, $tail);
-            if ( $params->{id_report} || $params->{id_report_rule}) {
-
-                # Remove _<related Category> to the column id in reports
-                ( $field1, $tail) = ($col->{id} =~ m/^(.*[^_])_(.*)$/);
-                $col_id = ($tail && grep /^$tail$/i, @names_category )? $field1 : $col->{id};
-            } else { 
-                $col_id = $col->{id}
-            }
+            my $col_id = $col->{id};
             my $v = $row->{ $col_id };
+
             if( ref $v eq 'ARRAY' ) {
                 if ($col->{id} eq 'projects') {
                     my @projects;
@@ -1846,7 +1839,7 @@ sub report_csv : Local {
                         $v = $rel_category.' #'.$v ; 
                     }
                 } else {
-                    ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
+                    my ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
                     $tail = lc(unac_string($tail) ) if ($tail);
                     if ($tail && grep /^$tail$/i, @names_category) {
                         (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
