@@ -37,12 +37,12 @@ register 'config.job' => {
         { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' }, 
         { id=>'approval_delay', label => 'Delay after start running job to allow approval', default=>'0h' },
         { id=>'demote_to_bl', label => '1 to offer demote to each bl in destination state', default=>'0' },
-
+        { id=>'changeset_comment_field', label => 'Changeset field to use as comment in monitor', default=>'' }
     ],
     relationships => [ { id=>'natures', label => 'Technologies', type=>'list', config=> 'config.tech' },
         { id=>'releases', label => 'Releases', type=>'list', config=> 'config.release' },
         { id=>'apps', label => 'Applications', type=>'list', config=> 'config.app' },
-        { id=>'rfcs', label => 'RFCs', type=>'list', config=>'config.rfc' },
+        { id=>'rfcs', label => 'RFCs', type=>'list', config=>'config.rfc' }
     ],
 };
 
