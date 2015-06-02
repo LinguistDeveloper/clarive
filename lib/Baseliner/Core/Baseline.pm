@@ -36,7 +36,7 @@ sub name {
 
 sub baselines {
     my $self = shift; 
-    return sort { $a->seq <=> $b->seq } ci->search_cis( collection => 'bl', active => '1' );
+    return sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
 }
 
 sub baselines_no_root {

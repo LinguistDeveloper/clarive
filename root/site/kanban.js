@@ -48,52 +48,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     self.goto_tab();
             }
         });
-
-        self.task_interval = 10000;
-        self.task = {
-            run: function() {
-
-                var data_kanban = [];
-
-                if(self.store){
-                    self.store.each( function(rec) {
-                        data_kanban.push( { mid: rec.data.topic_mid, category_status_id: rec.data.category_status_id} );
-                    });
-
-                    Baseliner.ajax_json('/topic/refresh_kanban', { data: data_kanban }, function(res){
-                        if(res.success){
-                            if(data_kanban.length){
-                                if (res.topic_count != data_kanban.length ){
-                                    self.refresh();
-                                }                                
-                            }
-                        }
-                    });                     
-                }else{
-                    self.autorefresh.stop(self.task);    
-                }
-  
-                
-                return true;
-            },
-            interval: 3000
-        };
-        self.autorefresh = new Ext.util.TaskRunner();
-        self.refresh_button = new Ext.Button({ text: _('Auto Refresh'),
-            icon: '/static/images/icons/time.gif', 
-            enableToggle: true,
-            pressed: false,
-            cls: 'x-btn-text-icon',
-            handler: function(t) {
-                if( t.pressed ) {
-                    self.autorefresh.start(self.task);
-                } else {
-                    self.autorefresh.stop(self.task);
-                }
-            }
-        });
-
-
         self.bodyCfg = { 
             style: {
              'background': self.background,
@@ -106,7 +60,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             '-',
             { icon:'/static/images/icons/refresh.gif', iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
             self.status_btn,
-            self.refresh_button,
             '->',
             self.tab_btn,
             { icon:'/static/images/icons/close.png', iconCls:'x-btn-icon', handler: function(){ 
@@ -206,10 +159,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         });
         */
 
-        self.on('destroy', function(){
-            self.autorefresh.stop(self.task);
-        });        
-
         Baseliner.Kanban.superclass.initComponent.call(this);
     },
     print_hook : function(){
@@ -251,25 +200,22 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         });
     },
     refresh : function(){
-        var self = this;
+        var self =this;
         self.removeAll();
         self.store = null;
-        self.load_data(false);
+        self.load_data();
     },
-    load_data : function(bl_load_status_menu) {
+    load_data : function() {
         var self = this;
-
-        self.bl_load_status_menu = typeof bl_load_status_menu !== 'undefined' ? bl_load_status_menu : true;
-
         self.el.mask( _('Loading...'), 'x-mask-loading');
         if( ! self.store ) {
             if( Ext.isArray( self.topics ) && self.topics.length > 0 ) {
                 // create my own store
                 self.store = new Baseliner.Topic.StoreList({
-                    baseParams: { start: 0, topic_list: self.topics, clear_filter: 1 }   // query_id
+                    baseParams: { start: 0, topic_list: self.topics }   // query_id
                 });
                 self.store.on('load', function(){
-                    self.load_workflow( self.topics);
+                    self.load_workflow( self.topics );
                 });
                 self.store.load();
             } else {
@@ -287,16 +233,11 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 if( filtered_mode && !mids_hash[mid] ) return;
                 self.topics.push( rec.data.topic_mid );
             });
-
-            self.bl_load_status_menu = false;
-
-            self.store.load();
             self.load_workflow( self.topics );
         }
     },
     load_workflow : function(topics) {
         var self = this;
-
         Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
             if( res.success ) {
                 //console.log( res.workflow );
@@ -341,19 +282,16 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     add_column( cs.id, cs.name, cs.visible, cs.bl );
                 });
 
-                if(self.bl_load_status_menu) {
-                    for( var k=0; k< statuses.length; k++ ) {
-                        var cs = statuses[k];
-                        self.status_btn.menu.addMenuItem({ 
-                            id_status: cs.id, text: cs.name, 
-                            checked: !!cs.visible, 
-                            checkHandler: function(opt){ return self.check_column(opt) } 
-                        });
-                    }
+                for( var k=0; k< statuses.length; k++ ) {
+                    var cs = statuses[k];
+                    self.status_btn.menu.addMenuItem({ 
+                        id_status: cs.id, text: cs.name, 
+                        checked: !!cs.visible, 
+                        checkHandler: function(opt){ return self.check_column(opt) } 
+                    });
                 }
 
                 self.render_me();
-
                 self.fireEvent( 'ready', res );
             } else {
                 Ext.Msg.alert( _('Error'), res.msg );
@@ -417,20 +355,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
               url_portlet: 'http://xxxx', url_max: 'http://xxxx'
             });
         });
-
-        self.status_btn.menu.items.each(function( item ) {
-            if(!item.checked){
-                var id_status = item.id_status;
-                self.items.each( function(i){
-                    if( i.id_status == id_status ) {
-                        i.hide();
-                        self.reconfigure_columns();
-                    }
-                });
-
-            }
-            
-        });                
     },
     // method to reconfigure all columnwidths
     reconfigure_columns :  function(){
