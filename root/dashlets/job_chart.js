@@ -1,6 +1,7 @@
 (function(params){ 
     var id = params.id_div;
 
+    var project_id = params.project_id;
     var graph;
     var graph_type = params.data.type || 'donut';
     var graph_period = params.data.period || '1M';
@@ -24,7 +25,7 @@
         graph_period = period;
         if (graph) graph.unload();
 
-        Cla.ajax_json('/job/by_status', { period: period }, function(res){
+        Cla.ajax_json('/job/by_status', { project_id: project_id, period: period, _ignore_conn_errors: true  }, function(res){
                 c3.generate({
                      bindto: '#'+id,
                      data: {

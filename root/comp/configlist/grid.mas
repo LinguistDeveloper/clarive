@@ -42,6 +42,8 @@
     };
     var menu_view = new Ext.Toolbar.Button({
         text: _('View'),
+        width: 80,
+        icon: '/static/images/icons/watch.png',
         menu: [
             { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
             { text: _('Original Values'), value: 'original', checked: false, group: 'view', checkHandler: view_change },
@@ -52,6 +54,7 @@
 
         // create the grid
         var grid = new Ext.grid.GridPanel({
+            renderTo: 'main-panel',
             title: _('Config'),
             header: false,
             stripeRows: true,
@@ -93,6 +96,7 @@
                     emptyText: _('<Enter your search string>')
                 }),
                 menu_view,
+                 '-',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
                     icon:'/static/images/icons/add.gif',

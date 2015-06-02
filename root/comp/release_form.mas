@@ -85,7 +85,7 @@ Ext.onReady(function(){
 % }
 
     var render_icon = function(v) {
-        if( v==undefined ) v="/static/images/icons/release.gif";
+        if( v==undefined ) v="/static/images/icons/release_explorer.png";
         return '<img src="' + v + '" />';
     };
     var render_bold = function(v) {

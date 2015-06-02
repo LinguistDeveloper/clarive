@@ -73,12 +73,20 @@ sub lc_for_project {
           },
           {
             node => 'Releases',
-            icon => '/static/images/icons/release.gif',
+            icon => '/static/images/icons/release_explorer.png',
             url => '/lifecycle/tree_project_releases',
             type => 'component',
             has_query => 1,
           }
     );
+    push @nodes,
+    {
+        node => 'Dashboards',
+        icon => '/static/images/icons/dashboard.png',
+        url => '/dashboard/dashboard_list',
+        has_query => 1,
+        type => 'component'
+    };
     my $is_root = Baseliner->model('Permissions')->is_root($username);
     my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
     if ($has_permission || $is_root){

@@ -72,7 +72,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             </script>
 
         */};
-        Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
+        Cla.ajax_json('/dashboard/init', {project_id: self.project_id, dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
                 <style>
                     img:hover {
@@ -135,7 +135,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     colspan: dashlet.data.columns, 
                     dashlet: dashlet, id_div: id_div });
                 html += dh;
-                Cla.ajaxEval(dashlet.js_file, { id_div: id_div, data: dashlet.data }, function(){
+                Cla.ajaxEval(dashlet.js_file, { id_div: id_div, project_id: self.project_id, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
                     if(icons) icons.innerHTML = buttons_tpl.tmpl({
                         id_dashlet : dashlet.id,
@@ -161,7 +161,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
         if(div) div.innerHTML= "<img src=/static/images/loading.gif />";
-        Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, data: dashlet.data }, function(){
+        Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, project_id: self.project_id, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();
             var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            

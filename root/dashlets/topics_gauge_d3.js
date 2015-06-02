@@ -1,6 +1,7 @@
 (function(params){ 
     var id = params.id_div;
 
+    var project_id = params.project_id;
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
     var not_in_status = params.data.not_in_status;
@@ -15,15 +16,16 @@
     var end_remaining = params.data.end_remaining;
     var columns = params.data.columns;
     var start = params.data.start || 0;
-    var end = params.data.end || 0;
+    var end = params.data.end || 100;
     var reverse = params.data.reverse || 0;
     var result_type = params.data.result_type || 'avg';
+    var show_pct = params.data.show_pct || 'off';
 
 
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var needle_length = 0.85;
         var value_font = "18px";
         var div = document.getElementById(id);
@@ -41,17 +43,21 @@
             value_font = "16px";
          }
         //Configure gauge range
-        var maxValue;
-        if ( res.max <= yellow ) {
-            maxValue = yellow + green + ( (yellow + green) * 20 /100 );
-        } else {
-            maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
-        }
+        var maxValue = parseInt(res.max);
+        // if ( res.max <= yellow ) {
+        //     maxValue = yellow + green + ( (yellow + green) * 20 /100 );
+        // } else {
+        //     maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
+        // }
+        // maxValue = yellow + green + ( (yellow + green) * 20 /100 );
         if ( parseInt(end) > maxValue ) {
-            maxValue = parseInt(end) + ( parseInt(end) * 20 / 100);
+            maxValue = parseInt(end);
         }
         if ( parseInt(res.data[result_type]) > maxValue ) {
-            maxValue = parseInt(res.data[result_type]) + (parseInt(res.data[result_type]) * 20 / 100);
+            maxValue = parseInt(res.data[result_type]);
+        }
+        if ( yellow > maxValue ) {
+            yellow = maxValue;
         }
 
         
@@ -142,7 +148,6 @@
                  // ticks = [0,green,yellow];//scale.ticks(config.majorTicks);
                  // tickData = [1, yellow/maxValue, green/maxValue];
 
-                 var last = 0;
                  arc = d3.svg.arc()
                      .innerRadius(r - config.ringWidth - config.ringInset)
                      .outerRadius(r - config.ringInset)
@@ -151,7 +156,12 @@
                      })
                      .endAngle(function(d, i) {
                          // console.log("Arc "+ d + " "+ i);
-                         return deg2rad(config.minAngle + (d * range));
+                         var label = d;
+                         if ( show_pct == 'on' ) {
+                            if (i != 0) label = d * maxValue / 100;
+                         }
+
+                         return deg2rad(config.minAngle + (label * range));
                      });
              }
              that.configure = configure;
@@ -205,10 +215,17 @@
                      .style("font-size", "10px")
                      .style("pointer-events", "none");
 
+                 var result = parseFloat(res.data[result_type]).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
+                 var maxLabel = parseFloat(maxValue).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
+
+                 if ( show_pct == 'on') {
+                    result = ( res.data[result_type] / maxValue * 100 ).toFixed(2).toLocaleString({},{style:'decimal'}) + '%';
+                    maxLabel = '100%';
+                 }
                  arcs.select('.c3-chart-arcs-gauge-unit')
                      .attr("dy", ".75em")
                      .attr("dy", "2em")
-                     .text(res.data[result_type] + ' ' + _(res.units) );
+                     .text(result);
                  arcs.select('.c3-chart-arcs-gauge-min')
                      .attr("dx", -1 * (innerRadius + ((outerRadius - innerRadius) / 2)) + "px")
                      .attr("dy", "1.2em")
@@ -216,16 +233,21 @@
                  arcs.select('.c3-chart-arcs-gauge-max')
                      .attr("dx", innerRadius + ((outerRadius - innerRadius) / 2) + "px")
                      .attr("dy", "1.2em")
-                     .text(maxValue);
+                     .text(maxLabel);
 
                  var lg = svg.append('g')
                          .attr('class', 'label')
                          .attr('transform', centerTx);
                  lg.selectAll('text')
                          .data(ticks)
-                     .enter().append('text')
+                         .enter()
+                         .append('text')
                          .attr('transform', function(d) {
-                             var ratio = scale(d);
+                             var label = d;
+                             if ( show_pct == 'on' ) {
+                                label = ( d * maxValue / 100 ).toFixed(2);
+                             }
+                             var ratio = scale(label);
                              // alert(ratio);
                              var newAngle = config.minAngle + (ratio * range);
                              return 'rotate(' +newAngle +') translate(0,' +(config.labelInset - r) +')';

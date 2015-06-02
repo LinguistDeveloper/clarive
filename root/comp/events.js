@@ -60,10 +60,11 @@
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };
     
-    var search_field = new Baseliner.SearchField({
+    var search_field =   new Baseliner.SearchField({
         store: store_events,
         width: 280,
-        params: {start: 0, limit: ps }
+        params: {start: 0, limit: ps },
+        emptyText: _('<Enter your search string>')
     });
 
     var del_event = function(){
@@ -144,12 +145,13 @@
     });
 
     var grid = new Ext.ux.maximgb.tg.GridPanel({ 
+        renderTo: 'main-panel',
         store: store_events,
         master_column_id : '_id',
         autoExpandColumn: '_id',
         stripeRows: true,
         viewConfig: {
-            forceFit: true,
+        forceFit: true,
         //enableRowBody : true
         },
         columns:[
@@ -163,11 +165,13 @@
             { header: _('Status'), width: 40, dataIndex: 'event_status', renderer: render_status },
             { header: _('Actions'), width: 120, dataIndex: 'id', renderer: render_data }
         ],
-        tbar: [ 
-            search_field,
+        tbar: [  _('Search') + ': ', ' ',
+            search_field,' ',' ',
             { icon:'/static/images/icons/refresh.png', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
-            { icon:'/static/images/icons/delete.gif', handler: del_event , tooltip:_('Delete event')},
-            { icon:'/static/images/icons/hourglass.png', handler: function(){ event_status_change('new') }, tooltip:_('Reset event status') }
+            { icon:'/static/images/icons/delete.gif', handler: del_event , 
+            //text:_('Delete event')},
+            text:_('Delete')},
+            { icon:'/static/images/icons/restart_new.png', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
         ],
         bbar: ptool
     });

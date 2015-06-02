@@ -693,7 +693,7 @@ sub update {
         $p->{_cis} = _decode_json( $p->{_cis} ) if $p->{_cis};
 
         when ( 'add' ) {
-            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            my $stash = { %$p, topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
             $p->{cancelEvent} = 1;
 
             event_new 'event.topic.create' => $stash => sub {
@@ -742,7 +742,7 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             my $rollback = 1;
-            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            my $stash = { %$p, topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
             event_new 'event.topic.modify' => $stash => sub {
                 my @field;
                 $topic_mid = $p->{topic_mid};
@@ -1108,18 +1108,18 @@ sub get_system_fields {
                 field_order_html => 2
             }
         },
-        {
-            id_field => 'progress',
-            params   => {
-                name_field  => 'Progress',
-                bd_field    => 'progress',
-                origin      => 'system',
-                html        => '/fields/templates/html/progress_bar.html',
-                js          => '/fields/templates/js/progress_bar.js',
-                field_order => -8,
-                section     => 'body'
-            }
-        },
+        # {
+        #     id_field => 'progress',
+        #     params   => {
+        #         name_field  => 'Progress',
+        #         bd_field    => 'progress',
+        #         origin      => 'system',
+        #         html        => '/fields/templates/html/progress_bar.html',
+        #         js          => '/fields/templates/js/progress_bar.js',
+        #         field_order => -8,
+        #         section     => 'body'
+        #     }
+        # },
         {
             id_field => 'include_into',
             params   => {
@@ -1135,18 +1135,18 @@ sub get_system_fields {
     return \@system_fields
 }
 
-sub tratar{
-    my $field = shift;
-    my $params = $field->{params};
-    if ($params->{origin} eq 'custom'){ 
-        $_->{type} = $params->{type};
-        $_->{js} = $params->{js};
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
+# sub tratar{
+#     my $field = shift;
+#     my $params = $field->{params};
+#     if ($params->{origin} eq 'custom'){ 
+#         $_->{type} = $params->{type};
+#         $_->{js} = $params->{js};
+#         return 1;
+#     }
+#     else {
+#         return 0;
+#     }
+# }
     
 sub get_update_system_fields {
     my ($self, $id_category) = @_;
@@ -1201,7 +1201,7 @@ sub get_update_system_fields {
        @ret;
     } @template_dirs;
     
-    my @fields =  grep { tratar $_ } map { _array($_->{fieldlets}) } mdb->category->find->fields({ fieldlets=>1 })->all;    
+    my @fields =  map { _array($_->{fieldlets}) } mdb->category->find->fields({ fieldlets=>1 })->all;    #grep { tratar $_ }
     
     for my $template (  grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
@@ -1646,7 +1646,7 @@ sub save_data {
 
         my @custom_fields =
             map { +{name => $_->{id_field}, column => $_->{id_field}, data => $_->{data}} }
-            grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta );
+            grep { !$_->{relation} } _array( $meta );
 
         push @custom_fields, map {
             my $cf = $_;
@@ -1655,7 +1655,6 @@ sub save_data {
             } grep {
             $_->{type} && $_->{type} eq 'form'
             } _array( $meta );
-
         my $topic;
         my $moniker = delete $row{moniker};
         my %change_status;

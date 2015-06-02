@@ -466,7 +466,11 @@ sub list_classes {
     my ($self, $role ) = @_;
     $role //= 'Baseliner::Role::CI';
     my @ret;
-    map { push @ret, packages_that_do( $_ )} _array $role;
+    if(ref $role eq 'ARRAY'){
+        map { push @ret, packages_that_do( $_ )} _array $role;   
+    }else{
+        push @ret, packages_that_do( $role );
+    }
     map {
         my $pkg = $_;
         ( my $name = $pkg ) =~ s/^BaselinerX::CI:://g;
@@ -539,7 +543,12 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-
+# _log "1--->"._dump $p;
+    my @a = split(',', $p->{role});
+    if(ref $p->{role} ne 'ARRAY' && $p->{role} ){
+        $p->{role} = \@a;
+    }
+# _log "2--->"._dump $p;
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
     
@@ -1517,6 +1526,7 @@ sub default : Path Args(2) {
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            _warn( _loc "Method '%1' found in class '%2'", $meth, ref $ci);
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $mid_or_class eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";

@@ -66,12 +66,63 @@ sub items {
             $diff_shas = [ $tag_sha, $rev_sha ];
         } else {
             Util->_debug( "BL and REV equal" );
-            @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-            @items = map { my $item = 'M   ' . $_; } @items;
-            $diff_shas = [ $tag_sha ];
+
+            if ( $type eq 'promote' ) {
+                my $sha = ci->GitRevision->search_ci( sha => $rev_sha );
+                my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
+
+                if ( scalar(@topics) eq 0 ) {
+                    _fail _loc("No changesets for this sha");
+                } elsif ( scalar(@topics) gt 1 ) {
+                    _fail _("This sha is contained in more than one sha");
+                }
+                my $cs = $topics[0];
+
+                my (@last_jobs) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
+
+                if ( @last_jobs ) {
+                    my $last_job;
+                    my $job;
+                    my $st;
+                    my $found = 0;
+
+                    for $last_job ( @last_jobs ) {
+                        $job = ci->new($last_job);
+                        $st = $job->stash;
+                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
+                            $found = 1;
+                            last;
+                        }
+                    }
+
+                    if ( $found ) {                    
+                        $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
+                        _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
+                        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
+                        $diff_shas = [ $tag_sha, $rev_sha ];
+                    } else {
+                        _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                        @items = map { my $item = 'M   ' . $_; } @items;
+                        $diff_shas = [ $tag_sha ];
+                    }
+                } else {
+                    _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                    @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                    @items = map { my $item = 'M   ' . $_; } @items;
+                    $diff_shas = [ $tag_sha ];
+                }
+            } else {
+                @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                @items = map { my $item = 'M   ' . $_; } @items;
+                $diff_shas = [ $tag_sha ];
+            }
         }
     } 
     my %repo_items = $self->repo_items( $diff_shas );
+
+
+
     @items = map {
         my ( $status, $path ) = /^(.*?)\s+(.*)$/;
         my $info = $repo_items{ Girl->unquote($path) } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
@@ -86,6 +137,7 @@ sub items {
     } @items;
     return @items;
 }
+
 
 sub sha_long {
     my $self = shift;

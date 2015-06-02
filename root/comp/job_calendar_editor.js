@@ -11,7 +11,7 @@
 
     var id_cal = '<% $c->stash->{id_cal} %>' ;
 
-    var calendar_type_help = '<b>Ventanas de pase:</b><br>';    
+    var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';    
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
@@ -37,7 +37,9 @@
                             });
                         } 
                     },*/
-                    {  text: _loc('Update'),
+                    {  icon: '/static/images/icons/save.png',
+                        //text: _loc('Update'),
+                        text: _loc('Save'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
@@ -54,7 +56,8 @@
                             });
                         } 
                     },
-                    {  text: _loc('Delete'),
+                    {  icon: '/static/images/icons/delete.gif',
+                        text: _loc('Delete'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
@@ -151,7 +154,7 @@
     
     var cal_windows = new Ext.Panel({  
         layout: 'border',
-        title: _('Calendar Windows'),
+        title: _('Calendar Slots'),
         hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
         style: 'margin-top: 20px',
         height: 450,

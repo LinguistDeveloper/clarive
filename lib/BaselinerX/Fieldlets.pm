@@ -489,17 +489,17 @@ register 'fieldlet.required.include_into' => {
     bd_field    => 'include_into'
 };
 
-register 'fieldlet.required.progress' => {
-    name        => _loc('progress'),
-    name_field  => _loc('Progress'),
-    html        => '/fields/templates/html/progress_bar.html',
-    js          => '/fields/templates/js/progress_bar.js',
-    editable    => '0',
-    hidden      => '1',
-    origin      => 'system',
-    section     => 'details',
-    id_field    => 'progress',
-    bd_field    => 'progress'
-};
+# register 'fieldlet.required.progress' => {
+#     name        => _loc('progress'),
+#     name_field  => _loc('Progress'),
+#     html        => '/fields/templates/html/progress_bar.html',
+#     js          => '/fields/templates/js/progress_bar.js',
+#     editable    => '0',
+#     hidden      => '1',
+#     origin      => 'system',
+#     section     => 'details',
+#     id_field    => 'progress',
+#     bd_field    => 'progress'
+# };
 
 1;

@@ -23,7 +23,7 @@ html: /dashlets/job_stats_by_env.html
     $(function () {
         var id = "#<% $graph_id %>";
         var data = [];
-        Cla.ajax_json('/job/job_stats', { }, function(res){
+        Cla.ajax_json('/job/job_stats', { _ignore_conn_errors: true }, function(res){
             var html = function(){/*
                <table class="table">
                   <tr>

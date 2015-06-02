@@ -272,7 +272,8 @@
         
         var btn_cerrar = new Ext.Toolbar.Button({
             text: _('Close'),
-            width: 50,
+            icon:'/static/images/icons/close.png',
+            width: 70,
             handler: function() {
                 win.close();
             }
@@ -280,7 +281,8 @@
         
         var btn_grabar_user =   new Ext.Toolbar.Button({
             text: _('Save'),
-            width: 50,
+            icon:'/static/images/icons/save.png',
+            width: 70,
             handler: function(){
                 var form = form_user.getForm();
                 var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
@@ -846,21 +848,26 @@
                     displayMsg: _('Rows {0} - {1} of {2}'),
                     emptyMsg: _('There are no rows available')
             }),        
-            tbar: [ 
+            tbar: [ _('Search') + ': ', ' ',
                 new Baseliner.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps}
-                }),
+                    params: {start: 0, limit: ps},
+                    emptyText: _('<Enter your search string>')
+                }),' ',' ',
+
+
+                
+% if ($c->stash->{can_maintenance}) {
+                btn_add,
+                btn_edit,
+                btn_delete,
+                btn_duplicate,
+%}
+
 % if ($c->stash->{can_surrogate}) { 
                     btn_surrogate,
 %}
                 btn_buzon,
-% if ($c->stash->{can_maintenance}) {
-                btn_add,
-                btn_edit,
-                btn_duplicate,
-                btn_delete,
-%}
                 '->'
             ]
         });

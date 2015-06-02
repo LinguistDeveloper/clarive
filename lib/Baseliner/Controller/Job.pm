@@ -690,12 +690,17 @@ sub by_status : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
+    my $project_id = $p->{project_id};
+
     my $period = $p->{period} // '1D';
     try {
         my %st;
         my $d = substr(Class::Date->now - $period,0,10);
 
         my $wh = { endtime=>{'$gt'=>"$d"} };  # TODO params control time range
+        if ( $project_id ) {
+            $wh->{projects} = $project_id;
+        }
         map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
         my @data = ();
         for ( keys %st ) {
@@ -717,7 +722,8 @@ sub burndown_new : Local {
     my $period = $p->{period} // '1D';
     my $bls = $p->{bls};
     my $joined = $p->{joined} // '1';
-    
+    my $project_id = $p->{project_id};
+
     try {
 
         my $now = Class::Date->new($date);
@@ -729,6 +735,10 @@ sub burndown_new : Local {
             @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
             $where->{bl} = mdb->in(@all_bls);
             _warn $bls;
+        }
+
+        if ( $project_id ) {
+            $where->{projects} = $project_id;
         }
         my $jobs = ci->job->find( $where );
 

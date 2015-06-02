@@ -53,7 +53,8 @@
     });
 
     var button_new_schedule = new Ext.Toolbar.Button({
-        text: _('New task'),
+        text: _('Create'),
+        //text: _('New task'),
         hidden: false,
         icon:'/static/images/icons/add.gif',
         cls: 'x-btn-text-icon',
@@ -145,7 +146,7 @@
     });
 
     var tbar = new Ext.Toolbar({ items: [ _('Search') + ': ', ' ',
-            search_field,
+            search_field, ' ', ' ',
             button_new_schedule,
             button_edit_schedule,
             button_delete_schedule,
@@ -173,6 +174,7 @@
 
     // create the grid
     var grid = new Ext.grid.GridPanel({
+        renderTo: 'main-panel',
         header: false,
         stripeRows: true,
         store: store,
@@ -224,13 +226,13 @@
         if ( r.data.status == 'IDLE' || r.data.status == 'KILLED' ) {
             button_run_schedule.show();
             button_toggle_activation.setText( _('Deactivate') );
-            button_toggle_activation.setIcon( '/static/images/silk/clock_pause.png');
+            button_toggle_activation.setIcon( '/static/images/icons/stop.png');
             button_delete_schedule.show();
             button_toggle_activation.show();
             button_kill_schedule.hide();
         } else if ( r.data.status == 'INACTIVE') {
             button_toggle_activation.setText( _('Activate') );
-            button_toggle_activation.setIcon( '/static/images/silk/clock_go.png');
+            button_toggle_activation.setIcon( '/static/images/icons/start.png');
             button_toggle_activation.show();
             button_delete_schedule.show();
             button_run_schedule.show();
@@ -469,7 +471,8 @@
         });
         
         var btn_submit = new Ext.Button({
-            text: _('OK'), icon:'/static/images/icons/save.png', 
+            text: _('Save'), 
+            icon:'/static/images/icons/save.png', 
             handler: function(){
                 if ( !valida_hora(schedule_time.getValue() ) ) {
                     Baseliner.error(_('Scheduler'), _('Time not valid'));
@@ -503,7 +506,8 @@
             buttons: [
                 btn_submit,
                 {
-                    text: _('Cancel'),
+                    text: _('Close'),
+                    icon:'/static/images/icons/close.png', 
                     handler: function(){ 
                         win.close();
                     }

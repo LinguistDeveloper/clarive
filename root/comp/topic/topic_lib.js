@@ -639,6 +639,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
     });
     var btn_submit = {
         xtype: 'button',
+        icon:'/static/images/icons/comment_new.gif',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
@@ -766,7 +767,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
-            type: 'submit',
+            // type: 'submit',
             hidden: true,
             handler: function(){ return self.save_topic() }
         });
@@ -775,9 +776,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text: _('Delete'),
             icon:'/static/images/icons/delete.gif',
             cls: 'x-btn-icon-text',
-            type: 'submit',
+            // type: 'submit',
             hidden: self.permDelete,
-            handler: function(){ return self.delete_topic() }
+            handler: function(a){ 
+                // console.dir(a);
+                // alert("han pulsado el botón");
+                return self.delete_topic();
+            }
         });
     
         // Detail Panel
@@ -820,6 +825,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     
         self.btn_detail = new Ext.Toolbar.Button({
             icon:'/static/images/icons/detail.png',
+            tooltip:_('Detail View'),
             cls: 'x-btn-icon',
             enableToggle: true, 
             hidden: self.topic_mid==undefined,
@@ -832,7 +838,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_edit = new Ext.Toolbar.Button({
             name: 'edit',
             text:_('Edit'),
-            icon:'/static/images/icons/edit.png',
+            icon:'/static/images/icons/edit.gif',
             cls: 'x-btn-text-icon',
             enableToggle: true, 
             pressed: self.topic_mid==undefined,
@@ -1172,13 +1178,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: [
                 self.btn_detail,
                 self.btn_edit,
-                '-',
-                self.btn_comment,
+                //'-',
+                ' ',
                 self.btn_delete_form,
+                self.btn_comment,
                 self.btn_save_form,
                 '->',
                 self.btn_deploy,
-                '-',
+               // '-',
                 self.btn_change_status,
                 self.btn_docgen,
                 self.btn_graph,
@@ -1416,7 +1423,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         }else{
                                             self.getTopToolbar().enable();
                                             if( self.permDelete ) {
-                                                self.btn_delete_form.enable();                                    
+                                                self.btn_delete_form.enable();
                                             }
                                         }
                                     }
@@ -1428,7 +1435,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             Baseliner.error( _('Error'), res.msg );
                             self.getTopToolbar().enable();
                             if( self.permDelete ) {
-                                self.btn_delete_form.enable();                              
+                                self.btn_delete_form.enable();
                             }
                         }
                     }

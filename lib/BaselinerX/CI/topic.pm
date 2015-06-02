@@ -268,4 +268,9 @@ sub velocities {
    return { data=>[] };
 }
 
+method get_field_data( :$username, :$field ) {
+    my $value = $self->get_doc->{$field};
+    return { value => $value };
+}
+
 1;

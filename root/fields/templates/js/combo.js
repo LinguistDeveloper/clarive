@@ -37,7 +37,7 @@ params:
         store: store,
         triggerAction: 'all',
         valueField: meta.id_field,
-        editable: Baseliner.eval_boolean(meta.editable),
+        editable: false, //Baseliner.eval_boolean(meta.editable),
         displayField: meta.id_field,
         mode: 'local',
         anchor: meta.anchor || '100%',
