@@ -1,22 +1,44 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
     
-    background_color: '#fff',
+    background_color: '#000',
     start_mode: 'manual',
     limit: '20',
 
     initComponent : function(){
         var self = this;
-        self.cuenta = 0;
+        //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
-        self.origen=0;
+        self.i=0;
+        self.contador=1000;
 
+        self.date = new Date();
+        //self.origen=0;
 
         self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim() } });
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop ];
+        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+            menu : {
+                items: [{
+                    text: 'Today', handler: self.days=0
+                }, {
+                    text: '2D', handler: self.days=2
+                }, {
+                    text: '7D', handler: self.days=7
+                }, {
+                    text: '1M', handler: self.days=30
+                }, {
+                    text: '3M', handler: self.days=90
+                }, {
+                    text: '6M', handler: self.days=180
+                }]
+            },
+            //handler: function(){ self.start_anim() } 
+        });
+
+        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, self.scale_bar];
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -35,30 +57,22 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //var color = d3.scale.category10();
 
         self.nodes = [];
-        self.nodeuser = [];
         self.links = [];
         self.nodes2 = [];
         self.nodes3 = [];
 
-        self.who = [];
-        var inid = {who: "aaaaaaa" , get_posicionx: 0, set_posicionx: 0,  get_posiciony: 0, set_posiciony: 0, get_posicionlink: 0, set_posicionlink: 0};
-        self.who.push(inid);
-
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
-            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
-            ".node.a": { "fill": "red" },
-            ".node.b": { "fill": "green" },
-            ".node3": { "fill": "#1f77b4" }
+            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' }
         });
 
         var id = self.body.id; 
         var selector = '#' + id; 
 
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').style("background-color", self.background_color).attr("preserveAspectRatio", "xMinYMin meet");
-        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
-        
+        //.append("text").text("HOLA ESTOY PROBANDO").attr("fill","#00CCFF");
+        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g'); 
+
         //CREAMOS UN RECTANGULO EN BLANCO DONDE SE VA A PINTAR TODO Y ES EL QUE HACE EL ZOOM
         self.svg.append('svg:rect')
             .attr('width', '100%')
@@ -68,12 +82,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force = d3.layout.force()
             .nodes(self.nodes)
             .links(self.links)
-            //.gravity(function(d){return (d.node=='raiz') ? 10: 15})
-            .charge(-80
-                /*function(node,i){
-                    return node.node=='iniciales' || node.node=='iniciales'  ? i=i-- : -80;
-                }*/
-            )
+            .charge(-80)
+            .friction(.6)
             .linkDistance(     
                 function(lnk){
                     return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 1 : 80;
@@ -110,13 +120,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_texto_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
         Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
-
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
         Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF6666").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
-
 
         var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -138,19 +146,27 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     start_anim : function(){
         var self = this;
-        Cla.ajax_json('/swarm/activity', {limit:self.limit}, function(res){
+        if(self.i==0){
+        Cla.ajax_json('/swarm/activity', {limit:self.limit, days: self.days}, function(res){
             self.res = res;
             self.i = 0;
-            if( !self.initiated ) {
-                self.first();
-                self.initiated = true;
-            }
-            self.anim_running = true;
-            self.btn_start.disable();
-            self.btn_pause.enable();
-            self.btn_stop.enable();
-            setTimeout(function(){ self.anim() }, 100 );
+            self.date = new Date();
+            date.setDate(date.getDate() - self.days);
+
         });
+        }
+        if( !self.initiated ) {
+            //alert("inicializa");
+            self.first();
+            self.initiated = true;
+        }
+
+        self.anim_running = true;
+        self.btn_start.disable();
+        self.btn_pause.enable();
+        self.btn_stop.enable();
+        setTimeout(function(){ self.anim() }, 100 );
+
     },
     pause_anim : function(){
         var self = this;
@@ -165,32 +181,73 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
+        self.i=self.res.data.length;  
     },
     anim : function(){
         var self = this;
+
         if( !self.anim_running ) return;
 
+        if(self.i==self.res.data.length){
+
+            self.i=0;
+            self.initiated=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
+            self.init();
+            self.start_anim();
+            return;
+        }
+        
         var row = self.res.data[ self.i++ ];
+
+
         if( !row ) {
             // no more rows? stop animation
             self.stop_anim();
             return;
         }
         row.id = Ext.id();
-        var next_timer = 1000;
 
-        //alert("llego aqui "+row.parent + "posicion" + self.i);
+
+        var next_timer = 1000;
+        //self.calculo_horas();
+
         if( row.parent ) {
             if( !self.parents[row.parent] ) {
                 self.parents[row.parent] = true;
                 self.add_inicial( row.parent );
                 var row = self.res.data[ self.i-- ];
             }else{
-            if(row.ev == 'add') {
-                self.add(row);
-            }else {
-                self.del(row);
-            }
+                if(row.ev == 'add') {
+                    self.comprobar_timer_usuario();
+                    self.add(row);
+                }else if(row.ev == 'mod') {
+                    self.comprobar_timer_usuario();
+                    self.modify(row);
+                }else {
+                    self.comprobar_timer_usuario();
+                    self.del(row);
+                }
         }
         }
         setTimeout(function(){ self.anim() }, next_timer);
@@ -203,7 +260,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         //quitamos la parte de el nodo para que no aparezca, solo definimos el elemento circulo
-        self.node.enter().append("circle");//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
+        self.node.enter().append("circle").attr("r",500);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
         
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
@@ -242,7 +299,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
-
         self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
         self.texto.enter().append('text').attr("fill","url(#Color_texto_Raiz)").text(function(d) { return d.source.parent;});   
 
@@ -251,12 +307,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(function(d) { return d.node;}).attr("fill",self.background_color);
+        self.node4.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
         self.node4.exit().remove();
 
-
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(function(d) { return d.node;}).attr("fill",self.background_color);
+        self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
         self.node5.exit().remove();
 
         //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
@@ -273,7 +328,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.exit().remove();
 
         self.force.start();
-        //self.borrar_nodo(self.timer);
+
     },
     add : function(row){
         var self = this;
@@ -289,19 +344,64 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //var c = self.nodes[1];
             var j = 0;
             while (j < self.nodes.length){
-                //alert("dentro el while "+self.nodes[j].node +" el parent es "+ row.parent);
+
                 if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
                         self.nodes.push(row);
                         self.links.push({source: row, target: self.nodes[j]});
+                        
                         j=self.nodes.length;
                 }   
                 j++;
             }
-            // self.useradd(row);
-            self.adduser(row);
+
             self.start({ row: row, timer: timer });
+            self.add_user(row);
+
         }
     },
+    modify : function(row){
+        var self = this;
+        var a = self.nodes[0];
+        var d = row; //{id: self.i, node:  row.parent};
+
+        var timer = 1000;  // TODO calculate from previous and next events
+
+        var j = 0;
+
+        while (j < self.nodes.length){
+                //Buscamos el nodo a borrar.
+                if (self.nodes[j].node == row.node){
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
+                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
+                    j=self.nodes.length;
+                }   
+            j++;
+        }
+
+        if (!a){
+             self.nodes.push(row);
+             self.links.push({source: row, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+
+                if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.links.push({source: row, target: self.nodes[j]});
+                        
+                        j=self.nodes.length;
+                }   
+                j++;
+            }
+
+            self.start_modify({ row: row, timer: timer });
+            self.add_user(row);
+
+        }
+    },     
     del : function(row){
 
         var self = this;
@@ -320,13 +420,87 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             j++;
         }
 
-        self.adduser(row);
+        self.userstart(row);
         self.start({ row: row, timer: 1000 });
     },
-    start : function(dt){
+    add_user : function(row){
         var self = this;
+        var a = self.nodes[0];
+
+        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios" };
+
+        if (!a){
+             self.nodes.push(d);
+             self.links.push({source: d, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+                    //alert("llega al while usuario "+d.who +"  el row es  "+row.who + " el usuario  "+self.nodes[j].node);
+                if (self.nodes[j].who ==  row.who && self.nodes[j].node == "usuarios"){
+
+                        self.nodes[j].t = 5;//Reinicia el timer del usuario cuando crea un nodo
+                        var i = 0;
+                        while(i < self.links.length){
+                            if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
+                                //alert("entra");
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
+                            } 
+                            i++;
+                        }
+                        self.links.push({source: self.nodes[j], target: row });
+                        j=self.nodes.length;
+                }
+                j++;
+            }
+         if(j==self.nodes.length){
+                        self.nodes.push(d);
+                        self.links.push({source: d, target: row });
+                }      
+        }
+        self.userstart(d);
+    },
+    comprobar_timer_usuario : function(){
+
+        var self = this;
+
+        var j = 0;
+        while (j < self.nodes.length){
+
+            if (self.nodes[j].node == "usuarios"){
+                    
+                    self.nodes[j].t = self.nodes[j].t-1;
+                    if(self.nodes[j].t <= 0){
+
+                        var i = 0;
+                        while(i < self.links.length){
+                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                    self.links.splice(self.links.indexOf(self.links[i]),1);
+                                    i=self.links.length;
+                                } 
+                                i++;
+                        }
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+
+                    }
+            }
+            j++;
+        }
+        self.force.start();
+
+    },
+    start : function(dt){
+
+        var self = this;
+        
         var row = dt.row;
         var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
@@ -347,10 +521,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
         self.node9.enter().append("text").style("visibility", "hidden");
         self.node9.exit().remove();
-        
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","green");
-       // self.link.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
@@ -388,126 +558,206 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          .transition().duration(timer).attr("fill","url(#Color_Nodos)").attr("fill-opacity",0.6);
         self.node.exit().remove();
 
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
+
         self.force.start();
-        //self.pintar_usuario();
+
     },
-    adduser : function(node){
+    start_modify : function(dt){
 
         var self = this;
-        var a = self.nodes[0];
-        var d = { id: "#d"+Math.random(), t: "usuarios", ev: "usuarios", who: node.who, node: "usuarios", parent: "usuarios" };
+        
+        var row = dt.row;
+        var timer = dt.timer;
 
-        //self.tiempoUsuario=2000;
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
 
-        /*if (!a){
-             self.links.push({source: node, target: node});
-        }else {
-            //var c = self.nodes[1];
-            var j = 0;
-            while (j < self.nodes.length){
-                //alert("dentro el while "+self.nodes[j].node +" el parent es "+ row.parent);
-                if (self.nodes[j].who ==  node.who && self.nodes[j].node != "iniciales"){
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.exit().remove();
+       
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
 
-                        self.links.push({source: node, target: self.nodes[j]});
-                        j=self.nodes.length;
-                }else if (j==self.nodes.length){
-                    self.links.push({source: node, target: node});
-                }   
-                j++;
+        self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
+        self.node6.enter().append("text").style("visibility", "hidden");
+        self.node6.exit().remove();
+        self.node7 = self.node7.data(self.force.nodes(), function(d) { return d.id;});
+        self.node7.enter().append("text").style("visibility", "hidden");
+        self.node7.exit().remove();
+        self.node8 = self.node8.data(self.force.nodes(), function(d) { return d.id;});
+        self.node8.enter().append("text").style("visibility", "hidden");
+        self.node8.exit().remove();
+        self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
+        self.node9.enter().append("text").style("visibility", "hidden");
+        self.node9.exit().remove();
 
-            }
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.exit().remove();
+      
+        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
+                         .on('mouseover', function(d)
+                         {
+                            d3.select(this).transition()
+                            .duration(750)
+                            .attr("r", 55)
+                            .attr("fill","url(#Amarillo)")
+                            //.attr("fill-opacity",0.6);
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                         })
+                         .on("mouseout", function()
+                         {
+                         d3.select(this).transition()
+                         .duration(750)
+                         .attr("r", 10)
+                         .attr("fill","url(#Verde)")
+                         .attr("fill-opacity",0.6);
+                         self.node6.style("visibility", "hidden");
+                         self.node7.style("visibility", "hidden");
+                         self.node8.style("visibility", "hidden");
+                         self.node9.style("visibility", "hidden");
+                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         })
+                         .call(self.force.drag)
+                         .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
+        self.node.exit().remove();
 
-        }*/
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
 
+        self.force.start();
 
-        self.userstart(node);
     },
     userstart : function(row){
+        
         var self = this;
 
-        var j = 0;            
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text'); 
 
-        //alert("llego aqui" + self.who.length);
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text");
+        self.node4.exit().remove();
 
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text");
+        self.node5.exit().remove();
 
-        if (self.who[0].who == "aaaaaaa"){
+        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
 
-            self.who[0].who = row.who;
-            
-            self.node2 = self.node2.data(self.force.nodes(), function(d) {return d.id;});
-            self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
-            self.node2.exit().remove();
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
+        self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+        self.link.exit().remove();
 
-            self.node3 = self.node3.data(self.force.nodes(), function(d) {return d.id;});
-            self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF");
+        self.node= self.node.data(self.force.nodes(), function(d) { return d.id;});
+        //self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
+        self.node.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
+        self.node.exit().remove();
 
-            //quitamos esto para quitar la linea de link2
-            self.link2 = self.link2.data(self.force.links(), function(d) {return d.source.id + "-" + d.target.id; });
-            self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");       
-            self.link2.exit().remove();
-                    console.log(self.who[0]);
-
-            self.force.start();
-        }
-
-        while (j < self.who.length){
-
-             //alert("ENTRO EN EL WHILE" + row.who +" array who "+ self.who[0].who);
-
-            if (row.who == self.who[j].who){
-
-            alert("entra en el if " + j + "esto es lo que hay en set " +self.who[self.who.length-1].get_posicionx);
-
-            self.who[j].set_posicionx = self.who[self.who.length-1].get_posicionx;
-            self.who[j].set_posiciony = self.who[self.who.length-1].get_posiciony;
-            //self.who.set_posicionlink = self.who.get_posicionlink;
-
-            alert("entra en el setposicion " + self.who[j].set_posicionx + "esto es lo que hay en set " +self.who[self.who.length-1].get_posicionx);
-            /*
-            self.node2 = self.node2.data(self.force.nodes(), function(d) {d.x=self.who[j].set_posicionx; d.y=self.who[j].set_posiciony; return d.id;});
-            self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
-            self.node2.exit().remove();
-
-            self.node3 = self.node3.data(self.force.nodes(), function(d) {d.x=self.who[j].set_posicionx; d.y=self.who[j].set_posiciony;  return d.id;});
-            self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF");
-            */
-            //quitamos esto para quitar la linea de link2
-            self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-            self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");       
-            self.link2.exit().remove();
-
-            }else if(j==self.who.length){
-               // alert("entra en el else "+self.who.length );
-            self.who.push(d);
-
-            self.who[self.who.length-1].who=row.who;
-
-            self.node2 = self.node2.data(self.force.nodes(), function(d) {d.x=self.who[j].set_posicionx; d.y=self.who[j].set_posiciony; return d.id;});
-            self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
-            self.node2.exit().remove();
-
-            self.node3 = self.node3.data(self.force.nodes(), function(d) {d.x=self.who[j].set_posicionx; d.y=self.who[j].set_posiciony; return d.id;});
-            self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF")  
-
-            //quitamos esto para quitar la linea de link2
-            self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-            self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");       
-            self.link2.exit().remove();
-            }
-
-            j++;
-
-        }
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF")
+        self.node3.exit().remove();
 
         self.force.start();
+
     }, 
+    calculo_horas : function(dias){
+
+        self = this;
+        self.stop_anim();
+        //var date = new Date(self.res.data[0].t);
+
+        var date = new Date();
+        date.setDate(date.getDate() - dias);
+
+         var dia;
+        switch (date.getDay()) {
+            case 0: dia='Domingo'
+                break;
+            case 1: dia='Lunes'
+                break;
+            case 2: dia='Martes'
+                break;
+            case 3: dia='Miercoles'
+                break;
+            case 4: dia='Jueves'
+                break
+            case 5: dia='Viernes'
+                break;
+            case 6: dia='Sabado'
+                break;
+            default: dia='NAN'
+        }
+
+        var mes;
+
+        switch (date.getMonth())
+        {
+            case 0: mes='Enero'
+                break;
+            case 1: mes='Febrero'
+                break;
+            case 2: mes='Marzo'
+                break;
+            case 3: mes='Abril'
+                break;
+            case 4: mes='Mayo'
+                break
+            case 5: mes='Junio'
+                break;
+            case 6: mes='Julio'
+                break;
+            case 7: mes='Agosto'
+                break;
+            case 8: mes='Septiembre'
+                break;
+            case 9: mes='Octubre'
+                break;
+            case 10: mes='Noviembre'
+                break;
+            case 11: mes='Diciembre'
+                break
+            default: mes='NAN'
+        }
+
+        self.date = dia +" , "+date.getDate()+" "+mes+" "+date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+
+        self.start_anim();
+
+    },
+    get_contador : function(){
+        self = this;
+
+        return self.contador = self.contador-5;
+
+    },
     tick : function(){
+
         var self = this;
-        //self.origen= self.origen-1;
+
+        //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
+        self.vis.append("text")
+            .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+            .attr("fill","#ffffff")
+            .attr("x", '45%')
+            .attr("y", '5%').transition().duration(1).remove();
+        //////////////////////////////////////////////////////////////////////////////////////
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
-            
+   
         self.node4.attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
 
@@ -522,35 +772,19 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
           .attr("x2", function(d) { return d.target.x; })
           .attr("y2", function(d) { return d.target.y; });
 
+        self.node.attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
 
-        self.node2.attr("x", function(d) {self.who[self.who.length-1].get_posicionx=d.x;  return d.x+(self.calculo_direcciones_x(d.x)*100); })
-            .attr("y", function(d) {self.who[self.who.length-1].get_posiciony=d.y;  return d.y+(self.calculo_direcciones_y(d.y)*100); });
-        self.node2.exit().remove();
+        self.node3.attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
 
-        self.node3.attr("x", function(d) {self.who[self.who.length-1].get_posicionx=d.x;  return d.x+(self.calculo_direcciones_x(d.x)*100); })
-            .attr("y", function(d) {self.who[self.who.length-1].get_posiciony=d.y;  return d.y+(self.calculo_direcciones_y(d.y)*100); });
-        self.node3.exit().remove();
-
-        self.link2.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x+(self.calculo_direcciones_x(d.source.x)*100); })
-            .attr("y2", function(d) { return d.source.y+(self.calculo_direcciones_y(d.source.y)*100); });
-        
-        /*if(self.tiempoUsuario < 0 ){
-            self.link2.transition().duration(0).remove();       
-            self.link2.exit().remove();
-
-            self.node2.transition().duration(0).remove();       
-            self.node2.exit().remove();
-
-            self.node3.transition().duration(0).remove();       
-            self.node3.exit().remove();
-        }*/
     },
     rescale : function() {
         var self = this;
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-    },
+    }
+
+    /*,
     calculo_direcciones_x : function(x){
         if(x < 350){
             x=1;
@@ -567,5 +801,5 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             y=-1;
         }
         return y;
-    }
+    }*/
 });
