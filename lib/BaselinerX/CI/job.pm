@@ -714,8 +714,14 @@ sub gen_job_key {
 sub build_job_contents {
     my ($self, $save_this) =@_;
     my $jc = {};
+    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
+
     $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
-    $jc->{list_changeset_cis} //= $self->changesets ;
+    $jc->{list_changeset_cis} //= $self->changesets;
+    if ( $config->{changeset_comment_field} ) {
+        my @mids = map { $_->{mid} } Util->_array( $self->changesets );
+        $jc->{cs_comments} = { map { $_->{mid} => $config->{changeset_comment_field} } grep { $_->{$config->{changeset_comment_field}} } mdb->topic->find({ mid => mdb->in(@mids)})->fields({ _id => 0, $config->{changeset_comment_field} => 1, mid => 1 })->all };
+    }
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
@@ -1163,6 +1169,7 @@ sub run {
     }
     $self->step( $self->final_step );
     $self->build_job_contents(0);
+
     $self->save;
    
     Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );

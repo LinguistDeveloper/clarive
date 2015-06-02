@@ -84,12 +84,12 @@ sub items {
                     my $last_job;
                     my $job;
                     my $st;
-                    my $found;
+                    my $found = 0;
 
                     for $last_job ( @last_jobs ) {
                         $job = ci->new($last_job);
                         $st = $job->stash;
-                        if ( $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
+                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
                             $found = 1;
                             last;
                         }

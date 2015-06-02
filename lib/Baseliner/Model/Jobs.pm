@@ -259,6 +259,7 @@ sub monitor {
             contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
             changesets   => $job_contents->{list_changesets} || [],
             changeset_cis   => $job_contents->{list_changeset_cis} || [],
+            cs_comments  => $job_contents->{cs_comments} || {},
             releases     => $job_contents->{list_releases} || [],
             applications => $job_contents->{list_apps} || [],
             natures      => $job_contents->{list_natures} || [],
