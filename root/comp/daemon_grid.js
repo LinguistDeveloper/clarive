@@ -222,7 +222,7 @@
 		    records: rec && rec.data ? rec.data.instances: [],
 		    preventMark: false,        
 		    columns: [
-		        Ext.apply({ dataIndex:'instance', header: _('Instance') }, tf() )
+		        Ext.apply({ dataIndex:'instance', header: _('Instances') }, tf() )
 		    ],
 		    viewConfig: { forceFit: true }
 		});

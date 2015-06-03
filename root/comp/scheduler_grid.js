@@ -128,7 +128,8 @@
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
         hidden: true,
-        icon:'/static/images/silk/clock_play.png',
+        icon:'/static/images/icons/start.png',
+        //icon:'/static/images/silk/clock_play.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             run_schedule();

@@ -1238,6 +1238,10 @@
         });
     };
     
+
+	var export_button = new Baseliner.button.CSVExport();
+
+
     var notify_import = function(){
         var data_paste = new Baseliner.MonoTextArea({ flex:1 });
         var results = new Baseliner.MonoTextArea({ flex:1 });

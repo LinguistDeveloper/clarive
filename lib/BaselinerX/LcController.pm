@@ -1504,7 +1504,7 @@ sub build_topic_tree {
         children => [
             {
                 text => _loc('Files'),
-                icon => '/static/images/icons/folder.png',
+                icon => '/static/images/icons/folder.gif',
                 url  => '/lifecycle/tree_topic_get_files',
                 leaf => \0,
                 data => {

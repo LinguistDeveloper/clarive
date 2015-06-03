@@ -95,8 +95,8 @@
                     params: {start: 0, limit: ps},
                     emptyText: _('<Enter your search string>')
                 }),
-                menu_view,
-                 '-',
+                //menu_view,
+                 //'-',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
                     icon:'/static/images/icons/add.gif',
@@ -139,11 +139,15 @@
                             } );
                     }
                 }),
+
                 new Ext.Toolbar.Button({
-                    text: _('Export'),
+        icon:'/static/images/icons/wrench.gif',
+        cls: 'x-btn-text-icon',
+        disabled: false,
+        menu: [{  text: _('Export'),
                     icon:'/static/images/download.gif',
                     cls: 'x-btn-text-icon',
-                    handler: function() {
+                     handler: function() {
                         Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
                             if( resp.success ) {
                                 Baseliner.message( _('Export'), resp.msg );
@@ -152,8 +156,66 @@
                             }
                         });
                     }
-                }),
-                new Baseliner.button.CSVExport(),
+            },
+            { text: _('CSV'),
+        icon:'/static/images/download.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var self = this;
+            if( !self.grid ) {
+                self.grid = self.findParentByType('grid');
+            }
+            var cfg = self.grid.getColumnModel().config;
+            var s = self.store ? self.store : self.grid.getStore();
+            var html = '';
+            var cols = [], col_names = [];
+            for( var i=0; i<cfg.length; i++ ) {
+                if( ! cfg[i].hidden )
+                    var n = cfg[i].report_header || cfg[i].header;
+                    col_names.push( n );
+                    cols.push({ id: cfg[i].dataIndex, name: n });
+            }
+            html += col_names.join(',') + "\n";
+            s.each( function(row){
+                var arr = [];
+                Ext.each( cols, function(col){
+                    var v = row.data[ col.id ];
+                    if( v == null ) {
+                        v='';
+                    } else {
+                        v = v.replace( '"', '\\"' );
+                    }
+                    arr.push( '"' + v + '"'  );
+                })
+               html += arr.join(',') + "\n";
+            });
+            var ww = window.open('about:blank', '_blank' );
+            ww.document.title = _('config.csv');
+            ww.document.write( '<pre>' + html + '</pre>' );
+            ww.document.close();
+        }
+            }]
+    }),
+
+              //  new Ext.Toolbar.Button({
+              //      text: _('Export'),
+             //       icon:'/static/images/download.gif',
+             //       cls: 'x-btn-text-icon',
+             //       handler: function() {
+             //           Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
+             //               if( resp.success ) {
+              //                  Baseliner.message( _('Export'), resp.msg );
+              //              } else {
+              //                  Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
+              //              }
+             //           });
+              //      }
+             //   }),
+               // new Baseliner.button.CSVExport(),
+                ' ',
+                '-',
+                menu_view,
+                 
                 '->'
                 ]
         });
