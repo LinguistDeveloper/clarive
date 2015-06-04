@@ -37,7 +37,9 @@
                             });
                         } 
                     },*/
-                    {  text: _loc('Update'),
+                    {  icon: '/static/images/icons/save.png',
+                        //text: _loc('Update'),
+                        text: _loc('Save'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
@@ -54,7 +56,8 @@
                             });
                         } 
                     },
-                    {  text: _loc('Delete'),
+                    {  icon: '/static/images/icons/delete.gif',
+                        text: _loc('Delete'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({

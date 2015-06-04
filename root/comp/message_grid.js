@@ -283,7 +283,8 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete all'),
-                    icon:'/static/images/del.gif',
+                    //icon:'/static/images/del.gif',
+                    icon:'/static/images/delete_all.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete all the inbox messages?'),

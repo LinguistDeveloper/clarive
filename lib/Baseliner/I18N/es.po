@@ -7954,3 +7954,34 @@ msgstr "Colapsar Filas"
 
 msgid "Detail View"
 msgstr "Vista detalle"
+
+msgid "Calendar Slots"
+msgstr "Ventanas"
+
+msgid "Modify Slot"
+msgstr "Modificar Ventana"
+
+msgid "Overwrite"
+msgstr "Sobreescribir"
+
+msgid "Disable (No Job)"
+msgstr "Desactivar (No Job)"
+
+msgid "Activate Slot"
+msgstr "Activar Ventana"
+
+msgid "Edit Job Slot"
+msgstr "Editar Ventana de Pase"
+
+msgid "Edit Job Slot for %1"
+msgstr "Editar Ventana de Pase para %1"
+
+msgid "Create Active Slot"
+msgstr "Crear Ventana Activa"
+
+msgid "Create Inactive Slot"
+msgstr "Crear Ventana Inactiva"
+
+msgid "new slot"
+msgstr "Nueva Ventana"
+

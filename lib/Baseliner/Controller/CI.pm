@@ -1526,6 +1526,7 @@ sub default : Path Args(2) {
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            _warn( _loc "Method '%1' found in class '%2'", $meth, ref $ci);
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $mid_or_class eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";

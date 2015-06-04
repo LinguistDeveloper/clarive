@@ -4139,3 +4139,12 @@ Baseliner.generic_list_fields = function(params){
     var ret = [ value_combo, list_type, { xtype:'textfield', name:'filter', fieldLabel: _('Advanced Filter JSON'), value: data.filter } ];
     return ret;
 };
+
+Baseliner.view_field_content = function(params) {
+    if (!params.mid) return;
+    Baseliner.ci_call( params.mid, 'get_field_data', { username: params.username, field: params.field }, function(res){
+        var html = new Baseliner.HtmlEditor({name:'body', hideLabel: true, readOnly:true, anchor:'100%', allowBlank: false, value: res.value});
+        var graph_win = new Baseliner.Window({ title: params.title, layout:'fit', width: 800, height: 600, items: html });
+        graph_win.show();
+    });
+};
