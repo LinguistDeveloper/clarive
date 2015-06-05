@@ -469,7 +469,7 @@ register 'fieldlet.required.modified_by' => {
 };
 
 register 'fieldlet.required.modified_on' => {
-    name_field  => _loc('Modifierd On'),
+    name_field  => _loc('Modified On'),
     origin      => 'default',
     id_field    => 'modified_on',
     bd_field    => 'modified_on',
