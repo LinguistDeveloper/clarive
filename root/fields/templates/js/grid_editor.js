@@ -32,6 +32,7 @@ params:
         records: records, 
         preventMark: false,        
         columns: meta.columns,
+        html_view_columns: meta.html_view_columns,
         disabled: readonly,
         viewConfig: {
             forceFit: meta.forceFit || true

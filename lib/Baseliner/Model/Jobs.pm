@@ -107,15 +107,13 @@ sub monitor {
     }
     
     if( !Baseliner->is_root($username) ) {
-        my @ids_project = $perm->user_projects_with_action(username => $username,
-                                                            action => 'action.job.viewall',
-                                                            level => 1);
-        $where->{projects} = mdb->in( sort @ids_project );
         my @bl;
         my $user = ci->user->find_one({ name=>$username });
         my @roles = keys $user->{project_security};
         @bl = @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
         $where->{bl} = mdb->in(@bl) if(@bl);
+        my @ids_project = $perm->user_projects_with_action(username => $username, action => 'action.job.viewall', level => 1, bl=>\@bl);
+        $where->{projects} = mdb->in( sort @ids_project );
     }
     
     if( length $p->{job_state_filter} ) {

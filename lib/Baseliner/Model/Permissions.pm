@@ -560,7 +560,7 @@ sub user_projects_with_action {
     _check_parameters( \%p, qw/username action/ );
     my $username  = $p{username};
     my $action    = $p{action};
-    my $bl        = $p{bl} || '*';
+    my @bl        = $p{bl} || ('*');
     if( $self->is_root($username) ) {
         return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
     }
@@ -570,7 +570,7 @@ sub user_projects_with_action {
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
     my @res;
     foreach my $role (@roles){
-        if(grep { $_->{action} eq $action and $_->{bl} eq $bl } @{$role->{actions}}){
+        if(grep { $_->{action} eq $action && $_->{bl} ~~ @bl } @{$role->{actions}}){
             push @res, values $user->{project_security}->{$role->{id}};
         }
     }
