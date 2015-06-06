@@ -25,6 +25,33 @@ Baseliner.tree_topic_style = [
     'border-radius:0px"></span>'
 ].join('');
 
+// explorer tree topic style with squares
+Cla.style_topic_node = function(n){
+    if(n.attributes.topic_name ) {
+        var tn = n.attributes.topic_name;
+        n.setIconCls('no-icon');  // no icon on this node
+        if( !tn.category_color ) 
+            tn.category_color = '#999';
+        var span = String.format( Baseliner.tree_topic_style, tn.category_color );
+        n.setText( String.format( '{0}<span title="{4}"  style="font-weight:bold;">{1} #{2}: {3}</span><span title="{4}">{4}</span>', 
+                    span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
+        n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
+    } else if(n.attributes.category_name ) {
+        var tn = n.attributes.category_name;
+        n.setIconCls('no-icon');  // no icon on this node
+        var span = String.format( Baseliner.tree_topic_style, tn.category_color);
+        n.setText( String.format( '{0}<b>{1}</b>', span, tn.category_name ) );
+    } else if(n.attributes.category_color ) {
+        // color box and nothing else
+        var span = String.format( Baseliner.tree_topic_style, n.attributes.category_color);
+        n.setIconCls('no-icon');  // no icon on this node
+        n.setText( String.format( '{0}{1}', span, n.text ) );
+        n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
+    } else if(n.attributes.data && n.attributes.data.desc && !n.attributes.id_favorite ) {
+        n.setText( String.format( '<span title="{1}">{0}</span>', n.text, n.attributes.data.desc) );
+    }
+};
+
 Baseliner.topic_title = function( mid, category, color, literal_only, id, opts) {
     var uppers = '';
 
@@ -123,10 +150,7 @@ Baseliner.topic_name = function(args) {
         var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
         if( ! mid ) 
             mid = args.topic_mid; 
-        if( mid )
-            mid = '#' + mid;
-        else
-            mid = '';
+        var midh = mid ? '#' + mid : '';
 
         var uppers = '';
         if ( args.category_name ) {
@@ -179,14 +203,14 @@ Baseliner.topic_name = function(args) {
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
-        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored({0},"{1}", "{2}", "{3}");', args.mid, cat_name, color, args.parent_id ) : '';  
+        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored({0},"{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';  
         var cursor = args.link ? 'cursor:pointer' : '';
 
         var ret = args.mini 
-            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>', 
-                cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor )
-            : String.format('<span id="boot" onclick=\'{4}\'><span class="{0}" style="{1};{5}">{2} {3}</span></span>', 
-                cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor );
+            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0} topic-name-{6}" mid="{7}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span class="topic-name-{6}" mid="{7}" style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>', 
+                cls, [style,args.style].join(';'), cat_name, midh, on_click, cursor, args.parent_id, mid )
+            : String.format('<span id="boot" class="topic-name-{6}" mid="{7}" onclick=\'{4}\'><span class="{0} topic-name-{6}" mid="{7}" style="{1};{5}">{2} {3}</span></span>', 
+                cls, [style,args.style].join(';'), cat_name, midh, on_click, cursor, args.parent_id, mid );
         return ret;
 };
 

@@ -678,12 +678,12 @@ Cla.topic_grid = function(params){
     
     var body_mini_tpl = function(){/*
                   <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
-                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");'>[%=value%][%=folders%] </span>
+                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");return false;'>[%=value%][%=folders%] </span>
           */}.tmpl();
     
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
-                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%] </span>
+                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]"); return false;'>[%=value%] </span>
                         <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %] </font>[%=folders%]
                         <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
@@ -948,10 +948,10 @@ Cla.topic_grid = function(params){
         //#####################################################
         
         Ext.each( value, function(topic){
-            // if( !Ext.isObject(topic) ) console.log('nnnnnnnn');
             arr.push( Baseliner.topic_name({
                 link: true,
                 parent_id: grid_topics.id,
+                ix: rowIndex,
                 mid: topic.mid, 
                 mini: btn_mini.pressed,
                 size: btn_mini.pressed ? '9' : '11',
@@ -1067,6 +1067,7 @@ Cla.topic_grid = function(params){
         return Baseliner.topic_name({
             link: true,
             parent_id: grid_topics.id,
+            row_index: rowIndex,
             mid: d.topic_mid || d.mid, 
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
@@ -1160,23 +1161,6 @@ Cla.topic_grid = function(params){
         checkOnly: true
     });
 
-    var dragger = {     
-        header : '',
-        id : 'dragger',
-        menuDisabled : true,
-        fixed : true,
-        hideable: false,
-        dataIndex: '', 
-        width: 7, 
-        sortable: false,
-        renderer: function(v,m,rec){
-            var div = document.createElement('div');
-            div.innerHTML = 'abc';
-            m.tdCls = m.tdCls + ' dragger-target';
-            return ' '; //'<div>aaa</div>';
-        }
-    };
-    
     var force_fit = true;
     
     var type_filters ={
@@ -1232,7 +1216,7 @@ Cla.topic_grid = function(params){
 
     if( fields ) {
         force_fit = false;
-        columns = [ dragger, check_sm, col_map['topic_name'] ];
+        columns = [ check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
             //console.log('cols');
@@ -1336,7 +1320,7 @@ Cla.topic_grid = function(params){
         });
         //console.dir(columns);
     } else {
-         columns = [ dragger, check_sm ];
+         columns = [ check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'ago', 'title', 'progress',
             'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
             'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by', 'current_job'];
@@ -1478,49 +1462,48 @@ Cla.topic_grid = function(params){
 
     grid_topics.store.on('load', function(st,r,o) {
         deferred_count(st,r,o);
-        for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
-            //var rec = grid_topics.store.getAt( ix );
-            var cell = grid_topics.view.getCell( ix, 0 );
-            var el = Ext.fly( cell );
-            el.setStyle( 'background-color', '#ddd' );
+        $('.topic-name-' + grid_topics.id ).each(function(ix,tn){
+            var el = Ext.fly( tn );
+            var mid = tn.getAttribute('mid');
+            if( ! mid ) return;
+            var ix = grid_topics.store.find('topic_mid', mid); // getAt( this.index ).data;
+            var row = grid_topics.store.getAt( ix );
+            if( !row ) return false;
+            var data = row.data;
             new Ext.dd.DragZone( el, {
                 ddGroup: 'explorer_dd',
-                index: ix,
+                mid: mid,
+                data: data,
                 getDragData: function(e){
                     var sourceEl = e.getTarget();
-                    var data = grid_topics.store.getAt( this.index ).data;
-                    var d = sourceEl.cloneNode(true);
-                    d.id = Ext.id();
-                    var mid = data.topic_mid;
+                    var mid = this.mid; 
+                    var data = this.data;
+                    // create new node 
+                    var proxy_node = sourceEl.cloneNode(true);
+                    proxy_node.id = Ext.id();
                     // TODO create topic node using the original data from attributes
                       // inject into loader? Loader.newNode or something?
                     var text = String.format('<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #{1};background-color: transparent;color:#{1};border-radius:0px"></span><b>{0}</b>{2}', data.topic_name, data.category_color, '' );
-                    d.innerHTML = text;
+                    proxy_node.innerHTML = text;
                     //text = data.topic_name;
-                    var node = {
-                            contains: Ext.emptyFn,
-                            text: text,
-                            leaf: true,
-                            parentNode: Ext.emptyFn,
-                            attributes: {
-                                text: text,
-                                icon: "/static/images/icons/topic.png",
-                                iconCls: "no-icon",
-                                leaf: true,
-                                data: {
-                                    topic_mid: mid
-                                },
-                                topic_name: {
-                                    category_color: data.category_color,
-                                    category_name: data.category_name,
-                                    is_changeset: data.is_changeset,
-                                    is_release: data.is_release,
-                                    mid: mid
-                                }
-                            }
-                        };
+                    var node = new Ext.tree.TreeNode({
+                        text: data.title,
+                        leaf: true,
+                        icon: "/static/images/icons/topic.png",
+                        data: {
+                            topic_mid: mid
+                        },
+                        topic_name: {
+                            category_color: data.category_color,
+                            category_name: data.category_name,
+                            is_changeset: data.is_changeset,
+                            is_release: data.is_release,
+                            mid: mid
+                        }
+                    });
+                    Cla.style_topic_node(node);
                     return {
-                        ddel: d,
+                        ddel: proxy_node,
                         sourceEl: sourceEl,
                         repairXY: Ext.fly(sourceEl).getXY(),
                         node: node,
@@ -1529,7 +1512,7 @@ Cla.topic_grid = function(params){
                     };
                 }
             });
-        }
+        });
     });
 
     function topicsSelected(){
