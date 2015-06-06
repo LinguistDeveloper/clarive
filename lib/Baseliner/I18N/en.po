@@ -149,9 +149,6 @@ msgstr "Actualizado el entorno %1 a %2"
 msgid "Baseline ID"
 msgstr "Entorno ID"
 
-msgid "Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled."
-msgstr "El pase tiene dependencias debido a pases posteriores. EL entorno no puede ser actualizado. Marcha atrás cancelada"
-
 msgid "Updating baseline %1 for repository %2, job type %3"
 msgid "Updating environment %1 for repository %2, job type %3"
 
