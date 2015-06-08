@@ -669,7 +669,11 @@ sub list : Local {
 sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+<<<<<<< HEAD
     my $username = $p->{username} // $c->username;
+=======
+    my $username = $c->username;
+>>>>>>> parent of 0659e0a... fix: change password compatible with username by parameter
     my $row = ci->user->find({username => $username, active => mdb->true})->next;
     if ($row) {
         if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->{password} ) {
