@@ -644,7 +644,7 @@ sub changeset : Local {
             my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
             my ( $deployable, $promotable, $demotable, $menu );
             my %category_data;
-            if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
+            if ( ($topic->{_workflow} && $topic->{_workflow}->{$p->{id_status}}) || !$category_data{$topic_row->{id_category}}) {
                 ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
                 $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
             } else {
@@ -827,7 +827,7 @@ sub promotes_and_demotes {
     _fail _loc 'Missing topic parameter' unless $topic;
 
     #Personalized _workflow!
-    if($topic->{_workflow}){
+    if($topic->{_workflow} && $topic->{_workflow}->{$id_status_from}){
         my @_workflow;
         my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
         use Array::Utils qw(:all);
