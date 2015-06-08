@@ -111,7 +111,7 @@
     });
 
     // AutoRefresh
-    var button_autorefresh = new Ext.Button({ tooltip: _('Auto Refresh'),
+    var button_autorefresh = new Ext.Button({ tooltip: _('Refresh'),
         icon: '/static/images/icons/refresh.png', 
         enableToggle: true,
         pressed: false,
@@ -281,7 +281,8 @@
 
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
-        if( value=='debug' ) icon='log_d.gif';
+        //if( value=='debug' ) icon='log_d.gif';
+        if( value=='debug' ) icon='debug_view.gif';
         else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
@@ -512,7 +513,7 @@
                 menu_exec_right,
                 {
                     text: _('Annotate'),
-                    icon: '/static/images/icons/post.gif', 
+                    icon: '/static/images/icons/comment_new.png', 
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
@@ -520,7 +521,7 @@
 % if( $user_action->{'action.admin.default'} ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
-                    icon: '/static/images/icons/advanced.png', 
+                    icon: '/static/images/icons/password.png', 
                     cls: 'x-btn-text-icon',
                     menu: { 
                         items: [ menu_stash, menu_delete, menu_logfile ]
