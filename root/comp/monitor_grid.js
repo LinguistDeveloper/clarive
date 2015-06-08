@@ -149,7 +149,10 @@
             {  name: 'status_code' },
             {  name: 'status' },
             {  name: 'natures' }, 
-            {  name: 'subapps' } 
+            {  name: 'subapps' },
+            {  name: 'can_restart' },
+            {  name: 'can_cancel' },
+            {  name: 'can_delete' }
         ]
     );
 
@@ -814,8 +817,8 @@
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
-        hidden: true,
         icon:'/static/images/del.gif',
+        disabled: true,
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -840,12 +843,10 @@
                             //console.log( res );
                             if( res.success ) {
                                 grid.getStore().reload();
-% if( $c->stash->{user_action}->{'action.job.delete'} ) {
-                                button_cancel.show();
-                                button_cancel.setText( msg_cancel_delete[1] );    
-% } else {
-                                button_cancel.hide();
-% }
+                                if(sel.data.can_cancel){
+                                    // button_cancel.enable();
+                                    button_cancel.setText( msg_cancel_delete[1] );    
+                                }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
                             }
@@ -854,6 +855,125 @@
                 } );
         }
     });
+
+
+    var button_rollback = new Ext.Toolbar.Button({
+        text: _('Rollback'),
+        disabled: true,
+        icon:'/static/images/icons/left.png',
+        cls: 'x-btn-text-icon',
+        handler: function() { do_backout() }
+    });
+
+    var button_rerun = new Ext.Toolbar.Button({
+        text: _('Rerun'),
+        disabled: true,
+        icon:'/static/images/icons/restart.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if ( ! sm.hasSelection()) {
+                Ext.Msg.alert(_('Error'), _('Select a row first'));   
+            } else {
+                var sel = sm.getSelected();
+                var users = new Ext.data.SimpleStore({
+                    fields: ['username'],
+                    data: [ [sel.data.username], ['<% $c->username %>'] ]
+                });
+                var steps = new Ext.data.SimpleStore({
+                    fields: ['step'],
+                    data: [ ['PRE'], ['RUN'], ['POST'], ['END'] ]
+                });
+                var user_combo = new Ext.form.ComboBox({
+                    name: 'username',
+                    hiddenName: 'username',
+                    fieldLabel: _('User'),
+                    store: users,
+                    valueField: 'username',
+                    lazyRender: false,
+                    value: sel.data.username,
+                    mode: 'local',
+                    editable: true,
+                    triggerAction: 'all',
+                    displayField: 'username'
+                });
+                var step_field = sel.data.step_code == 'END' ? 'PRE' : sel.data.step_code;
+                var run_now = sel.data.step_code == 'END' ? true : false;
+                var mid = sel.data.mid;
+                var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
+                    items: ['PRE','RUN','POST','END'].map(function(st){ 
+                        return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
+                            toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st };
+                    })
+                });
+                var form_res = new Ext.FormPanel({ 
+                    frame: false,
+                    height: 150,
+                    defaults: { width:'100%' },
+                    bodyStyle:'padding: 10px',
+                    items: [
+                        user_combo,
+                        { xtype: 'hidden', name:'mid', value: sel.data.mid },
+                        { xtype: 'hidden', name:'job_name', value: sel.data.name },
+                        { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
+                        { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
+                        step_buttons
+                    ],
+                    buttons: [
+                        {text:_('Rerun'), handler:function(f){ 
+                            var but = this;
+                            but.disable();
+                            var form_data = form_res.getForm().getValues();                                     
+                            step_buttons.items.each(function(btn){
+                                if( btn.pressed ) form_data.step = btn.text;
+                            });
+                            Baseliner.ci_call( 'job', 'reset', form_data, 
+                                function(res){ 
+                                    Baseliner.message( sel.data.name, _('Job Restarted') );
+                                    but.enable();
+                                    try{
+                                        store.reload();
+                                    }catch(err){};
+                                    win_res.close();
+                                },
+                                function(res) { 
+                                    but.enable();
+                                    Baseliner.error(_('Error'), _('Could not rerun the job: %1', res.msg) );
+                                }
+                            );
+                         }},
+                        {text:_('Cancel'), handler:function(f){ win_res.close() }}
+                    ]
+                });
+                var win_res=new Ext.Window({
+                    title: _('Rerun'),
+                    width: 400,
+                    height: 200,
+                    bodyStyle:'background-color:#e0c080;padding: 10px',
+                    items: form_res
+                });
+                win_res.show();
+                /*
+                Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to rerun the job') %> ' + sel.data.name + '?', 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            var conn = new Ext.data.Connection();
+                            conn.request({
+                                url: '/job/submit',
+                                params: { action: 'rerun', mid: sel.data.mid },
+                                success: function(resp,opt) {
+                                    Baseliner.message( sel.data.name, '<% _loc('Job Restarted') %>');
+                                    store.load();
+                                },
+                                failure: function(resp,opt) { Baseliner.message('<% _loc('Error') %>', '<% _loc('Could not rerun the job.') %>'); }
+                            }); 
+                        }
+                    } );
+                */
+            }
+        }
+    });
+
     //------------ Renderers
     var render_contents = function(value,metadata,rec,rowIndex,colIndex,store) {
         var return_value = new Array();
@@ -1139,123 +1259,12 @@
 % if( $c->stash->{user_action}->{'action.job.resume'} ) {
                 button_resume,
 % }
-% if( $c->stash->{user_action}->{'action.job.create'} ) {
+% if( $c->stash->{user_action}->{'action.job.delete'} || $c->stash->{user_action}->{'action.job.cancel'} ) {
                 button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
-                new Ext.Toolbar.Button({
-                    text: _('Rollback'),
-                    icon:'/static/images/icons/left.png',
-                    cls: 'x-btn-text-icon',
-                    handler: function() { do_backout() }
-                }),
-                new Ext.Toolbar.Button({
-                    text: _('Rerun'),
-                    icon:'/static/images/icons/restart.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if ( ! sm.hasSelection()) {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
-                        } else {
-                            var sel = sm.getSelected();
-                            var users = new Ext.data.SimpleStore({
-                                fields: ['username'],
-                                data: [ [sel.data.username], ['<% $c->username %>'] ]
-                            });
-                            var steps = new Ext.data.SimpleStore({
-                                fields: ['step'],
-                                data: [ ['PRE'], ['RUN'], ['POST'], ['END'] ]
-                            });
-                            var user_combo = new Ext.form.ComboBox({
-                                name: 'username',
-                                hiddenName: 'username',
-                                fieldLabel: _('User'),
-                                store: users,
-                                valueField: 'username',
-                                lazyRender: false,
-                                value: sel.data.username,
-                                mode: 'local',
-                                editable: true,
-                                triggerAction: 'all',
-                                displayField: 'username'
-                            });
-                            var step_field = sel.data.step_code == 'END' ? 'PRE' : sel.data.step_code;
-                            var run_now = sel.data.step_code == 'END' ? true : false;
-                            var mid = sel.data.mid;
-                            var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
-                                items: ['PRE','RUN','POST','END'].map(function(st){ 
-                                    return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
-                                        toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st };
-                                })
-                            });
-                            var form_res = new Ext.FormPanel({ 
-                                frame: false,
-                                height: 150,
-                                defaults: { width:'100%' },
-                                bodyStyle:'padding: 10px',
-                                items: [
-                                    user_combo,
-                                    { xtype: 'hidden', name:'mid', value: sel.data.mid },
-                                    { xtype: 'hidden', name:'job_name', value: sel.data.name },
-                                    { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
-                                    { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
-                                    step_buttons
-                                ],
-                                buttons: [
-                                    {text:_('Rerun'), handler:function(f){ 
-                                        var but = this;
-                                        but.disable();
-                                        var form_data = form_res.getForm().getValues();                                     
-                                        step_buttons.items.each(function(btn){
-                                            if( btn.pressed ) form_data.step = btn.text;
-                                        });
-                                        Baseliner.ci_call( 'job', 'reset', form_data, 
-                                            function(res){ 
-                                                Baseliner.message( sel.data.name, _('Job Restarted') );
-                                                but.enable();
-                                                try{
-                                                    store.reload();
-                                                }catch(err){};
-                                                win_res.close();
-                                            },
-                                            function(res) { 
-                                                but.enable();
-                                                Baseliner.error(_('Error'), _('Could not rerun the job: %1', res.msg) );
-                                            }
-                                        );
-                                     }},
-                                    {text:_('Cancel'), handler:function(f){ win_res.close() }}
-                                ]
-                            });
-                            var win_res=new Ext.Window({
-                                title: _('Rerun'),
-                                width: 400,
-                                height: 200,
-                                bodyStyle:'background-color:#e0c080;padding: 10px',
-                                items: form_res
-                            });
-                            win_res.show();
-                            /*
-                            Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to rerun the job') %> ' + sel.data.name + '?', 
-                                function(btn){ 
-                                    if(btn=='yes') {
-                                        var conn = new Ext.data.Connection();
-                                        conn.request({
-                                            url: '/job/submit',
-                                            params: { action: 'rerun', mid: sel.data.mid },
-                                            success: function(resp,opt) {
-                                                Baseliner.message( sel.data.name, '<% _loc('Job Restarted') %>');
-                                                store.load();
-                                            },
-                                            failure: function(resp,opt) { Baseliner.message('<% _loc('Error') %>', '<% _loc('Could not rerun the job.') %>'); }
-                                        });	
-                                    }
-                                } );
-                            */
-                        }
-                    }
-                }),
+                button_rollback,
+                button_rerun,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} || $c->stash->{user_action}->{'action.job.reschedule'} ) {
                 new Ext.Toolbar.Button({
@@ -1309,7 +1318,7 @@
                                                 store.reload();
                                                 winupdate.close();
                                             });
-                                                                             
+                                                                                
                                      } }
                                 ],
                                 title: 'Modificar fecha y hora del pase.',
@@ -1346,21 +1355,30 @@
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
         var sc = rec.data.status_code;
-        button_resume.hide();
-        if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
-% if( $c->stash->{user_action}->{'action.job.delete'} ) {
-            button_cancel.show();
-            button_cancel.setText( msg_cancel_delete[1] );    
-% } else {
-            button_cancel.hide();
-% }
+        button_resume.disable();
+        if ( rec.data.can_cancel || rec.data.can_delete ) {
+            if( (sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED') && rec.data.can_delete == '1' ) {
+                button_cancel.setText( msg_cancel_delete[1] );
+                button_cancel.enable();
+            } else if (rec.data.can_cancel == '1') {
+                button_cancel.setText( msg_cancel_delete[0] );
+                button_cancel.enable();
+            } else {
+                button_cancel.disable();
+            }
         } else {
-            button_cancel.show();
-            button_cancel.setText( msg_cancel_delete[0] );
-        }
+            button_cancel.disable();
+        };
         if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' || rec.data.status_code === 'TRAPPED_PAUSED' ) {
             button_resume.show();
         }
+        if (rec.data.can_restart == '1'){
+            button_rollback.enable();
+            button_rerun.enable();
+        } else {
+            button_rollback.disable();
+            button_rerun.disable();
+        };
     });
     row_sel.on('rowdeselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).removeClass('x-grid3-row-selected-yellow');

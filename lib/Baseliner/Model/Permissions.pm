@@ -560,7 +560,7 @@ sub user_projects_with_action {
     _check_parameters( \%p, qw/username action/ );
     my $username  = $p{username};
     my $action    = $p{action};
-    my $bl        = $p{bl} || '*';
+    my @bl        = $p{bl} || ('*');
     if( $self->is_root($username) ) {
         return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
     }
@@ -570,7 +570,7 @@ sub user_projects_with_action {
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
     my @res;
     foreach my $role (@roles){
-        if(grep { $_->{action} eq $action and $_->{bl} eq $bl } @{$role->{actions}}){
+        if(grep { $_->{action} eq $action && $_->{bl} ~~ @bl } @{$role->{actions}}){
             push @res, values $user->{project_security}->{$role->{id}};
         }
     }
@@ -638,7 +638,7 @@ sub list {
     if( ref $cached eq 'ARRAY' ) {
         return @$cached;
     }
-    my $bl = $p{bl} || '*';
+    my @bl = $p{bl} || ('*');
     my $username = $p{username};
     my $action = $p{action};
 
@@ -652,7 +652,7 @@ sub list {
     }
     
     if($username){
-        @ret = Baseliner->model('Users')->get_actions_from_user($username, ($bl));
+        @ret = Baseliner->model('Users')->get_actions_from_user($username, (@bl));
     }else{
         my @users = ci->user->find->fields({ mid=>1, project_security=>1 })->all;
         my @roles = mdb->role->find->all;
@@ -662,11 +662,11 @@ sub list {
             my @user_roles = grep { $_->{id} ~~ @id_roles } @roles;
             foreach my $user_role (@user_roles){
                 my @actions;
-                if($bl eq 'any'){
+                if(@bl ~~ 'any'){
                     @actions = map { $_->{action} } @{$user_role->{actions}};
                 }else{
                     foreach my $act (@{$user_role->{actions}}){
-                        if($act->{bl} eq $bl){
+                        if($act->{bl} ~~ @bl){
                             push @actions, $act->{action};
                         }
                     }

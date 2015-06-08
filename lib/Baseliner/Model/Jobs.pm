@@ -107,15 +107,13 @@ sub monitor {
     }
     
     if( !Baseliner->is_root($username) ) {
-        my @ids_project = $perm->user_projects_with_action(username => $username,
-                                                            action => 'action.job.viewall',
-                                                            level => 1);
-        $where->{projects} = mdb->in( sort @ids_project );
         my @bl;
         my $user = ci->user->find_one({ name=>$username });
         my @roles = keys $user->{project_security};
         @bl = @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
         $where->{bl} = mdb->in(@bl) if(@bl);
+        my @ids_project = $perm->user_projects_with_action(username => $username, action => 'action.job.viewall', level => 1, bl=>\@bl);
+        $where->{projects} = mdb->in( sort @ids_project );
     }
     
     if( length $p->{job_state_filter} ) {
@@ -224,6 +222,9 @@ sub monitor {
           :                      [ 0,  _loc('Upcoming') ];
         $when = $day->[0];
         my ($last_exec) = sort { $b cmp $a } keys %{$job->{milestones}};
+        my $can_restart = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.restart', bl=>$job->{bl} );
+        my $can_cancel = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.cancel', bl=>$job->{bl} );
+        my $can_delete = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.delete', bl=>$job->{bl} );
 
         push @rows, {
             id           => $job->{jobid},
@@ -272,6 +273,9 @@ sub monitor {
             pre_end         => $last_exec?$job->{milestones}->{$last_exec}->{PRE}->{end}|| " ":" ",
             run_start      => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{start}|| " ":" ",
             run_end         => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{end}|| " ":" ",
+            can_restart    => $can_restart,
+            can_cancel    => $can_cancel,
+            can_delete    => $can_delete,
 
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
