@@ -638,7 +638,7 @@ sub list {
     if( ref $cached eq 'ARRAY' ) {
         return @$cached;
     }
-    my $bl = $p{bl} || '*';
+    my @bl = $p{bl} || ('*');
     my $username = $p{username};
     my $action = $p{action};
 
@@ -652,7 +652,7 @@ sub list {
     }
     
     if($username){
-        @ret = Baseliner->model('Users')->get_actions_from_user($username, ($bl));
+        @ret = Baseliner->model('Users')->get_actions_from_user($username, (@bl));
     }else{
         my @users = ci->user->find->fields({ mid=>1, project_security=>1 })->all;
         my @roles = mdb->role->find->all;
@@ -662,11 +662,11 @@ sub list {
             my @user_roles = grep { $_->{id} ~~ @id_roles } @roles;
             foreach my $user_role (@user_roles){
                 my @actions;
-                if($bl eq 'any'){
+                if(@bl ~~ 'any'){
                     @actions = map { $_->{action} } @{$user_role->{actions}};
                 }else{
                     foreach my $act (@{$user_role->{actions}}){
-                        if($act->{bl} eq $bl){
+                        if($act->{bl} ~~ @bl){
                             push @actions, $act->{action};
                         }
                     }
