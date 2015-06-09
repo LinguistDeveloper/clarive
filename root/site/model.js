@@ -1204,12 +1204,6 @@ Baseliner.model.Status = function(c) {
 };
 Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
 
-Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
-    allowBlank: true,
-    url: '/job/staus_list', field: 'id_status', displayField: 'name',
-    fields: [ 'id_status', 'name' ]
-});
-
 Baseliner.ComboJobStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
     allowBlank: true,
     url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',

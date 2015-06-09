@@ -148,6 +148,7 @@
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
+            {  name: 'job_family' },
             {  name: 'natures' }, 
             {  name: 'subapps' } 
         ]
@@ -1100,6 +1101,7 @@
                 { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
+                { header: _('Family'), width: 120, dataIndex: 'job_family', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
                 { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },	

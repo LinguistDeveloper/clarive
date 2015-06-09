@@ -1747,7 +1747,7 @@ our $__year = 2_629_744*12;
 
 sub ago {
     my ($date, $now) = @_;
-    $now //= Class::Date->now();
+    $now //= Class::Date->new(_now);
     # if( ref $date eq 'DateTime' ) {
     #     $date = Class::Date->new( $date->epoch );
     # } elsif( ref $date ne 'Class::Date' ) {
@@ -1961,7 +1961,7 @@ sub tar_dir {
         my $f = shift;
         return if _file($tarfile) eq $f;
         my $rel = $f->relative( $dir );
-        return if %files && !exists $files{$rel}; # check if file is in list
+        return if %files && ( !exists $files{$rel} && !exists $files{"./$rel"} ); # check if file is in list
         my $stat = $f->stat;
         my $type = $f->is_dir ? 'd' : 'f';
         my %attr = $type eq 'f' 

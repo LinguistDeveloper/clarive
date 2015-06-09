@@ -6,7 +6,7 @@ with 'Baseliner::Role::CI::Infrastructure';
 
 sub icon { '/static/images/icons/script.png' }
 
-requires 'script';
+requires 'path';
 requires 'run';
 
 has arg => qw(is rw isa ArrayRef[Str]), default=>sub{[]}, traits=>['Array'];
