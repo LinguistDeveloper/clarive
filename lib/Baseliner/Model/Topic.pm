@@ -301,6 +301,24 @@ sub build_sort {
     return $order_by;
 }
 
+sub run_query_builder {
+    my ($self,$query,$where,$username) = @_;
+    my @mids_in;
+    #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
+    my @mids_query;
+    if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+        @mids_query = map { $_->{obj}{mid} } 
+            _array( mdb->topic->search( query=>$query, project=>{mid=>1})->{results} );
+    }
+    
+    if( @mids_query == 0 ) {
+        $self->build_field_query( $query, $where, $username );
+    } else {
+        push @mids_in, @mids_query > 0 ? @mids_query : -1;
+    }
+    return @mids_in;
+}
+
 # this is the main topic grid 
 # MONGO:
 #
@@ -318,18 +336,7 @@ sub topics_for_user {
     my $topic_list = $p->{topic_list};
     my ( @mids_in, @mids_nin, @mids_or );
     if( length($query) ) {
-        #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-        my @mids_query;
-        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
-            @mids_query = map { $_->{obj}{mid} } 
-                _array( mdb->topic->search( query=>$query, project=>{mid=>1})->{results} );
-        }
-        
-        if( @mids_query == 0 ) {
-            $self->build_field_query( $query, $where, $username );
-        } else {
-            push @mids_in, @mids_query > 0 ? @mids_query : -1;
-        }
+        @mids_in = $self->run_query_builder($query,$where,$username);
     }
     
     my ($select,$order_by, $as, $group_by);
@@ -498,7 +505,7 @@ sub topics_for_user {
         my @topics_project = map { $$_{from_mid} } 
             mdb->master_rel->find({ to_mid=>"$$p{id_project}", rel_type=>'topic_project' })->all;
         push @mids_in, grep { length } @topics_project;
-        push @mids_in, 'xxx' if !@topics_project;
+        push @mids_in, 'xxx' if !@topics_project;  # FIXME
     }
     
     if( @mids_in || @mids_nin ) {
@@ -1284,6 +1291,8 @@ sub get_meta {
 
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
+        _fail _loc 'Topic category has now form rule associated with it. Please contact your administrator.' 
+            unless length $cat->{default_field};
         my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
@@ -1363,8 +1372,8 @@ sub get_meta {
             $d
         } @cat_fields;
     
-   cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
-# _log _dump @meta;
+    cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
+    # _log _dump \@meta;
     return \@meta;
 }
 
@@ -3224,6 +3233,9 @@ sub apply_filter{
                     }
                 } 
             }
+            when ('query') {
+                $where->{query} = $filter{query};
+            }
             default {
                 my @ids = _array $filter{$key};
                 $where->{$key} = mdb->in(@ids);
@@ -3240,6 +3252,12 @@ sub get_topics_mdb{
     my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 
     try{
         $where = {} if !$where;
+        my @mids_in = _array( delete $where->{mid} );
+        if( my $query = delete $where->{query} ) {
+            @mids_in = $self->run_query_builder($query,$where,$username);
+        }
+        $where->{mid} = mdb->in( @mids_in ); 
+
         _throw _loc('Missing username') if !$username;
 
         Baseliner->model('Permissions')->build_project_security( $where, $username );

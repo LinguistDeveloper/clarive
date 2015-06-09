@@ -77,6 +77,7 @@ register 'fieldlet.dbi_query' => {
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
     icon        => '/static/images/icons/sql.png',
+    show_in_palette => 0, 
     type        => 'combo'
 };
 
@@ -138,7 +139,7 @@ register 'fieldlet.html_editor' => {
 };
 
 register 'fieldlet.origin_issue_chart_pie' => {
-    name        => _loc('origin issue chart pie'),
+    name        => _loc('Pie Chart For Issue'),
     html        => '/fields/templates/html/origin_issue_pie.html',
     js          => '',
     form        => '/fields/templates/config/origin_issue_chart_pie.js',
@@ -160,7 +161,7 @@ register 'fieldlet.pills' => {
     html        => '/fields/templates/html/pills.html',
     js          => '/fields/templates/js/pills.js',
     form        => '/fields/templates/config/pills.js',
-    icon        => ''
+    icon        => '/static/images/icons/pills.png',
 };
 
 register 'fieldlet.status_chart_pie' => {
@@ -168,6 +169,7 @@ register 'fieldlet.status_chart_pie' => {
     html        => '/fields/templates/html/status_chart_pie.html',
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart-pie.png',
+    section     => 'between',
     type        => 'generic'
 };
 
@@ -289,11 +291,11 @@ register 'fieldlet.system.labels' => {
 };
 
 register 'fieldlet.system.description' => {
-    name        => _loc('description'),
+    name        => _loc('Description'),
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/templates/js/html_editor.js',
     form        => '/fields/templates/config/description.js', ############# MODIFICAR
-    icon        => '/static/images/icons/lock_small.png',
+    icon        => '/static/images/icons/textfield.png',
     id_field    => 'description',
     bd_field    => 'description',
     origin      => 'system',
@@ -304,7 +306,7 @@ register 'fieldlet.system.description' => {
 ########################################################################################
 
 register 'fieldlet.system.revisions' => {
-    name        => _loc('revisions'),
+    name        => _loc('Revision Box'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_revisions',
     set_method  => 'set_revisions',
@@ -317,7 +319,7 @@ register 'fieldlet.system.revisions' => {
 };
 
 register 'fieldlet.system.release' => {
-    name        => _loc('release'),
+    name        => _loc('Release Combo'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_release',
     set_method  => 'set_release',
@@ -332,7 +334,7 @@ register 'fieldlet.system.release' => {
 
 
 register 'fieldlet.system.projects' => {
-    name        => _loc('projects'),
+    name        => _loc('Project Combo'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_projects',
     set_method  => 'set_projects',
@@ -347,7 +349,7 @@ register 'fieldlet.system.projects' => {
 
 
 register 'fieldlet.system.users' => {
-    name        => _loc('users'),
+    name        => _loc('User Combo'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_users',
     set_method  => 'set_users',
@@ -371,11 +373,12 @@ register 'fieldlet.system.topics' => {
     meta_type   => 'topic',
     relation    => 'system',
     type        => 'listbox',
+    show_in_palette => 0,
     rel_type    => 'topic_topic'
 };
 
 register 'fieldlet.system.list_topics' => {
-    name        => _loc('list topics'),
+    name        => _loc('Topic Selector'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
@@ -391,7 +394,7 @@ register 'fieldlet.system.list_topics' => {
 
 
 register 'fieldlet.system.cis' => {
-    name        => _loc('cis'),
+    name        => _loc('CI Combo'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_cis',
     set_method  => 'set_cis',
@@ -406,7 +409,7 @@ register 'fieldlet.system.cis' => {
 
 
 register 'fieldlet.system.tasks' => {
-    name        => _loc('tasks'),
+    name        => _loc('Task Grid'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => '',
     set_method  => '',
@@ -425,7 +428,7 @@ register 'fieldlet.system.tasks' => {
 ###########################
 
 register 'fieldlet.required.category' => {
-    name        => _loc('category'),
+    name        => _loc('Topic Category'),
     name_field  => 'Category',
     id_field    => 'category',
     bd_field    => 'id_category',

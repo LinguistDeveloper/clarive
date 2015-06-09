@@ -4115,9 +4115,35 @@ Baseliner.generic_list_fields = function(params){
         list_type.setValue(rec.data.value_type);
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
     });
-    var ret = [ value_combo, list_type, { xtype:'textfield', name:'filter', fieldLabel: _('Advanced Filter JSON'), value: data.filter } ];
+    var json_field = new Ext.form.TextArea({ name:'filter', fieldLabel: _('Advanced Filter JSON'), height: 60, anchor:'100%', value: data.filter });
+    var ret = [ 
+        value_combo, 
+        list_type, 
+        json_field ,
+        { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
+            handler: function(){ Cla.json_filter_builder(json_field) } } 
+    ];
     return ret;
 };
+
+Cla.json_filter_builder = function(json_field){
+    Cla.ajaxEval( '/comp/topic/topic_grid.js', {}, function(grid) {
+        var prev = json_field.getValue();
+        if( prev ) {
+            grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev); 
+        }
+        delete grid.title;
+        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit'), handler:function(){
+            var curr_filter = grid.get_grid().store.baseParams;
+            delete curr_filter.last_count;
+            var json = Ext.util.JSON.encode( curr_filter );
+            json_field.setValue( json );
+            win.close();
+        }});
+        var btn_cancel = { xtype:'button', icon: IC('cancel'), text:_('Cancel'), handler: function(){ win.close() } };
+        var win = new Cla.Window({ width:800, height:600, layout:'fit', modal: true, items:[grid], tbar:['->', btn_cancel,btn_save] }).show();
+    });
+}
 
 Baseliner.view_field_content = function(params) {
     if (!params.mid) return;

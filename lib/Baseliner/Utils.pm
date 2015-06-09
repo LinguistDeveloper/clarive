@@ -2249,6 +2249,7 @@ sub hide_passwords {
     my @patterns = split "\n", Baseliner->model('ConfigStore')->get('config.global')->{password_patterns};
     for my $line ( @patterns ) {
         my ($pattern,$replace) = split /\|\|/,$line;
+        $replace //= '';
         my $regex = eval { qr[$pattern] };
         if (!$@ ) {
             eval('$string'." =~ s[$pattern][$replace]gm");

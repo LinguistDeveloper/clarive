@@ -1976,6 +1976,10 @@ Cla.topic_grid = function(params){
         return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
     };
 
+    panel.get_grid = function(){
+        return grid_topics;
+    }
+
     return panel;
 }
 

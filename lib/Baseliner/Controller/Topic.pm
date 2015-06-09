@@ -313,7 +313,7 @@ sub related : Local {
     my ($self, $c) = @_;
     my $username = $c->username;
     my $p = $c->request->parameters;
-
+    
     my $where = {};
 
     my %filter;
@@ -324,11 +324,6 @@ sub related : Local {
     if ( $p->{mids} ){
         my @mids = _array $p->{mids};
         $filter{mid} = \@mids;    
-    }
-
-    if ( $p->{query} ){
-        my $query = $p->{query};
-        $where = $self->get_search_query_topic ( $query, $where );    
     }
 
     $filter{category_type} = 'release' if ($p->{show_release});
@@ -356,7 +351,7 @@ sub related : Local {
     }
 
     $where = $c->model('Topic')->apply_filter( $where, %filter );
-    #_debug $where;
+    # _debug $where;
 
     my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
             fields=>{ _txt=>0 });
@@ -524,8 +519,10 @@ sub view : Local {
                 $topic_doc = $topic_ci->get_doc;
 
             } catch {
+                my $err = shift;
                 $c->stash->{viewKanban} = 0;
                 $c->stash->{viewDocs} = 0;
+                _fail $err;
             };
         } else {
             $c->stash->{viewKanban} = 0;
