@@ -98,7 +98,7 @@ Ext.onReady(function(){
                  handler: function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.png" } ); },
                  icon : '/static/images/icons/envelope.png' 
              },
-             { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); }, icon:'/static/images/icons/user_suit.png' },
+             { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         

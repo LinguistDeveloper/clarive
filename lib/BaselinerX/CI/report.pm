@@ -37,7 +37,7 @@ sub root_reports {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
-            icon    => '/static/images/icons/topic.png',
+            icon    => '/static/images/icons/report_default.png',
             menu    => [ ],
             data    => {
                 click   => {
@@ -248,7 +248,7 @@ sub my_searches {
             {
                 mid     => $folder->mid,
                 text    => $name,
-                icon    => '/static/images/icons/topic.png',
+                icon    => '/static/images/icons/report_default.png',
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
@@ -304,7 +304,7 @@ sub public_searches {
 		push @public,{
 			mid     => $folder->mid,
 			text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
-			icon    => '/static/images/icons/topic.png',
+			icon    => '/static/images/icons/report_default.png',
 			menu    => [ ],
 			data    => {
 				click   => {
