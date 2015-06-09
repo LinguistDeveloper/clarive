@@ -661,12 +661,13 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
     var comment_field = new Baseliner.HtmlEditor({
         listeners: { 'initialize': function(){ comment_field.focus() } }
     });
-    var btn_submit = {
+    var btn_submit = new Ext.Button({
         xtype: 'button',
         icon:'/static/images/icons/comment_new.gif',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
+            btn_submit.disable();
             var id = cardcom.getLayout().activeItem.id;
             if( id == comment_field.getId() ) {
                 text = comment_field.getValue();
@@ -676,11 +677,12 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 content_type = 'code';
             }
             var text_length = text.replace(/\s+|&nbsp;|<br>/g, '');
-            if(text_length.length == 0) { Baseliner.message( _('Error'), _('Missing data') ); return; };
+            if(text_length.length == 0) { Baseliner.message( _('Error'), _('Missing data') ); btn_submit.enable(); return; };
             Baseliner.ajaxEval( '/topic/comment/add',
                 { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
                 function(res) {
-                   if( ! res.failure ) { 
+                    btn_submit.enable();
+                    if( ! res.failure ) { 
                        Baseliner.message(_('Success'), res.msg );
                        win_comment.close();
                        if( Ext.isFunction(cb)){
@@ -704,13 +706,13 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                                 });
                             my_self.detail.body.setStyle('overflow', 'auto');                           
                        }
-                   } else {
+                    } else {
                        Baseliner.error( _('Error'), res.msg );
                     }
                  }
             );
         }
-    };
+    });
 
     var code_field = new Ext.form.TextArea({});
     var code;
