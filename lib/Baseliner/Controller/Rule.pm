@@ -566,6 +566,7 @@ sub palette : Local {
                     text => _loc($n->{name}) // $service_key,
                 }
             } 
+            grep { $_->{show_in_palette} }
             map { 
                 $c->registry->get( $_ );
             } @fieldlets
