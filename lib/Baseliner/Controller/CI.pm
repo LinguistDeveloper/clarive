@@ -276,8 +276,10 @@ sub tree_objects {
         $where->{mid}=mdb->in(@mids_query);
     }
 
-    if ( $collection && ref $collection ) {
+    if ( _array($collection) ) {
         ($collection) = _array($collection);
+    } else {
+        $collection = '';
     }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
@@ -623,7 +625,9 @@ sub store : Local {
             }
             $mids = [ _array($mids), _unique @security];
         }
-
+        if ( ref $class ) {
+           ($class) = _array($class);
+        }
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
