@@ -275,7 +275,10 @@ sub tree_objects {
         push @mids_query, map { $_->{mid} } mdb->master_doc->find({ '$or'=>[ {name=>qr/$q/i}, {moniker=>qr/$q/i} ] })->fields({ mid=>1 })->all;
         $where->{mid}=mdb->in(@mids_query);
     }
-    
+
+    if ( $collection && ref $collection ) {
+        ($collection) = _array($collection);
+    }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     my $mids = $p{mids};
