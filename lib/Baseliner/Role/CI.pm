@@ -977,6 +977,9 @@ sub variables_like_me {
         if( my $classname = $p{classname} ) {
             @final = grep { defined $_->var_ci_class && $_->var_ci_class eq $classname } @vars;
         } elsif( my $role = $p{role} ) {
+            if ( ref $role ) {
+                ($role) = _array($role);
+            }
             my $cn = Util->to_role_class($role);
             if( $cn->can('meta') ) {
                 my %consumers = map { $_=>1 } $cn->meta->consumers; 
