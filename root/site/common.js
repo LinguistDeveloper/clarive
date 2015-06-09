@@ -4018,22 +4018,29 @@ Baseliner.generic_fields = function(params){
     if(data.fieldletType == /system/){
         data.origin = 'system';
     }
-  
     var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
 
+    var all_sections = { 
+        'head': _('Header'),
+        'body': _('Body'),
+        'details': _('Details'),
+        'more': _('More info'),
+        'between': _('Between')
+    };
+    var final_sections = [];
+    var available_sections = data.config ? data.config.section_allowed : ['head','body','details','more','between']; 
+    available_sections.forEach( function(element){
+        final_sections.push([ element, all_sections[element] ]);
+    });
+
+    //all_sections
     var combo_section = new Baseliner.ComboDouble({
         name: 'section',
         editable: false,
         fieldLabel: _('Section to view'),
         emptyText: _('Select one'),
-        data:[ 
-            [ 'head', _('Header') ],
-            [ 'body', _('Body') ],
-            [ 'details', _('Details') ],
-            [ 'more', _('More info') ],
-            [ 'between', _('Between') ]
-        ],
-        value: data.section || 'body',
+        data: final_sections,
+        value: data.section || available_sections[0],
     });
 
     var combo_colspan = new Baseliner.ComboDouble({

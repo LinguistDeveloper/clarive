@@ -578,7 +578,9 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {}, attributes: node.attributes }, function(comp){
+                    var data = node.attributes.data;
+                    data.config = res.config;
+                    Baseliner.ajaxEval( res.form, { data: data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
                             if(form.is_valid()){
