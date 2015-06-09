@@ -4028,7 +4028,7 @@ Baseliner.generic_fields = function(params){
         'between': _('Between')
     };
     var final_sections = [];
-    var available_sections = data.config ? data.config.section_allowed : ['head','body','details','more','between']; 
+    var available_sections = data.config.section_allowed ? data.config.section_allowed : ['head','body','details','more','between']; 
     available_sections.forEach( function(element){
         final_sections.push([ element, all_sections[element] ]);
     });
