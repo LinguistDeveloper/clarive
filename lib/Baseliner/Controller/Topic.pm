@@ -519,8 +519,10 @@ sub view : Local {
                 $topic_doc = $topic_ci->get_doc;
 
             } catch {
+                my $err = shift;
                 $c->stash->{viewKanban} = 0;
                 $c->stash->{viewDocs} = 0;
+                _fail $err;
             };
         } else {
             $c->stash->{viewKanban} = 0;
