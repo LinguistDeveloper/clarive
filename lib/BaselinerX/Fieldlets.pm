@@ -168,6 +168,7 @@ register 'fieldlet.status_chart_pie' => {
     html        => '/fields/templates/html/status_chart_pie.html',
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart-pie.png',
+    section     => 'between',
     type        => 'generic'
 };
 
