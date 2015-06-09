@@ -625,7 +625,7 @@ sub changeset : Local {
         # find releases for each changesets
         #my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
         my @releases = map { $_->{id}} mdb->category->find({ is_release => mdb->true})->all;
-        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'category.id' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;
+        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'id_category' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;    
         my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{"$$_{from_mid}"}@topic_topic), is_release=>mdb->true })->all;
         my %releases;
         push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
