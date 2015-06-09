@@ -232,7 +232,7 @@ sub branch_tree : Local {
                         },
                         repo_mid => $node->{repo_mid},
                         branch   => $node->{branch},
-                        tab_icon => '/static/images/icons/leaf.gif',
+                        tab_icon => '/static/images/icons/properties.png',
                         file     => "$f",
                         repo_dir => $node->{repo_dir},
                         rev_num  => $sha,  

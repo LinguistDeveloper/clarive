@@ -432,6 +432,7 @@ namespace::clean
 # from old dispatcher 
 
 Class::Load
+Class::Unload
 Error
 forks
 Getopt::Compact
