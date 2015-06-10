@@ -15,6 +15,8 @@ register 'fieldlet.attach_file' => {
     get_method  => 'get_files',
     type        => 'upload_files',
     relation    => 'system',
+    section_allowed => ['details','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.progressbar' => {
@@ -202,7 +204,9 @@ register 'fieldlet.checkbox' => {
     js          => '/fields/templates/js/checkbox.js',
     form        => '/fields/templates/config/checkbox.js',
     icon        => '/static/images/icons/checkbox.png',
-    type        => 'checkbox'
+    type        => 'checkbox',
+    section_allowed => ['details','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.separator' => {
