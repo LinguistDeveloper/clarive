@@ -233,7 +233,8 @@
             tbar: [
                 { 
                     text: _('Save'),
-                    icon:'/static/images/download.gif',
+                    //icon:'/static/images/download.gif',
+                    icon:'/static/images/icons/save.png',
                     cls: 'x-btn-text-icon',
                     handler: function(){
                         if( field_annotate.getValue().length > 2000 ) {
@@ -286,7 +287,8 @@
         else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
-        else if( value=='comment' ) icon='post.gif';
+        //else if( value=='comment' ) icon='post.gif';
+        else if( value=='comment' ) icon='sms.png';
         if( icon!=undefined ) {
             return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
         } else {
@@ -413,7 +415,7 @@
         } 
     });
 
-    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', hidden: false,
+    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ajaxEval( '/job/log/delete', { mid: current_job().mid, job_exec: job_exec,
                 confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().mid, job_exec) }, function(res) {

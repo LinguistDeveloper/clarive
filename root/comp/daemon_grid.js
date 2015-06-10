@@ -50,7 +50,7 @@
     };
 
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/daemon.gif' />" ;
+	    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.gif' />" ;
     };
 
     var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -154,7 +154,7 @@
     
         var btn_delete = new Ext.Toolbar.Button({
 		    text: _('Delete'),
-		    icon:'/static/images/icons/delete.gif',
+		    icon:'/static/images/icons/delete_.png',
 		    cls: 'x-btn-text-icon',
 		    disabled: true,
 		    handler: function() {

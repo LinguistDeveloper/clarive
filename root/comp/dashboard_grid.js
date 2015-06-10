@@ -489,7 +489,7 @@
     
     var btn_delete = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

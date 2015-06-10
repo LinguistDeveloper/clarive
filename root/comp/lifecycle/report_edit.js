@@ -403,7 +403,7 @@
                             }
                             node.remove();
                         }, 
-                        icon:'/static/images/icons/delete.gif' });
+                        icon:'/static/images/icons/delete_.png' });
             var stmts_menu = new Ext.menu.Menu({
             items: its 
         });

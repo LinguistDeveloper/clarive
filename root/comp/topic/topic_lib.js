@@ -800,7 +800,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     
         self.btn_delete_form = new Ext.Button({
             text: _('Delete'),
-            icon:'/static/images/icons/delete.gif',
+            icon:'/static/images/icons/delete_.png',
             cls: 'x-btn-icon-text',
             // type: 'submit',
             hidden: self.permDelete,

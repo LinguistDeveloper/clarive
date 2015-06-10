@@ -44,7 +44,7 @@
         tbar: [
             combo_bl,
             combo_vars, 
-            { icon:'/static/images/icons/delete.gif', handler: del_var }
+            { icon:'/static/images/icons/delete_.png', handler: del_var }
         ],
         data: data_value
     });

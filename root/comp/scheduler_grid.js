@@ -100,7 +100,7 @@
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete task'),
         hidden: true,
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             delete_schedule();

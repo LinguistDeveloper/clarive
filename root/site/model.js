@@ -1918,7 +1918,7 @@ Baseliner.DataEditor = function(c) {
         btn_json,
         '-',
         { icon:'/static/images/icons/add.gif',  tooltip: _('Create'), handler: add_row },
-        { icon:'/static/images/icons/delete.gif',  tooltip: _('Delete'), handler: self.del_row },
+        { icon:'/static/images/icons/delete_.png',  tooltip: _('Delete'), handler: self.del_row },
         '->' 
     ];
 
@@ -2417,7 +2417,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                     labelWidth: 200, labelAlign: 'right'
                 },
                 { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({ 
-                        icon:'/static/images/icons/delete.gif',
+                        icon:'/static/images/icons/delete_.png',
                         handler: function(){
                             self.deleting = true;
                             self.remove( pn );
@@ -2533,7 +2533,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 }
             }
         }});
-        self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete.gif', handler:function(){
+        self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete_.png', handler:function(){
             var ix = self.combo_vars.view.getSelectedIndexes()[0];
             if( ix!==undefined ) {
                 var rec = self.store_vars.getAt(ix);
