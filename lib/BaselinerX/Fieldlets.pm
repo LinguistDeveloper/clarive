@@ -33,7 +33,9 @@ register 'fieldlet.calculated_number' => {
     js          => '/fields/templates/js/calculated_numberfield.js',
     form        => '/fields/templates/config/calculated_numberfield.js',
     icon        => '/static/images/icons/number.png',
-    meta_type   => 'number'
+    meta_type   => 'number',
+    section_allowed => ['details','head','body','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.datetime' => {
@@ -43,7 +45,9 @@ register 'fieldlet.datetime' => {
     form        => '/fields/templates/config/datetimefield.js',
     icon        => '/static/images/icons/calendar.png',
     meta_type   => 'date',
-    type        => 'datefield'
+    type        => 'datefield',
+    section_allowed => ['details','head','body','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.time' => {
@@ -52,7 +56,9 @@ register 'fieldlet.time' => {
     js          => '/fields/templates/js/timefield.js',
     form        => '/fields/templates/config/timefield.js',
     icon        => '/static/images/icons/time.png',
-    type        => 'timefield'
+    type        => 'timefield',
+    section_allowed => ['details','head','body','more','between'],
+    section     => 'details'
 };
 
 
@@ -62,7 +68,9 @@ register 'fieldlet.ci_grid' => {
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/templates/js/ci_grid.js',
     form        => '/fields/templates/config/ci_grid.js',
-    icon        => '/static/images/icons/grid.png'
+    icon        => '/static/images/icons/grid.png',
+    section_allowed => ['details','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.combo' => {
@@ -70,7 +78,9 @@ register 'fieldlet.combo' => {
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
-    icon        => '/static/images/icons/combo_box.png'
+    icon        => '/static/images/icons/combo_box.png',
+    section_allowed => ['details','head','body','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.dbi_query' => {
@@ -234,7 +244,9 @@ register 'fieldlet.number' => {
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/numberfield.js',
     form        => '/fields/templates/config/numberfield.js',
-    icon        => '/static/images/icons/number.png'
+    icon        => '/static/images/icons/number.png',
+    section_allowed => ['details','head','body','more','between'],
+    section     => 'details'
 };
 
 ########################
