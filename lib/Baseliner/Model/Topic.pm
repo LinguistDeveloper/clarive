@@ -3256,7 +3256,7 @@ sub get_topics_mdb{
         if( my $query = delete $where->{query} ) {
             @mids_in = $self->run_query_builder($query,$where,$username);
         }
-        $where->{mid} = mdb->in( @mids_in ); 
+        $where->{mid} = mdb->in( @mids_in ) if @mids_in; 
 
         _throw _loc('Missing username') if !$username;
 
