@@ -1357,7 +1357,7 @@
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
         var sc = rec.data.status_code;
-        button_resume.disable();
+        button_resume.hide();
         if ( rec.data.can_cancel || rec.data.can_delete ) {
             if( (sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED') && rec.data.can_delete == '1' ) {
                 button_cancel.setText( msg_cancel_delete[1] );
