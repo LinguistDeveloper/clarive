@@ -260,6 +260,7 @@ sub monitor {
             type_raw     => $job->{job_type},
             type         => $type,
             runner       => $job->{runner},
+            job_family   => $job->{job_family} ||'pipeline',
             id_rule      => $job->{id_rule},
             rule_name    => _loc('Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ), 
             contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
