@@ -216,7 +216,7 @@ sub _create {
     $self->jobid( $job_seq );
 
     # setup name
-    my $name = $config->{name}
+    my $name = $self->name || $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
     Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
