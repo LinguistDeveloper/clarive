@@ -238,7 +238,7 @@ sub _create {
     
     # create a hash stash
     my $stash = +{ %{ $self->stash_init || {} }, %topic_stash };
-    $self->stash_init({});
+    $self->stash_init($stash);
     
     # separate releases into changesets
     my @releases; 
