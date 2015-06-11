@@ -22,10 +22,7 @@ has current_service    => qw(is rw isa Any default Core);
 has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
 has starttime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
-has maxstarttime       => qw(is rw isa TS coerce 1), default => sub { 
-    my ($self) = @_;
-    return ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) 
-};
+has maxstarttime       => qw(is rw isa TS coerce 1);  # default is in _create
 has maxapprovaltime    => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
@@ -206,18 +203,10 @@ sub _create {
     my $config = model->ConfigStore->get( 'config.job', bl=>$self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
-    #$now->set_time_zone('CET');
-    my $now = mdb->now;
-    my $end = $now + $self->expiry_time ;
 
-    $p{starttime}    ||= "$now";
-    $p{maxstarttime} ||= "$end";
-
-    ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $now, $end );
-    ($starttime, $maxstarttime ) = $p{starttime} < $now
-        ? ( $now , $end )
-        : ($p{starttime} , $p{maxstarttime} );
+    if( !$self->maxstarttime ) {
+        $self->maxstarttime( ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) );
+    }
 
     my $type = $p{job_type} || $p{type} || $config->{type};
     
