@@ -56,7 +56,7 @@
                             });
                         } 
                     },
-                    {  icon: '/static/images/icons/delete.gif',
+                    {  icon: '/static/images/icons/delete_.png',
                         text: _loc('Delete'),
                         handler: function(){ 
                             var ff = cal_form.getForm();

@@ -627,7 +627,7 @@
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
                 { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.gif', 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete_.png', 
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
                 { flex:1, layout:'hbox', padding: 20, 
@@ -821,7 +821,7 @@
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         hidden: true,
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();

@@ -994,7 +994,7 @@ register 'statement.fail' => {
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            Util->_fail( q{%s} );
+            Util->_fail( parse_vars( q{%s}, $stash ) );
         }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
     }
 };

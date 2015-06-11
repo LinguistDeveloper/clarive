@@ -24,7 +24,7 @@
         });
     }});
     
-    var btn_del = new Ext.Button({ icon:IC('delete.gif'), hidden: false, text:_('Delete'), handler:function(){
+    var btn_del = new Ext.Button({ icon:IC('delete_.png'), hidden: false, text:_('Delete'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -74,7 +74,7 @@
     };
     var btn_grid = new Ext.Button({ text:_('View Messages'),
      //icon:IC('catalog.gif'), 
-     icon:IC('sms.gif'), 
+     icon:IC('sms.png'), 
      pressed: true, toggleGroup:'sms-btn', handler:function(){ card_show(true) } });
     var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('edit.gif'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
     Baseliner.sms_read = function(ix,grid_id){

@@ -572,7 +572,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/delete.gif',
+                icon: '/static/images/icons/delete_.png',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();
@@ -1092,7 +1092,7 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Delete'),
-            icon: IC('delete.gif'),
+            icon: IC('delete_.png'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1630,7 +1630,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        this.btns = {
            download: new Ext.Button({ text:_('Download'), icon: ic, handler: function(){ self.download() } }),
            get: new Ext.Button({ text:_('Get'), icon: ic, hidden: true, handler: function(){ self.get() } }),
-           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete.gif', 
+           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete_.png', 
                hidden: true, handler: function(){ self.del() } }),
            install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.png',
                hidden: true, handler: function(){ self.install() } })
@@ -2865,7 +2865,7 @@ Baseliner.render_date = function(v){
 Baseliner.render_checkbox = function(v){
     return v 
         ? '<img src="/static/images/icons/checkbox.png">'
-        : '<img src="/static/images/icons/delete.gif">';
+        : '<img src="/static/images/icons/delete_.png">';
 };
         
 Baseliner.render_ago = function(t,p){
@@ -3648,7 +3648,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             tbar: [
                 { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
                 '->',
-                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.gif', handler: file_del }
+                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete_.png', handler: file_del }
             ],
             viewConfig: {
                 headersDisabled: true,
@@ -4018,22 +4018,29 @@ Baseliner.generic_fields = function(params){
     if(data.fieldletType == /system/){
         data.origin = 'system';
     }
-  
     var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
 
+    var all_sections = { 
+        'head': _('Header'),
+        'body': _('Body'),
+        'details': _('Details'),
+        'more': _('More info'),
+        'between': _('Between')
+    };
+    var final_sections = [];
+    var available_sections = data.config.section_allowed ? data.config.section_allowed : ['head','body','details','more','between']; 
+    available_sections.forEach( function(element){
+        final_sections.push([ element, all_sections[element] ]);
+    });
+
+    //all_sections
     var combo_section = new Baseliner.ComboDouble({
         name: 'section',
         editable: false,
         fieldLabel: _('Section to view'),
         emptyText: _('Select one'),
-        data:[ 
-            [ 'head', _('Header') ],
-            [ 'body', _('Body') ],
-            [ 'details', _('Details') ],
-            [ 'more', _('More info') ],
-            [ 'between', _('Between') ]
-        ],
-        value: data.section || 'body',
+        data: final_sections,
+        value: data.section || available_sections[0],
     });
 
     var combo_colspan = new Baseliner.ComboDouble({

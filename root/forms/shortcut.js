@@ -45,7 +45,7 @@
                             autoScroll: true,
                             tbar: [
                                 '->',
-                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
+                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete_.png', handler: function(){ win.close() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
                             bodyStyle: { padding: '4px', "background-color": '#eee' },

@@ -135,7 +135,7 @@ for(my $hh=0; $hh<=24; $hh++) {
 
 %}
 % unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
-            ,{  icon:'/static/images/icons/delete.gif', text: _('Delete'), handler: function(){ modify_window('B') } }
+            ,{  icon:'/static/images/icons/delete_.png', text: _('Delete'), handler: function(){ modify_window('B') } }
 %   if( $activa ) {
             ,{ icon:'/static/images/icons/stop.png', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {

@@ -175,7 +175,7 @@
     
     var btn_delete_status = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -643,7 +643,7 @@
     });     
 
     var btn_delete_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         tooltip:_('Delete'),
         cls: 'x-btn-text-icon',
         disabled: true,
@@ -882,7 +882,7 @@
         
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete.gif',
+            icon:'/static/images/icons/delete_.png',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -1336,7 +1336,7 @@
 
     var btn_delete_label = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
+        icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

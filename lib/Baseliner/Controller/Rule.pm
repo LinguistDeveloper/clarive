@@ -802,6 +802,10 @@ sub edit_key : Local {
             } else {
                 $config_data = {};
             }
+        } elsif ( $r->isa( 'BaselinerX::Type::Fieldlet' )){
+            $config_data = $config ? $self->config_to_data( $config ) : {};
+            $config_data = { %$config_data, %{ $r->data } } ;
+            $config_data->{section_allowed} = $r->registry_node->param->{section_allowed};
         } else {
             # statement
             $config_data = $config ? $self->config_to_data( $config ) : {};

@@ -168,7 +168,7 @@
         tbar: [  _('Search') + ': ', ' ',
             search_field,' ',' ',
             { icon:'/static/images/icons/refresh.png', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
-            { icon:'/static/images/icons/delete.gif', handler: del_event , 
+            { icon:'/static/images/icons/delete_.png', handler: del_event , 
             //text:_('Delete event')},
             text:_('Delete')},
             { icon:'/static/images/icons/restart_new.png', handler: function(){ event_status_change('new') }, text:_('Reset event status') }

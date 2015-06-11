@@ -257,7 +257,7 @@ sub my_searches {
                     },
                     {
                         text   => _loc('Delete') . '...',
-                        icon   => '/static/images/icons/delete.gif',
+                        icon   => '/static/images/icons/delete_.png',
                         eval   => { handler => 'Baseliner.delete_search' }
                     }                    
                 ],

@@ -224,7 +224,7 @@
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
-            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
@@ -578,7 +578,9 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {}, attributes: node.attributes }, function(comp){
+                    var data = node.attributes.data;
+                    data.config = res.config;
+                    Baseliner.ajaxEval( res.form, { data: data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
                             if(form.is_valid()){
@@ -595,7 +597,7 @@
                             autoScroll: true,
                             tbar: [
                                 '->',
-                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
+                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete_.png', handler: function(){ form.destroy() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
                             bodyStyle: { padding: '4px', "background-color": '#eee' },
@@ -817,7 +819,7 @@
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
                     { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/restart_new.png' },
-                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.gif' } 
+                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete_.png' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
