@@ -7,6 +7,7 @@ use v5.10;
 use utf8;
 with 'Baseliner::Role::CI::Internal';
 
+has job_name           => qw(is rw isa Str);   # initial job_name, overwrites the gen_job_mask system
 has id_stash           => qw(is rw isa Any);
 has jobid              => qw(is rw isa Any);   # mdb->seq('job')
 has bl                 => qw(is rw isa Any);
@@ -216,7 +217,7 @@ sub _create {
     $self->jobid( $job_seq );
 
     # setup name
-    my $name = $self->name || $config->{name}
+    my $name = $self->job_name || $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
     Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
