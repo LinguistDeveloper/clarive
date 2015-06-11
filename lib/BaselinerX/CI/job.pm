@@ -25,6 +25,7 @@ has starttime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->no
 has maxstarttime       => qw(is rw isa TS coerce 1);  # default is in _create
 has maxapprovaltime    => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
+has job_family         => qw(is rw isa Any default pipeline);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
@@ -314,7 +315,7 @@ sub _create {
             push @cs_list, $cs->topic_name ."\n";
         }
     }
-    _fail _loc('Missing job contents') unless @cs_list > 0;
+    _fail _loc('Missing job contents') if !@cs_list && $self->job_family eq 'pipeline';
 
     # log job items
     # if( @cs_list > 10 ) {
