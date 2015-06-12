@@ -424,7 +424,7 @@
         } 
     };
 
-    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.gif', cls: 'x-btn-text-icon', hidden: false,
+    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
                     var mid = current_job().mid;
                     Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", mid ), { mid: mid } );

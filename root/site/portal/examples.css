@@ -59,6 +59,8 @@ pre.code{
     margin:5px 5px 10px 5px !important;
 }
 
+/*****Customized styles for drag & drop between tabs. Clarive 6.3*********/
+
 .dd-arrow-down.dd-arrow-down-invisible {
     display: url( /static/ext/examples/shared/icons/fam/folder_wrench.png );
     visibility: hidden;
@@ -66,7 +68,7 @@ pre.code{
 	}
 	 
 .dd-arrow-down {
-  background-image:url(/static/images/icons/arrow_down.png );
+  background-image:url(/static/images/icons/arrow_down_black.png );
   display: block;
   visibility: visible;
   z-index: 20000;
@@ -92,3 +94,6 @@ pre.code{
     list-style: none outside none;}
 
 
+/*.x-dd-drop-nodrop .x-dd-drop-icon{background-image:url(-----------);}*/
+
+.x-dd-drop-ok .x-dd-drop-icon{background-image:url(/static/images/icons/log_i.png);}

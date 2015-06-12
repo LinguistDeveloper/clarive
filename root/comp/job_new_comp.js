@@ -658,7 +658,7 @@
             {
             xtype: 'button',
             text: _('Remove Job Item'),
-            icon:'/static/images/del.gif',
+            icon:'/static/images/icons/del_all.png',
             cls: 'x-btn-text-icon',
             handler: function() {
                 var sm = jc_grid.getSelectionModel();

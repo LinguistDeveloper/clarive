@@ -130,7 +130,7 @@
                         }},
                         {
                         text: '<% $row->{delLabel} %>',
-                        icon: '/static/images/del.gif',
+                        icon: '/static/images/icons/del_all.png',
                            cls: 'x-btn-text-icon',
                         handler : function(e){     
                             var __grid = Ext.getCmp('<% $row->{id} %>');			            
