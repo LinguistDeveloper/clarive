@@ -10,7 +10,7 @@
         store: rules_store,
         width: 140,
         params: {start: 0, limit: ps },
-        emptyText: _('<search>')
+        emptyText: _('<Search>')
     });
 
     var rule_del = function(){
@@ -844,9 +844,9 @@
             ] });
         
         // node search system
-        var btn_search = new Ext.Button({ icon:IC('search.png'), menu:[
-            { text: _('Search'), hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
-            { text: _('Clear'), hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
+        var btn_search = new Ext.Button({ icon:IC('wrench.gif'), menu:[
+            { text: _('Search'), icon:'/static/images/icons/search-small.png',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
+            { text: _('Clear'), icon:'/static/images/icons/wipe_cache.png', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } },
             '-',
@@ -916,12 +916,16 @@
                 dblClick: node_dbl_click
             },
             rootVisible: true,
-            tbar: [ 
-                btn_save_tree,
+            tbar: [
+                search_box, 
+                //btn_search, 
                 btn_refresh_tree,
+                btn_save_tree,
+                //btn_refresh_tree,
                 btn_dsl,
-                '-',
-                search_box, btn_search,
+                btn_search, 
+                //'-',
+                //search_box, btn_search,
                 '->',
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
