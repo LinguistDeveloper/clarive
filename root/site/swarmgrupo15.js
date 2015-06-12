@@ -6,16 +6,47 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
     initComponent : function(){
         var self = this;
-        self.cuenta = 0;
+        //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
-        self.origen=0;
+        self.i=0;
+        self.j=0;
+        self.contador=1000;
+        self.days = 86400000;
+        self.reiniciar = false;
+        //self.current_date=10;
+        //self.array = {'2014-12-07 14:18': ['evadd']};
+        //self.array = ['2014-12-07 10:43','2014-12-07 13:00','2015-03-16 12:10','2015-03-15 22:09','2015-02-16 07:47'];
+        //self.cnt = 4;
+
+        self.date = new Date();
+        self.fecha_fin = new Date();
+        //self.origen=0;
 
         self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim() } });
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop ];
+        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+            menu : {
+                items: [{
+                    text: 'Today', handler: function(){ self.get_days(0) } 
+                }, {
+                    text: '2D', handler: function(){ self.get_days(2) } 
+                }, {
+                    text: '7D', handler: function(){ self.get_days(7) } 
+                }, {
+                    text: '1M', handler: function(){ self.get_days(30) } 
+                }, {
+                    text: '3M', handler: function(){ self.get_days(90) } 
+                }, {
+                    text: '6M', handler: function(){ self.get_days(180) } 
+                }]
+            },
+            //handler: function(){ self.start_anim() } 
+        });
+
+        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, self.scale_bar];
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -40,19 +71,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
-            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
-            ".node.a": { "fill": "red" },
-            ".node.b": { "fill": "green" },
-            ".node3": { "fill": "#1f77b4" }
+            //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' }
         });
 
         var id = self.body.id; 
         var selector = '#' + id; 
 
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').style("background-color", self.background_color).attr("preserveAspectRatio", "xMinYMin meet");
-        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
-        
+        //.append("text").text("HOLA ESTOY PROBANDO").attr("fill","#00CCFF");
+        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g'); 
+
         //CREAMOS UN RECTANGULO EN BLANCO DONDE SE VA A PINTAR TODO Y ES EL QUE HACE EL ZOOM
         self.svg.append('svg:rect')
             .attr('width', '100%')
@@ -100,13 +128,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_texto_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
         Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
-
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
         Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF6666").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
-
 
         var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -128,19 +154,45 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     start_anim : function(){
         var self = this;
-        Cla.ajax_json('/swarm/leer_log', {limit:self.limit}, function(res){
+        if(self.i==0){
+        Cla.ajax_json('/swarm/grouped_activity', {limit:self.limit, days: self.days}, function(res){
+            
+            console.log(res.data);
             self.res = res;
             self.i = 0;
-            if( !self.initiated ) {
-                self.first();
-                self.initiated = true;
-            }
-            self.anim_running = true;
-            self.btn_start.disable();
-            self.btn_pause.enable();
-            self.btn_stop.enable();
-            setTimeout(function(){ self.anim() }, 100 );
+            self.j = 0;
+
+            //alert("dame dias  "+ self.days);
+
+            //var days = 86400000;
+
+            var fecha=new Date();
+            var tiempo =fecha.getTime();
+            var total= fecha.setTime(tiempo-self.days);
+            var fecha_inicio = new Date(total);
+            
+  
+            var calculo = self.calcula_contador(fecha_inicio);
+            calculo = new Date(calculo);
+            self.date = self.calcular_fecha(calculo);
+            self.date = '2014-11-04 17:50';
+            //alert("el calculo es "+self.date);
+
         });
+        }
+
+        if( !self.initiated ) {
+            //alert("inicializa");
+            self.first();
+            self.initiated = true;
+        }
+
+        setTimeout(function(){ self.datos(self.date) }, 1000 );
+        self.anim_running = true;
+        self.btn_start.disable();
+        self.btn_pause.enable();
+        self.btn_stop.enable();
+
     },
     pause_anim : function(){
         var self = this;
@@ -155,40 +207,193 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
+        self.reiniciar = true;
+        //self.i=self.res.data.length;  
+        //self.date = self.fecha_fin;
     },
-    anim : function(){
+    datos : function(fecha){
         var self = this;
+            //alert("llego a datos con "+fecha);
+            //var fecha = '2015-03-16 12:10';
+            if ( self.res.data[fecha] ) {
+                //alert("llega aqui" + self.res.data[fecha]);
+                var actividad = self.res.data[fecha];
+                    //alert("llego aqui "+actividad.length);
+                    for(i=0; i< actividad.length; i++) {
+                        self.anim(actividad,actividad.length);
+                    }
+            }else{
+                var date = new Date(self.date);
+                var calculo = self.calcula_contador(date);
+                calculo = new Date(calculo);
+                self.date = self.calcular_fecha(calculo);
+                if(date < self.fecha_fin && self.reiniciar != true){
+                    //alert("entro aqui");
+                            //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
+                    self.vis.append("text")
+                        .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+                        .attr("fill","#ffffff")
+                        .attr("x", '45%')
+                        .attr("y", '5%').transition().duration(1).remove();
+                    self.force.start();
+                    setTimeout(function(){ self.datos(self.date) }, 1000 );
+                }else{
+                
+                    self.i=0;
+                    self.j=0;
+                    self.initiated=false;
+                    self.reiniciar=false;
+
+                    self.anim_running = false;
+                    self.parents =  {};
+                    self.nodes = [];
+                    self.links = [];
+
+                    self.node.remove();
+                    self.link.remove();
+                    self.link2.remove();
+                    self.node2.remove();
+                    self.node3.remove();
+                    self.node4.remove();
+                    self.node5.remove();
+                    self.node6.remove();
+                    self.node7.remove();
+                    self.node8.remove();
+                    self.node9.remove();
+                    self.texto.remove();
+                    self.force.stop();
+                    self.vis.remove();
+
+                    self.init();
+                    self.start_anim();
+                    return;
+
+                }
+            }
+
+
+ 
+    },
+    anim : function(actividad,tamano){
+        var self = this;
+
+        var actividad = actividad;
+        var tamano = tamano;
+
+
         if( !self.anim_running ) return;
 
-        var row = self.res.data[ self.i++ ];
-        if( !row ) {
+        if(self.reiniciar){
+
+            self.i=0;
+            self.initiated=false;
+            self.reiniciar=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
+            self.init();
+            self.start_anim();
+            return;
+        }
+        
+        //alert("actividad: "+actividad+" tamano: "+tamano+" j: "+self.j)
+        var row = actividad[ self.j++ ];
+        self.i++;
+
+
+        /*if( !row ) {
             // no more rows? stop animation
             self.stop_anim();
             return;
-        }
+        }*/
         row.id = Ext.id();
-        var next_timer = 1000;
 
-        //alert("llego aqui "+row.parent + "posicion" + self.i);
+
+        var next_timer = 1000;
+        //self.calculo_horas();
+
         if( row.parent ) {
             if( !self.parents[row.parent] ) {
                 self.parents[row.parent] = true;
                 self.add_inicial( row.parent );
-                var row = self.res.data[ self.i-- ];
+                var row = actividad[ self.j-- ];
             }else{
-            if(row.ev == 'add') {
-                //self.comprobar_timer_usuario();
-                self.add(row);
+                if(row.ev == 'add') {
+                    self.comprobar_timer_usuario();
+                    self.add(row);
+                }else if(row.ev == 'mod') {
+                    self.comprobar_timer_usuario();
+                    self.modify(row);
+                }else {
+                    self.comprobar_timer_usuario();
+                    self.del(row);
+                }
+            }
 
-                //self.adduser(row.who);
-            }else {
-                //self.comprobar_timer_usuario();
-                self.del(row);
+        if(self.i==actividad.length){
 
+            var date = new Date(self.date);
+            var calculo = self.calcula_contador(date);
+            calculo = new Date(calculo);
+            self.date = self.calcular_fecha(calculo);
+
+            self.i=0;
+            self.j=0;
+            //alert ("fecha date " +self.date + "fecha fin "+self.fecha_fin);
+                if(date < self.fecha_fin){
+                    //alert("entro aqui");
+                    setTimeout(function(){ self.datos(self.date) }, 1000 );
+                }else{
+
+                    self.i=0;
+                    self.initiated=false;
+
+                    self.anim_running = false;
+                    self.parents =  {};
+                    self.nodes = [];
+                    self.links = [];
+
+                    self.node.remove();
+                    self.link.remove();
+                    self.link2.remove();
+                    self.node2.remove();
+                    self.node3.remove();
+                    self.node4.remove();
+                    self.node5.remove();
+                    self.node6.remove();
+                    self.node7.remove();
+                    self.node8.remove();
+                    self.node9.remove();
+                    self.texto.remove();
+                    self.force.stop();
+                    self.vis.remove();
+
+                    self.init();
+                    self.start_anim();
+                    return;
+
+                }
             }
         }
-        }
-        setTimeout(function(){ self.anim() }, next_timer);
+
     },
     first : function(){
         var self = this;
@@ -237,7 +442,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
-
         self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
         self.texto.enter().append('text').attr("fill","url(#Color_texto_Raiz)").text(function(d) { return d.source.parent;});   
 
@@ -248,7 +452,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
         self.node4.exit().remove();
-
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
@@ -268,7 +471,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.exit().remove();
 
         self.force.start();
-        //self.borrar_nodo(self.timer);
+
     },
     add : function(row){
         var self = this;
@@ -284,7 +487,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //var c = self.nodes[1];
             var j = 0;
             while (j < self.nodes.length){
-                //alert("dentro el while "+self.nodes[j].node +" el parent es "+ row.parent);
+
                 if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
                         self.nodes.push(row);
                         self.links.push({source: row, target: self.nodes[j]});
@@ -293,101 +496,55 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }   
                 j++;
             }
-            // self.useradd(row);
 
             self.start({ row: row, timer: timer });
             self.add_user(row);
 
         }
     },
-     add_user : function(row){
+    modify : function(row){
         var self = this;
         var a = self.nodes[0];
-        //var d = row; //{id: self.i, node:  row.parent};
-                var a = self.nodes[0];
-        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", 
-            who: row.who, node: "usuarios", parent: "usuarios" };
+        var d = row; //{id: self.i, node:  row.parent};
 
-
-//################################################################################################
-//################################################################################################
-//################################################################################################
-//################################################################################################
-//################################################################################################
+        var timer = 1000;  // TODO calculate from previous and next events
 
         var j = 0;
+
         while (j < self.nodes.length){
+                //Buscamos el nodo a borrar.
+                if (self.nodes[j].node == row.node){
 
-            if (self.nodes[j].node == "usuarios"){
-                    
-                    self.nodes[j].t = self.nodes[j].t-1;
-                    if(self.nodes[j].t <= 0){
-                        alert("el usuario "+ self.nodes[j].who +" tiene un timer "+ self.nodes[j].t);
-                        //self.nodes[j].pop();
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
+                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
 
-                                                
-                        var i = 0;
-                        while(i < self.links.length){
-                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
-                                    alert("entra " + self.links.length);
-                                    //self.links[i].pop();
-                                    self.links.splice(self.links.indexOf(self.links[i]),1);
-                                    alert("entra " + self.links.length);
-                                    i=self.links.length;
-                                } 
-                                i++;
-                        }
-
-                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
-
-                    }
-            }
+                    j=self.nodes.length;
+                }   
             j++;
         }
 
-
-
-//################################################################################################
-//################################################################################################
-//################################################################################################
-//################################################################################################
-//################################################################################################
-
-       
-
         if (!a){
-             self.nodes.push(d);
-             self.links.push({source: d, target: row});
+             self.nodes.push(row);
+             self.links.push({source: row, target: row});
         }else {
             //var c = self.nodes[1];
             var j = 0;
             while (j < self.nodes.length){
-                    //alert("llega al while usuario "+d.who +"  el row es  "+row.who + " el usuario  "+self.nodes[j].node);
-                if (self.nodes[j].who ==  row.who && self.nodes[j].node == "usuarios"){
-                        //alert("llega al if usuario "+self.nodes[j].who);
-                        self.nodes[j].t = 5;
-                        var i = 0;
-                        while(i < self.links.length){
-                            if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
-                                //alert("entra");
-                                self.links.splice(self.links.indexOf(self.links[i]),1);
-                                i=self.links.length;
-                            } 
-                            i++;
-                        }
-                        self.links.push({source: self.nodes[j], target: row });
+
+                if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.links.push({source: row, target: self.nodes[j]});
+                        
                         j=self.nodes.length;
-                }
+                }   
                 j++;
             }
-         if(j==self.nodes.length){
-                        self.nodes.push(d);
-                        self.links.push({source: d, target: row });
-                        //alert("el usuario es "+self.nodes[self.nodes.length-1].who);
-                }      
+
+            self.start_modify({ row: row, timer: timer });
+            self.add_user(row);
+
         }
-        self.userstart(d);
-    },
+    },     
     del : function(row){
 
         var self = this;
@@ -409,13 +566,84 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.userstart(row);
         self.start({ row: row, timer: 1000 });
     },
+    add_user : function(row){
+        var self = this;
+        var a = self.nodes[0];
 
+        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios" };
+
+        if (!a){
+             self.nodes.push(d);
+             self.links.push({source: d, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var j = 0;
+            while (j < self.nodes.length){
+                    //alert("llega al while usuario "+d.who +"  el row es  "+row.who + " el usuario  "+self.nodes[j].node);
+                if (self.nodes[j].who ==  row.who && self.nodes[j].node == "usuarios"){
+
+                        self.nodes[j].t = 5;//Reinicia el timer del usuario cuando crea un nodo
+                        var i = 0;
+                        while(i < self.links.length){
+                            if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
+                                //alert("entra");
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
+                            } 
+                            i++;
+                        }
+                        self.links.push({source: self.nodes[j], target: row });
+                        j=self.nodes.length;
+                }
+                j++;
+            }
+         if(j==self.nodes.length){
+                        self.nodes.push(d);
+                        self.links.push({source: d, target: row });
+                }      
+        }
+        self.userstart(d);
+    },
+    comprobar_timer_usuario : function(){
+
+        var self = this;
+
+        var j = 0;
+        while (j < self.nodes.length){
+
+            if (self.nodes[j].node == "usuarios"){
+                    
+                    self.nodes[j].t = self.nodes[j].t-1;
+                    if(self.nodes[j].t <= 0){
+
+                        var i = 0;
+                        while(i < self.links.length){
+                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                    self.links.splice(self.links.indexOf(self.links[i]),1);
+                                    i=self.links.length;
+                                } 
+                                i++;
+                        }
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+
+                    }
+            }
+            j++;
+        }
+        self.force.start();
+
+    },
     start : function(dt){
 
         var self = this;
         
         var row = dt.row;
         var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
@@ -436,10 +664,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
         self.node9.enter().append("text").style("visibility", "hidden");
         self.node9.exit().remove();
-        
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","green");
-       // self.link.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
@@ -482,24 +706,81 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.exit().remove();
 
         self.force.start();
-        //self.pintar_usuario();
-/*
-        self.node2.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); });
-        self.node2.exit().remove();
 
-        self.node3.attr("x", function(d) { return d.x-(self.calculo_direcciones_x(d.x)*60); })
-            .attr("y", function(d) { return d.y-(self.calculo_direcciones_y(d.y)*60); });
+    },
+    start_modify : function(dt){
+
+        var self = this;
+        
+        var row = dt.row;
+        var timer = dt.timer;
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
+        self.link.exit().remove();
+
+        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.exit().remove();
+       
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
+        self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
+        self.node6.enter().append("text").style("visibility", "hidden");
+        self.node6.exit().remove();
+        self.node7 = self.node7.data(self.force.nodes(), function(d) { return d.id;});
+        self.node7.enter().append("text").style("visibility", "hidden");
+        self.node7.exit().remove();
+        self.node8 = self.node8.data(self.force.nodes(), function(d) { return d.id;});
+        self.node8.enter().append("text").style("visibility", "hidden");
+        self.node8.exit().remove();
+        self.node9 = self.node9.data(self.force.nodes(), function(d) { return d.id;});
+        self.node9.enter().append("text").style("visibility", "hidden");
+        self.node9.exit().remove();
+
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.exit().remove();
+      
+        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
+                         .on('mouseover', function(d)
+                         {
+                            d3.select(this).transition()
+                            .duration(750)
+                            .attr("r", 55)
+                            .attr("fill","url(#Amarillo)")
+                            //.attr("fill-opacity",0.6);
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                         })
+                         .on("mouseout", function()
+                         {
+                         d3.select(this).transition()
+                         .duration(750)
+                         .attr("r", 10)
+                         .attr("fill","url(#Verde)")
+                         .attr("fill-opacity",0.6);
+                         self.node6.style("visibility", "hidden");
+                         self.node7.style("visibility", "hidden");
+                         self.node8.style("visibility", "hidden");
+                         self.node9.style("visibility", "hidden");
+                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         })
+                         .call(self.force.drag)
+                         .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
+        self.node.exit().remove();
+
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
         self.node3.exit().remove();
 
+        self.force.start();
 
-        self.link2.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x-(self.calculo_direcciones_x(d.target.x)*60); })
-            .attr("y2", function(d) { return d.target.y-(self.calculo_direcciones_y(d.target.y)*60); });*/
-        //self.link2.exit().remove();
-
-        self.origen = 50;
     },
     userstart : function(row){
         
@@ -516,9 +797,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5.enter().append("text");
         self.node5.exit().remove();
 
-        //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
+        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
 
-        //quitamos esto para quitar la linea de link2
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
         self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
@@ -536,11 +816,115 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     }, 
+    calcular_fecha : function(date){
+
+        self = this;
+
+        var day;
+        var month;
+        var hour;
+        var minutes;
+        var fecha;
+
+        if(date.getDate() < 10){
+            day = "0"+date.getDate();
+        }else{day = date.getDate();}
+
+        if(date.getMonth() < 9){
+            month = "0"+(date.getMonth()+1);
+        }else{month = date.getMonth()+1;}
+
+        if(date.getHours() < 10){
+            hour = "0"+date.getHours();
+        }else{hour = date.getHours();}
+
+        if(date.getMinutes() < 10){
+            minutes = "0"+date.getMinutes();
+        }else{minutes = date.getMinutes();}
+
+        fecha = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes;
+        return fecha;
+
+    },
+    calcula_contador : function(date){
+        self = this;
+
+        var minutes = date.getMinutes()+1;
+        var hour = date.getHours();
+        var day = date.getDate();
+        var month = date.getMonth();
+        var year = date.getFullYear();
+        var fecha;
+
+        if (minutes > 59){
+            minutes = '00';
+            hour = hour+1;
+            if(date.getHours()>=23){
+                hour = '00';
+                day = date.getDate()+1;
+                if(date.getDate()>=30){
+                    if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
+                       day = '01';
+                       month = date.getMonth()+1; 
+                        if(date.getMonth()>=11){
+                            month = 00;
+                            year= date.getFullYear()+1;
+                        }
+                    }else{
+                        day = '01';
+                        month = date.getMonth()+1;
+                        if(date.getMonth()>=11){
+                            month = 00;
+                            year= date.getFullYear()+1;
+                        }
+                    }
+                }else if (date.getDate()==28 && date.getMonth()==1){
+                    day = '01';
+                    month = date.getMonth()+1;
+                    if(date.getMonth()>=11){
+                        month = 00;
+                        year= date.getFullYear()+1;
+                    }
+                }
+            }
+        }
+
+        fecha = year+"-"+(month+1)+"-"+day+" "+hour+":"+minutes;
+        return fecha;
+    },
+    get_days : function(days){
+        
+        var self = this;
+
+
+        switch (days) {
+            case 0: self.days=86400000
+                break;
+            case 2: self.days=172800000
+                break;
+            case 7: self.days=604800000
+                break;
+            case 30: self.days=2592000000
+                break;
+            case 90: self.days=7776000000
+                break
+            case 180: self.days=15552000000
+                break;
+            default: self.days=0
+        }
+        self.start_anim();
+    },
     tick : function(){
 
         var self = this;
-        
-        self.origen= self.origen-1;
+
+        //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
+        self.vis.append("text")
+            .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+            .attr("fill","#ffffff")
+            .attr("x", '45%')
+            .attr("y", '5%').transition().duration(1).remove();
+        //////////////////////////////////////////////////////////////////////////////////////
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
@@ -565,63 +949,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node3.attr("x", function(d) { return d.x; })
             .attr("y", function(d) { return d.y; });
 
-        self.link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-
-        /*self.link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x+(self.calculo_direcciones_x(d.source.x)*self.origen); })
-            .attr("y2", function(d) { return d.source.y+(self.calculo_direcciones_y(d.source.y)*self.origen); });*/
-
-/*
-        self.node2.attr("x", function(d) { return d.x; })
-            .attr("y", function(d) { return d.y; });
-
-        self.node3.attr("x", function(d) { return d.x; })
-            .attr("y", function(d) { return d.y; });
-        
-        self.link2.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });*/
-
-        /*self.link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x+(self.calculo_direcciones_x(d.source.x)*self.origen); })
-            .attr("y2", function(d) { return d.source.y+(self.calculo_direcciones_y(d.source.y)*self.origen); });*/
-
-        /*if(self.origen < 0 ){
-            self.link.transition().duration(0).remove();       
-            self.link.exit().remove();
-
-            self.node2.transition().duration(0).remove();       
-            self.node2.exit().remove();
-
-            self.node3.transition().duration(0).remove();       
-            self.node3.exit().remove();
-        }*/
     },
     rescale : function() {
         var self = this;
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-    },
-    calculo_direcciones_x : function(x){
-        if(x < 350){
-            x=1;
-        }else{
-            x=-1;
-        }
-        return x;
-    },
-    calculo_direcciones_y : function(y){
-
-        if(y < 250){
-            y=1;
-        }else{
-            y=-1;
-        }
-        return y;
     }
 });

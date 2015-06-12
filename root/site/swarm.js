@@ -2,7 +2,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     
     background_color: '#000',
     start_mode: 'manual',
-    limit: '60',
+    limit: '20',
 
     initComponent : function(){
         var self = this;
@@ -10,13 +10,35 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.res = { data:[] };
         self.parents =  {};
         self.i=0;
+        self.contador=1000;
+
+        self.fecha = new Date();
         //self.origen=0;
 
-        self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim() } });
+        self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim();} });
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop ];
+        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+            menu : {
+                items: [{
+                    text: 'Today', handler: function(){ self.calculo_horas(0) }
+                }, {
+                    text: '2D', handler: function(){ self.calculo_horas(2) }
+                }, {
+                    text: '7D', handler: function(){ self.calculo_horas(7) }
+                }, {
+                    text: '1M', handler: function(){ self.calculo_horas(30) }
+                }, {
+                    text: '3M', handler: function(){ self.calculo_horas(90) }
+                }, {
+                    text: '6M', handler: function(){ self.calculo_horas(180) }
+                }]
+            },
+            //handler: function(){ self.start_anim() } 
+        });
+
+        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, self.scale_bar];
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -26,7 +48,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         });
         self.on('afterrender', function(){
             self.init();
-            if( self.start_mode == 'auto' ) self.start_anim();
+            if( self.start_mode == 'auto' ) { self.start_anim(); }
         });
     },
     init : function(){
@@ -48,8 +70,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var selector = '#' + id; 
 
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').style("background-color", self.background_color).attr("preserveAspectRatio", "xMinYMin meet");
-        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
-        
+        //.append("text").text("HOLA ESTOY PROBANDO").attr("fill","#00CCFF");
+        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g'); 
+
         //CREAMOS UN RECTANGULO EN BLANCO DONDE SE VA A PINTAR TODO Y ES EL QUE HACE EL ZOOM
         self.svg.append('svg:rect')
             .attr('width', '100%')
@@ -124,22 +147,25 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     start_anim : function(){
         var self = this;
         if(self.i==0){
-        Cla.ajax_json('/swarm/activity', {limit:self.limit}, function(res){
-            self.res = res;
-            //alert("coge valores"+self.res.data.length);
-            self.i = 0;
-        });
+            Cla.ajax_json('/swarm/leer_log', {limit:self.limit}, function(res){
+                
+                console.log(res);
+                self.res = res;
+                self.i = 0;
+
+            });
         }
         if( !self.initiated ) {
             //alert("inicializa");
             self.first();
             self.initiated = true;
         }
+
         self.anim_running = true;
         self.btn_start.disable();
         self.btn_pause.enable();
         self.btn_stop.enable();
-        setTimeout(function(){ self.anim() }, 100 );
+        setTimeout(function(){ self.anim(); }, 100 );
 
     },
     pause_anim : function(){
@@ -162,12 +188,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         if( !self.anim_running ) return;
 
-        //##############################################################
-        //##############################################################
-<<<<<<< HEAD
-        //##############################################################
-=======
->>>>>>> 6.3
         if(self.i==self.res.data.length){
 
             self.i=0;
@@ -197,15 +217,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.start_anim();
             return;
         }
-        //##############################################################
-        //##############################################################
-<<<<<<< HEAD
-        //##############################################################
         
-=======
-
->>>>>>> 6.3
         var row = self.res.data[ self.i++ ];
+
 
         if( !row ) {
             // no more rows? stop animation
@@ -213,7 +227,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             return;
         }
         row.id = Ext.id();
-        var next_timer = 500;
+
+
+        var next_timer = 1000;
+        //self.calculo_horas();
 
         if( row.parent ) {
             if( !self.parents[row.parent] ) {
@@ -656,9 +673,86 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     }, 
+    calculo_horas : function(dias){
+
+        self = this;
+        self.stop_anim();
+        //var date = new Date(self.res.data[0].t);
+
+        var date = new Date();
+        date.setDate(date.getDate() - dias);
+
+         var dia;
+        switch (date.getDay()) {
+            case 0: dia='Domingo'
+                break;
+            case 1: dia='Lunes'
+                break;
+            case 2: dia='Martes'
+                break;
+            case 3: dia='Miercoles'
+                break;
+            case 4: dia='Jueves'
+                break
+            case 5: dia='Viernes'
+                break;
+            case 6: dia='Sabado'
+                break;
+            default: dia='NAN'
+        }
+
+        var mes;
+
+        switch (date.getMonth())
+        {
+            case 0: mes='Enero'
+                break;
+            case 1: mes='Febrero'
+                break;
+            case 2: mes='Marzo'
+                break;
+            case 3: mes='Abril'
+                break;
+            case 4: mes='Mayo'
+                break
+            case 5: mes='Junio'
+                break;
+            case 6: mes='Julio'
+                break;
+            case 7: mes='Agosto'
+                break;
+            case 8: mes='Septiembre'
+                break;
+            case 9: mes='Octubre'
+                break;
+            case 10: mes='Noviembre'
+                break;
+            case 11: mes='Diciembre'
+                break
+            default: mes='NAN'
+        }
+
+        self.fecha = dia +" , "+date.getDate()+" "+mes+" "+date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+        self.start_anim();
+
+    },
+    get_contador : function(){
+        self = this;
+
+        return self.contador = self.contador-5;
+
+    },
     tick : function(){
 
         var self = this;
+
+        //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
+        self.vis.append("text")
+            .text(self.fecha)//.text(self.get_contador())//.text(self.res.data[0].t)
+            .attr("fill","#ffffff")
+            .attr("x", '45%')
+            .attr("y", '5%').transition().duration(1).remove();
+        //////////////////////////////////////////////////////////////////////////////////////
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
@@ -687,7 +781,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     rescale : function() {
         var self = this;
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-    }/*,
+    }
+
+    /*,
     calculo_direcciones_x : function(x){
         if(x < 350){
             x=1;
@@ -705,8 +801,4 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
         return y;
     }*/
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 6.3

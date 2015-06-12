@@ -11,6 +11,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.parents =  {};
         self.i=0;
         self.contador=1000;
+        self.current_date=10;
 
         self.date = new Date();
         //self.origen=0;
@@ -22,7 +23,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
             menu : {
                 items: [{
-                    text: 'Today', handler: self.days=0
+                    text: 'Today', handler: self.days=0, function(){ self.start_anim() } 
                 }, {
                     text: '2D', handler: self.days=2
                 }, {
@@ -147,14 +148,42 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     start_anim : function(){
         var self = this;
         if(self.i==0){
-        Cla.ajax_json('/swarm/activity', {limit:self.limit, days: self.days}, function(res){
+        Cla.ajax_json('/swarm/grouped_activity', {limit:self.limit, days: self.days}, function(res){
+            
+            console.log(res.data);
             self.res = res;
             self.i = 0;
-            self.date = new Date();
-            date.setDate(date.getDate() - self.days);
+            //self.date = new Date();
+            //self.current_date = new Date() - self.days;
+            //self.current_date = self.calcular_fecha(self.current_date);
 
+
+            array = ['2015-02-16 07:47','2014-12-07 10:43','2014-12-07 13:00','2015-03-16 12:10','2015-03-15 22:09'];
+
+            for (j=0;j<array.length;j++){
+                if ( self.res.data[array[j]] ) {
+                     alert("Hay actividad"); 
+                    var actividad = self.res.data[array[j]];
+
+                        //alert("llego aqui "+actividad.length);
+                        for(i=0; i< actividad.length; i++) {
+                            setTimeout(function(){ self.anim(actividad) }, 1000 );
+                        }
+                }
+            }
+ 
+
+            //alert("llego aqui "+self.current_date);
+ 
         });
         }
+
+
+
+
+
+
+
         if( !self.initiated ) {
             //alert("inicializa");
             self.first();
@@ -165,7 +194,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.disable();
         self.btn_pause.enable();
         self.btn_stop.enable();
-        setTimeout(function(){ self.anim() }, 100 );
+        
 
     },
     pause_anim : function(){
@@ -181,14 +210,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
-        self.i=self.res.data.length;  
+        //self.i=self.res.data.length;  
     },
-    anim : function(){
+    anim : function(actividad){
         var self = this;
+
+        var actividad = actividad;
 
         if( !self.anim_running ) return;
 
-        if(self.i==self.res.data.length){
+        if(self.i==actividad.length){
 
             self.i=0;
             self.initiated=false;
@@ -218,7 +249,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             return;
         }
         
-        var row = self.res.data[ self.i++ ];
+        var row = actividad[ self.i++ ];
 
 
         if( !row ) {
@@ -236,7 +267,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             if( !self.parents[row.parent] ) {
                 self.parents[row.parent] = true;
                 self.add_inicial( row.parent );
-                var row = self.res.data[ self.i-- ];
+                var row = actividad[ self.i-- ];
             }else{
                 if(row.ev == 'add') {
                     self.comprobar_timer_usuario();
@@ -250,7 +281,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }
         }
         }
-        setTimeout(function(){ self.anim() }, next_timer);
+        //setTimeout(function(){ self.anim(actividad) }, next_timer);
     },
     first : function(){
         var self = this;
@@ -673,68 +704,32 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     }, 
-    calculo_horas : function(dias){
+    calcular_fecha : function(date){
 
         self = this;
-        self.stop_anim();
-        //var date = new Date(self.res.data[0].t);
 
-        var date = new Date();
-        date.setDate(date.getDate() - dias);
+        var day;
+        var month;
+        var hour;
+        var minutes;
 
-         var dia;
-        switch (date.getDay()) {
-            case 0: dia='Domingo'
-                break;
-            case 1: dia='Lunes'
-                break;
-            case 2: dia='Martes'
-                break;
-            case 3: dia='Miercoles'
-                break;
-            case 4: dia='Jueves'
-                break
-            case 5: dia='Viernes'
-                break;
-            case 6: dia='Sabado'
-                break;
-            default: dia='NAN'
-        }
+        if(date.getDay() < 10){
+            day = "0"+date.getDay();
+        }else{day = date.getDay();}
 
-        var mes;
+        if(date.getMonth() < 10){
+            month = "0"+date.getMonth();
+        }else{month = date.getMonth();}
 
-        switch (date.getMonth())
-        {
-            case 0: mes='Enero'
-                break;
-            case 1: mes='Febrero'
-                break;
-            case 2: mes='Marzo'
-                break;
-            case 3: mes='Abril'
-                break;
-            case 4: mes='Mayo'
-                break
-            case 5: mes='Junio'
-                break;
-            case 6: mes='Julio'
-                break;
-            case 7: mes='Agosto'
-                break;
-            case 8: mes='Septiembre'
-                break;
-            case 9: mes='Octubre'
-                break;
-            case 10: mes='Noviembre'
-                break;
-            case 11: mes='Diciembre'
-                break
-            default: mes='NAN'
-        }
+        if(date.getHours() < 10){
+            hour = "0"+date.getHours();
+        }else{hour = date.getHours();}
 
-        self.date = dia +" , "+date.getDate()+" "+mes+" "+date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+        if(date.getMinutes() < 10){
+            minutes = "0"+date.getMinutes();
+        }else{minutes = date.getMinutes();}
 
-        self.start_anim();
+        return self.date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes;
 
     },
     get_contador : function(){
