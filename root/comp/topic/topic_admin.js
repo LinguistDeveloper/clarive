@@ -592,7 +592,8 @@
     //});
     
     var btn_add_category = new Baseliner.Grid.Buttons.Add({    
-        text: null,
+        //text: null,
+        text: _('Create'),
         handler: function() {
             add_edit_category();
         }
@@ -644,7 +645,8 @@
 
     var btn_delete_category = new Ext.Toolbar.Button({
         icon:'/static/images/icons/delete_.png',
-        tooltip:_('Delete'),
+        text:_('Delete'),
+        //tooltip:_('Delete'),
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -1231,10 +1233,11 @@
         deferredRender:true,    
         tbar: [ 
                 btn_add_category,
-                '-',
-                btn_delete_category,
-                '-',
                 btn_edit_category,
+                //'-',
+                btn_delete_category,
+                //'-',
+                //btn_edit_category,
                 btn_duplicate_category,
                 '->',
                 //btn_update_fields,
