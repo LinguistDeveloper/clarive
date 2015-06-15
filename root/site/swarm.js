@@ -23,7 +23,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+        /*self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
             menu : {
                 items: [{
                     text: 'Today', handler: function(){ self.get_days(0) } 
@@ -40,7 +40,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }]
             },
             //handler: function(){ self.start_anim() } 
-        });
+        });*/
 
         self.slider = new Ext.Slider({
             width: 100,
@@ -51,7 +51,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             plugins: new Ext.slider.Tip(),
         });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, {text: 'Speed + '}, self.slider, {text: ' -'}, self.scale_bar];
+        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, {text: 'Speed + '}, self.slider, {text: ' -'}];//, self.scale_bar
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -169,16 +169,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 self.i = 0;
                 self.j = 0;
 
-                var fecha=new Date();
+                //var fecha=new Date();
 
-                var tiempo =fecha.getTime();
-                var total= fecha.setTime(tiempo-self.days);
-                var fecha_inicio = new Date(total);
+                //var tiempo =fecha.getTime();
+                //var total= fecha.setTime(tiempo-self.days);
+                //var fecha_inicio = new Date(total);
         
       
-                var calculo = self.calcula_contador(fecha_inicio);
-                calculo = new Date(calculo);
-                self.date = self.calcular_fecha(calculo);
+                //var calculo = self.calcula_contador(fecha_inicio);
+                //calculo = new Date(calculo);
+                //self.date = self.calcular_fecha(calculo);
                 //self.date = '2015-06-08 10:24';
                 //alert("el calculo es "+self.date);
 
@@ -723,7 +723,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     }, 
-    calcular_fecha : function(date){
+    /*calcular_fecha : function(date){
 
         self = this;
 
@@ -905,14 +905,14 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         return fecha;
 
-    },
+    },*/
     tick : function(){
 
         var self = this;
 
         //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
         self.vis.append("text")
-            .text(self.formato_imprimir(self.date))//.text(self.get_contador())//.text(self.res.data[0].t)
+            .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
             .attr("fill","#ffffff")
             .attr("x", '45%')
             .attr("y", '5%').transition().duration(10).remove();
