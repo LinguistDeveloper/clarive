@@ -134,7 +134,9 @@
         title:_('System Messages'),
         layout:'fit', width:800, height:600, 
         //tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_cancel, btn_del, btn_new ],
-        tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_del, btn_cancel, btn_new ],
+        tbar: [ btn_grid, btn_compose, 
+       // '-', 
+        '->', btn_clone, btn_del, btn_cancel, btn_new ],
         items: card
     });
     win.show();

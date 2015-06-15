@@ -321,7 +321,7 @@
             _('Legend') + ': ',
             //'<img src="/static/images/icons/waiting.png" />', _('Waiting'),
             '<img src="/static/images/icons/busy.png" />', _('Waiting'),
-            '<img src="/static/images/icons/small_loading_static.gif" />', _('Busy'),
+            '<img src="/static/images/icons/small_loading_static.png" />', _('Busy'),
             //'<img src="/static/images/icons/asterisk_orange.gif" />', _('Granted'),
             '<img src="/static/images/icons/start.png" />', _('Granted'),
             //'<img src="/static/images/icons/cancel.png" />', _('Cancelled'),
