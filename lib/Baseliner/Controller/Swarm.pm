@@ -18,7 +18,6 @@ register 'dashlet.swarm' => {
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
-    _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
     my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
     my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
     my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
@@ -58,6 +57,7 @@ sub activity : Local {
     my @data;
     for my $ev ( @ev ) {
         my $parent = $cats{$ev->{mid}};
+        _log "PARENT => " . _dump $parent;
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
         my $actor = $ev->{username} || 'clarive';
@@ -127,47 +127,6 @@ sub grouped_activity : Local {
         $result_dates{$date->{_id}} = \@data;
     }
 	#_log( \%result_dates); 
-    $c->stash->{json} = { data=>\%result_dates };
-    $c->forward('View::JSON');    
-}
-
-
-sub grouped_prueba : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-
-	my $limit = $p->{limit} || 10000;
-    my $days = $p->{days} || 1;
-
-	my @array = ('2015-06-08 10:25','2015-06-08 10:26','2015-06-08 10:27','2015-06-08 10:28','2015-06-08 10:29','2015-06-08 10:30','2015-06-08 12:31','2015-06-08 12:32','2015-06-08 12:33','2015-06-08 10:34','2015-06-08 10:35','2015-06-08 10:36','2015-06-08 10:37','2015-06-08 10:38','2015-06-08 10:39','2015-06-08 10:40','2015-06-08 10:41','2015-06-08 10:42','2015-06-08 10:43','2015-06-08 10:44','2015-06-08 10:45','2015-06-08 10:46','2015-06-08 10:47','2015-06-08 10:48','2015-06-08 10:49','2015-06-08 10:50','2015-06-08 10:51','2015-06-08 10:52','2015-06-08 10:53','2015-06-08 10:54','2015-06-08 10:55','2015-06-08 10:56','2015-06-08 10:57','2015-06-08 10:58','2015-06-08 10:59','2015-06-08 11:00','2015-06-08 11:01','2015-06-08 11:02','2015-06-08 11:03','2015-06-08 11:04','2015-06-08 11:05','2015-06-08 11:06','2015-06-08 11:07','2015-06-08 11:08','2015-06-08 11:09','2015-06-08 11:10','2015-06-08 11:11','2015-06-08 11:12','2015-06-08 11:13','2015-06-08 11:14','2015-06-08 11:15','2015-06-08 11:16','2015-06-08 11:17','2015-06-08 11:18','2015-06-08 11:19','2015-06-08 11:20','2015-06-08 11:21','2015-06-08 11:22','2015-06-08 11:23','2015-06-08 11:24');
-	my $i=0;
-	my $j=0;
-
-    my %result_dates;
-    for my $i ( 0 .. 59 ) {
-	 
-		my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add');
-		my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
-		my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
-		my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Email','Changeset','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
-		
-		my @data;
-		
-			for my $j ( 0 .. 19 ) {
-				my $parent = $parent[$j];
-				my $nodes = $nodes[$j];
-				my $action = $action[$j];
-				my $actor = $actor[$j];
-				my $t = ($j+1) * 1000;
-				push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
-			}
-		#$cambio = preg_replace('a', ($i+1), '2015-06-08 10:0a');
-		$i++;
-		$result_dates{$array[$i]} = \@data;
-
-		#$result_dates{$date->{_id}} = \@data;
-    }
-	_log( \%result_dates); 
     $c->stash->{json} = { data=>\%result_dates };
     $c->forward('View::JSON');    
 }
