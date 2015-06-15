@@ -58,7 +58,6 @@ sub activity : Local {
     my @data;
     for my $ev ( @ev ) {
         my $parent = $cats{$ev->{mid}};
-        _log "PARENT => " . _dump $parent;
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
         my $actor = $ev->{username} || 'clarive';
@@ -124,7 +123,7 @@ sub grouped_activity : Local {
             $action = 'add';
             push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor } if ($parent);
         }
-		#_log "subo => $date->{_id} - total: " . scalar @data;
+		_log "subo => $date->{_id} - total: " . scalar @data;
         $result_dates{$date->{_id}} = \@data;
     }
 	#_log( \%result_dates); 
