@@ -184,7 +184,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.disable();
         self.btn_pause.enable();
         self.btn_stop.enable();
-        setTimeout(function(){ self.anim(); }, self.slider.getValue()*100 );
+        setTimeout(function(){ self.anim(); }, 100 );
 
     },
     pause_anim : function(){
@@ -354,11 +354,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = 1000;  // TODO calculate from previous and next events
 
         if (!a){
              self.nodes.push(row);
-             self.date = row.t;
              self.links.push({source: row, target: row});
         }else {
             //var c = self.nodes[1];
@@ -385,7 +384,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = 1000;  // TODO calculate from previous and next events
 
         var j = 0;
 
@@ -412,7 +411,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                 if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
                         self.nodes.push(row);
-                        self.date = row.t;
                         self.links.push({source: row, target: self.nodes[j]});
                         
                         j=self.nodes.length;
@@ -435,7 +433,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 //Buscamos el nodo a borrar.
                 if (self.nodes[j].node == row.node){
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
-                    self.date = row.t;
                     //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
                     j=self.nodes.length;
                 }   
@@ -443,7 +440,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
 
         self.userstart(row);
-        self.start({ row: row, timer: self.slider.getValue()*100 });
+        self.start({ row: row, timer: 1000 });
     },
     add_user : function(row){
         var self = this;
@@ -773,7 +770,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
             .attr("fill","#ffffff")
             .attr("x", '45%')
-            .attr("y", '5%').transition().duration(10).remove();
+            .attr("y", '5%').transition().duration(1).remove();
         //////////////////////////////////////////////////////////////////////////////////////
 
         self.node.attr("cx", function(d) { return d.x; })
