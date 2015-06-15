@@ -283,7 +283,7 @@
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         //if( value=='debug' ) icon='log_d.gif';
-        if( value=='debug' ) icon='debug_view.gif';
+        if( value=='debug' ) icon='debug_view.png';
         else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
