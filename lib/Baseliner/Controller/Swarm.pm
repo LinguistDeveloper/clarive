@@ -53,6 +53,9 @@ sub activity : Local {
     my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+    my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
+
+
 
     my @data;
     for my $ev ( @ev ) {
@@ -62,10 +65,10 @@ sub activity : Local {
         my $actor = $ev->{username} || 'clarive';
         $action = 'add';
         if ($parent){
-			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
+			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
 		}
     }
-    # _log( \@data ); 
+    # _log( \@data );
     $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
