@@ -18,7 +18,6 @@ register 'dashlet.swarm' => {
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
-    _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
     my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
     my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
     my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
@@ -42,24 +41,32 @@ sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-    #_warn $p;
-    
     my $limit = $p->{limit} || 10000;
     my $where = { mid=>{'$ne'=>undef} };
+	
+    my $days = $p->{days} || 2592000000;
+	$days = $days/86400000;
+
+    my $date = Class::Date->now();
+    my $filter_date = $date - ($days . 'D');
 
     my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+
     my @data;
     for my $ev ( @ev ) {
         my $parent = $cats{$ev->{mid}};
+        _log "PARENT => " . _dump $parent;
         my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
         my $actor = $ev->{username} || 'clarive';
         $action = 'add';
-        push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
+		if ($parent =>{'$ne'=>undef}){
+			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
+		}
     }
-    #_log( \@data ); 
+    _log( \@data ); 
     $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
@@ -69,15 +76,20 @@ sub grouped_activity : Local {
     my $p = $c->request->parameters;
 
     #_warn $p;
+	_log "comienzoooo";
     
     my $limit = $p->{limit} || 10000;
-    my $days = $p->{days} || 30;
+	_log "limit => " . $limit;
+    my $days = $p->{days} || 2592000000;
+	
+	$days = $days/86400000;
 
     my $where = { mid=>{'$ne'=>undef} };
 
     my $date = Class::Date->now();
     my $filter_date = $date - ($days . 'D');
-
+	_log "dates... " . $days;
+	_log "fecha filtrado" . $filter_date;
     my @dates = _array(
         mdb->activity->aggregate(
             [
@@ -91,12 +103,13 @@ sub grouped_activity : Local {
                         }
                     }
                 },
-                {'$sort' => {_id => 1}}
+                {'$sort' => {_id => 1}},
+				# {'$skip' => 10},
+				# {'$limit' => 50}
             ]
         )
     );
-
-
+	#_log "DATES --> " . scalar @dates;
     my %result_dates;
     for my $date ( @dates ) {
         my @mids = map { $_->{mid}} _array($date->{activity});
@@ -110,10 +123,10 @@ sub grouped_activity : Local {
             $action = 'add';
             push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor };
         }
-
+		#_log "subo => $date->{_id} - total: " . scalar @data;
         $result_dates{$date->{_id}} = \@data;
     }
-
+	#_log( \%result_dates); 
     $c->stash->{json} = { data=>\%result_dates };
     $c->forward('View::JSON');    
 }
