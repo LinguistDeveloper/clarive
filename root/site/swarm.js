@@ -659,7 +659,29 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var nodos;
         var texto_nodos;
 
-        switch (row.parent) {
+        alert(row);
+        console.log(row);
+
+        color = row.color;
+        var color_brillo = self.getLuxColor(row.color,0.8);
+
+        var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
+        Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos.append("stop").attr("offset", "0%").attr("stop-color", color_brillo).attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
+        Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+
+        nodos = "url(#Color_Nodos)"
+        texto_nodos = "url(#Color_Texto_Nodos)"
+
+        /*switch (row.parent) {
             case "Changeset":   nodos = "url(#Color_Nodos_Verde)"
                                 texto_nodos = "url(#Color_Texto_Nodos_Verde)"
                 break;
@@ -686,7 +708,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 break;
         default: nodos = "url(#Color_Nodos)"
                  texto_nodos = "url(#Color_Texto_Nodos)"
-        }
+        }*/
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
@@ -1046,6 +1068,26 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         return fecha;
 
     },*/
+    getLuxColor : function(hex,lum) {
+
+        // validate hex string
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        }
+        lum = lum || 0;
+
+        // convert to decimal and change luminosity
+        var rgb = "#", c, i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i*2,2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ("00"+c).substr(c.length);
+        }
+
+    //alert(rgb);
+    return rgb;
+    },
     tick : function(){
 
         var self = this;
