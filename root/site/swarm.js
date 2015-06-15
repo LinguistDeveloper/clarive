@@ -10,6 +10,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.color=0;
         self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
 
+        self.days = 86400000;
+        self.color=0;
+        self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
+
         self.fecha = new Date();
         //self.origen=0;
 
