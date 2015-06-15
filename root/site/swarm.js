@@ -14,6 +14,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.i=0;
         self.contador=1000;
         self.days = 86400000;
+        self.color=0;
+        self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
 
         self.date = new Date();
         self.fecha_fin = new Date();
@@ -145,6 +147,102 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FF1919").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Rojo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Rojo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Rojo.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Rojo.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
+        Color_Nodos_Rojo.append("stop").attr("offset", "100%").attr("stop-color", "#FF6666").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Rojo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Rojo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "0%").attr("stop-color", "#FF1919").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Verde = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Verde").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Verde.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Verde.append("stop").attr("offset", "60%").attr("stop-color", "#008000").attr("stop-opacity", 0.5); // Color GREEN
+        Color_Nodos_Verde.append("stop").attr("offset", "100%").attr("stop-color", "#66B366").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Verde = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Verde").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "0%").attr("stop-color", "#198D19").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "60%").attr("stop-color", "#008000").attr("stop-opacity", 0.5); // Color GREEN
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "100%").attr("stop-color", "#198D19").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Morado = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Morado").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Morado.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Morado.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Morado.append("stop").attr("offset", "100%").attr("stop-color", "#E3C8E3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Morado = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Morado").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "0%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "100%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Marron = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Marron").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Marron.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Marron.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Marron.append("stop").attr("offset", "100%").attr("stop-color", "#E3C8E3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Marron = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Marron").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "0%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "100%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Azul = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Azul").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Azul.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Azul.append("stop").attr("offset", "60%").attr("stop-color", "#0066FF").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Azul.append("stop").attr("offset", "100%").attr("stop-color", "#66A3FF").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Azul = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Azul").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "0%").attr("stop-color", "#1975FF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "60%").attr("stop-color", "#0066FF").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "100%").attr("stop-color", "#1975FF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_AzulOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_AzulOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#003366").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#6685A3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_AzulOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_AzulOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#194775").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#003366").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#194775").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Amarillo.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Amarillo.append("stop").attr("offset", "60%").attr("stop-color", "#FF9900").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Amarillo.append("stop").attr("offset", "100%").attr("stop-color", "#FFC266").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "0%").attr("stop-color", "#FFA319").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "60%").attr("stop-color", "#FF9900").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "100%").attr("stop-color", "#FFA319").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_MoradoOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_MoradoOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#660066").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#A366A3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_MoradoOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_MoradoOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#751975").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#660066").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#751975").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         var Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -298,7 +396,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         //quitamos la parte de el nodo para que no aparezca, solo definimos el elemento circulo
-        self.node.enter().append("circle").attr("r",500);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
+        self.node.enter().append("circle").attr("r",0);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
         
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
@@ -478,7 +576,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var a = self.nodes[0];
 
-        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios" };
+        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios", color: "aaa" };
 
         if (!a){
              self.nodes.push(d);
@@ -506,6 +604,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 j++;
             }
          if(j==self.nodes.length){
+
+                    for (i=0; i<11; i++){
+                        if (i==self.color && d.color == "aaa"){
+                            d.color= "/static/images/USER_"+i+".png";
+                        }
+
+                    } 
+                        if(self.color==10){self.color=0;}
+                        self.color++;
                         self.nodes.push(d);
                         self.links.push({source: d, target: row });
                 }      
@@ -549,12 +656,44 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var row = dt.row;
         var timer = dt.timer;
 
+        var nodos;
+        var texto_nodos;
+
+        switch (row.parent) {
+            case "Changeset":   nodos = "url(#Color_Nodos_Verde)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Verde)"
+                break;
+            case "Emergency":   nodos = "url(#Color_Nodos_Rojo)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Rojo)"
+                break;
+            case "KB":          nodos = "url(#Color_Nodos_Marron)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Marron)"
+                break;
+            case "Impact Estimation":   nodos = "url(#Color_Nodos_Morado)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Morado)"
+                break;
+            case "Project":   nodos = "url(#Color_Nodos_MoradoOscuro)"
+                                texto_nodos = "url(#Color_Texto_Nodos_MoradoOscuro)"
+                break;
+            case "Release":   nodos = "url(#Color_Nodos_AzulOscuro)"
+                                texto_nodos = "url(#Color_Texto_Nodos_AzulOscuro)"
+                break;
+            case "Requirement":   nodos = "url(#Color_Nodos_Amarillo)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Amarillo)"
+                break;
+            case "Test Case":   nodos = "url(#Color_Nodos_Azul)"
+                                texto_nodos = "url(#Color_Texto_Nodos_Azul)"
+                break;
+        default: nodos = "url(#Color_Nodos)"
+                 texto_nodos = "url(#Color_Texto_Nodos)"
+        }
+
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.enter().append("text").text(row.node).attr("fill", texto_nodos).attr("fill-opacity",0.6).style("visibility", "hidden");
         self.node5.exit().remove();
        
         self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
@@ -574,7 +713,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node9.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill", texto_nodos).remove();
         self.node4.exit().remove();
       
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
@@ -586,27 +725,27 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
-                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill",texto_nodos).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
                          d3.select(this).transition()
                          .duration(750)
                          .attr("r", 10)
-                         .attr("fill","url(#Color_Nodos)")
+                         .attr("fill",nodos)
                          .attr("fill-opacity",0.6);
                          self.node6.style("visibility", "hidden");
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
                          self.node9.style("visibility", "hidden");
-                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         return self.node5.attr("fill",texto_nodos).style("visibility", "hidden");//})
                          })
                          .call(self.force.drag)
-                         .transition().duration(timer).attr("fill","url(#Color_Nodos)").attr("fill-opacity",0.6);
+                         .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
@@ -714,11 +853,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node= self.node.data(self.force.nodes(), function(d) { return d.id;});
         //self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
-        self.node.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
+        self.node.enter().append("png:image").attr("xlink:href", function(d) { return d.color;}).attr("width", 20).attr("height", 20);
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF")
+        self.node3.enter().append("text").text(row.who).attr("fill",self.colores[self.color-1])
         self.node3.exit().remove();
 
         self.force.start();
