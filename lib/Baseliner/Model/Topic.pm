@@ -1292,8 +1292,10 @@ sub get_meta {
 
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
-        _fail _loc 'Topic category has now form rule associated with it. Please contact your administrator.' 
+
+        _warn _loc 'Topic category has now form rule associated with it. Please contact your administrator.' 
             unless length $cat->{default_field};
+        return     unless length $cat->{default_field};
         my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
