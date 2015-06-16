@@ -10,7 +10,6 @@
         value: data.ci_role || ''
     });
     ci_role_field.hide();
-
     var ci_class_field = new Ext.form.Field({
         name: 'ci_class',
         xtype: "textfield",
@@ -41,8 +40,6 @@
     ci_store.on('load', function(){
         ci_class_box.setValue(data.ci_class_box); 
     });
-
-    
 
     var class_selected = false;
     
@@ -81,7 +78,6 @@
         }
     });
 
-
     var ci_class_box = new Baseliner.SuperBox({
         deal_combo_change: function(obj){
             ci_class_field.setValue('');
@@ -114,7 +110,7 @@
             }
         }
     });
-    
+   
     if(!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value){
         role_box_multiselect.allowBlank = false;
         role_box_multiselect.show();
@@ -127,23 +123,22 @@
         ci_class_box.enable();
     }
 
-    ret.push([ 
-      { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.cis' },
-      {
-          xtype: 'container',
-          id: 'selection_method',
-          layout: 'hbox',
-          fieldLabel: _('Selection method'),
-          items: [
-              {
-                  xtype: 'radiogroup',
-                  id: 'rdogrpMethod',
-                  items: [
-                      { id: 'rdoRole', boxLabel: _('Role selection'), name: 'rdoMethod', inputValue: 'roleSelection', width: 20, checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value },
-                      { id: 'rdoClass', boxLabel: 'Class selection', name: 'rdoMethod', width: 20, inputValue: 'classSelection', checked: ci_class_field.value }
-                  ],
-                  listeners: {
-                      'change': function(rg,checked){
+    ret.push([ { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.cis' },
+        {
+            xtype: 'container',
+            id: 'selection_method',
+            layout: 'hbox',
+            fieldLabel: _('Selection method'),
+            items: [
+                {
+                    xtype: 'radiogroup',
+                    id: 'rdogrpMethod',
+                    items: [
+                        { id: 'rdoRole', boxLabel: _('Role selection'), name: 'rdoMethod', inputValue: 'roleSelection', width: 20, checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value },
+                        { id: 'rdoClass', boxLabel: 'Class selection', name: 'rdoMethod', width: 20, inputValue: 'classSelection', checked: ci_class_field.value }
+                    ],
+                    listeners: {
+                        'change': function(rg,checked){
                             ci_class_box.setValue('');
                             if(checked.id == 'rdoRole'){
                                 ci_class_box.allowBlank = true;
@@ -155,18 +150,18 @@
                                 ci_class_box.allowBlank = false;
                                 role_box_multiselect.allowBlank = true;
                                 ci_class_box.enable();
-
                             }
-                      }
-                  }
-              }
-          ]
-      },
-      role_box_multiselect,
-      ci_class_box,
-      ci_role_field,
-      ci_class_field,
+                        }
+                    }
+                }
+            ]
+        },
+        role_box_multiselect,
+        ci_class_box,
+        ci_role_field,
+        ci_class_field,
         { xtype:'textfield', name:'show_class', fieldLabel: _('Show class'), value: data.show_class }
     ]);
+
     return ret;
 })

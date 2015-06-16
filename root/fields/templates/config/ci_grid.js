@@ -165,7 +165,7 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
-        { xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height }
+        { xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height },
         { xtype:'textfield', name:'show_class', fieldLabel: _('Show class'), value: data.show_class }
     ]);
     return ret;
