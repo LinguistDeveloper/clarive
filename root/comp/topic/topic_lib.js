@@ -1923,9 +1923,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             //         $( '#' + self.id_title ).attr('title', data[field.id_field]);
             //     }
             // }
-            
-            if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
-            
+            if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;         
             if( field.body ) {// some fields only have an html part
                 var func = Baseliner.field_cache[ field.body[0] ];
                 if( !func || field.body[2]>0 ) {
