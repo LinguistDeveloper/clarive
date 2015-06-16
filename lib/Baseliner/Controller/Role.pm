@@ -149,7 +149,7 @@ sub action_tree : Local {
             my $txt = "$key,$name";
             if( List::MoreUtils::all(sub{ $txt =~ $_ }, @qrs) ) {
                 #_debug( $act );
-                push @tree_query, { id=>$key, text =>( $name ne $key ? "$name" : "$key" ), icon=>'/static/images/icons/action.gif', leaf=>\1 };
+                push @tree_query, { id=>$key, text =>( $name ne $key ? "$name" : "$key" ), icon=>'/static/images/icons/lock_small.png', leaf=>\1 };
             }
         }
         $c->stash->{json} = \@tree_query;
@@ -173,7 +173,7 @@ sub action_tree : Local {
             my $parent = join '.',@kp;
             my $fkey = $parent ? "$parent.$folder" : $folder; 
             $folders{$fkey} //= { key=>$fkey, text=>$folder, leaf=>\0, icon=>'/static/images/icons/action_folder.gif', parents=>\@kp };
-            my $node = { text=>$$act{name}, id=>$key, key=>$key, icon=>'/static/images/icons/action.gif', leaf=>\1 };
+            my $node = { text=>$$act{name}, id=>$key, key=>$key, icon=>'/static/images/icons/lock_small.png', leaf=>\1 };
             push @{ $folders{$fkey}{children} }, $node;
         }
         # now create intermediate folders

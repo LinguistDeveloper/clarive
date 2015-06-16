@@ -18,6 +18,7 @@
     var search_field = new Baseliner.SearchField({
         store: store_notifications,
         width: 280,
+        emptyText: _('<Enter your search string>'),
         params: {start: 0, limit: ps }
     });
 	
@@ -1374,6 +1375,7 @@
     }  	
 	
 	var grid = new Ext.grid.GridPanel({
+		  renderTo: 'main-panel',
 		sm: check_notifications_sm,
         store: store_notifications,
         stripeRows: true,

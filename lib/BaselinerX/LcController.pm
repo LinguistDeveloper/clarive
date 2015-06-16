@@ -53,7 +53,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/delete.png',
+               icon       => '/static/images/icons/delete_red.png',
                leaf       => \0,
                expandable => \1
            };           

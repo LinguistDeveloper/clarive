@@ -53,7 +53,8 @@
 
     var button_grant = new Ext.Button({
         text: _('Grant'),
-        icon:'/static/images/icons/add.png',
+        //icon:'/static/images/icons/add.png',
+        icon:'/static/images/icons/start.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -69,7 +70,7 @@
 
     var button_cancel = new Ext.Button({
         text: _('Cancel'),
-        icon:'/static/images/icons/close.png',
+        icon:'/static/images/icons/stop.png',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -207,17 +208,21 @@
         if( value == 'waiting' ) 
             img = '<img src="/static/images/icons/waiting.png" alt="'+value+'"/>';
         else if( value == 'granted' ) 
-            img = '<img src="/static/images/icons/asterisk_orange.gif" alt="'+value+'"/>';
+            //img = '<img src="/static/images/icons/asterisk_orange.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/start.png" alt="'+value+'"/>';
         else if( value == 'busy' ) 
             img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
             img = '<img src="/static/images/icons/write.gif" alt="'+value+'"/>';
         else if( value == 'done' ) 
-            img = '<img src="/static/images/icons/drop-yes.gif" alt="'+value+'"/>';
+            // img = '<img src="/static/images/icons/drop-yes.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/log_i.gif" alt="'+value+'"/>';
         else if( value == 'cancelled' ) 
-            img = '<img src="/static/images/icons/cancel.png" alt="'+value+'"/>';
+            //img = '<img src="/static/images/icons/cancel.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/stop.png" alt="'+value+'"/>';
         else if( value == 'killed' ) 
-            img = '<img src="/static/images/icons/help.png" alt="'+value+'"/>';
+            //img = '<img src="/static/images/icons/help.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/log_e.png" alt="'+value+'"/>';
         return img;
     };
 
@@ -314,12 +319,17 @@
         tbar: tbar_queue,
         bbar: [
             _('Legend') + ': ',
-            '<img src="/static/images/icons/waiting.png" />', _('Waiting'),
-            '<img src="/static/images/icons/asterisk_orange.gif" />', _('Granted'),
-            '<img src="/static/images/icons/small_loading_static.gif" />', _('Busy'),
-            '<img src="/static/images/icons/drop-yes.gif" />', _('Done'),
-            '<img src="/static/images/icons/cancel.png" />', _('Cancelled'),
-            '<img src="/static/images/icons/help.png" />', _('Killed')
+            //'<img src="/static/images/icons/waiting.png" />', _('Waiting'),
+            '<img src="/static/images/icons/busy.png" />', _('Waiting'),
+            '<img src="/static/images/icons/small_loading_static.png" />', _('Busy'),
+            //'<img src="/static/images/icons/asterisk_orange.gif" />', _('Granted'),
+            '<img src="/static/images/icons/start.png" />', _('Granted'),
+            //'<img src="/static/images/icons/cancel.png" />', _('Cancelled'),
+            '<img src="/static/images/icons/stop.png" />', _('Cancelled'),
+            //'<img src="/static/images/icons/drop-yes.gif" />', _('Done'),
+            '<img src="/static/images/icons/log_i.gif" />', _('Done'),
+            //'<img src="/static/images/icons/help.png" />', _('Killed')
+            '<img src="/static/images/icons/log_e.png" />', _('Killed')
         ],
         view: gview,
         viewConfig: {

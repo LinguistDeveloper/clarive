@@ -719,7 +719,7 @@ Baseliner.array_field = function( args ) {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/del.gif',
+                icon: '/static/images/icons/del_all.png',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = fgrid.getSelectionModel().getSelected();
@@ -3865,7 +3865,7 @@ Baseliner.request_approval = function(mid,id_grid){
         });
         var btn_reject = new Ext.Button({
             text: _('Reject'),
-            icon: '/static/images/del.gif',
+            icon: '/static/images/icons/del_all.png',
             handler: function(){
                 var comments = user_comments.getValue();
                 if( comments.length == 0 ) {
