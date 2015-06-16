@@ -283,34 +283,33 @@ sub _create {
         if($cs->is_changeset){
             my $topic_ci = ci->new($cs->{mid});
 
-            my @projetcs = $topic_ci->projects;
-            my $logers = "\n\t Proyectos:\n";
-            for my $r (@projetcs){
+            my @projects = $topic_ci->projects;
+            my $logers = "\n\t "._loc('Projects').":\n";
+            for my $r (@projects){
               $logers .=  "\t\t " . $r->{name} ."\n";
             }
-            if ((scalar @projetcs) == 0) {
-                $logers .= "\t\t No hay\n";
+            if ((scalar @projects) == 0) {
+                $logers .= "\t\t "._loc('Empty')."\n";
             }
 
             my @rev = $topic_ci->revisions;
-            $logers .= "\t Revisiones:\n";
+            $logers .= "\t "._loc('Revisions').":\n";
             for my $r (@rev){
-              $logers .=  "\t\t " . $r->{name} . ". Repositorio: " . $r->{repo}->{name} ."\n";
+              $logers .=  "\t\t " . $r->{name} ." "._loc('Repository').": " . $r->{repo}->{name} ."\n";
             }
             if ((scalar @rev) == 0) {
-                $logers .= "\t\t No hay\n";
+                $logers .= "\t\t "._loc('Empty')."\n";
             }
 
 
             my @files = $topic_ci->files;
-            $logers .= "\t Ficheros:\n";
+            $logers .= "\t "._loc('Files').":\n";
             for my $r (@files){
-              $logers .=  "\t\t " . $r->{filename} . "\n";
+              $logers .=  "\t\t " . $r->{name} . "\n";
             }
             if ((scalar @files) == 0) {
-                $logers .= "\t\t No hay\n";
+                $logers .= "\t\t "._loc('Empty')."\n";
             }
-
             push @cs_list, $cs->topic_name . $logers . "\n";
         } else {
             push @cs_list, $cs->topic_name ."\n";

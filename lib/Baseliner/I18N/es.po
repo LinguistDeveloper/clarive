@@ -7988,3 +7988,10 @@ msgstr "Crear Ventana Inactiva"
 msgid "new slot"
 msgstr "Nueva Ventana"
 
+msgid "Please, fill the required fields"
+msgstr "Por favor, rellena los campos obligatorios"
+
+msgid "There are not tasks to do"
+msgstr "No hay tareas para realiar"
+
+### EOF - do not write anything bellow this

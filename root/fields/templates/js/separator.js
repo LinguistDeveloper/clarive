@@ -17,8 +17,8 @@ params:
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         labelSeparator: '',
-        labelStyle: 'color:'+ color + ';font-weight:bold',
         hidden: Baseliner.eval_boolean(meta.hidden),
+        labelStyle: 'color:'+ color + ';font-weight:bold;font-size:' + size,
         autoEl: {html:'<hr style="background-color:' + color + ';height:2px;border:none;>"'},
         readOnly: false
 

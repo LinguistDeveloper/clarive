@@ -160,7 +160,7 @@ register 'report.clarive.jobs' => {
         $start = 0 if length $start && $start >= $cnt;    # reset paging if offset
         $rs->skip($start)  if length $start;
         $rs->limit($limit) if $limit ne -1;
-        $rs->sort( $sort ? $sort : { start_time => 1 } );
+        $rs->sort( $sort ? $sort : { starttime => 1 } );
 
         my @docs = $rs->all;
 
