@@ -536,10 +536,10 @@ sub view : Local {
             $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
         }
         
-        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
-        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
-        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
-        my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
+        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit', mid => $topic_mid );
+        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', mid => $topic_mid );
+        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', mid => $topic_mid );
+        my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -737,6 +737,9 @@ sub comment : Local {
             my $content_type = $p->{content_type};
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
+
+            #_log $text;
+            
             my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
@@ -1711,7 +1714,8 @@ sub kanban_status : Local {
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        #my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
         
         my %workflow;
         my %status_mids;
@@ -1906,6 +1910,7 @@ sub report_csv : Local {
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
+    $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
 }
 
@@ -2092,6 +2097,20 @@ sub get_files : Local {
     $c->stash->{serve_file} = $file_path;
     $c->stash->{serve_filename} = $mid.'_'.$fields.'.zip';
     $c->forward('/serve_file');
+}
+
+sub refresh_kanban : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+
+    my $topic_count = 0;
+    if($p->{data}){
+        $topic_count = mdb->topic->find({ '$or' => $p->{data} })->count;        
+    }
+    
+
+    $c->stash->{json} = { success => \1, topic_count => $topic_count };
+    $c->forward('View::JSON');
 }
 
 =pod

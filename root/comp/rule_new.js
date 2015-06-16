@@ -48,6 +48,7 @@
                store: [
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
+                  [ 'catalog', _('Catalog') ],
                   [ 'report', _('Report') ],
                   [ 'webservice', _('Webservice') ],
                   [ 'independent', _('Independent') ],
@@ -67,6 +68,7 @@
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.show();
+            catalog_form.hide();
             msg_job.show();
             msg_ev.hide();
             grid_events.hide();
@@ -102,16 +104,33 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else {
+        } else if( v == 'event' ) {
             wiz.last = wiz.current + 1;
             wiz.button_setup();
             job_chain_form.hide();
+            catalog_form.hide();
             msg_job.hide();
             msg_ev.show();
             grid_events.show();
+        } else {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
+            catalog_form.show();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
         }
     }
     
+    var catalog_form = new Ext.form.FieldSet({
+        hidden: true, border: false,
+        items: [
+            Baseliner.ci_box({ name: 'project', role:'Project', fieldLabel:_('Projects'), value: params.rec.project, singleMode: false, force_set_value: true }),
+            new Baseliner.UserAndRoleBox({ fieldLabel: _('Permissions'), name:'permissions', allowBlank: true, value: params.rec.permissions }),
+            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Description'), name: 'rule_desc', value: params.rec.rule_desc }
+        ]
+    });
     // job chain form
     var job_chain_form = new Ext.form.FieldSet({
         hidden: true, border: false,

@@ -16,6 +16,7 @@ has config       => ( is => 'rw', isa => 'Str' );
 has form         => ( is => 'rw', isa => 'Str', default => '' );
 has logger_class => ( is => 'rw', isa => 'Str', default => 'Baseliner::Core::Logger::Base' );    # class
 has logger       => ( is => 'rw', isa => 'Any' );
+has parse_vars   => ( is => 'rw', isa => 'Bool', default=>1 );
 has data         => ( is => 'rw', isa => 'HashRef' );
 
 has frequency     => ( is => 'rw', isa => 'Int' );                                               # frequency value in seconds
@@ -44,6 +45,8 @@ has js_input  => ( is=> 'rw', isa=> 'Str', default=>'' );
 has js_output => ( is=> 'rw', isa=> 'Str', default=>'' );
 
 has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/service.png');
+
+has filter  => ( is => 'rw', isa => 'Bool', default => 0 ); 
 
 sub BUILD {
     my ($self, $params) = @_;

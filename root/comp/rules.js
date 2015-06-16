@@ -589,8 +589,12 @@
                             }
                         };
                         var form = new Baseliner.FormPanel({ 
-                            frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            frame: false, 
+                            //forceFit: true, 
+                            defaults: { msgTarget: 'under', anchor:'100%' },
                             labelWidth: 150,
+                            width: 950,
+                            //autoHeight: true,
                             width: 800, height: 600,
                             labelAlign: 'right',
                             labelSeparator: '',
@@ -687,7 +691,18 @@
                 if( n.ui && n.ui.textNode ) n.ui.textNode.style.textDecoration = 'line-through';
             });
         });*/
-    
+
+        // rule_tree_loader.on('load', function(loader,node){
+        //     console.log(node);
+        //     node.appendChild({
+        //         text: 'Prueba',
+        //         key: 'statement.catalog.folder', 
+        //         leaf: true,
+        //         icon: '/static/images/icons/catalog-folder.png'
+        //     });            
+        //     //var copy = new Ext.tree.TreeNode( );
+        // });
+
         var rule_save = function(opt){
             var root = rule_tree.root;
             root.cascade(function(nc){
