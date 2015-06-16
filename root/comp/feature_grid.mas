@@ -101,7 +101,7 @@
                 },
                 new Ext.Toolbar.Button({
                     text: '<% _loc('Turn Off') %>',
-                    icon:'/static/images/del.gif',
+                    icon:'/static/images/icons/del_all.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
