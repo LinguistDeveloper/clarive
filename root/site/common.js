@@ -4018,6 +4018,8 @@ Baseliner.generic_fields = function(params){
     if(data.fieldletType == /system/){
         data.origin = 'system';
     }
+    data.active = data.active || 1;
+    data.allowBlank = data.allowBlank || 1;
     var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
     var active = new Ext.form.Hidden({  xtype:'hidden', name:'active', value: data.active });   
 
@@ -4071,7 +4073,7 @@ Baseliner.generic_fields = function(params){
         allowBlank_field.setValue(!cb.checked);
     });
 
-    var hide_from_edit_cb = new Baseliner.CBox({ name: 'hide_from_edit_cb', checked: !Baseliner.eval_boolean(data.active), fieldLabel: _('Hide from edit view') });
+    var hide_from_edit_cb = new Baseliner.CBox({ name: 'hide_from_edit_cb', checked: !Baseliner.eval_boolean(data.active, true), fieldLabel: _('Hide from edit view') });
     hide_from_edit_cb.on('check', function(cb){
         active.setValue(!cb.checked);
     });
