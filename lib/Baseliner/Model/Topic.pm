@@ -242,7 +242,7 @@ register 'registor.action.topic_category_fields' => {
             my $description;
             
             for my $field (_array $meta){
-                my $field_to_id = _name_to_id($field->{name_field});
+                my $field_to_id = $field->{id_field};
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
                     
