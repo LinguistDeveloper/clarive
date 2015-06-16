@@ -1270,6 +1270,7 @@ sub get_meta {
     my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
     return $cached if $cached;
 
+
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
 
     $id_category = $id_cat;

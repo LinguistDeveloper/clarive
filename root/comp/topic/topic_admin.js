@@ -58,6 +58,7 @@
             buttons: [
                     {
                         text: _('Accept'),
+                        icon:'/static/images/icons/save.png',
                         type: 'submit',
                         handler: function() {
                             var form = form_status.getForm();
@@ -87,6 +88,7 @@
                     },
                     {
                     text: _('Close'),
+                    icon:'/static/images/icons/close.png',
                     handler: function(){ 
                             win.close();
                         }

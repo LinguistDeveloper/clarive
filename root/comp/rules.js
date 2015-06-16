@@ -645,7 +645,10 @@
                     copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
                     copy.setText( name_field );  // keep original node text name
                     if (is_ok == false ) { return false };
-                }else {
+                } else if (/dashlet.swarm/.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
+                    copy.attributes.data = { 'autorefresh':"0", 'background_color':'#fff', 'columns':"6",'rows':"1",'start_mode':'auto',limit:'' };
+                    copy.setText( copy.attributes.name );  // keep original node text name
+                } else {
                     copy.setText( copy.attributes.name );  // keep original node text name
                 }
                 if( !copy.attributes.data ) copy.attributes.data={};
