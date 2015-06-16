@@ -12,7 +12,6 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var color = meta.color ? meta.color: '#99CCFF';
-    var size = meta.size ? meta.size : '10px'
     
     var separator = new Ext.Component({
         fieldLabel: _(meta.name_field),

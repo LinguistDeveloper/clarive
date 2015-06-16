@@ -113,14 +113,9 @@ Baseliner.show_topic_colored = function(mid, category, color, grid_id) {
 }
 
 Baseliner.show_topic_from_row = function(r, grid) {
-    if (r.get ) { 
-        var title = Baseliner.topic_title( r.get('topic_mid'), _(r.get( 'category_name' )), r.get('category_color') );
-        Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid.id } );
-        //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
-    }else{
-        var title = Baseliner.topic_title( r.topic_mid, _(r.category_name ), r.category_color );
-        Baseliner.show_topic( r.topic_mid, title, { topic_mid: r.topic_mid, title: title, _parent_grid: grid.id } );
-    }
+    var title = Baseliner.topic_title( r.get('topic_mid'), _(r.get( 'category_name' )), r.get('category_color') );
+    Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid.id } );
+    //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
 }
 
 Baseliner.user_seen_row = function(grid,mid){
@@ -2170,5 +2165,3 @@ Baseliner.comments_for_topic = function(args) {
         }
     });
 };
-
-

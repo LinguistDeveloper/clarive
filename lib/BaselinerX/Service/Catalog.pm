@@ -838,7 +838,7 @@ sub set_service_data {
 sub create_or_update_service {
     my ( $self, $relation_field, $service_selected, $id_category, $stash_data ) = @_;
 
-    my $action; 'add';
+    my $action; #'add';
     my $topic_data = $self->set_service_data( $relation_field, $service_selected, $id_category, $stash_data );
     if ($service_selected->{mid_topic_created_service}){
         $action = 'update';

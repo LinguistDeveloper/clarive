@@ -7918,35 +7918,14 @@ msgstr "Ignorar estados finales"
 msgid "View in tree"
 msgstr "Ver en el árbol de proyecto"
 
-msgid "Subproject"
-msgstr "Subaplicación"
-
 msgid "Acronym"
 msgstr "Acrónimo"
 
 msgid "acronym"
 msgstr "acrónimo"
 
-msgid "Tasks list"
-msgstr "Lista de tareas"
-
-msgid "Processing data..."
-msgstr "Procesando datos..."
-
-msgid "All data loaded!"
-msgstr "Datos cargados!"
-
-msgid "% completed"
-msgstr "% completado"
-
-msgid "Repeated"
-msgstr "Repetida"
-
 msgid "Do you want to add all release changesets in the same state from all projects?"
 msgstr "¿Quieres añadir todos los cambios de la release que están en el mismo estado de todos los proyectos?"
-
-msgid "There are no more forms"
-msgstr "No hay más formularios"
 
 msgid "Job By Status (7 days)"
 msgstr "Pases por estado (7 días)"

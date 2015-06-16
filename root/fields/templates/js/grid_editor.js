@@ -13,7 +13,7 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-	//var ff = params.form.getForm();
+	var ff = params.form.getForm();
 
     var allow = Baseliner.eval_boolean(meta.allowBlank);
     var readonly = Baseliner.eval_boolean(meta.readonly);
@@ -32,6 +32,7 @@ params:
         records: records, 
         preventMark: false,        
         columns: meta.columns,
+        html_view_columns: meta.html_view_columns,
         disabled: readonly,
         viewConfig: {
             forceFit: meta.forceFit || true

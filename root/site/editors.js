@@ -92,7 +92,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                         foo_load( i-- );
                     else {
                         var iframe = self.editor_iframe() ;
-                        if( iframe && iframe.contentDocument ) {
+                        if( iframe ) {
                             // fix caret cursor not showing on focus.
                             iframe.contentDocument.body.style.height = '90%';
                             iframe.contentDocument.documentElement.style.height = '100%'

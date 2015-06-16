@@ -626,18 +626,8 @@ sub store : Local {
             $mids = [ _array($mids), _unique @security];
         }
 
-        my @classes;
-        if (ref $class eq 'ARRAY'){
-            foreach my $cl (_array $class){
-                push @classes, "BaselinerX::CI::$cl" if $cl !~ /^Baseliner/;
-            }
-        }else{
-            $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-            push @classes, $class 
-        }
-
-        ($total, @data) = $self->tree_objects( class=> \@classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
-        #($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -963,8 +953,7 @@ sub load : Local {
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;
         my $rec = $obj->load;
-
-        #Util->_unbless( $rec );
+        Util->_unbless( $rec );
         $rec->{has_bl} = $obj->has_bl;
         $rec->{has_description} = $obj->has_description;
         $rec->{classname} = $rec->{class} = $class;
@@ -1530,7 +1519,6 @@ sub default : Path Args(2) {
     # if( my $field = $p->{_file_field} ) {
     #     $p->{$field} = $self->upload_file( $field );
     # }
-
     local $Baseliner::CI::_no_record = 1;
     local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
     local $Baseliner::CI::mid_scope = {}; # more freshness, paranoid 

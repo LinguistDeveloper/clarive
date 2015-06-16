@@ -9,12 +9,19 @@
 % }     
 <%perl>
     my $json = $data->{$meta->{bd_field}} ;
-    
+    my @res;
     my $ix = 0;
-    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
-        [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
+    my @columns = split ';', $meta->{columns};
+    my @html_view_columns = split ',', $meta->{html_view_columns};
+    if(@html_view_columns){
+        map {push @res, $_ if $_~~@html_view_columns} @columns;
+    }else{
+        @res = @columns;
+    }
+
+    my $cols = ref $meta->{columns} ? \@res : do {
+        [ map { [ split ',' ] } @res ]
     };
-    
     if( !$meta->{hidden} && length $json ) {
         my $d = ref $json 
             ? $json 
@@ -90,17 +97,6 @@
                                         $val
                                     }
                                   } 
-                            : $$h{type} eq 'ci_box'
-                                ?  do{ 
-                                        my $ci_box = ci->new($val);
-                                        my $img = $ci_box->icon;
-                                        if ($img){
-                                            '<img src="' . $img . '">&nbsp;' . $ci_box->{name};
-                                        }else{
-                                                $ci_box->{name};    
-                                        }
-                                        
-                                   }
                                 : Util->_markdown($val, { tab_width=>2 })
                         %></td>
 % }
