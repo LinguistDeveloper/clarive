@@ -4133,9 +4133,9 @@ Baseliner.generic_list_fields = function(params){
     var ret = [ 
         value_combo, 
         list_type, 
-        json_field ,
-        { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
-            handler: function(){ Cla.json_filter_builder(json_field) } } 
+        json_field //,
+        // { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
+        //     handler: function(){ Cla.json_filter_builder(json_field) } } 
     ];
     return ret;
 };
