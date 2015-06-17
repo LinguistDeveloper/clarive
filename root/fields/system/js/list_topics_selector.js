@@ -139,20 +139,6 @@ params:
 //        // alert(meta.name_field + " " + allow);
 //		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
 //	}
-	obj.push(topic_box);	
-<<<<<<< HEAD
-	
-    filter_field.on('change',function (argument) {
-        var txt_filter = '{ "'+ meta.filter_data +'":["' + filter_field.getValue() + '"]}';
-
-        topic_box_store.baseParams['filter'] = txt_filter;
-        topic_box.setValue(undefined);
-        topic_box.removeAllItems();
-        topic_box.killItems();
-        topic_box_store.load();
-    });
-
-=======
 
     if ( filter_field ) {
         filter_field.on('change',function (argument) {
@@ -175,6 +161,5 @@ params:
             topic_box_store.load();
         });
     }
->>>>>>> 6.2
 	return obj
 })
