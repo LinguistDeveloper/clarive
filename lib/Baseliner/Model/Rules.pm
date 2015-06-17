@@ -372,10 +372,7 @@ sub dsl_build {
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
-<<<<<<< HEAD
             _fail _loc 'Could not find rule key `%1`', $key unless blessed $reg;
-=======
->>>>>>> 6.2
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 if( length $attr->{sub_name} ) {
@@ -981,11 +978,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB"); 
     },
-<<<<<<< HEAD
     icon => '/static/images/icons/shortcut.png',
-=======
-    icon => '/static/images/icons/group2.gif',
->>>>>>> 6.2
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
