@@ -127,7 +127,7 @@
                     properties.items.getCount()==0 && properties.collapse();
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.png', function(b) { 
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -267,7 +267,7 @@
                     }
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.png', function(b) { 
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
