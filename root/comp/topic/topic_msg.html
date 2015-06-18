@@ -93,7 +93,7 @@ if (imagen.width()>600) { captura.show(); }
 </script>
 % 
 % my @form = grep { $_->{fields} } _array( $topic_meta );
-% my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
+% my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
 % my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
 % my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;

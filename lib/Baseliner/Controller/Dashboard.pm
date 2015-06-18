@@ -203,18 +203,16 @@ sub json : Local {
         }
         map {
             push @dashboard_list,
-            map {
-                +{
-                    name => $_->{rule_name},
-                    id   => '' . $_->{id}
-                }
-            } mdb->rule->find_one( { id => $_ } )
-        } @dashboard_ids;
+            +{
+                name => $_->{rule_name},
+                id   => '' . $_->{id}
+            }
+        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
     }
     else {
         @dashboard_list
             = map { +{ name => $_->{rule_name}, id => '' . $_->{id} } }
-            mdb->rule->find({ rule_type => 'dashboard' })->all;
+            mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
     }
 
     $c->stash->{json}
@@ -282,7 +280,7 @@ sub user_dashboards {
                 name => $_->{rule_name},
                 id   => '' . $_->{id}
             }
-        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->all;
+        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
 
     return @dashboard_list;
 }
@@ -952,7 +950,29 @@ sub topics_by_date: Local {
 sub topics_gauge: Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    my $data = gauge_data($c, $p);
 
+    my $data_max;
+    if ( $p->{max_selection} && $p->{max_selection} eq 'on' ) {
+        my $p_max = $p;
+
+        $p->{categories} = $p->{categories_max};
+        $p->{statuses} = $p->{statuses_max};
+        $p->{not_in_status} = $p->{not_in_status_max};
+        $p->{days_from} = $p->{days_from_max};
+        $p->{days_until} = $p->{days_until_max};
+        $p->{condition} = $p->{condition_max};
+
+        $data_max = gauge_data($c,$p_max);
+        $data->{max} = $data_max->{max};
+    }
+
+    $c->stash->{json} = { units => $data->{units}, data=> $data, max => sprintf("%.2f",$data->{max}) };
+    $c->forward('View::JSON');
+}
+
+sub gauge_data {
+    my ($c, $p) = @_;
     my $date_field_start = $p->{date_field_start};
     my $date_field_end = $p->{date_field_end};
 
@@ -1127,11 +1147,8 @@ sub topics_gauge: Local {
     }
 
     $units = $units.'s' if $units;
-
-    $c->stash->{json} = { units => $units, data=> { avg => $avg, sum => $sum, min => $min, max => $max, count => $count }, max => sprintf("%.2f",$max) };
-    $c->forward('View::JSON');
+    return { avg => $avg, sum => $sum, min => $min, max => $max, count => $count, units => $units };
 }
-
 sub list_topics: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;

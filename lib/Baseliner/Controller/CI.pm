@@ -223,6 +223,7 @@ sub tree_objects {
     my %class_coll;
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
+
             $collection = { '$in'=>[ map { 
                 my $coll= $_->can('collection') ? $_->collection : Util->to_base_class($_);
                 $class_coll{ $coll } = $_ ; # for later decoding it from a table
@@ -625,10 +626,9 @@ sub store : Local {
             }
             $mids = [ _array($mids), _unique @security];
         }
-        if ( ref $class ) {
-           ($class) = _array($class);
-        }
-        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
+
+        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
+
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {

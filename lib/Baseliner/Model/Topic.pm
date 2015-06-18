@@ -242,7 +242,7 @@ register 'registor.action.topic_category_fields' => {
             my $description;
             
             for my $field (_array $meta){
-                my $field_to_id = _name_to_id($field->{name_field});
+                my $field_to_id = $field->{id_field};
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
                     
@@ -998,7 +998,7 @@ sub next_status_for_user {
         }
     } else {
         my @user_wf = $self->user_workflow( $username );
-        @to_status = sort { ($a->{seq} || 0 ) <=> ( $b->{seq} || 0 ) } grep {
+        @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
             $_->{id_category} eq $p{id_category}
                 && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
                 && (( defined $_->{id_status_to}   && defined $p{id_status_from} && $_->{id_status_to}   ne $p{id_status_from} ) || ( !( defined $_->{id_status_to} && defined $p{id_status_from})))
@@ -1292,8 +1292,9 @@ sub get_meta {
 
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
-        _fail _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
+        _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
             unless length $cat->{default_field};
+        return     unless length $cat->{default_field};
         my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
@@ -1526,11 +1527,15 @@ sub get_revisions {
 sub get_cis {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
-    my $where = { from_mid => "$topic_mid" };
-    $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
-    $where->{rel_field} = $id_field;
-    my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
-
+    my @cis;
+    if($id_field eq 'bls'){
+        @cis = _array $data->{bls};
+    }else{
+        my $where = { from_mid => "$topic_mid" };
+        $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
+        $where->{rel_field} = $id_field;
+        @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
+    }
     $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
     return @cis ? \@cis : [];    
 }

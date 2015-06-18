@@ -110,7 +110,9 @@ register 'fieldlet.grid_editor' => {
     js          => '/fields/templates/js/grid_editor.js',
     form        => '/fields/templates/config/grid_editor.js',
     icon        => '/static/images/icons/grid.png',
-    type        => 'generic'
+    type        => 'generic',
+    section_allowed => ['details','body','more','between'],
+    section     => 'details'
 };
 
 register 'fieldlet.milestones' => {
@@ -147,6 +149,7 @@ register 'fieldlet.html_editor' => {
     icon        => '/static/images/icons/html.png',
     type        => 'html/editor',
     meta_type   => 'content',
+    section     => 'head'
     #data        => 'clob'
 };
 
