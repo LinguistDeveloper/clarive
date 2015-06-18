@@ -56,19 +56,17 @@
         //     maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         // }
         // maxValue = yellow + green + ( (yellow + green) * 20 /100 );
-        if ( max_selection != 'on' ) {
-            if ( parseInt(end) > maxValue ) {
-                maxValue = parseInt(end);
-            }
+        if ( parseInt(end) > maxValue ) {
+            maxValue = parseInt(end);
         }
-
         if ( parseInt(res.data[result_type]) > maxValue ) {
             maxValue = parseInt(res.data[result_type]);
         }
-        if ( yellow > maxValue ) {
-            yellow = maxValue;
+        if ( show_pct != 'on' ) {
+            if ( yellow > maxValue ) {
+                yellow = maxValue;
+            }
         }
-
         
         var minValue;
 
@@ -164,6 +162,7 @@
                          return deg2rad(config.minAngle);
                      })
                      .endAngle(function(d, i) {
+                         // console.log("Arc "+ d + " "+ i);
                          var label = d;
                          if ( show_pct == 'on' ) {
                             if (i != 0) label = d * maxValue / 100;
