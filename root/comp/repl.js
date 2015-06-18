@@ -271,7 +271,7 @@ To do:
                     }
                 });
             }),
-            Baseliner.button(_('Maximize'), '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button(_('Maximize'), '/static/images/icons/detach.png', function(b) { 
                 var tab = cons.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -280,7 +280,7 @@ To do:
                     Baseliner.addNewTabItem( to , '' );
                 }
             }),
-            Baseliner.button(_('Raw'), '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button(_('Raw'), '/static/images/icons/detach.png', function(b) { 
                 var tab = cons.getActiveTab();
                 var ww = window.open('about:blank', '_blank' );
                 ww.document.title = _('REPL');

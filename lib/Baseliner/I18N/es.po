@@ -885,6 +885,18 @@ msgstr "Aprobar"
 msgid "Approval"
 msgstr "Aprobación"
 
+msgid "Manage Requirements"
+msgstr "Gestionar Requerimientos"
+
+msgid "Prioritize Requirements"
+msgstr "Priorizar Requerimientos"
+
+msgid "Requirement"
+msgstr "Requerimiento"
+
+msgid "Requirements"
+msgstr "Requerimientos"
+
 msgid "Request ID"
 msgstr "ID de Solicitud"
 
