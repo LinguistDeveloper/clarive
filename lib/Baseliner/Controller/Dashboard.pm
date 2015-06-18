@@ -203,18 +203,16 @@ sub json : Local {
         }
         map {
             push @dashboard_list,
-            map {
-                +{
-                    name => $_->{rule_name},
-                    id   => '' . $_->{id}
-                }
-            } mdb->rule->find_one( { id => $_ } )
-        } @dashboard_ids;
+            +{
+                name => $_->{rule_name},
+                id   => '' . $_->{id}
+            }
+        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
     }
     else {
         @dashboard_list
             = map { +{ name => $_->{rule_name}, id => '' . $_->{id} } }
-            mdb->rule->find({ rule_type => 'dashboard' })->all;
+            mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
     }
 
     $c->stash->{json}
@@ -282,7 +280,7 @@ sub user_dashboards {
                 name => $_->{rule_name},
                 id   => '' . $_->{id}
             }
-        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->all;
+        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
 
     return @dashboard_list;
 }
