@@ -1093,7 +1093,7 @@ sub gauge_data {
         } elsif ( $end_remaining eq 'on' ) {
             my $date_end = Class::Date->new($topic->{$date_field_end});
             my $now = Class::Date->now();
-            my $rel = $now - $date_end;
+            my $rel = $date_end - $now;
             my $days = $rel->$units;
             push @data, $days;
             $max = $days if $days > $max;
