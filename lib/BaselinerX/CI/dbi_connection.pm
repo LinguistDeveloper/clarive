@@ -85,6 +85,7 @@ sub gen_connect_str {
 }
 
 sub list_drivers {
+    require DBIx::Simple;
     { data=>[ map { +{driver => $_} } DBI->available_drivers ] }
 }
 
