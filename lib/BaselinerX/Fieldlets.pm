@@ -111,7 +111,6 @@ register 'fieldlet.grid_editor' => {
     form        => '/fields/templates/config/grid_editor.js',
     icon        => '/static/images/icons/grid.png',
     type        => 'generic',
-    section_allowed => ['head','more'],
     section     => 'details'
 };
 
