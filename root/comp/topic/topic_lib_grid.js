@@ -1368,18 +1368,20 @@ Cla.topic_grid = function(params){
         bbar: ptool
     });
     
-//    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-//        //init_buttons('enable');
-//    });
+   // grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+   //      if(columnIndex == 0){
+   //          topicsSelected();
+   //      }
+   // });
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 1){
+        if(columnIndex == 0){
             topicsSelected();
         }
     });
     
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
-        if(columnIndex == 1){
+        if(columnIndex == 0){
             topicsSelected();
         }
     });
