@@ -2,7 +2,7 @@
     $meta
     $data
 </%args>
-% my $val = $data->{$meta->{id_field}} eq '1' ? _('Yes') : _('No');
+% my $val = $data->{$meta->{id_field}} eq '1' ? _loc('Yes') : _loc('No');
 % if( defined $val && !$meta->{hidden} ) {
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>
