@@ -935,7 +935,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	}
     
     my @sort;
+    my @rs_sort;
+    my $rs_sort;
     if ($sort) {
+        $rs_sort = $sort;
         my @categories;
         if ($categories_queries){
             for (keys $categories_queries) { push(@categories,$_) };
@@ -945,6 +948,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         for (@categories) { $sort =~ s/_$_//g; };
         $sort = "mid" if ($sort eq 'topic_mid');
         @sort = map { $_ => $sortdir } _array($sort);
+        @rs_sort = map { $_ => $sortdir } _array($rs_sort);
     } else{
         @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     }
@@ -1289,10 +1293,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	} @parse_data;
     # order data with text not ci-mid.
     if (@sort) {
-        if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/){
-            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) : lc($b->{$sort[0]}[0]) cmp lc($a->{$sort[0]}[0]) } @topics; 
-        } else {
-            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort}) cmp lc($b->{$sort}) : lc($b->{$sort}) cmp lc($a->{$sort}) } @topics; 
+        if (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} =~ /ci|project/){
+            @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort[0]}[0]) cmp lc($b->{$rs_sort[0]}[0]) : lc($b->{$rs_sort[0]}[0]) cmp lc($a->{$rs_sort[0]}[0]) } @topics; 
+        } elsif (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} !~ /release|topic/){
+            @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort}) cmp lc($b->{$rs_sort}) : lc($b->{$rs_sort}) cmp lc($a->{$rs_sort}) } @topics; 
         }
     }
 
