@@ -18,7 +18,7 @@ register 'dashlet.swarm' => {
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
-    my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
+    my @action = ('del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
     my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
     my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
     my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Email','Changeset','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
@@ -44,17 +44,22 @@ sub activity : Local {
     my $limit = $p->{limit} || 10000;
     my $where = { mid=>{'$ne'=>undef} };
 	
-    my $days = $p->{days} || 2592000000;
+    #my $days = $p->{days} || 2592000000;
+	my $days = $p->{days} || 31536000000;
 	$days = $days/86400000;
 
     my $date = Class::Date->now();
     my $filter_date = $date - ($days . 'D');
-
-    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef} })->sort({ ts=>1 })->limit($limit)->all;
+ 
+	_log( \$filter_date );
+ 
+    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef},ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->limit($limit)->all;
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
+_log _dump %cats;
+_log _dump %category_colors;
     my @data;
     for my $ev ( @ev ) {
         my $parent = $cats{$ev->{mid}};
@@ -66,7 +71,7 @@ sub activity : Local {
 			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
 		}
     }
-    # _log( \@data );
+ _log( \@data );
     $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
@@ -91,7 +96,7 @@ sub grouped_activity : Local {
 	_log "dates... " . $days;
 	_log "fecha filtrado" . $filter_date;
     my @dates = _array(
-        mdb->activity->aggregate(
+        mdb->activity2->aggregate(
             [
                 {'$match' => { mid=>{'$ne'=>undef}, event_key => qr/topic/, ts => { '$gte' => ''.$filter_date} }},
                 
@@ -129,6 +134,35 @@ sub grouped_activity : Local {
 	#_log( \%result_dates); 
     $c->stash->{json} = { data=>\%result_dates };
     $c->forward('View::JSON');    
+}
+
+sub swarm_tiempo : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+	my $limit = $p->{limit} || 10000;
+    my $days = $p->{days} || 1;
+
+	my @array = ('2015-06-08 10:25','2015-06-08 10:26','2015-06-08 10:27','2015-06-08 10:28','2015-06-08 10:29','2015-06-08 10:30','2015-06-08 12:31','2015-06-08 12:32','2015-06-08 12:33','2015-06-08 13:34','2015-06-08 13:35','2015-06-08 13:36','2015-06-08 13:37','2015-06-08 13:48','2015-06-08 13:49','2015-06-08 13:55','2015-06-08 13:56','2015-06-08 13:57','2015-06-08 13:58','2015-06-08 13:59','2015-06-08 14:00','2015-06-08 14:06','2015-06-08 14:07','2015-06-08 14:08','2015-06-08 14:09','2015-06-08 14:10','2015-06-08 14:11','2015-06-08 14:12','2015-06-08 14:13','2015-06-08 14:14','2015-06-08 14:15','2015-06-08 14:16','2015-06-08 15:57','2015-06-08 15:58','2015-06-08 15:59','2015-06-08 16:00','2015-06-08 16:01','2015-06-08 16:02','2015-06-08 16:03','2015-06-08 16:04','2015-06-08 16:05','2015-06-08 16:06','2015-06-08 16:07','2015-06-08 16:08','2015-06-08 16:09','2015-06-08 16:10','2015-06-08 16:11','2015-06-08 16:12','2015-06-08 16:13','2015-06-08 16:14','2015-06-08 16:15','2015-06-08 16:16','2015-06-08 16:17','2015-06-08 16:18','2015-06-08 16:19','2015-06-08 16:20','2015-06-08 16:21','2015-06-08 16:22','2015-06-08 16:23','2015-06-08 16:24');
+
+    _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
+    my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
+    my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
+    my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
+    my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Email','Changeset','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
+    
+    my @data;
+    for my $i ( 0 .. 59 ) {
+        my $parent = $parent[$i];
+        my $nodes = $nodes[$i];
+		my $action = $action[$i];
+        my $actor = $actor[$i];
+        my $t = $array[$i];
+        push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
+    }
+     
+    $c->stash->{json} = { data=>\@data };
+    $c->forward('View::JSON');   	
 }
 
 1;
