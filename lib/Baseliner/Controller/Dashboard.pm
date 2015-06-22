@@ -859,7 +859,8 @@ sub topics_by_date: Local {
     my %all_dates = ();
 
     for (my $date = $date_start->clone; $date <= $date_end; $date = $date + $interval) {
-        my $dt = DateTime->from_epoch( epoch => $date->epoch(), );
+        my $dt = DateTime->from_epoch( epoch => $date->epoch() );
+        $dt->set_time_zone( _tz );
         my $fdate;
         if ( $group !~ /day|quarter/ ) {    
             $dt->truncate( to => $group);
@@ -891,9 +892,9 @@ sub topics_by_date: Local {
             $all_categories{$topic->{category_name}} = 1;
         }
         if ($date_fmt) {
-            my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
+            my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch() );
+            $dt->set_time_zone( _tz );
             if ( $group !~ /day|quarter/ ) {
-
                 $dt->truncate( to => $group);
                 $date = substr(''.$dt,0,10);
             } elsif ( $group eq 'quarter' ){
@@ -901,7 +902,6 @@ sub topics_by_date: Local {
             } else {
                 $date = substr(''.$dt,0,10);
             }
-
             $topic_by_dates{$date}{ $topic->{category_name} }
                 = $topic_by_dates{$date}{ $topic->{category_name} }
                 ? $topic_by_dates{$date}{ $topic->{category_name} } + 1
@@ -921,7 +921,9 @@ sub topics_by_date: Local {
     }
 
     my %temp_data;
-    for my $rel_date ( keys %topic_by_dates ) {
+    for my $rel_date ( sort { $a cmp $b } keys %topic_by_dates ) {
+
+        my @data = ();
        for my $rel_type (keys %keys) {
            if ( !$temp_data{$rel_type} ) {
                 $temp_data{$rel_type} = [];
@@ -935,13 +937,13 @@ sub topics_by_date: Local {
     }
     my $matrix = [];
 
+
     push $matrix, \@dates;
 
     
     for ( keys %temp_data ) {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
-    # _warn $matrix;
 
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, matrix => $matrix} };
     $c->forward('View::JSON');
