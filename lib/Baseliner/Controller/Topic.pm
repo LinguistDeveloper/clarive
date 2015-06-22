@@ -1691,7 +1691,8 @@ sub kanban_status : Local {
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        # my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
         
         my %workflow;
         my %status_mids;

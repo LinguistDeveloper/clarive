@@ -56,7 +56,7 @@
         //     maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         // }
         // maxValue = yellow + green + ( (yellow + green) * 20 /100 );
-        if ( parseInt(end) > maxValue ) {
+        if ( max_selection != 'on' && parseInt(end) > maxValue ) {
             maxValue = parseInt(end);
         }
         if ( parseInt(res.data[result_type]) > maxValue ) {
