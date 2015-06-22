@@ -886,7 +886,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 texto_nodos = "url(#Color_Texto_Nodos)"
         }*/
 
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
