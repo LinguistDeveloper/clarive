@@ -1,44 +1,50 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
+    
+    background_color: '#000',
+    start_mode: 'manual',
+    limit: '20000',
+
     initComponent : function(){
+
         var self = this;
+        
         //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
         self.i=0;
         self.contador=1000;
-        self.days = 86400000;
+        self.days = 31536000000;
         self.color=0;
         self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
+        self.opuesto = self.invertir_Color(self.background_color);
+        self.cambio_realtime = true;
 
-        self.days = 86400000;
-        self.color=0;
-        self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
-
-        self.fecha = new Date();
+        self.date = new Date();
+        self.fecha_fin = new Date();
         //self.origen=0;
 
-        self.btn_start = new Baseliner.img_button( IC('start'), function(){ self.start_anim() });
-        self.btn_pause = new Baseliner.img_button( IC('pause.gif'), function(){ self.pause_anim() });
-        self.btn_stop = new Baseliner.img_button(  IC('stop'), function(){ self.stop_anim() });
+        self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim();} });
+        self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
+        self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        /*self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
             menu : {
                 items: [{
-                    text: 'Today', handler: function(){ self.calculo_horas(0) }
+                    text: 'Today', handler: function(){ self.get_days(0) } 
                 }, {
-                    text: '2D', handler: function(){ self.calculo_horas(2) }
+                    text: '2D', handler: function(){ self.get_days(2) } 
                 }, {
-                    text: '7D', handler: function(){ self.calculo_horas(7) }
+                    text: '7D', handler: function(){ self.get_days(7) } 
                 }, {
-                    text: '1M', handler: function(){ self.calculo_horas(30) }
+                    text: '1M', handler: function(){ self.get_days(30) } 
                 }, {
-                    text: '3M', handler: function(){ self.calculo_horas(90) }
+                    text: '3M', handler: function(){ self.get_days(90) } 
                 }, {
-                    text: '6M', handler: function(){ self.calculo_horas(180) }
+                    text: '6M', handler: function(){ self.get_days(180) } 
                 }]
             },
             //handler: function(){ self.start_anim() } 
-        });*/
+        });
 
         self.slider = new Ext.Slider({
             width: 100,
@@ -49,8 +55,36 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             plugins: new Ext.slider.Tip(),
         });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, '->', _('Speed'),'<b> + </b>', self.slider, ' <b> - </b> '];
-        //, self.scale_bar
+        self.slidertime = new Ext.Slider({
+            width: 40,
+            increment: 1,
+            value: 0,
+            minValue: 0,
+            maxValue: 1,
+            plugins: new Ext.slider.Tip(),
+        });
+
+
+        self.bbar = [ 
+        self.btn_start, 
+        self.btn_pause, 
+        self.btn_stop, 
+        //{xtype: 'tbfill'}, 
+        { xtype: 'tbspacer', width: 100 },
+        {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        self.slider, 
+        {xtype: 'tbtext', text:' +', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        { xtype: 'tbspacer', width: 100 },
+        {xtype: 'tbtext', text: 'Event Driven ', style : "color:#FF0000;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        self.slidertime, 
+        {xtype: 'tbtext', text: ' Real Time', style : "color:#009933;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
+        { xtype: 'tbspacer', width: 100 },
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        self.scale_bar,
+        { xtype: 'tbspacer', width: 25 },
+        ];
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -64,6 +98,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         });
     },
     init : function(){
+
         var self = this;
 
         //var color = d3.scale.category10();
@@ -117,20 +152,24 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node8 = self.svg.selectAll(".path");
         self.node9 = self.svg.selectAll(".path");
         self.texto = self.svg.selectAll("text");
+
+
+        //color = self.nodes[col].color;
+        //var color_brillo = self.getLuxColor(self.nodes[col].color,0.8);
   
         //COLORES DE LOS NODOS  
 
         var Color_Nodos_Raiz = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
-        Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
         Color_Nodos_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#90B4D2").attr("stop-opacity", 0).attr("brighter",1); // Color steelblue aclarado + 4
 
         var Color_texto_Raiz = self.svg.append("defs").append("linearGradient").attr("id", "Color_texto_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
-        Color_texto_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_texto_Raiz.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
         Color_texto_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
-        Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+        Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", self.opuesto).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -253,20 +292,32 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Verde.append("stop").attr("offset", "100%").attr("stop-color", "#66FF66").attr("stop-opacity", 0).attr("brighter",1); // Color verde aclarado + 4
     },
     start_anim : function(){
+
         var self = this;
+
+        /*self.background_color = "#ffff00";
+        self.opuesto = self.invertir_Color(self.background_color);
+        alert(self.background_color+" el opuesto "+self.opuesto);*/
+
         if(self.i==0){
 
+            //alert(self.days);
             Cla.ajax_json('/swarm/activity', {limit:self.limit, days: self.days}, function(res){
                 
-                // console.log(res);
+                if(res.data.length <= 0){
+                    alert("No existen datos para esta fecha, por favor introduzca otra fecha");
+                    self.stop_anim();
+                }
+                console.log(res);
+                //alert(res.data.length);
                 self.res = res;
                 self.i = 0;
                 self.j = 0;
 
-                //var fecha=new Date();
+                var fecha=new Date();
 
-                //var tiempo =fecha.getTime();
-                //var total= fecha.setTime(tiempo-self.days);
+                var tiempo =fecha.getTime();
+                var total= fecha.setTime(tiempo-self.days);
                 //var fecha_inicio = new Date(total);
         
       
@@ -278,6 +329,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
             });
         }
+
         if( !self.initiated ) {
             //alert("inicializa");
             self.first();
@@ -288,18 +340,22 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.disable();
         self.btn_pause.enable();
         self.btn_stop.enable();
-        setTimeout(function(){ self.anim(); }, self.slider.getValue()*100 );
+        setTimeout(function(){ self.anim(); }, (10-self.slider.getValue())*100 );
 
     },
     pause_anim : function(){
+
         var self = this;
+
         self.btn_start.enable();
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
     },
     stop_anim : function(){
+
         var self = this;
+
         self.btn_start.enable();
         self.btn_pause.disable();
         self.btn_stop.disable();
@@ -307,6 +363,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.i=self.res.data.length;  
     },
     anim : function(){
+
         var self = this;
 
         if( !self.anim_running ) return;
@@ -352,30 +409,95 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         row.id = Ext.id();
 
 
-        var next_timer = self.slider.getValue()*100;
+        var next_timer = (10-self.slider.getValue())*100;  
         //self.calculo_horas();
 
-        if( row.parent ) {
-            if( !self.parents[row.parent] ) {
-                self.parents[row.parent] = true;
-                self.add_inicial( row.parent );
-                var row = self.res.data[ self.i-- ];
-            }else{
-                if(row.ev == 'add') {
-                    self.comprobar_timer_usuario();
-                    self.add(row);
-                }else if(row.ev == 'mod') {
-                    self.comprobar_timer_usuario();
-                    self.modify(row);
-                }else {
-                    self.comprobar_timer_usuario();
-                    self.del(row);
+        if(self.slidertime.getValue()==0){
+            //#########################################################################
+            //PARTE PARA QUE PUEDA SOLO SALGAN LOS NODOS 
+            //#########################################################################
+            self.cambio_realtime=true;
+
+            if( row.parent ) {
+                if( !self.parents[row.parent] ) {
+                    self.parents[row.parent] = true;
+                    self.add_inicial( row.parent );
+                    var row = self.res.data[ self.i-- ];
+                }else{
+                    if(row.ev == 'add') {
+                        self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
+                        self.add(row);
+                    }else if(row.ev == 'mod') {
+                        self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
+                        self.modify(row);
+                    }else if(row.ev == 'del'){
+                        self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
+                        self.del(row);
+                    }
                 }
-        }
+            }
+            //#########################################################################
+            //#########################################################################
+            //#########################################################################
+        }else{
+            //#########################################################################
+            //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
+            //#########################################################################
+            
+            if(self.cambio_realtime){
+                self.date=row.t;
+                self.cambio_realtime=false;
+            }
+            //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
+            if(row.t==self.date){
+                //alert("entro aqui");
+                if( row.parent ) {
+                    if( !self.parents[row.parent] ) {
+                        self.parents[row.parent] = true;
+                        self.add_inicial( row.parent );
+                        var row = self.res.data[ self.i-- ];
+                    }else{
+                        if(row.ev == 'add') {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.add(row);
+                        }else if(row.ev == 'mod') {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.modify(row);
+                        }else {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.del(row);
+                        }
+                    }
+                }
+            }else{
+
+                var row = self.res.data[ self.i-- ];
+                var date = new Date(self.date);
+                var calculo = self.calcula_contador(date);
+                calculo = new Date(calculo);
+                self.date = self.calcular_fecha(calculo);
+
+                self.vis.append("text")
+                        .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+                        .attr("fill","#ffffff")
+                        .attr("x", '45%')
+                        .attr("y", '5%').transition().duration(10).remove();
+                    self.force.start();
+            }
+            //#########################################################################
+            //#########################################################################
+            //#########################################################################
         }
         setTimeout(function(){ self.anim() }, next_timer);
     },
     first : function(){
+
         var self = this;
 
         var a = { id: "9999" , node: "raiz"}
@@ -398,7 +520,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
     },
     add_inicial : function(parent_node){
+
         var self = this;
+
         var a = self.nodes[0];
         var d = { id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", 
             who: "iniciales", node: "iniciales", parent: parent_node };
@@ -454,11 +578,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
     },
     add : function(row){
+
         var self = this;
+
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = (10-self.slider.getValue())*100;  // TODO calculate from previous and next events
 
         if (!a){
              self.nodes.push(row);
@@ -470,11 +596,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             while (j < self.nodes.length){
 
                 if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
-                        self.nodes.push(row);
-                        self.date = row.t;
-                        self.links.push({source: row, target: self.nodes[j]});
-                        
-                        j=self.nodes.length;
+                    self.nodes.push(row);
+                    self.date = row.t;
+                    self.links.push({source: row, target: self.nodes[j]});
+                    
+                    j=self.nodes.length;
                 }   
                 j++;
             }
@@ -485,11 +611,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
     },
     modify : function(row){
+
         var self = this;
+
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = (10-self.slider.getValue())*100;  // TODO calculate from previous and next events
 
         var j = 0;
 
@@ -506,9 +634,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
 
         if (!a){
-             self.nodes.push(row);
-             self.date = row.t;
-             self.links.push({source: row, target: row});
+            self.nodes.push(row);
+            self.date = row.t;
+            self.links.push({source: row, target: row});
         }else {
             //var c = self.nodes[1];
             var j = 0;
@@ -533,24 +661,53 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
 
+
+        var a = self.nodes[0];
+        var d = row; //{id: self.i, node:  row.parent};
+
+        if (!a){
+            self.nodes.push(row);
+            self.date = row.t;
+            self.links.push({source: row, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var i = 0;
+            while (j < self.nodes.length){
+
+                if (self.nodes[i].parent ==  row.parent && self.nodes[i].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.date = row.t;
+                        self.links.push({source: row, target: self.nodes[i]});
+                        
+                        j=self.nodes.length;
+                }   
+                j++;
+            }
+
+        }
+
         var j = 0;
 
         while (j < self.nodes.length){
                 //Buscamos el nodo a borrar.
                 if (self.nodes[j].node == row.node){
+
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
                     self.date = row.t;
                     //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
                     j=self.nodes.length;
                 }   
             j++;
         }
 
         self.userstart(row);
-        self.start({ row: row, timer: self.slider.getValue()*100 });
+        self.start({ row: row, timer: (10-self.slider.getValue())*100 });
     },
     add_user : function(row){
+
         var self = this;
+
         var a = self.nodes[0];
 
         var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios", color: "aaa" };
@@ -626,6 +783,37 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
+    comprobar_timer_nodo : function(){
+
+        var self = this;
+
+        var j = 0;
+
+        if(self.nodes.length > 100){
+            while (j < self.nodes.length){
+
+                if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz"){
+
+                    //alert("entro aqui"+ self.nodes.length);
+               
+                    var i = 0;
+                    while(i < self.links.length){
+                            if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
+                            } 
+                            i++;
+                    }
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+                    j=self.nodes.length;
+                }
+                j++;
+            }
+        }
+        self.force.start();
+
+    },
     start : function(dt){
 
         var self = this;
@@ -636,17 +824,14 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var nodos;
         var texto_nodos;
 
-        alert(row);
-        console.log(row);
-
-        color = row.color;
+        var color = row.color;
         var color_brillo = self.getLuxColor(row.color,0.8);
 
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
-        Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
-        Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+        Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", self.opuesto).attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
 
         var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -654,37 +839,46 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
+        nodos = row.color;
+        texto_nodos = "url(#Color_Texto_Nodos)";
 
-        nodos = "url(#Color_Nodos)"
-        texto_nodos = "url(#Color_Texto_Nodos)"
 
         /*switch (row.parent) {
-            case "Changeset":   nodos = "url(#Color_Nodos_Verde)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Verde)"
+            case "Changeset":   
+                nodos = "url(#Color_Nodos_Verde)"
+                texto_nodos = "url(#Color_Texto_Nodos_Verde)"
                 break;
-            case "Emergency":   nodos = "url(#Color_Nodos_Rojo)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Rojo)"
+            case "Emergency":   
+                nodos = "url(#Color_Nodos_Rojo)"
+                texto_nodos = "url(#Color_Texto_Nodos_Rojo)"
                 break;
-            case "KB":          nodos = "url(#Color_Nodos_Marron)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Marron)"
+            case "KB":          
+                nodos = "url(#Color_Nodos_Marron)"
+                texto_nodos = "url(#Color_Texto_Nodos_Marron)"
                 break;
-            case "Impact Estimation":   nodos = "url(#Color_Nodos_Morado)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Morado)"
+            case "Impact Estimation":   
+                nodos = "url(#Color_Nodos_Morado)"
+                texto_nodos = "url(#Color_Texto_Nodos_Morado)"
                 break;
-            case "Project":   nodos = "url(#Color_Nodos_MoradoOscuro)"
-                                texto_nodos = "url(#Color_Texto_Nodos_MoradoOscuro)"
+            case "Project":   
+                nodos = "url(#Color_Nodos_MoradoOscuro)"
+                texto_nodos = "url(#Color_Texto_Nodos_MoradoOscuro)"
                 break;
-            case "Release":   nodos = "url(#Color_Nodos_AzulOscuro)"
-                                texto_nodos = "url(#Color_Texto_Nodos_AzulOscuro)"
+            case "Release":   
+                nodos = "url(#Color_Nodos_AzulOscuro)"
+                texto_nodos = "url(#Color_Texto_Nodos_AzulOscuro)"
                 break;
-            case "Requirement":   nodos = "url(#Color_Nodos_Amarillo)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Amarillo)"
+            case "Requirement":   
+                nodos = "url(#Color_Nodos_Amarillo)"
+                texto_nodos = "url(#Color_Texto_Nodos_Amarillo)"
                 break;
-            case "Test Case":   nodos = "url(#Color_Nodos_Azul)"
-                                texto_nodos = "url(#Color_Texto_Nodos_Azul)"
+            case "Test Case":   
+                nodos = "url(#Color_Nodos_Azul)"
+                texto_nodos = "url(#Color_Texto_Nodos_Azul)"
                 break;
-        default: nodos = "url(#Color_Nodos)"
-                 texto_nodos = "url(#Color_Texto_Nodos)"
+            default: 
+                nodos = "url(#Color_Nodos)"
+                texto_nodos = "url(#Color_Texto_Nodos)"
         }*/
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
@@ -862,14 +1056,122 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     }, 
-    /*calcular_fecha : function(date){
+    calcular_fecha : function(date){
 
         self = this;
-        self.stop_anim();
-        //var date = new Date(self.res.data[0].t);
 
-        var date = new Date();
-        date.setDate(date.getDate() - dias);
+        var day;
+        var month;
+        var hour;
+        var minutes;
+        var fecha;
+
+        if(date.getDate() < 10){
+            day = "0"+date.getDate();
+        }else{day = date.getDate();}
+
+        if(date.getMonth() < 9){
+            month = "0"+(date.getMonth()+1);
+        }else{month = date.getMonth()+1;}
+
+        if(date.getHours() < 10){
+            hour = "0"+date.getHours();
+        }else{hour = date.getHours();}
+
+        if(date.getMinutes() < 10){
+            minutes = "0"+date.getMinutes();
+        }else{minutes = date.getMinutes();}
+
+        if(date.getSeconds() < 10){
+            seconds = "0"+date.getSeconds();
+        }else{seconds = date.getSeconds();}
+
+        fecha = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes+":"+seconds;
+        return fecha;
+
+    },
+    calcula_contador : function(date){
+
+        self = this;
+
+        var seconds = date.getSeconds()+1;
+        var minutes = date.getMinutes()
+        var hour = date.getHours();
+        var day = date.getDate();
+        var month = date.getMonth();
+        var year = date.getFullYear();
+        var fecha;
+
+        if (seconds > 59){
+            seconds = '00';
+            minutes = minutes+1;
+
+
+            if (minutes > 59){
+                minutes = '00';
+                hour = hour+1;
+                if(date.getHours()>=23){
+                    hour = '00';
+                    day = date.getDate()+1;
+                    if(date.getDate()>=30){
+                        if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
+                           day = '01';
+                           month = date.getMonth()+1; 
+                            if(date.getMonth()>=11){
+                                month = 00;
+                                year= date.getFullYear()+1;
+                            }
+                        }else{
+                            day = '01';
+                            month = date.getMonth()+1;
+                            if(date.getMonth()>=11){
+                                month = 00;
+                                year= date.getFullYear()+1;
+                            }
+                        }
+                    }else if (date.getDate()==28 && date.getMonth()==1){
+                        day = '01';
+                        month = date.getMonth()+1;
+                        if(date.getMonth()>=11){
+                            month = 00;
+                            year= date.getFullYear()+1;
+                        }
+                    }
+                }
+            }
+        }
+        fecha = year+"-"+(month+1)+"-"+day+" "+hour+":"+minutes+":"+seconds;
+        return fecha;
+    },
+    get_days : function(days){
+        
+        var self = this;
+
+        switch (days) {
+            case 0: self.days=86400000
+                break;
+            case 2: self.days=172800000
+                break;
+            case 7: self.days=604800000
+                break;
+            case 30: self.days=2592000000
+                break;
+            case 90: self.days=7776000000
+                break
+            case 180: self.days=15552000000
+                break;
+            default: self.days=0
+        }
+        self.stop_anim();
+        self.start_anim();
+    },
+    formato_imprimir : function(date){
+
+        self = this;
+
+        var fecha;
+        var date = new Date(date);
+        date.setDate(date.getDate());
 
          var dia;
         switch (date.getDay()) {
@@ -921,16 +1223,32 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             default: mes='NAN'
         }
 
-        self.fecha = dia +" , "+date.getDate()+" "+mes+" "+date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
-        self.start_anim();
+        var day;
+        var month;
+        var hour;
+        var minutes;
+
+        if(date.getDate() < 10){
+            day = "0"+date.getDate();
+        }else{day = date.getDate();}
+
+        if(date.getMonth() < 9){
+            month = "0"+(date.getMonth()+1);
+        }else{month = date.getMonth()+1;}
+
+        if(date.getHours() < 10){
+            hour = "0"+date.getHours();
+        }else{hour = date.getHours();}
+
+        if(date.getMinutes() < 10){
+            minutes = "0"+date.getMinutes();
+        }else{minutes = date.getMinutes();}
+
+        fecha = dia +" , "+day+" "+mes+" "+date.getFullYear()+" "+hour+":"+minutes;
+
+        return fecha;
 
     },
-    get_contador : function(){
-        self = this;
-
-        return self.contador = self.contador-5;
-
-    },*/
     getLuxColor : function(hex,lum) {
 
         // validate hex string
@@ -948,8 +1266,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             rgb += ("00"+c).substr(c.length);
         }
 
-    //alert(rgb);
+    //alert(hex+" esto es un color "+rgb);
     return rgb;
+    },
+    invertir_Color : function(hex) {
+
+        var color = hex;
+        color = color.substring(1);           // remove #
+        color = parseInt(color, 16);          // convert to integer
+        color = 0xFFFFFF ^ color;             // invert three bytes
+        color = color.toString(16);           // convert to hex
+        color = ("000000" + color).slice(-6); // pad with leading zeros
+        color = "#" + color;                  // prepend #
+
+        return color;
     },
     tick : function(){
 
@@ -958,10 +1288,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
         self.vis.append("text")
             .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
-            .attr("fill","#ffffff")
+            .attr("fill", self.opuesto)
             .attr("x", '45%')
             .attr("y", '5%').transition().duration(10).remove();
         //////////////////////////////////////////////////////////////////////////////////////
+
+        //alert(self.node.t);
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
@@ -988,26 +1320,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
     },
     rescale : function() {
+
         var self = this;
+
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
-
-    /*,
-    calculo_direcciones_x : function(x){
-        if(x < 350){
-            x=1;
-        }else{
-            x=-1;
-        }
-        return x;
-    },
-    calculo_direcciones_y : function(y){
-
-        if(y < 250){
-            y=1;
-        }else{
-            y=-1;
-        }
-        return y;
-    }*/
 });

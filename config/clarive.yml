@@ -26,7 +26,7 @@ redis:
 
 # mongo database setup
 mongo:
-    dbname: clarive
+    dbname: acmebank 
     retry_frequency: 5
     max_retries: 60
     client:

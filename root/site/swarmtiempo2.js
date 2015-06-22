@@ -13,10 +13,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.parents =  {};
         self.i=0;
         self.contador=1000;
-        self.days = 86400000;
+        self.days = 31536000000;
         self.color=0;
         self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
         self.opuesto = self.invertir_Color(self.background_color);
+        self.cambio_realtime = true;
 
         self.date = new Date();
         self.fecha_fin = new Date();
@@ -26,7 +27,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        /*self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
             menu : {
                 items: [{
                     text: 'Today', handler: function(){ self.get_days(0) } 
@@ -43,7 +44,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }]
             },
             //handler: function(){ self.start_anim() } 
-        });*/
+        });
 
         self.slider = new Ext.Slider({
             width: 100,
@@ -54,7 +55,36 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             plugins: new Ext.slider.Tip(),
         });
 
-        self.bbar = [ self.btn_start, self.btn_pause, self.btn_stop, {xtype: 'tbfill'}, {text: 'Speed + '}, self.slider, {text: ' -'}, self.scale_bar];
+        self.slidertime = new Ext.Slider({
+            width: 40,
+            increment: 1,
+            value: 0,
+            minValue: 0,
+            maxValue: 1,
+            plugins: new Ext.slider.Tip(),
+        });
+
+
+        self.bbar = [ 
+        self.btn_start, 
+        self.btn_pause, 
+        self.btn_stop, 
+        //{xtype: 'tbfill'}, 
+        { xtype: 'tbspacer', width: 100 },
+        {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        self.slider, 
+        {xtype: 'tbtext', text:' +', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        { xtype: 'tbspacer', width: 100 },
+        {xtype: 'tbtext', text: 'Event Driven ', style : "color:#FF0000;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        self.slidertime, 
+        {xtype: 'tbtext', text: ' Real Time', style : "color:#009933;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
+        { xtype: 'tbspacer', width: 100 },
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        self.scale_bar,
+        { xtype: 'tbspacer', width: 25 },
+        ];
 
         Cla.Swarm.superclass.initComponent.call(this);
          
@@ -122,20 +152,24 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node8 = self.svg.selectAll(".path");
         self.node9 = self.svg.selectAll(".path");
         self.texto = self.svg.selectAll("text");
+
+
+        //color = self.nodes[col].color;
+        //var color_brillo = self.getLuxColor(self.nodes[col].color,0.8);
   
         //COLORES DE LOS NODOS  
 
         var Color_Nodos_Raiz = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
-        Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Raiz.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Nodos_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
         Color_Nodos_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#90B4D2").attr("stop-opacity", 0).attr("brighter",1); // Color steelblue aclarado + 4
 
         var Color_texto_Raiz = self.svg.append("defs").append("linearGradient").attr("id", "Color_texto_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
-        Color_texto_Raiz.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_texto_Raiz.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
         Color_texto_Raiz.append("stop").attr("offset", "60%").attr("stop-color", "#4682B4").attr("stop-opacity", 0.5); // Color steelblue
-        Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+        Color_texto_Raiz.append("stop").attr("offset", "100%").attr("stop-color", self.opuesto).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -148,6 +182,102 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "0%").attr("stop-color", "#FF1919").attr("stop-opacity", 1); //Luminosidad color blanco
         Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Rojo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Rojo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Rojo.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Rojo.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
+        Color_Nodos_Rojo.append("stop").attr("offset", "100%").attr("stop-color", "#FF6666").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Rojo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Rojo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "0%").attr("stop-color", "#FF1919").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "60%").attr("stop-color", "#FF0000").attr("stop-opacity", 0.5); // Color red
+        Color_Texto_Nodos_Rojo.append("stop").attr("offset", "100%").attr("stop-color", "#FF1919").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Verde = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Verde").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Verde.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Verde.append("stop").attr("offset", "60%").attr("stop-color", "#008000").attr("stop-opacity", 0.5); // Color GREEN
+        Color_Nodos_Verde.append("stop").attr("offset", "100%").attr("stop-color", "#66B366").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Verde = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Verde").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "0%").attr("stop-color", "#198D19").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "60%").attr("stop-color", "#008000").attr("stop-opacity", 0.5); // Color GREEN
+        Color_Texto_Nodos_Verde.append("stop").attr("offset", "100%").attr("stop-color", "#198D19").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Morado = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Morado").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Morado.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Morado.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Morado.append("stop").attr("offset", "100%").attr("stop-color", "#E3C8E3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Morado = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Morado").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "0%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Morado.append("stop").attr("offset", "100%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Marron = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Marron").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Marron.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Marron.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Marron.append("stop").attr("offset", "100%").attr("stop-color", "#E3C8E3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Marron = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Marron").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "0%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "60%").attr("stop-color", "#D1A3D1").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Marron.append("stop").attr("offset", "100%").attr("stop-color", "#D6ACD6").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Azul = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Azul").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Azul.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Azul.append("stop").attr("offset", "60%").attr("stop-color", "#0066FF").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Azul.append("stop").attr("offset", "100%").attr("stop-color", "#66A3FF").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Azul = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Azul").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "0%").attr("stop-color", "#1975FF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "60%").attr("stop-color", "#0066FF").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Azul.append("stop").attr("offset", "100%").attr("stop-color", "#1975FF").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_AzulOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_AzulOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#003366").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_AzulOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#6685A3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_AzulOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_AzulOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#194775").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#003366").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_AzulOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#194775").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_Amarillo.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_Amarillo.append("stop").attr("offset", "60%").attr("stop-color", "#FF9900").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_Amarillo.append("stop").attr("offset", "100%").attr("stop-color", "#FFC266").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "0%").attr("stop-color", "#FFA319").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "60%").attr("stop-color", "#FF9900").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_Amarillo.append("stop").attr("offset", "100%").attr("stop-color", "#FFA319").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        var Color_Nodos_MoradoOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_MoradoOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#660066").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Nodos_MoradoOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#A366A3").attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos_MoradoOscuro = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos_MoradoOscuro").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "0%").attr("stop-color", "#751975").attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "60%").attr("stop-color", "#660066").attr("stop-opacity", 0.5); // Color MORADO
+        Color_Texto_Nodos_MoradoOscuro.append("stop").attr("offset", "100%").attr("stop-color", "#751975").attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         var Amarillo = self.svg.append("defs").append("radialGradient").attr("id", "Amarillo").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -165,11 +295,21 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
 
+        /*self.background_color = "#ffff00";
+        self.opuesto = self.invertir_Color(self.background_color);
+        alert(self.background_color+" el opuesto "+self.opuesto);*/
+
         if(self.i==0){
 
-            Cla.ajax_json('/swarm/swarm_tiempo', {limit:self.limit, days: self.days}, function(res){
+            //alert(self.days);
+            Cla.ajax_json('/swarm/activity', {limit:self.limit, days: self.days}, function(res){
                 
+                if(res.data.length <= 0){
+                    alert("No existen datos para esta fecha, por favor introduzca otra fecha");
+                    self.stop_anim();
+                }
                 console.log(res);
+                //alert(res.data.length);
                 self.res = res;
                 self.i = 0;
                 self.j = 0;
@@ -178,14 +318,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                 var tiempo =fecha.getTime();
                 var total= fecha.setTime(tiempo-self.days);
-                var fecha_inicio = new Date(total);
+                //var fecha_inicio = new Date(total);
         
       
-                var calculo = self.calcula_contador(fecha_inicio);
-                calculo = new Date(calculo);
-                self.date = self.calcular_fecha(calculo);
-                //TRAMPEADO PARA QUE EMPIECE DONDE LOS DATOS QUE RECIBIMOS DE EL CONTROLADOR
-                self.date = '2015-06-08 10:24';
+                //var calculo = self.calcula_contador(fecha_inicio);
+                //calculo = new Date(calculo);
+                //self.date = self.calcular_fecha(calculo);
+                //self.date = '2015-06-08 10:24';
                 //alert("el calculo es "+self.date);
 
             });
@@ -201,7 +340,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.disable();
         self.btn_pause.enable();
         self.btn_stop.enable();
-        setTimeout(function(){ self.anim(); }, self.slider.getValue()*100 );
+        setTimeout(function(){ self.anim(); }, (10-self.slider.getValue())*100 );
 
     },
     pause_anim : function(){
@@ -270,14 +409,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         row.id = Ext.id();
 
 
-        var next_timer = self.slider.getValue()*100;  
+        var next_timer = (10-self.slider.getValue())*100;  
         //self.calculo_horas();
 
+        if(self.slidertime.getValue()==0){
+            //#########################################################################
+            //PARTE PARA QUE PUEDA SOLO SALGAN LOS NODOS 
+            //#########################################################################
+            self.cambio_realtime=true;
 
-        
-        //alert("las fechas son "+row.t+" la otra fecha es "+self.date);
-        if(row.t==self.date){
-            //alert("entro aqui");
             if( row.parent ) {
                 if( !self.parents[row.parent] ) {
                     self.parents[row.parent] = true;
@@ -286,30 +426,73 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }else{
                     if(row.ev == 'add') {
                         self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
                         self.add(row);
                     }else if(row.ev == 'mod') {
                         self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
                         self.modify(row);
-                    }else {
+                    }else if(row.ev == 'del'){
                         self.comprobar_timer_usuario();
+                        self.comprobar_timer_nodo();
                         self.del(row);
                     }
                 }
             }
+            //#########################################################################
+            //#########################################################################
+            //#########################################################################
         }else{
+            //#########################################################################
+            //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
+            //#########################################################################
+            
+            if(self.cambio_realtime){
+                self.date=row.t;
+                self.cambio_realtime=false;
+            }
+            //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
+            if(row.t==self.date){
+                //alert("entro aqui");
+                if( row.parent ) {
+                    if( !self.parents[row.parent] ) {
+                        self.parents[row.parent] = true;
+                        self.add_inicial( row.parent );
+                        var row = self.res.data[ self.i-- ];
+                    }else{
+                        if(row.ev == 'add') {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.add(row);
+                        }else if(row.ev == 'mod') {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.modify(row);
+                        }else {
+                            self.comprobar_timer_usuario();
+                            self.comprobar_timer_nodo();
+                            self.del(row);
+                        }
+                    }
+                }
+            }else{
 
-            var row = self.res.data[ self.i-- ];
-            var date = new Date(self.date);
-            var calculo = self.calcula_contador(date);
-            calculo = new Date(calculo);
-            self.date = self.calcular_fecha(calculo);
+                var row = self.res.data[ self.i-- ];
+                var date = new Date(self.date);
+                var calculo = self.calcula_contador(date);
+                calculo = new Date(calculo);
+                self.date = self.calcular_fecha(calculo);
 
-            self.vis.append("text")
-                    .text(self.formato_imprimir(self.date))//.text(self.get_contador())//.text(self.res.data[0].t)
-                    .attr("fill","#ffffff")
-                    .attr("x", '45%')
-                    .attr("y", '5%').transition().duration(10).remove();
-                self.force.start();
+                self.vis.append("text")
+                        .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+                        .attr("fill","#ffffff")
+                        .attr("x", '45%')
+                        .attr("y", '5%').transition().duration(10).remove();
+                    self.force.start();
+            }
+            //#########################################################################
+            //#########################################################################
+            //#########################################################################
         }
         setTimeout(function(){ self.anim() }, next_timer);
     },
@@ -322,7 +505,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         //quitamos la parte de el nodo para que no aparezca, solo definimos el elemento circulo
-        self.node.enter().append("circle").attr("r",500);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
+        self.node.enter().append("circle").attr("r",0);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
         
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
@@ -401,7 +584,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = (10-self.slider.getValue())*100;  // TODO calculate from previous and next events
 
         if (!a){
              self.nodes.push(row);
@@ -434,7 +617,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var a = self.nodes[0];
         var d = row; //{id: self.i, node:  row.parent};
 
-        var timer = self.slider.getValue()*100;  // TODO calculate from previous and next events
+        var timer = (10-self.slider.getValue())*100;  // TODO calculate from previous and next events
 
         var j = 0;
 
@@ -478,6 +661,31 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
 
+
+        var a = self.nodes[0];
+        var d = row; //{id: self.i, node:  row.parent};
+
+        if (!a){
+            self.nodes.push(row);
+            self.date = row.t;
+            self.links.push({source: row, target: row});
+        }else {
+            //var c = self.nodes[1];
+            var i = 0;
+            while (j < self.nodes.length){
+
+                if (self.nodes[i].parent ==  row.parent && self.nodes[i].node == "iniciales"){
+                        self.nodes.push(row);
+                        self.date = row.t;
+                        self.links.push({source: row, target: self.nodes[i]});
+                        
+                        j=self.nodes.length;
+                }   
+                j++;
+            }
+
+        }
+
         var j = 0;
 
         while (j < self.nodes.length){
@@ -494,7 +702,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
 
         self.userstart(row);
-        self.start({ row: row, timer: self.slider.getValue()*100 });
+        self.start({ row: row, timer: (10-self.slider.getValue())*100 });
     },
     add_user : function(row){
 
@@ -502,7 +710,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var a = self.nodes[0];
 
-        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios" };
+        var d = { id: "#u"+Math.random(), t: 5, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios", color: "aaa" };
 
         if (!a){
              self.nodes.push(d);
@@ -530,6 +738,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 j++;
             }
          if(j==self.nodes.length){
+
+                    for (i=0; i<11; i++){
+                        if (i==self.color && d.color == "aaa"){
+                            d.color= "/static/images/USER_"+i+".png";
+                        }
+
+                    } 
+                        if(self.color==10){self.color=0;}
+                        self.color++;
                         self.nodes.push(d);
                         self.links.push({source: d, target: row });
                 }      
@@ -566,6 +783,37 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
+    comprobar_timer_nodo : function(){
+
+        var self = this;
+
+        var j = 0;
+
+        if(self.nodes.length > 100){
+            while (j < self.nodes.length){
+
+                if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz"){
+
+                    //alert("entro aqui"+ self.nodes.length);
+               
+                    var i = 0;
+                    while(i < self.links.length){
+                            if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
+                            } 
+                            i++;
+                    }
+
+                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+                    j=self.nodes.length;
+                }
+                j++;
+            }
+        }
+        self.force.start();
+
+    },
     start : function(dt){
 
         var self = this;
@@ -573,12 +821,72 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var row = dt.row;
         var timer = dt.timer;
 
+        var nodos;
+        var texto_nodos;
+
+        var color = row.color;
+        var color_brillo = self.getLuxColor(row.color,0.8);
+
+        var Color_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Nodos.append("stop").attr("offset", "0%").attr("stop-color", self.opuesto).attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
+        Color_Nodos.append("stop").attr("offset", "100%").attr("stop-color", self.opuesto).attr("stop-opacity", 0).attr("brighter",1); // Color red aclarado + 4
+
+        var Color_Texto_Nodos = self.svg.append("defs").append("radialGradient").attr("id", "Color_Texto_Nodos").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
+        //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
+        Color_Texto_Nodos.append("stop").attr("offset", "0%").attr("stop-color", color_brillo).attr("stop-opacity", 1); //Luminosidad color blanco
+        Color_Texto_Nodos.append("stop").attr("offset", "60%").attr("stop-color", color).attr("stop-opacity", 0.5); // Color red
+        Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
+
+        nodos = row.color;
+        texto_nodos = "url(#Color_Texto_Nodos)";
+
+
+        /*switch (row.parent) {
+            case "Changeset":   
+                nodos = "url(#Color_Nodos_Verde)"
+                texto_nodos = "url(#Color_Texto_Nodos_Verde)"
+                break;
+            case "Emergency":   
+                nodos = "url(#Color_Nodos_Rojo)"
+                texto_nodos = "url(#Color_Texto_Nodos_Rojo)"
+                break;
+            case "KB":          
+                nodos = "url(#Color_Nodos_Marron)"
+                texto_nodos = "url(#Color_Texto_Nodos_Marron)"
+                break;
+            case "Impact Estimation":   
+                nodos = "url(#Color_Nodos_Morado)"
+                texto_nodos = "url(#Color_Texto_Nodos_Morado)"
+                break;
+            case "Project":   
+                nodos = "url(#Color_Nodos_MoradoOscuro)"
+                texto_nodos = "url(#Color_Texto_Nodos_MoradoOscuro)"
+                break;
+            case "Release":   
+                nodos = "url(#Color_Nodos_AzulOscuro)"
+                texto_nodos = "url(#Color_Texto_Nodos_AzulOscuro)"
+                break;
+            case "Requirement":   
+                nodos = "url(#Color_Nodos_Amarillo)"
+                texto_nodos = "url(#Color_Texto_Nodos_Amarillo)"
+                break;
+            case "Test Case":   
+                nodos = "url(#Color_Nodos_Azul)"
+                texto_nodos = "url(#Color_Texto_Nodos_Azul)"
+                break;
+            default: 
+                nodos = "url(#Color_Nodos)"
+                texto_nodos = "url(#Color_Texto_Nodos)"
+        }*/
+
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text").text(row.node).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "hidden");
+        self.node5.enter().append("text").text(row.node).attr("fill", texto_nodos).attr("fill-opacity",0.6).style("visibility", "hidden");
         self.node5.exit().remove();
        
         self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
@@ -598,7 +906,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node9.exit().remove();
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Color_Texto_Nodos)").remove();
+        self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill", texto_nodos).remove();
         self.node4.exit().remove();
       
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
@@ -610,27 +918,27 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
-                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            return self.node5.attr("fill",texto_nodos).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
                          d3.select(this).transition()
                          .duration(750)
                          .attr("r", 10)
-                         .attr("fill","url(#Color_Nodos)")
+                         .attr("fill",nodos)
                          .attr("fill-opacity",0.6);
                          self.node6.style("visibility", "hidden");
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
                          self.node9.style("visibility", "hidden");
-                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         return self.node5.attr("fill",texto_nodos).style("visibility", "hidden");//})
                          })
                          .call(self.force.drag)
-                         .transition().duration(timer).attr("fill","url(#Color_Nodos)").attr("fill-opacity",0.6);
+                         .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
@@ -738,11 +1046,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node= self.node.data(self.force.nodes(), function(d) { return d.id;});
         //self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
-        self.node.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20);
+        self.node.enter().append("png:image").attr("xlink:href", function(d) { return d.color;}).attr("width", 20).attr("height", 20);
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").text(row.who).attr("fill","#00CCFF")
+        self.node3.enter().append("text").text(row.who).attr("fill",self.colores[self.color-1])
         self.node3.exit().remove();
 
         self.force.start();
@@ -774,7 +1082,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             minutes = "0"+date.getMinutes();
         }else{minutes = date.getMinutes();}
 
-        fecha = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes;
+        if(date.getSeconds() < 10){
+            seconds = "0"+date.getSeconds();
+        }else{seconds = date.getSeconds();}
+
+        fecha = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes+":"+seconds;
         return fecha;
 
     },
@@ -782,28 +1094,42 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self = this;
 
-        var minutes = date.getMinutes()+1;
+        var seconds = date.getSeconds()+1;
+        var minutes = date.getMinutes()
         var hour = date.getHours();
         var day = date.getDate();
         var month = date.getMonth();
         var year = date.getFullYear();
         var fecha;
 
-        if (minutes > 59){
-            minutes = '00';
-            hour = hour+1;
-            if(date.getHours()>=23){
-                hour = '00';
-                day = date.getDate()+1;
-                if(date.getDate()>=30){
-                    if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
-                       day = '01';
-                       month = date.getMonth()+1; 
-                        if(date.getMonth()>=11){
-                            month = 00;
-                            year= date.getFullYear()+1;
+        if (seconds > 59){
+            seconds = '00';
+            minutes = minutes+1;
+
+
+            if (minutes > 59){
+                minutes = '00';
+                hour = hour+1;
+                if(date.getHours()>=23){
+                    hour = '00';
+                    day = date.getDate()+1;
+                    if(date.getDate()>=30){
+                        if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
+                           day = '01';
+                           month = date.getMonth()+1; 
+                            if(date.getMonth()>=11){
+                                month = 00;
+                                year= date.getFullYear()+1;
+                            }
+                        }else{
+                            day = '01';
+                            month = date.getMonth()+1;
+                            if(date.getMonth()>=11){
+                                month = 00;
+                                year= date.getFullYear()+1;
+                            }
                         }
-                    }else{
+                    }else if (date.getDate()==28 && date.getMonth()==1){
                         day = '01';
                         month = date.getMonth()+1;
                         if(date.getMonth()>=11){
@@ -811,18 +1137,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             year= date.getFullYear()+1;
                         }
                     }
-                }else if (date.getDate()==28 && date.getMonth()==1){
-                    day = '01';
-                    month = date.getMonth()+1;
-                    if(date.getMonth()>=11){
-                        month = 00;
-                        year= date.getFullYear()+1;
-                    }
                 }
             }
         }
-
-        fecha = year+"-"+(month+1)+"-"+day+" "+hour+":"+minutes;
+        fecha = year+"-"+(month+1)+"-"+day+" "+hour+":"+minutes+":"+seconds;
         return fecha;
     },
     get_days : function(days){
@@ -850,9 +1168,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     formato_imprimir : function(date){
 
         self = this;
-
-        //self.stop_anim();
-        //var date = new Date(self.res.data[0].t);
 
         var fecha;
         var date = new Date(date);
@@ -929,13 +1244,42 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             minutes = "0"+date.getMinutes();
         }else{minutes = date.getMinutes();}
 
-        //fecha = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes;
-
         fecha = dia +" , "+day+" "+mes+" "+date.getFullYear()+" "+hour+":"+minutes;
 
-        //self.start_anim();
         return fecha;
 
+    },
+    getLuxColor : function(hex,lum) {
+
+        // validate hex string
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        }
+        lum = lum || 0;
+
+        // convert to decimal and change luminosity
+        var rgb = "#", c, i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i*2,2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ("00"+c).substr(c.length);
+        }
+
+    //alert(hex+" esto es un color "+rgb);
+    return rgb;
+    },
+    invertir_Color : function(hex) {
+
+        var color = hex;
+        color = color.substring(1);           // remove #
+        color = parseInt(color, 16);          // convert to integer
+        color = 0xFFFFFF ^ color;             // invert three bytes
+        color = color.toString(16);           // convert to hex
+        color = ("000000" + color).slice(-6); // pad with leading zeros
+        color = "#" + color;                  // prepend #
+
+        return color;
     },
     tick : function(){
 
@@ -943,8 +1287,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         //PONIENDO EL GET_CONTROLADOR AQUI SE CUELGA LA APLICACION ¡¡¡SI PONEMOS UN TEXTO NO!!!
         self.vis.append("text")
-            .text(self.formato_imprimir(self.date))//.text(self.get_contador())//.text(self.res.data[0].t)
-            .attr("fill","#ffffff")
+            .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+            .attr("fill", self.opuesto)
             .attr("x", '45%')
             .attr("y", '5%').transition().duration(10).remove();
         //////////////////////////////////////////////////////////////////////////////////////
