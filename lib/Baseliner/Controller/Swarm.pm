@@ -40,8 +40,8 @@ sub leer_log : Local {
 sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+    #my $limit = $p->{limit} || 10000;
 
-    my $limit = $p->{limit} || 10000;
     my $where = { mid=>{'$ne'=>undef} };
 	
     #my $days = $p->{days} || 2592000000;
@@ -52,8 +52,12 @@ sub activity : Local {
     my $filter_date = $date - ($days . 'D');
  
 	_log( \$filter_date );
- 
-    my @ev = mdb->activity->find({ mid=>{'$ne'=>undef},ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->limit($limit)->all;
+
+
+
+
+  my @ev = mdb->activity->find({ mid=>{'$ne'=>undef},ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->all;
+
     my @mids = map { $_->{mid}} @ev;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;

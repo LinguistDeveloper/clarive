@@ -1,8 +1,12 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
     
-    background_color: '#000',
+    background_color: '#000000',
     start_mode: 'manual',
-    limit: '20000',
+
+
+
+    //limit: '20000',
+
 
     initComponent : function(){
 
@@ -18,6 +22,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.colores = ["#86ECFF", "#A3A5A8", "#B900BF", "#BF932D", "#55FF64", "#FA0200", "#FFFF00", "#FF7C54", "#0003E8", "#FF2E99", "#16FCFF"];
         self.opuesto = self.invertir_Color(self.background_color);
         self.cambio_realtime = true;
+
+
+        self.colores_usuarios=[];
+        self.usuarios_colores=[];
+        //EL CONTROL DE PINTAR SOLO ES VALIDO PARA COLORES DE 0 A 9.
+        self.pintar=0;
+
 
         self.date = new Date();
         self.fecha_fin = new Date();
@@ -307,7 +318,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         if(self.i==0){
 
             //alert(self.days);
-            Cla.ajax_json('/swarm/activity', {limit:self.limit, days: self.days}, function(res){
+
+
+
+            Cla.ajax_json('/swarm/activity', {days: self.days}, function(res){
+
                 
                 if(res.data.length <= 0){
                     alert("No existen datos para esta fecha, por favor introduzca otra fecha");
@@ -547,37 +562,69 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
 
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
-        self.link.exit().remove();
+        if (self.background_color == '#000000'){
+            
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","#FFFFFF");
+            self.link.exit().remove();
 
-        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-        self.texto.enter().append('text').attr("fill","url(#Color_texto_Raiz)").text(function(d) { return d.source.parent;});   
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+            self.texto.enter().append('text').attr("fill","#FFFFFF").text(function(d) { return d.source.parent;});   
 
-        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
-        self.node.exit().remove();
+            self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.exit().remove();
 
-        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
-        self.node4.exit().remove();
+        }
+        if (self.background_color == '#FFFFFF'){
+            
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","#000000");
+            self.link.exit().remove();
 
-        self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
-        self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
-        self.node5.exit().remove();
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+            self.texto.enter().append('text').attr("fill","#000000").text(function(d) { return d.source.parent;});   
 
-        //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
-        self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link2.enter().insert("line", ".node");
-        self.link2.exit().remove();
+            self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.exit().remove();
+        }
 
-        self.node2 = self.node2.data(self.force.nodes(), function(d) { return d.id;});
-        self.node2.enter().append("png:image");
-        self.node2.exit().remove();
+        if(self.background_color != "#000000" || self.background_color != "#FFFFFF") {
 
-        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text");
-        self.node3.exit().remove();
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke", self.opuesto);
+            self.link.exit().remove();
+
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
+            self.texto.enter().append('text').attr("fill",self.opuesto).text(function(d) { return d.source.parent;});   
+
+            self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.exit().remove();
+
+        }
+
+            self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+            self.node4.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
+            self.node4.exit().remove();
+
+            self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
+            self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
+            self.node5.exit().remove();
+
+            //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
+            self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.link2.enter().insert("line", ".node");
+            self.link2.exit().remove();
+
+            self.node2 = self.node2.data(self.force.nodes(), function(d) { return d.id;});
+            self.node2.enter().append("png:image");
+            self.node2.exit().remove();
+
+            self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+            self.node3.enter().append("text");
+            self.node3.exit().remove();
 
         self.force.start();
 
@@ -744,14 +791,53 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             }
          if(j==self.nodes.length){
 
-                    for (i=0; i<11; i++){
-                        if (i==self.color && d.color == "aaa"){
-                            d.color= "/static/images/USER_"+i+".png";
-                        }
 
-                    } 
-                        if(self.color==10){self.color=0;}
-                        self.color++;
+
+
+
+
+
+
+
+
+
+                    //for (i=0; i<11; i++){
+                        //if (i==self.color && d.color == "aaa"){
+                            var i = "no activo";
+                            if(self.colores_usuarios.length == 0){
+
+                                d.color= "/static/images/USER_"+0+".png";
+                                self.color=0;
+                                self.usuarios_colores.push(row.who);
+                                self.colores_usuarios.push(d.color);
+
+                            }else{
+                                for(j=0; j<self.usuarios_colores.length; j++){
+
+                                    if(row.who==self.usuarios_colores[j]){
+                                        //console.log(self.colores_usuarios);
+                                        //console.log(self.usuarios_colores);
+                                        //alert("valor de j "+j+"  "+self.colores_usuarios[j]);
+                                        d.color= self.colores_usuarios[j];
+                                        self.pintar =self.colores_usuarios[j].substr(20,1);
+                                        //self.color=j;
+                                        i="activo";
+                                        j=self.usuarios_colores.length;
+                                    }
+                                }
+                                if(i != "activo"){
+                                        //alert("valor de i "+i);
+                                        self.color++;
+                                        d.color= "/static/images/USER_"+(self.color)+".png";
+                                        self.pintar=self.color;
+                                        self.usuarios_colores.push(row.who);
+                                        self.colores_usuarios.push(d.color);
+                                }
+                            }
+                        //}
+                    //} 
+                        if(self.color==9){self.color=0;}
+
                         self.nodes.push(d);
                         self.links.push({source: d, target: row });
                 }      
@@ -794,25 +880,59 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var j = 0;
 
-        if(self.nodes.length > 100){
+
+
+
+
+
+
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+        var contador =0;
+
+        //500 ES EL MAXIMO DE NODOS QUE PUEDE HABER EN LA PANTALLA PINTADOS.
+        if(self.nodes.length > 500){
             while (j < self.nodes.length){
 
-                if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz"){
+                for (h=1; h< self.nodes.length; h++){
 
-                    //alert("entro aqui"+ self.nodes.length);
-               
-                    var i = 0;
-                    while(i < self.links.length){
-                            if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
-                                self.links.splice(self.links.indexOf(self.links[i]),1);
-                                i=self.links.length;
-                            } 
-                            i++;
+                    if(self.nodes[j].parent==self.nodes[h].parent){
+                        contador++;
                     }
+                    //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
+                    if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > 7){
 
-                    self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
-                    j=self.nodes.length;
+                        //alert("entro aqui"+ self.nodes.length);
+                   
+                        var i = 0;
+                        while(i < self.links.length){
+                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                                    self.links.splice(self.links.indexOf(self.links[i]),1);
+                                    i=self.links.length;
+                                } 
+                                i++;
+                        }
+
+                        self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
+                        j=self.nodes.length;
+                        h=self.nodes.length;
+                    }
                 }
+                contador=0;
+
                 j++;
             }
         }
@@ -845,7 +965,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         nodos = row.color;
-        texto_nodos = "url(#Color_Texto_Nodos)";
+
+
+
+        texto_nodos = row.color;
+
 
 
         /*switch (row.parent) {
@@ -886,7 +1010,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 texto_nodos = "url(#Color_Texto_Nodos)"
         }*/
 
-self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+
+
+
+        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
@@ -1044,10 +1172,31 @@ self.link = self.link.data(self.force.links(), function(d) { return d.source.id 
 
         //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
 
-        self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
-        self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
-        self.link.exit().remove();
+        if (self.background_color == '#000000'){
+            
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
+            self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            self.link.exit().remove();
+
+        }
+
+        if (self.background_color == '#FFFFFF'){
+
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
+            self.link.enter().insert("line", ".node").attr("stroke","url(#Color_Nodos_AzulOscuro)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            self.link.exit().remove();
+
+        }
+
+        if(self.background_color != "#000000" || self.background_color != "#FFFFFF") {
+
+            self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
+            self.link.enter().insert("line", ".node").attr("stroke", self.opuesto).attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            self.link.exit().remove();
+        }
 
         self.node= self.node.data(self.force.nodes(), function(d) { return d.id;});
         //self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Color_Nodos_Raiz)").on("zoom", function(){self.rescale()});
@@ -1055,7 +1204,11 @@ self.link = self.link.data(self.force.links(), function(d) { return d.source.id 
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").text(row.who).attr("fill",self.colores[self.color-1])
+
+
+
+        self.node3.enter().append("text").text(row.who).attr("fill",self.colores[self.pintar])
+
         self.node3.exit().remove();
 
         self.force.start();
@@ -1152,6 +1305,11 @@ self.link = self.link.data(self.force.links(), function(d) { return d.source.id 
         
         var self = this;
 
+
+
+        self.stop_anim();
+        
+
         switch (days) {
             case 0: self.days=86400000
                 break;
@@ -1167,7 +1325,11 @@ self.link = self.link.data(self.force.links(), function(d) { return d.source.id 
                 break;
             default: self.days=0
         }
-        self.stop_anim();
+
+
+
+
+
         self.start_anim();
     },
     formato_imprimir : function(date){
@@ -1330,4 +1492,8 @@ self.link = self.link.data(self.force.links(), function(d) { return d.source.id 
 
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
+
+
+
 });
+

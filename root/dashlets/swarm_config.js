@@ -2,11 +2,11 @@
     var common = Cla.dashlet_common(params);
     var data = params.data;
 
-    var limit = new Ext.ux.form.SpinnerField({ 
+    /*var limit = new Ext.ux.form.SpinnerField({ 
         value: data.limit,
         name: "limit",
         fieldLabel: _("Limit of records to animate")
-    });
+    });*/
 
 
     return common.concat([
@@ -16,7 +16,7 @@
             ['manual', _('Manually')]
           ] 
         }),
-        limit
+        //limit
     ])
 })
 
