@@ -3243,13 +3243,17 @@ sub apply_filter{
                 $where->{query} = $filter{query};
             }
             default {
-                my @ids = _array $filter{$key};
-                $where->{$key} = mdb->in(@ids);
+                if ( ref $filter{$key} eq 'ARRAY') {
+                    my @ids = _array $filter{$key};
+                    $where->{$key} = {'$in' => \@ids};
+                } else {
+                    $where->{$key} = $filter{$key};
+                }
             }        
 
         };
     }
-
+_log $where;
     return $where;
 }
 
