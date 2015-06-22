@@ -10,7 +10,7 @@ register 'action.home.view_workspace' => { name => 'User can access the workspac
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
 register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ; 
 register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ; 
-
+register 'event.wipe_cache' => { name => 'Wipe Cache', vars=>['username','ts'] } ;
 
 use Try::Tiny;
 use MIME::Base64;
@@ -470,6 +470,7 @@ sub cache_clear : Local {
     $c->stash->{json} = try {
         _fail 'No permission' unless $c->has_action('action.development.cache_clear');
         cache->clear;
+        event_new 'event.wipe_cache'=>{ username=>$c->username, ts=>mdb->now->string };
         { success=>\1, msg=>"CACHE CLEARED..." };
     } catch {
         { success=>\0, msg=>"No permission" };
