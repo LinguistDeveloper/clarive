@@ -330,7 +330,7 @@ sub tree_objects {
             classname         => $row_class || '', 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
+            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? try { $row_class->icon } catch {$generic_icon} : $generic_icon ) ),
             ts                => $row->{ts},
             bl                => $row->{bl},
             description       => $data->{description} // '',
