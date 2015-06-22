@@ -200,7 +200,7 @@
                      .enter().append('path')
                          .attr('fill', function(d, i) {
                             var colors = ['#FA5858','#F7D358','#60B044'  ];
-                            if ( end_remaining == 'on') colors = colors.reverse();
+                            if ( end_remaining == 'on' || reverse == 'on') colors = colors.reverse();
                              return colors[i];
                          })
                          .attr('d', arc);
