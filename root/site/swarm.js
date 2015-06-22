@@ -73,7 +73,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //{ xtype: 'tbspacer', width: 100 },
         {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
         { xtype: 'tbspacer', width: 2 },
-        {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, ç
+        {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 2 },
         self.slider, 
         { xtype: 'tbspacer', width: 2 },
