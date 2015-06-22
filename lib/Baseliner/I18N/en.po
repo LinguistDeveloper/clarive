@@ -185,9 +185,6 @@ msgstr "A calendar (%1) already exists for namespace %2 and environment %3"
 msgid "Nature"
 msgstr "Nature"
 
-msgid "Cambio"
-msgstr "Change"
-
 msgid "Incidencia"
 msgstr "Issue"
 
@@ -223,9 +220,6 @@ msgstr "Test Plan"
 
 msgid "Cambio BD"
 msgstr "DB Change"
-
-msgid "Defecto"
-msgstr "Defect"
 
 msgid "Suspendido"
 msgstr "Suspended"

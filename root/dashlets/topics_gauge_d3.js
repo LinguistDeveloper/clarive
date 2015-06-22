@@ -1,6 +1,5 @@
 (function(params){ 
     var id = params.id_div;
-
     var project_id = params.project_id;
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
@@ -8,6 +7,13 @@
     var condition = params.data.condition || '';
     var days_from = params.data.days_from || 0;
     var days_until = params.data.days_until || 0;
+    var max_selection = params.data.max_selection || '';
+    var categories_max = params.data.categories_max || [];
+    var statuses_max = params.data.statuses_max || [];
+    var not_in_status_max = params.data.not_in_status_max;
+    var condition_max = params.data.condition_max || '';
+    var days_from_max = params.data.days_from_max || 0;
+    var days_until_max = params.data.days_until_max || 0;
     var date_field_start = params.data.date_field_start;
     var date_field_end = params.data.date_field_end;
     var numeric_field = params.data.numeric_field;
@@ -25,7 +31,7 @@
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { max_selection: max_selection, days_from_max: days_from_max, days_until_max: days_until_max, condition_max: condition_max, not_in_status_max: not_in_status_max, categories_max: categories_max, statuses_max: statuses_max, project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var needle_length = 0.85;
         var value_font = "18px";
         var div = document.getElementById(id);
@@ -56,10 +62,11 @@
         if ( parseInt(res.data[result_type]) > maxValue ) {
             maxValue = parseInt(res.data[result_type]);
         }
-        if ( yellow > maxValue ) {
-            yellow = maxValue;
+        if ( show_pct != 'on' ) {
+            if ( yellow > maxValue ) {
+                yellow = maxValue;
+            }
         }
-
         
         var minValue;
 
@@ -193,7 +200,7 @@
                      .enter().append('path')
                          .attr('fill', function(d, i) {
                             var colors = ['#FA5858','#F7D358','#60B044'  ];
-                            if ( end_remaining == 'on') colors = colors.reverse();
+                            if ( end_remaining == 'on' || reverse == 'on') colors = colors.reverse();
                              return colors[i];
                          })
                          .attr('d', arc);

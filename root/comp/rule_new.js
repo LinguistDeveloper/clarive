@@ -102,7 +102,7 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else {
+        } else if( v == 'event' ) {
             wiz.last = wiz.current + 1;
             wiz.button_setup();
             job_chain_form.hide();

@@ -117,26 +117,8 @@ sub grid : Local {
     $c->stash->{id_project} = $p->{id_project};
     $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
-    if ($p->{category_id}){
-        
-        if (exists $c->stash->{category_id} && $c->stash->{category_id} ne $p->{category_id}) {
-            $c->stash->{category_id} = $p->{category_id};
-        }
-
-        my $cat = mdb->category->find_one({ id=>''.$p->{category_id} });
-        if ($cat->{default_grid}){
-            my $report = ci->new($cat->{default_grid});
-            my $selected_fields = $report->selected_fields({username => $c->username});
-            my $report_data = {
-                id_report   => $report->{mid},
-                report_name => $report->{name},
-                report_rows => $report->{rows},
-                fields      => $selected_fields
-            };
-
-            $c->stash->{report_data} = Util->_encode_json($report_data);
-        }
-
+    if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
+        $c->stash->{category_id} = $p->{category_id};
         # wip rgo: get report fields
         # my $cat = mdb->category->find_one({ id=>''.$p->{category_id} }) // _fail _loc 'Category with id %1 not found', $p->{category_id};
         # if( my $id_report = $cat->{default_grid} ) {
@@ -146,8 +128,6 @@ sub grid : Local {
         #     $c->stash->{default_grid} = $id_report;
         # }
     }
-
-
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
@@ -1906,6 +1886,7 @@ sub report_csv : Local {
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
+    $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
 }
 

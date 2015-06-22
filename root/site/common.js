@@ -4018,7 +4018,10 @@ Baseliner.generic_fields = function(params){
     if(data.fieldletType == /system/){
         data.origin = 'system';
     }
+    data.active = data.active || 1;
+    data.allowBlank = data.allowBlank || 1;
     var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
+    var active = new Ext.form.Hidden({  xtype:'hidden', name:'active', value: data.active });   
 
     var all_sections = { 
         'head': _('Header'),
@@ -4065,18 +4068,24 @@ Baseliner.generic_fields = function(params){
         ],
         value: data.colspan || '12',
     });
-    var mandatory_cb = new Baseliner.CBox({ name: 'mandatory_cb', checked: !Baseliner.eval_boolean(data.allowBlank), fieldLabel: _('Mandatory field') });
+    var mandatory_cb = new Baseliner.CBox({ name: 'mandatory_cb', checked: !Baseliner.eval_boolean(data.allowBlank, true), fieldLabel: _('Mandatory field') });
     mandatory_cb.on('check', function(cb){
         allowBlank_field.setValue(!cb.checked);
+    });
+
+    var hide_from_edit_cb = new Baseliner.CBox({ name: 'hide_from_edit_cb', checked: !Baseliner.eval_boolean(data.active, true), fieldLabel: _('Hide from edit view') });
+    hide_from_edit_cb.on('check', function(cb){
+        active.setValue(!cb.checked);
     });
     return [
         { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', fieldClass: "x-item-disabled", allowBlank: false, readOnly:true, value: data.id_field },
         combo_section,
         combo_colspan,
         new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
-        new Baseliner.CBox({ name: 'editable', checked: data.editable ? data.editable : '1', fieldLabel: _('View from edit view') }),
+        hide_from_edit_cb,
         mandatory_cb,
-        allowBlank_field
+        allowBlank_field,
+        active
     ]
 };
 
@@ -4126,9 +4135,9 @@ Baseliner.generic_list_fields = function(params){
     var ret = [ 
         value_combo, 
         list_type, 
-        json_field ,
-        { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
-            handler: function(){ Cla.json_filter_builder(json_field) } } 
+        json_field //,
+        // { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'), 
+        //     handler: function(){ Cla.json_filter_builder(json_field) } } 
     ];
     return ret;
 };

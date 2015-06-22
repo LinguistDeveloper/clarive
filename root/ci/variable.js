@@ -1,4 +1,5 @@
 (function(params){
+    params.rec.var_type = params.rec.var_type || 'value';
     var data = {};
     data[ 'var_default' ] = params.rec.var_default;
     var mf = new Baseliner.MetaForm({
@@ -17,7 +18,7 @@
         if( field ) {
             if( Ext.isFunction( field.get_save_data ) ) {
                 data[ 'var_default' ] = field.get_save_data();
-            } else if( Ext.isFunction( field.getValue ) ) {
+            } else if( Ext.isFunction( field.getValue ) ) {   
                 data[ 'var_default' ] = field.getValue();
             } else {
                 delete data['var_default'];
@@ -164,7 +165,6 @@
     }); 
     
     load_on_type( params.rec.var_type ) ;
-    
     return [
         var_type,
         var_default,

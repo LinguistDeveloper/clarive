@@ -5,6 +5,9 @@
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Use these statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Use these categories'), value: data.categories || ''  });
 
+    var cstatus_max = new Baseliner.StatusBox({ name: 'statuses_max', fieldLabel: _('Use these statuses'), value: data.statuses_max || ''});
+    var ccategory_max = new Baseliner.CategoryBox({ name: 'categories_max', fieldLabel: _('Use these categories'), value: data.categories_max || ''  });
+
     var common = Cla.dashlet_common(params);
 
     var days_from = new Ext.ux.form.SpinnerField({ 
@@ -18,6 +21,20 @@
         value: data.days_until, 
         anchor: '100%',
         name: "days_until",
+        fieldLabel: _("Shift in days from today to end timeline. 0 or blank means today")
+    });
+
+    var days_from_max = new Ext.ux.form.SpinnerField({ 
+        value: data.days_from_max, 
+        anchor: '100%',
+        name: "days_from_max",
+        fieldLabel: _("Shift in days from today to start timeline. 0 or blank means one day")
+    });
+
+    var days_until_max = new Ext.ux.form.SpinnerField({ 
+        value: data.days_until_max, 
+        anchor: '100%',
+        name: "days_until_max",
         fieldLabel: _("Shift in days from today to end timeline. 0 or blank means today")
     });
 
@@ -146,6 +163,46 @@
               items: [
                 days_from,
                 days_until
+              ]
+            }
+          ]
+        },
+        {
+            xtype: 'label',
+            text: _('END value selection criteria'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            {
+                xtype: 'checkbox',
+                boxLabel: _("Select to ignore END value above"),
+                name: 'max_selection',
+                checked: data.max_selection=='on'?true:false
+            },
+            { layout:'form', 
+              columnWidth: .50, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                ccategory_max,
+                cstatus_max,
+                { xtype : "checkbox", name : "not_in_status_max", checked: data.not_in_status_max=='on' ? true : false, boxLabel : _('Exclude statuses above') },
+                { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition_max', value: data.condition_max, anchor: '100%' }
+              ]
+            },
+            { layout:'form', 
+              columnWidth: .50, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                days_from_max,
+                days_until_max
               ]
             }
           ]

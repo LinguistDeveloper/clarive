@@ -294,7 +294,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
     layout: 'fit',
     initComponent: function(){
         var self = this;
-        self.bodyCfg = Ext.apply({ style:{ 'background-color':'#111' } }, self.bodyCfg );
+        self.bodyCfg = Ext.apply({ style:{ 'background-color':'#fff' } }, self.bodyCfg );
 
         Baseliner.ST.superclass.initComponent.call( this );
         
@@ -404,7 +404,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 style.width = 140 + 'px';
                 style.height = 21 + 'px';            
                 style.cursor = 'pointer';
-                style.color = '#fff';
+                style.color = '#000';
                 //style.backgroundColor = '#1a1a1a';
                 style.fontFamily = 'Tahoma, Consolas, Courier New, Arial, monotype';
                 style.fontSize = '0.8em';
@@ -423,7 +423,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 //add some color to the nodes in the path between the
                 //root node and the selected node.
                 if (node.selected) {
-                    node.data.$color = "#ff7";
+                    node.data.$color = "#000";
                 }
                 else {
                     delete node.data.$color;
