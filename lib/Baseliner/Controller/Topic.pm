@@ -1803,8 +1803,8 @@ sub report_csv : Local {
         my @cells;
         for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
             my $col_id = $col->{id};
+            
             my $v = $row->{ $col_id };
-
             if( ref $v eq 'ARRAY' ) {
                 if ($col->{id} eq 'projects') {
                     my @projects;
@@ -1820,18 +1820,24 @@ sub report_csv : Local {
                     $v = join ',', @$v;
                 }
             } elsif( ref $v eq 'HASH' ) {
-                $v = $v->{mid};
-                #$v = Util->hash_flatten($v);
-                #$v = Util->_encode_json($v);
-                #$v =~ s/{|}//g;
+                if ($v && $v->{mid}){
+                    $v = $v->{mid};
+                } else {
+                    # $v = Util->hash_flatten($v);
+                    # $v = Util->_encode_json($v);
+                    # $v =~ s/{|}//g;
+                    my $result;
+                    for my $step (keys $v){
+                        $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
+                    }
+                    if($result) { $v = $result } else{ $v = ''; };
+                }
             };
             if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
                 my $rel_category; 
-
                 if (ref $row->{$col_id} eq 'HASH' ){            
                      $rel_category = $row->{$col_id}->{category}->{name};
-                     $v = $rel_category.' #'.$v ;
-                    
+                     $v = $rel_category.' #'.$v if ($rel_category);
                 } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
                     (my $du) = _array $row->{$col_id};
                     if( ref $du eq 'HASH' && exists $du->{category}) {
@@ -1844,18 +1850,17 @@ sub report_csv : Local {
                     if ($tail && grep /^$tail$/i, @names_category) {
                         (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
                         $rel_category = mdb->category->find_one({id => $id})->{name};
-                        $v = $rel_category.' #'.$v ;
+                        $v = $rel_category.' #'.$v if ($rel_category) ;
                     }
                 }
             }
             $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
             $v = _strip_html ($v); # HTML Code 
-            #_debug "V=$v," . ref $v;
             $v =~ s/\t//g if $v;
             $v =~ s{"}{""}g if $v;
             # utf8::encode($v);
             # Encode::from_to($v,'utf-8','iso-8859-15');
-            if ($v || ($v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
+            if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
                  push @cells, qq{"$v"};
             } else { push @cells, qq{""} }; 
         }

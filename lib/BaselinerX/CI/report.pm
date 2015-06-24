@@ -1065,7 +1065,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};# if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
                                             delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
                                         }
-                                    }   
+                                    }
                                     # $tmp_ref->{$relation . "_$select"} = $field; 
                                 }
                                 $value = '';
@@ -1082,7 +1082,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field};# if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
@@ -1108,25 +1107,17 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
             #my $mt = $meta{$k}{meta_type} // '';
             my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
-
+            # _warn $mt;
             if( $mt =~ /revision|ci|project|user|file/ ) {
                 $row{ '_' . $k } = $v;
-
                 $row{$k} = $scope_cis{$v} // do {
-                    my @objs
-                        = $mdb2->master_doc->find(
-                        { mid => mdb->in( _array($v) ) },
-                        { _id => 0 } )->all;
+                    my @objs = $mdb2->master_doc->find({ mid => mdb->in( _array($v) ) },{ _id => 0 } )->all;
                     my @values;
                     if (@objs) {
                         for my $obj (@objs) {
                             my $tmp;
-
                             if ( $mt =~ /ci|project|user|file/ ) {
-                                $tmp
-                                    = $obj->{name}
-                                    ? $obj->{name}
-                                    : $obj->{moniker};
+                                $tmp = $obj->{name} ? $obj->{name} : $obj->{moniker};
                             }
                             else {
                                 $tmp = $obj->{name};
@@ -1139,7 +1130,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     \@values;
                 };
                 for my $category (@All_Categories) {
-                    $row{ $k . "_$category" } = $row{$k};
+                    $row{ $k . "_$category" } = $row{$k}; 
                     $row{ '_' . $k . "_$category" } = $row{ '_' . $k };
                 }
             } elsif( $mt =~ /release|topic/ ) {
@@ -1149,9 +1140,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     } if ($v);				
-            } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
+            } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) {
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
+                }
+                for my $category (@All_Categories){
+                    $row{$k. "_$category"} = $cal;
                 }
             }elsif( $mt =~ /history/ ) {
                 my $data;
@@ -1192,7 +1186,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
                                             if ($ci->{$ci_column}){
                                                 push @tmp,  $ci->{$ci_column};
-                                            }else{
+                                             }else{
                                                 if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                                     push @tmp,  $ci_extends->{$ci_column}->{name};
                                                 }else{
@@ -1269,14 +1263,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         $row{status_new} = $row{category_status}{name};
 		
 		if($row{category_status}){
-
 			foreach my $key (keys %{$row{category_status}}){
 				$row{'category_status_'.$key} = $row{category_status}{$key};
-                # for my $category (@All_Categories){
-                #     if( !exists $row{'category_status' . "_$category"} ){
-                #         $row{'category_status_'.$category."_$key"} = $row{category_status}{$key};
-                #     }
-                # }
+                for my $category (@All_Categories){
+                    $row{'category_status_'.$key.'_'.$category} = $row{category_status}{$key};
+                }
 			}
 		}
         #$row{category_status_name} = $row{category_status}{name};
