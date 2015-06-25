@@ -849,6 +849,7 @@ sub topics_by_date: Local {
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
     my %topic_by_dates = ();
+    my %list_topics = ();
     my %colors;
     my $quarters = { 'Q1' => '01-01', 'Q2' => '04-01', 'Q3' => '07-01', 'Q4' => '10-01'};
 
@@ -902,10 +903,17 @@ sub topics_by_date: Local {
             } else {
                 $date = substr(''.$dt,0,10);
             }
+            my $epoc = Class::Date->new($date)->epoch() * 1000;
+
             $topic_by_dates{$date}{ $topic->{category_name} }
                 = $topic_by_dates{$date}{ $topic->{category_name} }
                 ? $topic_by_dates{$date}{ $topic->{category_name} } + 1
                 : 1;
+
+            my @topics = _array($list_topics{$epoc}{ $topic->{category_name} });
+            push @topics, $topic->{mid};
+            $list_topics{$epoc}{ $topic->{category_name} } = \@topics;
+
         }
 
         $colors{$topic->{category}->{name}}= $topic->{category}->{color};
@@ -945,7 +953,8 @@ sub topics_by_date: Local {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
 
-    $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, matrix => $matrix} };
+_warn \%list_topics;
+    $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%list_topics, matrix => $matrix} };
     $c->forward('View::JSON');
 }
 

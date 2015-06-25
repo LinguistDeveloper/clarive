@@ -38,7 +38,14 @@
                      columns: res.data.matrix,
                      type: graph_type,
                      colors: res.data.colors,
-                     groups: groups
+                     groups: groups,
+                     onclick: function (d, i) {
+                        var epoc = d.x.getTime();
+                        // console.log(res.data.topics_list);
+                        // console.log("Epoc: " + epoc);
+                        // console.log("Id: " + d.id);
+                        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id , { topic_list: res.data.topics_list[epoc][d.id] });
+                     }
                  },
                  bar: {
                      width: {
