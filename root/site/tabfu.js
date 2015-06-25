@@ -612,7 +612,7 @@ if( Prefs.routing ) {
                 var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
                 if (r == true) {
                     Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                    if ( ptitle != 'REPL' || ptitle != 'Rules') Baseliner.refreshCurrentTab();
+                    if ( ptitle != 'REPL' && ptitle != 'Rules') Baseliner.refreshCurrentTab();
                     found = true;
                     return;
                 }
@@ -895,7 +895,7 @@ if( Prefs.routing ) {
                     var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
                     if (r == true) {
                         Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                        if ( ptitle != 'REPL' || ptitle != 'Rules') Baseliner.refreshCurrentTab();
+                        if ( ptitle != 'REPL' && ptitle != 'Rules') Baseliner.refreshCurrentTab();
                         found = true;
                         return;
                     }
@@ -939,7 +939,7 @@ if( Prefs.routing ) {
                     var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
                     if (r == true) {
                         Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                        if ( ptitle != 'REPL' || ptitle != 'Rules') Baseliner.refreshCurrentTab();
+                        if ( ptitle != 'REPL' && ptitle != 'Rules') Baseliner.refreshCurrentTab();
                         found = true;
                         return;
                     }
