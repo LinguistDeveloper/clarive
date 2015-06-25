@@ -22,6 +22,10 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
+  console.log(meta);
+
+  var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
+
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;
     else if( meta.ci_class ) ci['class'] = meta.ci_class;
@@ -31,7 +35,7 @@ params:
            fieldLabel: _(meta.name_field),
            name: meta.id_field,
            mode: 'remote',
-           singleMode: Baseliner.eval_boolean(meta.single_mode),
+           singleMode: single_mode,
            force_set_value: true,
            value: data[meta.id_field]!=undefined ? data[meta.id_field] : (meta.default_value!=undefined? meta.default_value: data[meta.id_field]),
            allowBlank: Baseliner.eval_boolean(meta.allowBlank),

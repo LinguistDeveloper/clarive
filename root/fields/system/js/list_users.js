@@ -20,7 +20,7 @@ params:
 	
     
     var single_mode = true;
-    if (!Baseliner.eval_boolean(meta.single_mode)) single_mode = false;
+    var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 	
     var users = new Array();
 	
