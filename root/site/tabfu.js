@@ -524,6 +524,24 @@ if( Prefs.routing ) {
     //adds a new object to a tab 
     Baseliner.addNewTabItem = function( comp, title, params ) {
         if( params == undefined ) params = { active: true };
+        var found = false;
+        var json_key = Ext.util.JSON.encode( { title: title, type: 'item', params: params } );
+        json_key = json_key.replace(',"active":true','');
+
+        Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+            var cmp_tab = Ext.getCmp(tab);
+            if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                if (r == true) {
+                    Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                    Baseliner.refreshCurrentTab();
+                    found = true;
+                    return;
+                }
+            }
+        });
+        if (found) return;
+
         var tabpanel = Ext.getCmp('main-panel');
         var tab;
         // if tab_index not defined -> add current tab for tab_index or add new tab.
@@ -550,6 +568,7 @@ if( Prefs.routing ) {
         }
         var tab_id = tab.getId();
         if( comp!=undefined && comp.tab_info!=undefined ) {
+            comp.tab_info[json_key] = json_key;
             Baseliner.tabInfo[tab_id] = comp.tab_info;
         }
         return tab_id; 
@@ -583,6 +602,24 @@ if( Prefs.routing ) {
     //adds a new fragment component with html or <script>...</script>
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
+        var found = false;
+        var json_key = Ext.util.JSON.encode( { url: purl, title: ptitle, type: 'script', params: params } );
+        json_key = json_key.replace(',"active":true','');
+
+        Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+            var cmp_tab = Ext.getCmp(tab);
+            if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                if (r == true) {
+                    Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                    if ( ptitle != 'REPL') Baseliner.refreshCurrentTab();
+                    found = true;
+                    return;
+                }
+            }
+        });
+        if (found) return;
+
         var tabpanel;
         var newpanel; 
         if(obj_tab) {
@@ -606,7 +643,7 @@ if( Prefs.routing ) {
             callback: function(el,success,res,opts){
                 if( success ) {
                     var id = tab.getId();
-                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
+                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params, json_key: json_key };
                     if( params.callback != undefined ) params.callback();
                     try { 
                         if (Baseliner.explorer.fixed == 0) {
@@ -848,8 +885,26 @@ if( Prefs.routing ) {
     Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
         var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
+            var found = false;
+            var json_key = Ext.util.JSON.encode( { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' } );
+            json_key = json_key.replace(',"active":true','');
+
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        if ( ptitle != 'REPL') Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    }
+                }
+            });
+            if (found) return;
+
             var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp', json_key: json_key };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -868,11 +923,31 @@ if( Prefs.routing ) {
     };
     Baseliner.add_tabcomp = function( comp_url, ptitle, params ){
         if( params == undefined ) params = {};
+
         Baseliner.ajaxEval( comp_url, params, function(comp) {
+            var found = false;
             var unescape_title = comp.tab_title || ptitle ? unescape(comp.tab_title || ptitle):null;
             var unescape_ptitle = ptitle ? unescape(ptitle):null;
+            var params_json = params;
+            delete params_json.title;
+            var json_key = Ext.util.JSON.encode( { url: comp_url, params: params_json, type: 'comp' } );
+            json_key = json_key.replace(',"active":true','');
+
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        if ( ptitle != 'REPL') Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    }
+                }
+            });
+            if (found) return;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
