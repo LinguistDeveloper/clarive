@@ -21,11 +21,13 @@ register 'config.user.view' => {
         { id=>'theme', label=>'Theme', type=>'combo', default=>Baseliner->config->{default_theme}, store=>['gray','blue','slate']  },
     ]
 };
-register 'menu.admin.users' => { label => 'Users',
-    url_comp=>'/comp/user_main.js', actions=>['action.admin.role'],
-    title=>'Users', index=>80, icon=>'/static/images/icons/user.gif' };
 register 'action.admin.users' => {
     name => 'User Admin',
+};
+
+register 'menu.admin.users' => { label => 'Users',
+    url_comp=>'/user/grid', actions=>['action.admin.users'],
+    title=>'Users', index=>80, icon=>'/static/images/icons/user.gif' 
 };
 
 register 'event.user.create' => {
