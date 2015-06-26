@@ -51,7 +51,7 @@ sub activity : Local {
     my $date = Class::Date->now();
     my $filter_date = $date - ($days . 'D');
  
-	_log( \$filter_date );
+	# _log( \$filter_date );
 
 
 
@@ -62,8 +62,8 @@ sub activity : Local {
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
-_log _dump %cats;
-_log _dump %category_colors;
+# _log _dump %cats;
+# _log _dump %category_colors;
     my @data;
     for my $ev ( @ev ) {
         my $parent = $cats{$ev->{mid}};
@@ -75,7 +75,7 @@ _log _dump %category_colors;
 			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
 		}
     }
- _log( \@data );
+ # _log( \@data );
     $c->stash->{json} = { data=>\@data };
     $c->forward('View::JSON');    
 }
