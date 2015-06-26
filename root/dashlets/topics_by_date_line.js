@@ -41,10 +41,11 @@
                      groups: groups,
                      onclick: function (d, i) {
                         var epoc = d.x.getTime();
+console.log(d);
                         // console.log(res.data.topics_list);
                         // console.log("Epoc: " + epoc);
                         // console.log("Id: " + d.id);
-                        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id , { topic_list: res.data.topics_list[epoc][d.id] });
+                        if ( res.data.topics_list[epoc] && res.data.topics_list[epoc][d.id] ) Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id + " - " + d.x.toLocaleDateString() , { topic_list: res.data.topics_list[epoc][d.id] });
                      }
                  },
                  bar: {

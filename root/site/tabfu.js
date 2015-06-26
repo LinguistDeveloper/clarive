@@ -1386,7 +1386,6 @@ if( Prefs.routing ) {
                 var clone = panel.cloneConfig(); 
                 tabpanel.remove( panel );
                 var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params, info.json_key );
-                Baseliner.tabInfo[new_id] = info;
             }
         } 
         else {
