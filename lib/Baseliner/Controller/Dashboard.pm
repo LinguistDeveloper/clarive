@@ -953,7 +953,6 @@ sub topics_by_date: Local {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
 
-_warn \%list_topics;
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%list_topics, matrix => $matrix} };
     $c->forward('View::JSON');
 }
