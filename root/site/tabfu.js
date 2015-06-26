@@ -528,18 +528,20 @@ if( Prefs.routing ) {
         json_key = json_key || Ext.util.JSON.encode( { title: title, type: 'item', params: params } );
         json_key = json_key.replace(',"active":true','');
 
-        Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
-            var cmp_tab = Ext.getCmp(tab);
-            if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
-                var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
-                if (r == true) {
-                    Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                    Baseliner.refreshCurrentTab();
-                    found = true;
-                    return;
+        if ( title != 'REPL' ) {
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    // if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        // Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    // }
                 }
-            }
-        });
+            });
+        }
         if (found) return;
 
         var tabpanel = Ext.getCmp('main-panel');
@@ -606,18 +608,20 @@ if( Prefs.routing ) {
         json_key = json_key || Ext.util.JSON.encode( { url: purl, title: ptitle, type: 'script', params: params } );
         json_key = json_key.replace(',"active":true','');
 
-        Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
-            var cmp_tab = Ext.getCmp(tab);
-            if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
-                var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
-                if (r == true) {
-                    Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                    if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
-                    found = true;
-                    return;
+        if ( ptitle != 'REPL') {
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    // if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    // }
                 }
-            }
-        });
+            });
+        }
         if (found) return;
 
         var tabpanel;
@@ -889,18 +893,20 @@ if( Prefs.routing ) {
             json_key = json_key || Ext.util.JSON.encode( { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' } );
             json_key = json_key.replace(',"active":true','');
 
-            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
-                var cmp_tab = Ext.getCmp(tab);
-                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
-                    var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
-                    if (r == true) {
-                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                        if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
-                        found = true;
-                        return;
+            if ( ptitle != 'REPL' ) {
+                Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                    var cmp_tab = Ext.getCmp(tab);
+                    if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                        // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                        // if (r == true) {
+                            Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                            // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                            found = true;
+                            return;
+                        // }
                     }
-                }
-            });
+                });
+            }
             if (found) return;
 
             var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
@@ -933,18 +939,20 @@ if( Prefs.routing ) {
             json_key = json_key || Ext.util.JSON.encode( { url: comp_url, params: params_json, type: 'comp' } );
             json_key = json_key.replace(',"active":true','');
 
-            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
-                var cmp_tab = Ext.getCmp(tab);
-                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
-                    var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
-                    if (r == true) {
-                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                        if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
-                        found = true;
-                        return;
+            if ( ptitle != 'REPL' ) {
+                Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                    var cmp_tab = Ext.getCmp(tab);
+                    if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                        // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                        // if (r == true) {
+                            Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                            // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                            found = true;
+                            return;
+                        // }
                     }
-                }
-            });
+                });
+            }
             if (found) return;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key };
