@@ -203,6 +203,8 @@ register 'registor.action.topic_category' => {
             edit   => 'Can edit topic for category `%1`',
             delete => 'Can delete topic in category `%1`',
             comment => 'Can add/view comments in topics of category `%1`',
+            activity => 'Can view activity in topics of category `%1`',
+            jobs => 'Can view jobs in topics of category `%1`',
         );
 
         my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
@@ -704,7 +706,8 @@ sub update {
                     push @meta_filter, $_
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
-                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
+                    $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
                     
                     $topic_mid    = $topic->mid;
@@ -756,6 +759,7 @@ sub update {
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
                 $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+                $p->{title} = _strip_html($p->{title});
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -2635,6 +2639,10 @@ sub get_categories_permissions{
         $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
     } elsif ($type eq 'comment') {
         $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
+    } elsif ($type eq 'activity') {
+        $re_action = qr/^action\.topics\.(.*?)\.(activity)$/;
+    } elsif ($type eq 'jobs') {
+        $re_action = qr/^action\.topics\.(.*?)\.(jobs)$/;
     }
     
     my @permission_categories;
