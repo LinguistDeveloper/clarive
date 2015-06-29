@@ -249,11 +249,12 @@
                  var lg = svg.append('g')
                          .attr('class', 'label')
                          .attr('transform', centerTx);
+                 var label_ticks = [ticks[1], ticks[2]];
                  lg.selectAll('text')
-                         .data(ticks)
+                         .data(label_ticks)
                          .enter()
                          .append('text')
-                         .attr('transform', function(d) {
+                         .attr('transform', function(d, i) {
                              var label = d;
                              if ( show_pct == 'on' ) {
                                 label = ( d * maxValue / 100 ).toFixed(2);
