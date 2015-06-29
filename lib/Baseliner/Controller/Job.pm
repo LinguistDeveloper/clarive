@@ -105,16 +105,23 @@ sub rollback : Local {
         if( my @deps = $job->find_rollback_deps ) {
             $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'), deps=>\@deps };
         } else {
-            my $exec = $job->exec + 1;
-            $job->exec( $exec );
-            $job->step( 'RUN' );
-            $job->final_status( '' );  # reset status, so that POST runs in rollback 
-            $job->rollback( 1 );
-            $job->status( 'READY' );
-            $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
-            $job->save;
-            $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
-            $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
+            my $stash = $job->job_stash;
+            my $nr = $stash->{needs_rollback} // {};
+            my @needing_rollback = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
+            if( @needing_rollback && !$job->rollback ) {
+                my $exec = $job->exec + 1;
+                $job->exec( $exec );
+                $job->step( $needing_rollback[0] );
+                $job->last_finish_status( '' );
+                $job->final_status( '' );  # reset status, so that POST runs in rollback 
+                $job->rollback( 1 );
+                $job->status( 'READY' );
+                $job->logger->info( "Starting *Rollback*", \@needing_rollback );
+                $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
+                $job->save;
+                $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
+                $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
+            }
         }
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };

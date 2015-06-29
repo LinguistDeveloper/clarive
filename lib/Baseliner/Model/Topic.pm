@@ -2775,11 +2775,12 @@ sub get_meta_permissions {
         @p{qw(username meta data name_category name_status id_category id_status)};
     my @hidden_field;
     
-    my $mid = $data->{topic_mid};
+    my $mid;
+    $mid = $data->{topic_mid};
     my $cache_key = { d=>'topic:meta', 
         st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
         cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
-    defined && return $_ for cache->get($cache_key);
+    defined && $mid && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
@@ -2787,7 +2788,7 @@ sub get_meta_permissions {
     
     my $is_root = model->Permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $mid,user_security => $user_security );
     my @user_actions_for_topic = $user_actions->{positive};
     my @user_read_actions_for_topic = $user_actions->{negative};
 
