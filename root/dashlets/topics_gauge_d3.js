@@ -73,7 +73,11 @@
         if ( start > res.max ) {
             minValue = res.max;
         } else {
-            minValue = start;
+            if ( parseFloat(res.min) < parseFloat(start) ) {
+                minValue = res.min;
+            } else {
+                minValue = start;
+            }
         }
 
          var gauge = function(container, configuration) {
@@ -236,7 +240,7 @@
                  arcs.select('.c3-chart-arcs-gauge-min')
                      .attr("dx", -1 * (innerRadius + ((outerRadius - innerRadius) / 2)) + "px")
                      .attr("dy", "1.2em")
-                     .text('0');
+                     .text(minValue);
                  arcs.select('.c3-chart-arcs-gauge-max')
                      .attr("dx", innerRadius + ((outerRadius - innerRadius) / 2) + "px")
                      .attr("dy", "1.2em")

@@ -977,7 +977,7 @@ sub topics_gauge: Local {
         $data->{max} = $data_max->{max};
     }
 
-    $c->stash->{json} = { units => $data->{units}, data=> $data, max => sprintf("%.2f",$data->{max}) };
+    $c->stash->{json} = { units => $data->{units}, data=> $data, min => sprintf("%.2f",$data->{min}), max => sprintf("%.2f",$data->{max}) };
     $c->forward('View::JSON');
 }
 
@@ -1112,6 +1112,7 @@ sub gauge_data {
             $units = '';
             $count += 1;
             $max += 1;
+            $min = 0;
         }
     }
 
@@ -1125,32 +1126,42 @@ sub gauge_data {
         if ( $input_units ne 'number' ) {
             my $sec_res = $avg;
             my $max_res = $max;
+            my $min_res = $min;
+
             if ( $input_units eq 'minute') {
                 $sec_res = $avg * 60;
                 $max_res = $max * 60;
+                $min_res = $min * 60;
             } elsif ( $input_units eq 'hour' ) {
                 $sec_res = $avg * 60 * 60;
                 $max_res = $max * 60 * 60;
+                $min_res = $min * 60 * 60;
             } elsif ( $input_units eq 'day' ) {
                 $sec_res = $avg * 60 * 60 * 24;
                 $max_res = $max * 60 * 60 * 24;
+                $min_res = $min * 60 * 60 * 24;
             }
 
             if ( $units eq 'month') {
                 $sec_res = $sec_res / 30 / 24 / 60 / 60;
                 $max_res = $max_res / 30 / 24 / 60 / 60;
+                $min_res = $min_res / 30 / 24 / 60 / 60;
             } elsif ( $units eq 'day') {
                 $sec_res = $sec_res / 24 / 60 / 60;
                 $max_res = $max_res / 24 / 60 / 60;
+                $min_res = $min_res / 24 / 60 / 60;
             } elsif ( $units eq 'hour') {
                 $sec_res = $sec_res / 60 / 60;
                 $max_res = $max_res / 60 / 60;
+                $min_res = $min_res / 60 / 60;
             } elsif ( $units eq 'minute') {
                 $sec_res = $sec_res / 60;
                 $max_res = $max_res / 60;
+                $min_res = $min_res / 60;
             }
             $avg = sprintf("%.2f",$sec_res);
             $max = sprintf("%.2f",$max_res);
+            $min = sprintf("%.2f",$min_res);
         } else {
             $units = '';
         }
