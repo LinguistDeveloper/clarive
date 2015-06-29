@@ -36,15 +36,15 @@
         var value_font = "18px";
         var div = document.getElementById(id);
          if ( columns < 3 ) {
-            div.style.height = "140px";
+            div.style.height = "160px";
             needle_length = 0.6;
             value_font = "12px";
          } else if ( columns < 4 ) {
-            div.style.height = "160px";
+            div.style.height = "180px";
             needle_length = 0.7;
             value_font = "14px";
          } else if ( columns < 6 ) {
-            div.style.height = "210px";
+            div.style.height = "230px";
             needle_length = 0.8;
             value_font = "16px";
          }
@@ -85,7 +85,7 @@
              var config = {
                  size                        : div.offsetWidth,
                  clipWidth                   : div.offsetWidth,
-                 clipHeight                  : div.offsetHeight +20,
+                 clipHeight                  : div.offsetHeight + 20,
                  ringInset                   : 40,
                  ringWidth                   : 40,
                  
