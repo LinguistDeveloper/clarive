@@ -207,6 +207,10 @@ sub delete : Local {
         my $row = mdb->rule->find_one({ id=>"$p->{id_rule}" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->{rule_name};
+        if($row->{rule_type} eq 'fieldlets'){
+            #remove relationship between rule and category
+            mdb->category->update({default_field=>"$p->{id_rule}"},{'$set'=>{default_field=>''}});
+        }
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
         mdb->grid->remove({ id_rule=>"$p->{id_rule}" });
         # TODO delete rule_version? its capped, it can't be deleted... may be good to keep history
