@@ -405,7 +405,8 @@ sub dsl_build {
     }
 
     my $dsl = join "\n", @dsl;
-    if( $self->tidy_up && !$p{no_tidy} ) {
+    # WTF? $self can be class name
+    if(ref $self && $self->tidy_up && !$p{no_tidy} ) {
         require Perl::Tidy;
         my $tidied = '';
         Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
@@ -474,6 +475,20 @@ sub dsl_run {
         _debug "DSL:\n",  $self->dsl_listing( $rule->dsl ) if $p{logging};
     }
     return { stash=>$stash, dsl=>($rule->dsl || $rule->package) };  # TODO storing dsl everywhere maybe a waste of space
+}
+
+sub compile_rules {
+    my $self = shift;
+
+    my @rules = mdb->rule->find( { rule_active => mdb->true } )
+      ->sort( mdb->ixhash( rule_seq => 1, id => 1 ) )->all;
+
+    foreach my $rule (@rules) {
+        try {
+            my $cr = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
+            $cr->compile;
+        };
+    }
 }
 
 # used by events
