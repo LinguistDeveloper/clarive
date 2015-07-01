@@ -647,7 +647,9 @@ if( Prefs.routing ) {
             callback: function(el,success,res,opts){
                 if( success ) {
                     var id = tab.getId();
-                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params, json_key: json_key };
+                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params, json_key: json_key,
+                        copy: function(){ Baseliner.addNewTab(purl, ptitle, params, obj_tab, Ext.id() ); }
+                    };
                     if( params.callback != undefined ) params.callback();
                     try { 
                         if (Baseliner.explorer.fixed == 0) {
@@ -803,7 +805,8 @@ if( Prefs.routing ) {
             var tab = Ext.getCmp('main-panel').add(tabpanel); 
             Ext.getCmp('main-panel').setActiveTab(tab); 
             var id = tab.getId();
-            Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script' };
+            Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', 
+                copy: function(){ Baseliner.addNewTabSearch(purl,ptitle,params) } };
     };
 
     Baseliner.runUrl = function(url) {
@@ -835,7 +838,9 @@ if( Prefs.routing ) {
         if( params == undefined ) params={};
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
-        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                copy: function(){ Baseliner.addNewIframe(url,title,params) } 
+        };
     };
 
     Baseliner.add_iframe = function(url,title,params) {
@@ -866,7 +871,9 @@ if( Prefs.routing ) {
         if( params == undefined ) params={};
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
-        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                copy: function(){ Baseliner.add_iframe(url,title,params) } 
+        };
     };
 
     Baseliner.error_parse = function( err, xhr ) {
@@ -910,7 +917,9 @@ if( Prefs.routing ) {
             if (found) return;
 
             var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp', json_key: json_key };
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp', json_key: json_key,
+                copy: function(){ Baseliner.addNewTabComp(comp_url,ptitle,params,Ext.id()) } 
+            };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -955,7 +964,9 @@ if( Prefs.routing ) {
             }
             if (found) return;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key };
+            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key,
+                copy: function(){ Baseliner.add_tabcomp(comp_url, ptitle, params, Ext.id()) }
+            };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -1413,65 +1424,12 @@ if( Prefs.routing ) {
         Baseliner.scroll_top_into_view();
     };
 
-    Baseliner.detachCurrentTab = function() {
+    Baseliner.duplicate_tab = function() {
         var tabpanel = Ext.getCmp('main-panel');
         var panel = tabpanel.getActiveTab();
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
-        if( info!=undefined ) {
-            if( info.type == 'comp' ) {
-                //var win = window.open( '/show_comp/?url=' +info.url, info.title, '' );
-                Ext.Ajax.request({
-                    url: info.url,
-                    success: function(xhr) {
-                        Ext.Ajax.request({
-                            url: '/detach',
-                            params: { detach_html: xhr.responseText, type: 'comp' },
-                            success: function(xhr) {
-                                var win = window.open( '', 'Titulo', '' );
-                                win.document.write(  xhr.responseText );
-                            },
-                            failure: function(xhr) {
-                               Baseliner.errorWin( _('Logout Error') , xhr.responseText );
-                            }
-                        });
-                    },
-                    failure: function(xhr) {
-                       Baseliner.errorWin( _('Logout Error'), xhr.responseText );
-                    }
-                });
-            }
-            else if( info.type=='script' ) {
-                Ext.Ajax.request({
-                    url: info.url,
-                    params: { detach_html: p.innerHTML },
-                    success: function(xhr) {
-                        var win = window.open( '/site/detach.html',  info.title, '' );
-                        win.document.write( xhr.responseText );
-                    },
-                    failure: function(xhr) {
-                       Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                    }
-                });
-            }
-            else if( info.type=='iframe' ) {
-                Baseliner.addNewBrowserWindow( info.url, info.title );
-            }
-        } else {
-            var p = document.getElementById( id );
-            Ext.Ajax.request({
-                url: '/detach',
-                params: { detach_html: p.innerHTML },
-                success: function(xhr) {
-                    var win = window.open( '', 'Titulo', '' );
-                    win.document.write(  xhr.responseText );
-                },
-                failure: function(xhr) {
-                   Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                }
-            });
-        }
-
+        if(info.copy) info.copy();
     };
     
     // expects success=>true|false, msg=>""
@@ -1956,6 +1914,7 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/static/gridtree/css/treegrid.css'  );
     add_css( dw, "/static/final.css"  );
     add_css( dw, "/static/sprites.css"  );
+    add_css( dw, "/static/c3/c3.css"  );
         
     add_css( dw, '/static/final.css' );
 
