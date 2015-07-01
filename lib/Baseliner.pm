@@ -158,12 +158,9 @@ if( $ENV{BALI_FAST} ) {
 after 'setup_finalize' => sub {
     my $app = shift;
 
-    my $precompile = $app->config->{precompiled_rules};
-
+    my $precompile = $app->config->{rule_precompile};
     # Precompile rules?
-    if ($precompile) {
-        $app->model('Rules')->compile_rules;
-    }
+    $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
 };
 
 #############################

@@ -10,14 +10,76 @@ TestEnv->setup;
 
 use_ok 'Baseliner::Model::Rules';
 
-subtest 'compiles rules' => sub {
+subtest 'does compile when config flag is conditional and rule is on' => sub {
+    setup_db( rule_compile_mode => 'precompile' );
+
     my $rules = build_model();
 
-    $rules->compile_rules;
+    $rules->compile_rules( rule_precompile=>'depends' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
     ok $cr->package->can('meta');
     ok $cr->is_loaded;
+    $cr->unload;
+};
+
+subtest 'does not compile when config flag is conditional and rule is off' => sub {
+    setup_db( rule_compile_mode => 'none' );
+
+    my $rules = build_model();
+
+    $rules->compile_rules( rule_precompile=>'depends' );
+
+    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    ok ! $cr->package->can('meta');
+};
+
+subtest 'does compile when config flag is on and rule is off' => sub {
+    setup_db( rule_compile_mode => 'none' );
+
+    my $rules = build_model();
+
+    $rules->compile_rules( rule_precompile=>'always' );
+
+    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    ok $cr->package->can('meta');
+    ok $cr->is_loaded;
+    $cr->unload;
+};
+
+subtest 'does compile when config flag is on and rule is on' => sub {
+    setup_db( rule_compile_mode => 'precompile' );
+
+    my $rules = build_model();
+
+    $rules->compile_rules( rule_precompile=>'always' );
+
+    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    ok $cr->package->can('meta');
+    ok $cr->is_loaded;
+    $cr->unload;
+};
+
+subtest 'does not compile when config flag is off and rule is on' => sub {
+    setup_db( rule_compile_mode => 'precompile' );
+
+    my $rules = build_model();
+
+    $rules->compile_rules( rule_precompile=>'none' );
+
+    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    ok ! $cr->package->can('meta');
+};
+
+subtest 'does not compile when config flag is off and rule is off' => sub {
+    setup_db( rule_compile_mode => 'none' );
+
+    my $rules = build_model();
+
+    $rules->compile_rules( rule_precompile=>'none' );
+
+    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    ok ! $cr->package->can('meta');
 };
 
 sub setup_db {
@@ -35,6 +97,7 @@ sub setup_db {
             "rule_desc"       => "",
             "authtype"        => "required",
             "rule_name"       => "test",
+            rule_compile_mode => $params{rule_compile_mode} // 'none',
             "ts"              => "2015-06-30 13:44:11",
             "username"        => "root",
             "rule_seq"        => 1,
