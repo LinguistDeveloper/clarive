@@ -835,7 +835,7 @@
                 msg = _('Killing the job will interrupt current local processing but no remote processes');
                 msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
                 mode = 'kill';
-            } else if( sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' ) {
+            } else if( sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' || sc == 'ABORT' || sc == 'KILLED' || sc == 'EXPIRED' ) {
                 msg = _('Are you sure you want to %1 the job?', _('delete') );
                 mode = 'delete';
             } else {
@@ -1365,7 +1365,7 @@
         var sc = rec.data.status_code;
         button_resume.hide();
         if ( rec.data.can_cancel || rec.data.can_delete ) {
-            if( (sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED') && rec.data.can_delete == '1' ) {
+            if( (sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' || sc == 'ABORT' || sc == 'KILLED' || sc == 'EXPIRED' ) && rec.data.can_delete == '1' ) {
                 button_cancel.setText( msg_cancel_delete[1] );
                 button_cancel.enable();
             } else if (rec.data.can_cancel == '1') {
