@@ -823,7 +823,7 @@
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
-        hidden: true,
+        disabled: true,
         icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
         handler: function() {
