@@ -308,6 +308,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         var self = this;
 
+
         if(self.i==0){
 
             //alert(self.days);
@@ -317,6 +318,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     alert("No existen datos para esta fecha, por favor introduzca otra fecha");
                     //self.mostrar=true;
                     self.stop_anim();
+                    self.i=1;
                 }
                 console.log(res);
                 //alert(res.data.length);
@@ -458,7 +460,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     if(self.nodos_modificados.length >= 2){
 
-                    self.comprobar_nodo_modificado(row); 
+                    self.comprobar_nodo_modificado(); 
 
                     }else if(row.ev == 'add') {
 
@@ -507,7 +509,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                         if(self.nodos_modificados.length >= 2){
 
-                        self.comprobar_nodo_modificado(row); 
+                        self.comprobar_nodo_modificado(); 
 
                         }else if(row.ev == 'add') {        
 
@@ -719,7 +721,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 if (self.nodes[j].node == row.node){
 
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
-                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
                     var z=0;
                     while(z < self.links.length){
 
@@ -787,7 +789,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
             }
 
-            //console.log(self.nodos_modificados);
             self.start_modify({ row: row, timer: timer });
             self.add_user(row);
 
@@ -836,7 +837,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 if (self.nodes[j].node == row.node){
 
                     self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
-                    //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
+
                     var z=0;
                     while(z < self.links.length){
                         if(self.links[z].source.node==row.node && (self.links[z].source.node != 'iniciales' || self.links[z].source.node != 'usuarios')){
@@ -864,7 +865,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var d = { id: "#u"+Math.random(), t: 1, ev: "usuarios", who: row.who, node: "usuarios", parent: "usuarios", color: "aaa" };
 
         //alert ("entro en el add user "+row.who);
-
 
         if (!a){
 
@@ -1019,9 +1019,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         var i = 0;
                         while(i < self.links.length){
                                 if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+
                                     self.links.splice(self.links.indexOf(self.links[i]),1);
                                     i=self.links.length;
+
                                 } 
+
                                 i++;
                         }
 
@@ -1041,11 +1044,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
-    comprobar_nodo_modificado : function(row){
+    comprobar_nodo_modificado : function(){
 
         var self = this;
   
-        if(self.nodos_modificados.length >= 2){
+        //if(self.nodos_modificados.length >= 2){
 
             var a = self.nodes[0];
             var modificado = self.nodos_modificados[0]; //{id: self.i, node:  row.parent};
@@ -1059,18 +1062,22 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     if (self.nodes[j].node == modificado.node){
 
                         self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
-                        //self.links.splice(self.links.indexOf(self.links[j]),1);//borro el link - posicion y nº de links a borrar.
                         self.nodos_modificados.splice(0,1);
 
                         var z= self.links.length-1;
 
                         while(z >= 0){
                             if(self.links[z].source.node==modificado.node && (self.links[z].source.node != 'iniciales' || self.links[z].source.node != 'usuarios')){
+
                                 self.links.splice(self.links.indexOf(self.links[z]),1);
                                 z=-1;
+
                             }
+
                         z--;
+
                         }
+
                         j=-1;
                     }   
                 j--;
@@ -1079,7 +1086,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             if (!a){
 
                 self.nodes.push(modificado);
-                //self.date = row.t;
                 self.links.push({source: modificado, target: modificado});
 
             }else {
@@ -1088,20 +1094,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 while (j < self.nodes.length){
 
                     if (self.nodes[j].parent ==  modificado.parent && self.nodes[j].node == "iniciales"){
+
                             self.nodes.push(modificado);
-                            //self.date = row.t;
-                            //console.log(self.nodes[j]);
                             self.links.push({source: modificado, target: self.nodes[j]});
                             
                             j=self.nodes.length;
-                    }   
+                    } 
+
                     j++;
                 }
 
                 self.start({ row: modificado, timer: timer });
                 //self.add_user(row); 
             }
-        }
+        //}
       
     },
     start : function(dt){
@@ -1203,7 +1209,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          .on('mouseover', function(d)
                          {
                             d3.select(this).transition()
-                            .duration(750)
+                          /*  .duration(750)
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
@@ -1211,20 +1217,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                            return self.node5.attr("fill",texto_nodos).style("visibility", "visible");
+                           */ return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
                          d3.select(this).transition()
-                         .duration(750)
+                         /*.duration(750)
                          .attr("r", 10)
                          .attr("fill",nodos)
                          .attr("fill-opacity",0.6);
                          self.node6.style("visibility", "hidden");
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
-                         self.node9.style("visibility", "hidden");
-                         return self.node5.attr("fill",texto_nodos).style("visibility", "hidden");//})
+                         self.node9.style("visibility", "hidden");*/
+                         return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
                          })
                          .call(self.force.drag)
                          .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
@@ -1277,7 +1283,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          .on('mouseover', function(d)
                          {
                             d3.select(this).transition()
-                            .duration(750)
+                            /*.duration(750)
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
@@ -1285,20 +1291,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "visible");
+                            */return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
                          d3.select(this).transition()
-                         .duration(750)
+                         /*.duration(750)
                          .attr("r", 10)
                          .attr("fill","url(#Verde)")
                          .attr("fill-opacity",0.6);
                          self.node6.style("visibility", "hidden");
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
-                         self.node9.style("visibility", "hidden");
-                         return self.node5.attr("fill","url(#Color_Texto_Nodos)").style("visibility", "hidden");//})
+                         self.node9.style("visibility", "hidden");*/
+                         return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
                          })
                          .call(self.force.drag)
                          .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
