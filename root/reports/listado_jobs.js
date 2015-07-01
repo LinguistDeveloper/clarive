@@ -20,7 +20,7 @@
         triggerAction: 'all',
         store: states_store,
         mode: 'remote',
-        fieldLabel: 'Estados',
+        fieldLabel: _('Status'),
         typeAhead: true,
         name: 'states',
         displayField: 'name',
@@ -48,7 +48,7 @@
     } });
 
     var projects = new Baseliner.PagingProjects({
-        fieldLabel: _('Sistemas'),
+        fieldLabel: _('Projects'),
         tpl: tpl,
         name: 'projects',
         hiddenName: 'projects',
@@ -80,7 +80,7 @@
     var natures = Baseliner.ci_box({ 
         name:'natures', 
         anchor:'100%', 
-        fieldLabel:'Naturaleza', role:'Nature', 
+        fieldLabel:_('Natures'), role:'Nature', 
         force_set_value: true, 
         value: data.natures,
         singleMode: false
@@ -100,7 +100,7 @@
     var bl = Baseliner.ci_box({ 
         name:'bl', 
         anchor:'100%', 
-        fieldLabel:'Entornos', 
+        fieldLabel:_('BLs'), 
         "class":'BaselinerX::CI::bl',
         force_set_value: true, 
         value: data.bl,
@@ -184,7 +184,7 @@
     });
     
     var users = new Baseliner.model.Users({
-        fieldLabel: 'Usuario',
+        fieldLabel: _('User'),
         name: 'users',
         hiddenName: 'users',
         store: users_store,
