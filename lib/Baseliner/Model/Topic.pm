@@ -707,7 +707,7 @@ sub update {
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
                     $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
-                    $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
+                    $p->{title} = _strip_html($p->{title}) if ($p->{title}); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
                     
                     $topic_mid    = $topic->mid;
@@ -759,7 +759,7 @@ sub update {
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
                 $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
-                $p->{title} = _strip_html($p->{title});
+                $p->{title} = _strip_html($p->{title}) if ($p->{title});
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
