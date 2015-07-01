@@ -85,8 +85,8 @@ Ext.onReady(function(){
     if( Prefs.site.show_calendar ) 
         tbar_items.push( '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />' );
             
-    tbar_items.push( '<img src="/static/images/icons/detach.png" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
-    tbar_items.push( '<img src="/static/images/icons/share_this.png" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="{0}" style="border:0px;" onclick="Baseliner.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
+    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="{0}" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />', _('Open in a new page and share link') ) );
     tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
     if( Prefs.stash.show_js_reload && Baseliner.DEBUG )
         tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
