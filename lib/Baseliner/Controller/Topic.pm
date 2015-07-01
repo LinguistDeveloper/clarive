@@ -489,6 +489,8 @@ sub view : Local {
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = 0;
+        $c->stash->{permissionActivity} = 0;
+        $c->stash->{permissionJobs} = 0;
         my $topic_ci;
         if ( $topic_mid ) {
             try {
@@ -520,6 +522,8 @@ sub view : Local {
         my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
         my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
         my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
+        my %categories_activity = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
+        my %categories_jobs = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -592,15 +596,21 @@ sub view : Local {
                 $c->stash->{permissionComment} = 0;
                 $c->stash->{has_comments} = 0;
             }
-                             
-     
+            if (exists ($categories_activity{ $category->{id} })){
+                $c->stash->{permissionActivity} = 1;
+            } else {
+                $c->stash->{permissionActivity} = 0;
+            }
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
-                my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
-
-                $c->stash->{jobs} = $has_permission ? 1 : 0;
+                my $has_permission;
+                if (exists ($categories_jobs{ $category->{id} })){
+                    $c->stash->{permissionJobs} = 1;
+                } else {
+                    $c->stash->{permissionJobs} = 0;
+                }
             } else {
-                $c->stash->{jobs} = -1;
+                $c->stash->{permissionJobs} = -1;
             }
             
             # used by the Change State menu in the topic
@@ -630,6 +640,8 @@ sub view : Local {
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
+            $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
+            $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
             
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
