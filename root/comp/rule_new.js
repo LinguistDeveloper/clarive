@@ -111,6 +111,12 @@
             grid_events.show();
         }
     }
+
+    var compile_mode = new Baseliner.ComboSingle({ 
+        fieldLabel: _('Compile Mode'), name:'rule_compile_mode', value: params.rec.rule_compile_mode, data: [
+               'none',
+               'precompile'
+           ]});
     
     // job chain form
     var job_chain_form = new Ext.form.FieldSet({
@@ -152,7 +158,7 @@
         border: false,
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
-            combo_type, msg_ev, msg_job, grid_events, job_chain_form, webservice_form
+            combo_type, compile_mode, msg_ev, msg_job, grid_events, job_chain_form, webservice_form
         ]
     });
 

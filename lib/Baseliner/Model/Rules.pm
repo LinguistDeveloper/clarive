@@ -479,8 +479,13 @@ sub dsl_run {
 
 sub compile_rules {
     my $self = shift;
+    my (%params) = @_;
 
-    my @rules = mdb->rule->find( { rule_active => mdb->true } )
+    my $rule_precompile = $params{rule_precompile} // _fail 'Missing parameter rule_precompile';
+
+    return if $rule_precompile eq 'none';
+
+    my @rules = mdb->rule->find( { rule_active => mdb->true, $rule_precompile ne 'always' ? (rule_compile_mode=>'precompile') : () } )
       ->sort( mdb->ixhash( rule_seq => 1, id => 1 ) )->all;
 
     foreach my $rule (@rules) {
