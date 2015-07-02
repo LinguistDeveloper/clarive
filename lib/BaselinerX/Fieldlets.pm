@@ -4,7 +4,6 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
-use utf8;
 
 register 'fieldlet.attach_file' => {
     name        => _loc('attach files'),

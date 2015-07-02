@@ -6,7 +6,6 @@ use DateTime;
 use JSON::XS;
 use Try::Tiny;
 use List::Util qw(max);
-use utf8;
 use experimental 'autoderef';
 
 BEGIN { extends 'Catalyst::Controller' }

@@ -2,7 +2,6 @@ package BaselinerX::Service::TopicServices;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;
-use utf8;
 use experimental 'smartmatch';
 #use Try::Tiny;
 

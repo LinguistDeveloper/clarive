@@ -9,7 +9,6 @@ use Archive::Tar;
 use Path::Class;
 use Try::Tiny;
 use Data::Dumper;
-use utf8;
 use Class::Date;
 use experimental 'autoderef';
 

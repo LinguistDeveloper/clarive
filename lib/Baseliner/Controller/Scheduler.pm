@@ -3,7 +3,6 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
 use Try::Tiny;
-use utf8;
 use Encode;
 use 5.010;
 

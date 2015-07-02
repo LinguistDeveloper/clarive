@@ -6,7 +6,6 @@ BEGIN {  extends 'Catalyst::Controller' }
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Core::Baseline;
-use utf8;
 use v5.10;
 
 #register 'menu.admin.core.bl' => { label => _loc('List all Baselines'), url=>'/core/baselines', title=>_loc('Baselines')  };
