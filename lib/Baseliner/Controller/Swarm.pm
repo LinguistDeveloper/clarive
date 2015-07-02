@@ -40,10 +40,11 @@ sub leer_log : Local {
 sub activity : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    #my $limit = $p->{limit} || 10000;
-
+    my $limit = $p->{limit} || 1000;
+    my $skip = $p->{skip} || 0;
     my $where = { mid=>{'$ne'=>undef} };
 	
+_warn $p;
     #my $days = $p->{days} || 2592000000;
 	my $days = $p->{days} || 31536000000;
 	$days = $days/86400000;
@@ -55,23 +56,17 @@ sub activity : Local {
 	# _log( \$filter_date );
 
 
+    my $total = mdb->activity->find({ event_key=> qr/^event.topic/,ts=>{ '$gte' => ''.$filter_date} })->count;
+    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/,ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
-
-
-
-
-
-
-    my @ev = mdb->activity->find({ event_key=> qr/^event.topic/,ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->all;
-
-    my @mids = map { $_->{mid}} @ev;
+    my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
 # _log _dump %cats;
 # _log _dump %category_colors;
     my @data;
-    for my $ev ( @ev ) {
+    for my $ev (@ev_rs) {
         my $parent = $cats{$ev->{mid}};
         my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
@@ -82,7 +77,7 @@ sub activity : Local {
 		}
     }
  # _log( \@data );
-    $c->stash->{json} = { data=>\@data };
+    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
     $c->forward('View::JSON');    
 }
 
