@@ -1272,8 +1272,8 @@ our %meta_types = (
 
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
-    my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
-    return $cached if $cached;
+    # my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
+    # return $cached if $cached;
 
 
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
@@ -1379,7 +1379,7 @@ sub get_meta {
             $d
         } @cat_fields;
     
-    cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
+    # cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
     # _log _dump \@meta;
     return \@meta;
 }
