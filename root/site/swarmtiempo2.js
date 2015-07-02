@@ -460,7 +460,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     if(self.nodos_modificados.length >= 2){
 
-                    self.comprobar_nodo_modificado(); 
+                        self.comprobar_nodo_modificado(); 
 
                     }else if(row.ev == 'add') {
 
@@ -509,7 +509,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                         if(self.nodos_modificados.length >= 2){
 
-                        self.comprobar_nodo_modificado(); 
+                            self.comprobar_nodo_modificado(); 
 
                         }else if(row.ev == 'add') {        
 
