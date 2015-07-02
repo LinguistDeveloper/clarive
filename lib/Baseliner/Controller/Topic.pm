@@ -1582,6 +1582,8 @@ sub list_users : Local {
     my (@rows, $users_friends);
     my $username = $c->username;
 
+_warn $p;
+
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
@@ -1589,8 +1591,9 @@ sub list_users : Local {
         my $topic_row;
         my @topic_projects;
         if ( $p->{topic_mid}) {
-            $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
-            @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
+            # $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
+            @topic_projects = ci->new($$p{topic_mid})->projects;
+            # @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
         }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
