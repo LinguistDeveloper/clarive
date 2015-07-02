@@ -41,6 +41,7 @@
                      groups: groups,
                      onclick: function (d, i) {
                         // console.log(d);
+                        // console.log(res);
                         //var epoc = d.x.getTime();
                         // console.log(res.data.topics_list);
                         // console.log("Epoc: " + epoc);

@@ -904,16 +904,15 @@ sub topics_by_date: Local {
             } else {
                 $date = substr(''.$dt,0,10);
             }
-            my $epoc = Class::Date->new($date)->epoch() * 1000;
 
             $topic_by_dates{$date}{ $topic->{category_name} }
                 = $topic_by_dates{$date}{ $topic->{category_name} }
                 ? $topic_by_dates{$date}{ $topic->{category_name} } + 1
                 : 1;
 
-            my @topics = _array($list_topics{$epoc}{ $topic->{category_name} });
+            my @topics = _array($list_topics{$date}{ $topic->{category_name} });
             push @topics, $topic->{mid};
-            $list_topics{$epoc}{ $topic->{category_name} } = \@topics;
+            $list_topics{$date}{ $topic->{category_name} } = \@topics;
 
         }
 
@@ -930,7 +929,11 @@ sub topics_by_date: Local {
     }
 
     my %temp_data;
+    my %final_list_topics;
+    my $index = 0;
+
     for my $rel_date ( sort { $a cmp $b } keys %topic_by_dates ) {
+        $final_list_topics{$index++} = $list_topics{$rel_date};
 
         my @data = ();
        for my $rel_type (keys %keys) {
@@ -954,12 +957,7 @@ sub topics_by_date: Local {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
 
-    my %final_list_topics;
-    my $index = 0;
 
-    for my $epoc ( keys %list_topics ) {
-        $final_list_topics{$index++} = $list_topics{$epoc};
-    }
 
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%final_list_topics, matrix => $matrix} };
     $c->forward('View::JSON');
