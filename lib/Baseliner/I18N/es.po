@@ -8012,4 +8012,7 @@ msgstr "Por favor, rellena los campos obligatorios"
 msgid "There are not tasks to do"
 msgstr "No hay tareas para realiar"
 
+msgid "No data for selection dates.  Please select another period"
+msgstr "No hay datos para las fechas seleccionadas.  Por favor, selecciona otro periodo"
+
 ### EOF - do not write anything bellow this
