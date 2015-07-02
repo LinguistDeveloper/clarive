@@ -3263,7 +3263,6 @@ sub apply_filter{
 
         };
     }
-_log $where;
     return $where;
 }
 
