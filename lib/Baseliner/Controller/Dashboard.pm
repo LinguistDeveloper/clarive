@@ -954,7 +954,14 @@ sub topics_by_date: Local {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
 
-    $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%list_topics, matrix => $matrix} };
+    my %final_list_topics;
+    my $index = 0;
+
+    for my $epoc ( keys %list_topics ) {
+        $final_list_topics{$index++} = $list_topics{$epoc};
+    }
+
+    $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%final_list_topics, matrix => $matrix} };
     $c->forward('View::JSON');
 }
 
