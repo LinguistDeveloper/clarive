@@ -246,6 +246,7 @@ EOL
 
 __DATA__
 
+experimental
 Algorithm::C3
 Algorithm::Diff::XS
 Any::Moose

@@ -8,6 +8,7 @@ use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
 use utf8;
+use experimental 'autoderef', 'switch';
 
 BEGIN { extends 'Catalyst::Model' }
 

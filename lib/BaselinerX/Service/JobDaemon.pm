@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 use utf8;
+use experimental 'smartmatch';
 
 with 'Baseliner::Role::Service';
 

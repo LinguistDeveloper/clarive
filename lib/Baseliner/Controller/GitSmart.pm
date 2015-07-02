@@ -13,6 +13,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use Path::Class;
+use experimental 'smartmatch';
 
 #BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 BEGIN { extends 'Catalyst::Controller' }

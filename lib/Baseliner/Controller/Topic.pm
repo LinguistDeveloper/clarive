@@ -6,6 +6,7 @@ use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
 use v5.10;
+use experimental 'smartmatch', 'autoderef', 'switch';
 
 BEGIN {  extends 'Catalyst::Controller' }
 

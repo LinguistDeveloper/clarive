@@ -2,6 +2,7 @@ package BaselinerX::Type::Nature;
 use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use utf8;
+use experimental 'smartmatch';
 with 'Baseliner::Role::Registrable';
 
 register_class 'nature' => __PACKAGE__;

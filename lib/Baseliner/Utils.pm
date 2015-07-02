@@ -153,6 +153,7 @@ use Path::Class;
 use Term::ANSIColor;
 use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
+use experimental 'switch';
 
 BEGIN {
     # enable a TO_JSON converter

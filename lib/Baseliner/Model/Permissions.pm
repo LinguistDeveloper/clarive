@@ -6,6 +6,7 @@ use Data::Dumper;
 use Baseliner::Sugar;
 use Baseliner::Model::Users;
 use Try::Tiny;
+use experimental 'autoderef', 'smartmatch';
 =head1 NAME
 
 Baseliner::Model::Permissions - Role and action management

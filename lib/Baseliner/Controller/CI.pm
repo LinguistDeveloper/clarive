@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
+use experimental 'switch', 'smartmatch', 'autoderef';
 
 # register 'action.ci.admin' => { name => 'Admin CIs' };
 # register 'menu.tools.ci' => {

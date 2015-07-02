@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use 5.010;
+use experimental 'autoderef';
 
 BEGIN {  extends 'Catalyst::Controller' }
 

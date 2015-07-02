@@ -5,6 +5,7 @@ use Baseliner::Sugar;
 use Try::Tiny;
 use Scalar::Util qw(looks_like_number);
 use v5.10;
+use experimental 'switch', 'autoderef';
 
 BEGIN {  extends 'Catalyst::Controller' }
 

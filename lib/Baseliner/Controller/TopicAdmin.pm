@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use DateTime;
 use Try::Tiny;
 use v5.10;
+use experimental 'autoderef', 'smartmatch', 'switch';
 
 BEGIN {  extends 'Catalyst::Controller' }
 

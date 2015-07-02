@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use utf8;
+use experimental 'autoderef', 'smartmatch';
 require Girl;
 
 BEGIN { extends 'Catalyst::Controller' };

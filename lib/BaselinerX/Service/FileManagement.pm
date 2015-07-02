@@ -5,6 +5,7 @@ use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
 use utf8::all;
+use experimental 'autoderef';
 with 'Baseliner::Role::Service';
 
 register 'service.fileman.foreach' => {

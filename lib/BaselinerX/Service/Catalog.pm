@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Path::Class;
 use Try::Tiny;
 use v5.10;
+use experimental 'autoderef', 'switch';
 
 no warnings q{uninitialized};
 

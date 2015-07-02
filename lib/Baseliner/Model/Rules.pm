@@ -6,6 +6,7 @@ use Baseliner::CompiledRule;
 use Try::Tiny;
 use v5.10;
 use utf8;
+use experimental 'autoderef';
 
 # DSL functions, export needed by "contained" mode in dsl_run
 use Exporter::Tidy default => [qw( 

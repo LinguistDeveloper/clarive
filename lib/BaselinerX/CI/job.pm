@@ -5,6 +5,7 @@ use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
 use v5.10;
 use utf8;
+use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
 has job_name           => qw(is rw isa Str);   # initial job_name, overwrites the gen_job_mask system

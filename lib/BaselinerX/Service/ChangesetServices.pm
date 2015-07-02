@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+use experimental 'smartmatch';
 
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';

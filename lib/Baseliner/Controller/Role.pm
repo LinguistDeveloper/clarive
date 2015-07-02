@@ -8,6 +8,7 @@ use Encode;
 use 5.010;
 
 BEGIN {  extends 'Catalyst::Controller' }
+use experimental 'autoderef';
 
 register 'action.admin.role' => { name=>'Admin Roles' };
 register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
