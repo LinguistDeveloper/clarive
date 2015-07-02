@@ -530,16 +530,104 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             }else{
 
                 var row = self.res.data[ self.i-- ];
-                var date = new Date(self.date);
-                var calculo = self.calcula_contador(date);
-                calculo = new Date(calculo);
-                self.date = self.calcular_fecha(calculo);
 
-                self.vis.append("text")
-                        .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+
+                var date = new Date(self.date);
+
+                //CAMBIO TODO ESTO POR....
+                /*var calculo = self.calcula_contador(date);
+                calculo = new Date(calculo);
+                self.date = self.calcular_fecha(calculo);*/
+
+                //TODO ESTO...........
+
+                var seconds = date.getSeconds()+1;
+                var minutes = date.getMinutes()
+                var hour = date.getHours();
+                var day = date.getDate();
+                var month = date.getMonth();
+                var year = date.getFullYear();
+                var fecha;
+
+                if (seconds > 59){
+                    seconds = '00';
+                    minutes = minutes+1;
+
+
+                    if (minutes > 59){
+                        minutes = '00';
+                        hour = hour+1;
+                        if(date.getHours()>=23){
+                            hour = '00';
+                            day = date.getDate()+1;
+                            if(date.getDate()>=30){
+                                if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
+                                   day = '01';
+                                   month = date.getMonth()+1; 
+                                    if(date.getMonth()>=11){
+                                        month = 00;
+                                        year= date.getFullYear()+1;
+                                    }
+                                }else{
+                                    day = '01';
+                                    month = date.getMonth()+1;
+                                    if(date.getMonth()>=11){
+                                        month = 00;
+                                        year= date.getFullYear()+1;
+                                    }
+                                }
+                            }else if (date.getDate()==28 && date.getMonth()==1){
+                                day = '01';
+                                month = date.getMonth()+1;
+                                if(date.getMonth()>=11){
+                                    month = 00;
+                                    year= date.getFullYear()+1;
+                                }
+                            }
+                        }
+                    }
+                }
+                fecha = year+"-"+(month+1)+"-"+day+" "+hour+":"+minutes+":"+seconds;
+
+                date = new Date(fecha);
+
+                if(date.getDate() < 10){
+                    day = "0"+date.getDate();
+                }else{day = date.getDate();}
+
+                if(date.getMonth() < 9){
+                    month = "0"+(date.getMonth()+1);
+                }else{month = date.getMonth()+1;}
+
+                if(date.getHours() < 10){
+                    hour = "0"+date.getHours();
+                }else{hour = date.getHours();}
+
+                if(date.getMinutes() < 10){
+                    minutes = "0"+date.getMinutes();
+                }else{minutes = date.getMinutes();}
+
+                if(date.getSeconds() < 10){
+                    seconds = "0"+date.getSeconds();
+                }else{seconds = date.getSeconds();}
+
+                self.date = date.getFullYear()+"-"+month+"-"+day+" "+hour+":"+minutes+":"+seconds;
+
+                //...........................................................................................................
+                //...........................................................................................................
+                //...........................................................................................................
+
+                //////////////////////////////////////////
+                //var d = new Date();                   
+                //d.setDate(d.getDate() + 0.00000578);  
+                //self.date = d;                        
+                //////////////////////////////////////////
+
+                /*self.vis.append("text")
+                        .text("dafefde")//.text(self.get_contador())//.text(self.res.data[0].t)
                         .attr("fill","#ffffff")
                         .attr("x", '45%')
-                        .attr("y", '5%').transition().duration(10).remove();
+                        .attr("y", '5%').transition().duration(10).remove();*/
                 self.force.start();
 
             }
