@@ -16,7 +16,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.res = { data:[] };
         self.parents =  {};
         self.i=0;
-        self.j=0;
         //self.contador=1000;
         self.days = 31536000000;
         self.color=0;
@@ -313,7 +312,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Verde.append("stop").attr("offset", "100%").attr("stop-color", "#66FF66").attr("stop-opacity", 0).attr("brighter",1); // Color verde aclarado + 4
     },
     start_anim : function(){
-console.log("Stating anim");
 
         var self = this;
 
@@ -322,8 +320,46 @@ console.log("Stating anim");
 
             //alert(self.days);
 
-            self.data_load(0);
 
+
+            Cla.ajax_json('/swarm/activity', {days: self.days}, function(res){
+
+                
+                if(res.data.length <= 0){
+                    alert("No existen datos para esta fecha, por favor introduzca otra fecha");
+                    //self.mostrar=true;
+                    self.stop_anim();
+                    self.i=1;
+                }
+                console.log(res);
+                //alert(res.data.length);
+                self.res = res;
+
+                var fecha=new Date();
+
+                var tiempo =fecha.getTime();
+                var total= fecha.setTime(tiempo-self.days);
+                //var fecha_inicio = new Date(total);
+              
+                //var calculo = self.calcula_contador(fecha_inicio);
+                //calculo = new Date(calculo);
+                //self.date = self.calcular_fecha(calculo);
+                //self.date = '2015-06-08 10:24';
+                //alert("el calculo es "+self.date);
+
+                if( !self.initiated ) {
+                    //alert("inicializa");
+                    self.first();
+                    self.initiated = true;
+                }
+
+                self.anim_running = true;
+                self.btn_start.disable();
+                self.btn_pause.enable();
+                self.btn_stop.enable();
+                setTimeout(function(){ self.anim(); }, (10-self.slider.getValue())*100 );
+
+            });
         }else{
 
             if( !self.initiated ) {
@@ -360,65 +396,47 @@ console.log("Stating anim");
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
-        self.force.stop();
-        self.i = self.res.skip;
-    },
-    reset_all : function() {
-        var self = this;
-        self.i=0;
-        self.res.skip = 0;
-        self.j = 0;
-        self.initiated=false;
-
-        self.anim_running = false;
-        self.parents =  {};
-        self.nodes = [];
-        self.links = [];
-        self.nodos_modificados = [];
-
-        self.node.remove();
-        self.link.remove();
-        self.link2.remove();
-        self.node2.remove();
-        self.node3.remove();
-        self.node4.remove();
-        self.node5.remove();
-        self.node6.remove();
-        self.node7.remove();
-        self.node8.remove();
-        self.node9.remove();
-        self.texto.remove();
-        self.force.stop();
-        self.vis.remove();
+        self.i=self.res.data.length; 
 
     },
-    anim : function(limit){
+    anim : function(){
 
         var self = this;
 
-        if( !self.anim_running ) {
-console.log("Not running");
-            return;
-        }
+        if( !self.anim_running ) return;
 
-        if ( self.i >= self.res.skip) {
-            self.data_load(self.res.skip);
-            self.j = 0;
-console.log("Saltando al siguiente batch: " + self.res.skip);
-            return;
-        }
+        if(self.i==self.res.data.length){
 
-        // if(self.i==self.res.data.length){
-        if(self.i >= self.res.total){
-            self.reset_all();
-console.log("Finished animation");
+            self.i=0;
+            self.initiated=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+            self.nodos_modificados = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
             self.init();
             self.start_anim();
             return;
         }
         
-        var row = self.res.data[ self.j++ ];
-        self.i++;
+        var row = self.res.data[ self.i++ ];
 
 
         if( !row ) {
@@ -443,8 +461,7 @@ console.log("Finished animation");
 
                     self.parents[row.parent] = true;
                     self.add_inicial( row.parent );
-                    var row = self.res.data[ self.j-- ];
-                    self.i++;
+                    var row = self.res.data[ self.i-- ];
 
                 }else{
                     
@@ -494,8 +511,7 @@ console.log("Finished animation");
 
                         self.parents[row.parent] = true;
                         self.add_inicial( row.parent );
-                        var row = self.res.data[ self.j-- ];
-                        self.i--;
+                        var row = self.res.data[ self.i-- ];
 
                     }else{
 
@@ -524,8 +540,7 @@ console.log("Finished animation");
                 }
             }else{
 
-                var row = self.res.data[ self.j-- ];
-                self.i--;
+                var row = self.res.data[ self.i-- ];
 
 
                 var date = new Date(self.date);
@@ -1827,48 +1842,6 @@ console.log("Finished animation");
         var self = this;
 
         self.svg.attr("transform","translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
-    },
-    data_load: function(skip) {
-        var self = this;
-        var limit = 10;
-console.log("Entrando con skip = " + skip);
-        Cla.ajax_json('/swarm/activity', {days: self.days, limit: limit, skip: skip}, function(res){
-
-console.log("Res length = " + res.data.length);
-            
-            if(res.data.length <= 0){
-                alert(_("No data for selection dates.  Please select another period"));
-                //self.mostrar=true;
-                self.stop_anim();
-                self.i=1;
-            }
-            // console.log(res);
-            //alert(res.data.length);
-            self.res = res;
-            var fecha=new Date();
-
-            var tiempo =fecha.getTime();
-            var total= fecha.setTime(tiempo-self.days);
-            //var fecha_inicio = new Date(total);
-          
-            //var calculo = self.calcula_contador(fecha_inicio);
-            //calculo = new Date(calculo);
-            //self.date = self.calcular_fecha(calculo);
-            //self.date = '2015-06-08 10:24';
-            //alert("el calculo es "+self.date);
-
-            if( !self.initiated ) {
-                //alert("inicializa");
-                self.first();
-                self.initiated = true;
-            }
-
-            self.anim_running = true;
-            self.btn_start.disable();
-            self.btn_pause.enable();
-            self.btn_stop.enable();
-            setTimeout(function(){ self.anim(limit); }, (10-self.slider.getValue())*100 );
-        });
     }
 
 
