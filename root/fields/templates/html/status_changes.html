@@ -18,7 +18,12 @@
                     <tbody>
 % for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
                         <tr>
+% if ( !$meta->{show_real_dates} ) {
                             <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111; " title="<% $ch->{username}  %>"><% Util->ago( $ch->{when} )  %></td>
+% } else {
+                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111; " title="<% $ch->{username}  %>"><% $ch->{when} %></td>
+
+% }
                             <!-- <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $ch->{username} %>/image.png" /><% $ch->{username}  %></td> -->
                             <!--<td><% $ch->{username}  %></td>-->
                             <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{old_status}  %></td>
@@ -28,7 +33,11 @@
                         </tr>
 % }
                         <tr>
+% if ( !$meta->{show_real_dates} ) {
                         <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% Util->ago( $data->{created_on_epoch} )   %></td>
+% } else {
+                        <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% $data->{created_on}   %></td>
+% }
                          <!-- <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /><% $data->{created_by}  %></td> -->
                          <!--<td><% $data->{created_by}  %></td>-->
                         <td colspan=3 class="status-html" style="font-size: 10px; font-weight: bold"><% _loc('Created') %></td>

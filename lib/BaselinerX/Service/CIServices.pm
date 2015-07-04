@@ -43,5 +43,4 @@ sub ci_invoke {
     # Function::Parameters::info( $cl.'::'.'write_to_logfile' );
 }
 
-
 1;

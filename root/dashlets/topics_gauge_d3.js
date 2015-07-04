@@ -1,6 +1,5 @@
 (function(params){ 
     var id = params.id_div;
-
     var project_id = params.project_id;
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
@@ -8,6 +7,13 @@
     var condition = params.data.condition || '';
     var days_from = params.data.days_from || 0;
     var days_until = params.data.days_until || 0;
+    var max_selection = params.data.max_selection || '';
+    var categories_max = params.data.categories_max || [];
+    var statuses_max = params.data.statuses_max || [];
+    var not_in_status_max = params.data.not_in_status_max;
+    var condition_max = params.data.condition_max || '';
+    var days_from_max = params.data.days_from_max || 0;
+    var days_until_max = params.data.days_until_max || 0;
     var date_field_start = params.data.date_field_start;
     var date_field_end = params.data.date_field_end;
     var numeric_field = params.data.numeric_field;
@@ -25,20 +31,20 @@
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { max_selection: max_selection, days_from_max: days_from_max, days_until_max: days_until_max, condition_max: condition_max, not_in_status_max: not_in_status_max, categories_max: categories_max, statuses_max: statuses_max, project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var needle_length = 0.85;
         var value_font = "18px";
         var div = document.getElementById(id);
          if ( columns < 3 ) {
-            div.style.height = "140px";
+            div.style.height = "160px";
             needle_length = 0.6;
             value_font = "12px";
          } else if ( columns < 4 ) {
-            div.style.height = "160px";
+            div.style.height = "180px";
             needle_length = 0.7;
             value_font = "14px";
          } else if ( columns < 6 ) {
-            div.style.height = "210px";
+            div.style.height = "230px";
             needle_length = 0.8;
             value_font = "16px";
          }
@@ -50,23 +56,28 @@
         //     maxValue = parseInt(res.max) + ( parseInt(res.max) * 20 / 100);
         // }
         // maxValue = yellow + green + ( (yellow + green) * 20 /100 );
-        if ( parseInt(end) > maxValue ) {
+        if ( max_selection != 'on' && parseInt(end) > maxValue ) {
             maxValue = parseInt(end);
         }
         if ( parseInt(res.data[result_type]) > maxValue ) {
             maxValue = parseInt(res.data[result_type]);
         }
-        if ( yellow > maxValue ) {
-            yellow = maxValue;
+        if ( show_pct != 'on' ) {
+            if ( yellow > maxValue ) {
+                yellow = maxValue;
+            }
         }
-
         
         var minValue;
 
         if ( start > res.max ) {
             minValue = res.max;
         } else {
-            minValue = start;
+            if ( parseFloat(res.min) < parseFloat(start) ) {
+                minValue = res.min;
+            } else {
+                minValue = start;
+            }
         }
 
          var gauge = function(container, configuration) {
@@ -74,7 +85,7 @@
              var config = {
                  size                        : div.offsetWidth,
                  clipWidth                   : div.offsetWidth,
-                 clipHeight                  : div.offsetHeight +20,
+                 clipHeight                  : div.offsetHeight + 20,
                  ringInset                   : 40,
                  ringWidth                   : 40,
                  
@@ -193,7 +204,7 @@
                      .enter().append('path')
                          .attr('fill', function(d, i) {
                             var colors = ['#FA5858','#F7D358','#60B044'  ];
-                            if ( end_remaining == 'on') colors = colors.reverse();
+                            if ( end_remaining == 'on' || reverse == 'on') colors = colors.reverse();
                              return colors[i];
                          })
                          .attr('d', arc);
@@ -229,7 +240,7 @@
                  arcs.select('.c3-chart-arcs-gauge-min')
                      .attr("dx", -1 * (innerRadius + ((outerRadius - innerRadius) / 2)) + "px")
                      .attr("dy", "1.2em")
-                     .text('0');
+                     .text(minValue);
                  arcs.select('.c3-chart-arcs-gauge-max')
                      .attr("dx", innerRadius + ((outerRadius - innerRadius) / 2) + "px")
                      .attr("dy", "1.2em")
@@ -238,11 +249,12 @@
                  var lg = svg.append('g')
                          .attr('class', 'label')
                          .attr('transform', centerTx);
+                 var label_ticks = [ticks[1], ticks[2]];
                  lg.selectAll('text')
-                         .data(ticks)
+                         .data(label_ticks)
                          .enter()
                          .append('text')
-                         .attr('transform', function(d) {
+                         .attr('transform', function(d, i) {
                              var label = d;
                              if ( show_pct == 'on' ) {
                                 label = ( d * maxValue / 100 ).toFixed(2);

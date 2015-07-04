@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
+use experimental 'autoderef';
 
 with 'Baseliner::Role::Service';
 

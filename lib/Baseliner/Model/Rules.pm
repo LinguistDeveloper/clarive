@@ -5,7 +5,7 @@ use Baseliner::Sugar;
 use Baseliner::CompiledRule;
 use Try::Tiny;
 use v5.10;
-use utf8;
+use experimental 'autoderef';
 
 # DSL functions, export needed by "contained" mode in dsl_run
 use Exporter::Tidy default => [qw( 
@@ -405,7 +405,8 @@ sub dsl_build {
     }
 
     my $dsl = join "\n", @dsl;
-    if( $self->tidy_up && !$p{no_tidy} ) {
+    # WTF? $self can be class name
+    if(ref $self && $self->tidy_up && !$p{no_tidy} ) {
         require Perl::Tidy;
         my $tidied = '';
         Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
@@ -474,6 +475,25 @@ sub dsl_run {
         _debug "DSL:\n",  $self->dsl_listing( $rule->dsl ) if $p{logging};
     }
     return { stash=>$stash, dsl=>($rule->dsl || $rule->package) };  # TODO storing dsl everywhere maybe a waste of space
+}
+
+sub compile_rules {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $rule_precompile = $params{rule_precompile} // _fail 'Missing parameter rule_precompile';
+
+    return if $rule_precompile eq 'none';
+
+    my @rules = mdb->rule->find( { rule_active => mdb->true, $rule_precompile ne 'always' ? (rule_compile_mode=>'precompile') : () } )
+      ->sort( mdb->ixhash( rule_seq => 1, id => 1 ) )->all;
+
+    foreach my $rule (@rules) {
+        try {
+            my $cr = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
+            $cr->compile;
+        };
+    }
 }
 
 # used by events

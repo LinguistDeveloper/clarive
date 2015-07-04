@@ -288,60 +288,7 @@ if( Prefs.routing ) {
         });
    };
 
-   Baseliner.default_dashboard = function() {
-        var change_dashboard_form = new Ext.FormPanel({
-           url: '/user/change_dashboard',
-           frame: true,
-           labelWidth: 100, 
-           timeout: 120,
-            items: [
-                new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboard', singleMode: true, allowBlank: true, baseParams: { username: true } })
-            ],
-            buttons: [
-                { text: _('Aceptar'),
-                     handler: function() {
-                        var form = change_dashboard_form.getForm();
-
-                        if (form.isValid()) {
-                          form.submit({
-                              success: function(f,a){
-                                    Baseliner.message(_('Success'), a.result.msg );
-                                    win_change.close(); 
-                              },
-                              failure: function(f,a){
-                                    Ext.Msg.show({  
-                                        title: _('Information'), 
-                                        msg: a.result.msg , 
-                                        buttons: Ext.Msg.OK, 
-                                        icon: Ext.Msg.INFO
-                                      });                       
-                              }
-                          });
-                        }
-                    }
-                },
-                { 
-                    text: _('Cancelar'),
-                    handler: function() {
-                        win_change.close();  
-                    }
-                }
-           ]
-       });
-      
-        var win_change = new Ext.Window({
-            id: 'win_change',
-            title: _('Change default dashboard'),
-            width: 350,
-            modal: true,
-            autoHeight: true,
-            items: [ change_dashboard_form ]
-        });
-   
-       win_change.show();       
-   }
-
-    Baseliner.change_password = function() {
+   Baseliner.change_password = function() {
        var change_pass_form = new Ext.FormPanel({
             url: '/user/change_pass',
             frame: true,
@@ -522,8 +469,28 @@ if( Prefs.routing ) {
     };
 
     //adds a new object to a tab 
-    Baseliner.addNewTabItem = function( comp, title, params ) {
+    Baseliner.addNewTabItem = function( comp, title, params, json_key ) {
         if( params == undefined ) params = { active: true };
+        var found = false;
+        json_key = json_key || Ext.util.JSON.encode( { title: title, type: 'item', params: params } );
+        json_key = json_key.replace(',"active":true','');
+
+        if ( title != 'REPL' ) {
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    // if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        // Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    // }
+                }
+            });
+        }
+        if (found) return;
+
         var tabpanel = Ext.getCmp('main-panel');
         var tab;
         // if tab_index not defined -> add current tab for tab_index or add new tab.
@@ -550,6 +517,7 @@ if( Prefs.routing ) {
         }
         var tab_id = tab.getId();
         if( comp!=undefined && comp.tab_info!=undefined ) {
+            comp.tab_info[json_key] = json_key;
             Baseliner.tabInfo[tab_id] = comp.tab_info;
         }
         return tab_id; 
@@ -581,8 +549,28 @@ if( Prefs.routing ) {
     }
 
     //adds a new fragment component with html or <script>...</script>
-    Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
+    Baseliner.addNewTab = function(purl, ptitle, params, obj_tab, json_key ){
         //Baseliner.
+        var found = false;
+        json_key = json_key || Ext.util.JSON.encode( { url: purl, title: ptitle, type: 'script', params: params } );
+        json_key = json_key.replace(',"active":true','');
+
+        if ( ptitle != 'REPL') {
+            Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                var cmp_tab = Ext.getCmp(tab);
+                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                    // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                    // if (r == true) {
+                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                        // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                        found = true;
+                        return;
+                    // }
+                }
+            });
+        }
+        if (found) return;
+
         var tabpanel;
         var newpanel; 
         if(obj_tab) {
@@ -606,7 +594,9 @@ if( Prefs.routing ) {
             callback: function(el,success,res,opts){
                 if( success ) {
                     var id = tab.getId();
-                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
+                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params, json_key: json_key,
+                        copy: function(){ Baseliner.addNewTab(purl, ptitle, params, obj_tab, Ext.id() ); }
+                    };
                     if( params.callback != undefined ) params.callback();
                     try { 
                         if (Baseliner.explorer.fixed == 0) {
@@ -762,7 +752,8 @@ if( Prefs.routing ) {
             var tab = Ext.getCmp('main-panel').add(tabpanel); 
             Ext.getCmp('main-panel').setActiveTab(tab); 
             var id = tab.getId();
-            Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script' };
+            Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', 
+                copy: function(){ Baseliner.addNewTabSearch(purl,ptitle,params) } };
     };
 
     Baseliner.runUrl = function(url) {
@@ -794,7 +785,12 @@ if( Prefs.routing ) {
         if( params == undefined ) params={};
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
-        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                copy: function(){ 
+                    // iframe are different, copying opens in a new browser window
+                    window.open( url, title );
+                } 
+        };
     };
 
     Baseliner.add_iframe = function(url,title,params) {
@@ -825,7 +821,9 @@ if( Prefs.routing ) {
         if( params == undefined ) params={};
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
-        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                copy: function(){ Baseliner.add_iframe(url,title,params) } 
+        };
     };
 
     Baseliner.error_parse = function( err, xhr ) {
@@ -845,11 +843,33 @@ if( Prefs.routing ) {
     };
 
     //adds a new tab from a function() type component
-    Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
+    Baseliner.addNewTabComp = function( comp_url, ptitle, params, json_key ){
         var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
+            var found = false;
+            json_key = json_key || Ext.util.JSON.encode( { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' } );
+            json_key = json_key.replace(',"active":true','');
+
+            if ( ptitle != 'REPL' ) {
+                Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                    var cmp_tab = Ext.getCmp(tab);
+                    if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                        // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                        // if (r == true) {
+                            Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                            // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                            found = true;
+                            return;
+                        // }
+                    }
+                });
+            }
+            if (found) return;
+
             var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp', json_key: json_key,
+                copy: function(){ Baseliner.addNewTabComp(comp_url,ptitle,params,Ext.id()) } 
+            };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -866,13 +886,37 @@ if( Prefs.routing ) {
         Baseliner.addNewTab( comp_url, ptitle, params );
 
     };
-    Baseliner.add_tabcomp = function( comp_url, ptitle, params ){
+    Baseliner.add_tabcomp = function( comp_url, ptitle, params, json_key ){
         if( params == undefined ) params = {};
+
         Baseliner.ajaxEval( comp_url, params, function(comp) {
+            var found = false;
             var unescape_title = comp.tab_title || ptitle ? unescape(comp.tab_title || ptitle):null;
             var unescape_ptitle = ptitle ? unescape(ptitle):null;
+            var params_json = params;
+            delete params_json.title;
+            json_key = json_key || Ext.util.JSON.encode( { url: comp_url, params: params_json, type: 'comp' } );
+            json_key = json_key.replace(',"active":true','');
+
+            if ( ptitle != 'REPL' ) {
+                Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
+                    var cmp_tab = Ext.getCmp(tab);
+                    if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
+                        // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                        // if (r == true) {
+                            Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                            // if ( ptitle != 'REPL' && ptitle != _('Rules') ) Baseliner.refreshCurrentTab();
+                            found = true;
+                            return;
+                        // }
+                    }
+                });
+            }
+            if (found) return;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key,
+                copy: function(){ Baseliner.add_tabcomp(comp_url, ptitle, params, Ext.id()) }
+            };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -1282,14 +1326,18 @@ if( Prefs.routing ) {
         var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
+        delete Baseliner.tabInfo[id];
         
+
         if( panel.refresh_tab ) {
             // I have my own "cloner"
             var clone = panel.refresh_tab();
             tabpanel.remove( panel );
             var new_comp = tabpanel.insert( activeTabIndex, clone );
+            var new_id = new_comp.id;
             if( clone.tab_icon ) tabpanel.changeTabIcon( clone, clone.tab_icon );
             tabpanel.setActiveTab( new_comp );
+            Baseliner.tabInfo[new_id] = info;
         }
         else if( info!=undefined ) {
             // standard component
@@ -1297,17 +1345,16 @@ if( Prefs.routing ) {
             info.params.tab_index = activeTabIndex;
             if( info.type == 'comp' ) {
                 tabpanel.remove( panel );
-                Baseliner.addNewTabComp( info.url, info.title, info.params );
+                Baseliner.addNewTabComp( info.url, info.title, info.params, info.json_key );
             }
             else if( info.type=='script') {
                 tabpanel.remove( panel );
-                Baseliner.addNewTab( info.url, info.title, info.params );
+                Baseliner.addNewTab( info.url, info.title, info.params, info.json_key );
             } 
             else if( info.type == 'object' ) {  // created with a addNewTabItem directly, like the kanban in tab
                 var clone = panel.cloneConfig(); 
                 tabpanel.remove( panel );
-                var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params );
-                Baseliner.tabInfo[new_id] = info;
+                var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params, info.json_key );
             }
         } 
         else {
@@ -1327,65 +1374,12 @@ if( Prefs.routing ) {
         Baseliner.scroll_top_into_view();
     };
 
-    Baseliner.detachCurrentTab = function() {
+    Baseliner.duplicate_tab = function() {
         var tabpanel = Ext.getCmp('main-panel');
         var panel = tabpanel.getActiveTab();
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
-        if( info!=undefined ) {
-            if( info.type == 'comp' ) {
-                //var win = window.open( '/show_comp/?url=' +info.url, info.title, '' );
-                Ext.Ajax.request({
-                    url: info.url,
-                    success: function(xhr) {
-                        Ext.Ajax.request({
-                            url: '/detach',
-                            params: { detach_html: xhr.responseText, type: 'comp' },
-                            success: function(xhr) {
-                                var win = window.open( '', 'Titulo', '' );
-                                win.document.write(  xhr.responseText );
-                            },
-                            failure: function(xhr) {
-                               Baseliner.errorWin( _('Logout Error') , xhr.responseText );
-                            }
-                        });
-                    },
-                    failure: function(xhr) {
-                       Baseliner.errorWin( _('Logout Error'), xhr.responseText );
-                    }
-                });
-            }
-            else if( info.type=='script' ) {
-                Ext.Ajax.request({
-                    url: info.url,
-                    params: { detach_html: p.innerHTML },
-                    success: function(xhr) {
-                        var win = window.open( '/site/detach.html',  info.title, '' );
-                        win.document.write( xhr.responseText );
-                    },
-                    failure: function(xhr) {
-                       Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                    }
-                });
-            }
-            else if( info.type=='iframe' ) {
-                Baseliner.addNewBrowserWindow( info.url, info.title );
-            }
-        } else {
-            var p = document.getElementById( id );
-            Ext.Ajax.request({
-                url: '/detach',
-                params: { detach_html: p.innerHTML },
-                success: function(xhr) {
-                    var win = window.open( '', 'Titulo', '' );
-                    win.document.write(  xhr.responseText );
-                },
-                failure: function(xhr) {
-                   Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                }
-            });
-        }
-
+        if(info.copy) info.copy();
     };
     
     // expects success=>true|false, msg=>""
@@ -1870,6 +1864,7 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/static/gridtree/css/treegrid.css'  );
     add_css( dw, "/static/final.css"  );
     add_css( dw, "/static/sprites.css"  );
+    add_css( dw, "/static/c3/c3.css"  );
         
     add_css( dw, '/static/final.css' );
 

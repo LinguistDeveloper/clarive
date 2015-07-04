@@ -38,7 +38,16 @@
                      columns: res.data.matrix,
                      type: graph_type,
                      colors: res.data.colors,
-                     groups: groups
+                     groups: groups,
+                     onclick: function (d, i) {
+                        // console.log(d);
+                        // console.log(res);
+                        //var epoc = d.x.getTime();
+                        // console.log(res.data.topics_list);
+                        // console.log("Epoc: " + epoc);
+                        // console.log("Id: " + d.id);
+                        if ( res.data.topics_list[d.index] && res.data.topics_list[d.index][d.id] ) Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id + " - " + d.x.toLocaleDateString() , { clear_filter: 1, topic_list: res.data.topics_list[d.index][d.id] });
+                     }
                  },
                  bar: {
                      width: {

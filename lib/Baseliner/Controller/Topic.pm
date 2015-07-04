@@ -6,6 +6,7 @@ use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
 use v5.10;
+use experimental 'smartmatch', 'autoderef', 'switch';
 
 BEGIN {  extends 'Catalyst::Controller' }
 
@@ -117,26 +118,8 @@ sub grid : Local {
     $c->stash->{id_project} = $p->{id_project};
     $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
-    if ($p->{category_id}){
-        
-        if (exists $c->stash->{category_id} && $c->stash->{category_id} ne $p->{category_id}) {
-            $c->stash->{category_id} = $p->{category_id};
-        }
-
-        my $cat = mdb->category->find_one({ id=>''.$p->{category_id} });
-        if ($cat->{default_grid}){
-            my $report = ci->new($cat->{default_grid});
-            my $selected_fields = $report->selected_fields({username => $c->username});
-            my $report_data = {
-                id_report   => $report->{mid},
-                report_name => $report->{name},
-                report_rows => $report->{rows},
-                fields      => $selected_fields
-            };
-
-            $c->stash->{report_data} = Util->_encode_json($report_data);
-        }
-
+    if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
+        $c->stash->{category_id} = $p->{category_id};
         # wip rgo: get report fields
         # my $cat = mdb->category->find_one({ id=>''.$p->{category_id} }) // _fail _loc 'Category with id %1 not found', $p->{category_id};
         # if( my $id_report = $cat->{default_grid} ) {
@@ -146,8 +129,6 @@ sub grid : Local {
         #     $c->stash->{default_grid} = $id_report;
         # }
     }
-
-
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
@@ -509,6 +490,8 @@ sub view : Local {
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = 0;
+        $c->stash->{permissionActivity} = 0;
+        $c->stash->{permissionJobs} = 0;
         my $topic_ci;
         if ( $topic_mid ) {
             try {
@@ -540,6 +523,8 @@ sub view : Local {
         my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
         my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
         my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
+        my %categories_activity = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
+        my %categories_jobs = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -612,15 +597,21 @@ sub view : Local {
                 $c->stash->{permissionComment} = 0;
                 $c->stash->{has_comments} = 0;
             }
-                             
-     
+            if (exists ($categories_activity{ $category->{id} })){
+                $c->stash->{permissionActivity} = 1;
+            } else {
+                $c->stash->{permissionActivity} = 0;
+            }
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
-                my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
-
-                $c->stash->{jobs} = $has_permission ? 1 : 0;
+                my $has_permission;
+                if (exists ($categories_jobs{ $category->{id} })){
+                    $c->stash->{permissionJobs} = 1;
+                } else {
+                    $c->stash->{permissionJobs} = 0;
+                }
             } else {
-                $c->stash->{jobs} = -1;
+                $c->stash->{permissionJobs} = -1;
             }
             
             # used by the Change State menu in the topic
@@ -650,6 +641,8 @@ sub view : Local {
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
+            $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
+            $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
             
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
@@ -1589,6 +1582,8 @@ sub list_users : Local {
     my (@rows, $users_friends);
     my $username = $c->username;
 
+_warn $p;
+
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
@@ -1596,8 +1591,9 @@ sub list_users : Local {
         my $topic_row;
         my @topic_projects;
         if ( $p->{topic_mid}) {
-            $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
-            @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
+            # $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
+            @topic_projects = ci->new($$p{topic_mid})->projects;
+            # @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
         }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
@@ -1711,7 +1707,8 @@ sub kanban_status : Local {
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        # my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
+        my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
         
         my %workflow;
         my %status_mids;
@@ -1828,19 +1825,12 @@ sub report_csv : Local {
     
     push @csv, join ';', @cols;
 
-    for my $row (_array $rows->{data}){      
+    for my $row (_array $rows->{data}){    
         my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
         my @cells;
         for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-            my ($col_id, $field1, $tail);
-            if ( $params->{id_report} || $params->{id_report_rule}) {
-
-                # Remove _<related Category> to the column id in reports
-                ( $field1, $tail) = ($col->{id} =~ m/^(.*[^_])_(.*)$/);
-                $col_id = ($tail && grep /^$tail$/i, @names_category )? $field1 : $col->{id};
-            } else { 
-                $col_id = $col->{id}
-            }
+            my $col_id = $col->{id};
+            
             my $v = $row->{ $col_id };
             if( ref $v eq 'ARRAY' ) {
                 if ($col->{id} eq 'projects') {
@@ -1857,18 +1847,24 @@ sub report_csv : Local {
                     $v = join ',', @$v;
                 }
             } elsif( ref $v eq 'HASH' ) {
-                $v = $v->{mid};
-                #$v = Util->hash_flatten($v);
-                #$v = Util->_encode_json($v);
-                #$v =~ s/{|}//g;
+                if ($v && $v->{mid}){
+                    $v = $v->{mid};
+                } else {
+                    # $v = Util->hash_flatten($v);
+                    # $v = Util->_encode_json($v);
+                    # $v =~ s/{|}//g;
+                    my $result;
+                    for my $step (keys $v){
+                        $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
+                    }
+                    if($result) { $v = $result } else{ $v = ''; };
+                }
             };
             if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
                 my $rel_category; 
-
                 if (ref $row->{$col_id} eq 'HASH' ){            
                      $rel_category = $row->{$col_id}->{category}->{name};
-                     $v = $rel_category.' #'.$v ;
-                    
+                     $v = $rel_category.' #'.$v if ($rel_category);
                 } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
                     (my $du) = _array $row->{$col_id};
                     if( ref $du eq 'HASH' && exists $du->{category}) {
@@ -1876,23 +1872,22 @@ sub report_csv : Local {
                         $v = $rel_category.' #'.$v ; 
                     }
                 } else {
-                    ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
+                    my ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
                     $tail = lc(unac_string($tail) ) if ($tail);
                     if ($tail && grep /^$tail$/i, @names_category) {
                         (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
                         $rel_category = mdb->category->find_one({id => $id})->{name};
-                        $v = $rel_category.' #'.$v ;
+                        $v = $rel_category.' #'.$v if ($rel_category) ;
                     }
                 }
             }
             $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
             $v = _strip_html ($v); # HTML Code 
-            #_debug "V=$v," . ref $v;
             $v =~ s/\t//g if $v;
             $v =~ s{"}{""}g if $v;
             # utf8::encode($v);
             # Encode::from_to($v,'utf-8','iso-8859-15');
-            if ($v || ($v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
+            if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
                  push @cells, qq{"$v"};
             } else { push @cells, qq{""} }; 
         }
@@ -1906,6 +1901,7 @@ sub report_csv : Local {
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
+    $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
 }
 

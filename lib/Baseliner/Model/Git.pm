@@ -191,7 +191,6 @@ sub old_tags_for_bl {
 =cut
 
 sub unac {
-    use utf8;
     my $str = shift;
     #utf8::upgrade( $str );
     #$str = Baseliner::Utils::unac_string( $str );

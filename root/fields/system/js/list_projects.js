@@ -24,6 +24,8 @@ params:
     
     var projects = [];
     var firstload = true;
+
+    var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     
     if(data && data[meta.id_field] ){
         var val_projects = data[meta.id_field];
@@ -66,7 +68,7 @@ params:
         allowBlank: Baseliner.eval_boolean(meta.allowBlank),
         disabled: Baseliner.eval_boolean(meta.readonly),
         store: project_box_store,
-        singleMode: Baseliner.eval_boolean(meta.single_mode)
+        singleMode: single_mode
     });
     
     project_box.field_ready = false;

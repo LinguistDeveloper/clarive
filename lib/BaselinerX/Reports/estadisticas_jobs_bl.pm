@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use utf8;
+use experimental 'smartmatch';
 
 register 'config.reports.estadisticas_jobs_bl' => {
     metadata=> [

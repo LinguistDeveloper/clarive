@@ -20,9 +20,9 @@ sub default : Path {
 sub js : Local {
     my ($self,$c,$lang) = @_;
     my $p = $c->req->parameters;
-    if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages );
-    }
+    # set the language here if possible
+    my @languages = $c->user_languages;
+    $c->languages([ @languages ]); 
     $lang ||= $c->language;
     my $text = $self->parse_po($c, $c->path_to('lib', 'Baseliner', 'I18N', $lang . '.po') );
     for my $feature ( $c->features->list ) {

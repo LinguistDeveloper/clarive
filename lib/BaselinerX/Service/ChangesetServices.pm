@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+use experimental 'smartmatch';
 
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';
@@ -231,7 +232,7 @@ sub update_baselines {
             $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
             if( $job->rollback ) {
                 if( my $previous = $stash->{bl_original}{$repo->mid} ) {
-                    $out = $repo->update_baselines( ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
+                    $out = $repo->update_baselines( job => $job, ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
                 } else {
                     _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
                 }

@@ -1,6 +1,7 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
 has api_key             => qw(is rw isa Any);
@@ -13,6 +14,7 @@ has realname            => qw(is rw isa Any);
 has alias               => qw(is rw isa Any);
 has project_security    => qw(is rw isa Any), default => sub { +{} };
 has dashboard           => qw(is rw isa Any);
+has language_pref       => qw(is rw isa Any), default=>Baseliner->config->{default_lang};
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
@@ -20,7 +22,7 @@ has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
 
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1, 
-default=>sub{ [ Util->_array(Baseliner->config->{default_lang} // 'en') ] });
+    default=>sub{ [ Util->_array(Baseliner->config->{default_lang} // 'en') ] });
 
 sub icon { '/static/images/icons/user.gif' }
 
@@ -60,14 +62,22 @@ sub default_dashboard {
     { dashboard => $default_dashboard, msg => 'ok'};
 }
 
-sub change_default_dashboard {
+sub general_prefs_save {
     my ($self,$p)=@_;
-    $self = ci->user->search_ci( name=>$p->{username} ) unless ref $self;
-    $self->dashboard($p->{dashboard});
+    my $data = $p->{data} // _fail(_loc('Missing data') );
+    # check if user can edit prefs for somebody else
+    if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
+        _fail _loc 'User does not have permission to edit users';
+    }
+    my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
+    $self = ci->user->search_ci( name=>$username ) unless ref $self;
+    $self->language_pref($data->{language_pref});
+    $self->dashboard($data->{dashboard});
     $self->save;
     { msg => 'ok'};
 }
 
+# TODO there's no interface for this (yet?):
 sub prefs_save {
     my ($self,$p)=@_;
     $self = ci->find( name=>$p->{username} ) unless ref $self;
@@ -95,7 +105,12 @@ sub encrypt_password {
 
 sub save_api_key  {
     my ($self, $p) = @_;
-    $self = ref $self ? $self : Baseliner->user_ci( $p->{username} );
+    # check if user can edit prefs for somebody else
+    if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
+        _fail _loc 'User does not have permission to edit users';
+    }
+    my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
+    $self = ref $self ? $self : Baseliner->user_ci( $username );
     my $new_key = $p->{api_key_param} // Util->_md5( $p->{username} . ( int ( rand( 32 * 32 ) % time ) ) );
     $self->update( api_key=>$new_key );
     { api_key=>$new_key, msg=>'ok', success=>\1 };

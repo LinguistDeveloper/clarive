@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Utils;
 use Path::Class;
 use Try::Tiny;
+use experimental 'smartmatch';
 
 BEGIN { extends 'Catalyst::Model' }
 

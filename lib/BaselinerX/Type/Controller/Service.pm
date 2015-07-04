@@ -3,7 +3,6 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
-use utf8;
 
 sub begin : Private {
     my ($self,$c)=@_;

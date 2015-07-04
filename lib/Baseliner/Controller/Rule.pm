@@ -207,6 +207,10 @@ sub delete : Local {
         my $row = mdb->rule->find_one({ id=>"$p->{id_rule}" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->{rule_name};
+        if($row->{rule_type} eq 'fieldlets'){
+            #remove relationship between rule and category
+            mdb->category->update({default_field=>"$p->{id_rule}"},{'$set'=>{default_field=>''}});
+        }
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
         mdb->grid->remove({ id_rule=>"$p->{id_rule}" });
         # TODO delete rule_version? its capped, it can't be deleted... may be good to keep history
@@ -280,13 +284,13 @@ sub grid : Local {
     $sort = 'name_insensitive' if $sort eq 'rule_name';
     my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
     if( $p->{query} ) {
-        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type)] ); 
+        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode)] ); 
     }
     # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
     my $rs = mdb->rule->aggregate([
             { '$match'=>$where },
             { '$project'=>{ 
-                    rule_name=>1, rule_type=>1, 
+                    rule_name=>1, rule_type=>1, rule_compile_mode=>1, 
                     rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, 
                     id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
                 } 
@@ -342,6 +346,7 @@ sub save : Local {
                 : $p->{rule_when} ),
             rule_event => $p->{rule_event},
             rule_type  => $p->{rule_type},
+            rule_compile_mode  => $p->{rule_compile_mode},
             rule_desc  => substr($p->{rule_desc},0,2000),
             subtype => $p->{subtype},
             authtype => $p->{authtype},

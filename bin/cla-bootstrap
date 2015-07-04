@@ -77,19 +77,19 @@ if( $opts{'--installed'} ) {
 $cpanm = eval $cpanm;
 my $app = App::cpanminus::script->new;
 
-# bootstrap the bootstrap
-say "Bootstraping this bootstrap...";
-( !$installed{'local::lib'} or $opts{-f} )  and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
-( !$installed{'ack'} or $opts{-f} )  and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
-( !$installed{'App::cpanminus'} or $opts{-f} ) and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
-( !$installed{'Capture::Tiny'} or $opts{-f} ) and cpanm( '-n', 'Capture::Tiny', ( $llib ? (-l => $llib) : () ) ) and die "error installing Capture::Tiny";
-
-require Capture::Tiny;
-
 # list of required modules
 my @needed = $opts{-m} ? ( split /,/, $opts{-m} ) 
     : grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
 @needed = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @needed;
+
+# bootstrap the bootstrap
+say "Bootstraping this bootstrap...";
+( !$installed{'local::lib'} or ( $opts{-f} && !$opts{-m} ) )  and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
+( !$installed{'ack'} or ( $opts{-f} && !$opts{-m} ) )  and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
+( !$installed{'App::cpanminus'} or ( $opts{-f} && !$opts{-m} ) ) and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
+( !$installed{'Capture::Tiny'} or ( $opts{-f} && !$opts{-m} ) ) and cpanm( '-n', 'Capture::Tiny', ( $llib ? (-l => $llib) : () ) ) and die "error installing Capture::Tiny";
+
+require Capture::Tiny;
 
 # list of modules we need to install
 say "Checking if required modules are installed...";
@@ -246,6 +246,7 @@ EOL
 
 __DATA__
 
+experimental
 Algorithm::C3
 Algorithm::Diff::XS
 Any::Moose
@@ -303,6 +304,7 @@ Class::Date
 Compress::Raw::Zlib
 Compress::Zlib
 Config::General
+Config::Properties
 Config::INI::Writer
 Config::JFDI
 Config::Tiny

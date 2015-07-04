@@ -6,6 +6,7 @@ use Carp;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
 use v5.10;
+use experimental 'switch';
 BEGIN { extends 'Catalyst::Controller' }
 
 register 'action.admin.daemon' => { name => 'Administer daemons'};

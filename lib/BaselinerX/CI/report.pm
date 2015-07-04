@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 use v5.10;
 use Try::Tiny;
+use experimental 'autoderef', 'switch';
 
 with 'Baseliner::Role::CI::Internal';
 
@@ -935,7 +936,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	}
     
     my @sort;
+    my @rs_sort;
+    my $rs_sort;
     if ($sort) {
+        $rs_sort = $sort;
         my @categories;
         if ($categories_queries){
             for (keys $categories_queries) { push(@categories,$_) };
@@ -945,6 +949,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         for (@categories) { $sort =~ s/_$_//g; };
         $sort = "mid" if ($sort eq 'topic_mid');
         @sort = map { $_ => $sortdir } _array($sort);
+        @rs_sort = map { $_ => $sortdir } _array($rs_sort);
     } else{
         @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     }
@@ -1013,7 +1018,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $tmp_data->{$relation} = $field;  
                         for my $select (@selects){
                             if ($i % 2 == 0){  
-                                if (exists $categories_queries->{$select}){
+                                if (exists $categories_queries->{$select}->{$field}){
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $categories_queries->{$select}->{$field};
                                     for my $inner_field ( @fields ) {
@@ -1029,9 +1034,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                         if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         } else{
-                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' ));
-                                            delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
+                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};
+                                            delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
+                                            # delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }
                                     $tmp_ref->{'mid' . "_$select"} = $categories_queries->{$select}->{$field}->{mid} // $tmp_data->{mid};
@@ -1056,12 +1062,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         }
                                         else{
-                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
-                                            # delete $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field . "_$select"});
-
+                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};# if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
                                         }
-                                    }   
+                                    }
                                     # $tmp_ref->{$relation . "_$select"} = $field; 
                                 }
                                 $value = '';
@@ -1078,7 +1083,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field};# if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
@@ -1104,25 +1108,17 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
             #my $mt = $meta{$k}{meta_type} // '';
             my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
-
+            # _warn $mt;
             if( $mt =~ /revision|ci|project|user|file/ ) {
                 $row{ '_' . $k } = $v;
-
                 $row{$k} = $scope_cis{$v} // do {
-                    my @objs
-                        = $mdb2->master_doc->find(
-                        { mid => mdb->in( _array($v) ) },
-                        { _id => 0 } )->all;
+                    my @objs = $mdb2->master_doc->find({ mid => mdb->in( _array($v) ) },{ _id => 0 } )->all;
                     my @values;
                     if (@objs) {
                         for my $obj (@objs) {
                             my $tmp;
-
                             if ( $mt =~ /ci|project|user|file/ ) {
-                                $tmp
-                                    = $obj->{name}
-                                    ? $obj->{name}
-                                    : $obj->{moniker};
+                                $tmp = $obj->{name} ? $obj->{name} : $obj->{moniker};
                             }
                             else {
                                 $tmp = $obj->{name};
@@ -1135,7 +1131,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     \@values;
                 };
                 for my $category (@All_Categories) {
-                    $row{ $k . "_$category" } = $row{$k};
+                    $row{ $k . "_$category" } = $row{$k}; 
                     $row{ '_' . $k . "_$category" } = $row{ '_' . $k };
                 }
             } elsif( $mt =~ /release|topic/ ) {
@@ -1145,9 +1141,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     } if ($v);				
-            } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
+            } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) {
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
+                }
+                for my $category (@All_Categories){
+                    $row{$k. "_$category"} = $cal;
                 }
             }elsif( $mt =~ /history/ ) {
                 my $data;
@@ -1155,9 +1154,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 my @status_changes = Baseliner->model('Topic')->status_changes( $data );
                 my $html = '<div style="width:250px">';
                 for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
-                    $html .= '<p style="font: 11px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
+                    $html .= '<p style="font: 10px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
                 }
                 $html .= '</div>';
+                $row{$k} = $html;
                 for my $category (@All_Categories){
                     $row{$k. "_$category"} = $html;
                 }
@@ -1187,7 +1187,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
                                             if ($ci->{$ci_column}){
                                                 push @tmp,  $ci->{$ci_column};
-                                            }else{
+                                             }else{
                                                 if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                                     push @tmp,  $ci_extends->{$ci_column}->{name};
                                                 }else{
@@ -1264,14 +1264,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         $row{status_new} = $row{category_status}{name};
 		
 		if($row{category_status}){
-
 			foreach my $key (keys %{$row{category_status}}){
 				$row{'category_status_'.$key} = $row{category_status}{$key};
-                # for my $category (@All_Categories){
-                #     if( !exists $row{'category_status' . "_$category"} ){
-                #         $row{'category_status_'.$category."_$key"} = $row{category_status}{$key};
-                #     }
-                # }
+                for my $category (@All_Categories){
+                    $row{'category_status_'.$key.'_'.$category} = $row{category_status}{$key};
+                }
 			}
 		}
         #$row{category_status_name} = $row{category_status}{name};
@@ -1288,10 +1285,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	} @parse_data;
     # order data with text not ci-mid.
     if (@sort) {
-        if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/){
-            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) : lc($b->{$sort[0]}[0]) cmp lc($a->{$sort[0]}[0]) } @topics; 
-        } else {
-            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort}) cmp lc($b->{$sort}) : lc($b->{$sort}) cmp lc($a->{$sort}) } @topics; 
+        if (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} =~ /ci|project/){
+            @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort[0]}[0]) cmp lc($b->{$rs_sort[0]}[0]) : lc($b->{$rs_sort[0]}[0]) cmp lc($a->{$rs_sort[0]}[0]) } @topics; 
+        } elsif (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} !~ /release|topic/){
+            @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort}) cmp lc($b->{$rs_sort}) : lc($b->{$rs_sort}) cmp lc($a->{$rs_sort}) } @topics; 
         }
     }
 

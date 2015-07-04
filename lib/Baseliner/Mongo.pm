@@ -8,6 +8,7 @@ use Function::Parameters qw(:strict);
 use DateTime::Tiny;
 use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
 use v5.10;
+use experimental 'autoderef';
 
 # mongo connection
 has retry_frequency => qw(is rw isa Num default 5);

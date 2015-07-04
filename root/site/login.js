@@ -61,8 +61,9 @@ Ext.onReady(function(){
     var login_form = new Ext.FormPanel({
             id: 'lf',
             url: '/login',
-            frame: true,
-            bodyStyle:'padding:5px 5px 0',
+            frame: false,
+            style:'background: #d8d0e1',
+            bodyStyle:'padding:5px 5px 0; background: transparent',
             cls: 'centered',
             labelAlign: 'right',
             timeout: 120,  // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something

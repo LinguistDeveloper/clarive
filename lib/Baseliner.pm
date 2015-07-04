@@ -155,6 +155,14 @@ if( $ENV{BALI_FAST} ) {
     };
 }
 
+after 'setup_finalize' => sub {
+    my $app = shift;
+
+    my $precompile = $app->config->{rule_precompile};
+    # Precompile rules?
+    $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
+};
+
 #############################
 __PACKAGE__->setup();
 #############################
@@ -328,6 +336,23 @@ sub username {
 sub user_ci {
     my ($c,$username) = @_;
     ci->user->search_ci( name=>( $username // $c->username ) );
+}
+
+sub user_languages {
+    my ($c) = @_;
+    if( my $user_ci = $c->user_ci ) {
+        my $language = $user_ci->language_pref || $c->config->{default_lang};
+        return( $language ); 
+    }
+    elsif( ref $c->session->{user} ) {
+        return( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
+    }
+    else {
+        # detect browser language
+        my $language = substr $c->req->headers->{'accept-language'},0,2;  # usually "en-US,en,..."
+        $language = 'en' unless $c->installed_languages->{$language}; # if it's not installed, choose English
+        return( $language ); 
+    }
 }
 
 sub has_action {

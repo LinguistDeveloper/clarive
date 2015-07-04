@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
+use experimental 'switch', 'smartmatch', 'autoderef';
 
 # register 'action.ci.admin' => { name => 'Admin CIs' };
 # register 'menu.tools.ci' => {
@@ -223,6 +224,7 @@ sub tree_objects {
     my %class_coll;
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
+
             $collection = { '$in'=>[ map { 
                 my $coll= $_->can('collection') ? $_->collection : Util->to_base_class($_);
                 $class_coll{ $coll } = $_ ; # for later decoding it from a table
@@ -329,7 +331,7 @@ sub tree_objects {
             classname         => $row_class || '', 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
+            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? try { $row_class->icon } catch {$generic_icon} : $generic_icon ) ),
             ts                => $row->{ts},
             bl                => $row->{bl},
             description       => $data->{description} // '',
@@ -625,10 +627,9 @@ sub store : Local {
             }
             $mids = [ _array($mids), _unique @security];
         }
-        if ( ref $class ) {
-           ($class) = _array($class);
-        }
-        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
+
+        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
+
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {

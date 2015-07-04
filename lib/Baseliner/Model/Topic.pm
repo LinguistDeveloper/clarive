@@ -8,6 +8,7 @@ use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
 use utf8;
+use experimental 'autoderef', 'switch';
 
 BEGIN { extends 'Catalyst::Model' }
 
@@ -203,6 +204,8 @@ register 'registor.action.topic_category' => {
             edit   => 'Can edit topic for category `%1`',
             delete => 'Can delete topic in category `%1`',
             comment => 'Can add/view comments in topics of category `%1`',
+            activity => 'Can view activity in topics of category `%1`',
+            jobs => 'Can view jobs in topics of category `%1`',
         );
 
         my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
@@ -242,7 +245,7 @@ register 'registor.action.topic_category_fields' => {
             my $description;
             
             for my $field (_array $meta){
-                my $field_to_id = _name_to_id($field->{name_field});
+                my $field_to_id = $field->{id_field};
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
                     
@@ -711,7 +714,8 @@ sub update {
                     push @meta_filter, $_
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
-                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
+                    $p->{title} = _strip_html($p->{title}) if ($p->{title}); #fix close comments in html templates
                     my ($topic) = $self->save_data($meta, undef, $p);
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
@@ -761,6 +765,7 @@ sub update {
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
                 $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+                $p->{title} = _strip_html($p->{title}) if ($p->{title});
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -998,7 +1003,7 @@ sub next_status_for_user {
         }
     } else {
         my @user_wf = $self->user_workflow( $username );
-        @to_status = sort { ($a->{seq} || 0 ) <=> ( $b->{seq} || 0 ) } grep {
+        @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
             $_->{id_category} eq $p{id_category}
                 && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
                 && (( defined $_->{id_status_to}   && defined $p{id_status_from} && $_->{id_status_to}   ne $p{id_status_from} ) || ( !( defined $_->{id_status_to} && defined $p{id_status_from})))
@@ -1267,8 +1272,8 @@ our %meta_types = (
 
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
-    my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
-    return $cached if $cached;
+    # my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
+    # return $cached if $cached;
 
 
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
@@ -1292,8 +1297,9 @@ sub get_meta {
 
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
-        _fail _loc 'Topic category has now form rule associated with it. Please contact your administrator.' 
+        _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
             unless length $cat->{default_field};
+        return     unless length $cat->{default_field};
         my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
@@ -1373,7 +1379,7 @@ sub get_meta {
             $d
         } @cat_fields;
     
-    cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
+    # cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
     # _log _dump \@meta;
     return \@meta;
 }
@@ -1526,11 +1532,15 @@ sub get_revisions {
 sub get_cis {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
-    my $where = { from_mid => "$topic_mid" };
-    $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
-    $where->{rel_field} = $id_field;
-    my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
-
+    my @cis;
+    if($id_field eq 'bls'){
+        @cis = _array $data->{bls};
+    }else{
+        my $where = { from_mid => "$topic_mid" };
+        $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
+        $where->{rel_field} = $id_field;
+        @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
+    }
     $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
     return @cis ? \@cis : [];    
 }
@@ -2741,6 +2751,10 @@ sub get_categories_permissions{
         $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
     } elsif ($type eq 'comment') {
         $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
+    } elsif ($type eq 'activity') {
+        $re_action = qr/^action\.topics\.(.*?)\.(activity)$/;
+    } elsif ($type eq 'jobs') {
+        $re_action = qr/^action\.topics\.(.*?)\.(jobs)$/;
     }
     
     my @permission_categories;
@@ -2770,11 +2784,12 @@ sub get_meta_permissions {
         @p{qw(username meta data name_category name_status id_category id_status)};
     my @hidden_field;
     
-    my $mid = $data->{topic_mid};
+    my $mid;
+    $mid = $data->{topic_mid};
     my $cache_key = { d=>'topic:meta', 
         st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
         cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
-    defined && return $_ for cache->get($cache_key);
+    defined && $mid && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
@@ -2782,7 +2797,7 @@ sub get_meta_permissions {
     
     my $is_root = model->Permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $mid,user_security => $user_security );
     my @user_actions_for_topic = $user_actions->{positive};
     my @user_read_actions_for_topic = $user_actions->{negative};
 
@@ -3238,13 +3253,16 @@ sub apply_filter{
                 $where->{query} = $filter{query};
             }
             default {
-                my @ids = _array $filter{$key};
-                $where->{$key} = mdb->in(@ids);
+                if ( ref $filter{$key} eq 'ARRAY') {
+                    my @ids = _array $filter{$key};
+                    $where->{$key} = {'$in' => \@ids};
+                } else {
+                    $where->{$key} = $filter{$key};
+                }
             }        
 
         };
     }
-
     return $where;
 }
 

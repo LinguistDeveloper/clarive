@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 use Git::Wrapper;
 use Try::Tiny;
+use experimental 'smartmatch';
 
 require Girl;
 
@@ -286,7 +287,7 @@ sub list_elements {
     return @elems;
 } ## end sub list_elements
 
-method update_baselines( :$revisions, :$tag, :$type, :$ref=undef ) {
+method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) {
     my $git = $self->git;
 
     my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );

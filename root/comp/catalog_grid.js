@@ -113,7 +113,7 @@
     });
     store_types.load();
     var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.gif', cls: 'x-btn-text-icon' });
-    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete_.png', function(){
+    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.gif', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         var row = sel.data;
@@ -237,7 +237,7 @@
                 params: {start: 0, limit: ps },
                 emptyText: _('<Enter your search string>')
             }),
-            Baseliner.img_button( '/static/images/icons/refresh.png', function(){ store.load() } ),
+            Baseliner.img_button( '/static/images/icons/refresh.gif', function(){ store.load() } ),
             button_add, button_del, button_edit, button_clone, button_raw,
             '->', _('Grouping') + ':', button_by_type, button_by_project 
         ],

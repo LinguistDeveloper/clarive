@@ -6,7 +6,7 @@ use DateTime;
 use JSON::XS;
 use Try::Tiny;
 use List::Util qw(max);
-use utf8;
+use experimental 'autoderef';
 
 BEGIN { extends 'Catalyst::Controller' }
 BEGIN { 
@@ -105,16 +105,23 @@ sub rollback : Local {
         if( my @deps = $job->find_rollback_deps ) {
             $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'), deps=>\@deps };
         } else {
-            my $exec = $job->exec + 1;
-            $job->exec( $exec );
-            $job->step( 'RUN' );
-            $job->final_status( '' );  # reset status, so that POST runs in rollback 
-            $job->rollback( 1 );
-            $job->status( 'READY' );
-            $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
-            $job->save;
-            $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
-            $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
+            my $stash = $job->job_stash;
+            my $nr = $stash->{needs_rollback} // {};
+            my @needing_rollback = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
+            if( @needing_rollback && !$job->rollback ) {
+                my $exec = $job->exec + 1;
+                $job->exec( $exec );
+                $job->step( $needing_rollback[0] );
+                $job->last_finish_status( '' );
+                $job->final_status( '' );  # reset status, so that POST runs in rollback 
+                $job->rollback( 1 );
+                $job->status( 'READY' );
+                $job->logger->info( "Starting *Rollback*", \@needing_rollback );
+                $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
+                $job->save;
+                $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
+                $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
+            }
         }
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };
@@ -494,8 +501,16 @@ sub job_states : Path('/job/states') {
 }
 
 sub envs_json {
-  #my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
-    my @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
+    my ($self, $username) = @_;
+    my @data;
+    if (!Baseliner->model('Permissions')->is_root( $username )){
+        my $user = ci->user->find_one({ name=>$username });
+        my @roles = keys $user->{project_security};
+        my @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
+        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis(bl=>mdb->in(@bl));
+    } else {
+        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
+    }
   _encode_json \@data;
 }
 
@@ -517,7 +532,7 @@ sub monitor : Path('/job/monitor') {
     
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
-    $c->stash->{envs_json}       = $self->envs_json;
+    $c->stash->{envs_json}       = $self->envs_json($c->username);
     $c->stash->{types_json}      = $self->types_json; # Tipo de elementos en Monitor. SCM|SQA.
 
     $c->stash->{template} = '/comp/monitor_grid.js';

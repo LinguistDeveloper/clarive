@@ -3,17 +3,19 @@
     $topic_mid
     $topic_meta
     $topic_data
-    $jobs => -1
+    $permissionJobs => 0
     $has_comments
     $HTMLbuttons => 0
     $permissionEdit => 0
     $permissionDelete => 0
     $permissionComment => 0
+    $permissionActivity => 0
     $user_security
 </%args>
 <%perl>
     use Baseliner::Utils;
-    my @tabactive = $has_comments ? ( 1,0 ) : ( 0,1);
+    my @tabactive = $has_comments ? ( 1,0,0 ) : $permissionActivity ? ( 0,1,0) : $permissionJobs ? (0,0,1) : ( 0,0,0);
+
 </%perl>
 <style>
 .badge-rel {
@@ -93,7 +95,7 @@ if (imagen.width()>600) { captura.show(); }
 </script>
 % 
 % my @form = grep { $_->{fields} } _array( $topic_meta );
-% my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
+% my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
 % my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
 % my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;
@@ -187,10 +189,10 @@ if (imagen.width()>600) { captura.show(); }
         <li <% $tabactive[0] and 'class="active"' %> <%  $permissionComment? '' : ' style="display: none" ' %>>
             <a href="#comments<% $ii %>" id="tab-comments<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
         </li>
-        <li <% $tabactive[1] and 'class="active"' %>>
+        <li <% $tabactive[1] and 'class="active"' %> <%  $permissionActivity? '' : ' style="display: none" ' %>>
             <a href="#activity<% $ii %>" id="tab-activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
         </li>
-        <li <% $jobs eq -1 and 'style="display: none"' %>>
+        <li <% $tabactive[2] and 'class="active"' %> <%  $permissionJobs? '' : ' style="display: none" ' %>>
             <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
 % if( @more ) {    
@@ -265,7 +267,7 @@ if (imagen.width()>600) { captura.show(); }
                                 mid: topic_mid,
                                 render_to: "topic-jobs"+ii,
                                 parent_id: ii,
-                                link: <% $jobs %>
+                                link: <% $permissionJobs %>
                             });
                         } else if( target_id == "tab-more"+ii && topic_mid != '' ) {
 
@@ -273,7 +275,8 @@ if (imagen.width()>600) { captura.show(); }
                         }// if tab
                     };
                     //$("#timeline<% $ii %> a").click(function(){
-                    var curr_tab = <% $tabactive[0] ? 'true' : 'false' %> ? 'comments' : 'activity';
+                    var curr_tab = <% $tabactive[0] ? 'true' : 'false' %> ? 'comments' : <% $tabactive[1] ? 'true' : 'false' %> ? 'activity' : 'jobs';
+                    console.log(curr_tab);
                     Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', 'tab-'+curr_tab+'<% $ii %>' );
                     $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (ev) {
                         Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', ev.target.id );

@@ -26,7 +26,7 @@ redis:
 
 # mongo database setup
 mongo:
-    dbname: clarive
+    dbname: acmebank 
     retry_frequency: 5
     max_retries: 60
     client:
@@ -61,6 +61,12 @@ index:
             name: 5
 # experimental: activates websockets server and socketio
 websockets: 0
+
+# configure the rule precompilation options: 
+#   none     = no precompilation
+#   depends  = depends on rule configuration
+#   always   = depends on rule configuration
+rule_precompile: depends
     
 # Baseliner Framework default config
 baseliner:

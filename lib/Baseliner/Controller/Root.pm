@@ -10,10 +10,11 @@ register 'action.home.view_workspace' => { name => 'User can access the workspac
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
 register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ; 
 register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ; 
-
+register 'event.wipe_cache' => { name => 'Wipe Cache', vars=>['username','ts'] } ;
 
 use Try::Tiny;
 use MIME::Base64;
+use experimental 'autoderef';
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -196,20 +197,10 @@ sub auto : Private {
 
 sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
-    
-    if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
-    }
-    elsif( my $username = $c->username ) {
-        my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        if( ref $c->session->{user} ) {
-            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        }
-    }
-    else {
-        $c->languages([ $c->config->{default_lang} ]); 
-    }
+
+    my @languages = $c->user_languages;
+    $c->languages([ @languages ]); 
+   
 }
 
 sub serve_file : Private {
@@ -218,6 +209,7 @@ sub serve_file : Private {
     my $file= $c->stash->{serve_file};
     my $body= $c->stash->{serve_body};
     my $status = $c->stash->{serve_status} // 0;
+    my $content_type = $c->stash->{content_type} || 'application-download;charset=utf-8';
     if( defined $file ) {
         $c->serve_static_file( $file );
     } 
@@ -231,7 +223,8 @@ sub serve_file : Private {
     $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
     $c->res->header('X-UA-Compatible', 'chrome=1');
     $c->res->headers->remove_header('Pragma');
-    $c->res->content_type('application-download;charset=utf-8');
+    #$c->res->content_type('application-download;charset=utf-8');
+    $c->res->content_type($content_type);
     if(0+$status < 0){
         $c->res->headers->remove_header('Cache-Control');
         $c->res->headers->remove_header('Pragma');
@@ -242,7 +235,8 @@ sub serve_file : Private {
         $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
         $c->res->header('X-UA-Compatible', 'chrome=1');
         $c->res->headers->remove_header('Pragma');
-        $c->res->content_type('application-download;charset=utf-8');
+        $c->res->content_type($content_type);
+        #$c->res->content_type('application-download;charset=utf-8');
     }
 }
 
@@ -454,6 +448,7 @@ sub cache_clear : Local {
     $c->stash->{json} = try {
         _fail 'No permission' unless $c->has_action('action.development.cache_clear');
         cache->clear;
+        event_new 'event.wipe_cache'=>{ username=>$c->username, ts=>mdb->now->string };
         { success=>\1, msg=>"CACHE CLEARED..." };
     } catch {
         { success=>\0, msg=>"No permission" };

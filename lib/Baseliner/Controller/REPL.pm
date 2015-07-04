@@ -8,6 +8,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Try::Tiny;
 
 BEGIN { extends 'Catalyst::Controller' }
+use experimental 'autoderef';
 
 register 'action.development.repl' => {name => 'Baseliner REPL'};
 register 'action.development.js_reload', => { name => 'JS Reload'};

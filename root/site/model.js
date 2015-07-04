@@ -283,7 +283,6 @@ Baseliner.DashboardBox = function(c) {
         msgTarget: 'under',
         allowAddNewData: true,
         addNewDataOnBlur: true, 
-        emptyText: _('select dashboards'),
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
@@ -2407,9 +2406,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             frame: false,
             border: false,
             items:[
-                { layout:'form', border: false, columnWidth:.9, items:[field],
-                    labelWidth: 200, labelAlign: 'right'
-                },
+                { layout:'form', border: false, columnWidth:.9, items:[field], labelWidth: 320, labelAlign: 'right' },
                 { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({ 
                         icon:'/static/images/icons/delete_.png',
                         handler: function(){

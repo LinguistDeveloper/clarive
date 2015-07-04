@@ -1,0 +1,13 @@
+mongo:
+   dbname: acmetest
+   client:
+      host: 'localhost:27017'
+baseliner:
+    name: test
+    app_name: test
+    default_theme: test
+    default_lang: en
+    create_user_session: 1
+    activity_from_event: 0
+lang: en_US.UTF-8
+port: 3000

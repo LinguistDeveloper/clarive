@@ -337,7 +337,7 @@ Cla.topic_grid = function(params){
     var topic_create_for_category = function(args){
         Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { 
             title: args.title, new_category_id: args.id,
-            new_category_name: args.name, _parent_grid: grid_topics.id } );
+            new_category_name: args.name, _parent_grid: grid_topics.id }, new Date().getTime().toString() );
     };
 
     var add_topic = function() {
@@ -1368,18 +1368,20 @@ Cla.topic_grid = function(params){
         bbar: ptool
     });
     
-//    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-//        //init_buttons('enable');
-//    });
+   // grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+   //      if(columnIndex == 0){
+   //          topicsSelected();
+   //      }
+   // });
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 1){
+        if(columnIndex == 0){
             topicsSelected();
         }
     });
     
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
-        if(columnIndex == 1){
+        if(columnIndex == 0){
             topicsSelected();
         }
     });

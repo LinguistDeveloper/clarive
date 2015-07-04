@@ -3,6 +3,7 @@ use Mouse;
 use Sys::Hostname;
 extends 'Clarive::Cmd';
 use v5.10;
+use experimental 'smartmatch';
 
 our $CAPTION = 'Start/Stop web server';
 

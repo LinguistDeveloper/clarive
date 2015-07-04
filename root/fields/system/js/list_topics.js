@@ -10,8 +10,7 @@ params:
     field_order: 14
     section: 'details'
     page_size: 20
-    filter: 'none'
-    single_mode: 'false'    
+    filter: 'none'  
     meta_type: 'topic'
     rel_type: 'topic_topic'
     parent_field: ''
@@ -41,6 +40,7 @@ params:
 		topics = [];
 	}
 	
+    var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
@@ -97,7 +97,7 @@ params:
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
             value: topics,
-            singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
+            singleMode: single_mode,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
             display_field: display_field,
             tpl_cfg: tpl_cfg

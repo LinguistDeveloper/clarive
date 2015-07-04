@@ -4,7 +4,7 @@
     ret.push([ 
     	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.pagedown' },
     	{ xtype:'numberfield',fieldLabel: _('HTML field order'), name: 'field_order_html', value: data.field_order_html },
-    	{ xtype:'textfield',fieldLabel: _('Height'), name: 'height', value: data.height }
+    	{ xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height }
     ]);
     return ret;
 })

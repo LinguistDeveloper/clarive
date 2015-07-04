@@ -29,7 +29,7 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	    my %data = %{ $n->{data} || {} };
 	    $data{name_field} = $n->{text};
         sprintf(q{
-            push @{ $stash->{fieldlets} }, %s;
+            push @{ $stash->{fieldlets} }, parse_vars(%s, $stash);
             %s
         }, Data::Dumper::Dumper(\%data), $self->dsl_build( $n->{children}));
 	};
