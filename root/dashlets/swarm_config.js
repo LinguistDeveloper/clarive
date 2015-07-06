@@ -16,6 +16,8 @@
             ['manual', _('Manually')]
           ] 
         }),
+        { xtype:'datefield', fieldLabel: _('Date from'), anchor:'100%', format:'Y-m-d', name: 'start_date', value: data.start_date },
+        { xtype:'datefield', fieldLabel: _('Date to'), anchor:'100%', format:'Y-m-d', name: 'end_date', value: data.end_date }
         //limit
     ])
 })

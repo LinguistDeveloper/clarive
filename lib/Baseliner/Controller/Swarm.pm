@@ -42,23 +42,35 @@ sub activity : Local {
     my $p = $c->request->parameters;
     my $limit = $p->{limit} || 1000;
     my $skip = $p->{skip} || 0;
+    my $start_date = $p->{start_date};
+    my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
 	
-_warn $p;
     #my $days = $p->{days} || 2592000000;
-	my $days = $p->{days} || 31536000000;
-	$days = $days/86400000;
+	# my $days = $p->{days} || 31536000000;
+	# $days = $days/86400000;
 
     my $date = Class::Date->now();
-    my $filter_date = $date - ($days . 'D');
+    # my $filter_date = $date - ($days . 'D');
  
+    my $time_filter = {};
 
-	# _log( \$filter_date );
+    if ( $start_date && $end_date) {
+        $time_filter = { '$and' => [{ts => {'$gte' => $start_date }},{ts => {'$lte' => $end_date}}]};; # { '$and' => [{ts => {'$gte' => '2014-12-03'}},{ts => {'$lte' => '2015-07-01'}}]};
+    } elsif ( $start_date ) {
+        $time_filter = { ts => {'$gte' => $start_date }};
+    } elsif ( $end_date ) {
+        $time_filter = { ts => {'$lte' => $end_date }};
+    }
+
+_log( \$time_filter );
 
 
-    my $total = mdb->activity->find({ event_key=> qr/^event.topic/,ts=>{ '$gte' => ''.$filter_date} })->count;
-    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/,ts=>{ '$gte' => ''.$filter_date} })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
+    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
+_log "DDDDDDDDDDDDDDDDDDDDDDDDD:$total";
+_log "DDDDDDDDDDDDDDDDDDDDDDDDD:" . scalar @ev_rs;
     my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
@@ -74,7 +86,9 @@ _warn $p;
         #$action = 'add';
         if ($parent){
 			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
-		}
+		} else {
+            push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
+        }
     }
  # _log( \@data );
     $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };

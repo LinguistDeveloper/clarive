@@ -13,6 +13,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
+        self.anim_running =  false;
         self.i=0;
         self.j=0;
         //self.contador=1000;
@@ -39,24 +40,24 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause = new Ext.Button({ icon: IC('pause.gif'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
-            menu : {
-                items: [{
-                    text: 'Today', handler: function(){ self.get_days(0) } 
-                }, {
-                    text: '2D', handler: function(){ self.get_days(2) } 
-                }, {
-                    text: '7D', handler: function(){ self.get_days(7) } 
-                }, {
-                    text: '1M', handler: function(){ self.get_days(30) } 
-                }, {
-                    text: '3M', handler: function(){ self.get_days(90) } 
-                }, {
-                    text: '6M', handler: function(){ self.get_days(180) } 
-                }]
-            },
-            //handler: function(){ self.start_anim() } 
-        });
+        // self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+        //     menu : {
+        //         items: [{
+        //             text: 'Today', handler: function(){ self.get_days(0) } 
+        //         }, {
+        //             text: '2D', handler: function(){ self.get_days(2) } 
+        //         }, {
+        //             text: '7D', handler: function(){ self.get_days(7) } 
+        //         }, {
+        //             text: '1M', handler: function(){ self.get_days(30) } 
+        //         }, {
+        //             text: '3M', handler: function(){ self.get_days(90) } 
+        //         }, {
+        //             text: '6M', handler: function(){ self.get_days(180) } 
+        //         }]
+        //     },
+        //     //handler: function(){ self.start_anim() } 
+        // });
 
         self.slider = new Ext.Slider({
             width: 100,
@@ -99,7 +100,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         {xtype: 'tbtext', text: ' Real Time', style : "color:#009933;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 100 },
         //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
-        self.scale_bar,
+        //self.scale_bar,
         { xtype: 'tbspacer', width: 25 },
         ];
 
@@ -311,7 +312,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         Verde.append("stop").attr("offset", "100%").attr("stop-color", "#66FF66").attr("stop-opacity", 0).attr("brighter",1); // Color verde aclarado + 4
     },
     start_anim : function(){
-console.log("Stating anim");
 
         var self = this;
 
@@ -320,6 +320,7 @@ console.log("Stating anim");
 
             //alert(self.days);
 
+            self.anim_running = true;
             self.data_load(0);
 
         }else{
@@ -443,7 +444,6 @@ console.log("Stating anim");
 
                 }else{
                     
-                     //console.log(self.nodes.length);
                     self.comprobar_timer_usuario(row);
                     //alert("compruebo timer usuario");
                     self.comprobar_timer_nodo();
@@ -1734,10 +1734,9 @@ console.log("Stating anim");
     data_load: function(skip) {
         var self = this;
         var limit = 100;
-console.log("Entrando con skip = " + skip);
-        Cla.ajax_json('/swarm/activity', {days: self.days, limit: limit, skip: skip}, function(res){
+        if ( !self.anim_running ) return;
+        Cla.ajax_json('/swarm/activity', {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
 
-console.log("Res length = " + res.data.length);
             
             if(res.data.length <= 0){
                 alert(_("No data for selection dates.  Please select another period"));
@@ -1746,7 +1745,6 @@ console.log("Res length = " + res.data.length);
                 self.i=-1;
 
             }
-            // console.log(res);
             //alert(res.data.length);
             self.res = res;
             var fecha=new Date();
