@@ -524,7 +524,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 self.i--;
 
                 var date = new Date(self.date);
-                var calculo = self.calcula_contador(date);
+
+                //CAMBIO TODO ESTO POR....
+                /*var calculo = self.calcula_contador(date);
                 calculo = new Date(calculo);
                 self.date = self.calcular_fecha(calculo);*/
 
@@ -611,11 +613,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 //self.date = d;                        
                 //////////////////////////////////////////
 
-                self.vis.append("text")
-                        .text(self.date)//.text(self.get_contador())//.text(self.res.data[0].t)
+                /*self.vis.append("text")
+                        .text("dafefde")//.text(self.get_contador())//.text(self.res.data[0].t)
                         .attr("fill","#ffffff")
                         .attr("x", '45%')
-                        .attr("y", '5%').transition().duration(10).remove();
+                        .attr("y", '5%').transition().duration(10).remove();*/
                 self.force.start();
 
             }
