@@ -686,7 +686,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill","#FFFFFF").text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
 
         }
@@ -700,7 +700,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill","#000000").text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
         }
 
@@ -714,7 +714,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill",self.opuesto).text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
 
         }
