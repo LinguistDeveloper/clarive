@@ -153,7 +153,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .friction(.6)
             .linkDistance(     
                 function(lnk){
-                    return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 1 : 80;
+                    return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 10 : 100; //1 : 80
                 }
             )
             //.linkStrength(.1)
@@ -1032,7 +1032,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             if (self.nodes[j].node == "usuarios"){
                         
                     self.nodes[j].t = self.nodes[j].t-1;
-                    if(self.nodes[j].t == 4){
+                    if(self.nodes[j].t <= 4 && self.nodes[j].t > 0){
 
                         //alert("borro el nodo "+self.nodes[j].who);
 
@@ -1051,6 +1051,21 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     }
                     if(self.nodes[j].t < 0){
+
+                        var k = 0;
+                        while(k < self.links.length){
+                                if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
+
+                                    self.links.splice(self.links.indexOf(self.links[k]),1);
+                                    k=self.links.length;
+
+                                } 
+
+                                k++;
+
+                        }
+
+
 
                         var i=0;
                         var contador=0;
@@ -1297,11 +1312,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
                             //.attr("fill-opacity",0.6);
-                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                           */ return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
+                            self.node9.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.t).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+3).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
+                            */return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
@@ -1318,6 +1333,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          })
                          .call(self.force.drag)
                          .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
+
         self.node.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
@@ -1710,8 +1726,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5.attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
 
-        self.texto.attr('x',function(d){ return (d.source.x+d.target.x)/2;})
-        .attr('y',function(d){ return (d.source.y+d.target.y)/2;});
+        //EN EL CASO DE QUERER SACAR EL TEXTO EN EL PUNTO MEDIO
+        //self.texto.attr('x',function(d){ return (d.source.x+d.target.x)/2;})
+        //.attr('y',function(d){ return (d.source.y+d.target.y)/2;});
+
+        //EN EL CASO DE QUERER INCREMENTAR EL TEXTO DIEZ POR ENCIMA DEL PUNTO SOURCE
+        //self.texto.attr('x',function(d){ return d.source.x+10;})
+        //.attr('y',function(d){ return d.source.y+10;});
+
+        // LA FORMULA SERIA d.source.x-(d.target.x*0.33))/0.67  SIENDO R= -0.33 Y SE DIVIDE ENTRE 1+R (X1+(R*X2)/(1+R))
+        // EN EL CASO DE QUERER SACAR EL TEXTO POR FUERA DEL PUNTO SOURCE
+        self.texto.attr('x',function(d){ return (d.source.x-(d.target.x*0.33))/0.67;})
+        .attr('y',function(d){ return (d.source.y-(d.target.y*0.33))/0.67;});
+        
+
 
         self.link.attr("x1", function(d) { return d.source.x; })
           .attr("y1", function(d) { return d.source.y; })
