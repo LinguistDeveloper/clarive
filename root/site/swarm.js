@@ -3,8 +3,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     background_color: '#FFFFFF',
     start_mode: 'manual',
 
-
-
     //limit: '20000',
 
 
@@ -352,6 +350,7 @@ console.log("Stating anim");
         self.anim_running = false;
 
     },
+
     stop_anim : function(){
 
         var self = this;
@@ -360,36 +359,7 @@ console.log("Stating anim");
         self.btn_pause.disable();
         self.btn_stop.disable();
         self.anim_running = false;
-        self.force.stop();
-        self.i = self.res.skip;
-    },
-    reset_all : function() {
-        var self = this;
-        self.i=0;
-        self.res.skip = 0;
-        self.j = 0;
-        self.initiated=false;
-
-        self.anim_running = false;
-        self.parents =  {};
-        self.nodes = [];
-        self.links = [];
-        self.nodos_modificados = [];
-
-        self.node.remove();
-        self.link.remove();
-        self.link2.remove();
-        self.node2.remove();
-        self.node3.remove();
-        self.node4.remove();
-        self.node5.remove();
-        self.node6.remove();
-        self.node7.remove();
-        self.node8.remove();
-        self.node9.remove();
-        self.texto.remove();
-        self.force.stop();
-        self.vis.remove();
+        self.i = self.res.total;
 
     },
     anim : function(limit){
@@ -397,25 +367,50 @@ console.log("Stating anim");
         var self = this;
 
         if( !self.anim_running ) {
-console.log("Not running");
+            return;
+        }
+
+        if(self.i >= self.res.total){
+
+            self.i=0;
+            self.j=0;
+            self.initiated=false;
+
+            self.anim_running = false;
+            self.parents =  {};
+            self.nodes = [];
+            self.links = [];
+            self.nodos_modificados = [];
+
+            self.node.remove();
+            self.link.remove();
+            self.link2.remove();
+            self.node2.remove();
+            self.node3.remove();
+            self.node4.remove();
+            self.node5.remove();
+            self.node6.remove();
+            self.node7.remove();
+            self.node8.remove();
+            self.node9.remove();
+            self.texto.remove();
+            self.force.stop();
+            self.vis.remove();
+
+
+            self.init();
+            self.start_anim();
             return;
         }
 
         if ( self.i >= self.res.skip) {
             self.data_load(self.res.skip);
             self.j = 0;
-console.log("Saltando al siguiente batch: " + self.res.skip);
             return;
         }
 
         // if(self.i==self.res.data.length){
-        if(self.i >= self.res.total){
-            self.reset_all();
-console.log("Finished animation");
-            self.init();
-            self.start_anim();
-            return;
-        }
+
         
         var row = self.res.data[ self.j++ ];
         self.i++;
@@ -444,19 +439,20 @@ console.log("Finished animation");
                     self.parents[row.parent] = true;
                     self.add_inicial( row.parent );
                     var row = self.res.data[ self.j-- ];
-                    self.i++;
+                    self.i--;
 
                 }else{
                     
                      //console.log(self.nodes.length);
                     self.comprobar_timer_usuario(row);
+                    //alert("compruebo timer usuario");
                     self.comprobar_timer_nodo();
 
-                    if(self.nodos_modificados.length >= 2){
+                    /*if(self.nodos_modificados.length >= 2){
 
                     self.comprobar_nodo_modificado(); 
 
-                    }else if(row.ev == 'add') {
+                    }else*/ if(row.ev == 'add') {
 
                         self.add(row);
 
@@ -502,11 +498,11 @@ console.log("Finished animation");
                         self.comprobar_timer_usuario(row);
                         self.comprobar_timer_nodo();
 
-                        if(self.nodos_modificados.length >= 2){
+                        /*if(self.nodos_modificados.length >= 2){
 
                         self.comprobar_nodo_modificado(); 
 
-                        }else if(row.ev == 'add') {        
+                        }else*/ if(row.ev == 'add') {        
 
                             self.add(row);
 
@@ -871,7 +867,9 @@ console.log("Finished animation");
 
             }
 
-            self.start_modify({ row: row, timer: timer });
+            //DESHABILITAMOS CAMBIAR COLORES SI QUEREMOS HABILITARLO SIMPLEMENTE DESCOMENTAMOS EL START_MODIFY Y LOS COMPROBAR_NODO_MODIFICADO
+            //self.start_modify({ row: row, timer: timer });
+            self.start({ row: row, timer: timer });
             self.add_user(row);
 
         }
@@ -981,59 +979,6 @@ console.log("Finished animation");
 
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             if(j==self.nodes.length){
 
                 var i = "no activo";
@@ -1087,7 +1032,7 @@ console.log("Finished animation");
             if (self.nodes[j].node == "usuarios"){
                         
                     self.nodes[j].t = self.nodes[j].t-1;
-                    if(self.nodes[j].t == 0){
+                    if(self.nodes[j].t == 4){
 
                         //alert("borro el nodo "+self.nodes[j].who);
 
@@ -1105,7 +1050,7 @@ console.log("Finished animation");
                         }
 
                     }
-                    if(self.nodes[j].t < 0 ){
+                    if(self.nodes[j].t < 0){
 
                         var i=0;
                         var contador=0;
@@ -1137,27 +1082,6 @@ console.log("Finished animation");
         var self = this;
 
         var j = 0;
-
-
-
-
-
-
-
-
-              
-
-
-
-
-
-
-
-
-
-
-
-
 
         var contador =0;
 
@@ -1296,15 +1220,7 @@ console.log("Finished animation");
         Color_Texto_Nodos.append("stop").attr("offset", "100%").attr("stop-color", color_brillo).attr("stop-opacity", 1).attr("brighter",1); // Color blanco
 
         nodos = row.color;
-
-
-
         texto_nodos = row.color;
-
-
-
-
-
 
         /*switch (row.parent) {
             case "Changeset":   
@@ -1344,11 +1260,7 @@ console.log("Finished animation");
                 texto_nodos = "url(#Color_Texto_Nodos)"
         }*/
 
-
-
-
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-
         self.link.enter().insert("line", ".node");//.attr("class", "link").attr("stroke","steelblue").attr("stroke-opacity",0.4);
         self.link.exit().remove();
 
@@ -1639,10 +1551,7 @@ console.log("Finished animation");
         
         var self = this;
 
-
-
         self.stop_anim();
-        
 
         switch (days) {
             case 0: self.days=86400000
@@ -1659,10 +1568,6 @@ console.log("Finished animation");
                 break;
             default: self.days=0
         }
-
-
-
-
 
         self.start_anim();
     },
@@ -1828,7 +1733,7 @@ console.log("Finished animation");
     },
     data_load: function(skip) {
         var self = this;
-        var limit = 10;
+        var limit = 100;
 console.log("Entrando con skip = " + skip);
         Cla.ajax_json('/swarm/activity', {days: self.days, limit: limit, skip: skip}, function(res){
 
@@ -1838,7 +1743,8 @@ console.log("Res length = " + res.data.length);
                 alert(_("No data for selection dates.  Please select another period"));
                 //self.mostrar=true;
                 self.stop_anim();
-                self.i=1;
+                self.i=-1;
+
             }
             // console.log(res);
             //alert(res.data.length);
