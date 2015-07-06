@@ -446,8 +446,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     
                     self.comprobar_timer_usuario(row);
                     //alert("compruebo timer usuario");
-                    self.comprobar_timer_nodo();
-
+                    if(self.max_node != 0 && self.min_node != 0){
+                        if(self.max_node < self.min_node){
+                            alert("el maximo de nodos tiene que ser mayor que el minimo.");
+                        }else{
+                            self.comprobar_timer_nodo();
+                        }
+                    }
                     /*if(self.nodos_modificados.length >= 2){
 
                     self.comprobar_nodo_modificado(); 
@@ -496,7 +501,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }else{
 
                         self.comprobar_timer_usuario(row);
-                        self.comprobar_timer_nodo();
+                        if(self.max_node != 0 && self.min_node != 0){
+                            if(self.max_node < self.min_node){
+                                alert("el maximo de nodos tiene que ser mayor que el minimo.");
+                            }else{
+                                self.comprobar_timer_nodo();
+                            }
+                        }
 
                         /*if(self.nodos_modificados.length >= 2){
 
@@ -1101,7 +1112,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var contador =0;
 
         //500 ES EL MAXIMO DE NODOS QUE PUEDE HABER EN LA PANTALLA PINTADOS.
-        if(self.nodes.length > 500){
+        if(self.nodes.length > self.max_node){
             while (j < self.nodes.length){
 
                 for (h=1; h< self.nodes.length; h++){
@@ -1110,7 +1121,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         contador++;
                     }
                     //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
-                    if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > 7){
+                    if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > self.min_node){
 
                         //alert("entro aqui"+ self.nodes.length);
                    
