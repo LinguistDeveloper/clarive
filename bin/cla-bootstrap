@@ -304,6 +304,7 @@ Class::Date
 Compress::Raw::Zlib
 Compress::Zlib
 Config::General
+Config::Properties
 Config::INI::Writer
 Config::JFDI
 Config::Tiny
