@@ -211,7 +211,7 @@ sub _set_user_lang : Private {
     else {
         # detect browser language
         my $language = substr $c->req->headers->{'accept-language'},0,2;  # usually "en-US,en,..."
-        $language = $c->config->{default_lang} unless $c->installed_languages->{$language}; # if it's not installed, go to default
+        $language = 'en' unless $c->installed_languages->{$language}; # if it's not installed, choose English
         _debug( "No session, detected language=$language");
         $c->languages([ $language ]); 
     }
