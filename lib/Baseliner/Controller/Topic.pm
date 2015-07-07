@@ -205,7 +205,7 @@ sub get_items {
             totalCount=>$report_data->{cnt} || []
         }
        
-    } else {
+    } else  {
         my ($info, @rows ) = Baseliner->model('Topic')->topics_for_user( $p );
 
         $data = {
@@ -1801,97 +1801,127 @@ sub report_csv : Local {
     my $p = $c->req->params;
     my $json = $p->{data_json};
     my $data = _decode_json $json;
-    my $params = _decode_json $p->{params};
-    $params->{username} = $c->username;
-    $params->{categories} ='' if !scalar @{$params->{categories}};
-    $params->{limit} = $p->{total_rows};
 
-   my $rows = $self->get_items($params);
-   
     my @csv;
-    my @cols;
-
-    my $charset = "iso-8859-1";
-    # Topics are related to categories, remove accents from category name to check for mongo fields and extract data.    
-    my @cats = map { +{ id => $_->{id}, name => lc(unac_string($_->{name}) )} } mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
-    push my @names_category, map {$_->{name}} @cats;
-    # _log "categories "._dump @cats;
-
-    # Columns are taken from user grid.
-    for( grep { length $_->{name} } _array( $data->{columns} ) ) { 
-        push @cols, qq{"$_->{name}"}; #"
-    }
-    for(@cols){s/Comentarios/Mas info/g};
+    if ($p->{params}) {
+        my $params = _decode_json $p->{params};
+        $params->{username} = $c->username;
+        $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
+        $params->{limit} = $p->{total_rows};
     
-    push @csv, join ';', @cols;
+        my $rows = $self->get_items($params) ;
 
-    for my $row (_array $rows->{data}){    
-        my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
-        my @cells;
-        for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-            my $col_id = $col->{id};
-            
-            my $v = $row->{ $col_id };
-            if( ref $v eq 'ARRAY' ) {
-                if ($col->{id} eq 'projects') {
-                    my @projects;
-                    for (@{$v}){
-                        push @projects, ( split';', $_)[1];
-                    }
-                    @$v = @projects;
-                }
-                (my $du) = _array $v;
-                if( ref $du eq 'HASH' && exists $du->{mid}) {
-                        $v = $du->{mid};
-                } else {        
-                    $v = join ',', @$v;
-                }
-            } elsif( ref $v eq 'HASH' ) {
-                if ($v && $v->{mid}){
-                    $v = $v->{mid};
-                } else {
-                    # $v = Util->hash_flatten($v);
-                    # $v = Util->_encode_json($v);
-                    # $v =~ s/{|}//g;
-                    my $result;
-                    for my $step (keys $v){
-                        $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
-                    }
-                    if($result) { $v = $result } else{ $v = ''; };
-                }
-            };
-            if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
-                my $rel_category; 
-                if (ref $row->{$col_id} eq 'HASH' ){            
-                     $rel_category = $row->{$col_id}->{category}->{name};
-                     $v = $rel_category.' #'.$v if ($rel_category);
-                } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
-                    (my $du) = _array $row->{$col_id};
-                    if( ref $du eq 'HASH' && exists $du->{category}) {
-                        $rel_category = $du->{category}->{name};
-                        $v = $rel_category.' #'.$v ; 
-                    }
-                } else {
-                    my ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
-                    $tail = lc(unac_string($tail) ) if ($tail);
-                    if ($tail && grep /^$tail$/i, @names_category) {
-                        (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
-                        $rel_category = mdb->category->find_one({id => $id})->{name};
-                        $v = $rel_category.' #'.$v if ($rel_category) ;
-                    }
-                }
-            }
-            $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
-            $v = _strip_html ($v); # HTML Code 
-            $v =~ s/\t//g if $v;
-            $v =~ s{"}{""}g if $v;
-            # utf8::encode($v);
-            # Encode::from_to($v,'utf-8','iso-8859-15');
-            if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
-                 push @cells, qq{"$v"};
-            } else { push @cells, qq{""} }; 
+        my @cols;
+
+        my $charset = "iso-8859-1";
+        # Topics are related to categories, remove accents from category name to check for mongo fields and extract data.    
+        my @cats = map { +{ id => $_->{id}, name => lc(unac_string($_->{name}) )} } mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+        push my @names_category, map {$_->{name}} @cats;
+        # _log "categories "._dump @cats;
+
+        # Columns are taken from user grid.
+        for( grep { length $_->{name} } _array( $data->{columns} ) ) { 
+            push @cols, qq{"$_->{name}"}; #"
         }
-        push @csv, join ';', @cells; 
+        for(@cols){s/Comentarios/Mas info/g};
+        
+        push @csv, join ';', @cols;
+
+        for my $row (_array $rows->{data}){    
+            my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
+            my @cells;
+            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
+                my $col_id = $col->{id};
+                
+                my $v = $row->{ $col_id };
+                if( ref $v eq 'ARRAY' ) {
+                    if ($col->{id} eq 'projects') {
+                        my @projects;
+                        for (@{$v}){
+                            push @projects, ( split';', $_)[1];
+                        }
+                        @$v = @projects;
+                    }
+                    (my $du) = _array $v;
+                    if( ref $du eq 'HASH' && exists $du->{mid}) {
+                            $v = $du->{mid};
+                    } else {        
+                        $v = join ',', @$v;
+                    }
+                } elsif( ref $v eq 'HASH' ) {
+                    if ($v && $v->{mid}){
+                        $v = $v->{mid};
+                    } else {
+                        # $v = Util->hash_flatten($v);
+                        # $v = Util->_encode_json($v);
+                        # $v =~ s/{|}//g;
+                        my $result;
+                        for my $step (keys $v){
+                            $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
+                        }
+                        if($result) { $v = $result } else{ $v = ''; };
+                    }
+                };
+                if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
+                    my $rel_category; 
+                    if (ref $row->{$col_id} eq 'HASH' ){            
+                         $rel_category = $row->{$col_id}->{category}->{name};
+                         $v = $rel_category.' #'.$v if ($rel_category);
+                    } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
+                        (my $du) = _array $row->{$col_id};
+                        if( ref $du eq 'HASH' && exists $du->{category}) {
+                            $rel_category = $du->{category}->{name};
+                            $v = $rel_category.' #'.$v ; 
+                        }
+                    } else {
+                        my ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
+                        $tail = lc(unac_string($tail) ) if ($tail);
+                        if ($tail && grep /^$tail$/i, @names_category) {
+                            (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
+                            $rel_category = mdb->category->find_one({id => $id})->{name};
+                            $v = $rel_category.' #'.$v if ($rel_category) ;
+                        }
+                    }
+                }
+                $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
+                $v = _strip_html ($v); # HTML Code 
+                $v =~ s/\t//g if $v;
+                $v =~ s{"}{""}g if $v;
+                # utf8::encode($v);
+                # Encode::from_to($v,'utf-8','iso-8859-15');
+                if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
+                     push @cells, qq{"$v"};
+                } else { push @cells, qq{""} }; 
+            }
+            push @csv, join ';', @cells; 
+        }
+    } else {
+
+        my @cols;
+        for( grep { length $_->{name} } _array( $data->{columns} ) ) {
+            push @cols, qq{"$_->{name}"}; #"
+        }
+        push @csv, join ';', @cols;
+
+        for my $row ( _array( $data->{rows} ) ) {
+            my @cells;
+            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
+                my $v = $row->{ $col->{id} };
+                if( ref $v eq 'ARRAY' ) {
+                    $v = join ',', @$v;
+                } elsif( ref $v eq 'HASH' ) {
+                    $v = Util->hash_flatten($v);
+                    $v = Util->_encode_json($v);
+                    $v =~ s/{|}//g;
+                }
+                #_debug "V=$v," . ref $v;
+                $v =~ s{"}{""}g;
+                # utf8::encode($v);
+                # Encode::from_to($v,'utf-8','iso-8859-15');
+                push @cells, qq{"$v"};
+            }
+            push @csv, join ';', @cells;
+        }    
     }
     my $body = join "\n", @csv;
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file
@@ -1903,6 +1933,7 @@ sub report_csv : Local {
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
+
 }
 
 sub img : Local {
