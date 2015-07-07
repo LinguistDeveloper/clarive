@@ -6,7 +6,6 @@ use Try::Tiny;
 use Path::Class;
 use Baseliner::Sugar;
 use Class::Date;
-use utf8;
 
 with 'Baseliner::Role::Service';
 

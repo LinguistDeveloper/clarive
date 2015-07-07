@@ -7,8 +7,6 @@ use Try::Tiny;
 use File::Spec;
 use File::Path qw/mkpath remove_tree/;
 
-use utf8;
-
 with 'Baseliner::Role::Service';
 
 register 'service.job.init' => { 

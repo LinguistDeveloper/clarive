@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 use v5.10;
 use Try::Tiny;
+use experimental 'autoderef', 'switch';
 
 with 'Baseliner::Role::CI::Internal';
 

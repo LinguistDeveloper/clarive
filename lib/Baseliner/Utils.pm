@@ -153,6 +153,7 @@ use Path::Class;
 use Term::ANSIColor;
 use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
+use experimental 'switch';
 
 BEGIN {
     # enable a TO_JSON converter
@@ -1514,32 +1515,35 @@ sub _html_escape {
 sub _fixascii_sql {
     my $data = shift;
     #convert ASCII characters form SQL
-    $data =~ s/\\xE1/á/g;
-    $data =~ s/\\xE9/é/g;
-    $data =~ s/\\xED/í/g;
-    $data =~ s/\\xF3/ó/g;
-    $data =~ s/\\xFA/ú/g;
-    $data =~ s/\\Ã/í/g;
-    $data =~ s/\\Ã³/ó/g;
-
+    if ( $data ) {
+        $data =~ s/\\xE1/á/g;
+        $data =~ s/\\xE9/é/g;
+        $data =~ s/\\xED/í/g;
+        $data =~ s/\\xF3/ó/g;
+        $data =~ s/\\xFA/ú/g;
+        $data =~ s/\\Ã/í/g;
+        $data =~ s/\\Ã³/ó/g;
+    }
     $data
 }
 
 
 sub _fix_utf8_to_xml_entities {
     my $data = shift;
-    $data =~ s/á/&#225;/g;
-    $data =~ s/Á/&#193;/g;
-    $data =~ s/é/&#233;/g;
-    $data =~ s/É/&#201;/g;
-    $data =~ s/í/&#237;/g;
-    $data =~ s/Í/&#205;/g;
-    $data =~ s/ó/&#243;/g;
-    $data =~ s/Ó/&#211;/g;
-    $data =~ s/ú/&#250;/g;
-    $data =~ s/Ú/&#218;/g;
-    $data =~ s/ñ/&#241;/g;
-    $data =~ s/Ñ/&#209;/g;
+    if ( $data ) {
+        $data =~ s/á/&#225;/g;
+        $data =~ s/Á/&#193;/g;
+        $data =~ s/é/&#233;/g;
+        $data =~ s/É/&#201;/g;
+        $data =~ s/í/&#237;/g;
+        $data =~ s/Í/&#205;/g;
+        $data =~ s/ó/&#243;/g;
+        $data =~ s/Ó/&#211;/g;
+        $data =~ s/ú/&#250;/g;
+        $data =~ s/Ú/&#218;/g;
+        $data =~ s/ñ/&#241;/g;
+        $data =~ s/Ñ/&#209;/g;
+    }
     $data;
 }
 

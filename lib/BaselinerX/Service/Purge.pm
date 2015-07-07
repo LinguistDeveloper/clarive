@@ -5,7 +5,6 @@ use Path::Class;
 use Carp;
 use Try::Tiny;
 use File::Path;
-use utf8;
 use Time::Piece;
 use Time::Seconds;
 use File::Copy;

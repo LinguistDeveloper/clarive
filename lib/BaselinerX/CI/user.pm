@@ -1,6 +1,7 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
 has api_key             => qw(is rw isa Any);

@@ -2,6 +2,7 @@ package BaselinerX::Lc;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
+use experimental 'smartmatch';
 
 register 'config.lc' => {
     metadata => [

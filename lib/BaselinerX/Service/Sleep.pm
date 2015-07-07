@@ -4,7 +4,6 @@ use Baseliner::Utils;
 use Carp;
 use Try::Tiny;
 use Path::Class;
-use utf8;
 
 with 'Baseliner::Role::Service';
 

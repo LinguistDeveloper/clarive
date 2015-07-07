@@ -2,6 +2,7 @@ package Baseliner::MongoCollection;
 use Moose;
 use Try::Tiny;
 use Baseliner::Utils;
+use experimental 'autoderef';
 
 has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );

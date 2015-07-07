@@ -14,6 +14,7 @@ register 'event.wipe_cache' => { name => 'Wipe Cache', vars=>['username','ts'] }
 
 use Try::Tiny;
 use MIME::Base64;
+use experimental 'autoderef';
 
 #
 # Sets the actions in this controller to be registered with no prefix

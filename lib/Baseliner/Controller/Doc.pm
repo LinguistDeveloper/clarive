@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
+use experimental 'autoderef';
 
 sub content : Local {
     my ($self, $c) = @_;

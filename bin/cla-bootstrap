@@ -246,6 +246,7 @@ EOL
 
 __DATA__
 
+experimental
 Algorithm::C3
 Algorithm::Diff::XS
 Any::Moose
@@ -303,6 +304,7 @@ Class::Date
 Compress::Raw::Zlib
 Compress::Zlib
 Config::General
+Config::Properties
 Config::INI::Writer
 Config::JFDI
 Config::Tiny

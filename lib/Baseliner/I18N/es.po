@@ -4401,6 +4401,12 @@ msgstr "Puede borrar tópicos de la categoría `%1`"
 msgid "Can add/view comments in topics of category `%1`"
 msgstr "Puede comentar/ver comentarios en tópicos de la categoría `%1`"
 
+msgid "Can view activity in topics of category `%1`"
+msgstr "Puede ver actividad en tópicos de la categoría `%1`"
+
+msgid "Can view jobs in topics of category `%1`"
+msgstr "Puede ver jobs en tópicos de la categoría `%1`"
+
 msgid "Can edit the field"
 msgstr "Puede editar el campo"
 
@@ -8005,5 +8011,8 @@ msgstr "Por favor, rellena los campos obligatorios"
 
 msgid "There are not tasks to do"
 msgstr "No hay tareas para realiar"
+
+msgid "No data for selection dates.  Please select another period"
+msgstr "No hay datos para las fechas seleccionadas.  Por favor, selecciona otro periodo"
 
 ### EOF - do not write anything bellow this

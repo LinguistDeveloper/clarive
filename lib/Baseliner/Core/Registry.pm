@@ -5,6 +5,7 @@ use Moose::Exporter;
 use Try::Tiny;
 use Carp;
 use Baseliner::Utils;
+use experimental 'autoderef';
 
 Moose::Exporter->setup_import_methods();
 
@@ -44,6 +45,7 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
 {
     package Baseliner::Core::RegistryNode;
     use Mouse;
+    use experimental 'autoderef';
 
     has key     => ( is => 'rw', isa => 'Str',     required => 1 );
     has id      => ( is => 'rw', isa => 'Str',     required => 1 );

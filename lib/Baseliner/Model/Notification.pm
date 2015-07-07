@@ -6,6 +6,7 @@ use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
 use v5.10;
+use experimental 'autoderef', 'switch';
 
 BEGIN { extends 'Catalyst::Model' }
 

@@ -2,6 +2,7 @@ package Baseliner::Model::Users;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
+use experimental 'smartmatch', 'autoderef';
 
 sub get {
     my ($self, $username ) = @_;

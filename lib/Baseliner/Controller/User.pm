@@ -6,6 +6,7 @@ use Try::Tiny;
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
+use experimental 'autoderef', 'switch';
 
 register 'config.user.global' => {
     preference=>1,
