@@ -63,14 +63,10 @@ sub activity : Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
-_log( \$time_filter );
-
 
     my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
     my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
-_log "DDDDDDDDDDDDDDDDDDDDDDDDD:$total";
-_log "DDDDDDDDDDDDDDDDDDDDDDDDD:" . scalar @ev_rs;
     my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
