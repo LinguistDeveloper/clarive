@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#set -x
+
+BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+LOCALDIR="$BINDIR/../../local"
+PERL="$LOCALDIR/perl/bin/perl"
+PATH="$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
+LD_LIBRARY_PATH="$LOCALDIR/lib"
+
+if [ "$1" == "exec" ]; then
+    shift
+
+    if [ "$1" == "nginx" ]; then
+        cd $LOCALDIR/sbin
+    fi
+
+    "$@"
+else
+    $PERL $BINDIR/cla "$@"
+fi
