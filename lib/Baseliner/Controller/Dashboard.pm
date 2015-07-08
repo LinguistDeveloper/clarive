@@ -157,7 +157,6 @@ sub init : Local {
 
     my $k = 1;
     my $user_config = ci->user->search_ci( name => $c->username )->dashlet_config;
-# _warn $user_config;
 
     $dashlets = [ map{ 
         $$_{order} = $k++;
@@ -202,18 +201,22 @@ sub json : Local {
         } else {
             @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
         }
-        map {
-            push @dashboard_list,
+        @dashboard_list = map {
+            my $name = $_->{rule_name};
+            $name = $name.' '._loc('(Default)') if $_->{default_dashboard};
             +{
-                name => $_->{rule_name},
+                name => $name,
                 id   => '' . $_->{id}
             }
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
     }
     else {
-        @dashboard_list
-            = map { +{ name => $_->{rule_name}, id => '' . $_->{id} } }
-            mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
+        @dashboard_list = map { 
+            my $name = $_->{rule_name};
+            $name = $name.' '._loc('(Default)') if $_->{default_dashboard};
+            +{ name => $name, id => '' . $_->{id} } 
+        }
+        mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
     }
 
     $c->stash->{json}
@@ -258,7 +261,6 @@ sub user_dashboards {
 
     my $username = $p->{username};
     my $user_ci = ci->user->search_ci(name=>$username);
-    my @dashboard_list;
 
     my $where = {};
     my @dashboard_ids = ($user_ci->default_dashboard->{dashboard}) || ();
@@ -271,18 +273,23 @@ sub user_dashboards {
     } else {
         push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
     }
+
+    # no personal id? no id for role? then show default
     if ( !@dashboard_ids ) {
         push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
     }
 
-    push @dashboard_list,
+    # the trick here is to get the data but keep the order, 
+    #  because [0] is the user prerred dashboard
+    my %dashash =
         map {
-            +{
+            $_->{id} => +{
                 name => $_->{rule_name},
                 id   => '' . $_->{id}
             }
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
 
+    my @dashboard_list = map { $dashash{$_} } @dashboard_ids;
     return @dashboard_list;
 }
 
