@@ -786,7 +786,10 @@ if( Prefs.routing ) {
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
-                copy: function(){ Baseliner.addNewIframe(url,title,params) } 
+                copy: function(){ 
+                    // iframe are different, copying opens in a new browser window
+                    window.open( url, title );
+                } 
         };
     };
 
