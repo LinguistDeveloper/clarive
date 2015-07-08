@@ -15,14 +15,18 @@
             {  name: 'realname' },
             {  name: 'alias' },
             {  name: 'email' },
+            {  name: 'language_pref' },
             {  name: 'phone' },
             {  name: 'active'}
         ],
         listeners: {
             'load': function(){
-                init_buttons('disable');
-                }
-            }       
+                if( grid.getSelectionModel().hasSelection() ) 
+                    init_buttons('enable');
+                else
+                    init_buttons('disable');
+            }
+        }       
     });
     
     var store_roles = new Baseliner.JsonStore({
@@ -41,7 +45,6 @@
     });
     
     var ps = 100; //page_size
-    store.load({params:{start:0 , limit: ps}});
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +71,7 @@
         eval('btn_surrogate.' + action + '()');
         eval('btn_buzon.' + action + '()');
         eval('btn_edit.' + action + '()');
+        eval('btn_prefs.' + action + '()');
         eval('btn_duplicate.' + action + '()');
         eval('btn_delete.' + action + '()');
     }
@@ -135,8 +139,8 @@
             listeners: {
                 'load': function(){
                     control_buttons();
-                    }
-                }       
+                }
+            }       
         });
 
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
@@ -460,27 +464,6 @@
             });
         });
 
-        var combo_language = new Ext.form.ComboBox({
-            mode: 'local',
-            value: 'spanish',
-            triggerAction: 'all',
-            forceSelection: true,
-            editable: false,
-            fieldLabel: _('Language'),
-            name: 'cmb_language',
-            hiddenName: 'language',
-            displayField: 'name',
-            valueField: 'value',
-            //En un futuro se cargaran los distintos Host
-            store:  new Baseliner.JsonStore({
-                    fields : ['name', 'value'],
-                    data   : [
-                          {name : 'spanish',   value: 'localhost'},
-                          {name : 'english',   value: 'localhost'}
-                          ]
-                })
-        });         
-
         var render_rol_field  = function(value,metadata,rec_grid,rowIndex,colIndex,store) {
             if( value==undefined || value=='null' || value=='' ) return '';
             //var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}?id_role={1}&username={2}")', value, rec_grid.data.id_role, rec.data.username );
@@ -604,7 +587,6 @@
                         // left column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            combo_language                          
                             //{ fieldLabel: _('Alias'), name: 'alias1', emptyText: 'Alias', xtype: 'textfield'}
                             ]
                         },
@@ -747,6 +729,23 @@
         }
     });
     
+    var btn_prefs = new Ext.Toolbar.Button({
+        text: _('Preferences'),
+        icon:'/static/images/icons/prefs.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+        var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                Prefs.open_editor({ username: sel.data.username, on_save: function(res){
+                    store.reload();
+                }}); 
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };
+        }
+    });
     
     var btn_duplicate = new Ext.Toolbar.Button({
         text: _('Duplicate'),
@@ -816,8 +815,6 @@
         }
     });
     
-
-
     // create the grid
     var grid = new Ext.grid.GridPanel({
             title: _('Users'),
@@ -833,9 +830,11 @@
             loadMask:'true',
             columns: [
                 { header: _('Id'), hidden: true, dataIndex: 'id' },
+                { header: _('Avatar'), hidden: false, width: 64, dataIndex: 'username', renderer: Baseliner.render_avatar },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
                 { header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
                 { header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true },
+                { header: _('Language'), width: 60, dataIndex: 'language_pref', sortable: true },
                 { header: _('Email'), width: 150, dataIndex: 'email'  },
                 { header: _('Phone'), width: 100, dataIndex: 'phone' }
             ],
@@ -861,6 +860,7 @@
                 btn_add,
                 btn_edit,
                 btn_delete,
+                btn_prefs,
                 btn_duplicate,
 %}
 
@@ -872,15 +872,20 @@
             ]
         });
 
-        grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-			var r = grid.getStore().getAt(rowIndex);
-            var active = r.get( 'active' );
-            if(active != '0'){
-                init_buttons('enable');   
-            }else{
-                init_buttons('disable');   
-            }
-        });
+    var sm = grid.getSelectionModel();
+    sm.on('rowselect', function(it,rowIndex){
+        var r = grid.getStore().getAt(rowIndex);
+        var active = r.get( 'active' );
+        if(active != '0'){
+            init_buttons('enable');   
+        }else{
+            init_buttons('disable');   
+        }
+    });
+    sm.on('rowdeselect', function(grid,rowIndex){
+        init_buttons('disable');
+    });
             
+    store.load({params:{start:0 , limit: ps}});
     return grid;
 })
