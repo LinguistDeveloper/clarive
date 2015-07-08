@@ -1692,6 +1692,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     getLuxColor : function(hex,lum) {
 
+        if ( !hex || hex == null || hex == 'null') return;
         // validate hex string
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
@@ -1783,7 +1784,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var limit = 100;
         if ( !self.anim_running ) return;
 
-        Cla.ajax_json('/swarm/activity', {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
+        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
 
             
             if(res.data.length <= 0){
