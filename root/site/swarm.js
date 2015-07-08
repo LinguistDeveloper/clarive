@@ -446,6 +446,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     
                     self.comprobar_timer_usuario(row);
                     //alert("compruebo timer usuario");
+
                     if(self.max_node != 0 && self.min_node != 0){
                         if(self.max_node < self.min_node){
                             alert("el maximo de nodos tiene que ser mayor que el minimo.");
@@ -501,6 +502,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }else{
 
                         self.comprobar_timer_usuario(row);
+
                         if(self.max_node != 0 && self.min_node != 0){
                             if(self.max_node < self.min_node){
                                 alert("el maximo de nodos tiene que ser mayor que el minimo.");
@@ -1774,6 +1776,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
         var limit = 100;
         if ( !self.anim_running ) return;
+
         Cla.ajax_json('/swarm/activity', {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
 
             
