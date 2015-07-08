@@ -25,7 +25,7 @@
             fieldLabel: _('Node groupping'),
             anchor: '40%',
             data: [ ['/swarm/activity_by_category',_('Category')], ['/swarm/activity_by_status',_('Status')] ],  // patch?
-            value: params.controller || '/swarm/activity_by_category'
+            value: data.controller || '/swarm/activity_by_category'
         })
         //limit
     ])
