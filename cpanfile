@@ -115,7 +115,6 @@ requires 'MIME::Base64';
 requires 'MIME::Lite';
 requires 'MIME::Types';
 requires 'Module::Loaded';
-requires 'Mojolicious';
 requires 'MongoDB';
 requires 'Moose';
 requires 'Moose::Autobox';
