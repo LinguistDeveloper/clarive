@@ -288,60 +288,7 @@ if( Prefs.routing ) {
         });
    };
 
-   Baseliner.default_dashboard = function() {
-        var change_dashboard_form = new Ext.FormPanel({
-           url: '/user/change_dashboard',
-           frame: true,
-           labelWidth: 100, 
-           timeout: 120,
-            items: [
-                new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboard', singleMode: true, allowBlank: true, baseParams: { username: true } })
-            ],
-            buttons: [
-                { text: _('Aceptar'),
-                     handler: function() {
-                        var form = change_dashboard_form.getForm();
-
-                        if (form.isValid()) {
-                          form.submit({
-                              success: function(f,a){
-                                    Baseliner.message(_('Success'), a.result.msg );
-                                    win_change.close(); 
-                              },
-                              failure: function(f,a){
-                                    Ext.Msg.show({  
-                                        title: _('Information'), 
-                                        msg: a.result.msg , 
-                                        buttons: Ext.Msg.OK, 
-                                        icon: Ext.Msg.INFO
-                                      });                       
-                              }
-                          });
-                        }
-                    }
-                },
-                { 
-                    text: _('Cancelar'),
-                    handler: function() {
-                        win_change.close();  
-                    }
-                }
-           ]
-       });
-      
-        var win_change = new Ext.Window({
-            id: 'win_change',
-            title: _('Change default dashboard'),
-            width: 350,
-            modal: true,
-            autoHeight: true,
-            items: [ change_dashboard_form ]
-        });
-   
-       win_change.show();       
-   }
-
-    Baseliner.change_password = function() {
+   Baseliner.change_password = function() {
        var change_pass_form = new Ext.FormPanel({
             url: '/user/change_pass',
             frame: true,
@@ -839,7 +786,10 @@ if( Prefs.routing ) {
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
-                copy: function(){ Baseliner.addNewIframe(url,title,params) } 
+                copy: function(){ 
+                    // iframe are different, copying opens in a new browser window
+                    window.open( url, title );
+                } 
         };
     };
 

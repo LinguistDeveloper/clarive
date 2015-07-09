@@ -165,10 +165,14 @@ sub infodetail : Local {
 
 sub user_data : Local {
     my ($self, $c) = @_;
+    my $params = $c->req->params;
+    my $username = $params->{username} && $c->has_action('action.admin.users') 
+        ? $params->{username}
+        : $c->username;
     try {
-        my $user = ci->user->find_one({ username => $c->username });
-        _fail _loc('User not found: %1', $c->username ) unless $user;
-        $c->stash->{json} = { data=> $user , msg=>'ok', success=>\1 };
+        my $user = ci->user->search_ci( username => $username );
+        _fail _loc('User not found: %1', $username ) unless $user;
+        $c->stash->{json} = { data=> $user , msg=>'ok', languages=>$c->installed_languages, success=>\1 };
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 };
@@ -650,7 +654,7 @@ sub list : Local {
 
     $where->{active} = '1' if $p->{active_only};
 
-    my $rs = ci->user->find($where)->fields({ username => 1, realname => 1, alias => 1, email => 1, active => 1, phone => 1, mid => 1, _id => 0 });
+    my $rs = ci->user->find($where)->fields({ username => 1, realname => 1, alias => 1, email => 1, active => 1, phone => 1, mid => 1, language_pref=>1, _id => 0 });
     $rs->sort($sort ? { $sort => $dir } : {username => 1});
     $rs->skip($start);
     $rs->limit($limit);
@@ -750,10 +754,13 @@ sub avatar : Local {
 }
 
 sub avatar_refresh : Local {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $username ) = @_;
     my $p      = $c->req->params;
+    if( $username ne $c->username && !$c->has_action('action.admin.users') ) {
+        _fail _loc 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username;
+    }
     try {
-        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $username . '.png' );
         unlink $avatar or _fail $!;
         $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed' ) } ;            
     } catch {
@@ -765,16 +772,19 @@ sub avatar_refresh : Local {
 }
 
 sub avatar_upload : Local {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $username ) = @_;
     my $p      = $c->req->params;
     my $filename = $p->{qqfile};
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
     my $f =  _file( $c->req->body );
     _log "Uploading avatar " . $filename;
+    if( $username ne $c->username && !$c->has_action('action.admin.users') ) {
+        _fail _loc 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username;
+    }
     try {
         require File::Copy;
-        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $username . '.png' );
         _debug "Avatar file=$avatar";
         File::Copy::copy( "$f", "$avatar" ); 
         $c->stash->{ json } = { success => \1, msg => _loc( 'Changed user avatar' ) } ;            

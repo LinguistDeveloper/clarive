@@ -2867,6 +2867,9 @@ Baseliner.render_checkbox = function(v){
         ? '<img src="/static/images/icons/checkbox.png">'
         : '<img src="/static/images/icons/delete_.png">';
 };
+Baseliner.render_avatar = function(v){
+    return '<img width="16" src="/user/avatar/'+v+'/checkbox.png">'
+};
         
 Baseliner.render_ago = function(t,p){
     return Cla.moment(t).fromNow();  // TODO use the user prefs for timezone and language

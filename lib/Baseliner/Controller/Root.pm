@@ -197,24 +197,10 @@ sub auto : Private {
 
 sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
-    
-    if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
-    }
-    elsif( my $username = $c->username ) {
-        my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        if( ref $c->session->{user} ) {
-            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        }
-    }
-    else {
-        # detect browser language
-        my $language = substr $c->req->headers->{'accept-language'},0,2;  # usually "en-US,en,..."
-        $language = 'en' unless $c->installed_languages->{$language}; # if it's not installed, choose English
-        _debug( "No session, detected language=$language");
-        $c->languages([ $language ]); 
-    }
+
+    my @languages = $c->user_languages;
+    $c->languages([ @languages ]); 
+   
 }
 
 sub serve_file : Private {

@@ -283,7 +283,6 @@ Baseliner.DashboardBox = function(c) {
         msgTarget: 'under',
         allowAddNewData: true,
         addNewDataOnBlur: true, 
-        emptyText: _('select dashboards'),
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',

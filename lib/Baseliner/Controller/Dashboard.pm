@@ -157,7 +157,6 @@ sub init : Local {
 
     my $k = 1;
     my $user_config = ci->user->search_ci( name => $c->username )->dashlet_config;
-# _warn $user_config;
 
     $dashlets = [ map{ 
         $$_{order} = $k++;
@@ -202,18 +201,22 @@ sub json : Local {
         } else {
             @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
         }
-        map {
-            push @dashboard_list,
+        @dashboard_list = map {
+            my $name = $_->{rule_name};
+            $name = $name.' '._loc('(Default)') if $_->{default_dashboard};
             +{
-                name => $_->{rule_name},
+                name => $name,
                 id   => '' . $_->{id}
             }
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
     }
     else {
-        @dashboard_list
-            = map { +{ name => $_->{rule_name}, id => '' . $_->{id} } }
-            mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
+        @dashboard_list = map { 
+            my $name = $_->{rule_name};
+            $name = $name.' '._loc('(Default)') if $_->{default_dashboard};
+            +{ name => $name, id => '' . $_->{id} } 
+        }
+        mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
     }
 
     $c->stash->{json}
@@ -258,7 +261,6 @@ sub user_dashboards {
 
     my $username = $p->{username};
     my $user_ci = ci->user->search_ci(name=>$username);
-    my @dashboard_list;
 
     my $where = {};
     my @dashboard_ids = ($user_ci->default_dashboard->{dashboard}) || ();
@@ -271,18 +273,23 @@ sub user_dashboards {
     } else {
         push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
     }
+
+    # no personal id? no id for role? then show default
     if ( !@dashboard_ids ) {
         push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
     }
 
-    push @dashboard_list,
+    # the trick here is to get the data but keep the order, 
+    #  because [0] is the user prerred dashboard
+    my %dashash =
         map {
-            +{
+            $_->{id} => +{
                 name => $_->{rule_name},
                 id   => '' . $_->{id}
             }
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
 
+    my @dashboard_list = map { $dashash{$_} } @dashboard_ids;
     return @dashboard_list;
 }
 
@@ -1584,544 +1591,12 @@ sub viewjobs : Local {
     $c->forward('/job/monitor/Dashboard');
 }
 
-
-##################### DEPRECATED
-##Configuración del dashboard
-register 'config.dashboard' => {
-    metadata => [
-           { id=>'job_days', label=>'Days for job statistics', default => 7 },
-        ]
-};
-
-register 'config.dashlet.baselines' => {
-    metadata => [
-           { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
-           { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
-           { id=>'projects', label=>'Projects for job statistics', default => 'ALL' },
-        ]
-};
-
-register 'config.dashlet.lastjobs' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
-};
-
-register 'config.dashlet.emails' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
-};
-
-register 'config.dashlet.topics' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
-};
-
-register 'config.dashlet.jobs' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
-};
-
-register 'config.dashlet.filtered_topics' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-           { id=>'categories', label=>'List of categories', default => 'ALL' },
-           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
-        ]
-};
-
-register 'config.dashlet.list_releases' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-           { id=>'categories', label=>'List of categories', default => 'ALL' },
-           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
-        ]
-};
-
-register 'config.dashlet.my_topics' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 'ALL' },
-           { id=>'categories', label=>'List of categories', default => 'ALL' }
-        ]
-};
-
-register 'config.dashlet.topics_open_by_status' => {
-    metadata => [
-           { id=>'categories', label=>'List of categories', default => 'ALL' },
-           { id=>'final', label=>'Final statuses? (1/0)', default => '0' },
-           { id=>'all_statuses', label=>'All statuses? (1/0)', default => '0' },
-        ]
-};
-
 ##################################################
-
+#
+# TODO 
+# old dashlet data, deprecated? move somewhere else?
+#
 ##################################################
-
-sub grid : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    $c->stash->{template} = '/comp/dashboard_grid.js';
-}
-
-sub list_dashboard : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-
-    my ($start, $limit, $query, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-
-    $start||= 0;
-    $limit ||= 100;
-    
-    $dir ||= 'desc';
-    if($dir =~ /desc/i){
-        $dir = -1;
-    }else{
-        $dir = 1;
-    }
-
-    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(name description)]) : {};
-
-    my $rs = mdb->dashboard->find($where);
-    $rs->skip($start);
-    $rs->limit($limit);
-    $rs->sort($sort ? { $sort => $dir } : {name => 1});   
-
-    $cnt = mdb->dashboard->count($where);		
-    
-    my @rows;
-    while( my $r = $rs->next ) {
-        # produce the grid
-        my @dashlets = map {$_->{html} . '#' . $_->{url} } sort { $a->{order} <=> $b->{order} } _array $r->{dashlets};
-        
-        push @rows,
-            {
-                id 			=> ''.$r->{_id},
-                name		=> $r->{name},
-                description	=> $r->{description},
-                is_main 	=> $r->{is_main},
-                is_system	=> \$r->{is_system},
-                type 		=> $r->{is_columns} eq '1' ? 'T':'O',
-                roles 		=> $r->{role},
-                dashlets	=> \@dashlets
-            };
-    }
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
-    $c->forward('View::JSON');
-}
-
-sub generic : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-}
-
-
-sub list_dashlets : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-
-    my @dash_dirs = map {
-        _dir( $_->root, 'dashlets' )->stringify  
-    } Baseliner->features->list;
-    push @dash_dirs, $c->path_to( 'root/dashlets' ) . "";
-    @dash_dirs = grep { -d } @dash_dirs;
-    my @dashlets = map {
-        my @ret;
-        my $dashlet_dir = $_;
-        for my $f ( grep { -f } _dir($dashlet_dir)->children ) {
-            my $d    = $f->slurp;
-            my $yaml = _load_yaml_from_comment( $d );
-
-            my $metadata = try {
-                _load($yaml);
-            }
-            catch {
-                my $err = shift;
-                _error( _loc( 'Could not load metadata for dashlet %1: %2', $f, $err ) );
-                {};
-            };
-            my @rows = map { +{ field => $_, value => $metadata->{$_} } } keys %{ $metadata || {} };
-            push @ret,
-                {
-                file     => "$f",
-                yaml     => $yaml,
-                metadata => $metadata,
-                rows     => \@rows,
-                };
-        }
-        @ret;
-    } @dash_dirs;
-    #@dashlets;
-    
-    my @rows;
-    my $cnt = 1;
-    for my $dash ( @dashlets ) {
-        push @rows,
-          {
-            id			=> $dash->{metadata}->{html} . '#' . ( $dash->{metadata}->{url} // $cnt++ ),
-            name		=> $dash->{metadata}->{name},
-            description	=> $dash->{metadata}->{description},
-            config		=> $dash->{metadata}->{config}
-            
-          };		
-    }	
-    
-    $c->stash->{json} = { data=>\@rows };
-    $c->forward('View::JSON');
-}
-
-sub update : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    my $action = $p->{action};
-    my (@dashlets); 
-    my $i = 0;
-    
-    foreach my $dashlet (_array $p->{dashlets}){
-        my @html_url = split(/#/, $dashlet);
-
-        my $_dashlet = {};
-        
-        $_dashlet->{html}	=	$html_url[0];
-        $_dashlet->{url}	=  $html_url[1];
-        $_dashlet->{order}	=  ++$i;
-            
-        if($p->{id} ne '-1'){
-            my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{id})})->next;
-            my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
-            if($config_dashlet[0]->{params}){
-                $_dashlet->{params} = $config_dashlet[0]->{params};
-            }			
-        }			
-            
-        push @dashlets, $_dashlet;
-    }
-
-    given ($action) {
-        when ('add') {
-            try{
-                my $row;
-                $row = mdb->dashboard->find({name => $p->{name}})->next;
-                if(!$row){
-                    my @roles;
-                    foreach (_array $p->{roles}){
-                        push @roles, $_;
-                    }
-                    my $dashboard = mdb->dashboard->insert(
-                                    {
-                                        name  => $p->{name},
-                                        description => $p->{description},
-                                        is_main => $p->{dashboard_main_check} ? '1': '0',
-                                        is_columns => $p->{type} eq 'T' ? '1': '0',
-                                        dashlets =>  \@dashlets,
-                                        role => \@roles,
-                                        is_system => '0'
-                                    });
-                    $c->stash->{json} = { msg => _loc('Dashboard added'), success => \1, dashboard_id => ''.$dashboard };
-                }else{
-                    $c->stash->{json} = { msg => _loc('Dashboard name already exists, introduce another dashboard'), failure => \1 };
-                }
-            }
-            catch{
-                $c->stash->{json} = { msg => _loc('Error adding dashboard: %1', shift()), failure => \1 }
-            }
-        }
-        when ('update') {
-            try{
-                my @roles;
-                my  $row = mdb->dashboard->find({name => $p->{name}})->next;
-                foreach (_array $p->{roles}){
-                    push @roles, $_;
-                }
-                mdb->dashboard->update( 
-                    {_id => mdb->oid($p->{id})},
-                    {
-                        '$set' => {
-                            name => $p->{name},
-                            description => $p->{description},
-                            is_main => $p->{dashboard_main_check} ? '1': '0',
-                            is_columns => $p->{type} eq 'T' ? '1': '0',
-                            dashlets => \@dashlets,
-                            role => \@roles,                            
-                        }
-                    }
-                );
-                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
-            }
-            catch{
-                $c->stash->{json} = { msg => _loc('Error modifying dashboard: %1', shift()), failure => \1 };
-            }
-        }
-        when ('delete') {
-            my $dashboard_id = mdb->oid($p->{id});
-            
-            try{
-                mdb->dashboard->remove({_id => $dashboard_id});
-                $c->stash->{json} = { success => \1, msg=>_loc('Dashboard deleted') };
-            }
-            catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting dashboard') };
-            }
-        }
-    }
-    $c->forward('View::JSON');    
-}
-
-
-sub list : Local {
-    my ($self, $c, $dashboard_name) = @_;
-    my $p = $c->req->params;
-    # **********************************************************************************************************
-    # TODO: Hay que controlar los dashboards por perfil ********************************************************
-    # **********************************************************************************************************
-    given ($dashboard_name) {
-        when ('project') {
-            my $system_dashboard = mdb->dashboard->find_one({name => 'Clarive projects'});
-            my @dashlets;
-            my $is_columns;
-            my $dashboard_id;
-            
-            if($system_dashboard){
-                @dashlets = $system_dashboard->{dashlets};
-                $is_columns = $system_dashboard->{is_columns};
-                $dashboard_id = $system_dashboard->{_id}.'';
-            }
-            else{
-                ##Dashlets para el dashboard de proyectos.
-                @dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-                             { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-                            );
-                $is_columns = '1';
-                
-                my @params = qw /projects/; #Aqui van las variables no configurables por el usuario.
-                my $dashboard = mdb->dashboard->insert(
-                    {
-                        name  => 'Clarive projects',
-                        description => 'System dashboard',
-                        dashlets => \@dashlets,
-                        is_columns => '1',
-                        is_system => '1',
-                        system_params => \@params,
-                        role => ['100'] #Public
-                    });
-            }    
-            
-            my @params;
-            my %valores;
-            $valores{projects} = $p->{id_project};
-            push @params, 'system/' . $dashboard_id; 
-            push @params, \%valores;
-
-            for my $dash ( @dashlets ) {
-                $c->forward( $dash->{url}, \@params );
-                $c->stash->{is_columns} = $is_columns;
-                $c->stash->{dashboardlets} = \@dashlets;
-            }			
-    
-        } #End Dashboard Project
-        default {
-            my $dashboard_id = $p->{dashboard_id} ? mdb->oid($p->{dashboard_id}) : undef;
-            my @dashlets;
-            if ($dashboard_id){
-                my $dashboard = mdb->dashboard->find_one({_id => $dashboard_id});
-                @dashlets = _array  $dashboard->{dashlets};
-                for my $dash ( @dashlets ) {
-                    if($dash->{url}){
-                        $c->forward( $dash->{url} . '/' . $dashboard_id.'' );
-                    }
-                }
-                $c->stash->{is_columns} = $dashboard->{is_columns};
-                $c->stash->{dashboardlets} = \@dashlets;
-            }else{
-                my $where = {};
-                my $is_root = $c->model('Permissions')->is_root( $c->username );
-                my @roles;
-                if (!$is_root) {             
-                    @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-                } else {
-                    @roles = map { $_->{id} } mdb->role->find()->all;
-                }
-                my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
-                my @dashboard_ids = ($default_dashboard) if $default_dashboard;
-                push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
-                my @dashboards;
-                map { push @dashboards, mdb->dashboard->find_one( { _id => mdb->oid($_) } ) } @dashboard_ids;
-                $where->{role} = {'$in' => \@roles};
-                $where->{is_system} = '0';
-                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if scalar @dashboards eq 0;
-                if ( scalar @dashboards ){
-                    my $i = 0;
-                    my @dashboard;
-                    my %dash;
-                    for my $dashboard ( @dashboards ){
-                        if($i eq 0){
-                            @dashlets = _array $dashboard->{dashlets};
-                            for my $dash ( @dashlets ) {
-                                if($dash->{url}){
-                                    $c->forward( $dash->{url} . '/' . $dashboard->{_id}.'' );
-                                }
-                            }
-                            $c->stash->{is_columns} = $dashboard->{is_columns};
-                            $c->stash->{dashboardlets} = \@dashlets;
-                        }else{
-                            $dash{$dashboard->{_id}.''} = { name => $dashboard->{name},
-                                               id   => $dashboard->{_id}.'',
-                                             };
-                        }
-                        $i++;
-                    }
-                    @dashboard = values %dash;
-
-                    $c->stash->{dashboards} = \@dashboard;
-                    
-                }else{
-                    ##Dashboard proporcionado por clarive (default)
-                    @dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-                                    { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-                                    { html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
-                                    { html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
-                                    { html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
-#                                    { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
-                                );
-                    my $dashboard = mdb->dashboard->find({is_system => '1', name => 'Clarive'})->next;
-                    if (!$dashboard) {
-                        $dashboard = mdb->dashboard->insert({
-                                name  => 'Clarive',
-                                description => 'Demo dashboard Clarive configurable',
-                                dashlets => \@dashlets,
-                                is_name => '0',
-                                is_columns => '1',
-                                is_system => '1',
-                                role => ['100'] 
-                            });
-                    }
-                    
-                    for my $dash ( @dashlets ) {
-                        $c->forward( $dash->{url} . '/' . $dashboard->{_id}.'' );
-                        $c->stash->{is_columns} = $dashboard->{is_columns};
-                        $c->stash->{dashboardlets} = \@dashlets;
-                    }
-                }
-            }
-        } # End default
-    }	
-    $c->stash->{template} = '/comp/dashboard.html';
-}
-
-sub get_config : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    my @rows = ();
-    my @html_url = split(/#/, $p->{id});
-    
-    if($p->{config}){
-        my $default_config = $c->model('Registry')->get( $p->{config} )->metadata;
-        my %dashlet_config;
-        my %key_description;
-        foreach my $field (_array $default_config){
-            $dashlet_config{$field->{id}} = $field->{default};
-            $key_description{$field->{id}} = $field->{label};
-        }		
-        my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{dashboard_id})})->next;
-        my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
-        
-
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
-                $dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
-            };
-        }
-        
-        if($p->{system} eq 'true'){
-            foreach my $system_id (_array $dashboard->{system_params}){
-                delete $dashlet_config{$system_id};
-                delete $key_description{$system_id};
-            };			
-        }
-        
-        foreach my $key (keys %dashlet_config){
-            push @rows,
-                {
-                    id 			=> $key,
-                    dashlet		=> $html_url[0],
-                    description	=> $key_description{$key},
-                    value 		=> $dashlet_config{$key}
-                };		
-        }
-    }
-    
-    $c->stash->{json} = { data=>\@rows};		
-    $c->forward('View::JSON');	
-    
-}
-
-sub set_config : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    
-    my $dashboard_id = mdb->oid($p->{id_dashboard});
-    my $dashboard_rs = mdb->dashboard->find({_id => $dashboard_id})->next;
-    my $dashlet = $p->{dashlet};
-
-    my @dashlet = grep {$_->{html}=~ $dashlet} _array $dashboard_rs->{dashlets};
-   
-    $dashlet[0]->{params}->{$p->{id}} = $p->{value};
-    
-    my @dashlets = grep {$_->{html}!~ $dashlet} _array $dashboard_rs->{dashlets};
-
-    push @dashlets, @dashlet;
-    mdb->dashboard->update(
-        {_id => $dashboard_id},
-        {
-            '$set' => {
-                dashlets => \@dashlets
-            }
-        });
-    
-    $c->stash->{json} = { success => \1, msg=>_loc('Configuration changed') };	
-    $c->forward('View::JSON');	
-    
-}
-
-sub get_config_dashlet{
-    my ($parent_method, $dashboard_id, $params) = @_;
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
-
-    if($dashboard_id){
-        $default_config->{dashboard_id} = $dashboard_id;
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)})->next;
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array $dashboard_rs->{dashlets};
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };
-        }		
-    }else{
-        
-        my @dashboard_system_id = split "/", $dashboard_id;		
-        $default_config->{dashboard_id} = $dashboard_system_id[1];
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_system_id[1])});
-
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array $dashboard_rs->{dashlets};
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }			
-        
-        my %params = _array $params;
-        if($params){
-            foreach my $key (keys %params){
-                $default_config->{$key} = $params{$key};
-            };				
-        }			
-    }
-    return $default_config;
-}
 
 sub list_pending_jobs: Private{
     my ( $self, $c, $dashboard_id, $params ) = @_;
@@ -2183,32 +1658,6 @@ sub list_pending_jobs: Private{
     }
     $c->stash->{pending_jobs} =\@pending_jobs;
 }
-
-# sub list_topics: Private{
-#     my ( $self, $c, $dashboard_id ) = @_;
-#     my $username = $c->username;
-#     #my (@topics, $topic, @datas, $SQL);
-    
-#     #CONFIGURATION DASHLET
-#     ##########################################################################################################
-#     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
-#     if($dashboard_id ) {
-#         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
-#         my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
-        
-#         if($config_dashlet[0]->{params}){
-#             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-#                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-#             };              
-#         }       
-#     }   
-#     ##########################################################################################################      
-    
-#     # go to the controller for the list
-#     my $p = { limit => $default_config->{rows}, username=>$c->username };
-#     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
-#     $c->stash->{topics} = \@rows ;
-# }
 
 sub list_filtered_topics_old: Private{
     my ( $self, $c, $dashboard_id ) = @_;

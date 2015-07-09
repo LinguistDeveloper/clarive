@@ -46,12 +46,15 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             Baseliner.message(_('Prefereces'), _('Saved ok') );
         });
     }, 
-    open_editor : function() {
+    open_editor : function(opts) {
+        if( !opts ) opts={};
         var upload = new Ext.Container();
+        var username = opts.username;
+        var avatar_username = username || Prefs.username;
         upload.on('afterrender', function(){
             var uploader = new qq.FileUploader({
                 element: upload.el.dom,
-                action: '/user/avatar_upload',
+                action: '/user/avatar_upload/' + avatar_username,
                 allowedExtensions: ['png'],
                 template: '<div class="qq-uploader">' + 
                     '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
@@ -62,6 +65,9 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
                     Baseliner.message(_('Upload File'), _(res.msg, filename) );
                     reload_avatar_img();
+                    if( opts.on_save ) {
+                        opts.on_save({});
+                    }
                 },
                 onSubmit: function(id, filename){
                     //uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.rel_field });
@@ -92,25 +98,28 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 // reload image
                 var el = Ext.get( img_id );
                 var rnd = Math.floor(Math.random()*80000);
-                el.dom.src = '/user/avatar/image.png?' + rnd;
+                el.dom.src = '/user/avatar/'+avatar_username+'/image.png?' + rnd;
         };
         var gen_avatar = function(){
-            Baseliner.ajaxEval('/user/avatar_refresh', {}, function(res){
+            Baseliner.ajaxEval('/user/avatar_refresh/' + avatar_username, {}, function(res){
                 Baseliner.message( _('Avatar'), res.msg );
                 reload_avatar_img();
+                if( opts.on_save ) {
+                    opts.on_save({});
+                }
             });
         };
         var rnd = Math.floor(Math.random()*80000); // avoid caching
-        Baseliner.ajaxEval('/user/user_data', {}, function(res){
+        Baseliner.ajaxEval('/user/user_data', { username: username }, function(res){
             if( !res.success ) {
                 Baseliner.error( _('User data'), res.msg );
                 return;
             }
-            var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
+            var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/'+avatar_username+'/image.png?{1}" />', img_id, rnd );
             var api_key = res.data.api_key;
             var default_dashboard = res.data.dashboard;
             var gen_apikey = function(){
-                Baseliner.ci_call('user', 'save_api_key', {}, function(res){
+                Baseliner.ci_call('user', 'save_api_key', { for_username: username }, function(res){
                     Baseliner.message( _('API Key'), res.msg );
                     if( res.success ) {
                         api_key.setValue( res.api_key );
@@ -123,72 +132,88 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 });
             };
             var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
-             var change_dashboard_form = new Ext.FormPanel({
-                url: '/user/change_dashboard',
-                frame: false,
-                border: false,
-                labelWidth: 100, 
-                timeout: 120,
-                 items: [
-                     new Baseliner.DashboardBox({ fieldLabel: _('Default dashboard'), name:'dashboard', singleMode: true, allowBlank: true, baseParams: { username: true }, value: default_dashboard })
-                 ],
+            // language combo
+            var language_pref = res.data.language_pref;
+            var installed_languages = res.languages;
+            var lang_arr = [];
+            for( var ln in installed_languages ) {
+                var lang_name = installed_languages[ln];
+                lang_arr.push([ ln, _(lang_name)||_(ln) ]);
+            }
+            lang_arr = lang_arr.sort(function(a,b){ return a[1].toUpperCase() > b[1].toUpperCase() ? 1 : b[1].toUpperCase() > a[1].toUpperCase() ? -1 : 0 });
+            var language = new Baseliner.ComboDouble({
+                fieldLabel: _('Interface Language'), 
+                name: 'language_pref', 
+                value: language_pref || Prefs.language || 'en',
+                data: lang_arr.length ? lang_arr : [ ['en',_('English')], ['es',_('Spanish')] ]
+            });
+            var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
+                       allowBlank: true, baseParams: { username: true }, value: default_dashboard });
+
+             var change_dashboard_form = new Cla.FormPanel({
+                 frame: false,
+                 border: false,
+                 labelWidth: 100, 
+                 timeout: 120,
+                 items: [ language, dashboard ],
                  buttons: [
-                     { text: _('Aceptar'),
+                     { text: username ? _('Save %1', username) : _('Save'),
                           handler: function() {
                              var form = change_dashboard_form.getForm();
-
                              if (form.isValid()) {
-                               form.submit({
-                                   success: function(f,a){
-                                         Baseliner.message(_('Success'), a.result.msg );
-                                         win_change.close(); 
-                                   },
-                                   failure: function(f,a){
-                                         Ext.Msg.show({  
-                                             title: _('Information'), 
-                                             msg: a.result.msg , 
-                                             buttons: Ext.Msg.OK, 
-                                             icon: Ext.Msg.INFO
-                                           });                       
-                                   }
-                               });
+                                 var form_data = change_dashboard_form.getValues() || {};
+                                 Baseliner.ci_call( 'user', 'general_prefs_save', { data:form_data, for_username: username }, function(res){
+                                     Cla.message(_('Save'), _('General Preferences Saved') );
+                                     if( !username && language.getValue() != language_pref ) {
+                                         Cla.confirm(_('To correctly visualize language changes, you need to reload the page. Do you want to do that now?'), 
+                                             function(){
+                                                 window.location.href = window.location.href;
+                                             });
+                                     }
+                                     if( opts.on_save ) {
+                                         opts.on_save(res);
+                                     }
+                                 }, function(res){
+                                     Cla.error(_('Error'), _('Could not save general preferences: %1', res.msg) );
+                                 });
                              }
                          }
                      }
                 ]
             });
+
             var preftabs = new Ext.TabPanel({ 
                 activeTab: 0, 
                 plugins: [ new Ext.ux.panel.DraggableTabs()], 
                 items: [
                     { xtype:'panel', layout:'form', frame: false, border: false,
-                        title: _('Avatar'),
-                        bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
-                        items: [
-                            { xtype:'container', fieldLabel:_('Current avatar'), html: img },
-                            { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Change Avatar'), handler:gen_avatar },
-                            { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
-                          ]
-                    },
-                    { xtype:'panel', layout:'form', frame: false, border: false,
-                        title: _('Default dashboard'),
+                        title: _('General'),
                         bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
                         items: [
                             change_dashboard_form
                         ]
                     },
+                    { xtype:'panel', layout:'form', frame: false, border: false,
+                        title: _('Avatar'),
+                        bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
+                        items: [
+                            { xtype:'container', fieldLabel:_('Current avatar'), html: img },
+                            { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Change Avatar'), handler: gen_avatar },
+                            { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
+                          ]
+                    },
                     { title: _('API'), layout:'form', frame: false, border: false, 
                         bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
                         items: [
                             api_key,
-                            { xtype:'button',  fieldLabel: _('Save API Key'), width: 150, scale:'large', text:_('Save'), handler: save_apikey },
-                            { xtype:'button',  fieldLabel: _('Generate API Key'), width: 150, scale:'large', text:_('Generate API Key'), handler: gen_apikey }
+                            { xtype:'button',  fieldLabel: _('Generate API Key'), width: 150, scale:'large', text:_('Generate API Key'), handler: gen_apikey },
+                            { xtype:'button',  fieldLabel: _('Save API Key'), width: 150, scale:'large', text:_('Save Current API Key'), handler: save_apikey }
                         ]
                     }
                 ]
             });
             var win = new Baseliner.Window({
-                title: _('Preferences'),
+                title: username ? _('Preferences for %1', username) : _('Preferences'),
                 layout:'fit', width: 600, height: 400, 
                 items: [ preftabs ]
             });
