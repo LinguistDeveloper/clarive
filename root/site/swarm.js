@@ -446,8 +446,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     
                     self.comprobar_timer_usuario(row);
                     //alert("compruebo timer usuario");
-                    self.comprobar_timer_nodo();
 
+                    if(self.max_node != 0){
+                            self.comprobar_timer_nodo(self.max_node, self.min_node);
+                    }
                     /*if(self.nodos_modificados.length >= 2){
 
                     self.comprobar_nodo_modificado(); 
@@ -496,7 +498,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }else{
 
                         self.comprobar_timer_usuario(row);
-                        self.comprobar_timer_nodo();
+
+                        if(self.max_node != 0 && self.min_node != 0){
+                            self.comprobar_timer_nodo(self.max_node, self.min_node);
+                        }
 
                         /*if(self.nodos_modificados.length >= 2){
 
@@ -686,7 +691,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill","#FFFFFF").text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
 
         }
@@ -700,7 +705,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill","#000000").text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
         }
 
@@ -714,7 +719,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.texto.enter().append('text').attr("fill",self.opuesto).text(function(d) { return d.source.parent;});   
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
-            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
+            self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
             self.node.exit().remove();
 
         }
@@ -1092,32 +1097,46 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.force.start();
 
     },
-    comprobar_timer_nodo : function(){
+    comprobar_timer_nodo : function(max_node, min_node){
 
         var self = this;
+
+        var max_node = max_node;
+        var min_node = min_node;
 
         var j = 0;
 
         var contador =0;
+        var max_count = 0;
+
+        for (w=0; w<self.nodes.length; w++){
+            if(self.nodes[w].node != "usuarios" && self.nodes[w].node != "iniciales" && self.nodes[w].node != "raiz"){
+                max_count ++;
+                //alert("este es el nodo a contar"+self.nodes[w].node +" y esto lo que contamos "+max_count);
+            }
+
+        }
 
         //500 ES EL MAXIMO DE NODOS QUE PUEDE HABER EN LA PANTALLA PINTADOS.
-        if(self.nodes.length > 500){
+        if(max_count > max_node){
+
             while (j < self.nodes.length){
 
-                for (h=1; h< self.nodes.length; h++){
+                for (h=0; h< self.nodes.length; h++){
 
-                    if(self.nodes[j].parent==self.nodes[h].parent){
+                    if(self.nodes[h].node != "usuarios" && self.nodes[h].node != "iniciales" && self.nodes[h].node != "raiz" && self.nodes[j].parent==self.nodes[h].parent){
                         contador++;
                     }
                     //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
-                    if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > 7){
+                    if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > min_node){
 
-                        //alert("entro aqui"+ self.nodes.length);
-                   
+                        alert("entro aqui"+ contador +"  "+ self.nodes[j].parent);
+                        
                         var i = 0;
                         while(i < self.links.length){
-                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
 
+                                if(self.links[i].source.node == self.nodes[j].node && self.links[i].target.node == "iniciales"){
+                                             //alert("borro el link "+self.links[i].source.node +" "+ self.links[i].target.node+" el nodo j es "+self.nodes[j].node);
                                     self.links.splice(self.links.indexOf(self.links[i]),1);
                                     i=self.links.length;
 
@@ -1134,10 +1153,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 }
 
                 contador=0;
-
                 j++;
 
             }
+
         }
 
         self.force.start();
@@ -1673,6 +1692,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     getLuxColor : function(hex,lum) {
 
+        if ( !hex || hex == null || hex == 'null') return;
         // validate hex string
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
@@ -1763,7 +1783,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
         var limit = 100;
         if ( !self.anim_running ) return;
-        Cla.ajax_json('/swarm/activity', {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
+
+        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
 
             
             if(res.data.length <= 0){

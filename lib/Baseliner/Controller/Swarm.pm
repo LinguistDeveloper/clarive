@@ -37,7 +37,60 @@ sub leer_log : Local {
     $c->forward('View::JSON');    
 }
 
-sub activity : Local {
+sub activity_by_category : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $limit = $p->{limit} || 1000;
+    my $skip = $p->{skip} || 0;
+    my $start_date = $p->{start_date};
+    my $end_date = $p->{end_date};
+    my $where = { mid=>{'$ne'=>undef} };
+    
+    #my $days = $p->{days} || 2592000000;
+    # my $days = $p->{days} || 31536000000;
+    # $days = $days/86400000;
+
+    my $date = Class::Date->now();
+    # my $filter_date = $date - ($days . 'D');
+ 
+    my $time_filter = {};
+
+    if ( $start_date && $end_date) {
+        $time_filter = { '$and' => [{ts => {'$gte' => $start_date }},{ts => {'$lte' => $end_date}}]};; # { '$and' => [{ts => {'$gte' => '2014-12-03'}},{ts => {'$lte' => '2015-07-01'}}]};
+    } elsif ( $start_date ) {
+        $time_filter = { ts => {'$gte' => $start_date }};
+    } elsif ( $end_date ) {
+        $time_filter = { ts => {'$lte' => $end_date }};
+    }
+
+    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
+    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+
+    my @mids = map { $_->{mid}} @ev_rs;
+    my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+    my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
+
+# _log _dump %cats;
+# _log _dump %category_colors;
+    my @data;
+    for my $ev (@ev_rs) {
+        my $parent = $cats{$ev->{mid}};
+        my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
+            $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
+        my $actor = $ev->{username} || 'clarive';
+        #$action = 'add';
+        if ($parent){
+            push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
+        } else {
+            push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
+        }
+    }
+ # _log( \@data );
+    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
+    $c->forward('View::JSON');    
+}
+
+sub activity_by_status: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my $limit = $p->{limit} || 1000;
@@ -64,8 +117,8 @@ sub activity : Local {
     }
 
 
-    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
-    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+    my $total = mdb->activity->find({ event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter })->count;
+    my @ev_rs = mdb->activity->find({ event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
     my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
@@ -75,13 +128,14 @@ sub activity : Local {
 # _log _dump %category_colors;
     my @data;
     for my $ev (@ev_rs) {
-        my $parent = $cats{$ev->{mid}};
+        my $parent = $ev->{event_key} =~ /(topic.create)/ ? _loc('New'): $ev->{vars}->{status};
+        my $category = $cats{$ev->{mid}};
         my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
             $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
         my $actor = $ev->{username} || 'clarive';
         #$action = 'add';
         if ($parent){
-			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
+			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$category} };
 		} else {
             push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
         }
