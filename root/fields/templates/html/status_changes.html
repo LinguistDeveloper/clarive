@@ -33,7 +33,7 @@
                         </tr>
 % }
                         <tr>
-% if ( $meta->{show_real_dates} ) {
+% if ( !$meta->{show_real_dates} ) {
                         <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% Util->ago( $data->{created_on_epoch} )   %></td>
 % } else {
                         <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% $data->{created_on}   %></td>
