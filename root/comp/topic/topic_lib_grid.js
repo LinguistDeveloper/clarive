@@ -402,9 +402,21 @@ Cla.topic_grid = function(params){
     });
    
     var topic_create_for_category = function(args){
-        Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { 
-            title: args.title, new_category_id: args.id,
-            new_category_name: args.name, _parent_grid: grid_topics.id }, new Date().getTime().toString() );
+        Baseliner.ajaxEval( '/topic/list_category', { action:'create'}, function(res){
+            var data = res.data;
+            if (data.length > 0){
+                var data_ok = 0;
+                data.forEach(function(value){
+                    if (value.id == args.id) { 
+                        data_ok = 1;
+                        Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { title: args.title, new_category_id: args.id, new_category_name: args.name, _parent_grid: grid_topics.id }, new Date().getTime().toString());
+                     };
+                 });
+                if (data_ok == 0) { Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'))}
+            } else {
+                Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'));
+            }
+        });
     };
 
     var add_topic = function() {
