@@ -510,7 +510,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var show_dashboards = function(callback) {
             if( !self.$tree_dashboards ) {
-                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', baseParams: { show_reports: true } });
+                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', baseParams: { ordered: true, show_reports: true } });
                 self.add( self.$tree_dashboards );
                 self.$tree_dashboards.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
