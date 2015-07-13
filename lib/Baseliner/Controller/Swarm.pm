@@ -44,6 +44,8 @@ sub activity_by_category : Local {
     my $skip = $p->{skip} || 0;
     my $start_date = $p->{start_date};
     my $end_date = $p->{end_date};
+    my $statuses = $p->{statuses} || undef;
+    my $categories = $p->{categories} || undef;
     my $where = { mid=>{'$ne'=>undef} };
     
     #my $days = $p->{days} || 2592000000;
@@ -63,30 +65,50 @@ sub activity_by_category : Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
-    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
-    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter})->count;
+    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter})->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
     my @mids = map { $_->{mid}} @ev_rs;
-    my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+    #my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+
+    my %cats = ();
+    if ( $categories ) {
+      %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids), category_id => mdb->in($categories)})->all;
+    } else {    
+      %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;   
+    }
+#_log "CATS===>"._dump %cats;
+    #my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids), category_id => mdb->in($categories)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
-# _log _dump %cats;
+#_log "mids de camio===>>"._dump keys %cats;
 # _log _dump %category_colors;
     my @data;
     for my $ev (@ev_rs) {
-        my $parent = $cats{$ev->{mid}};
-        my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
-            $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
-        my $actor = $ev->{username} || 'clarive';
-        #$action = 'add';
-        if ($parent){
-            push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
-        } else {
-            push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
-        }
+        _log "mid==>".$ev->{mid};
+        #if(grep {$ev->{mid} eq $_}  keys %cats){
+            my $parent = $cats{$ev->{mid}};
+            my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
+                $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
+            my $actor = $ev->{username} || 'clarive';
+
+
+
+            #$action = 'add';
+            if ($parent){
+                push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
+            } else {
+    #_log _dump $ev;
+                if (! $categories ) {
+                    push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
+                }#else{
+                    
+                #}
+            }
+        #}
     }
  # _log( \@data );
-    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
+    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, count_query=>scalar @ev_rs, total => $total };
     $c->forward('View::JSON');    
 }
 

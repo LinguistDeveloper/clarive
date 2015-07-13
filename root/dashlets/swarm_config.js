@@ -9,6 +9,14 @@
     });*/
 
 
+
+
+    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
+    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
+
+
+
+
     return common.concat([
         { xtype:'textfield', fieldLabel: _('Background Color'), name:'background_color', value:data.background_color||'#FFFFFF' },
         new Baseliner.ComboDouble({ fieldLabel: _('Animation Start Mode'), name:'start_mode', value: data.start_mode || 'auto', data: [
@@ -26,8 +34,38 @@
             anchor: '40%',
             data: [ ['/swarm/activity_by_category',_('Category')], ['/swarm/activity_by_status',_('Status')] ],  // patch?
             value: data.controller || '/swarm/activity_by_category'
-        })
+        }),
         //limit
+
+
+        {
+            xtype: 'label',
+            text: _('Topics selection criteria'),
+            style: {
+                // 'margin': '10px',
+                'font-size': '12px',
+                'font-weight': 'bold'
+            }
+        },
+        { xtype:'panel', 
+          hideBorders: true, 
+          layout:'column', 
+          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+          items:[
+            { layout:'form', 
+              columnWidth: 1, 
+              bodyStyle: 'background:transparent;',
+              items: [
+                ccategory,
+                cstatus,
+                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') }
+              ]
+            }
+          ]
+        }
+
+
+
     ])
 })
 

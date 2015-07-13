@@ -16,6 +16,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.anim_running =  false;
         self.i=0;
         self.j=0;
+        self.limit=100;
+        self.partial_count = 0;
         //self.contador=1000;
         self.days = 31536000000;
         self.color=0;
@@ -363,7 +365,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.i = self.res.total;
 
     },
-    anim : function(limit){
+    anim : function(){
 
         var self = this;
 
@@ -371,8 +373,14 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             return;
         }
 
-        if(self.i >= self.res.total){
-
+        console.log("Patial==>");
+        console.log(self.partial_count);
+        console.log("Total==>");
+        console.log(self.res.total);
+                
+        if( self.partial_count >= self.res.total && self.j >= self.res.data.length ){
+            //alert("entandor");
+            self.partial_count = 0;
             self.i=0;
             self.j=0;
             self.initiated=false;
@@ -404,7 +412,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             return;
         }
 
-        if ( self.i >= self.res.skip) {
+        if ( self.j >= self.res.data.length) {
             self.data_load(self.res.skip);
             self.j = 0;
             return;
@@ -500,7 +508,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         self.comprobar_timer_usuario(row);
 
                         if(self.max_node != 0 && self.min_node != 0){
-                            self.comprobar_timer_nodo(self.max_node, self.min_node);
+                            fself.comprobar_timer_nodo(self.max_node, self.min_node);
                         }
 
                         /*if(self.nodos_modificados.length >= 2){
@@ -941,6 +949,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.userstart(row);
         self.start({ row: row, timer: (10-self.slider.getValue())*100 });
     },
+
     add_user : function(row){
 
         var self = this;
@@ -1130,7 +1139,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
                     if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > min_node){
 
-                        alert("entro aqui"+ contador +"  "+ self.nodes[j].parent);
+                        //alert("entro aqui"+ contador +"  "+ self.nodes[j].parent);
                         
                         var i = 0;
                         while(i < self.links.length){
@@ -1781,13 +1790,19 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     },
     data_load: function(skip) {
         var self = this;
-        var limit = 100;
-        if ( !self.anim_running ) return;
+        //if ( !self.anim_running ) return;
+        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: self.limit, skip: skip, statuses: self.statuses, categories: self.categories}, function(res){
 
-        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: limit, skip: skip}, function(res){
+        console.log(res);
 
-            
-            if(res.data.length <= 0){
+
+        
+            if(res.data.length<=0 && res.total>0){
+                //alert("ento aquei");
+                self.data_load(self.res.skip);
+                self.j = 0;
+            }
+            if(res.total<=0){
                 alert(_("No data for selection dates.  Please select another period"));
                 //self.mostrar=true;
                 self.stop_anim();
@@ -1814,11 +1829,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 self.initiated = true;
             }
 
+            alert(res.count_query);
+            self.partial_count += res.count_query;
+
+
             self.anim_running = true;
             self.btn_start.disable();
             self.btn_pause.enable();
             self.btn_stop.enable();
-            setTimeout(function(){ self.anim(limit); }, (10-self.slider.getValue())*100 );
+            setTimeout(function(){ self.anim(); }, (10-self.slider.getValue())*100 );
+      
         });
     }
 
