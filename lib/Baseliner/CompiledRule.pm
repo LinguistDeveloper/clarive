@@ -147,6 +147,13 @@ sub compile {
                     my (\$self,\$stash)=\@_;
                     $dsl 
                 };
+                sub call {
+                    my (\$id_rule, \$stash)=\@_;
+
+                    my \$rule = Baseliner::CompiledRule->new(id_rule => "\$id_rule");
+                    \$rule->compile;
+                    return \$rule->run(stash => \$stash)->{ret};
+                }
                 1;
             }
         };

@@ -1403,6 +1403,18 @@ register 'statement.include' => {
     },
 };
 
+register 'statement.call' => {
+    text => 'CALL rule',
+    icon => '/static/images/icons/cog.png', 
+    holds_children => 0,
+    data => { id_rule=>'', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+
+        "call($n->{id_rule},\$stash);";
+    },
+};
+
 sub include_rule {
     my ($self, $id_rule, %p) = @_;
     my @tree = $self->build_tree( $id_rule, undef );
