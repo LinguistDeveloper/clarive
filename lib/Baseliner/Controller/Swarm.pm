@@ -108,7 +108,7 @@ sub activity_by_category : Local {
         #}
     }
  # _log( \@data );
-    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, count_query=>scalar @ev_rs, total => $total };
+    $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
     $c->forward('View::JSON');    
 }
 
@@ -119,6 +119,7 @@ sub activity_by_status: Local {
     my $skip = $p->{skip} || 0;
     my $start_date = $p->{start_date};
     my $categories = $p->{categories} || undef;
+    my $statuses = $p->{statuses} || undef;
     my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
 	
@@ -139,11 +140,21 @@ sub activity_by_status: Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
+    my @statuses_mids;
     my @category_mids;
+
+
+    my @statuses_ids = _array($statuses);
+    my @category_ids = _array($categories);
 
     my $condition = { event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter };
 
-    my @category_ids = _array($categories);
+    if(@statuses_ids){
+
+        @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($statuses)})->all;
+        $condition->{'vars.status'} = mdb->in(@statuses_mids);
+
+    }
 
     if ( @category_ids ) {
       @category_mids = map { $_->{mid} } mdb->topic->find({ category_id => mdb->in($categories)})->all;
