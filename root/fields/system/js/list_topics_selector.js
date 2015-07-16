@@ -24,8 +24,9 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	var form = params.form.getForm();
+
     var filter_field = form.findField( meta.filter_field );
-	
+
 	var topics = new Array();
     var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
 	var id_required = Ext.id()
@@ -139,24 +140,48 @@ params:
 //        // alert(meta.name_field + " " + allow);
 //		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
 //	}
+	obj.push(topic_box);
 
     if ( filter_field ) {
-        filter_field.on('change',function (argument) {
+            topic_box_store.on('load',function(argument){
+            var mids = "";
+            var value = filter_field.items.items;
+            value.forEach(function(val){
+                mids += val.value + ",";
+            });
+            mids = mids.substr(0, mids.length-1);
             var meta_filter = meta.filter;
-            if ( meta_filter ) {
-                //alert(meta_filter.replace('{','R'));
+            var txt_filter
+            if ( meta.filter != 'none' && meta_filter.length>0 ) {
                meta_filter = "," + meta_filter.replace("{","");
             } else {
               meta_filter = "}";
             }
-
-            var txt_filter = '{ "'+ meta.filter_data +'":["' + filter_field + '"]' + meta_filter;
-            // var txt_filter = '{ "'+ meta.filter_data +'":["' + filter_field.getValue() + '"]}';
-            alert(txt_filter);
+            if (meta.filter_data) { 
+                txt_filter = '{ "'+ meta.filter_data +'":["' + mids + '"]' + meta_filter;
+            } else {
+                txt_filter = '{ "'+ filter_field.name +'":["' + mids + '"]' + meta_filter;
+            };
+            topic_box_store.baseParams['filter'] = txt_filter;
+            topic_box.removeAll();
+        });
+        filter_field.on('change',function (argument) {
+            var meta_filter = meta.filter;
+            var txt_filter
+            if ( meta.filter != 'none' && meta_filter.length>0 ) {
+               meta_filter = "," + meta_filter.replace("{","");
+            } else {
+              meta_filter = "}";
+            }
+            if (meta.filter_data) { 
+                txt_filter = '{ "'+ meta.filter_data +'":["' + filter_field.getValue() + '"]' + meta_filter;
+            } else {
+                txt_filter = '{ "'+ filter_field.name +'":["' + filter_field.getValue() + '"]' + meta_filter;
+            };
 
             topic_box_store.baseParams['filter'] = txt_filter;
             topic_box.setValue(undefined);
-            topic_box.removeAllItems();
+            topic_box.removeAll();
             topic_box.killItems();
             topic_box_store.load();
         });
