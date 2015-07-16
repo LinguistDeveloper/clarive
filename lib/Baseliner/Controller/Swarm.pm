@@ -44,6 +44,8 @@ sub activity_by_category : Local {
     my $skip = $p->{skip} || 0;
     my $start_date = $p->{start_date};
     my $end_date = $p->{end_date};
+    my $statuses = $p->{statuses} || undef;
+    my $categories = $p->{categories} || undef;
     my $where = { mid=>{'$ne'=>undef} };
     
     #my $days = $p->{days} || 2592000000;
@@ -63,27 +65,47 @@ sub activity_by_category : Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
-    my $total = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->count;
-    my @ev_rs = mdb->activity->find({ event_key=> qr/^event.topic/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+    my @category_mids;
+
+    my $condition = { event_key=> qr/^event.topic/, %$time_filter};
+
+    my @category_ids = _array($categories);
+
+    if ( @category_ids ) {
+      @category_mids = map { $_->{mid} } mdb->topic->find({ category_id => mdb->in($categories)})->all;
+      $condition->{mid} = mdb->in(@category_mids);
+    }
+
+    my $total = mdb->activity->find($condition)->count;
+    my @ev_rs = mdb->activity->find($condition)->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
     my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+
+#_log "CATS===>"._dump %cats;
+    #my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids), category_id => mdb->in($categories)})->all;
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
-# _log _dump %cats;
+#_log "mids de camio===>>"._dump keys %cats;
 # _log _dump %category_colors;
     my @data;
     for my $ev (@ev_rs) {
-        my $parent = $cats{$ev->{mid}};
-        my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
-            $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
-        my $actor = $ev->{username} || 'clarive';
-        #$action = 'add';
-        if ($parent){
-            push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
-        } else {
-            push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
-        }
+        _log "mid==>".$ev->{mid};
+        #if(grep {$ev->{mid} eq $_}  keys %cats){
+            my $parent = $cats{$ev->{mid}};
+            my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
+                $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
+            my $actor = $ev->{username} || 'clarive';
+
+
+
+            #$action = 'add';
+            if ($parent){
+                push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$parent} };
+            } else {
+                push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
+            }
+        #}
     }
  # _log( \@data );
     $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
@@ -96,6 +118,8 @@ sub activity_by_status: Local {
     my $limit = $p->{limit} || 1000;
     my $skip = $p->{skip} || 0;
     my $start_date = $p->{start_date};
+    my $categories = $p->{categories} || undef;
+    my $statuses = $p->{statuses} || undef;
     my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
 	
@@ -116,12 +140,33 @@ sub activity_by_status: Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
+    my @statuses_mids;
+    my @category_mids;
 
-    my $total = mdb->activity->find({ event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter })->count;
-    my @ev_rs = mdb->activity->find({ event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter })->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
+
+    my @statuses_ids = _array($statuses);
+    my @category_ids = _array($categories);
+
+    my $condition = { event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter };
+
+    if(@statuses_ids){
+
+        @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($statuses)})->all;
+        $condition->{'vars.status'} = mdb->in(@statuses_mids);
+
+    }
+
+    if ( @category_ids ) {
+      @category_mids = map { $_->{mid} } mdb->topic->find({ category_id => mdb->in($categories)})->all;
+      $condition->{mid} = mdb->in(@category_mids);
+    }
+
+    my $total = mdb->activity->find($condition)->count;
+    my @ev_rs = mdb->activity->find($condition)->sort({ ts=>1 })->limit($limit)->skip($skip)->all;
 
     my @mids = map { $_->{mid}} @ev_rs;
     my %cats = map { $_->{mid} => $_->{category_name} } mdb->topic->find({ mid => mdb->in(@mids)})->all;
+
     my %category_colors = map { $_->{name} => $_->{color} } mdb->category->find->fields({name=>1,color=>1})->all;
 
 # _log _dump %cats;

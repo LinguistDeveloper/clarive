@@ -646,7 +646,7 @@
                     copy.setText( name_field );  // keep original node text name
                     if (is_ok == false ) { return false };
                 } else if (/dashlet.swarm/.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
-                    copy.attributes.data = { 'autorefresh':"0", 'background_color':'#fff', 'columns':"6",'rows':"1",'start_mode':'auto',limit:'' };
+                    copy.attributes.data = { 'autorefresh':"0", 'background_color':'#FFFFFF', 'columns':"6",'rows':"1",'start_mode':'auto',limit:'' };
                     copy.setText( copy.attributes.name );  // keep original node text name
                 } else {
                     copy.setText( copy.attributes.name );  // keep original node text name
