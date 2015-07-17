@@ -972,10 +972,11 @@ sub variables_like_me {
 
     my @recs = Baseliner::Role::CI->load_from_search({ collection=>'variable' });
     my @vars = map { $class->_build_ci_instance_from_rec($_) } @recs;
-    
+
     my @final;
     if( $class eq 'Baseliner::Role::CI' ) {
         if( my $classname = $p{classname} ) {
+            ($classname) = _array($classname) if ref $classname;
             @final = grep { defined $_->var_ci_class && $_->var_ci_class eq $classname } @vars;
         } elsif( my $roles = $p{role} ) {
             for my $role ( _array( $roles ) ) {
