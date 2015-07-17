@@ -1134,6 +1134,7 @@ sub run {
 
     if( $rollback_now ) {
         # finish job and start rollback
+        $stash->{job_mode} = 'rollback';
         $self->save;
         goto ROLLBACK if $rollback_now;
     }
