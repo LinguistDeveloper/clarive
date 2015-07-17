@@ -29,6 +29,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.pintar=0;
         self.nodos_modificados=[];
         self.contador_modificado=0;
+        self.parse_status = 0;
+        self.parse= 0;
 
         self.date = new Date();
         self.fecha_fin = new Date();
@@ -444,12 +446,39 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.cambio_realtime=true;
 
             if( row.parent ) {
+
                 if( !self.parents[row.parent] ) {
 
-                    self.parents[row.parent] = true;
-                    self.add_inicial( row.parent );
-                    var row = self.res.data[ self.j-- ];
-                    self.i--;
+
+                    if(self.not_in_status == 'on'){
+
+                        var i = 0;
+                        var encontrado = false;
+
+                        while (i < self.parse.data.length){
+                            if(row.parent == self.parse.data[i]){
+                                self.parents[row.parent] = true;
+                                var row = self.res.data[ self.j-- ];
+                                self.i--;
+                                i=self.parse.data.length;
+                                encontrado=true;
+                            }
+                            i++;
+                        }
+
+                        if(!encontrado){
+                            self.parents[row.parent] = true;
+                            self.add_inicial( row.parent );
+                            var row = self.res.data[ self.j-- ];
+                            self.i--;
+                        }
+
+                    }else{
+                        self.parents[row.parent] = true;
+                        self.add_inicial( row.parent );
+                        var row = self.res.data[ self.j-- ];
+                        self.i--;
+                    }
 
                 }else{
                     
@@ -463,20 +492,55 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     self.comprobar_nodo_modificado(); 
 
-                    }else*/ if(row.ev == 'add') {
+                    }else*/ 
 
-                        self.add(row);
+                    if(self.not_in_status == 'on'){
 
-                    }else if(row.ev == 'mod') {
+                        var i = 0;
+                        var encontrado = false;
 
-                        self.modify(row);
+                        while (i < self.parse.data.length){
+                            if(row.parent == self.parse.data[i]){
+                                self.del(row);
+                                i=self.parse.data.length;
+                                encontrado=true;
+                            }
+                            i++;
+                        }
 
-                    }else if(row.ev == 'del'){
+                        if(!encontrado){
+                            if(row.ev == 'add') {
 
-                        self.del(row);
+                                self.add(row);
+
+                            }else if(row.ev == 'mod') {
+
+                                self.modify(row);
+
+                            }else if(row.ev == 'del'){
+
+                                self.del(row);
+
+                            }
+                        }
+
+                    }else{
+
+                        if(row.ev == 'add') {
+
+                            self.add(row);
+
+                        }else if(row.ev == 'mod') {
+
+                            self.modify(row);
+
+                        }else if(row.ev == 'del'){
+
+                            self.del(row);
+
+                        }
 
                     }
-
                 }
             }
             //#########################################################################
@@ -496,40 +560,103 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
             if(row.t==self.date){
                 //alert("entro aqui");
+                
                 if( row.parent ) {
+
                     if( !self.parents[row.parent] ) {
 
-                        self.parents[row.parent] = true;
-                        self.add_inicial( row.parent );
-                        var row = self.res.data[ self.j-- ];
-                        self.i--;
 
-                    }else{
+                        if(self.not_in_status == 'on'){
 
-                        self.comprobar_timer_usuario(row);
+                            var i = 0;
+                            var encontrado = false;
 
-                        if(self.max_node != 0 && self.min_node != 0){
-                            self.comprobar_timer_nodo(self.max_node, self.min_node);
+                            while (i < self.parse.data.length){
+                                if(row.parent == self.parse.data[i]){
+                                    self.parents[row.parent] = true;
+                                    var row = self.res.data[ self.j-- ];
+                                    self.i--;
+                                    i=self.parse.data.length;
+                                    encontrado=true;
+                                }
+                                i++;
+                            }
+
+                            if(!encontrado){
+                                self.parents[row.parent] = true;
+                                self.add_inicial( row.parent );
+                                var row = self.res.data[ self.j-- ];
+                                self.i--;
+                            }
+
+                        }else{
+                            self.parents[row.parent] = true;
+                            self.add_inicial( row.parent );
+                            var row = self.res.data[ self.j-- ];
+                            self.i--;
                         }
 
+                    }else{
+                        
+                        self.comprobar_timer_usuario(row);
+                        //alert("compruebo timer usuario");
+
+                        if(self.max_node != 0){
+                                self.comprobar_timer_nodo(self.max_node, self.min_node);
+                        }
                         /*if(self.nodos_modificados.length >= 2){
 
                         self.comprobar_nodo_modificado(); 
 
-                        }else*/ if(row.ev == 'add') {        
+                        }else*/ 
 
-                            self.add(row);
+                        if(self.not_in_status == 'on'){
 
-                        }else if(row.ev == 'mod') {
+                            var i = 0;
+                            var encontrado = false;
 
-                            self.modify(row);
+                            while (i < self.parse.data.length){
+                                if(row.parent == self.parse.data[i]){
+                                    self.del(row);
+                                    i=self.parse.data.length;
+                                    encontrado=true;
+                                }
+                                i++;
+                            }
 
-                        }else if(row.ev == 'del'){
+                            if(!encontrado){
+                                if(row.ev == 'add') {
 
-                            self.del(row);
+                                    self.add(row);
+
+                                }else if(row.ev == 'mod') {
+
+                                    self.modify(row);
+
+                                }else if(row.ev == 'del'){
+
+                                    self.del(row);
+
+                                }
+                            }
+
+                        }else{
+
+                            if(row.ev == 'add') {
+
+                                self.add(row);
+
+                            }else if(row.ev == 'mod') {
+
+                                self.modify(row);
+
+                            }else if(row.ev == 'del'){
+
+                                self.del(row);
+
+                            }
 
                         }
-
                     }
                 }
             }else{
@@ -1140,8 +1267,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
                     if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > min_node){
 
-                        alert("entro aqui"+ contador +"  "+ self.nodes[j].parent);
-                        
+                      
                         var i = 0;
                         while(i < self.links.length){
 
@@ -1790,8 +1916,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var limit = 100;
         if ( !self.anim_running ) return;
 
+        /*
+        <%perl>
+        use JavaScript::Dumper;
+        my @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in(2,61)})->all;
+        my $parse_status = js_dumper[@statuses_mids];
+        </%perl>
 
-        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: self.limit, skip: skip, statuses: self.statuses, categories: self.categories}, function(res){
+        self.parse_status = <% js_dumper \$parse_status %>;*/
+        Cla.ajax_json('/swarm/parse_status', {statuses: self.statuses}, function(parse){
+            //alert(res.data.length);
+            self.parse = parse;
+        });
+
+        Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: self.limit, skip: skip, statuses: self.statuses, categories: self.categories, not_in_status: self.not_in_status}, function(res){
             
             if(res.data.length <= 0){
                 alert(_("No data for selection dates.  Please select another period"));

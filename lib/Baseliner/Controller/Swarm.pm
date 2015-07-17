@@ -15,6 +15,21 @@ register 'dashlet.swarm' => {
     js_file => '/dashlets/swarm_dash.js'
 };
 
+
+
+sub parse_status : Local {
+
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $parse_status = $p->{statuses};
+
+    my @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($parse_status)})->all;
+
+    $c->stash->{json} = { data=>\@statuses_mids };
+    $c->forward('View::JSON');    
+
+}
+
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
@@ -122,7 +137,9 @@ sub activity_by_status: Local {
     my $statuses = $p->{statuses} || undef;
     my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
-	
+	my $not_in_status = $p->{not_in_status};
+
+
     #my $days = $p->{days} || 2592000000;
 	# my $days = $p->{days} || 31536000000;
 	# $days = $days/86400000;
@@ -140,6 +157,11 @@ sub activity_by_status: Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
+    if ($not_in_status == 'on'){
+        $statuses = undef;
+    }
+
+
     my @statuses_mids;
     my @category_mids;
 
@@ -150,10 +172,8 @@ sub activity_by_status: Local {
     my $condition = { event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter };
 
     if(@statuses_ids){
-
         @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($statuses)})->all;
         $condition->{'vars.status'} = mdb->in(@statuses_mids);
-
     }
 
     if ( @category_ids ) {
