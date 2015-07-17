@@ -93,6 +93,7 @@ use Exporter::Tidy default => [
     _regex
     _get_dotted_keys
     _reg_line
+    _pointer
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2297,6 +2298,42 @@ sub _reg_line {
         return $sum;       
     }
 }
+
+sub _pointer {
+    my ($pointer, $data, %options) = @_;
+
+    my $p = $data;
+    my @parts = split /\./, $pointer;
+
+    for (my $i = 0; $i < @parts; $i++) {
+        my $part = $parts[$i];
+
+        if ($part =~ m/^\[(\d+)\]$/) {
+            unless (ref $p eq 'ARRAY') {
+                return unless $options{throw};
+
+                my $path = $i == 0 ? '.' : join('.', @parts[0 .. $i - 1]);
+                die qq{array ref expected at '$path'};
+            }
+
+            $p = $p->[$1];
+        }
+        else {
+            unless (ref $p eq 'HASH') {
+                return unless $options{throw};
+
+                my $path = $i == 0 ? '.' : join('.', @parts[0 .. $i - 1]);
+                die qq{hash ref expected at '$path'};
+            }
+
+            $p = $p->{$part};
+        }
+    }
+
+    return $p;
+}
+
+
 1;
 
 __END__
