@@ -20,7 +20,7 @@ has ssh     => (
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
         my $n = Net::OpenSSH->new( $uri, 
-            master_opts      => [ -F => '/dev/null' ],
+            master_opts      => [ -F => '/dev/null', -o => 'StrictHostKeyChecking=no' ],
             default_ssh_opts => [ -F => '/dev/null' ] 
         );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
