@@ -435,7 +435,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
         row.id = Ext.id();
 
-
         var next_timer = (10-self.slider.getValue())*100;  
         //self.calculo_horas();
 
@@ -449,122 +448,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                 if( !self.parents[row.parent] ) {
 
-
-                    if(self.not_in_status == 'on'){
-
-                        var i = 0;
-                        var encontrado = false;
-
-                        while (i < self.parse.data.length){
-                            if(row.parent == self.parse.data[i]){
-                                self.parents[row.parent] = true;
-                                var row = self.res.data[ self.j-- ];
-                                self.i--;
-                                i=self.parse.data.length;
-                                encontrado=true;
-                            }
-                            i++;
-                        }
-
-                        if(!encontrado){
-                            self.parents[row.parent] = true;
-                            self.add_inicial( row.parent );
-                            var row = self.res.data[ self.j-- ];
-                            self.i--;
-                        }
-
-                    }else{
-                        self.parents[row.parent] = true;
-                        self.add_inicial( row.parent );
-                        var row = self.res.data[ self.j-- ];
-                        self.i--;
-                    }
-
-                }else{
-                    
-                    self.comprobar_timer_usuario(row);
-                    //alert("compruebo timer usuario");
-
-                    if(self.max_node != 0){
-                            self.comprobar_timer_nodo(self.max_node, self.min_node);
-                    }
-                    /*if(self.nodos_modificados.length >= 2){
-
-                    self.comprobar_nodo_modificado(); 
-
-                    }else*/ 
-
-                    if(self.not_in_status == 'on'){
-
-                        var i = 0;
-                        var encontrado = false;
-
-                        while (i < self.parse.data.length){
-                            if(row.parent == self.parse.data[i]){
-                                self.del(row);
-                                i=self.parse.data.length;
-                                encontrado=true;
-                            }
-                            i++;
-                        }
-
-                        if(!encontrado){
-                            if(row.ev == 'add') {
-
-                                self.add(row);
-
-                            }else if(row.ev == 'mod') {
-
-                                self.modify(row);
-
-                            }else if(row.ev == 'del'){
-
-                                self.del(row);
-
-                            }
-                        }
-
-                    }else{
-
-                        if(row.ev == 'add') {
-
-                            self.add(row);
-
-                        }else if(row.ev == 'mod') {
-
-                            self.modify(row);
-
-                        }else if(row.ev == 'del'){
-
-                            self.del(row);
-
-                        }
-
-                    }
-                }
-            }
-            //#########################################################################
-            //#########################################################################
-            //#########################################################################
-        }else{
-            //#########################################################################
-            //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
-            //#########################################################################
-            
-            if(self.cambio_realtime){
-
-                self.date=row.t;
-                self.cambio_realtime=false;
-
-            }
-            //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
-            if(row.t==self.date){
-                //alert("entro aqui");
-                
-                if( row.parent ) {
-
-                    if( !self.parents[row.parent] ) {
-
+                    if(self.statuses){
 
                         if(self.not_in_status == 'on'){
 
@@ -590,26 +474,49 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             }
 
                         }else{
-                            self.parents[row.parent] = true;
-                            self.add_inicial( row.parent );
-                            var row = self.res.data[ self.j-- ];
-                            self.i--;
-                        }
 
+                                var i = 0;
+                                var encontrado = false;
+
+
+                                while (i < self.parse.data.length){
+                                    if(row.parent == self.parse.data[i]){
+                                        self.parents[row.parent] = true;
+                                        self.add_inicial( row.parent );
+                                        var row = self.res.data[ self.j-- ];
+                                        self.i--;
+                                        i=self.parse.data.length;
+                                        encontrado=true;
+                                    }
+                                    i++;
+                                }
+                                if(!encontrado){
+                                    self.parents[row.parent] = true;
+                                    var row = self.res.data[ self.j-- ];
+                                    self.i--;
+                                }
+                        }           
                     }else{
-                        
-                        self.comprobar_timer_usuario(row);
-                        //alert("compruebo timer usuario");
+                        self.parents[row.parent] = true;
+                        self.add_inicial( row.parent );
+                        var row = self.res.data[ self.j-- ];
+                        self.i--;                        
+                    }
 
-                        if(self.max_node != 0){
-                                self.comprobar_timer_nodo(self.max_node, self.min_node);
-                        }
-                        /*if(self.nodos_modificados.length >= 2){
+                }else{
+                    
+                    self.comprobar_timer_usuario(row);
+                    //alert("compruebo timer usuario");
 
-                        self.comprobar_nodo_modificado(); 
+                    if(self.max_node != 0){
+                        self.comprobar_timer_nodo(self.max_node, self.min_node);
+                    }
+                    /*if(self.nodos_modificados.length >= 2){
 
-                        }else*/ 
+                    self.comprobar_nodo_modificado(); 
 
+                    }else*/ 
+                    if(self.statuses){
                         if(self.not_in_status == 'on'){
 
                             var i = 0;
@@ -642,6 +549,37 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                         }else{
 
+                                var i = 0;
+                                var encontrado = false;
+
+                                while (i < self.parse.data.length){
+                                    if(row.parent == self.parse.data[i]){
+
+                                        if(row.ev == 'add') {
+
+                                        self.add(row);
+
+                                        }else if(row.ev == 'mod') {
+
+                                        self.modify(row);
+
+                                        }else if(row.ev == 'del'){
+
+                                        self.del(row);
+
+                                        }
+                                        i=self.parse.data.length;
+                                        encontrado=true;
+                                    }
+                                    i++;
+                                }
+
+                                if(!encontrado){
+                                    self.del(row);
+                                }
+                        }        
+                    }else{
+
                             if(row.ev == 'add') {
 
                                 self.add(row);
@@ -655,10 +593,182 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                 self.del(row);
 
                             }
+                        
+
+                    }
+                }
+            }
+            //#########################################################################
+            //#########################################################################
+            //#########################################################################
+        }else{
+            //#########################################################################
+            //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
+            //#########################################################################
+            
+            if(self.cambio_realtime){
+
+                self.date=row.t;
+                self.cambio_realtime=false;
+
+            }
+            //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
+            if(row.t==self.date){
+                //alert("entro aqui");                
+                if( row.parent ) {
+
+                    if( !self.parents[row.parent] ) {
+
+                        if(self.statuses){
+
+                            if(self.not_in_status == 'on'){
+
+                                var i = 0;
+                                var encontrado = false;
+
+                                while (i < self.parse.data.length){
+                                    if(row.parent == self.parse.data[i]){
+                                        self.parents[row.parent] = true;
+                                        var row = self.res.data[ self.j-- ];
+                                        self.i--;
+                                        i=self.parse.data.length;
+                                        encontrado=true;
+                                    }
+                                    i++;
+                                }
+
+                                if(!encontrado){
+                                    self.parents[row.parent] = true;
+                                    self.add_inicial( row.parent );
+                                    var row = self.res.data[ self.j-- ];
+                                    self.i--;
+                                }
+
+                            }else{
+
+                                    var i = 0;
+                                    var encontrado = false;
+
+
+                                    while (i < self.parse.data.length){
+                                        if(row.parent == self.parse.data[i]){
+                                            self.parents[row.parent] = true;
+                                            self.add_inicial( row.parent );
+                                            var row = self.res.data[ self.j-- ];
+                                            self.i--;
+                                            i=self.parse.data.length;
+                                            encontrado=true;
+                                        }
+                                        i++;
+                                    }
+                                    if(!encontrado){
+                                        self.parents[row.parent] = true;
+                                        var row = self.res.data[ self.j-- ];
+                                        self.i--;
+                                    }
+                            }           
+                        }else{
+                            self.parents[row.parent] = true;
+                            self.add_inicial( row.parent );
+                            var row = self.res.data[ self.j-- ];
+                            self.i--;                        
+                        }
+
+                    }else{
+                        
+                        self.comprobar_timer_usuario(row);
+                        //alert("compruebo timer usuario");
+
+                        if(self.max_node != 0){
+                            self.comprobar_timer_nodo(self.max_node, self.min_node);
+                        }
+                        /*if(self.nodos_modificados.length >= 2){
+
+                        self.comprobar_nodo_modificado(); 
+
+                        }else*/ 
+                        if(self.statuses){
+                            if(self.not_in_status == 'on'){
+
+                                var i = 0;
+                                var encontrado = false;
+
+                                while (i < self.parse.data.length){
+                                    if(row.parent == self.parse.data[i]){
+                                        self.del(row);
+                                        i=self.parse.data.length;
+                                        encontrado=true;
+                                    }
+                                    i++;
+                                }
+
+                                if(!encontrado){
+                                    if(row.ev == 'add') {
+
+                                        self.add(row);
+
+                                    }else if(row.ev == 'mod') {
+
+                                        self.modify(row);
+
+                                    }else if(row.ev == 'del'){
+
+                                        self.del(row);
+
+                                    }
+                                }
+
+                            }else{
+
+                                    var i = 0;
+                                    var encontrado = false;
+
+                                    while (i < self.parse.data.length){
+                                        if(row.parent == self.parse.data[i]){
+
+                                            if(row.ev == 'add') {
+
+                                            self.add(row);
+
+                                            }else if(row.ev == 'mod') {
+
+                                            self.modify(row);
+
+                                            }else if(row.ev == 'del'){
+
+                                            self.del(row);
+
+                                            }
+                                            i=self.parse.data.length;
+                                            encontrado=true;
+                                        }
+                                        i++;
+                                    }
+
+                                    if(!encontrado){
+                                        self.del(row);
+                                    }
+                            }        
+                        }else{
+
+                                if(row.ev == 'add') {
+
+                                    self.add(row);
+
+                                }else if(row.ev == 'mod') {
+
+                                    self.modify(row);
+
+                                }else if(row.ev == 'del'){
+
+                                    self.del(row);
+
+                                }
+                            
 
                         }
                     }
-                }
+                }               
             }else{
 
                 var row = self.res.data[ self.j-- ];
@@ -789,6 +899,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //Nos pasa igual que con el circulo. Si hacemos visible el .text vemos el texto del nodo raiz.
         self.node5.enter().append("text");//.text(a.node);
         self.node5.exit().remove();
+
+                    self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+            self.node3.enter().append("text");
+            self.node3.exit().remove();
 
     },
     add_inicial : function(parent_node){
