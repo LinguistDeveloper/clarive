@@ -189,7 +189,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Remove from Favorites'),
-            icon: '/static/images/icons/favorite.png',
+            icon: '/static/images/icons/delete.gif',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
