@@ -1433,6 +1433,12 @@ sub parse_vars_raw {
                     $str = _name_to_id(parse_vars_raw( data=>$1, vars=>$vars, throw=>$throw,stack=>$stack ));
                     last;
                 }
+                if( $k =~ /^quote_list\(([^\),]+)(?:,(\S))?\)$/ ) {
+                    my $qt = $3 // '"';  # double quote is default
+                    $str = join "$qt $qt", _array( parse_vars_raw( data=>'${'.$1.'}', vars=>$vars, throw=>$throw,stack=>$stack ) );
+                    $str = $qt . $str . $qt;
+                    last;
+                }
                 if( $k =~ /^nvl\(([^\)]+),(.+)\)/ ) {
                     $str = $vars->{$1} // $2;
                     last;
