@@ -52,8 +52,8 @@ sub parse_po {
             }
         }
         close $fh;
-        return "\n /* From po file '$file': */ \n\n"
-        . join( ",\n",@po ) . ",\n";
+        my ($relpath) = $file =~ m{^.*(/[^/]+/lib/.*)$};
+        return ( Clarive->debug ? "\n /* From po file '$relpath': */ \n\n" : "\n/**************/\n\n" ) . join( ",\n",@po ) . ",\n";
     } catch {
         #return "\n /* Error reading po file '$file': \n\n" . shift() . " */ \n\n";
         return '';
