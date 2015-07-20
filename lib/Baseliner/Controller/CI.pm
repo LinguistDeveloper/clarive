@@ -955,6 +955,9 @@ sub load : Local {
     try {
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;
+        my $collection = Util->to_base_class($class);
+        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) )
+            unless $c->has_action("action.ci.view.$collection");
         my $rec = $obj->load;
         Util->_unbless( $rec );
         $rec->{has_bl} = $obj->has_bl;
@@ -1270,11 +1273,13 @@ sub edit : Local {
     local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
-    if ( $p->{mid} ) {
-        my $doc = mdb->master->find_one({ mid=>"$p->{mid}" });
-        _fail _loc 'Could not find CI %1 in database', $p->{mid} unless $doc;
+    if ( my $mid = $p->{mid} ) {
+        my $doc = mdb->master->find_one({ mid=>"$mid" });
+        _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
         my $collection = $doc->{collection};
-        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $collection, username => $c->username );
+        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) ) 
+            unless $c->has_action("action.ci.view.$collection");
+        $has_permission = $c->has_action( 'action.ci.admin.%.'. $collection );
     } else {
         $has_permission = 1;
     }
