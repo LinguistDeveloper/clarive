@@ -20,6 +20,10 @@ sub config  { {} }
 sub version { '' }
 
 BEGIN { $ENV{BALI_FAST}++ }
+BEGIN {
+    $Baseliner::logger = sub {};
+    $Baseliner::_logger = sub {};
+};
 
 sub setup {
     require Clarive::App;
