@@ -434,6 +434,9 @@ msgstr "The packages are going to be filtered by this field"
 msgid "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
 msgstr "Job out of window. Select Custom window if you want a job out of the allowed windows"
 
+msgid "ci:bl"
+msgstr "Environment"
+
 msgid "Franja horaria"
 msgstr "Times"
 

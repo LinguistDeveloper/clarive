@@ -39,7 +39,9 @@ sub list : Local {
         my $n = {};
         $_->{anode} = $_->{_id};
         $n->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
-        $n->{text} = $_->{item};
+        my $locstr = "ci:$_->{item}";
+        my $tx = _loc($locstr);
+        $n->{text} = $tx eq $locstr ? $_->{item} : $tx;
         $n->{icon} = $_->{icon};
         #$_->{id} = $_->{_id};
         $n->{url} = '/ci/list';

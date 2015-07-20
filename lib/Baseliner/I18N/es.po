@@ -21,6 +21,9 @@ msgstr "d/m/Y h:i:s"
 msgid "js_dtd_format"
 msgstr "D d/m/Y h:i:s"
 
+msgid "ci:bl"
+msgstr "Entorno"
+
 msgid "Monday"
 msgstr "Lunes"
 
