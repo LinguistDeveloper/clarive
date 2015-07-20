@@ -849,12 +849,12 @@ sub to_pages {
 
 sub to_base64 {
     require MIME::Base64;
-    return MIME::Base64::encode_base64( shift );
+    return MIME::Base64::encode_base64( shift, shift );
 }
 
 sub from_base64 {
     require MIME::Base64;
-    return  MIME::Base64::decode_base64( shift() );
+    return  MIME::Base64::decode_base64( shift );
 }
 
 =head2 _fail
