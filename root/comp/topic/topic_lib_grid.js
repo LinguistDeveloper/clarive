@@ -57,6 +57,7 @@ Cla.topic_grid = function(params){
     var report_name = params.report_name;
     var fields = params.fields;
     var status_id = params.status_id;
+    var current_state = params.current_state || {}; // from favorites
 
     if(params.data_report){
      report_rows = params.data_report.report_rows;
@@ -145,7 +146,10 @@ Cla.topic_grid = function(params){
     var loading;
     store_topics.on('beforeload',function(){
 
-        if( custom_form_url && custom_form.is_loaded ) {
+        if( current_state.baseParams ) {
+            store_topics.baseParams = current_state.baseParams;
+        }
+        else if( custom_form_url && custom_form.is_loaded ) {
             var fvalues = custom_form.getValues();
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
             store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
@@ -1115,6 +1119,9 @@ Cla.topic_grid = function(params){
         params: {start: 0 },
         emptyText: _('<Enter your search string>')
     });
+    if( current_state.baseParams && current_state.baseParams.query ) {
+        search_field.setValue( current_state.baseParams.query );
+    }
 
     //var pager_tool = new Ext.ux.ProgressBarPager();
 
@@ -1980,6 +1987,13 @@ Cla.topic_grid = function(params){
 
     panel.get_grid = function(){
         return grid_topics;
+    }
+
+    panel.get_current_state = function(){
+        return {
+            baseParams: store_topics.baseParams,
+            icon: '/static/images/icons/topic.png'
+        }
     }
 
     return panel;

@@ -14,6 +14,7 @@
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>; 
     var state_id = 'job-monitor';
+    var current_state = params.current_state || {};
    
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
@@ -444,7 +445,7 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
-            baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
+            baseParams: current_state.baseParams || { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
             remoteGroup: true,
             //groupField: 'when',
@@ -1405,5 +1406,9 @@
     grid.on('destroy', function(){
         autorefresh.stop(task);
     });
+
+    grid.get_current_state = function(){
+        return { baseParams: grid.store.baseParams } 
+    }
     return grid;
 })
