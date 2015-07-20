@@ -38,7 +38,12 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
             self.dataUrl = self.$dataUrl;
         });
         self.on("loadexception", function(loader, node, res) {
-            var obj = Ext.util.JSON.decode( res.responseText );
+            var obj = {};
+            try {
+                obj = Ext.util.JSON.decode( res.responseText );
+            } catch(e){
+                obj = {};
+            }
             if( ! Ext.isObject(obj) ) obj={};
             if( res.status == 401 || obj.logged_out ) {
                 Baseliner.login({ no_reload: 1, on_login: function(){ 
