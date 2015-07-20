@@ -966,6 +966,7 @@ sub load : Local {
         $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $rec->{services} = [ $obj->service_list ];
+        $rec->{password} = '*' x 30;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;
