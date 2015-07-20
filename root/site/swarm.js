@@ -152,7 +152,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .attr('height', '100%')
             .attr('fill', self.background_color )
         //LLAMAMOS AL LAYOUT
+
         self.force = d3.layout.force()
+        //Para probar el cola.d3adaptor
+        //self.force = cola.d3adaptor()
             .nodes(self.nodes)
             .links(self.links)
             .charge(-80)
@@ -361,6 +364,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.enable();
         self.btn_pause.disable();
         self.btn_stop.disable();
+        self.del_user();
+        self.control_bucle = true;
         self.anim_running = false;
         self.i = self.res.total;
 
@@ -613,6 +618,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
             }
             //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
+
             if(row.t==self.date){
                 //alert("entro aqui");                
                 if( row.parent ) {
@@ -764,17 +770,29 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                     self.del(row);
 
                                 }
-                            
-
+                    
                         }
                     }
                 }               
             }else{
 
+                
+
+                
+                //self.del_user();
                 var row = self.res.data[ self.j-- ];
                 self.i--;
 
                 var date = new Date(self.date);
+                var time = new Date(row.t);
+
+                //alert("estoy aqui " + (date.getMinutes()+1) + "esto es el tiempo mas 20 "+ date.getMinutes());
+                //alert("estoy aqui " + (date.getMinutes()) + "esto es el tiempo mas 20 "+ time.getMinutes());
+                /*if((date.getMinutes()+5) <= time.getMinutes() && date.getHours()== time.getHours()){
+                    alert("estoy aqui " + (date.getMinutes()) + "esto es el tiempo mas 20 "+ time.getMinutes());
+                    self.del_user();
+                    time=0;
+                }*/
 
                 //CAMBIO TODO ESTO POR....
                 /*var calculo = self.calcula_contador(date);
@@ -1213,20 +1231,20 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     //alert("llega al while usuario "+d.who +"  el row es  "+row.who + " el usuario  "+self.nodes[j].node);
                 if (self.nodes[j].who ==  row.who && self.nodes[j].node == "usuarios"){
 
-                        self.nodes[j].t = 5;//Reinicia el timer del usuario cuando crea un nodo
-                        var i = 0;
-                        while(i < self.links.length){
-                            if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
+                    self.nodes[j].t = 5;//Reinicia el timer del usuario cuando crea un nodo
+                    var i = 0;
+                    while(i < self.links.length){
+                        if(self.links[i].source.who == row.who && self.links[i].source.node == "usuarios"){
 
-                                self.links.splice(self.links.indexOf(self.links[i]),1);
-                                i=self.links.length;
+                            self.links.splice(self.links.indexOf(self.links[i]),1);
+                            i=self.links.length;
 
-                            } 
-                            i++;
-                        }
+                        } 
+                        i++;
+                    }
 
-                        self.links.push({source: self.nodes[j], target: row });
-                        j=self.nodes.length;
+                    self.links.push({source: self.nodes[j], target: row });
+                    j=self.nodes.length;
 
                 }
 
@@ -1276,7 +1294,35 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
         self.userstart(d);
     },
+    del_user : function() {
 
+        var self = this;
+        var j=0;
+
+        while (j < self.nodes.length){
+            if(self.nodes[j].node == "usuarios"){
+
+                    var k = 0;
+                    while(k < self.links.length){
+                        
+                        if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
+
+                            self.links.splice(self.links.indexOf(self.links[k]),1);
+                            k=self.links.length;
+
+                        } 
+
+                        k++;
+
+                    }
+                self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
+                self.userstart(self.nodes[j]);
+            }
+        j++;
+        }
+
+
+    },
     comprobar_timer_usuario : function(row){
 
         var self = this;
@@ -1291,17 +1337,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     if(self.nodes[j].t <= 4 && self.nodes[j].t > 0){
 
                         //alert("borro el nodo "+self.nodes[j].who);
-
                         var i = 0;
                         while(i < self.links.length){
-                                if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
+                            if(self.links[i].source.who == self.nodes[j].who && self.links[i].source.node == "usuarios"){
 
-                                    self.links.splice(self.links.indexOf(self.links[i]),1);
-                                    i=self.links.length;
+                                self.links.splice(self.links.indexOf(self.links[i]),1);
+                                i=self.links.length;
 
-                                } 
+                            } 
 
-                                i++;
+                            i++;
 
                         }
 
@@ -1310,29 +1355,28 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                         var k = 0;
                         while(k < self.links.length){
-                                if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
+                            
+                            if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
 
-                                    self.links.splice(self.links.indexOf(self.links[k]),1);
-                                    k=self.links.length;
+                                self.links.splice(self.links.indexOf(self.links[k]),1);
+                                k=self.links.length;
 
-                                } 
+                            } 
 
-                                k++;
+                            k++;
 
                         }
 
-
-
-                        var i=0;
+                        /*var i=0;
                         var contador=0;
                         while(i < self.nodes.length){
                             if(self.nodes[i].node == row.node){
                                 contador++;
                             }
                             i++;
-                        }
-                        if (contador==0 && self.nodes[j].who != row.who){
-
+                        }*/
+                        if (self.nodes[j].who != row.who){
+                            alert("borro el nodo " + self.nodes[j].who);
                             self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
                             j=self.nodes.length;
 
