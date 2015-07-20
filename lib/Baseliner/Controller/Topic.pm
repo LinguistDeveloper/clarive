@@ -27,8 +27,8 @@ register 'registor.menu.topics' => {
            my $id = _name_to_id( $name );
            $data->{color} //= 'transparent';
            "menu.topic.$id" => {
-                label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                title    => qq[<div id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></div>],
+                label    => qq[<span id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></span>],
+                title    => qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
                 index    => $seq++,
                 actions  => ["action.topics.$id.view"],
                 url_comp => "/topic/grid?category_id=" . $data->{id},
