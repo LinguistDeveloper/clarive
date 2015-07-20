@@ -38,6 +38,63 @@ Ext.onReady(function(){
         }
     });
     Baseliner.search_box = search_box;
+    Baseliner.favorite_this = function(){
+        var tabpanel = Baseliner.tabpanel();
+        var tab = tabpanel.getActiveTab();
+        var tab_id = tab.getId();
+        var info = Baseliner.tabInfo[tab_id];
+        //console.log( info );
+        // current_state from within tab
+        var current_state = tab.get_current_state ? tab.get_current_state() : {};
+        var title = current_state.title!=undefined 
+                ? current_state.title : tab.get_title 
+                ? tab.get_title() : tab.title;
+        var title_field = new Ext.form.TextField({ fieldLabel: _('Favorite Name'), value: title });
+        if( !info.favorite_this ) {
+            Cla.message(_('Favorite'),_('Current tab does not support saving as favorite'));
+            return; // tab opening mode does not favoriting
+        }
+        var tabfav = info.favorite_this(); 
+        var opp = function(){
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || IC('favorite');
+            var fav_data = {
+                title: title_field.getValue(),
+                click: {
+                    url: '/comp/open_favorite.js',
+                    icon: icon,
+                    title: title_field.getValue(),
+                    tabfav: tabfav,
+                    current_state: current_state,
+                    type:'eval'
+                }
+            };
+            //console.log( tabfav );
+            Cla.ajaxEval( '/lifecycle/favorite_add',
+                {
+                    text: title_field.getValue(),
+                    icon: icon,
+                    data: Ext.encode(fav_data),
+                    menu: Ext.encode({})
+                },
+                function(res) {
+                    if( Cla.explorer && Cla.explorer.$tree_favorites ) Cla.explorer.$tree_favorites.refresh();
+                    Baseliner.message( _('Favorite'), res.msg );
+                }
+            );
+        };
+        var win = new Cla.Window({
+            height: 300, width: 800,
+            layout:'form',
+            labelWidth: 100, 
+            defaults: { anchor:'100%' },
+            bodyStyle: 'padding: 20px; background-color: #fff',
+            title: _('Save Favorite: %1', title),
+            tbar: [ '->', {  xtype:'button', text:'Save', icon: IC('save'), handler:opp } ],
+            items: [ title_field ]
+        });
+        win.show();
+        
+    };
     Baseliner.toggleCalendar = function(){
         var bc = Baseliner.calpanel;
         //if( bc.collapsed ) bc.toggleCollapse()
@@ -80,6 +137,8 @@ Ext.onReady(function(){
         tbar_items.push( search_box );
     
     tbar_items.push( Baseliner.help_button );
+
+    tbar_items.push( '<img src="/static/images/icons/favorite.png" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
 
     Prefs.site.show_calendar = true;
     if( Prefs.site.show_calendar ) 
@@ -148,20 +207,11 @@ Ext.onReady(function(){
         tabs.push({ xtype: 'panel', title:_('Portal'), layout: 'border', closable: false, items: Baseliner.portal });
     } 
 
-    if( Prefs.site.show_dashboard ) {
-        //tabs.push({xtype:'panel',title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
-        //var dash = new Ext.Panel({ title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png'  }); // new Cla.Dashboard({});
-        //dash.closable = false; 
-        tabs.push( new Cla.Dashboard({ closable: false}) );
-
-    }
-
     var menuTab = new Ext.ux.TabCloseMenu({
         closeTabText: _('Close Tab'),
         closeOtherTabsText: _('Close Other Tabs'),
         closeAllTabsText: _('Close All Tabs')        
     });
-
 
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
             defaults: { autoScroll: true }, 
@@ -177,6 +227,13 @@ Ext.onReady(function(){
             activeTab: 0, 
             items: tabs
     });
+    if( Prefs.site.show_dashboard ) {
+        tab_panel.on('afterrender', function(){
+            var dash = new Cla.Dashboard({ closable: false});
+            Baseliner.tabInfo[dash.id] = { };
+            Cla.addNewTabItem(dash);
+        });
+    }
 
     if( Prefs.site.show_lifecycle && Prefs.stash.can_lifecycle ) 
         Baseliner.explorer = new Baseliner.Explorer({ fixed: 1 });

@@ -1340,7 +1340,8 @@ sub tree_favorites : Local {
         keys %$root ];
 
     for my $node ( @$favs ) {
-        ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
+        delete $node->{menu} if !$node->{menu}; # otherwise menus don't work
+        $node->{leaf} = \1 if !$node->{url}; 
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;

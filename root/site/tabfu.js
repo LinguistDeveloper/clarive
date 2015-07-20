@@ -550,7 +550,7 @@ if( Prefs.routing ) {
 
     //adds a new fragment component with html or <script>...</script>
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab, json_key ){
-        //Baseliner.
+        var info_args = arguments;
         var found = false;
         json_key = json_key || Ext.util.JSON.encode( { url: purl, title: ptitle, type: 'script', params: params } );
         json_key = json_key.replace(',"active":true','');
@@ -595,6 +595,7 @@ if( Prefs.routing ) {
                 if( success ) {
                     var id = tab.getId();
                     Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params, json_key: json_key,
+                        favorite_this: function(){ return { foo:'Baseliner.addNewTab', args:info_args } },
                         copy: function(){ Baseliner.addNewTab(purl, ptitle, params, obj_tab, Ext.id() ); }
                     };
                     if( params.callback != undefined ) params.callback();
@@ -732,6 +733,7 @@ if( Prefs.routing ) {
     });
 
     Baseliner.addNewTabSearch = function(purl, ptitle, params ){
+            var info_args = arguments;
             var search = new Ext.app.TextSearchField({
                             emptyText: _('<Enter your search string>')
                         });
@@ -753,6 +755,7 @@ if( Prefs.routing ) {
             Ext.getCmp('main-panel').setActiveTab(tab); 
             var id = tab.getId();
             Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', 
+                favorite_this: function(){ return { foo:'Baseliner.addNewTabSearch', args:info_args } },
                 copy: function(){ Baseliner.addNewTabSearch(purl,ptitle,params) } };
     };
 
@@ -771,6 +774,7 @@ if( Prefs.routing ) {
     };
 
     Baseliner.addNewIframe = function(url,title,params) {
+        var info_args = arguments;
         var tabpanel = Baseliner.tabpanel();
         var idif = Ext.id();
         var tab = tabpanel.add({ 
@@ -786,6 +790,7 @@ if( Prefs.routing ) {
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                favorite_this: function(){ return { foo:'window.open', args:info_args } },
                 copy: function(){ 
                     // iframe are different, copying opens in a new browser window
                     window.open( url, title );
@@ -794,6 +799,7 @@ if( Prefs.routing ) {
     };
 
     Baseliner.add_iframe = function(url,title,params) {
+        var info_args = arguments;
         var tabpanel = Baseliner.tabpanel();
         var panel = new Ext.Panel({
             layout: 'fit', 
@@ -822,6 +828,7 @@ if( Prefs.routing ) {
         if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe',
+                favorite_this: function(){ return { foo:'Baseliner.add_iframe', args:info_args } },
                 copy: function(){ Baseliner.add_iframe(url,title,params) } 
         };
     };
@@ -845,6 +852,7 @@ if( Prefs.routing ) {
     //adds a new tab from a function() type component
     Baseliner.addNewTabComp = function( comp_url, ptitle, params, json_key ){
         var req_params = params != undefined ? params : {};
+        var info_args = arguments;
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
             var found = false;
             json_key = json_key || Ext.util.JSON.encode( { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' } );
@@ -868,6 +876,7 @@ if( Prefs.routing ) {
 
             var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp', json_key: json_key,
+                favorite_this: function(){ return { foo:'Baseliner.addNewTabComp', args:info_args } },
                 copy: function(){ Baseliner.addNewTabComp(comp_url,ptitle,params,Ext.id()) } 
             };
             try { 
@@ -887,6 +896,7 @@ if( Prefs.routing ) {
 
     };
     Baseliner.add_tabcomp = function( comp_url, ptitle, params, json_key ){
+        var info_args = arguments;
         if( params == undefined ) params = {};
 
         Baseliner.ajaxEval( comp_url, params, function(comp) {
@@ -915,6 +925,7 @@ if( Prefs.routing ) {
             if (found) return;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp', json_key: json_key,
+                favorite_this: function(){ return { foo:'Baseliner.add_tabcomp', args:info_args } },
                 copy: function(){ Baseliner.add_tabcomp(comp_url, ptitle, params, Ext.id()) }
             };
             try { 
@@ -1379,7 +1390,8 @@ if( Prefs.routing ) {
         var panel = tabpanel.getActiveTab();
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
-        if(info.copy) info.copy();
+        if(info.copy) info.copy() 
+        else Cla.message(_('Detach'),_('Tab detach not available for current tab'));
     };
     
     // expects success=>true|false, msg=>""
