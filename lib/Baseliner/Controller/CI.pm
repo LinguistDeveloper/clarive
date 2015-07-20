@@ -957,7 +957,7 @@ sub load : Local {
         my $class = ref $obj;
         my $collection = Util->to_base_class($class);
         _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) )
-            unless $c->has_action("action.ci.view.$collection");
+            unless $c->has_action("action.ci.view.%.$collection");
         my $rec = $obj->load;
         Util->_unbless( $rec );
         $rec->{has_bl} = $obj->has_bl;
@@ -1279,7 +1279,7 @@ sub edit : Local {
         _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
         my $collection = $doc->{collection};
         _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) ) 
-            unless $c->has_action("action.ci.view.$collection");
+            unless $c->has_action("action.ci.view.%.$collection");
         $has_permission = $c->has_action( 'action.ci.admin.%.'. $collection );
     } else {
         $has_permission = 1;
