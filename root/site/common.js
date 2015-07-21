@@ -328,6 +328,11 @@ Baseliner.render_bytes = function(value,metadata,rec,rowIndex,colIndex,store) {
     return Baseliner.byte_format( value );
 }
 
+Cla.ci_loc = function(cls){
+    var trans = _("ci:"+cls);
+    trans = trans=="ci:"+cls ? cls : trans;
+    return trans;
+}
 
 //return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
 

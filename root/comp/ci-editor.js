@@ -198,7 +198,7 @@
         });
         var set_txt = function(){
             var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1 (%2)' );
-            txt_cont.update( _( txt, params.item, params.mid ) );
+            txt_cont.update( _( txt, Cla.ci_loc(params.item), params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
         var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
