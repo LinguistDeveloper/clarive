@@ -19,10 +19,17 @@ has ssh     => (
         Clarive->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
-        my $master_opts = { -F => '/dev/null', -o => 'StrictHostKeyChecking=no' };
-        $master_opts->{ -i } = $self->private_key if $self->{private_key};
+
+        my $master_opts = [
+            -F => '/dev/null',
+            -o => 'StrictHostKeyChecking=no',
+            -o => 'PasswordAuthentication=no',
+            -o => 'UserKnownHostsFile=/dev/null'
+        ];
+        push @$master_opts, -i => $self->private_key if $self->{private_key};
+
         my $n = Net::OpenSSH->new( $uri, 
-            master_opts      => [ %$master_opts ],
+            master_opts      => [ @$master_opts ],
             default_ssh_opts => [ -F => '/dev/null' ] 
         );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
