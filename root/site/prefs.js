@@ -165,7 +165,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                                  Baseliner.ci_call( 'user', 'general_prefs_save', { data:form_data, for_username: username }, function(res){
                                      Cla.message(_('Save'), _('General Preferences Saved') );
                                      if( !username && language.getValue() != language_pref ) {
-                                         Cla.confirm(_('To correctly visualize language changes, you need to reload the page. Do you want to do that now?'), 
+                                         Cla.confirm(_('To reflect language changes you need to reload the page. Do you want to do that now?'), 
                                              function(){
                                                  window.location.href = window.location.href;
                                              });
