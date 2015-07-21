@@ -112,6 +112,7 @@ sub surrogate : Local {
     my $username= $case eq 'uc' ? uc($p->{login}) 
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
+        _fail('User cannot surrogate') unless $c->has_action('action.surrogate');
         my $doc = ci->user->find_one({ name=>$username, active => mdb->true }); 
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
@@ -124,8 +125,9 @@ sub surrogate : Local {
             $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
         }
     } catch {
+        my $msg = shift;
         event_new 'event.auth.surrogate_failed'=>{ username=>$curr_user, to_user=>$username };
-        $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
+        $c->stash->{json} = { success => \0, msg => _loc('Surrogate error: %1', $msg || _loc("Invalid User") ) };
     };
     $c->forward('View::JSON');  
 }

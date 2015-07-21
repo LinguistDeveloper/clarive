@@ -39,7 +39,9 @@ sub list : Local {
         my $n = {};
         $_->{anode} = $_->{_id};
         $n->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
-        $n->{text} = $_->{item};
+        my $locstr = "ci:$_->{item}";
+        my $tx = _loc($locstr);
+        $n->{text} = $tx eq $locstr ? $_->{item} : $tx;
         $n->{icon} = $_->{icon};
         #$_->{id} = $_->{_id};
         $n->{url} = '/ci/list';
@@ -955,6 +957,9 @@ sub load : Local {
     try {
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;
+        my $collection = Util->to_base_class($class);
+        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) )
+            unless $c->has_action("action.ci.view.%.$collection");
         my $rec = $obj->load;
         Util->_unbless( $rec );
         $rec->{has_bl} = $obj->has_bl;
@@ -963,6 +968,7 @@ sub load : Local {
         $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $rec->{services} = [ $obj->service_list ];
+        $rec->{password} = '*' x 30;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;
@@ -1270,11 +1276,13 @@ sub edit : Local {
     local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
-    if ( $p->{mid} ) {
-        my $doc = mdb->master->find_one({ mid=>"$p->{mid}" });
-        _fail _loc 'Could not find CI %1 in database', $p->{mid} unless $doc;
+    if ( my $mid = $p->{mid} ) {
+        my $doc = mdb->master->find_one({ mid=>"$mid" });
+        _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
         my $collection = $doc->{collection};
-        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $collection, username => $c->username );
+        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) ) 
+            unless $c->has_action("action.ci.view.%.$collection");
+        $has_permission = $c->has_action( 'action.ci.admin.%.'. $collection );
     } else {
         $has_permission = 1;
     }

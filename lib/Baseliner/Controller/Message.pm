@@ -39,9 +39,10 @@ sub inbox_json : Local {
     $sort ||= 'sent';
     $dir ||= 'DESC';
     return unless $c->user || $p->{test};
+    my $username = $c->has_action('action.admin.user') ? $p->{username} : $c->username;
     $c->stash->{messages} = $c->model('Messaging')->inbox(
             all      => 1,
-            username => $p->{username} || $c->username || $c->user->id,
+            username => $username,
             query    => $query,
             sort     => $sort,
             dir      => $dir,
@@ -50,7 +51,7 @@ sub inbox_json : Local {
             query_id => $query_id || undef
     );
     
-    $c->stash->{username} = $p->{username} || $c->username || $c->user->id;
+    $c->stash->{username} = $username; 
     $c->forward('/message/json');
 }
 

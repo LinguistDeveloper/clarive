@@ -360,7 +360,11 @@ sub has_action {
     # memoization for the same request
     my $v = $c->stash->{ $c->username }->{ $action };
     return $v if defined $v;
-    $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    if( $action =~ /%/ ) {
+        $v = $c->model('Permissions')->user_has_any_action( action=>$action, username=>$c->username );
+    } else {
+        $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    }
     return $c->stash->{ $c->username }->{ $action } = $v;
 }
 

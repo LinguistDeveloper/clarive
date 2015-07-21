@@ -2,8 +2,8 @@ Ext.onReady(function(){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
 
-    var after_login = "<% $c->stash->{after_login} %>"; 
-    var after_login_query = "<% $c->stash->{after_login_query} %>";
+    var after_login = Base64.decode("<% Util->to_base64( $c->stash->{after_login}, '' ) %>");
+    var after_login_query = Base64.decode("<% Util->to_base64( $c->stash->{after_login_query}, '' ) %>");
     
     var login_txt = '<% _loc("Login") %>';
 

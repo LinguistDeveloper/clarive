@@ -111,7 +111,7 @@
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         } 
-        Baseliner.add_tabcomp( '/ci/edit', _('New: %1' , params.item ), {
+        Baseliner.add_tabcomp( '/ci/edit', _('New: %1' , Cla.ci_loc(params.item) ), {
                 _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
                 item: data.collection,
@@ -378,7 +378,7 @@
     }*/
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
-        title: _('CI Class: %1', params.item),
+        title: Cla.ci_loc(params.item),
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
