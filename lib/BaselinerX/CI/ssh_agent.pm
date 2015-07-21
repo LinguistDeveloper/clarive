@@ -20,7 +20,12 @@ has ssh     => (
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
 
-        my $master_opts = [ -F => '/dev/null', -o => 'StrictHostKeyChecking=no', -o => 'PasswordAuthentication=no' ];
+        my $master_opts = [
+            -F => '/dev/null',
+            -o => 'StrictHostKeyChecking=no',
+            -o => 'PasswordAuthentication=no',
+            -o => 'UserKnownHostsFile=/dev/null'
+        ];
         push @$master_opts, -i => $self->private_key if $self->{private_key};
 
         my $n = Net::OpenSSH->new( $uri, 
