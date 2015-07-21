@@ -5,6 +5,7 @@ use Try::Tiny;
 #use namespace::autoclean;
 
 has_ci 'server';
+has user   => qw(is rw isa Maybe[Str]);
 has port_num   => qw(is rw isa Any);
 has private_key => qw(is rw isa Any);
 
@@ -16,9 +17,10 @@ has ssh     => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
+
         Clarive->debug and $Net::OpenSSH::debug |= 8;
+
         my $uri = $self->_build_uri;
-        require Net::OpenSSH;
 
         my $master_opts = [
             -F => '/dev/null',
@@ -28,7 +30,7 @@ has ssh     => (
         ];
         push @$master_opts, -i => $self->private_key if $self->{private_key};
 
-        my $n = Net::OpenSSH->new( $uri, 
+        my $n = $self->_build_openssh( $uri, 
             master_opts      => [ @$master_opts ],
             default_ssh_opts => [ -F => '/dev/null' ] 
         );
@@ -225,11 +227,18 @@ sub execute {
     ($rc, $ret);
 }
 
+sub _build_openssh {
+    my $self = shift;
+
+    require Net::OpenSSH;
+    return Net::OpenSSH->new(@_);
+}
+
 sub _build_uri {
     my ($self) = @_;
     my $uri;
-    if( $self->{user} ) {
-        $uri =  sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+    if( $self->user ) {
+        $uri =  sprintf('%s@%s', $self->user, $self->server->hostname ); 
     } 
     else {
         $uri =  $self->server->hostname; 
