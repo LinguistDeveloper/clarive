@@ -4,6 +4,6 @@
        { xtype:'textfield', fieldLabel: _('User'), name:'user', value: params.rec.user },
        { xtype:'textfield', fieldLabel: _('Port'), name:'port_num', value: params.rec.port_num },
        { xtype:'textfield', fieldLabel: _('Timeout (s)'), name:'timeout', value: params.rec.timeout },
-       { xtype:'textarea', height: 180, anchor:'100%', fieldLabel: _('Private Key'), name:'private_key', allowBlank: true }
+       { xtype:'textfield', anchor:'100%', fieldLabel: _('Private Key Filename'), name:'private_key', allowBlank: true }
     ]
 })
