@@ -49,7 +49,16 @@ has internal => qw(is rw isa Bool default 0);
 has must_release => qw(is rw isa Bool default 0);
 has released     => qw(is rw isa Bool default 0);
 has disp_id => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
-has session => qw(is rw isa Any), default => sub{ mdb->run_command({'whatsmyuri' => 1})->{you} };
+has session => qw(is rw isa Any), default => sub{ 
+    my $actual_conection;
+    my @conn = mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog};
+    for my $elem (_array @conn){
+        $actual_conection = $elem->{connectionId} if $elem->{client} && $elem->{client} eq mdb->run_command({'whatsmyuri' => 1})->{you};
+        last if $actual_conection;
+    }
+    $actual_conection;
+};
+
 
 sub BUILD {
     my ($self) = @_;
@@ -167,7 +176,6 @@ sub take {
                 _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
             }
         }
-        
         my $res = mdb->sem->update(
             { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, queue=>{ '$elemMatch'=>{ _id=>$self->id_queue, seq=>{ '$gt'=>-1, '$lte'=>0+$minseq }}} },
             { '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
@@ -180,7 +188,12 @@ sub take {
         } elsif ( $cont > 0 ) {
             if ( @active_queues ) {
                 _debug("Found ".scalar @active_queues." running queues. Checking if they are alive..") if $print_msgs;
-                my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
+                
+                my @conn = mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog};
+                my %active_sessions;
+                map { $active_sessions{$_->{connectionId}} = 1  if $_->{connectionId} } _array(@conn);
+                
+                #my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog});
                 for my $qitem ( @active_queues ) {
                     if( !$active_sessions{ $qitem->{session} } ) {
                         if( !$qitem->{granted} ) {
@@ -229,6 +242,7 @@ sub release {
     my ($self, %p) =@_;
     return if $self->released;
     if ( $self->must_release ) {
+
         my $res = mdb->sem->update(
             { key => $self->key, 'queue._id'=>$self->id_queue },
             { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy', pid => $$ } } }
