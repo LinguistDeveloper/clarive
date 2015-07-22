@@ -6,10 +6,12 @@ use warnings;
 use base 'Exporter';
 our @EXPORT = qw(debug config version);
 
+use Cwd ();
 my $root;
+
 BEGIN {
     use File::Basename qw(dirname);
-    $root = dirname(__FILE__);
+    $root = Cwd::realpath(dirname(__FILE__));
 }
 
 use lib "$root/../../lib";
@@ -18,6 +20,8 @@ use local::lib "$root/../../../local/";
 sub debug   { }
 sub config  { {} }
 sub version { '' }
+
+use Baseliner::Core::Registry;
 
 BEGIN { $ENV{BALI_FAST}++ }
 BEGIN {
@@ -33,6 +37,7 @@ sub setup {
     require Clarive::cache;
 
     *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
+    *Baseliner::config = sub { {} };
 }
 
 1;

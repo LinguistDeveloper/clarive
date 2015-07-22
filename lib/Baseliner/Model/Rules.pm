@@ -481,7 +481,7 @@ sub compile_rules {
     my $self = shift;
     my (%params) = @_;
 
-    my $rule_precompile = $params{rule_precompile} // _fail 'Missing parameter rule_precompile';
+    my $rule_precompile = $params{rule_precompile} // 'none';
 
     return if $rule_precompile eq 'none';
 
