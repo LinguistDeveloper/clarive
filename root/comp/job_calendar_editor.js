@@ -219,6 +219,7 @@
 
     var panel = new Ext.Panel({
         //layout: 'fit',
+        id: id2,
         style: 'padding: 5px',
         autoScroll: true,
         items: [ cal_form, cal_windows ]
