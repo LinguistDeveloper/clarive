@@ -376,6 +376,9 @@ if(forms.constructor === Array) form.pending_fields = form.pending_fields+forms.
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
                 cardpanel.doLayout(); // otherwise, no tbar
+            }, function(res){
+                Cla.error(_('CI %1', params.mid ), _('Error opening CI %1: %2', params.mid, res.msg));
+                cardpanel.destroy();
             });
         } else {
             // someone sent me full row data (DEPRECATED)
