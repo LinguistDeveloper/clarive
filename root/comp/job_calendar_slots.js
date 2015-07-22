@@ -93,8 +93,10 @@ my $firstday = Class::Date->new( $c->stash->{monday} );
 
 </%perl>
         </TR>
+</TABLE>
+<TABLE border="0" width="100%" cellpadding="2">
         <TR>
-<%perl>	
+<%perl> 
     foreach my $dd ( 0..6 ) {
         my $date = $firstday + ($dd.'D');
         my ($year, $month, $day) = ($date->year,$date->month,$date->day);
@@ -104,9 +106,9 @@ my $firstday = Class::Date->new( $c->stash->{monday} );
         print qq{ </TD>};
     }
 </%perl>
-        </TR>	
-    </TABLE>
+        </TR>   
 
+</TABLE>
 </FORM>
 <TABLE border="0" width="100%" cellpadding="2">
 <TR>
