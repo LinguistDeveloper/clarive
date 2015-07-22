@@ -111,13 +111,17 @@
                 ]
     });
 
-    var cal_slots = new Ext.Panel({       
+    var cal_slots = new Ext.Panel({    
         id: id,
-        region:'west',
-        width: 720,             
+        //region:'west',
+        frame: true,
+        autoHeight: true,
+        autoWidth: true,
+        defaults: { width: 300 },
+        //width: 720,             
         autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } },
         split: true,
-        frame: true
+        //frame: true
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
@@ -152,19 +156,24 @@
         picker.setSelectedDates(_dates);        
     }
     
-    var cal_windows = new Ext.Panel({  
-        layout: 'border',
-        title: _('Calendar Slots'),
-        hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
-        style: 'margin-top: 20px',
-        height: 450,
+    var cal_windows = new Ext.Panel({
+        layout: 'column',
+        anchor:'90%',
         frame: true,
-        items: [    
+        //layout: 'border',
+        title: _('Calendar Windows'),
+        hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
+        style: 'margin-top: 20px', 
+        autoHeight: true,
+        autoWidth: true,
+        defaults: { width: 900 },
+        height: 450,
+        //frame: true,
+        items: [
+        { layout: 'column', columnWidth: 0.5, items: [    
             cal_slots,
-            {           
-                region:'center',
-                frame: true,
-                items: [
+            ]},
+        { layout: 'column', columnWidth: 0.5 ,style: 'margin-left: 5px', items: [               
                 {
                     xtype: 'datepickerplus',
                     value: _CurrentDate,    
@@ -202,14 +211,14 @@
                         
                     } 
                 }
-                ]
-            }
+                
+            ]}
         ]
                 
     });
 
     var panel = new Ext.Panel({
-        layout: 'fit',
+        //layout: 'fit',
         id: id2,
         style: 'padding: 5px',
         autoScroll: true,
