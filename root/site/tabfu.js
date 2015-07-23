@@ -1223,7 +1223,13 @@ if( Prefs.routing ) {
                         msg = xhr.responseText;
                     }
                     // get rid of Unknown errors
-                    if( msg ) Baseliner.error_win(url,params,xhr, msg);
+                    if( msg ) {
+                        if( Ext.isFunction(scope) ) {  // scope is catch
+                            scope( comp, foo );
+                        }
+
+                        Baseliner.error_win(url,params,xhr, msg);
+                    }
                     else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/disconnected.png' });
                     return;
                 }
