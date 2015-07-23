@@ -31,6 +31,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.contador_modificado=0;
         self.parse_status = 0;
         self.parse= 0;
+        self.del_timer = 0;
 
         self.date = new Date();
         self.fecha_fin = new Date();
@@ -610,17 +611,19 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //#########################################################################
             //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
             //#########################################################################
-            
+         
             if(self.cambio_realtime){
 
                 self.date=row.t;
                 self.cambio_realtime=false;
 
+
             }
             //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
 
             if(row.t==self.date){
-                //alert("entro aqui");                
+                //alert("entro aqui");        
+                self.del_timer=0;        
                 if( row.parent ) {
 
                     if( !self.parents[row.parent] ) {
@@ -775,25 +778,22 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }
                 }               
             }else{
-
-                
-
-                
-                //self.del_user();
+           
                 var row = self.res.data[ self.j-- ];
                 self.i--;
 
                 var date = new Date(self.date);
+                if(self.del_timer == 0){
                 var time = new Date(row.t);
 
-                //alert("estoy aqui " + (date.getMinutes()+1) + "esto es el tiempo mas 20 "+ date.getMinutes());
-                //alert("estoy aqui " + (date.getMinutes()) + "esto es el tiempo mas 20 "+ time.getMinutes());
-                /*if((date.getMinutes()+5) <= time.getMinutes() && date.getHours()== time.getHours()){
-                    alert("estoy aqui " + (date.getMinutes()) + "esto es el tiempo mas 20 "+ time.getMinutes());
-                    self.del_user();
-                    time=0;
-                }*/
+                if(date.getMinutes() <= (time.getMinutes()-10) || date.getMinutes() >= (time.getMinutes()+10)){
+                    //alert("estoy aqui " + (date.getMinutes()) + "esto es el tiempo mas 20 "+ time.getMinutes());
+                    //self.del_user();
+                    setTimeout(function(){ self.del_user() }, 5000);
+                    self.del_timer=1;
+                }
 
+                }
                 //CAMBIO TODO ESTO POR....
                 /*var calculo = self.calcula_contador(date);
                 calculo = new Date(calculo);
@@ -918,9 +918,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5.enter().append("text");//.text(a.node);
         self.node5.exit().remove();
 
-                    self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-            self.node3.enter().append("text");
-            self.node3.exit().remove();
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
 
     },
     add_inicial : function(parent_node){
@@ -1316,6 +1316,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     }
                 self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
+                //self.node3.pop();
                 self.userstart(self.nodes[j]);
             }
         j++;
@@ -1376,7 +1377,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             i++;
                         }*/
                         if (self.nodes[j].who != row.who){
-                            alert("borro el nodo " + self.nodes[j].who);
+                            //alert("borro el nodo " + self.nodes[j].who);
+                            self.del_timer=1;
                             self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
                             j=self.nodes.length;
 
@@ -1778,9 +1780,15 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node.enter().append("png:image").attr("xlink:href", function(d) { return d.color;}).attr("width", 20).attr("height", 20);
         self.node.exit().remove();
 
+        if(row){
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
         self.node3.enter().append("text").text(row.who).attr("fill",self.colores[self.pintar]);
         self.node3.exit().remove();
+        }else{
+        self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
+        self.node3.enter().append("text");
+        self.node3.exit().remove();
+        }
 
         self.force.start();
 
