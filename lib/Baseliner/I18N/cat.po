@@ -4468,7 +4468,7 @@ msgstr "Relacionats"
 msgid "Unread"
 msgstr "No llegides"
 
-msgid "Created for Me"
+msgid "Created by Me"
 msgstr "Creades per Mi"
 
 msgid "Change Status"
