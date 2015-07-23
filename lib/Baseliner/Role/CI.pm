@@ -427,9 +427,11 @@ sub load {
     $self = $class if $self eq 'Baseliner::Role::CI';
     # check class is available, otherwise use a dummy ci class
     if( ! try { Clarive->load_class( $class ) } ) {
-        _fail(_loc("Could not load CI class `%1`. Maybe check if any plugins/features are missing?", $coll) ); 
-        # TODO Empty definetly deprecated? Better give errors than just silently eat that class in? Probably...
-        #      $self = $class = 'BaselinerX::CI::Empty' unless $class_load_ok;
+        if( $Baseliner::CI::use_empty_ci ) {
+            $self = $class = 'BaselinerX::CI::Empty';
+        } else {
+            _fail(_loc("Could not load CI class `%1`. Maybe check if any plugins/features are missing?", $coll) ); 
+        }
     }
     
     # load pre-data
