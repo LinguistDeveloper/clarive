@@ -172,11 +172,11 @@ sub auto : Private {
     } elsif( $c->stash->{auth_basic} ) {
         my $ret = $c->forward('/auth/login_basic');
         return $ret; 
-    } elsif( $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
+    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
         $c->res->body(_loc('Error: Authentication required') );
         $c->res->status(401);
         return 0;
-    } elsif( $c->stash->{auth_logon_type} eq 'json' ) {   # used by Rule WS
+    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'json' && $c->stash->{auth_logon_type} ) {   # used by Rule WS
         $c->stash->{json}{success} = \0;
         $c->stash->{json}{msg} = $c->stash->{last_msg} // _loc('Error: Authentication required');
         $c->res->status(401);
