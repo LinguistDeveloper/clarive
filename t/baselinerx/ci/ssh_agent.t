@@ -38,6 +38,17 @@ subtest 'builds openssh with correct params' => sub {
       };
 };
 
+subtest 'builds correct uri without a user' => sub {
+    my $ssh_agent =
+      _build_ssh_agent( server => BaselinerX::CI::generic_server->new( hostname => 'bar' ) );
+
+    my $rv = $ssh_agent->ssh;
+
+    my ( $uri, %options ) = $ssh_agent->mocked_call_args('_build_openssh');
+
+    is $uri, 'bar';
+};
+
 subtest 'builds openssh with correct params when private_key' => sub {
     my $ssh_agent = _build_ssh_agent(
         user        => 'foo',
