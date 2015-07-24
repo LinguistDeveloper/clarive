@@ -2774,7 +2774,7 @@ sub get_categories_permissions{
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
 
-    cache->set($cache_key, \@categories );
+    # cache->set($cache_key, \@categories );
     return @categories;
 }
 
@@ -2865,7 +2865,7 @@ sub get_meta_permissions {
     my %hidden_field = map { $_ => 1} @hidden_field;
     $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
-    cache->set($cache_key,$meta);
+    # cache->set($cache_key,$meta);
     return $meta
 }
 
