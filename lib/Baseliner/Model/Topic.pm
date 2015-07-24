@@ -1577,7 +1577,7 @@ sub get_topics {
             $_->{name_status} //= $data->{name_status};
             $_->{data} //= $data;
             # _warn $meta;
-            my @topic_fields = map { $_->{id_field} } grep { $_->{get_method} eq 'get_topics' } _array($meta);
+            my @topic_fields = map { $_->{id_field} } grep {  $_->{get_method} && $_->{get_method} eq 'get_topics' } _array($meta);
 
             for my $topic_field ( @topic_fields ) {
                 _warn "Adding ". '_title_list_'.$topic_field;

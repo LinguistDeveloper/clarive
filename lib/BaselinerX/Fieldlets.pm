@@ -413,6 +413,22 @@ register 'fieldlet.system.list_topics' => {
     section_allowed => ['head','more','details']
 };
 
+register 'fieldlet.system.list_topics_selector' => {
+    name        => _loc('Topic Selector'),
+    icon        => '/static/images/icons/listbox.png',
+    get_method  => 'get_topics',
+    set_method  => 'set_topics',
+    section_allowed => ['head','more'],
+    html        => '/fields/system/html/list_topics.html',
+    js          => '/fields/system/js/list_topics_selector.js',
+    form        => '/fields/templates/config/list_topics_selector.js',
+    meta_type   => 'topic',
+    relation    => 'system',
+    type        => 'listbox',
+    rel_type    => 'topic_topic',
+    section_allowed => ['head','more','details']
+};
+
 
 register 'fieldlet.system.cis' => {
     name        => _loc('CI Combo'),
