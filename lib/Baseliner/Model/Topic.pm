@@ -2728,8 +2728,8 @@ sub set_labels {
 sub get_categories_permissions{
     my ($self, %param) = @_;
     
-    my $cache_key = { d=>'topic:meta', p=>\%param };
-    ref($_) && return @$_ for cache->get($cache_key);
+    # my $cache_key = { d=>'topic:meta', p=>\%param };
+    # ref($_) && return @$_ for cache->get($cache_key);
     
     my $username = delete $param{username};
     my $type = delete $param{type};
@@ -2786,10 +2786,10 @@ sub get_meta_permissions {
     
     my $mid;
     $mid = $data->{topic_mid};
-    my $cache_key = { d=>'topic:meta', 
-        st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
-        cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
-    defined && $mid && return $_ for cache->get($cache_key);
+    # my $cache_key = { d=>'topic:meta', 
+    #     st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
+    #     cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
+    # defined && $mid && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
