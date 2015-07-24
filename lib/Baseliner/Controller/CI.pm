@@ -955,6 +955,7 @@ sub load : Local {
     }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
+        local $Baseliner::CI::use_empty_ci = 1;
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;
         my $collection = Util->to_base_class($class);

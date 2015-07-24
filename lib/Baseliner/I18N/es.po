@@ -4551,7 +4551,7 @@ msgstr "Relacionados"
 msgid "Unread"
 msgstr "No leídas"
 
-msgid "Created for Me"
+msgid "Created by Me"
 msgstr "Creadas por Mí"
 
 msgid "Change Status"

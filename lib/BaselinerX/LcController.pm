@@ -367,12 +367,12 @@ sub tree_projects : Local {
                 id_project => $r->{mid},
                 project    => $r->{name},
                 desc       => $r->{description},
-                click => {
-                    url   => '/dashboard/list/project',
-                    type  => 'html',
-                    icon  => '/static/images/icons/project.png',
-                    title => $r->{name},
-                }               
+                click      => {
+                    'icon' => '/static/images/icons/topic.png',
+                    'url' => '/topic/grid',
+                    'title' => $r->{name},
+                    'type' => 'comp'
+                },
             },
             icon       => '/static/images/icons/project.png',
             leaf       => \0,

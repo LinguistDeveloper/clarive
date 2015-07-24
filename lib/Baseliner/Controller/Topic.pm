@@ -1145,7 +1145,7 @@ sub filters_list : Local {
     push @views, {
         id  => $i++,
         idfilter      => 4,
-        text    => _loc('Created for Me'),
+        text    => _loc('Created by Me'),
         filter  => '{"created_for_me":true}',
         default    => \1,
         cls     => 'forum default',
