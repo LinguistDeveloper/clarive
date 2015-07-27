@@ -1,0 +1,90 @@
+package Baseliner::Validator;
+use Moo;
+use Class::Load 'load_class';
+
+has fields => ( is => 'ro', default => sub { {} } );
+has rules  => ( is => 'ro', default => sub { {} } );
+
+sub add_field {
+    my $self = shift;
+    my ( $name, %params ) = @_;
+
+    $self->fields->{$name} = {%params};
+
+    return $self;
+}
+
+sub validate {
+    my $self = shift;
+    my ($params) = @_;
+
+    my $validated_params = {};
+    my $errors           = {};
+
+    foreach my $name ( keys %{ $self->fields } ) {
+        my $field = $self->fields->{$name};
+        my $value = $params->{$name};
+        $value = $value->[0] if $value && ref $value eq 'ARRAY';
+
+        if ($self->_is_empty($value)) {
+            if (exists $field->{default}) {
+                $validated_params->{$name} = $field->{default};
+            }
+            else {
+                $errors->{$name} = 'REQUIRED';
+            }
+
+            next;
+        }
+
+        my $has_errors = 0;
+
+        my $rules = $field->{rules} || [];
+        $rules = [$rules] unless ref $rules eq 'ARRAY';
+        foreach my $rule_name (@$rules) {
+            my %params;
+            if ( ref $rule_name eq 'HASH' ) {
+                (%params)    = %{ (values %$rule_name)[0] };
+                ($rule_name) = keys %$rule_name;
+            }
+
+            my $rule = __PACKAGE__ . '::' . $rule_name;
+
+            load_class($rule);
+
+            my $result = $rule->new(%params)->validate($value);
+
+            if ( $result->{is_valid} ) {
+                $value = $result->{value} if exists $result->{value};
+            }
+            else {
+                $errors->{$name} = $result->{error};
+
+                $has_errors = 1;
+                last;
+            }
+        }
+
+        $validated_params->{$name} = $value unless $has_errors;
+    }
+
+    my $is_valid = %$errors ? 0 : 1;
+
+    return {
+        is_valid         => $is_valid,
+        validated_params => $validated_params,
+        errors           => $errors
+    };
+}
+
+sub _is_empty {
+    my $self = shift;
+    my ($value) = @_;
+
+    return 1 unless defined $value;
+    return 1 unless length $value;
+
+    return 0;
+}
+
+1;
