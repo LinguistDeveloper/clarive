@@ -695,6 +695,7 @@
     
         var rule_save = function(opt){
             var root = rule_tree.root;
+            rule_tree.expandAll();
             root.cascade(function(nc){
                 nc.attributes.expanded = nc.isExpanded();
             });
