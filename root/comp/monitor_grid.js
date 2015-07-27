@@ -291,7 +291,8 @@
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
       tooltip: _('Natures'),
-      icon: '/static/images/nature/nature.png',
+      icon: '/static/images/icons/nature.png',
+      //icon: '/static/images/nature/nature.png',
       menu: nature_menu
     });
 

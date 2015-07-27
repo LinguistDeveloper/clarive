@@ -54,7 +54,8 @@ register 'service.changeset.checkout.bl_all_repos' => {
 
 register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
-    icon    => '/static/images/nature/nature.png',
+    #icon    => '/static/images/nature/nature.png',
+    icon    => '/static/images/icons/nature.png',
     form    => '/forms/nature_items.js',
     job_service  => 1,
     handler => \&nature_items,

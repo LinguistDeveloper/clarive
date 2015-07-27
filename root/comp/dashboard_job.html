@@ -226,7 +226,8 @@
                         }
                     
                         if( obj.more=='jes' ) {
-                            ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+                            //ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+                             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/icons/mainframe.png' /></a> ";
                         } else if( obj.more=='link'  ) {
                             //Ojo con obj.data en este caso, verificar.++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                             ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", obj.link );

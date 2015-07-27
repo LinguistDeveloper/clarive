@@ -6,7 +6,9 @@ use namespace::autoclean;
 with 'Baseliner::Role::CI::Nature';
 with 'Baseliner::Role::CI::VariableStash';
 
-sub icon { '/static/images/nature/nature.png' }
+sub icon { '/static/images/icons/nature.png' }
+#sub icon { '/static/images/nature/nature.png' }
+
 
 
 has include => qw(is rw isa Any);

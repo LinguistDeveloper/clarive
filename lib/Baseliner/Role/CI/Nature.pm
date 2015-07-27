@@ -4,9 +4,10 @@ with 'Baseliner::Role::CI';
 
 has only_parsed => qw(is rw isa BoolCheckbox coerce 1 default 0);
 
-sub icon { '/static/images/nature/nature.png' }
+sub icon { '/static/images/icons/nature.png' }
+=sub icon { '/static/images/nature/nature.png' }
 
-=head2 filter_items
+head2 filter_items
 
 From a list of items, filter the ones that belong to this
 nature.
