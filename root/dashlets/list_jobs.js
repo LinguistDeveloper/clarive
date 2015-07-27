@@ -88,7 +88,8 @@ my $iid = Util->_md5;
         Baseliner.datatable("#<% $iid %>",{
           "scrollY": (parseInt(rows)*260),
           "dom": '<lf<t>ip>',
-          "scrollX": true
+          "scrollX": true,
+          "order": [[ 3, "desc" ]]
         });
     });
 });
