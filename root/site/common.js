@@ -3787,6 +3787,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             height: self.height_drop
         });
 
+        var uploadFileCompleted = 0;
         filedrop.on('afterrender', function(){
             var el = filedrop.el.dom;
             var uploader = new qq.FileUploader({
@@ -3819,6 +3820,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                     //}
                 },
                 onSubmit: function(id, filename){
+                    try {
                     var mid = self.get_mid(); // data && data.topic_mid ? data.topic_mid : self.get_mid();
                     var config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: self.id_field }); };
                     if( mid == undefined || mid<0 ) {
@@ -3844,8 +3846,29 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                     } else {
                         config_parms(mid);
                     }
+                    }catch(err) {
+                        console.log("Fallo en subida de fichero");
+                    }
                 },
-                onProgress: function(id, filename, loaded, total){},
+                onProgress: function(id, filename, loaded, total){
+                    progress = loaded/total;
+                    Ext.MessageBox.show({
+                        title: _('Uploading file ')+filename,
+                        progressText: _('Uploading...'),
+                        width:300,
+                        progress:true,
+                        closable:false
+                    });
+                    Ext.MessageBox.updateProgress(progress, Math.round(100*progress)+'% completed');
+                    
+                    if(progress == 1 && uploadFileCompleted){
+                        Ext.MessageBox.hide();
+                        uploadFileCompleted = 0;
+                    }else if(progress == 1 && !uploadFileCompleted){
+                        uploadFileCompleted = 1;
+                        Ext.MessageBox.updateText(_("Saving file..."));
+                    }
+                },
                 onCancel: function(id, filename){ },
                 classes: {
                     // used to get elements from templates
