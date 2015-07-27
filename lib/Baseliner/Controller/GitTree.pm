@@ -4,6 +4,8 @@ use Baseliner::Utils;
 use Try::Tiny;
 use namespace::clean;
 use Baseliner::Sugar;
+use Time::Piece;
+use Baseliner::Validator;
 
 require Git::Wrapper;
 require Girl;
@@ -607,25 +609,56 @@ sub view_diff : Local {
 }
 
 sub get_commits_history : Local {
-    my ($self, $c ) = @_;
-    my $node = $c->req->params;
-    my $sort = $node->{sort} // '';
-    my $dir = $node->{dir} // '';
+    my ( $self, $c ) = @_;
+
+    my $node = $self->_validate_schema(
+        $c,
+        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
+        branch => { rules => 'git_branch', default => 'HEAD' },
+        tag    => { rules => 'git_tag',    default => '' },
+        commit => { rules => 'git_commit', default => '' },
+        start  => { rules => 'pos_int',    default => 0 },
+        limit  => { rules => 'pos_int',    default => 40 },
+    ) || return;
+
+    my $ci = $node->{repo_mid};
+
     $c->stash->{json} = try {
-        my @commits = $self->get_log_history({url=>$node->{repo_dir}, branch=>$node->{branch}, start=>$node->{start}, last=>$node->{start}+$node->{limit}, sort=>$sort, dir=>$dir, tag=>$node->{tag}, commit=>$node->{commit} });
-        my $g = Girl::Repo->new( path=>$node->{repo_dir} );
-        my $totalCount;
-        if($node->{tag}){
-            $totalCount = $g->git->exec( 'rev-list', "$node->{tag}..$node->{commit}", '--count');
-        }else{    
-            $totalCount = $g->git->exec( 'rev-list', $node->{branch}, '--count');
-        }    
-        { success=>\1, msg=> _loc( "Success loading commits history"), commits=>\@commits, totalCount=>$totalCount };
-    } catch {
+        my @commits = $self->get_log_history(
+            {
+                url    => $ci->repo_dir,
+                branch => $node->{branch},
+                start  => $node->{start},
+                last   => $node->{start} + $node->{limit},
+                tag    => $node->{tag},
+                commit => $node->{commit}
+            }
+        );
+
+        my $g = Girl::Repo->new( path => $ci->repo_dir );
+
+        my $total_count;
+        if ( $node->{tag} ) {
+            $total_count = $g->git->exec( 'rev-list', "$node->{tag}..$node->{commit}", '--count' );
+        }
+        else {
+            $total_count = $g->git->exec( 'rev-list', $node->{branch}, '--count' );
+        }
+
+        {
+            success    => \1,
+            msg        => _loc("Success loading commits history"),
+            commits    => \@commits,
+            totalCount => $total_count
+        };
+    }
+    catch {
         my $err = shift;
-        { success=>\0, msg=> _loc( "Error loading commits history: %1", "$err" ) };
-    };    
-    $c->forward('View::JSON');
+
+        { success => \0, msg => _loc( "Error loading commits history: %1", "$err" ) };
+    };
+
+    return $c->forward('View::JSON');
 }
 
 sub get_log_history {
@@ -758,4 +791,34 @@ sub commit_search {
     @commits;
 }
 ######################
+
+sub _validate_schema {
+    my $self = shift;
+    my ( $c, %schema ) = @_;
+
+    my $schema = $self->_build_schema;
+
+    foreach my $key ( keys %schema ) {
+        $schema->add_field( $key, %{ $schema{$key} } );
+    }
+
+    my $vresult = $schema->validate($c->req->params);
+
+    if ( $vresult->{is_valid} ) {
+        return $vresult->{validated_params};
+    }
+    else {
+        $c->stash->{json} =
+          { success => \0, msg => _loc("Validation failed"), errors => $vresult->{errors} };
+        $c->forward('View::JSON');
+        return 0;
+    }
+}
+
+sub _build_schema {
+    my $self = shift;
+
+    return Baseliner::Validator->new;
+}
+
 1;
