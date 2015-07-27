@@ -111,8 +111,16 @@
                 field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
                 break;
             case 'status': 
-                field=new Baseliner.SuperBox({ fieldLabel:_('Status'), name:'value', 
-                    valueField:'id', value: attr.value, singleMode: false, store: new Baseliner.Topic.StoreStatus() });
+                field=new Baseliner.SuperBox({ 
+                    fieldLabel:_('Status'), 
+                    name:'value',
+                    pageSize: 10,
+                    valueField:'id', 
+                    hiddenName: 'value',
+                    value: attr.value, 
+                    singleMode: false, 
+                    store: new Baseliner.Topic.StoreStatus() 
+                });
                 //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
                 oper_by_type = oper_in;
                 break;

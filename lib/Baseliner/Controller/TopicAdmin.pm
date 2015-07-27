@@ -154,13 +154,17 @@ sub list_status : Local {
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
     $dir = $dir && $dir =~ /desc/i ? -1 : 1;
     $sort ||= 'seq';
-
+    my @query = split '\s',$p->{query} if($p->{query});
+    my $query = $p->{query} ? { '$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }] } : {};
     my $row;
     my @rows;
-    $row = ci->status->find->sort({ $sort => $dir });
+    $row = ci->status->find( $query );
+    my $count = $row->count;
+    $row->sort({ $sort=>$dir });
+    $row->skip($p->{start} // 0);
+    $row->limit($p->{limit} // -1);
     
     while( my $r = $row->next ) {
-         
         push @rows,
           {
             id          => $r->{id_status},
@@ -174,10 +178,8 @@ sub list_status : Local {
             ci_update   => $r->{ci_update} eq '1'?\1:\0,
             bind_releases => $r->{bind_releases} eq '1'?\1:\0,
           };
-    }  
-    $cnt = @rows;
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    }      
+    $c->stash->{json} = { data=>\@rows, totalCount=>$count};
     $c->forward('View::JSON');
 }
 
