@@ -8,7 +8,7 @@ Ext.onReady(function(){
 
     Baseliner.help_menu = new Ext.menu.Menu({});
     Baseliner.help_button = new Ext.Button({
-       icon: '/static/images/icons/lightbulb_off.gif',
+       icon: '/static/images/icons/lightbulb_off.png',
        cls: 'x-btn-icon',
        hidden: true,
        menu: Baseliner.help_menu

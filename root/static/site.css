@@ -260,8 +260,8 @@ Help File Styles
 
 *************************************************/
 
-.help-off { background-image: '/static/images/icons/lightbulb_off.gif' }
-.help-on { background-image: '/static/images/icons/lightbulb.gif' }
+.help-off { background-image: '/static/images/icons/lightbulb_off.png' }
+.help-on { background-image: '/static/images/icons/lightbulb.png' }
 
 pre { font-family: Consolas, Courier New, mono; }
 
