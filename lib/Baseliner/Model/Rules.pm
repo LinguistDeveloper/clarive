@@ -788,6 +788,7 @@ register 'statement.if.condition' => {
 
 register 'statement.if.else' => {
     text => 'ELSE',
+     icon => '/static/images/icons/else.gif',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
@@ -804,6 +805,7 @@ register 'statement.if.else' => {
 
 register 'statement.if.elsif' => {
     text => 'ELSIF condition THEN',
+    icon => '/static/images/icons/if_else.gif',
     type => 'if',
     nested => 1,
     data => { condition =>'1' },
@@ -1204,7 +1206,7 @@ register 'statement.project.block' => {
 register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
     form => '/forms/stmt_eval.js', 
-    icon => '/static/images/icons/cog.png', 
+    icon => '/static/images/icons/cog_perl.png', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1220,7 +1222,7 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    icon => '/static/images/icons/cog.png', 
+    icon => '/static/images/icons/cog_perl.png', 
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
@@ -1254,7 +1256,7 @@ register 'statement.perl.group' => {
 register 'statement.perl.for' => {
     text => 'FOR eval', data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/icons/cog.png', 
+    icon => '/static/images/icons/cog_perl.png', 
     form => '/forms/stmt_for.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
@@ -1270,7 +1272,7 @@ register 'statement.perl.for' => {
 register 'statement.js.code' => {
     text => 'EVAL JavaScript', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/javascript.png', 
+    icon => '/static/images/icons/cog_java.png', 
     form => '/forms/stmt_for.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
@@ -1284,7 +1286,7 @@ register 'statement.js.code' => {
 register 'statement.perl.code' => {
     text => 'CODE', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/cog.png',
+    icon => '/static/images/icons/cog_perl.png',
     holds_children => 0,
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
@@ -1385,7 +1387,7 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text => 'INCLUDE rule',
-    icon => '/static/images/icons/cog.png', 
+    icon => '/static/images/icons/cog_perl.png', 
     holds_children => 0,
     data => { id_rule=>'', },
     dsl => sub { 
