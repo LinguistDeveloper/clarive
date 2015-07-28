@@ -600,6 +600,7 @@ sub changeset : Local {
                         bl    => $bl,
                         name  => $d->{name},
                         repo_path  => $d->{repo_dir},
+                        repo_mid   => $d->{mid},
                         collection => $d->{collection},
                         click => {
                             url   => '/lifecycle/repository',

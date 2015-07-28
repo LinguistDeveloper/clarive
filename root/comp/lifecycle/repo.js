@@ -1,5 +1,6 @@
 (function(params) {
     var repo_path = '<% $c->stash->{repo_path} %>';
+    var repo_mid  = '<% $c->stash->{repo_mid} %>';
     var repo_type = '<% $c->stash->{collection} %>';
     var bl = '<% $c->stash->{bl} %>';
     var controller;
@@ -98,7 +99,7 @@
     });
     tree.getLoader().on("beforeload", function(treeLoader, node) {
         var loader = tree.getLoader();
-        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl, repo_type: repo_type, leaf: node.leaf };
+        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, repo_mid: repo_mid, bl: bl, repo_type: repo_type, leaf: node.leaf };
     });
 
     tree.on('dblclick', function(node, ev){
@@ -165,7 +166,7 @@
             properties.changeTabIcon( '/static/images/moredata.gif' );
             properties.expand();
         }else{*/
-            Baseliner.ajaxEval('/comp/view_file.js', { repo_dir: repo_path, file: path, rev_num: version, controller: controller, bl: bl }, function(comp){
+            Baseliner.ajaxEval('/comp/view_file.js', { repo_dir: repo_path, repo_mid: repo_mid, file: path, rev_num: version, controller: controller, bl: bl }, function(comp){
                 //var style_cons = 'background-color: #000; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
                 comp.setTitle(name);
                 comp.closable = true;
