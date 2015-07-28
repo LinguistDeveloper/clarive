@@ -38,6 +38,15 @@ sub setup {
 
     *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
     *Baseliner::config = sub { {} };
+    *Baseliner::model = sub {
+        shift;
+        my ($model) = @_;
+
+        if ($model eq 'ConfigStore') {
+            require BaselinerX::Type::Model::ConfigStore;
+            return BaselinerX::Type::Model::ConfigStore->new;
+        }
+    };
 }
 
 1;

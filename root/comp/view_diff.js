@@ -58,7 +58,7 @@
     };
 
     if(controller == 'gittree' && file_diff == ''){
-	    var params_get_tags = { repo_dir: params.repo_dir };
+	    var params_get_tags = { repo_mid: params.repo_mid, repo_dir: params.repo_dir };
 	    var tagsStore = new Baseliner.JsonStore({
 	        autoLoad: true,
 	        remoteSort: true,

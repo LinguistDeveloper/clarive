@@ -1,5 +1,5 @@
 (function(params){
-    var path = params.repo_dir;
+    var path = params.repo_dir || '';
     var file = params.file;
     var revid = params.revid;
     var branch = params.branch;
@@ -144,9 +144,9 @@
             }else if(comp.pane == 'blame'){
                 var params_blame;
                 if(controller == 'gittree'){
-                    params_blame = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
+                    params_blame = { repo_mid: repo_mid, repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
                 }else{
-                    params_blame = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
+                    params_blame = { repo_mid: repo_mid, filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
                 }
                 Baseliner.ajax_json('/'+controller+'/get_file_blame', params_blame, function(res){
                     if(!res.suported)

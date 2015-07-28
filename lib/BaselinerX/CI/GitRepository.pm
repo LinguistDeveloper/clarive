@@ -1,6 +1,7 @@
 package BaselinerX::CI::GitRepository;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use BaselinerX::CI::bl;
 use Git::Wrapper;
 use Try::Tiny;
 use experimental 'smartmatch';
