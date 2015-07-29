@@ -36,8 +36,20 @@ sub icon { '/static/images/icons/commite.png' }
 
 sub url {
     my $self = shift;
+
     my $repo_dir = $self->repo->repo_dir;
-    { url => '/comp/view_diff.js', repo_dir => $repo_dir, rev_num => $self->sha, branch => '', title => $self->name, repo_type=> 'git', controller=>'gittree'},
+    my $repo_mid = $self->repo->mid;
+
+    {
+        url        => '/comp/view_diff.js',
+        repo_dir   => $repo_dir,
+        repo_mid   => $repo_mid,
+        rev_num    => $self->sha,
+        branch     => '',
+        title      => $self->name,
+        repo_type  => 'git',
+        controller => 'gittree'
+    },
 }
 
 sub items {
