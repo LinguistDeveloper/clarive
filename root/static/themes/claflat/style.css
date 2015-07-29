@@ -5,6 +5,10 @@
  *
  *
  */
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
 body a table td tr h1 h2 h3 h4 h5 span li ul {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -29,7 +33,7 @@ body a table td tr h1 h2 h3 h4 h5 span li ul {
 }
 .x-panel-header {
     color:#333;
-	border:1px solid #99BBE8;
+	border:1px solid #fff;
     background-image:none;
 	background-color: #f5f5f5;
 }
@@ -41,6 +45,12 @@ body a table td tr h1 h2 h3 h4 h5 span li ul {
 .x-panel-bbar .x-toolbar {
     border-color:#d0d0d0;
 }
+
+/*
+.x-panel-tbar {
+    margin-left: -4px;
+}
+*/
 
 .x-panel-tbar .x-toolbar {
     border-color:#d0d0d0;
@@ -55,12 +65,16 @@ body a table td tr h1 h2 h3 h4 h5 span li ul {
 }
 .x-panel-tl .x-panel-header {
     color:#333;
+	background: #EEE;
+	background-image:none;
+    margin: 2px 0px 10px 0px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .x-panel-tc {
 	background-image:none;
 }
 .x-panel-tl {
-	/*background-image:none;*/
+	background-image:none;
     /*border-color:#d0d0d0;*/
 	border:none;
 }
@@ -310,23 +324,22 @@ body .x-window .x-window-header-text, body .x-panel-ghost .x-window-header-text 
 
 /*********** X-panel *******/
 .x-panel-tc {
-	background: #B7D7F3;
+	background: #fff;
 }
-.x-panel-tl {
+/* .x-panel-tl {
 	background: transparent url(images/xt.png) no-repeat scroll 0 0;
 }
 .x-panel-tr {
 	background: transparent url(images/xt.png) no-repeat scroll right 0;
 }
+*/
 .x-panel-bc {
-	background: #B7D7F3;
+	background: #fff;
 }
 .x-panel-bl {
-	background:transparent url(images/xb.png) no-repeat scroll 0 bottom;
 	padding-left:4px;
 }
 .x-panel-br {
-	background:transparent url(images/xb.png) no-repeat scroll right bottom;
 	padding-right:4px;
 }
 .x-panel-mc {
@@ -335,11 +348,11 @@ body .x-window .x-window-header-text, body .x-panel-ghost .x-window-header-text 
 }
 
 .x-panel-ml {
-	background: #B7D7F3;
+	background: #fff;
 	padding-left:4px;
 }
 .x-panel-mr{
-	background: #B7D7F3;
+	background: #fff;
 	padding-right:4px;
 }
 
@@ -535,3 +548,10 @@ body {
 
 .x-combo-list .x-combo-selected { border:none !important;}
 .x-combo-list-item { border:none; }
+
+.x-panel-mc {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.x-form-item {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
