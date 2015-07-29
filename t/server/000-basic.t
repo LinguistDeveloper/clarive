@@ -6,6 +6,10 @@ use Try::Tiny;
 use WWW::Mechanize;
 use Baseliner::Utils;
 
+BEGIN {
+    plan skip_all => 'set TEST_LIVE to run this test' unless $ENV{TEST_LIVE};
+}
+
 my $ag = Clarive::Test->user_agent;
 #$ag->success or die $ag->response->status_line;
 

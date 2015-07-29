@@ -7,6 +7,10 @@ use WWW::Mechanize;
 use Baseliner::Utils;
 use Clarive::Test;
 
+BEGIN {
+    plan skip_all => 'set TEST_LIVE to run this test' unless $ENV{TEST_LIVE};
+}
+
 my $ag = Clarive::Test->user_agent;
 
 my $url;
