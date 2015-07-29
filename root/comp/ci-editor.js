@@ -198,7 +198,7 @@
         });
         var set_txt = function(){
             var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1 (%2)' );
-            txt_cont.update( _( txt, Cla.ci_loc(params.item), params.mid ) );
+            txt_cont.update( _( '<b>'+txt+'</b>', Cla.ci_loc(params.item), params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
         var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
@@ -376,6 +376,11 @@ if(forms.constructor === Array) form.pending_fields = form.pending_fields+forms.
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
                 cardpanel.doLayout(); // otherwise, no tbar
+                cardpanel.get_current_state = function(){ // for favorite to have correct icon
+                    return {
+                        icon: rec.icon
+                    }
+                }
             }, function(res){
                 Cla.error(_('CI %1', params.mid ), _('Error opening CI %1: %2', params.mid, res.msg));
                 cardpanel.destroy();
