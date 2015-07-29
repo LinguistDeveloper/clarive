@@ -1,5 +1,6 @@
 package BaselinerX::Type::Config;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 with 'Baseliner::Role::Registrable';

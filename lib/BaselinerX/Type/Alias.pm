@@ -1,5 +1,6 @@
 package BaselinerX::Type::Alias;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 with 'Baseliner::Role::Registrable';
 
 register_class 'alias' => __PACKAGE__;

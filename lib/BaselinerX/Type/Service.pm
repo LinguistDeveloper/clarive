@@ -1,5 +1,6 @@
 package BaselinerX::Type::Service;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 

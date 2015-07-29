@@ -1,5 +1,6 @@
 package Baseliner::Controller::Slot;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Core::Baseline;
 use Baseliner::Utils;

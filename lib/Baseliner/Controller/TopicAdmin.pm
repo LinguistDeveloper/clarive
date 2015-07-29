@@ -1,5 +1,6 @@
 package Baseliner::Controller::TopicAdmin;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use DateTime;
 use Try::Tiny;

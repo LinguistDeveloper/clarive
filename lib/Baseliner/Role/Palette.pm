@@ -1,5 +1,5 @@
 package Baseliner::Role::Palette;
-use Mouse::Role;
+use Moose::Role;
 
 has id             => ( is => 'rw', isa => 'Str', default => '' );
 has text           => ( is => 'rw', isa => 'Str' );

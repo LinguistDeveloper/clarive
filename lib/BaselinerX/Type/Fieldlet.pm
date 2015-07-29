@@ -1,5 +1,6 @@
 package BaselinerX::Type::Fieldlet;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 with 'Baseliner::Role::Registrable';
 with 'Baseliner::Role::Palette';
 
@@ -7,7 +8,7 @@ register_class 'fieldlet' => __PACKAGE__;
 sub service_noun { 'fieldlet' }
 
 has name		=> (is=>'rw', isa=>'Str', default=>'');
-has name_field 	=> (is=>'rw', isa=>'Str', default=>sub{ 
+has name_field 	=> (is=>'rw', isa=>'Maybe[Str]', default=>sub{ 
     my $self = shift;
     return $self->name;
 });
@@ -15,7 +16,7 @@ has id_field   	=> (is=>'rw', isa=>'Str', default=>'');
 has form		=> (is=>'rw', isa=>'Str', default=>'');
 has html_file	=> (is=>'rw', isa=>'Str', default=>'');
 has js_file		=> (is=>'rw', isa=>'Str', default=>'');
-has bd_field   	=> ( is=> 'rw', isa=> 'Str', default=>sub{ 
+has bd_field   	=> ( is=> 'rw', isa=> 'Maybe[Str]', default=>sub{ 
     my $self = shift;
     return $self->id_field;
 });

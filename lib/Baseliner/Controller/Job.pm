@@ -1,6 +1,7 @@
 package Baseliner::Controller::Job;
 use v5.10;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use DateTime;
 use JSON::XS;

@@ -45,7 +45,8 @@ You may define filters to change data before translation:
 
 =cut
 package BaselinerX::Type::Event;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 with 'Baseliner::Role::Registrable';
 

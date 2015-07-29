@@ -1,5 +1,6 @@
 package BaselinerX::Type::Registor;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 with 'Baseliner::Role::Registrable';
 
 register_class 'registor' => __PACKAGE__;

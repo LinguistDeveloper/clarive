@@ -1,5 +1,6 @@
 package BaselinerX::Type::Nature;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use experimental 'smartmatch';
 with 'Baseliner::Role::Registrable';

@@ -1,5 +1,6 @@
 package BaselinerX::Type::Action;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 with 'Baseliner::Role::Registrable';
 
 register_class 'action' => __PACKAGE__;

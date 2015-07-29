@@ -1,5 +1,6 @@
 package Baseliner::Controller::Feature;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' }
 use Git::Wrapper 0.025;

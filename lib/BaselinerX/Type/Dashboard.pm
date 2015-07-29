@@ -1,5 +1,6 @@
 package BaselinerX::Type::Dashboard;
-use Baseliner::PlugMouse;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
 with 'Baseliner::Role::Registrable';
