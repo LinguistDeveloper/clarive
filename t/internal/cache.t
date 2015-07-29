@@ -4,6 +4,10 @@ use warnings;
 use Test::More;
 use Try::Tiny;
 
+BEGIN {
+    plan skip_all => 'set TEST_LIVE to run this test' unless $ENV{TEST_LIVE};
+}
+
 {
     require Clarive::mdb;
     require Clarive::cache;
