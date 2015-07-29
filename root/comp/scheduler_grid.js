@@ -54,7 +54,6 @@
 
     var button_new_schedule = new Ext.Toolbar.Button({
         text: _('Create'),
-        //text: _('New task'),
         hidden: false,
         icon:'/static/images/icons/add.gif',
         cls: 'x-btn-text-icon',
@@ -65,7 +64,7 @@
     });
 
     var button_edit_schedule = new Ext.Toolbar.Button({
-        text: _('Edit task'),
+        text: _('Edit'),
         hidden: true,
         icon:'/static/images/icons/edit.gif',
         cls: 'x-btn-text-icon',
@@ -98,7 +97,7 @@
         }     
     };
     var button_delete_schedule = new Ext.Toolbar.Button({
-        text: _('Delete task'),
+        text: _('Delete'),
         hidden: true,
         icon:'/static/images/icons/delete_.png',
         cls: 'x-btn-text-icon',
@@ -108,7 +107,7 @@
     });
 
     var button_duplicate_schedule = new Ext.Toolbar.Button({
-        text: _('Duplicate task'),
+        text: _('Duplicate'),
         hidden: true,
         icon:'/static/images/icons/copy.gif',
         cls: 'x-btn-text-icon',
