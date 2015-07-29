@@ -1,5 +1,6 @@
 package BaselinerX::Service::CallWebService;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Path::Class;
 #use Try::Tiny;

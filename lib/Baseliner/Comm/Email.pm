@@ -1,5 +1,6 @@
 package Baseliner::Comm::Email;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use MIME::Lite;
 use Try::Tiny;

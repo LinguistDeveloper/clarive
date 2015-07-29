@@ -1,5 +1,6 @@
 package BaselinerX::Service::FootprintElements;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use File::Spec;
 use Path::Class;

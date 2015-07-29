@@ -4,7 +4,6 @@
 #
 
 package Baseliner::Comm::SSH;
-use Baseliner::Plug;
 
 #use IO::Socket;
 require Exporter;

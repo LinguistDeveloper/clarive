@@ -1,4 +1,5 @@
 package Baseliner::Controller::GitSmart;
+use Moose;
 =head1 NAME
 
 BaselinerX::Controller::GitSmart - interface to Git Smart HTTP
@@ -8,7 +9,7 @@ BaselinerX::Controller::GitSmart - interface to Git Smart HTTP
 This controller manages all interagtions with git-http-backend
 
 =cut
-use Baseliner::Plug;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;

@@ -1,46 +1,72 @@
 package Baseliner::Core::Registry;
 use Moose;
 use MooseX::ClassAttribute;
-use Moose::Exporter;
 use Try::Tiny;
 use Carp;
 use Baseliner::Utils;
 use experimental 'autoderef';
+use Exporter 'import';
 
-Moose::Exporter->setup_import_methods();
+our @EXPORT_OK = qw(register register_class);
+our %EXPORT_TAGS = ( dsl => [qw(register register_class)] );
+
+sub register {
+    my (  $key, $obj ) = @_;
+
+    my ($package) = caller;
+    __PACKAGE__->add( $package, $key, $obj );
+}
+
+sub register_class {
+    my (  $key, $obj ) = @_;
+
+    my ($package) = caller;
+    __PACKAGE__->add_class( $package, $key, $obj );
+}
 
 class_has registrar =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
+      lazy    => 1,
+      clearer => 'clear_registrar',
     );
 
 class_has registor_data =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
+      lazy    => 1,
+      clearer => 'clear_registor_data',
     );
     
 class_has registor_keys_added =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
+      lazy    => 1,
+      clearer => 'clear_registor_keys_added',
     );
 
 class_has classes =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
+      lazy    => 1,
+      clearer => 'clear_classes',
     );
 
 class_has module_index =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
+      lazy    => 1,
+      clearer => 'clear_module_index',
     );
 
-class_has 'keys_enabled' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
-class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
+class_has 'keys_enabled' => ( is=>'rw', isa=>'HashRef', default=>sub{{}}, lazy => 1, clearer => 'clear_keys_enabled' );
+
+class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', default => sub {{}}, lazy => 1, clearer => 'clear_registrar_enabled');
 
 {
     package Baseliner::Core::RegistryNode;
@@ -66,6 +92,18 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
         return $raw;
     }
 }	
+
+sub clear {
+    my $class = shift;
+
+    $class->clear_registrar;
+    $class->clear_registor_data;
+    $class->clear_registor_keys_added;
+    $class->clear_classes;
+    $class->clear_module_index;
+    $class->clear_keys_enabled;
+    $class->clear_registrar_enabled;
+}
 
 sub registors {
     my ($self)=@_;

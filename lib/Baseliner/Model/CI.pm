@@ -1,5 +1,6 @@
 package Baseliner::Model::CI;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(packages_that_do _fail _array _warn _loc _log);
 with 'Baseliner::Role::Service';
 use v5.10;

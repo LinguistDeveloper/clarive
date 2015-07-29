@@ -1,11 +1,13 @@
 package Baseliner::Controller::Rule;
-use Baseliner::Plug;
+use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use DateTime;
 use Try::Tiny;
 use Time::HiRes qw(time);
 use v5.10;
+use Baseliner::Core::Registry ':dsl';
+
 
 BEGIN {  extends 'Catalyst::Controller' }
 BEGIN { extends 'Catalyst::Controller::WrapCGI' }

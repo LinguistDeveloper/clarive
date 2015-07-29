@@ -1,5 +1,6 @@
 package Baseliner::Model::Jobs;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use namespace::clean;
 use Baseliner::Utils;

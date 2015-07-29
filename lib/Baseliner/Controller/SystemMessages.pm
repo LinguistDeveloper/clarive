@@ -1,5 +1,6 @@
 package Baseliner::Controller::SystemMessages;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }

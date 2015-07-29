@@ -1,7 +1,7 @@
 package Baseliner::Model::Messaging;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
-no Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Core::Message;

@@ -1,5 +1,6 @@
 package Baseliner::Controller::Dashboard;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Try::Tiny;

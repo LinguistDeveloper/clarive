@@ -36,7 +36,7 @@ has alias => (
         my ( $self, $alias, $meta ) = @_;
         my $alias_key = 'alias.' . $alias;
         register $alias_key => { link => $self->id };
-        Baseliner::Plug->registry->initialize($alias_key);
+        Baseliner::Core::Registry->initialize($alias_key);
     }
 );
 

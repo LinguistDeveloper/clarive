@@ -1,5 +1,6 @@
 package BaselinerX::Reports::estadisticas_jobs_bl;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use utf8;

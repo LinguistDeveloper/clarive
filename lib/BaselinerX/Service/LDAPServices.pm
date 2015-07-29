@@ -1,6 +1,7 @@
 package BaselinerX::Service::LDAPServices;
+use Moose;
 use Net::LDAP;
-use Baseliner::Plug;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;

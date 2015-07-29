@@ -1,5 +1,6 @@
 package BaselinerX::Service::CreateJob;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Carp;
 use Try::Tiny;

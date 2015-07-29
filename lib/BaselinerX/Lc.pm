@@ -1,5 +1,6 @@
 package BaselinerX::Lc;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 use experimental 'smartmatch';

@@ -1,5 +1,6 @@
 package BaselinerX::Reports::trending_requests_by_month;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use utf8;

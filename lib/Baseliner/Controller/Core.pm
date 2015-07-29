@@ -1,5 +1,6 @@
 package Baseliner::Controller::Core;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
 register 'action.admin.default' =>  { name=>'Administrator' };

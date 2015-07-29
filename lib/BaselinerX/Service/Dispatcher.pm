@@ -1,5 +1,6 @@
 package BaselinerX::Service::Dispatcher;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Proc::Background;
 use Proc::Exists qw(pexists);

@@ -1,5 +1,6 @@
 package BaselinerX::Type::Controller::Service;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };

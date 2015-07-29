@@ -1,5 +1,6 @@
 package Baseliner::Model::Permissions;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use Data::Dumper;

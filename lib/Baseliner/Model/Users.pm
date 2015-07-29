@@ -1,5 +1,6 @@
 package Baseliner::Model::Users;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use experimental 'smartmatch', 'autoderef';

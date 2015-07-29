@@ -1,5 +1,6 @@
 package Baseliner::Model::Label;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Try::Tiny;
 use v5.10;
 

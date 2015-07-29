@@ -1,5 +1,6 @@
 package BaselinerX::Type::Service::Config;
-use Baseliner::Plug;
+use Moose;
+use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
 with 'Baseliner::Role::Service';
