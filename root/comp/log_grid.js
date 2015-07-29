@@ -483,7 +483,7 @@
                 { header: _('Execution'), width: 60, dataIndex: 'exec', sortable: true, hidden: true },
                 { header: _('Level'), width: 30, dataIndex: 'lev', renderer: Baseliner.levRenderer, sortable: true },
                 { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true }, 
-                { header: _('Task'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: false, renderer: render_task },
+                { header: _('Op'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: false, renderer: render_task },
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
                 { header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
                 { header: _('Provider'), width: 100, dataIndex: 'provider', sortable: true, hidden: true },
