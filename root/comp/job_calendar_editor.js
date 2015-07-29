@@ -219,17 +219,9 @@
 
     var panel = new Ext.Panel({
         //layout: 'fit',
-        id: id2,
         style: 'padding: 5px',
         autoScroll: true,
-        items: [ cal_form, cal_windows ],
-        destroy: function()
-        {
-            //Esta linea es muy importante, debido a un bug en Ext el autoDestroy no funciona correctamente en el TabPanel
-            //La manera de solventar esto es asignar id al panel y obtener la coleccion completa con Ext.get
-            //Sobrescribimos la funcion destroy para gestionar la eliminacion correcta del panel y todos sus items
-            Ext.get( id2 ).remove();
-        }       
+        items: [ cal_form, cal_windows ]
     });
     return panel;
 })
