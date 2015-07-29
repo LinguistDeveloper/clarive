@@ -1707,7 +1707,6 @@ Baseliner.get_keys = function(obj){
 };
 
 Baseliner.DataEditor = function(c) {
-    console.dir(c);
     var self = this;
     self.addEvents('save');
     var Record = Ext.data.Record.create([  // Record is a Class
