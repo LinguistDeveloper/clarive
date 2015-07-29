@@ -335,6 +335,7 @@ sub tree_objects {
             moniker           => $row->{moniker},
             icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? try { $row_class->icon } catch {$generic_icon} : $generic_icon ) ),
             ts                => $row->{ts},
+            modified_by       => $row->{modified_by},
             bl                => $row->{bl},
             description       => $data->{description} // '',
             active            => ( $row->{active} eq 1 ? \1 : \0 ),

@@ -10,7 +10,7 @@
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 
         'name', 'item', 'ci_form', 'active', 'moniker',
-        'class',
+        'class', 'modified_by',
         'classname', 'versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -448,13 +448,14 @@
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' , sortable: true},
             { header: _('Collection'), width: 50, dataIndex: 'collection' , sortable: true},
             { header: _('Moniker'), width: 160, dataIndex: 'moniker', renderer: render_moniker, sortable: true },
-            { header: _('Class'),  width: 160, dataIndex: 'classname', sortable: true },
+            { header: _('Class'),  width: 160, dataIndex: 'classname', sortable: true, hidden: true },
             { header: _('Baseline'), hidden: true, width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl, sortable: true },
             { header: _('Version'), width: 50, dataIndex: 'versionid', sortable: true },
             { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
+            { header: _('Modified By'), width: 100, dataIndex: 'modified_by', sortable: true },
             { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags, sortable: true },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties, sortable: true },
-            { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
+            { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv, hidden: true }
         ],
         bbar: bbar
     });
