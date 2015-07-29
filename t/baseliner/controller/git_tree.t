@@ -16,6 +16,19 @@ use Clarive::mdb;
 use Baseliner::Core::Registry;
 use Baseliner::Controller::GitTree;
 
+local *Baseliner::model = sub {
+    shift;
+    my ($model) = @_;
+
+    if ($model eq 'ConfigStore') {
+        require BaselinerX::Type::Model::ConfigStore;
+        return BaselinerX::Type::Model::ConfigStore->new;
+    }
+
+    return Clarive::model($model);
+    die "unknown model '$model'";
+};
+
 my $RE_sha8 = '[a-f0-9]{8}';
 my $RE_sha  = '[a-f0-9]{40}';
 sub re_sha8 { re(qr/^$RE_sha8$/) }
