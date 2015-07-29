@@ -1000,7 +1000,8 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB"); 
     },
-    icon => '/static/images/icons/shortcut.png',
+    icon => '/static/images/icons/cog_perl.png',
+    #icon => '/static/images/icons/shortcut.png',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1053,7 +1054,8 @@ register 'statement.shortcut' => {
 register 'statement.log' => {
     text => 'LOG message or variable',
     data => { msg => '', level=>'info', content_type=>'literal' },
-    icon => '/static/images/icons/log-msg.gif',
+    icon => '/static/images/icons/cog_perl.png',
+    #icon => '/static/images/icons/log-msg.gif',
     form => '/forms/log.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
