@@ -463,7 +463,6 @@
         var grid = new Ext.grid.EditorGridPanel({
             title: _('Job Log'),
             header: false,
-            /* stripeRows: true, */
             autoScroll: true,
             autoWidth: true,
             autoSizeColumns: true,

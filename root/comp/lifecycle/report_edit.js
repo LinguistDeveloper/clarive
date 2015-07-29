@@ -425,7 +425,6 @@
         useArrows: true,
         animate: true,
         lines: true,
-        //stripeRows: true,
         enableSort: true,
         enableDD: true,
         ddScroll: true,

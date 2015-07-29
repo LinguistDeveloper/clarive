@@ -18,7 +18,6 @@
     var grid = new Ext.grid.EditorGridPanel({
 		    title: _('Tasks'),
 		    header: false,
-            stripeRows: true,
 		    autoScroll: true,
 		    autoWidth: true,
 		    store: store,

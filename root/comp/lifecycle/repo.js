@@ -51,7 +51,6 @@
         width: 500,
         height: 300,
         lines: true,
-	    stripeRows: true,
         enableSort: false,
         enableDD: true,
         dataUrl: '/lifecycle/repo_data',

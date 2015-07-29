@@ -1378,7 +1378,6 @@
 		  renderTo: 'main-panel',
 		sm: check_notifications_sm,
         store: store_notifications,
-        stripeRows: true,
         viewConfig: {
             forceFit: true
         },

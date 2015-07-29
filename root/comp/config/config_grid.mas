@@ -69,7 +69,6 @@
         var grid = new Ext.grid.GridPanel({
             region: 'center',
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,

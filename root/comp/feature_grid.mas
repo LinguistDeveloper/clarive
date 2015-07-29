@@ -31,7 +31,6 @@
         var grid = new Ext.grid.GridPanel({
             title: '<% _loc('Features') %>',
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,

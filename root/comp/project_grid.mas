@@ -24,7 +24,6 @@
     var grid = new Ext.grid.EditorGridPanel({
             title: _('Projects'),
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,

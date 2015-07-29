@@ -160,7 +160,6 @@
         var grid = new Ext.grid.GridPanel({
             title: _('Job Calendars'),
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,

@@ -146,7 +146,6 @@
         title: _('Users'),
         store: store_role_users,
         defaults: { sortable: true },
-        stripeRows: true,
         autoScroll: true,
         viewConfig: { forceFit: true },
         columns: [
@@ -172,7 +171,6 @@
         title: _('Projects'),
         store: store_role_projects,
         defaults: { sortable: true },
-        stripeRows: true,
         autoScroll: true,
         viewConfig: { forceFit: true },
         columns: [
@@ -222,7 +220,6 @@
     var grid_role = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
         region: 'center',
-        stripeRows: true,
         autoScroll: true,
         store: action_store,
         split: true,

@@ -149,7 +149,6 @@
         store: store_events,
         master_column_id : '_id',
         autoExpandColumn: '_id',
-        stripeRows: true,
         viewConfig: {
         forceFit: true,
         //enableRowBody : true

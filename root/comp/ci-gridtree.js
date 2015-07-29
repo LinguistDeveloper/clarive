@@ -379,7 +379,6 @@
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: Cla.ci_loc(params.item),
-        stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         sortable: true,

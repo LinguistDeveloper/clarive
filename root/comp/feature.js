@@ -138,7 +138,6 @@
                 region:'center',
                 store: self.store, 
                 loadMask:'true',
-                stripeRows: true,
                 autoScroll: true,
                 autoWidth: true,
                 autoSizeColumns: true,

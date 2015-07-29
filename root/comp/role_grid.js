@@ -53,7 +53,6 @@
             renderTo: 'main-panel',
             title: _('Roles'),
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,
@@ -165,7 +164,6 @@
         var st = new Ext.data.SimpleStore({ fields: ['key','name'], data: actions });
         var agrid = new Ext.grid.GridPanel({ 
             store: st,
-            stripeRows: true,
             autoScroll: true,
             viewConfig: { forceFit: true },
             loadMask: true,

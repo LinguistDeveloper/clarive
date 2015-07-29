@@ -176,7 +176,6 @@ Ext.override(Ext.form.HtmlEditor, {
             region: 'center',
             title: _('Inbox'),
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             iconCls: 'icon-inbox',

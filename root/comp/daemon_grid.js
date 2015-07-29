@@ -306,7 +306,6 @@
     	renderTo: 'main-panel',
 	    title: _('Daemons'),
 	    header: false,
-	    stripeRows: true,
 	    autoScroll: true,
 	    autoWidth: true,
 	    store: store,

@@ -105,7 +105,6 @@
     var grid_report = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
-        stripeRows: true,
         autoScroll: true,
         stateful: !Baseliner.DEBUG,
         stateId: 'topic-grid',

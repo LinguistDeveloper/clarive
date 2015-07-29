@@ -40,7 +40,6 @@
             renderTo: 'main-panel',
             title: '<% $c->stash->{title} %>',
             header: false,
-            stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,

@@ -462,7 +462,6 @@
         title: _("Revisions"),
         header: false,
         tab_icon: '/static/images/icons/revision.gif',
-        stripeRows: true,
         autoScroll: true,
         tpl: resultTpl,
         autoWidth: true,
