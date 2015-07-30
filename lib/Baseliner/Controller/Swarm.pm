@@ -16,6 +16,21 @@ register 'dashlet.swarm' => {
     js_file => '/dashlets/swarm_dash.js'
 };
 
+
+
+sub parse_status : Local {
+
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $parse_status = $p->{statuses};
+
+    my @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($parse_status)})->all;
+
+    $c->stash->{json} = { data=>\@statuses_mids };
+    $c->forward('View::JSON');    
+
+}
+
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
@@ -120,10 +135,12 @@ sub activity_by_status: Local {
     my $skip = $p->{skip} || 0;
     my $start_date = $p->{start_date};
     my $categories = $p->{categories} || undef;
-    my $statuses = $p->{statuses} || undef;
+    #my $statuses = $p->{statuses} || undef;
     my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
-	
+	#my $not_in_status = $p->{not_in_status} || undef;
+
+
     #my $days = $p->{days} || 2592000000;
 	# my $days = $p->{days} || 31536000000;
 	# $days = $days/86400000;
@@ -141,21 +158,23 @@ sub activity_by_status: Local {
         $time_filter = { ts => {'$lte' => $end_date }};
     }
 
-    my @statuses_mids;
+    #if ($not_in_status eq 'on'){
+    #    $statuses = undef;
+    #}
+
+    #my @statuses_mids;
     my @category_mids;
 
 
-    my @statuses_ids = _array($statuses);
+    #my @statuses_ids = _array($statuses);
     my @category_ids = _array($categories);
 
     my $condition = { event_key=> qr/^(event.topic.create|event.topic.change_status)/, %$time_filter };
 
-    if(@statuses_ids){
-
-        @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($statuses)})->all;
-        $condition->{'vars.status'} = mdb->in(@statuses_mids);
-
-    }
+    #if(@statuses_ids){
+    #    @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($statuses)})->all;
+    #    $condition->{'vars.status'} = mdb->in(@statuses_mids);
+    #}
 
     if ( @category_ids ) {
       @category_mids = map { $_->{mid} } mdb->topic->find({ category_id => mdb->in($categories)})->all;
