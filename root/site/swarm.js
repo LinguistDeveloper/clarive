@@ -2,6 +2,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     
     background_color: '#FFFFFF',
     start_mode: 'manual',
+    //anim_bucle: 'on',
+    //max_node: 0,
+    //min_node: 0,
+    //controller: '/swarm/activity_by_category',
+    //not_in_status: 'on',
+
 
     //limit: '20000',
 
@@ -365,10 +371,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_start.enable();
         self.btn_pause.disable();
         self.btn_stop.disable();
-        self.del_user();
         self.control_bucle = true;
         self.anim_running = false;
         self.i = self.res.total;
+        self.del_user();
 
     },
     anim : function(limit){
@@ -1620,9 +1626,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
       
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
-                         .on('mouseover', function(d)
+                         /*.on('mouseover', function(d)
                          {
-                            d3.select(this).transition()
+                            d3.select(this).transition()*/
+                           //this is a second part to visibility 
                           /*  .duration(750)
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
@@ -1631,11 +1638,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(d.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill",texto_nodos).attr("fill-opacity",0.6).style("visibility", "visible");
-                            */return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
+                            */
+                            /*return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
-                         d3.select(this).transition()
+                         d3.select(this).transition()*/
                          /*.duration(750)
                          .attr("r", 10)
                          .attr("fill",nodos)
@@ -1644,10 +1652,35 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
                          self.node9.style("visibility", "hidden");*/
-                         return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
-                         })
-                         .call(self.force.drag)
-                         .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
+                         /*return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
+                         })*/
+                        .on('click', function(){
+
+                            var node_title = row.node;
+
+                            win = new Ext.Window({
+                            title: 'Node id '+ node_title,
+                            layout: 'fit',
+                            autoScroll: true,
+                            width: 200,
+                            height: 200,
+                            modal: false,
+                            closeAction: 'hide',
+                            items: [new Baseliner.MonoTextArea({ value:  '\n'
+                                                                        +'\n'                                                                        
+                                                                        +'Event: ' + row.ev +'\n' 
+                                                                        +'Parent: ' + row.parent +'\n'
+                                                                        +'User: ' + row.who +'\n'
+                                                                        +'Id: ' + row.id +'\n'
+                                                                        +'Color in Hex: ' + row.color +'\n'
+                                                                        +'Date: ' + row.t +'\n'                                                                        
+                                                                    })]
+                        });
+                        win.show();
+
+                        })
+                        .call(self.force.drag)
+                        .transition().duration(timer).attr("fill",nodos).attr("fill-opacity",0.6);
 
         self.node.exit().remove();
 
@@ -1695,9 +1728,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
       
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
-                         .on('mouseover', function(d)
+                         /*.on('mouseover', function(d)
                          {
-                            d3.select(this).transition()
+                            d3.select(this).transition()*/
                             /*.duration(750)
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
@@ -1706,11 +1739,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             self.node6.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.ev).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+16).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node7.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.who).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+29).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
                             self.node8.enter().append("text").attr("x", d.x-10).attr("y",d.y-10).text(row.parent).transition().duration(3000).attr("x", d.x-10).attr("y", d.y+42).attr("fill","url(#Color_Texto_Nodos)").attr("fill-opacity",0.6).style("visibility", "visible");
-                            */return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
+                            */
+                         /*return self.node5.attr("fill",self.opuesto).style("visibility", "visible");
                          })
                          .on("mouseout", function()
                          {
-                         d3.select(this).transition()
+                         d3.select(this).transition()*/
                          /*.duration(750)
                          .attr("r", 10)
                          .attr("fill","url(#Verde)")
@@ -1719,8 +1753,33 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                          self.node7.style("visibility", "hidden");
                          self.node8.style("visibility", "hidden");
                          self.node9.style("visibility", "hidden");*/
-                         return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
-                         })
+                         /*return self.node5.attr("fill",self.opuesto).style("visibility", "hidden");//})
+                         })*/
+                        .on('click', function(){
+
+                            var node_title = row.node;
+
+                            win = new Ext.Window({
+                            title: 'Node id '+ node_title,
+                            layout: 'fit',
+                            autoScroll: true,
+                            width: 200,
+                            height: 200,
+                            modal: false,
+                            closeAction: 'hide',
+                            items: [new Baseliner.MonoTextArea({ value: '\n'
+                                                                        +'\n'                                                                        
+                                                                        +'Event: ' + row.ev +'\n' 
+                                                                        +'Parent: ' + row.parent +'\n'
+                                                                        +'User: ' + row.who +'\n'
+                                                                        +'Id: ' + row.id +'\n'
+                                                                        +'Color in Hex: ' + row.color +'\n'
+                                                                        +'Date: ' + row.t +'\n'  
+                                                                    })]
+                        });
+                        win.show();
+
+                        })
                          .call(self.force.drag)
                          .transition().duration(timer).attr("fill","url(#Verde)").attr("fill-opacity",0.6);
         self.node.exit().remove();
