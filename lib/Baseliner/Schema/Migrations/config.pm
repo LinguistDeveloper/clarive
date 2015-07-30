@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::config;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->config;

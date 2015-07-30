@@ -70,7 +70,7 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', default => sub {{}
 
 {
     package Baseliner::Core::RegistryNode;
-    use Mouse;
+    use Moose;
     use experimental 'autoderef';
 
     has key     => ( is => 'rw', isa => 'Str',     required => 1 );

@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::repo_repl;
-use Mouse;
+use Moose;
 
 sub upgrade {
     Util->_fail('Collection repl already exists') if mdb->repl->count;

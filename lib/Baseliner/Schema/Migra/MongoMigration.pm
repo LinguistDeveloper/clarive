@@ -1,8 +1,7 @@
 package Baseliner::Schema::Migra::MongoMigration;
-use Baseliner::Mouse;
+use Moose;
 use Baseliner::Utils;
 use v5.10;
-use strict;
 use Try::Tiny;
 
 sub roles {

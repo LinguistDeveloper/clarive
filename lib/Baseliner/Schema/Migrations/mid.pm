@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::mid;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->mids;

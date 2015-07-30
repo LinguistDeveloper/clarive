@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::dashboard;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->dashboards;

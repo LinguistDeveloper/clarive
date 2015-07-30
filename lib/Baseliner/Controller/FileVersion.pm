@@ -1,5 +1,5 @@
 package Baseliner::Controller::FileVersion;
-use Mouse;
+use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;

@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::root_create 3;
-use Mouse;
+use Moose;
 
 sub upgrade {
     if( ! ci->user->find_one({ name=>'root' }) ) {

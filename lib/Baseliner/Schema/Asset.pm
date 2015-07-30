@@ -1,6 +1,5 @@
 package Baseliner::Schema::Asset;
-use strict;
-use Baseliner::Mouse;
+use Moose;
 use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump);
 
 has fh       => qw(is rw isa Any required 1);

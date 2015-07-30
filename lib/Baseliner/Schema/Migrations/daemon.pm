@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::daemon;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->daemons;

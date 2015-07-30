@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::role;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->role;

@@ -1,5 +1,6 @@
 package Baseliner::Queue;
-use Baseliner::Mouse;
+use Moose;
+use Function::Parameters ();
 
 method push( :$msg, :$data ) {
     my $ts = mdb->ts;

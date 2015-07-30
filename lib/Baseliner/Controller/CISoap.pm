@@ -1,5 +1,5 @@
 package Baseliner::Controller::CISoap;
-use Mouse;
+use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;

@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::notification;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->notifications;

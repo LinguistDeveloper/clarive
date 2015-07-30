@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::topic_admin 5;
-use Mouse;
+use Moose;
 
 sub upgrade {
     mdb->migra->topic_admin;

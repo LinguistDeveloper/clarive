@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::bl_common 1;
-use Mouse;
+use Moose;
 
 sub upgrade {
     if( ! ci->bl->find_one({ name=>'root' }) ) {

@@ -1,5 +1,5 @@
 package Baseliner::JS;
-use Mouse;
+use Moose;
 use Baseliner::Utils qw(:logging);
 
 has je => qw(is rw isa JE lazy 1 default), sub{ require JE; JE->new };
@@ -86,7 +86,7 @@ TODO this should be done with a bind_class wrapper, but could not find a way
 
 =cut
 package ClaApiJS {
-    use Mouse;
+    use Moose;
     extends 'Clarive::Api';
     use Try::Tiny;
     around qr/.*/ => sub {

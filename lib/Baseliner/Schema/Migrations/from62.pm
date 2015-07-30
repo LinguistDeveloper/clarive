@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::from62;
-use Mouse;
+use Moose;
 
 #cla db-upgrade --migrate from62 
 

@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::from61;
-use Mouse;
+use Moose;
 
 sub upgrade {
     # 6.1:

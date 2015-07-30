@@ -1,5 +1,5 @@
 package Baseliner::Schema::Migrations::topic_rels;
-use Mouse;
+use Moose;
 
 sub upgrade {
     # 6.1:

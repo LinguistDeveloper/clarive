@@ -31,12 +31,10 @@ Possible statuses for the queue:
 
 =cut
 package Baseliner::Sem;
-use Baseliner::Mouse;
+use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
-use strict;
-use warnings;
 
 has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);

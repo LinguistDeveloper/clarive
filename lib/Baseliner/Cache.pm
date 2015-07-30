@@ -1,6 +1,6 @@
 package Baseliner::Cache;
 use v5.10;
-use Mouse;
+use Moose;
 use URI::Escape qw(uri_escape uri_unescape);
 use Try::Tiny;
 use JSON::XS;

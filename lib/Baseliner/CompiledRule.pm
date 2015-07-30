@@ -1,7 +1,5 @@
 package Baseliner::CompiledRule;
-use Mouse;
-use strict;
-use warnings;
+use Moose;
 use Baseliner::Utils qw(:logging);
 use Try::Tiny;
 use Module::Loaded qw();

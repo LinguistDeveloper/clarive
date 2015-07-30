@@ -1,5 +1,5 @@
 package Baseliner::MongoCursor;
-use Mouse;
+use Moose;
 extends 'MongoDB::Cursor';
 
 =head2 await_data

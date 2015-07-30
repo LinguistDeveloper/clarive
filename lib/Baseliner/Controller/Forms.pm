@@ -1,8 +1,7 @@
 package Baseliner::Controller::Forms;
-use Mouse;
+use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
