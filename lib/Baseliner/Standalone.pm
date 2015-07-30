@@ -6,5 +6,8 @@ sub registry { 'Baseliner::Core::Registry' }
 
 Baseliner::Standalone->meta->make_immutable( inline_constructor=>0 );
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

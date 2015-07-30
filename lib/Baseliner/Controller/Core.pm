@@ -23,6 +23,9 @@ sub registry : Path('/core/registry') {
     my ( $self, $c ) = @_;
     $c->res->body( '<pre>' . _dump( $c->registry->registrar ) );
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 

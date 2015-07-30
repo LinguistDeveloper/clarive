@@ -39,5 +39,8 @@ sub fatal {
 }
 #TODO write to db too
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

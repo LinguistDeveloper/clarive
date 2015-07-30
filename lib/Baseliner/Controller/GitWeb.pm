@@ -70,6 +70,9 @@ sub gitweb_cgi {
     Baseliner::GitWeb::gitweb_cgi( @_ );
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __DATA__

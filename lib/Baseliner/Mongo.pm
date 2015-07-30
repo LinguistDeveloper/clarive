@@ -761,4 +761,7 @@ package Baseliner::Mongo::TraceCursor {
     }
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

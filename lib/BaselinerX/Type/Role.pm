@@ -10,4 +10,7 @@ has 'name' => ( is=> 'rw', isa=> 'Str' );
 
 
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

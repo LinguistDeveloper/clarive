@@ -317,4 +317,7 @@ sub repopath_for_project_repo {
     }
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

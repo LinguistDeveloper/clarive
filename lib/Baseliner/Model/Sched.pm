@@ -249,5 +249,8 @@ sub kill_schedule {
 
     $self->set_task_data( taskid => $taskid, status => 'KILLED');
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

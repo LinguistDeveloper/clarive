@@ -560,4 +560,7 @@ sub _filtered_env {
   return { map {; $_ => $env->{$_} } @ok };
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

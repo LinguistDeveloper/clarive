@@ -193,32 +193,6 @@ around 'debug' => sub {
     $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
     $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    if( ! Clarive->debug ) {
-        # make immutable for speed
-        my %cl=Class::MOP::get_all_metaclasses;
-
-        # generic classes
-        for my $package (
-            grep !/(Baseliner|Baseliner::Cmd|Baseliner::Moose|Baseliner::Role::.*|Baseliner::View::.*|BaselinerX::CI::.*)$/, 
-            grep /^Baseliner/, 
-            keys %cl )
-        {
-            my $meta = $cl{ $package };
-            next if ref $meta eq 'Moose::Meta::Role';
-            unless( $meta->is_immutable ) {
-                $meta->make_immutable ;   # slow loadup... ~1s
-            }
-        }
-
-        #my %pkgs;
-        #for( keys %{ Baseliner::Core::Registry->registrar } ) {
-        #   my $node = Baseliner::Core::Registry->registrar->{$_};
-        #   $pkgs{ $node->instance->module } =undef;
-        #   #  say _dump $node;
-        #}
-        #$_->meta->make_immutable for keys %pkgs;
-    }
-
     # cache legacy, for unmigrated features
     sub cache_get { shift; cache->get( @_ ) }
     sub cache_set { shift; cache->set( @_ ) }
@@ -525,5 +499,8 @@ This is the main Baseliner app object.
 L<Baseliner::Controller::Root>, L<Catalyst>
 
 =cut
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
 
 1;

@@ -414,4 +414,7 @@ sub build_field_query {
 }
 
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

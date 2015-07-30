@@ -223,4 +223,7 @@ register 'report.clarive.job_statistics_semana' => {
     }
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

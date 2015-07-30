@@ -12,6 +12,9 @@ has formfu 	=> ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
 has 'plugin' => (is=>'rw', isa=>'Str', default=>'');
 has 'id' => (is=>'rw', isa=>'Str', default=>'');
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 =head1 SYNTAX

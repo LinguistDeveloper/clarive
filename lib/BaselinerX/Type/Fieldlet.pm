@@ -36,5 +36,8 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	};
 });
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

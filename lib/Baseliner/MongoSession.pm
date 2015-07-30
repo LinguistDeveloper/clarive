@@ -118,5 +118,8 @@ sub delete_expired_sessions {
 
 __PACKAGE__->meta->make_immutable;
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

@@ -357,5 +357,8 @@ exec "some_system_command";
 
 =cut
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

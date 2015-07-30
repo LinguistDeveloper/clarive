@@ -27,6 +27,9 @@ sub ws_form_request {
     }
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 =head1 NAME

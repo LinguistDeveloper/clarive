@@ -19,4 +19,7 @@ sub can_i_haz_nature { # ArrayRef -> Bool
   $self->name ~~ @all_natures ? 1 : 0;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -41,6 +41,9 @@ register 'service.auth.message' => {
     }
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 

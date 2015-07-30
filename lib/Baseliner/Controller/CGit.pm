@@ -55,5 +55,8 @@ sub cgit_data : Path('/cgit-data') {
     $c->res->body('nay');
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

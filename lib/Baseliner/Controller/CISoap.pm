@@ -230,6 +230,9 @@ sub methods {
         grep !/^_/, 
         sort $cn->meta->get_method_list;
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

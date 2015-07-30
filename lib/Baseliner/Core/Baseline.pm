@@ -46,5 +46,8 @@ sub baselines_no_root {
     shift @arr if $arr[0]->{bl} eq '*';
     return @arr;
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

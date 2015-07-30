@@ -1602,5 +1602,8 @@ sub user_can_search {
     my ($self, $username) = @_;
     return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.ci');
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

@@ -550,4 +550,7 @@ sub mdb_message_query {
 	return %json; 
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

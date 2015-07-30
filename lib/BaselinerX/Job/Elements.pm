@@ -247,4 +247,7 @@ sub split_by_extension {
     return $matching, $unmatching;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

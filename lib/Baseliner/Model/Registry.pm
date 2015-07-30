@@ -24,6 +24,9 @@ sub get {  ## somehow autoload does not get called for this
     Baseliner::Core::Registry->get( @_);
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 

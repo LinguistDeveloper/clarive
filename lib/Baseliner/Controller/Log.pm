@@ -514,4 +514,7 @@ sub upload_file : Path('/job/log/upload_file') {
     $c->forward( 'View::JSON' );
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -79,4 +79,7 @@ sub run_create {
     };    
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

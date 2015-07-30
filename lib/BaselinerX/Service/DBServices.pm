@@ -224,4 +224,7 @@ sub rollback_all {
     return;
 }   
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

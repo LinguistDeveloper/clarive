@@ -14,4 +14,7 @@ use Try::Tiny;
 #     #actions  => [ 'action.git.cgit_view_repo' ]
 # };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

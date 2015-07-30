@@ -197,4 +197,7 @@ register 'report.clarive.trending_requests_by_month' => {
     }
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

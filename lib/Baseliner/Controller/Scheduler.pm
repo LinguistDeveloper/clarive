@@ -252,4 +252,7 @@ sub update_conf : Local {
     $c->forward('View::JSON');
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

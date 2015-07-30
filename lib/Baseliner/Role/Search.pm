@@ -16,4 +16,7 @@ package SearchResult;
 use Moose;
 has icon => qw/is ro/;
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

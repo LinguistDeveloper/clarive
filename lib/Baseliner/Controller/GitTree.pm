@@ -1014,4 +1014,7 @@ sub _build_schema {
     return Baseliner::Validator->new;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

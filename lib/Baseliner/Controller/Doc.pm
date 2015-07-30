@@ -123,5 +123,8 @@ sub default : Path {
     $c->stash->{template} = '/static/docgen/home.html';
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

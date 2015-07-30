@@ -269,4 +269,7 @@ sub run_eval {
     return @rets > 1 ? \@rets : $rets[0];
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

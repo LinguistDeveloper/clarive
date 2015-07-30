@@ -536,4 +536,7 @@ sub end : ActionClass('RenderView') {
         foreach( keys %{ $c->req->parameters || {} });
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

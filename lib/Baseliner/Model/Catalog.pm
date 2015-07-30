@@ -48,4 +48,7 @@ sub get_perm_catalog {
     return \%perm_catalog;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

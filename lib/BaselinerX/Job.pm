@@ -143,4 +143,7 @@ register 'event.job.cancel_running' => {
 };
 
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

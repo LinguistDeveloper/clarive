@@ -11,4 +11,7 @@ register_class 'statement' => __PACKAGE__;
 
 sub service_noun { 'statement' }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

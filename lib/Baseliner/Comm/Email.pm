@@ -287,5 +287,8 @@ sub filter_queue {
     return @q;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

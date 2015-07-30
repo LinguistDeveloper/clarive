@@ -157,4 +157,7 @@ sub main : Local {
     $c->stash->{template} = '/comp/config/config_main.mas';
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

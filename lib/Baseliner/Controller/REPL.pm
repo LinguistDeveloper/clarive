@@ -587,4 +587,7 @@ sub push_to_history {
     } ## end if ( !$session->{repl_md5...})
 } ## end sub push_to_history
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

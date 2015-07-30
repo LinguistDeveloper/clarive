@@ -14,4 +14,7 @@ register 'event.repository.update' => {
     vars => [qw/username title repository commit diff mid/],  #   mid=revision-mid, diff=diff text, commit=object for commit
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

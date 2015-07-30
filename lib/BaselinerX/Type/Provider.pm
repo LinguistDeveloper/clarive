@@ -11,6 +11,9 @@ has 'desc' => ( is=> 'rw', isa=> 'Str' );
 has 'list' => ( is=> 'rw', isa=> 'CodeRef' );
 has 'config' => ( is=> 'rw', isa=> 'Str' );
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 =head1 DESCRIPTION

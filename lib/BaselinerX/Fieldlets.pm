@@ -541,4 +541,7 @@ register 'fieldlet.required.include_into' => {
 #     bd_field    => 'progress'
 # };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -1888,6 +1888,9 @@ sub list_status_changed: Local{
     $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __DATA__

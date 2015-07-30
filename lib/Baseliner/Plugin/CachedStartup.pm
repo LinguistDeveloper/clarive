@@ -15,4 +15,7 @@ around 'locate_components' => sub {
       return @comps;
 };
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

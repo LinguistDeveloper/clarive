@@ -10,4 +10,7 @@ sub setup {
     $c->next::method(@_);
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

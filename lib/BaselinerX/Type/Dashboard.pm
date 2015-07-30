@@ -16,6 +16,9 @@ has 'name'   => ( is => 'rw', isa => 'Str' );
 has 'column' => ( is => 'rw', isa => 'Int', default => 0 );
 has 'active' => ( is => 'rw', isa => 'Bool', default => 1 );
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 

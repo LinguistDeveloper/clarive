@@ -31,4 +31,7 @@ sub get_all_projects {
     $rs->all;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

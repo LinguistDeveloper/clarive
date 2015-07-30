@@ -101,5 +101,8 @@ sub run_rules {
 sub rules_pre_online { $_[0]->run_rules( 'pre-online', $_[1] ) }
 sub rules_post_online { $_[0]->run_rules( 'post-online', $_[1] ) }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

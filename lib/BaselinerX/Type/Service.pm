@@ -180,6 +180,9 @@ sub run_container {
     return $handler->( $obj, $container, $config );
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 ######################################################################
 package BaselinerX::Type::Service::Container;
 use Baseliner::Moose;
@@ -220,4 +223,5 @@ sub AUTOLOAD {
     my ($cl,$fi,$li) = caller(0);
     Util->_log_me( $lev // 'info', $cl, $fi, $li, @_ );
 }
+
 1;

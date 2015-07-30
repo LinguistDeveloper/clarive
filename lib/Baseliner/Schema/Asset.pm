@@ -57,4 +57,7 @@ sub insert {
     $self->id( $id );
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

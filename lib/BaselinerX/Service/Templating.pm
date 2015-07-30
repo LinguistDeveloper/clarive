@@ -78,4 +78,7 @@ sub process_tt {
     return $output;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -23,5 +23,8 @@ has data           => ( is => 'rw', isa => 'HashRef', default => sub { {} } );  
 has form           => ( is => 'rw', isa => 'Str', default => '' );
 has icon           => ( is => 'rw', isa => 'Str', default=>'/static/images/icons/report_default.png');
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

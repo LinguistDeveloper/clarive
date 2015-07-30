@@ -11,4 +11,7 @@ sub load_user_actions : Private {
     }
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

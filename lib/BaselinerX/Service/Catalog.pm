@@ -1204,4 +1204,7 @@ sub set_service_status {
     $service_selected->{run_service_step} = 'DONE';
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

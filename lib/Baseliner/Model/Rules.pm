@@ -1413,4 +1413,7 @@ sub include_rule {
     return $dsl;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

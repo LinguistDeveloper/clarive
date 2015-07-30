@@ -271,4 +271,7 @@ sub find_mid {
     return @docs==1 ? $docs[0] : @docs;
 }
     
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -90,4 +90,7 @@ sub show_file : Local  {
     $c->stash->{template} = '/git/commit.html'; 
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

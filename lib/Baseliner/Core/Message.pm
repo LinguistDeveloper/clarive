@@ -15,4 +15,7 @@ has 'swreaded' => ( is=>'rw', isa=>'Int' );
 
 sub from { my $self=shift; $self->sender(@_) }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

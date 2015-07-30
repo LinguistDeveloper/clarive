@@ -799,4 +799,7 @@ sub users_with_roles {
     return @users, @root_users;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

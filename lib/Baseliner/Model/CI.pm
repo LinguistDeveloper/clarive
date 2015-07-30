@@ -36,5 +36,8 @@ register 'service.ci.update' => {
         _log _loc "Update user ok";
     }
 };
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

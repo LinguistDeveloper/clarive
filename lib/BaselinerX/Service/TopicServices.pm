@@ -434,4 +434,7 @@ sub get_with_condition {
 }
 
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

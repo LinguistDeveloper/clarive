@@ -322,4 +322,7 @@ sub old_tags_not_in_bl {
 
 =cut
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

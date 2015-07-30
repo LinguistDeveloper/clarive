@@ -92,4 +92,7 @@ sub ext_menu {
     } 
     return $ret;
 }
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

@@ -9,5 +9,8 @@ has id=> (is=>'rw', isa=>'Str', default=>'');
 has name => ( is=> 'rw', isa=> 'Str' );
 has generator => ( is=> 'rw', isa=> 'CodeRef' );
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

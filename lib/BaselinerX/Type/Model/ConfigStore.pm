@@ -581,5 +581,8 @@ sub export_to_file {
     $xml_file->close;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
 

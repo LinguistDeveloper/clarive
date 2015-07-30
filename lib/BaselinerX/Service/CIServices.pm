@@ -44,4 +44,7 @@ sub ci_invoke {
     # Function::Parameters::info( $cl.'::'.'write_to_logfile' );
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;

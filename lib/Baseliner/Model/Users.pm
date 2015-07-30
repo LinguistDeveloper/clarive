@@ -292,4 +292,7 @@ sub get_projectnames_and_descriptions_from_user{
     mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->sort({ name=>1 })->all;
 }
 
+no Moose;
+__PACKAGE__->meta->make_immutable;
+
 1;
