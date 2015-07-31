@@ -205,43 +205,64 @@ sub infoactions : Local {
     my $p = $c->request->parameters;
     my $username = $p->{username};
     my $id_role = $p->{id_role};
+    my $authorized = 1;
+    my $msg = '';
     
     my @actions;
     my @datas;
     my $data;
     
+    my $auth = Baseliner->model('permissions');
+    my $can_roles = $auth->user_has_action( username => $c->username, action => 'action.admin.roles');
+    my $can_user = $auth->user_has_action( username => $c->username, action => 'action.admin.users');
+    my $own_user = $username && $username eq $c->username;
+
     if ($id_role) {
-        my $rs_actions = mdb->role->find({id=>$id_role})->next->{actions};
-        foreach my $rs (_array $rs_actions) {
-            my $desc = $rs->{action};
-            eval { # it may fail for keys that are not in the registry
-                my $action = $c->model('Registry')->get( $rs->{action} );
-                $desc = $action->name;
-            }; 
-            push @actions,{ action=>$rs->{action}, description=>$desc, bl=>$rs->{bl} };
+        if ( $can_roles ) {
+            my $rs_actions = mdb->role->find({id=>$id_role})->next->{actions};
+            foreach my $rs (_array $rs_actions) {
+                my $desc = $rs->{action};
+                eval { # it may fail for keys that are not in the registry
+                    my $action = $c->model('Registry')->get( $rs->{action} );
+                    $desc = $action->name;
+                }; 
+                push @actions,{ action=>$rs->{action}, description=>$desc, bl=>$rs->{bl} };
+            }
+        } else {
+            $authorized = 0;
+            $msg = _loc("User ".$c->username." is not authorized to query role actions");
         }
     }
     else{
-        my @user_roles = map{$_} keys ci->user->find({username=>$username})->next->{project_security};
-        my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
-        my @res;
-        foreach my $role (@roles){
-            push @res, @{$role->{actions}};
-        }
+        if ( $can_user || $own_user ) {
+            my @user_roles = map{$_} keys ci->user->find({username=>$username})->next->{project_security};
+            my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
+            my @res;
+            foreach my $role (@roles){
+                push @res, @{$role->{actions}};
+            }
 
-        my @datas = values +{ map { ("$_->{action}_$_->{bl}" => $_) } @res };
+            my @datas = values +{ map { ("$_->{action}_$_->{bl}" => $_) } @res };
 
-        foreach $data (@datas){
-            my $desc = $data->{action};
-            eval { # it may fail for keys that are not in the registry
-                my $action = $c->model('Registry')->get( $data->{action} );
-                $desc = $action->name;
-            }; 
-            push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
+            foreach $data (@datas){
+                my $desc = $data->{action};
+                eval { # it may fail for keys that are not in the registry
+                    my $action = $c->model('Registry')->get( $data->{action} );
+                    $desc = $action->name;
+                }; 
+                push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
+            }
+        } else {
+            $authorized = 0;
+            $msg = _loc("User ".$c->username." is not authorized to query user actions");
         }
     }
     
-    $c->stash->{json} =  { data=>\@actions};
+    if ( $authorized ) {
+        $c->stash->{json} =  { data=>\@actions};
+    } else {
+        $c->stash->{json} =  { msg => $msg };
+    }
     $c->forward('View::JSON');   
 }
 
