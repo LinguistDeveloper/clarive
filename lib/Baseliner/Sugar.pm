@@ -32,7 +32,6 @@ use Exporter::Tidy default => [qw/
     event_hook
     events_by_key
     events_by_mid
-    activity_by_mid
     /
 ];
 
@@ -294,52 +293,6 @@ sub events_by_mid {
     return $purged;
 }
 
-
-sub activity_by_mid {
-    my ($mid, %p ) = @_;
-    my $min_level = $p{min_level} // 0;
-
-    my $cache_key = { mid=>"$mid", d=>'activities', opts=>\%p }; # [ "activities:$mid:", \%p ];
-    my $cached = cache->get( $cache_key );
-    return $cached if $cached;
-
-    my @acts = mdb->activity->find({ mid=>"$mid" })->sort({ ts=>-1 })->all;
-
-    my $ret = !@acts ? [] : [
-      grep {
-         $_->{ev_level} == 0 || $_->{level} >= $min_level;
-      }
-      map { 
-        # merge 2 hashes
-        delete $_->{_id};
-        my $event_data =  $_->{vars};
-        delete $_->{vars};
-        my $d = $_ && $event_data ? { %$_ , %$event_data } : $_ ? %$_ : $event_data ? %$event_data : {};
-        
-        try {
-            my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
-            $d->{text} = $ev->event_text( $d );
-            $d->{ev_level} = $ev->level;
-        } catch {
-            my $err = shift;
-            Util->_error( Util->_loc('Error in event text generator: %1', $err) );
-        };  
-        $d; 
-    } @acts ];
-
-    my $purged = [];
-    foreach my $elem (@$ret){
-        my $vars = model->Registry->get($elem->{event_key})->vars;
-        my %res = map { $_=>$$elem{$_} } @$vars;
-        $res{ts} = $elem->{ts};
-        $res{username} = $elem->{username};
-        $res{text} = $elem->{text};
-        push @$purged, \%res;
-    }
-    cache->set( $cache_key, $purged );
-
-    return $purged;
-}
 
 =head2 event_hook
 

@@ -1,6 +1,7 @@
 package BaselinerX::CI::topic;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Activity;
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
@@ -93,7 +94,7 @@ sub timeline {
     } grep { $_->{plan_end_date} } @cal;
     
     # events
-    my %events = map { $_->{text} => $_ } @{ Baseliner::Sugar::activity_by_mid( $self->mid ) };
+    my %events = map { $_->{text} => $_ } @{ Baseliner::Model::Activity->find( $self->mid ) };
     push @data, map {
         my $start = $_->{ts};
         +{
@@ -196,7 +197,7 @@ sub activity {
         $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
     } else{
         _debug "listing activities";
-        $activity = Baseliner::Sugar::activity_by_mid( $self->mid, min_level => 2 );
+        $activity = Baseliner::Model::Activity->find( $self->mid, min_level => 2 );
     }
     
     # control activity visualiz permissions
