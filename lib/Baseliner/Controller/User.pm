@@ -676,7 +676,7 @@ sub projects_list : Local {
     $c->forward('View::JSON');
 }
 
-sub list : Local {
+sub list : Local : Does('Ajax') {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
