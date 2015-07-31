@@ -163,7 +163,7 @@ sub list_status : Local {
     my $count = $row->count;
     $row->sort({ $sort=>$dir });
     $row->skip($p->{start} // 0);
-    $row->limit($p->{limit} // -1);
+    $row->limit($p->{limit}) if $p->{limit};
     
     while( my $r = $row->next ) {
         push @rows,
