@@ -27,9 +27,7 @@ use Exporter::Tidy default => [qw/
     log_warn
     log_error
     lifecycle
-    master_new
     event_new
-    event_hook
     /
 ];
 
@@ -187,39 +185,6 @@ sub event_new {
             _fail $err;
         }
     };
-}
-
-=head2 event_hook
-
-Adds hooks to events. 
-
-    event_hook 'event.topic.create' => 'before' => sub {
-         ...
-    };
-
-=cut
-sub event_hook {
-    my ( $keys, $when, $code ) = @_;
-    if( ref $when eq 'CODE' ) {
-        $code = $when;
-        $when = 'after';
-    }
-    my $pkg = caller();
-    my @keys = ref $keys eq 'ARRAY' ? @$keys : ($keys);
-    my $regs = 'Baseliner::Core::Registry';  # Baseliner->model('Registry') not available on startup
-    for my $key ( @keys ) {
-        my $regkey = "$key._hooks";
-        if( my $hooks = $regs->get_node( $regkey ) ) {
-            push @{ $hooks->param->{$when} }, $code;
-        } else {
-            my $param = { 
-                before => [], 
-                after  => [],
-            };
-            push @{ $param->{ $when } }, $code; 
-            Baseliner::Core::Registry->add( $pkg || __PACKAGE__, $regkey, $param );
-        }
-    }
 }
 
 1;
