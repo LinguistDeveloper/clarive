@@ -84,83 +84,104 @@ sub infodetail : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $username = $p->{username};
+
+    my $authorized = 1;
+    my $msg = '';
     
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'role';
-    $dir ||= 'asc';
-    if($dir =~ /asc/i){
-        $dir = 1;
-    }else{
-        $dir = -1;
-    }
+    my @actions;
+    my @datas;
+    my $data;
+    my $auth = $c->model('permissions');
+    my $can_user = $auth->user_has_action( username => $c->username, action => 'action.admin.users');
+    my $own_user = $username && $username eq $c->username;
+
     my @rows;
-
-    my $user = ci->user->find({ username => $username})->next;
-    my @roles;
-    if($user->{project_security}){
-        @roles = keys $user->{project_security};
-        @roles = map {$_} @roles;
-    }
-    my $roles_from_user = 
-        mdb->role->find( 
-            {id => {'$in' => \@roles}}
-        )->fields(
-            {   role => 1, 
-                description => 1, 
-                id => 1,  
-                _id => 0
-            }
-        )->sort($sort ? { $sort => $dir } : {role => 1});
-    
-    while( my $r = $roles_from_user->next ) {    
-        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists'=>1} })->next;
-        my @roles = keys $rs_user->{project_security};
-        
-        my @user_projects;
-        my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
-        foreach my $col (@colls){
-            @user_projects = (@user_projects, _array $rs_user->{project_security}->{$r->{id}}->{$col});
+    if ( $can_user || $own_user ) {
+        my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+        $sort ||= 'role';
+        $dir ||= 'asc';
+        if($dir =~ /asc/i){
+            $dir = 1;
+        }else{
+            $dir = -1;
         }
 
-        my @projects;
-        foreach my $prjid (@user_projects){
-            my $str;
-            my $parent;
-            my $allpath;
-            my $nature;
-            my $project = ci->find($prjid);
-
-            if($project and $project->{name}){
-                if($project->{nature}){ 
-                    $str = $project->{name} . ' (' . $project->{nature} . ')';
-                }else{
-                    $str = $project->{name};
+        my $user = ci->user->find({ username => $username})->next;
+        my @roles;
+        if($user->{project_security}){
+            @roles = keys $user->{project_security};
+            @roles = map {$_} @roles;
+        }
+        my $roles_from_user = 
+            mdb->role->find( 
+                {id => {'$in' => \@roles}}
+            )->fields(
+                {   role => 1, 
+                    description => 1, 
+                    id => 1,  
+                    _id => 0
                 }
-            }
-            else{
-                $str = '';
-            }
-            push @projects, $str;
-        }
-        @projects = sort(@projects);
+            )->sort($sort ? { $sort => $dir } : {role => 1});
         
-        my @jsonprojects;
-        foreach my $project (@projects){
-            my $str = { name=>$project };
-            push @jsonprojects, $str;
+        while( my $r = $roles_from_user->next ) {    
+            my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists'=>1} })->next;
+            my @roles = keys $rs_user->{project_security};
+            
+            my @user_projects;
+            my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+            foreach my $col (@colls){
+                @user_projects = (@user_projects, _array $rs_user->{project_security}->{$r->{id}}->{$col});
+            }
+
+            my @projects;
+            foreach my $prjid (@user_projects){
+                my $str;
+                my $parent;
+                my $allpath;
+                my $nature;
+                my $project = ci->find($prjid);
+
+                if($project and $project->{name}){
+                    if($project->{nature}){ 
+                        $str = $project->{name} . ' (' . $project->{nature} . ')';
+                    }else{
+                        $str = $project->{name};
+                    }
+                }
+                else{
+                    $str = '';
+                }
+                push @projects, $str;
+            }
+            @projects = sort(@projects);
+            
+            my @jsonprojects;
+            foreach my $project (@projects){
+                my $str = { name=>$project };
+                push @jsonprojects, $str;
+            }
+            my $projects_txt = \@jsonprojects;
+        
+            push @rows,
+                    {
+                      id            => $r->{id},
+                      id_role       => $r->{id},
+                      role          => $r->{role},
+                      description   => $r->{description},
+                      projects      => $projects_txt
+                    };
         }
-        my $projects_txt = \@jsonprojects;
-    
-        push @rows,
-                {
-                  id            => $r->{id},
-                  id_role       => $r->{id},
-                  role          => $r->{role},
-                  description   => $r->{description},
-                  projects      => $projects_txt
-                };
+    } else {
+        $authorized = 0;
+        $msg = _loc("User ".$c->username." is not authorized to query user details");
     }
-    $c->stash->{json} = { data=>\@rows};		
+
+    if ( $authorized ) {
+        $c->stash->{json} = { data=>\@rows};        
+    } else {
+        $c->stash->{json} =  { msg => $msg };
+    }
+
     $c->forward('View::JSON');    
 }
 
@@ -212,7 +233,7 @@ sub infoactions : Local {
     my @datas;
     my $data;
     
-    my $auth = Baseliner->model('permissions');
+    my $auth = $c->model('permissions');
     my $can_roles = $auth->user_has_action( username => $c->username, action => 'action.admin.roles');
     my $can_user = $auth->user_has_action( username => $c->username, action => 'action.admin.users');
     my $own_user = $username && $username eq $c->username;
@@ -235,7 +256,7 @@ sub infoactions : Local {
     }
     else{
         if ( $can_user || $own_user ) {
-            my @user_roles = map{$_} keys ci->user->find({username=>$username})->next->{project_security};
+            my @user_roles = map{$_} keys ci->user->find_one({name=>$username})->{project_security};
             my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
             my @res;
             foreach my $role (@roles){

@@ -150,7 +150,7 @@ sub user_has_action {
         push my @bl, _array $p{bl}, '*';
         return 1 if $username eq 'root';  # root can surrogate always
         return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
-        $ret = scalar grep {$action eq $_ } Baseliner->model('Users')->get_actions_from_user($username, @bl);      
+        $ret = scalar grep {$action eq $_ } Baseliner::Model::Users->new()->get_actions_from_user($username, @bl);      
     }
     if( $p{fail} && !$ret ) {
         _fail _loc 'User %1 does not have permissions to action %2', $username, $action;
@@ -698,7 +698,7 @@ sub is_root {
     return $cached if defined $cached;
     my $is_root = 
         $username eq 'root' 
-        || scalar( grep { 'action.admin.root' eq $_ } Baseliner->model('Users')->get_actions_from_user($username) );
+        || scalar( grep { 'action.admin.root' eq $_ } Baseliner::Model::Users->new()->get_actions_from_user($username) );
     cache->set( $cached_key, $is_root );
     return $is_root;
 }

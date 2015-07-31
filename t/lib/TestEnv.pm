@@ -27,6 +27,7 @@ BEGIN { $ENV{BALI_FAST}++ }
 BEGIN {
     $Baseliner::logger = sub {};
     $Baseliner::_logger = sub {};
+    $Baseliner::config = sub { {} };
 };
 
 sub setup {
