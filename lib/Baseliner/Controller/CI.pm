@@ -532,7 +532,7 @@ sub class_methods : Local {
     $c->forward('View::JSON');
 }
 
-sub classes : Local {
+sub classes : Local : Does('Ajax') {
     my ($self, $c) = @_;
     my $role = $c->req->params->{role};
     my @classes = sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes($role);
@@ -540,7 +540,7 @@ sub classes : Local {
     $c->forward('View::JSON');
 }
 
-sub roles : Local {
+sub roles : Local : Does('Ajax') {
     my ($self, $c) = @_;
     my $name_format = $c->req->params->{name_format};
     my @roles = sort { $a->{name} cmp $b->{name} } $self->list_roles( name_format=>$name_format );
@@ -551,7 +551,7 @@ sub roles : Local {
 # used by Baseliner.store.CI
 #   (used in ci forms)
 
-sub store : Local {
+sub store : Local : Does('Ajax') {
     my ($self, $c) = @_;
     my $p = $c->req->params;
 
