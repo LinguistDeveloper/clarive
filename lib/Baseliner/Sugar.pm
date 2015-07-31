@@ -144,7 +144,7 @@ sub event_new {
         };
         # PRE rules
         my $rules_pre = $ev->rules_pre_online( $data );
-        push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
+        push @rule_log, map { $_->{when} = 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
         # PRE hooks
         for my $hk ( $ev->before_hooks ) {
             my $hk_data = $hk->( $obj );
@@ -170,7 +170,7 @@ sub event_new {
         }
         # POST rules
         my $rules_post = $ev->rules_post_online( $data );
-        push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
+        push @rule_log, map { $_->{when} = 'post-online'; $_ } _array( $rules_post->{rule_log} );
 
         # create the event on table
         $event_create->( $data, @rule_log ); #if defined $data->{mid};
