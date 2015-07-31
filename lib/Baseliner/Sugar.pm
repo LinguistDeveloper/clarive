@@ -60,55 +60,6 @@ sub log_warn { $job->log->warn( @_ ) }
 
 sub log_section {}
 
-=head2 master_new
-
-Creates a master row, then your row by calling your code,
-all within a transaction.
-
-Usage:
-
-    master_new 'topic' => 'my_ci_name' => sub {
-       my $mid = shift;
-       ...
-    };
-
-Or:
-
-    master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
-
-=cut
-sub master_new {   
-    my ($collection, $name, $code ) =@_;
-    my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
-    my $class = 'BaselinerX::CI::'.$collection;
-    my $mid = $master_data->{mid};  # user supplied mid? ok. 
-    if( ref $code eq 'HASH' ) {
-        my $ci = $class->new( %$master_data, %$code );
-        return $ci->save;
-        #return $class->save( %$master_data, data=>$code );   # this returns a mid
-    } elsif( ref $code eq 'CODE' ) {
-        return try {
-            my $ret;
-            # txn begin
-            my $ci = $class->new( %$master_data );
-            $ci->save;
-            $mid = $ci->mid;
-            ################################# 
-            $ret = $code->( $mid );
-            ################################# 
-            # txn commit
-            return $ret;
-        } catch {
-            my $e = shift; 
-            ci->delete( $mid ) if length $mid;
-            # txn rollback
-            _throw $e;
-        };
-    } else {
-        _throw 'Invalid master_new syntax';
-    }
-}
-
 sub event_new {
     my ($key, $data, $code, $catch ) =@_;
     my $module = caller;
