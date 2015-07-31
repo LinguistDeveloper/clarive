@@ -9,6 +9,9 @@ use Baseliner::Core::Registry;
 
 TestEnv->setup;
 
+$Clarive::_no_cache++;
+$Baseliner::_no_cache++;
+
 use_ok 'Baseliner::Model::Activity';
 
 subtest 'returns empty array ref when activity not found' => sub {
@@ -16,7 +19,7 @@ subtest 'returns empty array ref when activity not found' => sub {
 
     my $activity = _build_model();
 
-    my $rv = $activity->find_not_cached(999);
+    my $rv = $activity->find_by_mid(999);
 
     is_deeply $rv, [ ];
 };
@@ -26,7 +29,7 @@ subtest 'returns empty array ref when event not found in registry' => sub {
 
     my $activity = _build_model();
 
-    my $rv = $activity->find_not_cached(907);
+    my $rv = $activity->find_by_mid(907);
 
     is_deeply $rv, [ ];
 };
@@ -38,7 +41,7 @@ subtest 'returns mapped activity' => sub {
 
     my $activity = _build_model();
 
-    my $rv = $activity->find_not_cached(907);
+    my $rv = $activity->find_by_mid(907);
 
     is_deeply $rv,
       [

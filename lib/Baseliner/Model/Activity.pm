@@ -6,7 +6,7 @@ use Baseliner::Utils qw(_loc _error);
 use Clarive::cache;
 use Clarive::mdb;
 
-sub find {
+sub find_by_mid {
     my $self = shift;
     my ( $mid, %p ) = @_;
 
@@ -14,17 +14,6 @@ sub find {
 
     my $cached = cache->get($cache_key);
     return $cached if $cached;
-
-    my $purged = $self->find_not_cached(@_);
-
-    cache->set( $cache_key, $purged );
-
-    return $purged;
-}
-
-sub find_not_cached {
-    my $self = shift;
-    my ( $mid, %p ) = @_;
 
     my $min_level = $p{min_level} // 0;
 
@@ -51,6 +40,8 @@ sub find_not_cached {
 
         push @elems, \%res;
     }
+
+    cache->set( $cache_key, \@elems );
 
     return \@elems;
 }

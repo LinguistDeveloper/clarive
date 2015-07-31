@@ -192,14 +192,15 @@ sub activity {
     # activity (activities)
 
     my $activity;
-    if( (Baseliner->config->{activity_from_event}//0) == 1){
+    if ( ( Baseliner->config->{activity_from_event} // 0 ) == 1 ) {
         _debug "listing events";
         $activity = Baseliner::Model::Events->find_by_mid( $self->mid, min_level => 2 );
-    } else{
-        _debug "listing activities";
-        $activity = Baseliner::Model::Activity->find( $self->mid, min_level => 2 );
     }
-    
+    else {
+        _debug "listing activities";
+        $activity = Baseliner::Model::Activity->find_by_mid( $self->mid, min_level => 2 );
+    }
+
     # control activity visualiz permissions
     my $name_category = Util->_name_to_id($self->name_category);
     my %topic_category = ();
