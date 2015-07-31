@@ -68,6 +68,11 @@ websockets: 0
 #   always   = depends on rule configuration
 rule_precompile: depends
     
+# non ajax access to ajax defined controllers
+#    0 = allow access
+#    1 = deny access
+deny_non_ajax_access: 0
+
 # Baseliner Framework default config
 baseliner:
     name: ϲʟᴀʀɪᴠе
