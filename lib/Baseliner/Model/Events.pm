@@ -159,6 +159,60 @@ sub run_once {
     }
 }
 
+sub find_by_key {
+    my $self = shift;
+    my ( $key, $args ) = @_;
+
+    my $evs_rs = mdb->event->find( { event_key => $key } )->sort( { ts => -1 } );
+
+    return [
+        map {
+            { %$_, %{ _load( $_->{event_data} ) || {} } }
+        } $evs_rs->all
+    ];
+}
+
+sub find_by_mid {
+    my $self = shift;
+    my ($mid, %p ) = @_;
+
+    my $cache_key = { mid=>"$mid", d=>'events', opts=>\%p }; # [ "events:$mid:", \%p ];
+    my $cached = cache->get( $cache_key );
+    return $cached if $cached;
+
+    my $min_level = $p{min_level} // 0;
+
+    my @events = mdb->event->find( { mid => "$mid" } )->sort( { ts => -1 } )->all;
+
+    my @filtered_events = grep { $_->{ev_level} == 0 || $_->{level} >= $min_level } @events;
+
+    my @elems;
+    foreach my $event (@filtered_events) {
+        my $ev = Baseliner::Core::Registry->get( $event->{event_key} );
+
+        if ( !$ev || !%$ev ) {
+            _error( _loc('Error in event text generator: event not found') );
+            next;
+        }
+
+        my $event_data = _load( _to_utf8( $event->{event_data} ) );
+
+        my %res = map { $_ => $event_data->{$_} } @{$ev->vars};
+
+        $res{ts}       = $event->{ts};
+        $res{username} = $event->{username};
+
+        my %merged = ( %$event, %{ $event_data || {} } );
+        $res{text} = $ev->event_text( \%merged );
+
+        push @elems, \%res;
+    }
+
+    cache->set( $cache_key, \@elems );
+
+    return \@elems;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

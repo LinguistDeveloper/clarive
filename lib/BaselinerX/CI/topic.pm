@@ -2,6 +2,7 @@ package BaselinerX::CI::topic;
 use Baseliner::Moose;
 use Baseliner::Utils;
 use Baseliner::Model::Activity;
+use Baseliner::Model::Events;
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
@@ -189,12 +190,11 @@ sub jobs {
 sub activity {
     my ($self, $p )=@_;
     # activity (activities)
-    require Baseliner::Sugar;
 
     my $activity;
     if( (Baseliner->config->{activity_from_event}//0) == 1){
         _debug "listing events";
-        $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
+        $activity = Baseliner::Model::Events->find_by_mid( $self->mid, min_level => 2 );
     } else{
         _debug "listing activities";
         $activity = Baseliner::Model::Activity->find( $self->mid, min_level => 2 );
