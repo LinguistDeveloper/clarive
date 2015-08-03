@@ -283,9 +283,12 @@ register 'registor.action.topic_category_fields' => {
 };
 
 sub build_field_query {
-    my ($self,$query,$where,$username) = @_;
-    my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
-    mdb->query_build( where=>$where, query=>$query, fields=>['mid', 'category.name', 'category_status.name', '_txt', keys %all_fields] ); 
+    my ($self,$query,$where,$username,%opts) = @_;
+    my $fields = $opts{fields} || do { 
+        my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
+        ['mid', 'category.name', 'category_status.name', '_txt', keys %all_fields];
+    };
+    mdb->query_build( where=>$where, query=>$query, fields=>$fields ); 
 }
 
 sub build_sort {
@@ -316,7 +319,7 @@ sub run_query_builder {
     }
     
     if( @mids_query == 0 ) {
-        $self->build_field_query( $query, $where, $username );
+        $self->build_field_query( $query, $where, $username, fields=>$opts{fields} );
     } else {
         push @mids_in, @mids_query > 0 ? @mids_query : -1;
     }
