@@ -44,7 +44,7 @@ has alias => (
 has js_input  => ( is=> 'rw', isa=> 'Str', default=>'' );
 has js_output => ( is=> 'rw', isa=> 'Str', default=>'' );
 
-has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/service.png');
+has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/job.png');
 
 sub BUILD {
     my ($self, $params) = @_;

@@ -467,7 +467,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Generic Services'),
-        icon => '/static/images/icons/service.png',
+        icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [ 

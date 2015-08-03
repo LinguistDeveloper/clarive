@@ -12,7 +12,7 @@ register 'service.topic.change_status' => {
     name => 'Change topic status',
     handler => \&change_status,
     job_service  => 1,
-    icon => '/static/images/icons/folder_go.png',
+    #icon => '/static/images/icons/folder_go.png',
     form => '/forms/topic_status.js' 
 };
 

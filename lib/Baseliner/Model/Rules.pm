@@ -1241,7 +1241,7 @@ register 'statement.perl.do' => {
 
 register 'statement.perl.group' => {
     text => 'GROUP',data => { },
-    icon => '/static/images/icons/group.gif', 
+    icon => '/static/images/icons/cog_gears.png', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
