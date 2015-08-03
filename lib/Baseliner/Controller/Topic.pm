@@ -297,16 +297,19 @@ sub related : Local {
     my $p = $c->request->parameters;
     
     my $where = {};
+    if ( $p->{valuesqry} eq 'true' ){
+        $where->{mid} = [ delete $p->{query} ];
+    }
     $where->{query} = $p->{query} if length $p->{query};
 
     my %filter;
+
 
     my $start = $p->{start} // 0;
     my $limit = $p->{limit} // 20;
 
     if ( $p->{mids} ){
-        my @mids = _array $p->{mids};
-        $filter{mid} = \@mids;    
+        $filter{mid} = $p->{mids};
     }
 
     $filter{category_type} = 'release' if ($p->{show_release});
@@ -343,7 +346,7 @@ sub related : Local {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
-        $_
+       $_
     }  @result_topics;
     
 

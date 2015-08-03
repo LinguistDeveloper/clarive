@@ -3276,15 +3276,16 @@ sub get_topics_mdb{
     try{
         $where = {} if !$where;
         my @mids_in = _array( delete $where->{mid} );
+        push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
         if( my $query = delete $where->{query} ) {
-            @mids_in = $self->run_query_builder($query,$where,$username, build_query=>1);
+            push @mids_in, $self->run_query_builder($query,$where,$username, build_query=>1);
         }
         $where->{mid} = mdb->in( @mids_in ) if @mids_in; 
 
         _throw _loc('Missing username') if !$username;
 
         Baseliner->model('Permissions')->build_project_security( $where, $username );
-        #_warn $where;
+        # _warn $where;
 
         my $rs_topics = mdb->topic->find($where);
         $rs_topics->fields($fields) if $fields;
