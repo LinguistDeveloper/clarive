@@ -297,6 +297,7 @@ sub related : Local {
     my $p = $c->request->parameters;
     
     my $where = {};
+    $where->{query} = $p->{query} if length $p->{query};
 
     my %filter;
 
