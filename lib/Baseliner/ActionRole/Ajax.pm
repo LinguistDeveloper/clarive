@@ -9,13 +9,16 @@ around [ 'match', 'match_captures' ] => sub {
     my ( $orig, $self, $c, @args ) = @_;
 
     if ( $c->config->{deny_non_ajax_access} ) {
-        if ( $c->req->header('x-requested-with') eq 'XMLHttpRequest' ) {
+        my $header = $c->req->header('x-requested-with') // '';
+
+        if ( $header eq 'XMLHttpRequest' ) {
             return 1;
         }
         else {
             return 0;
         }
-    } else {
+    }
+    else {
         return 1;
     }
 };

@@ -78,13 +78,25 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $self->{params} = $params{params};
+    $self->{params}  = $params{params};
+    $self->{headers} = $params{headers} || {};
+
+    foreach my $key (keys %{$self->{headers}}) {
+        $self->{headers}->{lc($key)} = delete $self->{headers}->{$key};
+    }
 
     return $self;
 }
 
 sub parameters { &params }
 sub params     { shift->{params} }
+
+sub header {
+    my $self = shift;
+    my ($key) = @_;
+
+    return $self->{headers}->{$key};
+}
 
 package FakeResponse;
 
@@ -118,9 +130,12 @@ sub new {
     $self->{req}      = $params{req};
     $self->{username} = $params{username};
     $self->{model}    = $params{model};
+    $self->{config}   = $params{config} || {};
 
     return $self;
 }
+
+sub config { shift->{config} }
 
 sub stash {
     my $self = shift;
@@ -148,7 +163,7 @@ sub model {
 sub username { shift->{username} }
 
 sub request { &req }
-sub req     { shift->{req} }
+sub req     { shift->{req} || FakeRequest->new }
 sub res     { FakeResponse->new }
 sub forward { 'FORWARD' }
 
