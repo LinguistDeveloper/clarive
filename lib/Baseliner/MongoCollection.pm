@@ -24,7 +24,11 @@ sub search {
         return $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ;
     }else{
         #TODO: Include options like limit
-        my @results = map { +{ obj=>$_ } } $self->find({'$text' => {'$search' => $query } })->limit($limit)->all;
+        my $rs = $self->find({'$text' => {'$search' => $query } })->limit($limit);
+        if( my $project = delete $p{project} ) {
+            $rs->fields($project);
+        }
+        my @results = map { +{ obj=>$_ } } $rs->all;
         return { ok=>1, results=>\@results };
     }
 }
