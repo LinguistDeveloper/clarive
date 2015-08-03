@@ -55,6 +55,11 @@ sub oid {
     return MongoDB::OID->new( $oid );
 }
 
+sub mongo_version {
+    state $mdbv = mdb->db->run_command({ serverStatus=> 1 })->{version};
+    return $mdbv;
+}
+
 =head2
 
 Returns the next seq num as STRING
