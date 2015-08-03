@@ -3,6 +3,13 @@ package TestUtils;
 use strict;
 use warnings;
 
+use base 'Exporter';
+
+our @EXPORT_OK = qw(mock_catalyst_req mock_catalyst_res mock_catalyst_c);
+our %EXPORT_TAGS = ( 'catalyst' => [qw/mock_catalyst_req mock_catalyst_res mock_catalyst_c/] );
+
+use Carp;
+use Class::Load ();
 use Clarive::mdb;
 use Clarive::ci;
 
@@ -40,5 +47,109 @@ sub create_amazon_instance {
     $instance->save;
     return $instance;
 }
+
+sub mock_catalyst_req {
+    FakeRequest->new(@_);
+}
+
+sub mock_catalyst_res {
+    FakeResponse->new(@_);
+}
+
+sub mock_catalyst_c {
+    my (%params) = @_;
+
+    if ( $params{req} && ref $params{req} eq 'HASH' ) {
+        $params{req} = mock_catalyst_req( %{ delete $params{req} } );
+    }
+
+    FakeContext->new(%params);
+}
+
+package FakeRequest;
+
+use strict;
+use warnings;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    $self->{params} = $params{params};
+
+    return $self;
+}
+
+sub parameters { &params }
+sub params     { shift->{params} }
+
+package FakeResponse;
+
+use strict;
+use warnings;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    return $self;
+}
+
+sub status { }
+
+package FakeContext;
+
+use Carp;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    $self->{stash}    = $params{stash} || {};
+    $self->{req}      = $params{req};
+    $self->{username} = $params{username};
+    $self->{model}    = $params{model};
+
+    return $self;
+}
+
+sub stash {
+    my $self = shift;
+
+    return $self->{stash} unless @_;
+
+    if ( @_ == 1 ) {
+        return $self->{stash}->{ $_[0] };
+    }
+
+    return $self->{stash}->{ $_[0] } = $_[1];
+}
+
+sub model {
+    my $self = shift;
+
+    my $model_class = $self->{model};
+    croak 'no model defined' unless $model_class;
+
+    Class::Load::load_class($model_class);
+
+    return $model_class->new;
+}
+
+sub username { shift->{username} }
+
+sub request { &req }
+sub req     { shift->{req} }
+sub res     { FakeResponse->new }
+sub forward { 'FORWARD' }
 
 1;

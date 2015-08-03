@@ -7,7 +7,7 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
-use TestUtils;
+use TestUtils ':catalyst';
 
 TestEnv->setup;
 
@@ -20,7 +20,7 @@ local *Baseliner::model = sub {
     shift;
     my ($model) = @_;
 
-    if ($model eq 'ConfigStore') {
+    if ( $model eq 'ConfigStore' ) {
         require BaselinerX::Type::Model::ConfigStore;
         return BaselinerX::Type::Model::ConfigStore->new;
     }
@@ -42,7 +42,7 @@ subtest 'get_commits_history: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_history($c);
 
@@ -60,7 +60,7 @@ subtest 'get_commits_history: returns commits' => sub {
 
     my $params = { repo_mid => $repo_ci->mid };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_history($c);
 
@@ -103,7 +103,7 @@ subtest 'branch_commits: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_commits($c);
 
@@ -123,7 +123,7 @@ subtest 'branch_commits: returns commits' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, branch => 'master' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_commits($c);
 
@@ -186,7 +186,7 @@ subtest 'branch_changes returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_changes($c);
 
@@ -204,7 +204,7 @@ subtest 'branch_changes returns changes' => sub {
 
     my $params = { repo_mid => $repo_ci->mid };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_changes($c);
 
@@ -227,7 +227,7 @@ subtest 'branch_tree: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_tree($c);
 
@@ -245,7 +245,7 @@ subtest 'branch_tree: returns tree' => sub {
 
     my $params = { repo_mid => $repo_ci->mid };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_tree($c);
 
@@ -296,7 +296,7 @@ subtest 'branch_tree: returns tree from a subdirectory' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, folder => 'foo' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->branch_tree($c);
 
@@ -333,7 +333,7 @@ subtest 'get_file_revisions: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_revisions($c);
 
@@ -357,7 +357,7 @@ subtest 'get_file_revisions: returns commits' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '123' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_revisions($c);
 
@@ -378,7 +378,7 @@ subtest 'view_file: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->view_file($c);
 
@@ -402,7 +402,7 @@ subtest 'view_file: returns file content' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->view_file($c);
 
@@ -424,7 +424,7 @@ subtest 'get_file_blame: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_blame($c);
 
@@ -448,7 +448,7 @@ subtest 'get_file_blame: returns blame' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_blame($c);
 
@@ -469,7 +469,7 @@ subtest 'view_diff_file: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->view_diff_file($c);
 
@@ -493,7 +493,7 @@ subtest 'view_diff_file: returns diff' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, file => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->view_diff_file($c);
 
@@ -556,7 +556,7 @@ subtest 'view_diff: returns diff' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->view_diff($c);
 
@@ -595,7 +595,7 @@ subtest 'get_file_history: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_history($c);
 
@@ -619,7 +619,7 @@ subtest 'get_file_history: returns diff' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_file_history($c);
 
@@ -641,7 +641,7 @@ subtest 'get_tags: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_tags($c);
 
@@ -665,7 +665,7 @@ subtest 'get_tags: returns tags' => sub {
 
     my $params = { repo_mid => $repo_ci->mid };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_tags($c);
 
@@ -679,7 +679,7 @@ subtest 'get_commits_search: returns validation errors' => sub {
 
     my $params = {};
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_search($c);
 
@@ -703,7 +703,7 @@ subtest 'get_commits_search: returns found commits by comment' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, query => '--comment="initial"' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_search($c);
 
@@ -737,7 +737,7 @@ subtest 'get_commits_search: returns found commits by author' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, query => '--author="vti"' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_search($c);
 
@@ -781,7 +781,7 @@ subtest 'get_commits_search: returns found commits by revision' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, query => '38405ec58c' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_search($c);
 
@@ -815,7 +815,7 @@ subtest 'get_commits_search: returns empty result when nothing found' => sub {
 
     my $params = { repo_mid => $repo_ci->mid, query => 'abcdef' };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params ) );
+    my $c = mock_catalyst_c( req => { params => $params } );
 
     $controller->get_commits_search($c);
 
@@ -835,71 +835,3 @@ sub _build_controller {
 }
 
 done_testing;
-
-package FakeRequest;
-
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{params} = $params{params};
-
-    return $self;
-}
-
-sub parameters { &params }
-sub params     { shift->{params} }
-
-package FakeResponse;
-
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    return $self;
-}
-
-sub status { }
-
-package FakeContext;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{stash} = $params{stash} || {};
-    $self->{req} = $params{req};
-
-    return $self;
-}
-
-sub stash {
-    my $self = shift;
-
-    return $self->{stash} unless @_;
-
-    if ( @_ == 1 ) {
-        return $self->{stash}->{ $_[0] };
-    }
-
-    return $self->{stash}->{ $_[0] } = $_[1];
-}
-sub request { &req }
-sub req     { shift->{req} }
-sub res     { FakeResponse->new }
-sub forward { 'FORWARD' }
