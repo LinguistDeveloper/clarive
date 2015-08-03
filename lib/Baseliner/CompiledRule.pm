@@ -1,6 +1,7 @@
 package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
+use Baseliner::Model::Rules;
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -68,7 +69,7 @@ sub is_loaded {
 sub dsl_build { 
     my ($self, %p)=@_;
     return if $self->is_temp_rule;
-    my @tree = model->Rules->build_tree( $self->id_rule, undef );
+    my @tree = Baseliner::Model::Rules->build_tree( $self->id_rule, undef );
     return unless @tree;
     my $dsl = try {
         model->Rules->dsl_build( \@tree, no_tidy=>0, id_rule=>$self->id_rule, rule_name=>$self->rule_name, %p ); 

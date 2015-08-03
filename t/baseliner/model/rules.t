@@ -8,6 +8,8 @@ use TestEnv;
 
 TestEnv->setup;
 
+use Baseliner::Role::CI;
+
 use_ok 'Baseliner::Model::Rules';
 
 subtest 'does compile when config flag is conditional and rule is on' => sub {

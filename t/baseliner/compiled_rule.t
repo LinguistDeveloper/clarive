@@ -8,6 +8,8 @@ use TestEnv;
 
 TestEnv->setup;
 
+use Baseliner::Role::CI;
+
 use_ok 'Baseliner::CompiledRule';
 
 subtest 'returns default values' => sub {
