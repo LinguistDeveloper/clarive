@@ -306,11 +306,11 @@ sub build_sort {
 }
 
 sub run_query_builder {
-    my ($self,$query,$where,$username) = @_;
+    my ($self,$query,$where,$username, %opts) = @_;
     my @mids_in;
     #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
     my @mids_query;
-    if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+    if( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {  # special queries handled by query_build later
         @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, project=>{mid=>1})->{results} );
     }
@@ -3274,7 +3274,7 @@ sub get_topics_mdb{
         $where = {} if !$where;
         my @mids_in = _array( delete $where->{mid} );
         if( my $query = delete $where->{query} ) {
-            @mids_in = $self->run_query_builder($query,$where,$username);
+            @mids_in = $self->run_query_builder($query,$where,$username, build_query=>1);
         }
         $where->{mid} = mdb->in( @mids_in ) if @mids_in; 
 
