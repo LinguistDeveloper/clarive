@@ -4,6 +4,7 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::CompiledRule;
+use BaselinerX::CI::variable;
 use Try::Tiny;
 use v5.10;
 use experimental 'autoderef';

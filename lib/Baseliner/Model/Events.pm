@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Core::Event;
 use Try::Tiny;
 use v5.10;
 use experimental 'autoderef';
@@ -211,6 +212,171 @@ sub find_by_mid {
     cache->set( $cache_key, \@elems );
 
     return \@elems;
+}
+
+sub new_event {
+    my $self = shift;
+    my ( $key, $data, $code, $catch ) = @_;
+
+    my $module = caller;
+
+    if ( ref $data eq 'CODE' ) {
+        $code = $data;
+        $data = {};
+    }
+    $data ||= {};
+
+    my $ev = Baseliner::Core::Registry->get($key);
+    _throw 'Event not found in registry' unless $ev && %$ev;
+
+    return try {
+        $self->_new_event( $ev, $key, $data, $module, $code );
+    }
+    catch {
+        my $err = shift;
+        if ( ref $catch eq 'CODE' ) {
+            $catch->($err);
+            _error "*** event_new: caught $key: $err";
+        }
+        else {
+            _error "*** event_new: untrapped $key: $err";
+            _fail $err;
+        }
+    };
+}
+
+sub _new_event {
+    my $self = shift;
+    my ( $ev, $key, $data, $module, $code ) = @_;
+
+    try {
+        if ( length $data->{mid} ) {
+            my $ci      = ci->new( $data->{mid} );
+            my $ci_data = $ci->load;
+            $data = { %$ci_data, ci => $ci, %$data };
+        }
+        else {
+            $data = {%$data};
+        }
+    }
+    catch {
+        _error _loc( "Error: Could not instantiate ci data for event: %1", shift() );
+    };
+
+    my @rule_log;
+
+    # PRE rules
+    my $rules_pre = $ev->rules_pre_online($data);
+    push @rule_log, _array( $rules_pre->{rule_log} );
+
+    my $obj = Baseliner::Core::Event->new( data => $data );
+
+    # PRE hooks
+    for my $hk ( $ev->before_hooks ) {
+        my $hk_data = $hk->($obj);
+        $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+        $obj->data($data);
+    }
+
+    # RUN
+    if ( ref $code eq 'CODE' ) {
+        my $rundata = $code->($data);
+
+        if (ref $rundata eq 'HASH') {
+            $data = { %$data, %$rundata };
+        }
+    }
+
+    #if( !length $data->{mid} ) {
+    #    _debug 'event_new is missing mid parameter' ;
+    #_throw 'event_new is missing mid parameter' ;
+    #} else {
+    #}
+
+    # POST hooks
+    $obj->data($data);
+    for my $hk ( $ev->after_hooks ) {
+        my $hk_data = $hk->($obj);
+        $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+        $obj->data($data);
+    }
+
+    # POST rules
+    my $rules_post = $ev->rules_post_online($data);
+    push @rule_log, _array( $rules_post->{rule_log} );
+
+    $self->_create_event_and_friends( $ev, $key, $module, $data, @rule_log );    #if defined $data->{mid};
+
+    return $data;
+}
+
+sub _create_event_and_friends {
+    my $self = shift;
+    my ( $ev, $key, $module, $ed, @event_log ) = @_;
+
+    my $ev_id = mdb->seq('event');
+
+    # rgo: remember, top mongo doc size is 16MB. #11905
+    # TODO large data should be in the Grid instead
+    my $event_data = substr( _dump($ed), 0, 4_096_000 );    # 4MB
+    mdb->event->insert(
+        {
+            id           => $ev_id,
+            ts           => mdb->ts,
+            t            => mdb->ts_hires,
+            event_key    => $key,
+            event_data   => $event_data,
+            event_status => 'new',
+            module       => $module,
+            mid          => $ed->{mid},
+            username     => $ed->{username}
+        }
+    );
+
+    if ( _array( $ev->{vars} ) > 0 ) {
+        my $ed_reduced = {};
+
+        # fix "unhandled" Mongo errors due to unblessed structures
+        my $ed_cloned = Util->_clone($ed);
+        Util->_unbless($ed_cloned);
+        foreach ( _array $ev->{vars} ) {
+            $ed_reduced->{$_} = $ed_cloned->{$_};
+        }
+        $ed_reduced->{ts} = mdb->ts;
+
+        mdb->activity->insert(
+            {
+                vars      => $ed_reduced,
+                event_key => $key,
+                event_id  => $ev_id,
+                mid       => $ed->{mid},
+                module    => $module,
+                ts        => mdb->ts,
+                username  => $ed->{username},
+                text      => $ev->{text},
+                ev_level  => $ev->{ev_level},
+                level     => $ev->{level}
+            }
+        );
+    }
+
+    for my $log (@event_log) {
+        my $stash_data = substr( _dump( $log->{ret} ),    0, 1_024_000 );    # 1MB
+        my $log_output = substr( _dump( $log->{output} ), 0, 4_096_000 );    # 4MB
+        my $dsl        = substr( $log->{dsl},             0, 1_024_000 );
+
+        my $log        = {
+            id         => mdb->seq('event_log'),
+            id_event   => $ev_id,
+            id_rule    => $log->{id},
+            ts         => mdb->ts,
+            t          => mdb->ts_hires,
+            stash_data => $stash_data,
+            dsl        => $log->{dsl},
+            log_output => $log_output,
+        };
+        mdb->event_log->insert($log);
+    }
 }
 
 no Moose;
