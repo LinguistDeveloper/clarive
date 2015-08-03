@@ -3296,14 +3296,6 @@ sub get_topics_mdb{
     }
 }
 
-sub get_fields_topic{
-    my ($self) = @_;
-
-    my @fields = map {$_} keys mdb->topic->find_one({},{ _txt=>0 }); #TODO: Improve to get all fields from topic collection. 
-
-    return \@fields;
-}
-
 sub group_by_status { 
     my ($self,%p) = @_;
     my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth}, docs_only => 1 ));

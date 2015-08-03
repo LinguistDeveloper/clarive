@@ -351,16 +351,6 @@ sub related : Local {
     $c->forward('View::JSON');
 }
 
-sub get_search_query_topic {
-    my ($self, $query, $where) = @_;
-    _fail _loc("Missing parameter query") if ( !$query );
-    $where = {} if ( !$where );
-
-    mdb->query_build( query => $query, where => $where, fields => Baseliner->model('Topic')->get_fields_topic() );
-
-    return $where;
-}
-
 our %field_cache;
 
 sub get_field_bodies {
