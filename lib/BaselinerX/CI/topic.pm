@@ -95,7 +95,7 @@ sub timeline {
     } grep { $_->{plan_end_date} } @cal;
     
     # events
-    my %events = map { $_->{text} => $_ } @{ Baseliner::Model::Activity->find( $self->mid ) };
+    my %events = map { $_->{text} => $_ } @{ Baseliner::Model::Activity->find_by_mid( $self->mid ) };
     push @data, map {
         my $start = $_->{ts};
         +{
