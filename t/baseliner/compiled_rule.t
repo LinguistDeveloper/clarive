@@ -95,6 +95,8 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
     is $cr->return_value, 'hi there';
 
     $cr->unload;
+
+    build_compiled_rule(id_rule => 1)->unload;
 };
 
 subtest 'catches compile errors' => sub {
