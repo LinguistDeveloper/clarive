@@ -11,7 +11,7 @@ my $root;
 
 BEGIN {
     use File::Basename qw(dirname);
-    $root = Cwd::realpath(dirname(__FILE__));
+    $root = Cwd::realpath( dirname(__FILE__) );
 }
 
 use lib "$root/../../lib";
@@ -24,10 +24,13 @@ sub version { '' }
 use Baseliner::Core::Registry;
 
 BEGIN { $ENV{BALI_FAST}++ }
+
 BEGIN {
-    $Baseliner::logger = sub {};
-    $Baseliner::_logger = sub {};
-    $Baseliner::config = sub { {} };
+    $Baseliner::logger  = sub { };
+    $Baseliner::_logger = sub { };
+    $Baseliner::config  = sub { {} };
+
+    sub Clarive::config { {} }
 };
 
 sub setup {
@@ -38,7 +41,7 @@ sub setup {
     require Clarive::cache;
 
     *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
-    *Baseliner::config = sub { {} };
+    *Baseliner::config   = sub { {} };
 }
 
 1;
