@@ -10,6 +10,16 @@ use experimental 'autoderef';
 
 with 'Baseliner::Role::Service';
 
+with 'Baseliner::Role::CacheProxy' => {
+    cache_key_cb => sub {
+        shift;
+        my ( $mid, %p ) = @_;
+
+        { mid => "$mid", d => 'events', opts => \%p };    # [ "events:$mid:", \%p ];
+    },
+    methods => [qw/find_by_mid/]
+};
+
 register 'config.events' => {
     name => 'Event daemon configuration',
     metadata => [
@@ -177,10 +187,6 @@ sub find_by_mid {
     my $self = shift;
     my ($mid, %p ) = @_;
 
-    my $cache_key = { mid=>"$mid", d=>'events', opts=>\%p }; # [ "events:$mid:", \%p ];
-    my $cached = cache->get( $cache_key );
-    return $cached if $cached;
-
     my $min_level = $p{min_level} // 0;
 
     my @events = mdb->event->find( { mid => "$mid" } )->sort( { ts => -1 } )->all;
@@ -208,8 +214,6 @@ sub find_by_mid {
 
         push @elems, \%res;
     }
-
-    cache->set( $cache_key, \@elems );
 
     return \@elems;
 }
