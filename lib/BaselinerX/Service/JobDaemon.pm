@@ -16,6 +16,7 @@ has 'proc_list' => ( is=>'rw', isa=>'ArrayRef', default=>sub { [] } );
 
 register 'service.job.daemon' => {
     name    => 'Watch for new jobs',
+    icon => '/static/images/icons/daemon.gif', 
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&job_daemon,

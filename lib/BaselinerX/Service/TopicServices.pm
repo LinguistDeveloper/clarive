@@ -64,7 +64,7 @@ register 'service.topic.related' => {
 
 register 'service.topic.inactivity_daemon' => {
     name    => 'Watch for topics without activity in statuses',
-    icon => '/static/images/icons/topic.png',
+    icon => '/static/images/icons/daemon.gif',
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&inactivity_daemon,

@@ -30,6 +30,7 @@ register 'config.events' => {
 
 register 'service.event.daemon' => {
     daemon => 1,
+    icon => '/static/images/icons/daemon.gif', 
     config => 'config.events',
     handler => sub {
         my ($self, $c, $config ) = @_;

@@ -28,6 +28,7 @@ register 'config.dispatcher' => {
 register 'service.dispatcher' => {
     name    => 'Dispatcher Service',
     config  => 'config.dispatcher',
+    icon => '/static/images/icons/daemon.gif', 
     daemon => 1,
     handler => \&run,
 };

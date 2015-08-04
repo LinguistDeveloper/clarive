@@ -25,7 +25,8 @@ sub has_bl { 1 }
 service 'create_tags' => {
     name    => _loc('Create tags'),
     form    => '/forms/repo_create_tags.js',
-    icon    => '/gitweb/images/icons/git.png',
+    icon    => '/static/images/icons/git-repo.gif',
+    #icon    => '/gitweb/images/icons/git.png',
     handler => sub {
         my ($self,$c,$config) = @_;
         my $ref = $config->{'ref'};

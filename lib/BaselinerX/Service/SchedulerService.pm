@@ -10,13 +10,14 @@ with 'Baseliner::Role::Service';
 has 'config' => ( is=>'rw', isa=>'Any' );
 
 register 'config.scheduler' => {
+    
     metadata => [
        { id=>'frequency', label=>'SQA send_ju Daemon Frequency', default => 60 },
        { id=>'iterations', label=>'Iteraciones del servicio', default => 1000 }
     ]
 };
 
-register 'service.scheduler' => {  config   => 'config.scheduler',   handler => \&run, }; 
+register 'service.scheduler' => {  config   => 'config.scheduler',  icon => '/static/images/icons/daemon.gif',  handler => \&run, }; 
 
 sub run { # bucle de demonio aqui
     my ($self,$c, $config) = @_;
@@ -36,7 +37,7 @@ sub run { # bucle de demonio aqui
     _log "Ending service.scheduler";
 }
 
-register 'service.scheduler.run_once' => {  config   => 'config.scheduler',   handler => \&run_once, };
+register 'service.scheduler.run_once' => {  config   => 'config.scheduler', icon => '/static/images/icons/daemon.gif',   handler => \&run_once, };
 
 
 sub run_once {
@@ -87,7 +88,7 @@ sub road_kill {
     Baseliner->model('Sched')->road_kill; # find new schedules
 }
 
-register 'service.scheduler.test' => { config => 'config.scheduler', handler => \&scheduler_test };
+register 'service.scheduler.test' => { config => 'config.scheduler', icon => '/static/images/icons/daemon.gif', handler => \&scheduler_test };
 
 sub scheduler_test {
     my ( $self, $c, $config ) = @_;
