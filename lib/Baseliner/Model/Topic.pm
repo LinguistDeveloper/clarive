@@ -3,6 +3,8 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Users;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -349,7 +351,7 @@ sub topics_for_user {
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
     my $where = $p->{where} // {};
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
@@ -369,7 +371,7 @@ sub topics_for_user {
         @categories = _array( $p->{categories} );
         my @user_categories = map {
             $_->{id};
-        } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+        } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
         my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
@@ -393,7 +395,7 @@ sub topics_for_user {
     }
 
     # project security - grouped by - into $or 
-    Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
+    Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @categories );
     
     if( $topic_list ) {
         $where->{mid} = mdb->in($topic_list);
@@ -656,7 +658,7 @@ sub update_mid_data {
     my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
     my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
     
-    my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
+    my $user_security = Baseliner::Model::Permissions->new->user_projects_ids_with_collection(username => $username, with_role => 1);
     
     my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ _txt=>0 })->all;
 
@@ -945,11 +947,11 @@ sub next_status_for_user {
     my $id_category = ''.$p{id_category};
     my $where = { id =>$id_category };
     $where->{'workflow.id_status_from'} = mdb->in($p{id_status_from}) if defined $p{id_status_from};
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my @to_status;
     
     if ( !$is_root ) {
-        @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
+        @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $username, mid => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
         my %my_roles = map { $_=>1 } @user_roles;
         my $_tos;
@@ -1005,11 +1007,11 @@ sub next_status_for_user {
             
             foreach my $status (@deployable_status){
                 if ( $status->{job_type} eq 'promote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
+                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
                         push @to_status, $status;
                     }
                 }elsif ( $status->{job_type} eq 'demote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
+                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
                         push @to_status, $status;
                     }               
                 }else {
@@ -1887,7 +1889,7 @@ sub save_data {
 sub update_project_security {
     my ($self, $doc )=@_;
 
-    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid}, $doc->{id_category});
+    my $meta = Baseliner::Model::Topic->new->get_meta ($doc->{mid}, $doc->{id_category});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
@@ -2294,7 +2296,7 @@ sub set_topics {
         my @category_single_mode;
         my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
         for my $topic_category (@categories){
-            my $meta = Baseliner->model('Topic')->get_meta(undef, $topic_category);
+            my $meta = Baseliner::Model::Topic->new->get_meta(undef, $topic_category);
             my @data_field = map {$_}grep{$_->{parent_field} eq $id_field} grep { exists $_->{parent_field}} @$meta;
             if (!@data_field){
                 @data_field = map {$_}grep{$_->{release_field} eq $id_field} grep { exists $_->{release_field}} @$meta;
@@ -2779,14 +2781,14 @@ sub get_categories_permissions{
     my $rs = mdb->category->find($where);
     $rs->fields({ id=>1, name=>1, color=>1 }) if !$param{all_fields}; 
     my @categories  = $rs->sort({ $sort=>$dir })->all;
-    if ( Baseliner->model('Permissions')->is_root( $username) ) {
+    if ( Baseliner::Model::Permissions->new->is_root( $username) ) {
         return @categories;
     }
     
     push @permission_categories, _unique map { 
         $_ =~ $re_action;
         $1;
-    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
+    } Baseliner::Model::Permissions->new->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
     
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
@@ -2953,7 +2955,7 @@ Workflow for a user. Gets the user role, then search for workflows.
 sub user_workflow {
     my ( $self, $username, %p ) = @_;
     
-    return Baseliner->model('Permissions')->is_root( $username ) 
+    return Baseliner::Model::Permissions->new->is_root( $username ) 
         ? $self->root_workflow(%p) 
         : $self->non_root_workflow($username, %p);
 }
@@ -2966,7 +2968,7 @@ called by user_workflow.
 =cut
 sub non_root_workflow {
     my ( $self, $username, %p ) = @_;
-    my %roles = map { $_=>1 } Baseliner->model('Permissions')->user_role_ids($username);
+    my %roles = map { $_=>1 } Baseliner::Model::Permissions->new->user_role_ids($username);
     my $where = { 'workflow.id_role'=>mdb->in(keys %roles) };
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
     return _array( map { 
@@ -3152,18 +3154,18 @@ sub check_fields_required {
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     my $username = $p{username} or _throw 'Missing parameter username';
     
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my $isValid = 1;
     my @fields_required = ();
     my $field_name;
     if (!$is_root){
         if($mid != -1){
-            my $meta = Baseliner->model('Topic')->get_meta( $mid );
+            my $meta = Baseliner::Model::Topic->new->get_meta( $mid );
             my %fields_required =  map { $_->{id_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
-            my $data = Baseliner->model('Topic')->get_data( $meta, $mid, no_cache => 1 );  
+            my $data = Baseliner::Model::Topic->new->get_data( $meta, $mid, no_cache => 1 );  
             
             for my $field ( keys %fields_required){
-                next if !Baseliner->model('Permissions')->user_has_action( 
+                next if !Baseliner::Model::Permissions->new->user_has_action( 
                     username => $username, 
                     action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write',
                     mid => $mid
@@ -3180,7 +3182,7 @@ sub check_fields_required {
             }
         } else {
             my $data = $p{data} or _throw 'Missing parameter data';
-            my $meta = Baseliner->model('Topic')->get_meta(undef, $data->{category} );
+            my $meta = Baseliner::Model::Topic->new->get_meta(undef, $data->{category} );
             my $category = mdb->category->find_one({ id=>''.$data->{category} });
             my $status = ci->status->find_one({ id_status=>''. $data->{status_new} });
             
@@ -3188,7 +3190,7 @@ sub check_fields_required {
                 map { $_->{id_field} => $_->{name_field} }
                 grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array($meta);
             for my $field ( keys %fields_required){
-                next if !Baseliner->model('Permissions')->user_has_action( 
+                next if !Baseliner::Model::Permissions->new->user_has_action( 
                     username => $username, 
                     action => 'action.topicsfield.'._name_to_id($category->{name}).'.'.$field.'.'._name_to_id($status->{name}).'.write',
                     mid => $mid
@@ -3217,7 +3219,7 @@ sub get_short_name {
 
 sub user_can_search {
     my ($self, $username) = @_;
-    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.topic');
+    return Baseliner::Model::Permissions->new->user_has_action( username => $username, action => 'action.search.topic');
 }
 
 sub apply_filter{
@@ -3297,8 +3299,8 @@ sub get_topics_mdb{
 
         _throw _loc('Missing username') if !$username;
 
-        Baseliner->model('Permissions')->build_project_security( $where, $username );
-        # _warn $where;
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username );
+        #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
         $rs_topics->fields($fields) if $fields;
@@ -3375,14 +3377,14 @@ sub get_status_history_topics{
     my $cnt = 0;
     for ($i=0; $i<$total; $i=$i+$limit){
         if ($i+$limit>$total) { $limit = $total-$i; };
-        my ($partial_cnt, @res ) = Baseliner->model('Topic')->topics_for_user({ username => $username, start=>$i, limit=>$limit, query=>undef });
+        my ($partial_cnt, @res ) = Baseliner::Model::Topic->new->topics_for_user({ username => $username, start=>$i, limit=>$limit, query=>undef });
         push @rows, @res;
         $cnt = $cnt + $partial_cnt;
     }
 
     #############################################################
 
-    # my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $username, limit=>1000, query=>undef });
+    # my ($cnt, @rows ) = Baseliner::Model::Topic->new->topics_for_user({ username => $username, limit=>1000, query=>undef });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
     my @status_changes;
@@ -3551,7 +3553,7 @@ sub get_downloadable_files {
     $where->{username} = $p->{username} || _throw _loc('Missing username');
     $where->{query_id} = $p->{mid};
 
-    my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user( $where );
+    my ($cnt, @user_topics) = Baseliner::Model::Topic->new->topics_for_user( $where );
 
     my $filter = { 
         # mid => mdb->in(map {$_->{mid}} @user_topics), 
