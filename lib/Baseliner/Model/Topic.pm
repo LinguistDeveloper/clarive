@@ -727,6 +727,7 @@ sub update {
             event_new 'event.topic.create' => $stash => sub {
                 mdb->txn(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
+
                     $stash->{topic_meta} = $meta; 
                     my @meta_filter;
                     push @meta_filter, $_
@@ -3133,20 +3134,25 @@ sub status_changes {
 }
 
 sub get_users_friend {
-    my ($self, %p) = @_;
+    my ( $self, %p ) = @_;
+
+    my $mid         = $p{mid}         or _throw 'Missing parameter mid';
+    my $id_category = $p{id_category} or _throw 'Missing parameter id_category';
+    my $id_status   = $p{id_status}   or _throw 'Missing parameter id_status';
+
+    my $category = mdb->category->find_one( { id => '' . $id_category }, { workflow => 1 } );
+    return () unless $category;
+
+    my @roles =
+      _unique map { $_->{id_role} } grep { $_->{id_status_from} == $id_status } _array( $category->{workflow} );
 
     my @users;
-    my $mid = $p{mid};
-    my @roles = _unique map { $_->{id_role} } grep { $$_{id_status_from} == $p{id_status} } _array(
-        mdb->category->find_one( 
-            { id => ''.$p{id_category} },
-            { workflow=>1 })->{workflow}
-    );
-    if (@roles){
-        @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
+    if (@roles) {
+        @users = Baseliner::Model::Users->new->get_users_from_mid_roles( mid => $mid, roles => \@roles );
         @users = _unique @users;
     }
-    return @users
+
+    return @users;
 }
 
 sub check_fields_required {
