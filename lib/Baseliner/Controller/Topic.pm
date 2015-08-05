@@ -945,7 +945,7 @@ sub list_category : Local {
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
                     default_grid  => $category->{default_grid},
-                    default_field => $category->{default_field},
+                    default_form  => $category->{default_form} // $category->{default_field}, ## FIXME default_field is legacy
                     statuses      => \@statuses,
                     fields        => \@fieldlets,
                     #priorities    => \@priorities

@@ -1301,10 +1301,11 @@ sub get_meta {
 
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
+        my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
         _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
-            unless length $cat->{default_field};
-        return     unless length $cat->{default_field};
-        my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+            unless length $default_form;
+        return [] unless length $default_form;
+        my $cr = Baseliner::CompiledRule->new( id_rule=> $default_form );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
         $cr->run(stash=>$stash);

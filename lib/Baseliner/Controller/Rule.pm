@@ -211,7 +211,7 @@ sub delete : Local {
         my $name = $row->{rule_name};
         if($row->{rule_type} eq 'fieldlets'){
             #remove relationship between rule and category
-            mdb->category->update({default_field=>"$p->{id_rule}"},{'$set'=>{default_field=>''}});
+            mdb->category->update({default_form=>"$p->{id_rule}"},{'$set'=>{default_form=>''}});
         }
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
         mdb->grid->remove({ id_rule=>"$p->{id_rule}" });

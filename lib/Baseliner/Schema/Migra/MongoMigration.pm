@@ -206,7 +206,7 @@ sub topic_categories_to_rules {
         #_decode_json($rule->{rule_tree});
         #_log "LA REGLA "._dump $rule;
         mdb->rule->insert($rule);
-        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_field=>"$rule->{id}"} });
+        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
         _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
         generate_dsl($rule);
     }

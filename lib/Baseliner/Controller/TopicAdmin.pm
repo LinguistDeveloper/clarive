@@ -74,7 +74,7 @@ sub update_category : Local {
                         statuses => $idsstatus // [], 
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
-                        default_field => $p->{default_field}
+                        default_form => $p->{default_form} // $p->{default_field}, ## FIXME default_field is legacy
                     };
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);

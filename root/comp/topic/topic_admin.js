@@ -352,13 +352,13 @@
         });
 
         var combo_fields =new Baseliner.SuperBox({ 
-            name: 'default_field',
-            id: 'default_field',
-            hiddenName: 'default_field',
+            name: 'default_form',
+            id: 'default_form',
+            hiddenName: 'default_form',
             fieldLabel: _("Form"), 
             valueField: 'id',
             displayField: 'rule_name',
-            value: rec ? rec.data.default_field : '',
+            value: rec ? rec.data.default_form : '',
             singleMode: true, 
             store: store_fields,
             forceSelection: true,

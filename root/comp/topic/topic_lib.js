@@ -461,7 +461,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'color' },
                 {  name: 'description' },
                 {  name: 'default_grid' },
-                {  name: 'default_field' },
+                {  name: 'default_form' },
                 {  name: 'type' },
                 {  name: 'statuses' },
                 {  name: 'forms' },
