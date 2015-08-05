@@ -232,7 +232,7 @@ sub new_event {
     $data ||= {};
 
     my $ev = Baseliner::Core::Registry->get($key);
-    _throw 'Event not found in registry' unless $ev && %$ev;
+    _throw "Event '$key' not found in registry" unless $ev && %$ev;
 
     return try {
         $self->_new_event( $ev, $key, $data, $module, $code );
