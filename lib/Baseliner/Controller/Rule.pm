@@ -422,7 +422,8 @@ sub palette : Local {
         } 
         Baseliner->registry->starts_with( 'statement.' );
         push @tree, {
-            icon     => '/static/images/icons/control.gif',
+            icon     => '/static/images/icons/controller.png',
+            #icon     => '/static/images/icons/control.gif',
             text     => _loc('Control'),
             draggable => \0,
             expanded => \1,
@@ -467,7 +468,8 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Generic Services'),
-        icon => '/static/images/icons/job.png',
+        icon => '/static/images/icons/services.png',
+        #icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [ 
