@@ -59,8 +59,23 @@ msgstr "Cancelled"
 msgid "DONE"
 msgstr "Finished"
 
+msgid "TRAPPED"
+msgstr "Trapped"
+
+msgid "TRAPPED_PAUSED"
+msgstr "Trap Paused"
+
 msgid "All-f"
 msgstr "All"
+
+msgid "cat"
+msgstr "Catalan"
+
+msgid "BL"
+msgstr "Environment"
+
+msgid "BLs"
+msgstr "Environments"
 
 msgid "Baseline"
 msgstr "Environment"
@@ -190,9 +205,6 @@ msgstr "Issue"
 
 msgid "Requerimiento"
 msgstr "Requirement"
-
-msgid "Solicitud"
-msgstr "Request"
 
 msgid "Release"
 msgstr "Release"
