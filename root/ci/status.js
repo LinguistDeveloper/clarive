@@ -2,7 +2,7 @@
     if( !params.rec ) params.rec = {};
 
     var bls = Baseliner.ci_box({ name:'bls', hiddenName:'bls', "class":'BaselinerX::CI::bl', allowBlank:false, singleMode:false,
-        fieldLabel:_('BLs'), value: params.rec.bls });
+        fieldLabel:_('Environments'), value: params.rec.bls });
     var bind_releases = params.rec.bind_releases == undefined ? false : params.rec.bind_releases;
 
 	var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
