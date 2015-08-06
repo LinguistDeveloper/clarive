@@ -88,6 +88,18 @@ register 'event.file.remove' => {
     vars => ['username', 'filename', 'ts'],
 };
 
+register 'event.file.labels' => {
+    text => '%1 modify labels',
+    description => 'User modified a topic',
+    vars => ['username', 'ts'],
+};
+
+register 'event.file.labels_remove' => {
+    text => '%1 remove labels',
+    description => 'User modified a topic',
+    vars => ['username', 'ts'],
+};
+
 register 'event.topic.file_remove' => {
     text => '%1 removed %2',
     description => 'User removed a file',

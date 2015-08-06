@@ -1006,7 +1006,22 @@ sub update_topic_labels : Local {
     try{
         if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"}) ) {
             my @current_labels = _array( $doc->{labels} );
+            
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
+            
+            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+            my @users = $c->model('Topic')->get_users_friend(
+                id_category => $doc->{category}{id},
+                id_status   => $doc->{category_status}{id},
+                projects    => \@projects
+            );
+            my $subject = _loc('Labels assigned');
+            event_new 'event.file.labels' => {
+                username        => $c->username,
+                mid             => $topic_mid,
+                notify_default  => \@users,
+                subject         => $subject
+            };          
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ ) 
@@ -1022,7 +1037,22 @@ sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ 
+        my $doc = mdb->topic->find_one({mid=>"$topic_mid"});
         mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
+        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+        my @users = $c->model('Topic')->get_users_friend(
+            id_category => $doc->{category}{id},
+            id_status   => $doc->{category_status}{id},
+            projects    => \@projects
+        );
+        my $subject = _loc('Labels deleted');
+        event_new 'event.file.labels_remove' => {
+            username        => $c->username,
+            mid             => $topic_mid,
+            notify_default  => \@users,
+            subject         => $subject
+        };
+
         $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
     }
     catch{
