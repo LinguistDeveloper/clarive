@@ -202,3 +202,10 @@ requires 'IO::CaptureOutput';
 # requires 'Catalyst::Plugin::CommandLine';
 # requires 'Catalyst::Plugin::Email';
 # requires 'Catalyst::Plugin::Server::XMLRPC';
+
+# Tests
+requires 'Test::More';
+requires 'Test::Fatal';
+requires 'Test::MonkeyMock';
+requires 'Test::MockSleep';
+requires 'Test::Deep';

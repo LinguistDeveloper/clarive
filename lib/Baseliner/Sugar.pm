@@ -59,6 +59,6 @@ sub log_warn { $job->log->warn( @_ ) }
 
 sub log_section {}
 
-sub event_new { Baseliner::Model::Events->new_event(@_) }
+sub event_new { Baseliner::Model::Events->new_event(@_, caller) }
 
 1;

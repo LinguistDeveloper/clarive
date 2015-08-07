@@ -2,6 +2,7 @@ package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
 use Baseliner::Model::Rules;
+use Baseliner::RuleFuncs;
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -137,7 +138,7 @@ sub compile {
                 use Moose;
                 use v5.10;
                 #extends 'Baseliner::Model::Rules';
-                use Baseliner::Model::Rules;
+                use Baseliner::RuleFuncs;
                 use Baseliner::Utils;
                 use Baseliner::Sugar;
                 use Try::Tiny;
@@ -147,6 +148,13 @@ sub compile {
                     my (\$self,\$stash)=\@_;
                     $dsl 
                 };
+                sub call {
+                    my (\$id_rule, \$stash)=\@_;
+
+                    my \$rule = Baseliner::CompiledRule->new(id_rule => "\$id_rule");
+                    \$rule->compile;
+                    return \$rule->run(stash => \$stash)->{ret};
+                }
                 1;
             }
         };

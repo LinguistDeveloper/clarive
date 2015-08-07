@@ -94,6 +94,9 @@ use Exporter::Tidy default => [
     _get_dotted_keys
     _reg_line
     _pointer
+    _clone
+    _stash_dump
+    _stash_load
 )],
 other => [qw(
     _load_yaml_from_comment

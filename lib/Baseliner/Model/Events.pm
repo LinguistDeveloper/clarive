@@ -221,9 +221,9 @@ sub find_by_mid {
 
 sub new_event {
     my $self = shift;
-    my ( $key, $data, $code, $catch ) = @_;
+    my ( $key, $data, $code, $catch, $caller ) = @_;
 
-    my $module = caller;
+    my $module = $caller || caller;
 
     if ( ref $data eq 'CODE' ) {
         $code = $data;
@@ -232,7 +232,7 @@ sub new_event {
     $data ||= {};
 
     my $ev = Baseliner::Core::Registry->get($key);
-    _throw 'Event not found in registry' unless $ev && %$ev;
+    _throw "Event '$key' not found in registry" unless $ev && %$ev;
 
     return try {
         $self->_new_event( $ev, $key, $data, $module, $code );
