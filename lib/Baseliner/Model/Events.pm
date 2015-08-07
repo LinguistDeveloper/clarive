@@ -221,9 +221,9 @@ sub find_by_mid {
 
 sub new_event {
     my $self = shift;
-    my ( $key, $data, $code, $catch ) = @_;
+    my ( $key, $data, $code, $catch, $caller ) = @_;
 
-    my $module = caller;
+    my $module = $caller || caller;
 
     if ( ref $data eq 'CODE' ) {
         $code = $data;
