@@ -2,6 +2,7 @@ package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
 use Baseliner::Model::Rules;
+use Baseliner::RuleFuncs;
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -137,7 +138,7 @@ sub compile {
                 use Moose;
                 use v5.10;
                 #extends 'Baseliner::Model::Rules';
-                use Baseliner::Model::Rules;
+                use Baseliner::RuleFuncs;
                 use Baseliner::Utils;
                 use Baseliner::Sugar;
                 use Try::Tiny;

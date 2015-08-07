@@ -733,8 +733,12 @@ sub update {
                     push @meta_filter, $_
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
-                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
-                    $p->{title} = _strip_html($p->{title}) if ($p->{title}); #fix close comments in html templates
+
+                    if ($p->{title}) {
+                        $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
+                        $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
+                    }
+
                     my ($topic) = $self->save_data($meta, undef, $p);
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
@@ -1390,7 +1394,7 @@ sub get_meta {
             if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
                 $d->{default_value} = eval $1;
             }
-            $d->{editable} //= (length $d->{js} || $d->{editable} eq '1') ? '1' : '0';
+            $d->{editable} //= (length $d->{js} || ($d->{editable} // '') eq '1') ? '1' : '0';
             $d->{field_order_html} ||= 0;
             $d->{bd_field} ||= $d->{id_field};
             $d->{meta_type} ||= $d->{set_method} 
@@ -1646,14 +1650,14 @@ sub save_data {
         my @std_fields =
             map {
             +{
-                name     => $_->{id_field},
-                column   => $_->{bd_field},
-                method   => $_->{set_method},
-                relation => $_->{relation}
+                name     => $_->{id_field} // '',
+                column   => $_->{bd_field} // '',
+                method   => $_->{set_method} // '',
+                relation => $_->{relation} // ''
                 }
             }
             grep {
-            $_->{origin} eq 'system'
+            $_->{origin} && $_->{origin} eq 'system'
             } _array( $meta );
 
         my %row;
@@ -2058,7 +2062,7 @@ sub update_rels {
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
         
         #adding title to sorting
-        my $title = lc $topic_titles{$mid};
+        my $title = lc($topic_titles{$mid} // '');
         $title =~ s/^\s+//;
         $d{_sort}{title} = $title;
 

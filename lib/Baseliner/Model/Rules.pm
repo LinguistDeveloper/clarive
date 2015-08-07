@@ -1,5 +1,7 @@
 package Baseliner::Model::Rules;
 use Moose;
+BEGIN { extends 'Catalyst::Model' }
+
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -8,26 +10,6 @@ use BaselinerX::CI::variable;
 use Try::Tiny;
 use v5.10;
 use experimental 'autoderef';
-
-# DSL functions, export needed by "contained" mode in dsl_run
-use Exporter::Tidy default => [qw( 
-    current_task
-    semaphore
-    parallel_run
-    error_trap
-    merge_data
-    project_changes 
-    current_task
-    cut_nature_items
-    launch
-    merge_into_stash
-    stash_has_nature
-    changeset_projects
-    variables_for_bl
-    include_rule
-)];
-
-BEGIN { extends 'Catalyst::Model' }
 
 with 'Baseliner::Role::Service';
 
@@ -82,141 +64,6 @@ sub init_fieldlets_tasks {
         $node 
     } Baseliner->registry->get('fieldlet.system.status_new')->registry_node->raw, 
     Baseliner->registry->get('fieldlet.system.title')->registry_node->raw;
-}
-
-sub parallel_run {
-    my ($name, $mode, $stash, $code)= @_;
-    
-    my $stash_child = Util->_clone( $stash ); # save stash completely, so that parent does not destroy something by the time fork() child is ready
-     
-    my $chi_pid = fork;
-    if( !defined $chi_pid ) {
-        # could not fork
-        require Proc::ProcessTable;
-        my @children;
-        for my $p (_array( Proc::ProcessTable->new->table )){
-            push @children, $p->pid if $p->ppid == $$;
-        }
-        my $msg = _loc( "Children, number=%1, list=%2", scalar(@children), join(',',@children) ); 
-        _fail( _loc('Could not fork child from parent pid %1. Check max processes available with `ulimit -u`.',$$), data=>$msg );  
-    } elsif( $chi_pid ) {
-        # parent
-        _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
-        if( $mode eq 'fork' ) {
-            # fork and wait..
-            $stash->{_forked_pids}{ $chi_pid } = $name;
-        }
-    } else {
-        # child
-        mdb->disconnect;    # will reconnect later
-        my ( $ret, $err );
-        $stash = $stash_child;
-        
-        try {
-            $ret = $code->();
-        }
-        catch {
-            $err = shift;
-            _error( _loc( 'Detected error in child %1 (%2): %3', $$, $mode, $err ) );
-        };
-        if ( $mode eq 'fork' ) {
-            # fork and wait.., communicate results to parent
-            my $res = { ret => $ret, err => $err };
-            queue->push( msg => "rule:child:results:$$", data => $res );
-        }
-        exit 0;    # cannot update stash, because it would override the parent run copy
-    }
-}
-
-sub error_trap {
-    my ($stash, $trap_timeout,$trap_timeout_action, $trap_rollback, $mode, $code)= @_;
-    my $job = $stash->{job};
-    RETRY_TRAP:
-    try {
-        $code->();
-    } catch {
-        my $err = shift;
-        if( !$job ) { # we're in a event rule, not a job
-            _error( _loc( "Error ignored in rule: %1", $err ) );
-            return;
-        }
-        if ( $job->rollback && !$trap_rollback ) {
-            $job->logger->info( _loc "Ignoring trap errors in rollback.  Aborting task", $err );    
-            _fail( $err );            
-        };
-        if( $mode eq 'ignore' ) {
-            $job->logger->debug( _loc "Ignored error trapped in rule: %1", $err );    
-            return;
-        };
-        $job->logger->error( _loc "Error trapped in rule: %1", $err );    
-        $job->update( status=>'TRAPPED' );
-
-        ## Avoid error if . in stash keys
-        my @keys = _get_dotted_keys( $stash, '$stash');
-
-        if ( @keys ) {
-            my @complete_keys;
-            for my $key ( @keys ) {
-                push @complete_keys, $key->{parent}.'->{'.$key->{key}.'}';
-                my $parent = eval($key->{parent});
-                delete $parent->{$key->{key}};
-            }
-            _debug("Stash contains variables with '.' removed to avoid errors:\n\n". join(", ", @complete_keys));
-        };
-
-        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {} => sub{
-            # catch and ignore
-            my $err = shift;
-            _warn( _loc('Could not store event for trapped error: %1', $err ) );
-        }; 
-
-        my $last_status;
-        my $timeout = $trap_timeout;
-        LOOP:
-        sleep 4;
-        while( 1 ) {
-            if ( $last_status eq 'TRAPPED_PAUSED' ) {
-                sleep 5;
-            } else {
-                if ( !$trap_timeout || $trap_timeout eq '0' ) {
-                    sleep 5;
-                } else {
-                    sleep 10;
-                    $timeout = $timeout - 10;
-                    if ( $timeout gt 0 ) {
-                        $job->logger->warn( _loc("%1 seconds remaining to cancel trap with action %2", $timeout, $trap_timeout_action) );
-                    } else {
-                        $job->trap_action({ action => $trap_timeout_action, comments => _loc("Trap timeout expired.  Action configured: %1", $trap_timeout_action)});
-                    }
-                }
-            }
-            $last_status = $job->load->{status};
-            if ( $last_status !~ /TRAPPED/ ) {
-                last;
-            }
-        }
-        if( $last_status eq 'RETRYING' ) {
-            $job->logger->info( _loc "Retrying task", $err );    
-            goto RETRY_TRAP;
-        } elsif( $last_status eq 'SKIPPING' ) {
-            $job->logger->info( _loc "Skipping task", $err );    
-            return;
-        } elsif( $last_status eq 'ERROR' ) { # ERROR
-            $job->logger->info( _loc "Aborting task", $err );    
-            _fail( $err );
-        } else {
-           goto LOOP; 
-        }
-    };
-}
-
-sub semaphore {
-    my ($data, $stash)=@_;
-    require Baseliner::Sem;
-    parse_vars( $data, $stash );
-    my $sem = Baseliner::Sem->new( $data );
-    _info( _loc 'Semaphore queued for %1', $data->{key} );
-    return $sem;
 }
 
 sub tree_format {
@@ -358,11 +205,11 @@ sub dsl_build {
         }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
-        push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
+        push @dsl, sprintf( '# task: %s', $name // '') . "\n"; 
         if( $closure ) {
             push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s}, sub{', $id_rule, $rule_name, $name )."\n";
         } elsif( ! $attr->{nested} ) {
-            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name // '')."\n";
         }
         if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
@@ -598,95 +445,6 @@ sub dsl_listing {
 
 ######################################## GLOBAL SUBS
 
-sub merge_data {
-    my ($dest,@hashes)=@_;
-    $dest = {} unless ref $dest eq 'HASH';
-    for my $hash ( @hashes ) {
-        next unless ref $hash eq 'HASH';
-        for my $k ( keys %$hash ) {
-            $dest->{$k} = $hash->{$k};
-        }
-    }
-    parse_vars( $dest, $dest );
-}
-
-
-sub project_changes {
-    my ($stash)=@_;
-    if( !$stash->{project_changes} ) {
-        _warn _loc('No project changes detected');
-        return ();
-    } else {
-        return map { 
-            my $p = $_->{project};
-            if( Util->_blessed( $p )  ) {
-                $p;
-            } else {
-                if( $p->can('mid') ) {
-                    ci->new( $p->mid );
-                } else {
-                    ci->new( $p );  # is a number then, or try my luck
-                }
-            }
-        } _array( $stash->{project_changes} );
-    }
-}
-
-sub current_task {
-    my ($stash,$id_rule, $rule_name, $name, $code)=@_;
-    $name = parse_vars( $name, $stash );  # so we can have vars in task names
-    $Baseliner::_rule_current_id = $id_rule;
-    $Baseliner::_rule_current_name = $rule_name;
-    $stash->{current_rule_id} = $id_rule;
-    $stash->{current_rule_name} = $rule_name;
-    $stash->{current_task_name} = $name;
-    if( my $job = $stash->{job} ) {
-        $job->start_task( $name );
-    }
-    $code->() if $code;
-}
-
-sub cut_nature_items {
-    my ($stash,$tail)=@_;
-    my @items = _array( $stash->{nature_items} );
-    # items to write
-    my @items_write = grep { $_->status ne 'D' } @items;
-    my @paths_write = grep { length } map { $_->path_tail( $tail ) } @items_write;
-    # items deleted
-    my @items_del   = grep { $_->status eq 'D' } @items;
-    my @paths_del   = grep { length } map { $_->path_tail( $tail ) } @items_del;
-    
-    _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail 
-        unless ( @paths_write + @paths_del );
-    return ( \@paths_write, \@paths_del );
-}
-
-# launch runs service, merge return into stash and returns what the service returns
-sub launch {  
-    my ($key, $task, $stash, $config, $data_key )=@_;
-    
-    $task = parse_vars( $task, $stash );
-    my $reg = Baseliner->registry->get( $key );
-    #_log "running container for $key";
-    my $return_data = try { 
-        $reg->run_container( $stash, $config );
-    } catch {
-        my $err = shift;
-        die _loc( 'Error running task * %1 *: %2', $task, $err ) . "\n"; # there's another catch later, so no need to _fail here
-    };
-    # TODO milestone for service
-    #_debug $ret;
-    my $refr = ref $return_data;
-    my $mergeable = $refr eq 'HASH' || Scalar::Util::blessed($return_data); 
-    if( $mergeable || $refr eq 'ARRAY' || !$refr ) {
-        # merge into stash
-        merge_into_stash( $stash, ( $data_key eq '=' && $mergeable ? $return_data : { $data_key => $return_data } ) ) if length $data_key;
-        return $return_data;
-    } else {
-        return {};
-    }
-}
-
 sub merge_into_stash {
     my ($stash, $data) = @_;
     return unless ref $data eq 'HASH';
@@ -694,27 +452,6 @@ sub merge_into_stash {
         $stash->{$k} = $v;
     }
     return $stash
-}
-
-sub stash_has_nature {
-    my ($nature,$stash) = @_;
-    $nature = ci->new( $nature ) unless ref $nature;
-    my $nature_items = $nature->filter_items( items=>$stash->{items} ); # save => 1 ??  
-    return $nature_items; 
-}
-
-sub changeset_projects {
-    my $stash = shift;
-    # for each changeset, get project and group changesets
-    my %projects;
-    for my $cs ( _array( $stash->{changesets} ) ) {
-        $cs = ci->new( $cs ) unless ref $cs;
-        for my $project ( $cs->related( does=>'Project' ) ) {
-            $projects{ $project->mid } = $project;
-        }
-    }
-    #my $project = ci->new( 6901 );  # TEF
-    return values %projects;
 }
 
 #sub project_changed {
@@ -730,14 +467,6 @@ sub changeset_projects {
 #    #my $project = ci->new( 6901 );  # TEF
 #    return values %projects;
 #}
-
-sub variables_for_bl {
-    my ($ci, $bl) = @_; 
-    my $vars = $ci->variables // { _no_vars=>1 }; 
-    my $vars_common_bl = $vars->{'*'} // {};
-    my $vars_for_bl = $vars->{$bl} // { _no_vars_for_bl=>$bl } if length $bl && $bl ne '*';
-    +{ %$vars_common_bl, %$vars_for_bl };
-}
 
 ############################## STATEMENTS
 
