@@ -34,8 +34,35 @@ subtest 'creates entry' => sub {
     ok $entry && %$entry;
 };
 
+subtest 'creates root user' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my $user = ci->user->search_ci(username => 'root');
+
+    ok $user;
+};
+
+subtest 'does nothing if root user exists' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my @user = ci->user->search_cis;
+
+    is scalar @user, 1;
+};
+
 sub _setup {
     mdb->clarive->drop;
+
+    mdb->master->drop;
+    mdb->master_doc->drop;
 }
 
 sub _build_cmd {
