@@ -35,7 +35,7 @@ BEGIN {
 
 sub setup {
     require Clarive::App;
-    $Clarive::app = Clarive::App->new( config => "$root/../data/acmetest.yml" );
+    $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml" );
     require Clarive::mdb;
     require Clarive::model;
     require Clarive::cache;
