@@ -920,16 +920,17 @@ register 'statement.stash.local' => {
 };
 
 register 'statement.project.block' => {
-    text => 'APPLY PROJECT', data => { project=>'' },
+    text => 'APPLY PROJECT', data => { project=>'', bl=>'' },
     type => 'loop',
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
-                my $project = '%s';
-                my $variables = $stash->{$project}->variables->{ $stash->{bl} // '*' } // {};
-                merge_data $stash, $variables, { _ctx => 'apply_variables' }; 
-                
+                my $project = ci->new( '%s' );
+                my $vars = variables_for_bl( $project, $stash->{bl} );
+                _info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
+                merge_data $stash, $vars, { _ctx => 'apply project' }; 
+
                 %s    
             }
         }, $n->{project} // 'project', $self->dsl_build( $n->{children}, %p ) );
