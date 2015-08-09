@@ -231,8 +231,9 @@ sub _find_class {
         $class = join '.',@domain[ 0..$i ];
         last if( $self->classes->{$class} ) ;
     }
-    my $class_module = $self->classes->{$class} || $node->module; ## if no class found, bless onto itself
-        #'BaselinerX::Type::Generic';  ## if no class found, assign it to generic
+    my $class_module = $self->classes->{$class} 
+        || Util->_fail(Util->_loc('Could not find registry class %1 for key %2',$class,$key)); 
+        ## if no class found, bless onto itself
     #$ENV{CATALYST_DEBUG} && print STDERR "\t\t*** CLASS: $class ($class_module) FOR $key\n";
     return $class_module;
 }
