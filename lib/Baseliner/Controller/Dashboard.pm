@@ -1905,7 +1905,7 @@ __DATA__
     - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last month","expanded":false,"id":"rule-ext-gen10866-1431204661743","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:58","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1M","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":"0","data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
-    status - Last quearter","expanded":false,"id":"rule-ext-gen10865-1431204661742","semaphore_key":"","leaf":true,"ts":"2015-05-15T18:48:42","name":"Job
+    status - Last quarter","expanded":false,"id":"rule-ext-gen10865-1431204661742","semaphore_key":"","leaf":true,"ts":"2015-05-15T18:48:42","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"3M","autorefresh":"0","columns":"4","bls":[],"type":"donut","rows":"1"},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last year","expanded":false,"id":"rule-ext-gen10862-1431204661738","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:30","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1Y","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":60000,"data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-18T22:56:51","name":"Topics
@@ -1922,7 +1922,7 @@ __DATA__
 - rule_active: '1'
   rule_desc: ''
   rule_event: ~
-  rule_name: Release mgr
+  rule_name: Release Manager
   rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
     by date line chart","active":1,"data":{"days_until":"0","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","type":"area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
     created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","isTarget":false,"html":"","text":"Releases
@@ -1961,7 +1961,7 @@ __DATA__
   default_dashboard: '1'
   rule_desc: ''
   rule_event: ~
-  rule_name: Default dashboard
+  rule_name: Main Dashboard
   rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:12","name":"Topics
     chart","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_status","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"Open
     topics by status","expanded":false,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:23","name":"Topics
