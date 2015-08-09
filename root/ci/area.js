@@ -27,7 +27,6 @@
         not working:
         variables_field.getRawValue = function(){
             var ret = Ext.util.JSON.encode( de.data );
-            console.log( ret );
             return ret;
         };
     */

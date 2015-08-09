@@ -2,7 +2,7 @@
     var id = params.id_div;
     var project_id = params.project_id;
     var meta = params.data;
-console.log(params);
+
     require(['/site/swarm.js?'+Math.random()], function(res){
         var div = document.getElementById(id);
         div.innerHTML = '';

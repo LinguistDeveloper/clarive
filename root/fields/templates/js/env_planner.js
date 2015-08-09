@@ -31,7 +31,6 @@
 
     geditor.editor.on('validateedit',function(ed, changes, r, rowIndex){
         var row_final = Ext.apply({},changes);
-        console.log( row_final );
         if( row_final.plan_start_date > row_final.plan_end_date ) {
             Cla.warning(_(meta.name_field),_('Start date is after end date'));
             return false;

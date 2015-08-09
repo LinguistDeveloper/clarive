@@ -22,8 +22,6 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
-  console.log(meta);
-
   var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
     var ci = {};
