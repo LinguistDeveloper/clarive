@@ -767,11 +767,15 @@ sub update {
                 #$return_options->{reload} = 1;                 
             } 
             => sub { # catch
-                mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
-                _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
+                if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
+                    mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
+                    _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
+                } else {
+                    _throw _loc( 'Error adding Topic: %1', shift() );
+                }
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
@@ -1843,7 +1847,7 @@ sub save_data {
                 $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta, $cancelEvent );
             }
         } 
-        
+
         # save to mongo
         $self->save_doc(
             $meta, +{ %$topic }, $data,
