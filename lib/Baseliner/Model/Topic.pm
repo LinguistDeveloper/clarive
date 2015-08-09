@@ -1921,8 +1921,12 @@ sub save_doc {
             $doc->{$field} = {};
             for my $cal ( _array($arr) ) {
                 _fail "field $field is not a calendar?" unless ref $cal;
-                my $slot = Util->_name_to_id( $cal->{slotname} );
-                $doc->{$field}{$slot} = $cal;
+                if( length $cal->{slotname} ) {
+                    my $slot = Util->_name_to_id( $cal->{slotname} );
+                    $doc->{$field}{$slot} = $cal;
+                } else {
+                    _fail _loc 'Field `%1` is missing the `slotname` column to properly be stored as a calendar', $field;
+                }
             }
         }
         elsif( $mt eq 'number' ) {
