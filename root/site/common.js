@@ -3048,6 +3048,38 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
     }
 });
 
+Baseliner.RowEditor = Ext.extend(Ext.ux.grid.RowEditor, {
+    // the original class is in 
+    //     features/extjs_3.4.0/root/static/ext/examples/ux/RowEditor.js
+    layout: 'column',
+    showTooltip: function(msg){
+        // FIXME not working, flashing on/off constantly, turned off
+    },
+    verifyLayout: function(force){
+        if(this.el && (this.isVisible() || force === true)){
+            var row = this.grid.getView().getRow(this.rowIndex);
+            this.setSize(Ext.fly(row).getWidth(), Ext.isIE ? Ext.fly(row).getHeight() + 9 : undefined);
+            var cm = this.grid.colModel, fields = this.items.items;
+            for(var i = 0, len = cm.getColumnCount(); i < len; i++){
+                if(!cm.isHidden(i)){
+                    var adjust = 0;
+                    if(i === (len - 1)){
+                        adjust += 3; // outer padding
+                    } else{
+                        adjust += 1;
+                    }
+                    fields[i].show();
+                    fields[i].setWidth(cm.getColumnWidth(i));
+                } else{
+                    fields[i].hide();
+                }
+            }
+            this.doLayout();
+            this.positionButtons();
+        }
+    }
+});
+
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
     height: 250,
@@ -3184,7 +3216,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         
         // use RowEditor for editing
         if( self.use_row_editor ) {
-            self.editor = new Ext.ux.grid.RowEditor({
+            self.editor = new Baseliner.RowEditor({
                 clicksToMoveEditor: 1,
                 autoCancel: false,
                 enableDragDrop: true, 
