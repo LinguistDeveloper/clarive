@@ -124,6 +124,27 @@ register 'fieldlet.milestones' => {
     section_allowed => ['head','more']
 };
 
+register 'fieldlet.env_planner' => {
+    name        => _loc('Environment Planner'),
+    html        => '/fields/templates/html/grid_editor.html',
+    js          => '/fields/templates/js/env_planner.js',
+    form        => '/fields/templates/config/env_planner.js',
+    icon        => '/static/images/icons/milestone.png',
+    relation    => 'system',
+    get_method  => 'get_cal',
+    set_method  => 'set_cal',
+    type        => 'generic',
+    meta_type   => 'calendar',
+    data_gen    => sub{
+        +{
+            columns=>sprintf(
+                '%s[slotname],bl_combo,100;%s[plan_start_date],datefield,80;%s[plan_end_date],datefield,80', 
+                _loc('Environment'), _loc('Planned Start'), _loc('Planned End') )
+        }
+    },
+    section_allowed => ['head','more']
+};
+
 register 'fieldlet.scheduler' => {
     name        => _loc('Scheduler'),
     html        => '/fields/templates/html/grid_editor.html',
