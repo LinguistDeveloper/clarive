@@ -24,11 +24,14 @@ has bd_field   	=> ( is=> 'rw', isa=> 'Maybe[Str]', default=>sub{
 has leaf        => ( is => 'rw', isa => 'Bool', default => 1);
 has holds_children => ( is => 'rw', isa => 'Bool', default => 0);
 
+has data_gen    => ( is => 'rw', isa => 'CodeRef');
+
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	return sub{
 	    my ($self, $n, %p ) = @_;
 	    my %data = %{ $n->{data} || {} };
 	    $data{name_field} = $n->{text};
+	    $data{key} = $n->{key};
         sprintf(q{
             push @{ $stash->{fieldlets} }, parse_vars(%s, $stash);
             %s

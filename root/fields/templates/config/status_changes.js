@@ -25,8 +25,7 @@
     });
 
     ret.push([
-        checkbox_show_real_dates,
-        { xtype:'hidden', name:'fieldletType', value: 'fieldlet.status_changes' } 
+        checkbox_show_real_dates
     ]);
     return ret;
 })

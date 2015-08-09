@@ -7,7 +7,7 @@ use Path::Class;
 use Try::Tiny;
 
 register 'fieldlet.attach_file' => {
-    name        => _loc('attach files'),
+    name        => _loc('Attach Files'),
     html        => '/fields/templates/html/upload_files.html',
     js          => '/fields/templates/js/upload_files.js',
     form        => '/fields/templates/config/upload_files.js',
@@ -19,7 +19,7 @@ register 'fieldlet.attach_file' => {
 };
 
 register 'fieldlet.progressbar' => {
-    name        => _loc('progress bar'),
+    name        => _loc('Progress Bar'),
     html        => '/fields/templates/html/progress_bar.html',
     js          => '/fields/templates/js/progress_bar.js',
     form        => '/fields/templates/config/progress_bar.js',
@@ -28,7 +28,7 @@ register 'fieldlet.progressbar' => {
 };
 
 register 'fieldlet.calculated_number' => {
-    name        => _loc('calculated numberfield'),
+    name        => _loc('Calculated Numberfield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/calculated_numberfield.js',
     form        => '/fields/templates/config/calculated_numberfield.js',
@@ -38,7 +38,7 @@ register 'fieldlet.calculated_number' => {
 };
 
 register 'fieldlet.datetime' => {
-    name        => _loc('datefield'),
+    name        => _loc('Datefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/datetimefield.js',
     form        => '/fields/templates/config/datetimefield.js',
@@ -49,7 +49,7 @@ register 'fieldlet.datetime' => {
 };
 
 register 'fieldlet.time' => {
-    name        => _loc('timefield'),
+    name        => _loc('Timefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/timefield.js',
     form        => '/fields/templates/config/timefield.js',
@@ -61,7 +61,7 @@ register 'fieldlet.time' => {
 
 
 register 'fieldlet.ci_grid' => {
-    name        => _loc('ci grid'),
+    name        => _loc('CI Grid'),
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/templates/js/ci_grid.js',
     form        => '/fields/templates/config/ci_grid.js',
@@ -70,7 +70,7 @@ register 'fieldlet.ci_grid' => {
 };
 
 register 'fieldlet.combo' => {
-    name        => _loc('combo'),
+    name        => _loc('Combo'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
@@ -79,7 +79,7 @@ register 'fieldlet.combo' => {
 };
 
 register 'fieldlet.dbi_query' => {
-    name        => _loc('dbi query'),
+    name        => _loc('DB Query'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
@@ -89,7 +89,7 @@ register 'fieldlet.dbi_query' => {
 };
 
 register 'fieldlet.download_all_files' => {
-    name        => _loc('download all files'),
+    name        => _loc('Download All Files'),
     html        => '/fields/templates/html/download_all.html',
     form        => '/fields/templates/config/download_all.js',
     icon        => '/static/images/icons/download.png',
@@ -101,7 +101,7 @@ register 'fieldlet.download_all_files' => {
 };
 
 register 'fieldlet.grid_editor' => {
-    name        => _loc('grid editor'),
+    name        => _loc('Grid Editor'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/grid_editor.js',
     form        => '/fields/templates/config/grid_editor.js',
@@ -111,7 +111,7 @@ register 'fieldlet.grid_editor' => {
 };
 
 register 'fieldlet.milestones' => {
-    name        => _loc('milestones'),
+    name        => _loc('Milestones'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/milestones.js',
     form        => '/fields/templates/config/milestones.js',
@@ -139,14 +139,13 @@ register 'fieldlet.scheduler' => {
 };
 
 register 'fieldlet.html_editor' => {
-    name        => _loc('html/editor'),
+    name        => _loc('HTML Editor'),
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/templates/js/html_editor.js',
     form        => '/fields/templates/config/html_editor.js',
     icon        => '/static/images/icons/html.png',
     type        => 'html/editor',
     meta_type   => 'content',
-    #data        => 'clob',
     section_allowed => ['head','more']
 };
 

@@ -7,8 +7,5 @@
             element.readOnly = true;
         }
     });
-    ret.push([ 
-        { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.moniker' } 
-    ]);
     return ret;
 })

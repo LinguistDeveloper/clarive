@@ -1298,17 +1298,16 @@ sub get_meta {
     # my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
     # return $cached if $cached;
 
-
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
 
     $id_category = $id_cat;
-    my @fieldlets;
     my @cat_fields;
 
     my $field_order = 0;
-    my @system_fields = Baseliner->registry->starts_with( "fieldlet.required" );
-    foreach my $sys_field (@system_fields){
-        my $fieldRegistry = Baseliner->registry->get($sys_field);
+    # first, the required fields
+    my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
+    foreach my $required_fields (@required_fields){
+        my $fieldRegistry = Baseliner->registry->get($required_fields);
         my $reg_params = $fieldRegistry->{registry_node}{param};
         my $res = {};
         $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
@@ -1318,6 +1317,8 @@ sub get_meta {
         push @cat_fields, $res;
     }
 
+    # now we run the rule to get the custom fieldlets
+    my @custom_fieldlets;
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
         my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
@@ -1328,62 +1329,40 @@ sub get_meta {
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
         $cr->run(stash=>$stash);
-        @fieldlets = _array $stash->{fieldlets};
-        # now merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
-        foreach my $fieldlet (@fieldlets){
-            my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
-            my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry;
-            try { 
-                $fieldRegistry = Baseliner->registry->get( $fieldType );
-                my $reg_params = $fieldRegistry->{registry_node}{param};
-                $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
-                $res->{params}{field_order} = $field_order++;
-                push @cat_fields, $res;
-            } catch {
-                _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;
-            };
+        push @custom_fieldlets, _array( $stash->{fieldlets} );
+    } else {
+        my @user_categories = $username 
+            ? map { $_->{id} } $self->get_categories_permissions( username=>$username, type=>'view' )
+            : map { $_->{id} } mdb->category->find->all;
+        foreach my $category (@user_categories){
+            my $cat = mdb->category->find_one({ id=>$category });
+            my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+            $cr->compile;
+            my $stash = {id_category=>$category};
+            $cr->run(stash=>$stash);
+            push @custom_fieldlets, _array( $stash->{fieldlets} );
         }
-    }else{
-        if ($username){
-            my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            foreach my $category (@user_categories){
-                my $cat = mdb->category->find_one({ id=>$category });
-                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
-                $cr->compile;
-                my $stash = {id_category=>$category};
-                $cr->run(stash=>$stash);
-                push @fieldlets, _array $stash->{fieldlets};
+    }
+
+    # merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
+    foreach my $fieldlet ( @custom_fieldlets ){
+        my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
+        my $key = $fieldlet->{fieldletType} || $fieldlet->{key};  # FIXME fieldletType is deprecated
+        try { 
+            my $registered_fieldlet = Baseliner->registry->get( $key );
+            my $reg_params = $registered_fieldlet->{registry_node}{param};
+            $res->{params}{$_} = $reg_params->{$_} for grep !/^(registry_node|data_gen)$/, keys $reg_params;
+            $res->{params}{field_order} = $field_order++;
+            if( my $data_gen = $registered_fieldlet->data_gen ) {
+                my $data = $data_gen->( $res->{params} ) // {};
+                $res->{params}{$_} = $data->{$_} for keys %$data;
             }
-        } else {
-            my @user_categories =  map { $_->{id} } mdb->category->find->all;
-            foreach my $category (@user_categories){
-                my $cat = mdb->category->find_one({ id=>$category });
-                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
-                $cr->compile;
-                my $stash = {id_category=>$category};
-                $cr->run(stash=>$stash);
-                push @fieldlets, _array $stash->{fieldlets};
-            }
-        }
-        foreach my $fieldlet (_array @fieldlets){
-            my $res;
-            my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry;
-            try {
-                $fieldRegistry = Baseliner->registry->get( $fieldType );
-                foreach my $field (keys $fieldlet){
-                    $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
-                }
-                $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
-                map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-                $res->{params}->{field_order} = $field_order;
-                $field_order++;
-                push @cat_fields, $res;
-            } catch {
-                _error "FieldType $fieldType not found in registry: ".shift;
-            };
-        }
+            push @cat_fields, $res;
+        } catch {
+            my $err = shift;
+            # TODO consider showing the form, but with a special "error" fieldlet 
+            _error _loc "Fieldlet `$%1` not found in registry: %2", $key, $err;
+        };
     }
 
     my @meta =

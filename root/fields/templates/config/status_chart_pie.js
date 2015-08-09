@@ -42,7 +42,6 @@
     });
 
     return [
-        { xtype:'hidden', name:'fieldletType', value: 'fieldlet.status_chart_pie' },
         combo_category,
     	{ xtype:'textfield',fieldLabel: _('Filter'), name: 'filter', value: data.filter },
     	{ xtype:'numberfield',fieldLabel: _('Depth'), name: 'depth', value: data.depth },

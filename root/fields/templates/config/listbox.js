@@ -159,7 +159,6 @@
     });
 
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.listbox' },
     	type_combo,
     	value_combo,
     	filter_field

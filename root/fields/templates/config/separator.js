@@ -42,7 +42,6 @@
 
 
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.separator' },
     	color_button,
     	selected_color 
     ]);
