@@ -2886,10 +2886,10 @@ Baseliner.cols_templates = {
       htmleditor: function(){ return { editor: new Ext.form.HtmlEditor({submitValue: false}), default_value:'' } },
       cleditor: function(){ return { editor: new Baseliner.CLEditorField({submitValue: false}), default_value:'' } },
       textfield : function(){ return { width: 100, editor: new Ext.form.TextField({submitValue: false}), default_value:'' } },
-      datefield : function(){ return { width: 30, 
-          editor: new Ext.form.DateField({ format: Prefs.js_date_format, submitValue: false }), 
-          renderer: Baseliner.render_date
-      }},
+      datefield : function(){ 
+          var df = new Ext.form.DateField({ format: Prefs.js_date_format, submitValue: false });
+          return { width: 30, editor: df, renderer: Baseliner.render_date }
+      },
       cbox      : function(){ return { align: 'center', width: 10, editor: new Baseliner.CBox({submit_num: true, submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
@@ -2900,7 +2900,12 @@ Baseliner.cols_templates = {
         return { editor: ed, default_value:'', renderer: function(v){ if (v) { return '********'; } else { return ''; } } } 
       },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } },
-      colorComboPalette : function(){ 
+      bl_combo : function(){ 
+        //var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1, singleMode: true });
+        var bl_combo = Baseliner.combo_baseline({ value: '*' });
+        return { editor: bl_combo, default_value:'', css: 'line-height: 40px', width: 20 }; 
+      },
+      color_combo : function(){ 
             var color_btn_gen = function(color){
                 return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: #{0}">#{1}</span></div>', 
                     color, color  );
@@ -2932,7 +2937,7 @@ Baseliner.cols_templates = {
                             [ 'FF0000', color_btn_gen('FF0000') ]
                         ]
                     });
-                    this.store = store;
+                    this.store = store_colors;
                     var tpl_list = new Ext.XTemplate(
                         '<tpl for=".">',
                         '<div>'+color_btn_gen()+'</div>',
@@ -3122,7 +3127,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                         values.default_value = col_s[3];
                     };
                     ct = ct(values);  // templates are functions
-                    if( col_s[2] != undefined ) ct.width = col_s[2];
+                    if( col_s[2] != undefined && ct.width==undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
                     if( col_s[5] == 'readonly' ) ct.editor.readOnly = true;
                     ct.sortable = true;
@@ -3142,6 +3147,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     store_field.type =  'date';
                     store_field.dateFormat = 'Y-m-d 00:00:00';
                 }
+                // ct.renderer = function(v,meta){ meta.style='padding-right: 10px'; return v };
                 cols.push( ct );
                 fields.push( store_field );
             });
