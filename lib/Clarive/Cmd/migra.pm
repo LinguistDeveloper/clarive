@@ -12,9 +12,13 @@ use Try::Tiny;
 use Clarive::mdb;
 use Class::Load qw(load_class);
 
+sub run_start { &run }
+
 sub run {
     my $self = shift;
     my (%opts) = @_;
+
+    $self->run_init if $opts{'--init'};
 
     my $clarive = $self->_load_collection( $opts{'--force'} ? ( no_migration_ok => 1, no_init_ok => 1 ) : () );
 
@@ -112,8 +116,22 @@ __END__
 Common options:
 
     --env <environment>
-    --force do not perform safety checks
 
 =head1 migra- subcommands:
+
+=head2 init
+
+Initializes the migrations
+
+=head2 start
+
+Starts the migrations. Options:
+
+    --init run initialization before migrating
+    --force do not perform safety checks
+
+=head2 fix
+
+Removes the error from last migration. Use *ONLY* when the issue is really fixed
 
 =cut

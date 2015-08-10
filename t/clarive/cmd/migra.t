@@ -85,6 +85,13 @@ subtest 'run: runs migrations' => sub {
       };
 };
 
+subtest 'run: runs migrations when init and not initialized' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--init' => 1);
+};
+
 subtest 'run: runs migrations when forced and system not initialized' => sub {
     _setup( no_system_init => 1 );
 
