@@ -15,13 +15,17 @@ use Clarive::Cmd::web;
 subtest 'run_start: throws when initialization is needed' => sub {
     _setup(no_system_init => 1);
 
-    like exception { _build_cmd() }, qr/System is not initialized/;
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run_start }, qr/System is not initialized/;
 };
 
 subtest 'run_start: throws when migrations are needed' => sub {
     _setup();
 
-    like exception { _build_cmd() }, qr/Migrations are not up to date/;
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run_start }, qr/Migrations are not up to date/;
 };
 
 sub _setup {

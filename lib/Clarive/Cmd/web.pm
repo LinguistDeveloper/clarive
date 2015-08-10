@@ -54,10 +54,6 @@ sub BUILD {
     }
 
     $self->setup_baseliner;
-    
-    $self->check_initialized;
-
-    $self->check_migrations;
 }
 
 sub setup_vars {
@@ -85,6 +81,10 @@ sub run {
 
 sub run_start {
     my ($self, %opts)=@_; 
+
+    $self->check_initialized;
+
+    $self->check_migrations;
     
     $self->check_pid_exists();
 
