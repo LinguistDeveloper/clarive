@@ -55,7 +55,7 @@
             cell_color = hcolor[first_mid];
         }
 
-        meta.style = cell_color!=undefined 
+        meta.style += cell_color!=undefined 
                 ? 'line-height:20px; color: #fff; background-color: '+ cell_color
                 : 'line-height:20px; color: #fff'; 
         return cell_text; 
