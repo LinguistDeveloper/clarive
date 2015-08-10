@@ -18,7 +18,7 @@ sub run {
 
     my $clarive = mdb->clarive->find_one();
 
-    if ( !$clarive || ( !%$clarive && !$clarive->{initialized} ) ) {
+    if (!$self->check) {
         local *Baseliner::config = \&Clarive::config;
 
         if ( !ci->user->find_one( { name => 'root' } ) ) {
@@ -38,6 +38,16 @@ sub run {
     else {
         die 'ERROR: System is already initialized';
     }
+}
+
+sub check {
+    my $self = shift;
+
+    my $clarive = mdb->clarive->find_one();
+
+    return 0 unless $clarive && %$clarive && $clarive->{initialized};
+
+    return 1;
 }
 
 1;

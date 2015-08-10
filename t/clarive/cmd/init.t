@@ -58,6 +58,24 @@ subtest 'does nothing if root user exists' => sub {
     is scalar @user, 1;
 };
 
+subtest 'check: returns true if initialized' => sub {
+    _setup();
+
+    _build_cmd()->run;
+
+    my $cmd = _build_cmd();
+
+    ok $cmd->check;
+};
+
+subtest 'check: returns false if not initialized' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    ok !$cmd->check;
+};
+
 sub _setup {
     mdb->clarive->drop;
 
