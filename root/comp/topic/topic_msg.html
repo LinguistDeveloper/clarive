@@ -4,6 +4,7 @@
     $topic_meta
     $topic_data
     $permissionJobs => 0
+    $permissionDashboard => 1
     $has_comments
     $HTMLbuttons => 0
     $permissionEdit => 0
@@ -11,6 +12,7 @@
     $permissionComment => 0
     $permissionActivity => 0
     $user_security
+    $dashboard => ''
 </%args>
 <%perl>
     use Baseliner::Utils;
@@ -195,6 +197,11 @@ if (imagen.width()>600) { captura.show(); }
         <li <% $tabactive[2] and 'class="active"' %> <%  $permissionJobs? '' : ' style="display: none" ' %>>
             <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
+% if( length $dashboard ) {    
+        <li <% $tabactive[2] and 'class="active"' %> <%  $permissionDashboard? '' : ' style="display: none" ' %>>
+            <a href="#dash<% $ii %>" id="tab-dash<% $ii %>" data-toggle="tab"><% _loc('Dashboard') %></a>
+        </li>
+% } 
 % if( @more ) {    
         <li <% $tabactive[3] and 'class="active"' %>>
             <a href="#more<% $ii %>" id="tab-more<% $ii %>" data-toggle="tab"><% _loc('More info') %></a>
@@ -219,6 +226,10 @@ if (imagen.width()>600) { captura.show(); }
                 <div id="topic-jobs<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
             </div> <!-- jobs tab -->
 
+            <div class="tab-pane <% $tabactive[2] and 'active' %>" id="dash<% $ii %>">
+                <div id="topic-dash<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
+            </div> <!-- dash tab -->
+
             <div class="tab-pane <% $tabactive[3] and 'active' %>" id="more<% $ii %>">
                 <div id="topic-more<% $ii %>">
 % if( @more ) {
@@ -236,7 +247,7 @@ if (imagen.width()>600) { captura.show(); }
 % } 
 
                 </div>
-            </div> <!-- jobs tab -->
+            </div> <!-- more tab -->
 
             <div class="tab-pane <% $tabactive[4] and 'active' %>" id="timeline<% $ii %>">
                 <div id="topic-timeline<% $ii %>" style="border: 1px solid #aaa"></div>
@@ -269,6 +280,14 @@ if (imagen.width()>600) { captura.show(); }
                                 parent_id: ii,
                                 link: <% $permissionJobs %>
                             });
+                        } else if( target_id == "tab-dash"+ii && topic_mid != '' ) {
+                            var dashboard_id = '<% $dashboard %>'; 
+                            if( dashboard_id.length > 0 ) {
+                                var dash_id = "topic-dash"+ii;
+                                $('#'+dash_id).html('');
+                                var dashboard = new Cla.Dashboard({ title: undefined, dashboard_id: dashboard_id, topic_mid: topic_mid });
+                                dashboard.render( dash_id );
+                            }
                         } else if( target_id == "tab-more"+ii && topic_mid != '' ) {
 
                             document.getElementById("topic-more<% $ii %>").innerHTML = more_html ;
@@ -276,7 +295,6 @@ if (imagen.width()>600) { captura.show(); }
                     };
                     //$("#timeline<% $ii %> a").click(function(){
                     var curr_tab = <% $tabactive[0] ? 'true' : 'false' %> ? 'comments' : <% $tabactive[1] ? 'true' : 'false' %> ? 'activity' : 'jobs';
-                    console.log(curr_tab);
                     Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', 'tab-'+curr_tab+'<% $ii %>' );
                     $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (ev) {
                         Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', ev.target.id );

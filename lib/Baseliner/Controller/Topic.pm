@@ -530,6 +530,7 @@ sub view : Local {
             
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
             
+            $c->stash->{dashboard} = $category->{dashboard};
             if ( $category->{is_changeset} ) {
                 if ( !$topic_doc->{category_status}->{bind_releases} ) {
                     my ($id_project) = map {$_->{mid}} $topic_ci->projects;
@@ -618,6 +619,7 @@ sub view : Local {
             $c->stash->{category_meta} = $category->{forms};
             $c->stash->{category_name} = $category->{name};
             $c->stash->{category_color} = $category->{color};
+            $c->stash->{dashboard} = $category->{dashboard};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
 
@@ -946,6 +948,7 @@ sub list_category : Local {
                     description   => $category->{description},
                     default_grid  => $category->{default_grid},
                     default_form  => $category->{default_form} // $category->{default_field}, ## FIXME default_field is legacy
+                    dashboard     => $category->{dashboard},
                     statuses      => \@statuses,
                     fields        => \@fieldlets,
                     #priorities    => \@priorities

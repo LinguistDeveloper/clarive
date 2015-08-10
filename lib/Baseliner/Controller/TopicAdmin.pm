@@ -75,6 +75,7 @@ sub update_category : Local {
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
                         default_form => $p->{default_form} // $p->{default_field}, ## FIXME default_field is legacy
+                        dashboard    => $p->{dashboard},
                     };
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
@@ -102,7 +103,8 @@ sub update_category : Local {
                         color         => $p->{category_color},
                         description   => $p->{description},
                         default_grid  => $p->{default_grid},
-                        default_field => $p->{default_field},
+                        default_form => $p->{default_form},
+                        dashboard    => $p->{dashboard},
                         ( $idsstatus ? (statuses=>$idsstatus) : () ),
                         %$iss
                     }

@@ -345,13 +345,13 @@
 
         var combo_grid = Cla.ci_box({ name:'default_grid', isa:'report', fieldLabel:_('Default Grid'), value: rec ? rec.data.default_grid : '' });
 
-        var store_fields = new Baseliner.JsonStore({
+        // default form for Topic
+        var store_form = new Baseliner.JsonStore({
             url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
             fields:['id','rule_name'],
             baseParams: Ext.apply({ rule_type: 'form' }),
         });
-
-        var combo_fields =new Baseliner.SuperBox({ 
+        var combo_form =new Baseliner.SuperBox({ 
             name: 'default_form',
             id: 'default_form',
             hiddenName: 'default_form',
@@ -360,11 +360,14 @@
             displayField: 'rule_name',
             value: rec ? rec.data.default_form : '',
             singleMode: true, 
-            store: store_fields,
+            store: store_form,
             forceSelection: true,
         });
+        store_form.load();
 
-        store_fields.load();
+        // Topic dashboards
+        var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Dashboard'), name:'dashboard', singleMode: true, 
+                   allowBlank: true, baseParams: { username: true }, value: rec.data.dashboard });
 
         var ta = new Ext.form.TextArea({
             name: 'description',
@@ -442,7 +445,7 @@
                 },
                 color_button,
                 { xtype: 'panel', style: { 'margin-top': '20px' }, defaults:{ anchor:'100%' }, layout: 'form', 
-                    items: [ combo_grid, combo_fields, combo_providers ] },
+                    items: [ combo_grid, combo_form, dashboard, combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
                         { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
