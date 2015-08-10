@@ -34,6 +34,20 @@ subtest 'creates entry' => sub {
     ok $entry && %$entry;
 };
 
+subtest 'does not create entry when exists' => sub {
+    _setup();
+
+    mdb->clarive->insert({foo => 'bar'});
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my @entries = mdb->clarive->find->all;
+
+    is scalar @entries, 1;
+};
+
 subtest 'creates root user' => sub {
     _setup();
 

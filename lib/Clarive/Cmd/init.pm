@@ -19,7 +19,7 @@ sub run {
 
     my $clarive = mdb->clarive->find_one();
 
-    if (!$self->check) {
+    if ( !$self->check ) {
         local *Baseliner::config = \&Clarive::config;
 
         if ( !ci->user->find_one( { name => 'root' } ) ) {
@@ -29,12 +29,17 @@ sub run {
                     username         => 'root',
                     project_security => {},
                     realname         => 'Root User',
-                    password         => _md5( _md5( _md5 ) ),
+                    password         => _md5( _md5(_md5) ),
                 }
             )->save;
         }
 
-        mdb->clarive->insert( { initialized => true } );
+        if ($clarive) {
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { initialized => true } } );
+        }
+        else {
+            mdb->clarive->insert( { initialized => true } );
+        }
 
         Clarive::Cmd::migra->new( app => $self->app, env => $self->env, opts => {} )
           ->run_init( args => { yes => 1, quiet => 1 } );
