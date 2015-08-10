@@ -10,6 +10,7 @@ with 'Clarive::Role::Baseliner';
 use boolean;
 use Clarive::mdb;
 use Clarive::ci;
+use Clarive::Cmd::migra;
 use Baseliner::Utils qw(_md5);
 
 sub run {
@@ -18,7 +19,7 @@ sub run {
 
     my $clarive = mdb->clarive->find_one();
 
-    if ( !$clarive || ( !%$clarive && !$clarive->{initialized} ) ) {
+    if ( !$self->check ) {
         local *Baseliner::config = \&Clarive::config;
 
         if ( !ci->user->find_one( { name => 'root' } ) ) {
@@ -28,16 +29,36 @@ sub run {
                     username         => 'root',
                     project_security => {},
                     realname         => 'Root User',
-                    password         => _md5( _md5( _md5 ) ),
+                    password         => _md5( _md5(_md5) ),
                 }
             )->save;
         }
 
-        mdb->clarive->insert( { initialized => true } );
+        my %defaults = ( initialized => true );
+
+        if ($clarive) {
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => {%defaults} } );
+        }
+        else {
+            mdb->clarive->insert( {%defaults} );
+        }
+
+        Clarive::Cmd::migra->new( app => $self->app, env => $self->env, opts => {} )
+          ->run_init( args => { yes => 1, quiet => 1 } );
     }
     else {
         die 'ERROR: System is already initialized';
     }
+}
+
+sub check {
+    my $self = shift;
+
+    my $clarive = mdb->clarive->find_one();
+
+    return 0 unless $clarive && %$clarive && $clarive->{initialized};
+
+    return 1;
 }
 
 1;

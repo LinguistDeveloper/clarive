@@ -16,6 +16,8 @@ has instance_name => qw(is rw);
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
+with 'Clarive::Role::CheckInitialized';
+with 'Clarive::Role::CheckMigrations';
 
 sub BUILD {
     my $self = shift;
@@ -23,6 +25,9 @@ sub BUILD {
     $self->instance_name( 'cla-disp-'. $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
+
+    $self->check_initialized;
+    $self->check_migrations;
     
     $ENV{CLARIVE_DISPATCHER_ID} = $self->id;
 }

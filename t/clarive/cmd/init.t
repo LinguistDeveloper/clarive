@@ -34,6 +34,20 @@ subtest 'creates entry' => sub {
     ok $entry && %$entry;
 };
 
+subtest 'does not create entry when exists' => sub {
+    _setup();
+
+    mdb->clarive->insert({foo => 'bar'});
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my @entries = mdb->clarive->find->all;
+
+    is scalar @entries, 1;
+};
+
 subtest 'creates root user' => sub {
     _setup();
 
@@ -56,6 +70,24 @@ subtest 'does nothing if root user exists' => sub {
     my @user = ci->user->search_cis;
 
     is scalar @user, 1;
+};
+
+subtest 'check: returns true if initialized' => sub {
+    _setup();
+
+    _build_cmd()->run;
+
+    my $cmd = _build_cmd();
+
+    ok $cmd->check;
+};
+
+subtest 'check: returns false if not initialized' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    ok !$cmd->check;
 };
 
 sub _setup {

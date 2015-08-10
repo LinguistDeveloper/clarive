@@ -29,6 +29,8 @@ has [qw(backlog min_servers min_spare_servers max_spare_servers max_servers)] =>
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
+with 'Clarive::Role::CheckInitialized';
+with 'Clarive::Role::CheckMigrations';
 
 sub BUILD {
     my $self = shift;
@@ -53,6 +55,9 @@ sub BUILD {
 
     $self->setup_baseliner;
     
+    $self->check_initialized;
+
+    $self->check_migrations;
 }
 
 sub setup_vars {
