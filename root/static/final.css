@@ -1,5 +1,10 @@
 /* Last css to be executed by Baseliner */
 
+/* fullcalendar font, otherwise it uses body font and ajusts */
+.fc, .fc-event, .fc table {
+    font: normal 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 #boot .topictag {
     font-size: 9px;
     font-family: Arial, Helvetica;
