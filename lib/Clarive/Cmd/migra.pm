@@ -10,6 +10,7 @@ with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Baseliner';
 
 use Try::Tiny;
+use Capture::Tiny qw(capture);
 use Clarive::mdb;
 use Class::Load qw(load_class);
 
@@ -130,7 +131,9 @@ sub _upgrade {
         try {
             my ( $package, $code ) = $self->_compile_migration_from_file($file);
 
-            $package->new->upgrade;
+            capture {
+                $package->new->upgrade;
+            };
 
             mdb->clarive->update(
                 { _id => $clarive->{_id} },
@@ -181,7 +184,9 @@ sub _downgrade {
 
             my $package = $self->_compile_migration($code);
 
-            $package->new->downgrade;
+            capture {
+                $package->new->downgrade;
+            };
 
             my $prev_version =
               $i + 1 < @downgrade_migrations ? $downgrade_migrations[ $i + 1 ] : $newest_local_migration->{version};
@@ -322,7 +327,9 @@ sub _compile_migration_from_file {
 
     my ($package) = $code =~ m/^\s*package\s*(.*?);/ms;
 
-    require $path;
+    capture {
+        require $path;
+    };
 
     return ( $package, $code );
 }
@@ -333,7 +340,7 @@ sub _compile_migration {
 
     my ($package) = $code =~ m/^\s*package\s*(.*?);/ms;
 
-    eval $code;
+    eval $code or die $@;
 
     return $package;
 }

@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-no warnings 'redefine';
 use lib 't/lib';
 
 use Test::More;
@@ -204,12 +203,12 @@ subtest 'run: runs downgrade migrations' => sub {
                         {
                             version => '0103',
                             name    => 'baz',
-                            code    => "package Baz; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='baz'}"
+                            code    => "package Baz; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='baz'};1"
                         },
                         {
                             version => '0104',
                             name    => 'qux',
-                            code    => "package Qux; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='qux'}"
+                            code    => "package Qux; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='qux'};1"
                         },
                     ]
                 }
