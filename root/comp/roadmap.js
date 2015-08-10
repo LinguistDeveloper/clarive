@@ -49,8 +49,8 @@
                 if( !hcolor[topic.mid] ) hcolor[topic.mid] = '#'+all_colors[ color_index++ ];
                 if( color_index >= 64 ) color_index = 0;
                 cell_text += String.format(
-                        '<div class="roadmap-cell-div" style="padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}"><b>{4}#{0}</b> {1}</div>', 
-                        topic.mid, topic.title, '#fff', hcolor[topic.mid], acronym );
+                        '<div class="roadmap-cell-div" onclick="javascript:Cla.show_topic_colored(\'{0}\',\'{5}\',\'{6}\');return false;" style="cursor: pointer; padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}" mid="{0}"><b>{4}#{0}</b> {1}</div>', 
+                        topic.mid, topic.title, '#fff', hcolor[topic.mid], acronym, topic.category.name, topic.category.color );
             }
             cell_color = hcolor[first_mid];
         }
