@@ -40,7 +40,7 @@ subtest 'run_init: does nothing when dry run' => sub {
 
     my $cmd = _build_cmd();
 
-    $cmd->run_init(args => {yes => 1, 'dry-run' => 1});
+    $cmd->run_init( args => { yes => 1, 'dry-run' => 1 } );
 
     my $clarive = mdb->clarive->find_one;
 
@@ -131,7 +131,7 @@ subtest 'run_fix: does nothing when user says no' => sub {
     ok $clarive->{migration}->{error};
 };
 
-subtest 'run: runs migrations' => sub {
+subtest 'run: runs upgrade migrations' => sub {
     _setup();
 
     my $cmd = _build_cmd();
@@ -142,8 +142,114 @@ subtest 'run: runs migrations' => sub {
     cmp_deeply $clarive->{migration},
       {
         version => '0102',
+        patches => [
+            { version => '0101', name => 'foo', code => re(qr/package .*?_foo/) },
+            { version => '0102', name => 'bar', code => re(qr/package .*?_bar/) }
+        ]
+      };
+};
+
+subtest 'run: sets error when patch does not have code' => sub {
+    _setup();
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update(
+        { _id => $clarive->{_id} },
+        {
+            '$set' => {
+                migration => {
+                    version => '0103',
+                    patches => [
+                        { version => '0101', name => 'foo' },
+                        { version => '0102', name => 'bar' },
+                        { version => '0103', name => 'baz' }
+                    ]
+                }
+            }
+        }
+    );
+
+    my $cmd = _build_cmd();
+    $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } );
+
+    $clarive = mdb->clarive->find_one();
+
+    cmp_deeply $clarive->{migration},
+      {
+        version => '0103',
+        error   => re(qr/No code found in patch/),
+        patches => [
+            { version => '0101', name => 'foo' },
+            { version => '0102', name => 'bar' },
+            { version => '0103', name => 'baz' }
+        ]
+      };
+};
+
+subtest 'run: runs downgrade migrations' => sub {
+    _setup();
+
+    local $ENV{TEST_MIGRA} = '';
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update(
+        { _id => $clarive->{_id} },
+        {
+            '$set' => {
+                migration => {
+                    version => '0104',
+                    patches => [
+                        { version => '0101', name => 'foo' },
+                        { version => '0102', name => 'bar' },
+                        {
+                            version => '0103',
+                            name    => 'baz',
+                            code    => "package Baz; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='baz'}"
+                        },
+                        {
+                            version => '0104',
+                            name    => 'qux',
+                            code    => "package Qux; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='qux'}"
+                        },
+                    ]
+                }
+            }
+        }
+    );
+
+    my $cmd = _build_cmd();
+    $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } );
+
+    $clarive = mdb->clarive->find_one();
+
+    is $ENV{TEST_MIGRA}, 'quxbaz';
+    cmp_deeply $clarive->{migration},
+      {
+        version => '0102',
         patches => [ { version => '0101', name => 'foo' }, { version => '0102', name => 'bar' } ]
       };
+};
+
+subtest 'run: throws when downgrade is needed but patches are missing' => sub {
+    _setup();
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update(
+        { _id => $clarive->{_id} },
+        {
+            '$set' => {
+                migration => {
+                    version => '0104',
+                    patches => []
+                }
+            }
+        }
+    );
+
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } ) },
+      qr/Downgrade is needed, but no patches were found/;
 };
 
 subtest 'run: does nothing when user says no' => sub {

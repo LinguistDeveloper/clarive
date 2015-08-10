@@ -3,7 +3,8 @@ package Clarive::Cmd::migra;
 use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
-our $CAPTION = 'Run migrations';
+our $CAPTION         = 'Run migrations';
+our $DEFAULT_VERSION = '0100';
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Baseliner';
@@ -12,9 +13,9 @@ use Try::Tiny;
 use Clarive::mdb;
 use Class::Load qw(load_class);
 
-sub run { &run_upgrade }
+sub run { &run_start }
 
-sub run_upgrade {
+sub run_start {
     my $self = shift;
     my (%opts) = @_;
 
@@ -34,56 +35,135 @@ sub run_upgrade {
 
     my $migrations_path = $opts{args}->{path} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
 
-    opendir( my $dh, $migrations_path ) || die "ERROR: Can't opendir $migrations_path $!";
-    my @migrations = sort grep { /^\d+_.*?\.pm/ && -f "$migrations_path/$_" } readdir($dh);
+    opendir( my $dh, $migrations_path ) || die "ERROR: Can't opendir '$migrations_path': $!";
+    my @migrations;
+    foreach my $file ( sort readdir($dh) ) {
+        next unless -f "$migrations_path/$file" && $file =~ /^(\d+)_(.*?)\.pm/;
+
+        push @migrations,
+          {
+            version => $1,
+            name    => $2,
+            file    => "$migrations_path/$file"
+          };
+    }
     closedir $dh;
 
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Run migrations on database?' );
     return unless $yes;
 
-    my $count = 0;
-    foreach my $migration (@migrations) {
-        my ( $version, $name ) = $migration =~ m/^(\d+)_(.*?)\.pm/;
-        next unless $version && $name;
+    my $current_version = $clarive->{migration}->{version} || $DEFAULT_VERSION;
 
-        next unless ( $clarive->{migration}->{version} || '' ) lt $version;
+    my $newest_local_migration = $migrations[-1];
+    if ( $newest_local_migration->{version} gt $current_version ) {
+        my @upgrade_migrations = grep { $_->{version} gt $current_version } @migrations;
+
+        $self->_upgrade( $clarive, \@upgrade_migrations, %opts );
+    }
+    elsif ( $newest_local_migration->{version} lt $current_version ) {
+        $self->_downgrade( $clarive, $newest_local_migration, %opts );
+    }
+    else {
+        $self->_say( 'Nothing to migrate', %opts );
+        return 1;
+    }
+
+    $self->_say( 'OK', %opts );
+
+    return 1;
+}
+
+sub _upgrade {
+    my $self = shift;
+    my ( $clarive, $migrations, %opts ) = @_;
+
+    foreach my $migration (@$migrations) {
+        my $version = $migration->{version};
+        my $name    = $migration->{name};
+        my $file    = $migration->{file};
 
         $self->_say( "Upgrading to '$version-$name'", %opts );
 
-        if ( !$self->_is_dry_run(%opts) ) {
-            my $error;
-            try {
-                my ( $package, $code ) = $self->_compile_migration("$migrations_path/$migration");
+        next if $self->_is_dry_run(%opts);
 
-                $package->new->upgrade;
+        my $error;
+        try {
+            my ( $package, $code ) = $self->_compile_migration_from_file($file);
 
-                mdb->clarive->update(
-                    { _id => $clarive->{_id} },
-                    {
-                        '$set'  => { 'migration.version' => $version },
-                        '$push' => { 'migration.patches' => { version => $version, name => $name } }
-                    }
-                );
-            }
-            catch {
-                $error = shift;
+            $package->new->upgrade;
 
-                mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
-
-                print "ERROR: $error\n. Exiting";
-            };
-
-            last if $error;
+            mdb->clarive->update(
+                { _id => $clarive->{_id} },
+                {
+                    '$set'  => { 'migration.version' => $version },
+                    '$push' => { 'migration.patches' => { version => $version, name => $name, code => $code } }
+                }
+            );
         }
+        catch {
+            $error = shift;
 
-        $count++;
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
+
+            print "ERROR: $error\n. Exiting";
+        };
+
+        last if $error;
+    }
+}
+
+sub _downgrade {
+    my $self = shift;
+    my ( $clarive, $newest_local_migration, %opts ) = @_;
+
+    my @downgrade_migrations =
+      reverse grep { $_->{version} gt $newest_local_migration->{version} } @{ $clarive->{migration}->{patches} };
+
+    if (!@downgrade_migrations) {
+        die 'Downgrade is needed, but no patches were found';
     }
 
-    $self->_say( 'Nothing to migrate', %opts ) unless $count;
+    for ( my $i = 0 ; $i < @downgrade_migrations ; $i++ ) {
+        my $migration = $downgrade_migrations[$i];
 
-    $self->_say( 'OK', %opts ) if $count;
+        my $version = $migration->{version};
+        my $name    = $migration->{name};
+        my $file    = $migration->{file};
 
-    return 1;
+        $self->_say( "Downgrading to '$version-$name'", %opts );
+
+        next if $self->_is_dry_run(%opts);
+
+        my $error;
+        try {
+            my $code = $migration->{code};
+            die "No code found in patch '$migration->{version} $migration->{name}'" unless $code;
+
+            my $package = $self->_compile_migration($code);
+
+            $package->new->downgrade;
+
+            my $prev_version =
+              $i + 1 < @downgrade_migrations ? $downgrade_migrations[ $i + 1 ] : $newest_local_migration->{version};
+
+            mdb->clarive->update(
+                { _id => $clarive->{_id} },
+                {
+                    '$set' => { 'migration.version' => $prev_version },
+                    '$pop' => { 'migration.patches' => 1 }
+                }
+            );
+        }
+        catch {
+            $error = shift;
+
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
+
+            print "ERROR: $error\n. Exiting";
+        };
+
+        last if $error;
+    }
 }
 
 sub run_init {
@@ -104,7 +184,8 @@ sub run_init {
     return unless $yes;
 
     if ( !$self->_is_dry_run(%opts) ) {
-        mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { migration => { version => '0100' } } } );
+        mdb->clarive->update( { _id => $clarive->{_id} },
+            { '$set' => { migration => { version => $DEFAULT_VERSION } } } );
     }
 
     return 1;
@@ -193,16 +274,28 @@ sub _ask_me {
     return 1;
 }
 
-sub _compile_migration {
+sub _compile_migration_from_file {
     my $self = shift;
     my ($path) = @_;
 
     my $code = do { local $/; open my $fh, '<', $path or die $!; <$fh> };
+
     my ($package) = $code =~ m/^\s*package\s*(.*?);/ms;
 
     require $path;
 
     return ( $package, $code );
+}
+
+sub _compile_migration {
+    my $self = shift;
+    my ($code) = @_;
+
+    my ($package) = $code =~ m/^\s*package\s*(.*?);/ms;
+
+    eval $code;
+
+    return $package;
 }
 
 sub _load_collection {
@@ -237,7 +330,7 @@ Common options:
 
 Initializes the migrations
 
-=head2 upgrade
+=head2 start
 
 Upgrade the migrations. Options:
 
