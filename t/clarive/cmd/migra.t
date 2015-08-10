@@ -188,6 +188,46 @@ subtest 'run: stops on first runtime error' => sub {
     cmp_deeply $clarive->{migration}, { version => '0101', error => re(qr/runtime error/), patches => ignore() };
 };
 
+subtest 'run_set: throws when no version passed' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run_set }, qr/--version is required/;
+};
+
+subtest 'run_set: throws when invalid version' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run_set( args => { version => 'abc' } ) }, qr/--version must be in format/;
+};
+
+subtest 'run_set: sets migration version' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    $cmd->run_set( args => { version => '666', yes => 1 } );
+
+    my $clarive = mdb->clarive->find_one();
+
+    is $clarive->{migration}->{version}, '0666';
+};
+
+subtest 'run_set: does nothing when user says no' => sub {
+    _setup();
+
+    my $cmd = _build_cmd( _ask_me => 0 );
+
+    $cmd->run_set( args => { version => '666' } );
+
+    my $clarive = mdb->clarive->find_one();
+
+    isnt $clarive->{migration}->{version}, '666';
+};
+
 sub _setup {
     my (%params) = @_;
 

@@ -12,9 +12,9 @@ use Try::Tiny;
 use Clarive::mdb;
 use Class::Load qw(load_class);
 
-sub run { &run_start }
+sub run { &run_upgrade }
 
-sub run_start {
+sub run_upgrade {
     my $self = shift;
     my (%opts) = @_;
 
@@ -114,6 +114,24 @@ sub run_fix {
     return 1;
 }
 
+sub run_set {
+    my $self = shift;
+    my (%opts) = @_;
+
+    die '--version is required' unless my $version = $opts{args}->{version};
+    die '--version must be in format \d{1,4}' unless $version =~ m/^\d{1,4}$/;
+    $version = sprintf '%04d', $version;
+
+    my $clarive = $self->_load_collection;
+
+    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => "Set migrations version to '$version'?" );
+    return unless $yes;
+
+    mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.version' => $version } } );
+
+    return 1;
+}
+
 sub _ask_me {
     my $self = shift;
     my (%p) = @_;
@@ -177,12 +195,16 @@ Common options:
 
 Initializes the migrations
 
-=head2 start
+=head2 upgrade
 
-Starts the migrations. Options:
+Upgrade the migrations. Options:
 
     --init run initialization before migrating
     --path path to migrations instead of default
+
+=head2 set
+
+Manually set the latest migrations version
 
 =head2 fix
 
