@@ -10,6 +10,7 @@ with 'Clarive::Role::Baseliner';
 use boolean;
 use Clarive::mdb;
 use Clarive::ci;
+use Clarive::Cmd::migra;
 use Baseliner::Utils qw(_md5);
 
 sub run {
@@ -34,6 +35,9 @@ sub run {
         }
 
         mdb->clarive->insert( { initialized => true } );
+
+        Clarive::Cmd::migra->new( app => $self->app, env => $self->env, opts => {} )
+          ->run_init( args => { yes => 1, quiet => 1 } );
     }
     else {
         die 'ERROR: System is already initialized';

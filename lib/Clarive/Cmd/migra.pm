@@ -30,21 +30,26 @@ sub run_start {
 
     my @migrations = $self->_load_migrations(%opts);
 
-    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Run migrations on database?' );
-    return unless $yes;
-
     my $current_version = $clarive->{migration}->{version} || $DEFAULT_VERSION;
     my $newest_local_migration = $migrations[-1];
 
     my $migration_direction = $self->_migration_direction( $current_version, $newest_local_migration );
 
-    if ( $migration_direction > 0 ) {
-        my @upgrade_migrations = grep { $_->{version} gt $current_version } @migrations;
+    if ($migration_direction) {
+        if ( $migration_direction > 0 ) {
+            my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Database needs un upgrade. Run migrations?' );
+            return unless $yes;
 
-        $self->_upgrade( $clarive, \@upgrade_migrations, %opts );
-    }
-    elsif ( $migration_direction < 0 ) {
-        $self->_downgrade( $clarive, $newest_local_migration, %opts );
+            my @upgrade_migrations = grep { $_->{version} gt $current_version } @migrations;
+
+            $self->_upgrade( $clarive, \@upgrade_migrations, %opts );
+        }
+        elsif ( $migration_direction < 0 ) {
+            my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Database needs a downgrade. Run migrations?' );
+            return unless $yes;
+
+            $self->_downgrade( $clarive, $newest_local_migration, %opts );
+        }
     }
     else {
         $self->_say( 'Nothing to migrate', %opts );
