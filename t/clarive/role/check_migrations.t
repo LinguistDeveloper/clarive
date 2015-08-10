@@ -10,13 +10,6 @@ TestEnv->setup;
 
 use boolean;
 use Clarive::mdb;
-use Clarive::Cmd::web;
-
-subtest 'run_start: throws when initialization is needed' => sub {
-    _setup(no_system_init => 1);
-
-    like exception { _build_cmd() }, qr/System is not initialized/;
-};
 
 subtest 'run_start: throws when migrations are needed' => sub {
     _setup();
@@ -35,7 +28,19 @@ sub _setup {
 sub _build_cmd {
     my (%params) = @_;
 
-    return Clarive::Cmd::web->new( app => $Clarive::app, opts => {} );
+    return TestCmd->new( app => $Clarive::app, opts => {} );
 }
 
 done_testing;
+
+package TestCmd;
+use Mouse;
+BEGIN { extends 'Clarive::Cmd' }
+
+BEGIN { with 'Clarive::Role::CheckMigrations' }
+
+sub BUILD {
+    my $self = shift;
+
+    $self->check_migrations;
+}

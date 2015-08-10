@@ -10,7 +10,7 @@ TestEnv->setup;
 
 use boolean;
 use Clarive::mdb;
-use Clarive::Cmd::web;
+use Clarive::Cmd::disp;
 
 subtest 'run_start: throws when initialization is needed' => sub {
     _setup(no_system_init => 1);
@@ -35,7 +35,7 @@ sub _setup {
 sub _build_cmd {
     my (%params) = @_;
 
-    return Clarive::Cmd::web->new( app => $Clarive::app, opts => {} );
+    return Clarive::Cmd::disp->new( app => $Clarive::app, opts => {} );
 }
 
 done_testing;

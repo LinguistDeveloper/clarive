@@ -29,6 +29,8 @@ has [qw(backlog min_servers min_spare_servers max_spare_servers max_servers)] =>
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
+with 'Clarive::Role::CheckInitialized';
+with 'Clarive::Role::CheckMigrations';
 
 sub BUILD {
     my $self = shift;
@@ -74,42 +76,6 @@ sub setup_vars {
         say 'log_file: ' . $self->log_file;
         $self->_log_zip( $self->log_file ); 
         $self->_cleanup_logs( $self->log_file ); 
-    }
-}
-
-sub check_initialized {
-    my $self = shift;
-
-    require Clarive::Cmd::init;
-    my $init = Clarive::Cmd::init->new(app => $self->app, env => $self->env, opts => {});
-
-    my $check = $init->check;
-
-    if (!$check) {
-        if ($self->opts->{args}->{init}) {
-            $init->run;
-        }
-        else {
-            die "ERROR: System is not initialized. Run with --init flag or use init command\n";
-        }
-    }
-}
-
-sub check_migrations {
-    my $self = shift;
-
-    require Clarive::Cmd::migra;
-    my $migra = Clarive::Cmd::migra->new(app => $self->app, env => $self->env, opts => {});
-
-    my $check = $migra->check;
-
-    if ($check) {
-        if ($self->opts->{args}->{migrate}) {
-            $migra->run;
-        }
-        else {
-            die "ERROR: Migrations are not up to date. Run with --migrate flag or use migra- commands\n";
-        }
     }
 }
 
