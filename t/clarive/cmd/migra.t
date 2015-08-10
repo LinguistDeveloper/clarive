@@ -14,20 +14,20 @@ use boolean;
 use Clarive::mdb;
 use Clarive::Cmd::migra;
 
-subtest 'run: throws when not initialized' => sub {
-    _setup( no_init => 1 );
-
-    my $cmd = _build_cmd();
-
-    like exception { $cmd->run }, qr/not initialized/;
-};
-
 subtest 'run_init: throws when system not initialized' => sub {
     _setup( no_system_init => 1 );
 
     my $cmd = _build_cmd();
 
     like exception { $cmd->run_init }, qr/System not initialized/;
+};
+
+subtest 'run: throws when not initialized' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run }, qr/not initialized/;
 };
 
 subtest 'run_init: creates db entry' => sub {
@@ -83,6 +83,20 @@ subtest 'run: runs migrations' => sub {
         version => '0102',
         patches => [ { version => '0101', name => 'foo' }, { version => '0102', name => 'bar' } ]
       };
+};
+
+subtest 'run: runs migrations when forced and system not initialized' => sub {
+    _setup( no_system_init => 1 );
+
+    my $cmd = _build_cmd();
+    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--force' => 1);
+};
+
+subtest 'run: runs migrations when forced and migrations not initialized' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--force' => 1);
 };
 
 subtest 'run: stops on first syntax error' => sub {

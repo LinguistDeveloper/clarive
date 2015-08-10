@@ -1,6 +1,4 @@
 package Clarive::Cmd::migra;
-    use Data::Dumper;
-    warn Dumper( \@migrations );
 
 use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
@@ -18,7 +16,7 @@ sub run {
     my $self = shift;
     my (%opts) = @_;
 
-    my $clarive = $self->_load_collection;
+    my $clarive = $self->_load_collection( $opts{'--force'} ? ( no_migration_ok => 1, no_init_ok => 1 ) : () );
 
     die 'ERROR: It seems that the last migration did not succeed. '
       . 'Fix the issue and run migra-fix. Error is: `'
@@ -35,7 +33,7 @@ sub run {
         my ( $version, $name ) = $migration =~ m/^(\d+)_(.*?)\.pm/;
         next unless $version && $name;
 
-        next unless $clarive->{migration}->{version} lt $version;
+        next unless ( $clarive->{migration}->{version} || '' ) lt $version;
 
         my $error;
         try {
@@ -59,6 +57,8 @@ sub run {
 
         last if $error;
     }
+
+    return 1;
 }
 
 sub run_init {
@@ -97,7 +97,7 @@ sub _load_collection {
 
     my $clarive = mdb->clarive->find_one;
 
-    die 'ERROR: System not initialized' unless $clarive;
+    die 'ERROR: System not initialized' unless $params{no_init_ok} || $clarive;
     die 'ERROR: Migrations are not initialized. Run migra-init first'
       unless $params{no_migration_ok} || $clarive->{migration};
 
@@ -112,6 +112,7 @@ __END__
 Common options:
 
     --env <environment>
+    --force do not perform safety checks
 
 =head1 migra- subcommands:
 
