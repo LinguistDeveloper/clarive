@@ -395,6 +395,8 @@ Upgrade the migrations. Options:
 
 Manually set the latest migrations version
 
+    --version the version to be set
+
 =head2 fix
 
 Removes the error from last migration. Use *ONLY* when the issue is really fixed
