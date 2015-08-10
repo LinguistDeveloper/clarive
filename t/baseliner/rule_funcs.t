@@ -85,7 +85,8 @@ subtest 'launch' => sub {
     my $config = {};
     my $stash  = {};
 
-    Baseliner::Core::Registry->add( 'TestService', 'service.scripting.local', { foo => 'bar' } );
+    Baseliner::Core::Registry->add_class( undef, 'service'  => 'TestService' );
+    Baseliner::Core::Registry->add( 'main', 'service.scripting.local', { foo => 'bar' } );
 
     my $rv = launch( 'service.scripting.local', 'some task', $stash, $config, '' );
 

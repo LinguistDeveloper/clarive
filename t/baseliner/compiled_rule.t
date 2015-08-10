@@ -9,6 +9,8 @@ use TestEnv;
 TestEnv->setup;
 
 use Baseliner::Role::CI;
+use Baseliner::Core::Registry;
+use BaselinerX::Type::Statement;
 
 use_ok 'Baseliner::CompiledRule';
 
@@ -24,9 +26,9 @@ subtest 'returns default values' => sub {
 };
 
 subtest 'compiles rule' => sub {
-    setup_db();
+    _setup();
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     $cr->compile;
 
@@ -40,9 +42,9 @@ subtest 'compiles rule' => sub {
 };
 
 subtest 'builds package name' => sub {
-    setup_db();
+    _setup();
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     is $cr->package, 'Clarive::RULE_1';
 
@@ -50,9 +52,9 @@ subtest 'builds package name' => sub {
 };
 
 subtest 'runs rule' => sub {
-    setup_db();
+    _setup();
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     $cr->compile;
     $cr->run( stash => { job_step => 'RUN' } );
@@ -63,7 +65,7 @@ subtest 'runs rule' => sub {
 };
 
 subtest 'calls another rule' => sub {
-    setup_db();
+    _setup();
 
     my $code = 'return call(1, $stash);';
     mdb->rule->insert(
@@ -87,7 +89,7 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
         }
     );
 
-    my $cr = build_compiled_rule(id_rule => 2);
+    my $cr = _build_compiled_rule(id_rule => 2);
 
     $cr->compile;
     $cr->run( stash => { job_step => 'RUN' } );
@@ -96,13 +98,13 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
 
     $cr->unload;
 
-    build_compiled_rule(id_rule => 1)->unload;
+    _build_compiled_rule(id_rule => 1)->unload;
 };
 
 subtest 'catches compile errors' => sub {
-    setup_db( code => q{bareword} );
+    _setup( code => q{bareword} );
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     $cr->compile;
     $cr->run( stash => { job_step => 'RUN' } );
@@ -115,9 +117,9 @@ subtest 'catches compile errors' => sub {
 };
 
 subtest 'catches runtime errors' => sub {
-    setup_db( code => q{die 'here'} );
+    _setup( code => q{die 'here'} );
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     $cr->compile;
     $cr->run( stash => { job_step => 'RUN' } );
@@ -132,9 +134,9 @@ subtest 'catches runtime errors' => sub {
 };
 
 subtest 'unloads rule' => sub {
-    setup_db();
+    _setup();
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
 
     my $package = $cr->package;
 
@@ -156,9 +158,9 @@ subtest 'creates temp rule' => sub {
 };
 
 subtest 'unloads temp rule on DESTROY' => sub {
-    setup_db();
+    _setup();
 
-    my $cr = build_compiled_rule();
+    my $cr = _build_compiled_rule();
     $cr->is_temp_rule(1);
 
     $cr->compile;
@@ -170,8 +172,12 @@ subtest 'unloads temp rule on DESTROY' => sub {
     ok !$package->can('meta');
 };
 
-sub setup_db {
+sub _setup {
     my (%params) = @_;
+
+    Baseliner::Core::Registry->clear;
+
+    _register_statements();
 
     my $code = $params{code} || q%return 'hi there';%;
 
@@ -198,7 +204,38 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
     );
 }
 
-sub build_compiled_rule {
+sub _register_statements {
+    Baseliner::Core::Registry->add_class( undef, 'statement' => 'BaselinerX::Type::Statement' );
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'statement.step' => {
+            dsl => sub {
+                my ( $self, $n, %p ) = @_;
+                sprintf(
+                    q{
+            if( $stash->{job_step} eq q{%s} ) {
+                %s
+            }
+        }, $n->{text}, $self->dsl_build( $n->{children}, %p )
+                );
+            }
+        }
+    );
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'statement.perl.code' => {
+            data => { code => '' },
+            dsl  => sub {
+                my ( $self, $n, %p ) = @_;
+                sprintf( q{ %s; }, $n->{code} // '' );
+            },
+        }
+    );
+}
+
+sub _build_compiled_rule {
     return Baseliner::CompiledRule->new( id_rule => 1, @_ );
 }
 

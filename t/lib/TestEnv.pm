@@ -30,8 +30,8 @@ BEGIN {
     $Baseliner::_logger = sub { };
     $Baseliner::config  = sub { {} };
 
-    sub Clarive::config { {} }
-};
+    sub Clarive::config { { mongo => { dbname => 'acmetest' } } }
+}
 
 sub setup {
     require Clarive::App;

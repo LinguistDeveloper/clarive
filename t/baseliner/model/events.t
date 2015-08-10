@@ -11,6 +11,7 @@ use JSON ();
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
+use BaselinerX::Type::Statement;
 
 TestEnv->setup;
 
@@ -19,6 +20,8 @@ $Baseliner::_no_cache++;
 
 my $RE_ts = qr/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 my $RE_t  = qr/^\d+\.\d+$/;
+
+use BaselinerX::Type::Event;
 
 use_ok 'Baseliner::Model::Events';
 
@@ -67,7 +70,7 @@ subtest 'find_by_mid: returns empty array ref when event not registered' => sub 
 subtest 'find_by_mid: returns mapped event' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'TestEvent', 'event.topic.change_status', { vars => ['foo'] } );
+    Baseliner::Core::Registry->add( 'main', 'event.topic.change_status', { vars => ['foo'] } );
 
     my $events = _build_model();
 
@@ -76,7 +79,7 @@ subtest 'find_by_mid: returns mapped event' => sub {
     is_deeply $rv,
       [
         {
-            'text'     => '',
+            'text'     => 'Event event.topic.change_status occurred',
             'ts'       => '2015-04-02 15:48:54',
             'foo'      => 'bar',
             'username' => 'clarive'
@@ -130,7 +133,7 @@ subtest 'new_event: creates new activity' => sub {
 subtest 'new_event: creates log' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     my $events = _build_model();
 
@@ -151,7 +154,7 @@ subtest 'new_event: creates log' => sub {
 subtest 'new_event: runs pre rules' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     _register_statements();
 
@@ -171,7 +174,7 @@ subtest 'new_event: runs pre rules' => sub {
 subtest 'new_event: runs post rules' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     _register_statements();
 
@@ -199,9 +202,9 @@ subtest 'new_event: runs hooks' => sub {
 
     my $hooks = '';
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
     Baseliner::Core::Registry->add(
-        'BaselinerX::Type::Event',
+        'main',
         'event.job.new._hooks',
         {
             before => sub {
@@ -230,7 +233,7 @@ subtest 'new_event: runs hooks' => sub {
 subtest 'new_event: runs code block' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     my $events = _build_model();
 
@@ -243,7 +246,7 @@ subtest 'new_event: runs code block' => sub {
 subtest 'new_event: merges code block results into data' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     my $events = _build_model();
 
@@ -255,7 +258,7 @@ subtest 'new_event: merges code block results into data' => sub {
 subtest 'new_event: runs catch block on error' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     my $events = _build_model();
 
@@ -268,7 +271,7 @@ subtest 'new_event: runs catch block on error' => sub {
 subtest 'new_event: rethrows error if catch block not provided' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'main', 'event.job.new', {} );
 
     my $events = _build_model();
 
@@ -279,6 +282,8 @@ subtest 'new_event: rethrows error if catch block not provided' => sub {
 
 sub _setup {
     Baseliner::Core::Registry->clear;
+
+    Baseliner::Core::Registry->add_class(undef, 'event' => 'BaselinerX::Type::Event');
 
     mdb->rule->drop;
     mdb->event->drop;
@@ -303,8 +308,10 @@ sub _setup {
 }
 
 sub _register_statements {
+    Baseliner::Core::Registry->add_class( undef, 'statement' => 'BaselinerX::Type::Statement' );
+
     Baseliner::Core::Registry->add(
-        'Baseliner::Model::Rules',
+        'main',
         'statement.step' => {
             dsl => sub {
                 my ( $self, $n, %p ) = @_;
@@ -320,7 +327,7 @@ sub _register_statements {
     );
 
     Baseliner::Core::Registry->add(
-        'Baseliner::Model::Rules',
+        'main',
         'statement.perl.code' => {
             data => { code => '' },
             dsl  => sub {
@@ -394,20 +401,3 @@ sub _build_model {
 }
 
 done_testing;
-
-package TestEvent;
-
-sub new {
-    my $class = shift;
-
-    my $self = { %{ $_[0] } };
-    bless $self, $class;
-
-    return $self;
-}
-
-sub vars       { shift->{vars} }
-sub event_text { '' }
-sub level      { shift->{vars} }
-
-1;

@@ -12,6 +12,9 @@ TestEnv->setup;
 $Clarive::_no_cache++;
 $Baseliner::_no_cache++;
 
+use Baseliner::Role::CI;
+use BaselinerX::Type::Event;
+
 use_ok 'Baseliner::Model::Activity';
 
 subtest 'returns empty array ref when activity not found' => sub {
@@ -21,7 +24,7 @@ subtest 'returns empty array ref when activity not found' => sub {
 
     my $rv = $activity->find_by_mid(999);
 
-    is_deeply $rv, [ ];
+    is_deeply $rv, [];
 };
 
 subtest 'returns empty array ref when event not found in registry' => sub {
@@ -31,13 +34,13 @@ subtest 'returns empty array ref when event not found in registry' => sub {
 
     my $rv = $activity->find_by_mid(907);
 
-    is_deeply $rv, [ ];
+    is_deeply $rv, [];
 };
 
 subtest 'returns mapped activity' => sub {
     _setup();
 
-    Baseliner::Core::Registry->add( 'TestEvent', 'event.job.delete', { vars => ['jobname'] } );
+    Baseliner::Core::Registry->add( 'main', 'event.job.delete', { vars => ['jobname'] } );
 
     my $activity = _build_model();
 
@@ -46,7 +49,7 @@ subtest 'returns mapped activity' => sub {
     is_deeply $rv,
       [
         {
-            text     => '',
+            text     => 'Event event.job.delete occurred',
             ts       => '2014-10-15 11:30:32',
             jobname  => 'N.DESA-00000087',
             username => 'root'
@@ -56,6 +59,8 @@ subtest 'returns mapped activity' => sub {
 
 sub _setup {
     Baseliner::Core::Registry->clear;
+
+    Baseliner::Core::Registry->add_class( 'main', 'event' => 'BaselinerX::Type::Event' );
 
     mdb->activity->drop;
 
@@ -86,20 +91,5 @@ sub _build_model {
 }
 
 done_testing;
-
-package TestEvent;
-
-sub new {
-    my $class = shift;
-
-    my $self = { %{ $_[0] } };
-    bless $self, $class;
-
-    return $self;
-}
-
-sub vars       { shift->{vars} }
-sub event_text { '' }
-sub level      { shift->{vars} }
 
 1;

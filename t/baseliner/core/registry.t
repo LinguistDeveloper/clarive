@@ -24,7 +24,7 @@ subtest 'registers with dsl' => sub {
 subtest 'registers with method' => sub {
     _setup();
 
-    _registry()->add( 'TestRegistry', key => { foo => 'bar' } );
+    _registry()->add( 'main', key => { foo => 'bar' } );
 
     my $registry = _registry();
 
@@ -58,6 +58,8 @@ sub _registry {
 
 sub _setup {
     Baseliner::Core::Registry->clear;
+
+    Baseliner::Core::Registry->add_class(undef, 'key' => 'TestRegistry');
 }
 
 done_testing;
