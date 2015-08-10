@@ -465,12 +465,6 @@ if( Clarive->debug ) {
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
 
-# now check for migrations: --migrate
-if( $ENV{CLARIVE_MIGRATE_NOW} ) {
-    require Baseliner::Schema::Migrator;
-    Baseliner::Schema::Migrator->check( $ENV{CLARIVE_MIGRATE_NOW} );
-}
-
 # clear cache on restart
 if( Clarive->debug ) {
     cache->clear;  
