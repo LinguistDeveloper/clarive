@@ -26,12 +26,68 @@ sub run_start {
 
     my $clarive = $self->_load_collection( $opts{args}->{force} ? ( no_migration_ok => 1, no_init_ok => 1 ) : () );
 
-    die 'ERROR: It seems that the last migration did not succeed. '
-      . 'Fix the issue and run migra-fix. Error is: `'
-      . $clarive->{migration}->{error} . '`'
-      if $clarive->{migration}->{error};
-
     $self->_dry_run_banner(%opts);
+
+    my @migrations = $self->_load_migrations(%opts);
+
+    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Run migrations on database?' );
+    return unless $yes;
+
+    my $current_version = $clarive->{migration}->{version} || $DEFAULT_VERSION;
+    my $newest_local_migration = $migrations[-1];
+
+    my $migration_direction = $self->_migration_direction( $current_version, $newest_local_migration );
+
+    if ( $migration_direction > 0 ) {
+        my @upgrade_migrations = grep { $_->{version} gt $current_version } @migrations;
+
+        $self->_upgrade( $clarive, \@upgrade_migrations, %opts );
+    }
+    elsif ( $migration_direction < 0 ) {
+        $self->_downgrade( $clarive, $newest_local_migration, %opts );
+    }
+    else {
+        $self->_say( 'Nothing to migrate', %opts );
+        return 1;
+    }
+
+    $self->_say( 'OK', %opts );
+
+    return 1;
+}
+
+sub check {
+    my $self = shift;
+    my (%opts) = @_;
+
+    my $clarive = $self->_load_collection;
+
+    my @migrations = $self->_load_migrations(%opts);
+
+    my $current_version = $clarive->{migration}->{version} || $DEFAULT_VERSION;
+    my $newest_local_migration = $migrations[-1];
+
+    return $self->_migration_direction( $current_version, $newest_local_migration );
+}
+
+sub _migration_direction {
+    my $self = shift;
+    my ( $current_version, $newest_local ) = @_;
+
+    if ( $newest_local->{version} gt $current_version ) {
+        return 1;
+    }
+    elsif ( $newest_local->{version} lt $current_version ) {
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
+sub _load_migrations {
+    my $self = shift;
+    my (%opts) = @_;
 
     my $migrations_path = $opts{args}->{path} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
 
@@ -49,28 +105,7 @@ sub run_start {
     }
     closedir $dh;
 
-    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Run migrations on database?' );
-    return unless $yes;
-
-    my $current_version = $clarive->{migration}->{version} || $DEFAULT_VERSION;
-
-    my $newest_local_migration = $migrations[-1];
-    if ( $newest_local_migration->{version} gt $current_version ) {
-        my @upgrade_migrations = grep { $_->{version} gt $current_version } @migrations;
-
-        $self->_upgrade( $clarive, \@upgrade_migrations, %opts );
-    }
-    elsif ( $newest_local_migration->{version} lt $current_version ) {
-        $self->_downgrade( $clarive, $newest_local_migration, %opts );
-    }
-    else {
-        $self->_say( 'Nothing to migrate', %opts );
-        return 1;
-    }
-
-    $self->_say( 'OK', %opts );
-
-    return 1;
+    return @migrations;
 }
 
 sub _upgrade {
@@ -119,7 +154,7 @@ sub _downgrade {
     my @downgrade_migrations =
       reverse grep { $_->{version} gt $newest_local_migration->{version} } @{ $clarive->{migration}->{patches} };
 
-    if (!@downgrade_migrations) {
+    if ( !@downgrade_migrations ) {
         die 'Downgrade is needed, but no patches were found';
     }
 
@@ -195,7 +230,7 @@ sub run_fix {
     my $self = shift;
     my (%opts) = @_;
 
-    my $clarive = $self->_load_collection;
+    my $clarive = $self->_load_collection( error_ok => 1 );
 
     $self->_dry_run_banner(%opts);
 
@@ -307,6 +342,13 @@ sub _load_collection {
     die 'ERROR: System not initialized' unless $params{no_init_ok} || $clarive;
     die 'ERROR: Migrations are not initialized. Run migra-init first'
       unless $params{no_migration_ok} || $clarive->{migration};
+
+    unless ( $params{error_ok} ) {
+        die 'ERROR: It seems that the last migration did not succeed. '
+          . 'Fix the issue and run migra-fix. Error is: `'
+          . $clarive->{migration}->{error} . '`'
+          if $clarive->{migration}->{error};
+    }
 
     return $clarive;
 }

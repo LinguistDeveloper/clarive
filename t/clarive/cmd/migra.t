@@ -369,6 +369,74 @@ subtest 'run_set: does nothing when dry run' => sub {
     isnt $clarive->{migration}->{version}, '666';
 };
 
+subtest 'check: returns > 0 when upgrade needed' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    my $rv = $cmd->check( args => { path => 't/data/migrations/all_ok' } );
+
+    ok $rv > 0;
+};
+
+subtest 'check: returns < 0 when downgrade needed' => sub {
+    _setup();
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update(
+        { _id => $clarive->{_id} },
+        {
+            '$set' => {
+                migration => {
+                    version => '0104',
+                    patches => [
+                        { version => '0101', name => 'foo' },
+                        { version => '0102', name => 'bar' },
+                        {
+                            version => '0103',
+                            name    => 'baz',
+                            code    => "package Baz; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='baz'}"
+                        },
+                        {
+                            version => '0104',
+                            name    => 'qux',
+                            code    => "package Qux; use Moo; sub downgrade {\$ENV{TEST_MIGRA}.='qux'}"
+                        },
+                    ]
+                }
+            }
+        }
+    );
+
+    my $cmd = _build_cmd();
+
+    my $rv = $cmd->check( args => { path => 't/data/migrations/all_ok' } );
+
+    ok $rv < 0;
+};
+
+subtest 'check: returns 0 when everything is up to date' => sub {
+    _setup();
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update(
+        { _id => $clarive->{_id} },
+        {
+            '$set' => {
+                migration => {
+                    version => '0102',
+                }
+            }
+        }
+    );
+
+    my $cmd = _build_cmd();
+
+    my $rv = $cmd->check( args => { path => 't/data/migrations/all_ok' } );
+
+    is $rv, 0;
+};
+
 sub _setup {
     my (%params) = @_;
 
