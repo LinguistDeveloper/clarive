@@ -260,10 +260,8 @@ sub dashboard_list: Local {
             };
     }
 
-    if ( $p->{ordered} ) {
-        my %names = map { $_->{text} => $_ } @trees;
-        @trees = sort { $a->{text} cmp $b->{text} } values %names;
-    }
+    my %names = map { $_->{text} => $_ } @trees;
+    @trees = sort { $a->{text} cmp $b->{text} } values %names;
 
     $c->stash->{json} = \@trees;
     $c->forward('View::JSON');
