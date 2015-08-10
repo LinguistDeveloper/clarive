@@ -34,11 +34,13 @@ sub run {
             )->save;
         }
 
+        my %defaults = ( initialized => true );
+
         if ($clarive) {
-            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { initialized => true } } );
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => {%defaults} } );
         }
         else {
-            mdb->clarive->insert( { initialized => true } );
+            mdb->clarive->insert( {%defaults} );
         }
 
         Clarive::Cmd::migra->new( app => $self->app, env => $self->env, opts => {} )
