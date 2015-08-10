@@ -30,6 +30,8 @@ sub run_upgrade {
       . $clarive->{migration}->{error} . '`'
       if $clarive->{migration}->{error};
 
+    $self->_dry_run_banner(%opts);
+
     my $migrations_path = $opts{args}->{path} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
 
     opendir( my $dh, $migrations_path ) || die "ERROR: Can't opendir $migrations_path $!";
@@ -46,38 +48,40 @@ sub run_upgrade {
 
         next unless ( $clarive->{migration}->{version} || '' ) lt $version;
 
-        print "Running migration '$version-$name'\n" unless $opts{args}->{quiet};
+        $self->_say( "Upgrading to '$version-$name'", %opts );
 
-        my $error;
-        try {
-            my ( $package, $code ) = $self->_compile_migration("$migrations_path/$migration");
+        if ( !$self->_is_dry_run(%opts) ) {
+            my $error;
+            try {
+                my ( $package, $code ) = $self->_compile_migration("$migrations_path/$migration");
 
-            $package->new->upgrade;
+                $package->new->upgrade;
 
-            mdb->clarive->update(
-                { _id => $clarive->{_id} },
-                {
-                    '$set'  => { 'migration.version' => $version },
-                    '$push' => { 'migration.patches' => { version => $version, name => $name } }
-                }
-            );
+                mdb->clarive->update(
+                    { _id => $clarive->{_id} },
+                    {
+                        '$set'  => { 'migration.version' => $version },
+                        '$push' => { 'migration.patches' => { version => $version, name => $name } }
+                    }
+                );
+            }
+            catch {
+                $error = shift;
+
+                mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
+
+                print "ERROR: $error\n. Exiting";
+            };
+
+            last if $error;
         }
-        catch {
-            $error = shift;
-
-            mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
-
-            print "ERROR: $error\n. Exiting";
-        };
-
-        last if $error;
 
         $count++;
     }
 
-    print "Nothing to migrate\n" unless $opts{args}->{quiet} || $count;
+    $self->_say( 'Nothing to migrate', %opts ) unless $count;
 
-    print "OK\n" if !$opts{args}->{quiet} && $count;
+    $self->_say( 'OK', %opts ) if $count;
 
     return 1;
 }
@@ -88,14 +92,20 @@ sub run_init {
 
     my $clarive = $self->_load_collection( no_migration_ok => 1 );
 
+    $self->_dry_run_banner(%opts);
+
     if ( !$opts{args}->{force} ) {
         die 'Migrations are already initialized' if $clarive->{migration} && $clarive->{migration}->{version};
     }
 
+    $self->_say( 'Initializing migrations', %opts );
+
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Initialize migration database?' );
     return unless $yes;
 
-    mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { migration => { version => '0100' } } } );
+    if ( !$self->_is_dry_run(%opts) ) {
+        mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { migration => { version => '0100' } } } );
+    }
 
     return 1;
 }
@@ -106,10 +116,14 @@ sub run_fix {
 
     my $clarive = $self->_load_collection;
 
+    $self->_dry_run_banner(%opts);
+
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Remove error from last migration?' );
     return unless $yes;
 
-    mdb->clarive->update( { _id => $clarive->{_id} }, { '$unset' => { 'migration.error' => '' } } );
+    if ( !$self->_is_dry_run(%opts) ) {
+        mdb->clarive->update( { _id => $clarive->{_id} }, { '$unset' => { 'migration.error' => '' } } );
+    }
 
     return 1;
 }
@@ -124,12 +138,39 @@ sub run_set {
 
     my $clarive = $self->_load_collection;
 
+    $self->_dry_run_banner(%opts);
+
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => "Set migrations version to '$version'?" );
     return unless $yes;
 
-    mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.version' => $version } } );
+    if ( !$self->_is_dry_run(%opts) ) {
+        mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.version' => $version } } );
+    }
 
     return 1;
+}
+
+sub _say {
+    my $self = shift;
+    my ( $msg, %opts ) = @_;
+
+    print "$msg\n" unless $opts{args}->{quiet};
+}
+
+sub _is_dry_run {
+    my $self = shift;
+    my (%opts) = @_;
+
+    return $opts{args}->{'dry-run'};
+}
+
+sub _dry_run_banner {
+    my $self = shift;
+    my (%opts) = @_;
+
+    if ( $opts{args}->{'dry-run'} ) {
+        print "DRY-RUN mode. No actions are really performed\n";
+    }
 }
 
 sub _ask_me {
@@ -186,6 +227,7 @@ Common options:
 
     --env <environment>
     --yes answer *yes* to all questions
+    --dry-run don't really do anything
     --force do not perform safety checks
     --quiet be quiet
 

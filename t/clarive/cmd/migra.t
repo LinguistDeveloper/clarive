@@ -35,6 +35,18 @@ subtest 'run_init: does nothing when user says no' => sub {
     ok !exists $clarive->{migration}->{version};
 };
 
+subtest 'run_init: does nothing when dry run' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+
+    $cmd->run_init(args => {yes => 1, 'dry-run' => 1});
+
+    my $clarive = mdb->clarive->find_one;
+
+    ok !exists $clarive->{migration}->{version};
+};
+
 subtest 'run_init: creates db entry' => sub {
     _setup( no_init => 1 );
 
@@ -145,6 +157,17 @@ subtest 'run: does nothing when user says no' => sub {
     cmp_deeply $clarive->{migration}, { version => '0100' };
 };
 
+subtest 'run: does nothing when dry run' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+    $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1, 'dry-run' => 1 } );
+
+    my $clarive = mdb->clarive->find_one();
+
+    cmp_deeply $clarive->{migration}, { version => '0100' };
+};
+
 subtest 'run: runs migrations when init and not initialized' => sub {
     _setup( no_init => 1 );
 
@@ -222,6 +245,18 @@ subtest 'run_set: does nothing when user says no' => sub {
     my $cmd = _build_cmd( _ask_me => 0 );
 
     $cmd->run_set( args => { version => '666' } );
+
+    my $clarive = mdb->clarive->find_one();
+
+    isnt $clarive->{migration}->{version}, '666';
+};
+
+subtest 'run_set: does nothing when dry run' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    $cmd->run_set( args => { version => '666', yes => 1, 'dry-run' => 1 } );
 
     my $clarive = mdb->clarive->find_one();
 
