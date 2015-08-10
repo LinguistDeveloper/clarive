@@ -7,6 +7,8 @@
     	{ xtype:'textfield',fieldLabel: _('Width'), name: 'width', value: data.width },
     	{ xtype:'textfield',fieldLabel: _('Height'), name: 'height', value: data.height }
     ]);
+
+    // TODO add a selection of available BLs ??
     return ret;
 })
 

@@ -452,3 +452,7 @@ a:hover {
 	color: #15428b;
 }
 
+/* roadmap dashlet */
+.roadmap-cell-div {
+    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

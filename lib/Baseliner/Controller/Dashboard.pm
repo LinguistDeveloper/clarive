@@ -91,6 +91,13 @@ register 'dashlet.topic.gauge' => {
     js_file => '/dashlets/topics_gauge_d3.js'
 };
 
+register 'dashlet.topic.topic_roadmap' => {
+    form=> '/dashlets/topic_roadmap_config.js',
+    name=> 'Topic Roadmap', 
+    icon=> '/static/images/icons/calendar.gif',
+    js_file => '/dashlets/topic_roadmap.js'
+};
+
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
@@ -974,6 +981,73 @@ sub topics_by_date: Local {
 
     $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, topics_list => \%final_list_topics, matrix => $matrix} };
     $c->forward('View::JSON');
+}
+
+sub roadmap : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+
+    # we need to determine the first day of the week, going back X weeks
+    #   so the start date is always EARLIER than today's date minus X weeks
+    my $now = Class::Date->now;
+    my $first_day_week = $p->{first_day_week} // 6;  # 0 is Sunday, 6 is Saturday
+    my $weeks_from = $p->{weeks_from} // 10;
+    my $weeks_until = $p->{weeks_until} // 10;
+    my $first_day_of_my_week = $now->_wday - $first_day_week;
+    my $first_day = $now - ( ($weeks_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D');
+    $first_day = substr( $first_day, 0, 10) . ' 00:00';
+    my $categories = $p->{categories};
+    my $condition = length $p->{condition} ? Util->_decode_json("{" . $p->{condition} . "}") : {};
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
+    # my $id_project = $p->{id_project};
+    my @rows;
+    my %bls = map{ $$_{name}=>[] } ci->bl->find->all;
+    my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ id=>1, acronym=>1 })->all;
+    my $where = { 'category.id'=>mdb->in(keys %cats), %$condition };
+    if( length $topic_mid){
+        $where->{mid} = $topic_mid;
+    } elsif( $id_project ){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+    my @topics = mdb->topic->find($where)->fields({ category=>1, mid=>1, title=>1 })->all;
+    my %master_cal;
+    map{ push @{ $master_cal{$$_{mid}} } => $_ } mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics) })->all;
+
+    # distribute topics to their corresponding bl
+    for my $topic ( @topics ) {
+        my $cal = $master_cal{ $topic->{mid} } || next;
+        for my $cc ( _array $cal ) { 
+            next unless exists $bls{ $cc->{slotname} };
+            push @{ $bls{ $cc->{slotname} } }, { topic=>$topic, cal=>$cc, acronym=>$cats{$topic->{category}{id}}{acronym} }; 
+        }
+    }
+
+    # week by week, find which topics go where
+    for my $st ( map{ Class::Date->new( $first_day ) + (($_*7).'D') } 0..( $weeks_from + $weeks_until ) ) {
+        my $row = { date=>"$st" };
+        for my $bl ( keys %bls ) {
+            my $ed = $st + '7D';
+            my @bl_topics = grep { 
+                ($$_{cal}{plan_start_date} ge $st && $$_{cal}{plan_start_date} lt $ed ) 
+                || ( $$_{cal}{plan_end_date} ge $st && $$_{cal}{plan_end_date} lt $ed ) 
+                || ( $$_{cal}{plan_start_date} le $st && $$_{cal}{plan_end_date} ge $ed ) 
+            } _array( $bls{ $bl } );
+            for my $blt ( @bl_topics ) {
+                push @{ $row->{$bl} }, $blt; 
+            }
+        }
+
+        push @rows, $row;
+    }
+
+    $c->stash->{json} = { data=>\@rows};
+    $c->forward('View::JSON');    
 }
 
 sub topics_gauge: Local {
