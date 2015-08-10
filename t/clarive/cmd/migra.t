@@ -6,6 +6,7 @@ use lib 't/lib';
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+use Test::MonkeyMock;
 use TestEnv;
 
 TestEnv->setup;
@@ -22,12 +23,16 @@ subtest 'run_init: throws when system not initialized' => sub {
     like exception { $cmd->run_init }, qr/System not initialized/;
 };
 
-subtest 'run: throws when not initialized' => sub {
+subtest 'run_init: does nothing when user says no' => sub {
     _setup( no_init => 1 );
 
-    my $cmd = _build_cmd();
+    my $cmd = _build_cmd( _ask_me => 0 );
 
-    like exception { $cmd->run }, qr/not initialized/;
+    $cmd->run_init;
+
+    my $clarive = mdb->clarive->find_one;
+
+    ok !exists $clarive->{migration}->{version};
 };
 
 subtest 'run_init: creates db entry' => sub {
@@ -35,11 +40,39 @@ subtest 'run_init: creates db entry' => sub {
 
     my $cmd = _build_cmd();
 
-    $cmd->run_init;
+    $cmd->run_init( args => { yes => 1 } );
 
     my $clarive = mdb->clarive->find_one;
 
     ok $clarive->{migration}->{version};
+};
+
+subtest 'run_init: throws when already initialized' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+
+    $cmd->run_init( args => { yes => 1 } );
+
+    like exception { $cmd->run_init( args => { yes => 1 } ) }, qr/already initialized/;
+};
+
+subtest 'run_init: does not throw when already initialized but forced' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+
+    $cmd->run_init( args => { yes => 1 } );
+
+    ok $cmd->run_init( args => { yes => 1, force => 1 } );
+};
+
+subtest 'run: throws when not initialized' => sub {
+    _setup( no_init => 1 );
+
+    my $cmd = _build_cmd();
+
+    like exception { $cmd->run }, qr/not initialized/;
 };
 
 subtest 'run: throws when there is an error' => sub {
@@ -54,10 +87,26 @@ subtest 'run: throws when there is an error' => sub {
     like exception { $cmd->run }, qr/last migration did not succeed/;
 };
 
-subtest 'run-fix: fixes error' => sub {
+subtest 'run_fix: fixes error' => sub {
     _setup();
 
     my $cmd = _build_cmd();
+
+    my $clarive = mdb->clarive->find_one();
+    mdb->clarive->update( { _id => $clarive->{_id} },
+        { '$set' => { migration => { version => 100, error => 'Some error' } } } );
+
+    $cmd->run_fix( args => { yes => 1 } );
+
+    $clarive = mdb->clarive->find_one();
+
+    ok !$clarive->{migration}->{error};
+};
+
+subtest 'run_fix: does nothing when user says no' => sub {
+    _setup();
+
+    my $cmd = _build_cmd( _ask_me => 0 );
 
     my $clarive = mdb->clarive->find_one();
     mdb->clarive->update( { _id => $clarive->{_id} },
@@ -67,14 +116,14 @@ subtest 'run-fix: fixes error' => sub {
 
     $clarive = mdb->clarive->find_one();
 
-    ok !$clarive->{migration}->{error};
+    ok $clarive->{migration}->{error};
 };
 
 subtest 'run: runs migrations' => sub {
     _setup();
 
     my $cmd = _build_cmd();
-    $cmd->run( '--path' => 't/data/migrations/all_ok' );
+    $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } );
 
     my $clarive = mdb->clarive->find_one();
 
@@ -85,32 +134,43 @@ subtest 'run: runs migrations' => sub {
       };
 };
 
+subtest 'run: does nothing when user says no' => sub {
+    _setup();
+
+    my $cmd = _build_cmd( _ask_me => 0 );
+    $cmd->run( args => { path => 't/data/migrations/all_ok' } );
+
+    my $clarive = mdb->clarive->find_one();
+
+    cmp_deeply $clarive->{migration}, { version => '0100' };
+};
+
 subtest 'run: runs migrations when init and not initialized' => sub {
     _setup( no_init => 1 );
 
     my $cmd = _build_cmd();
-    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--init' => 1);
+    ok $cmd->run( args => { path => 't/data/migrations/all_ok', init => 1, yes => 1 } );
 };
 
 subtest 'run: runs migrations when forced and system not initialized' => sub {
     _setup( no_system_init => 1 );
 
     my $cmd = _build_cmd();
-    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--force' => 1);
+    ok $cmd->run( args => { path => 't/data/migrations/all_ok', force => 1, yes => 1 } );
 };
 
 subtest 'run: runs migrations when forced and migrations not initialized' => sub {
     _setup( no_init => 1 );
 
     my $cmd = _build_cmd();
-    ok $cmd->run( '--path' => 't/data/migrations/all_ok', '--force' => 1);
+    ok $cmd->run( args => { path => 't/data/migrations/all_ok', force => 1, yes => 1 } );
 };
 
 subtest 'run: stops on first syntax error' => sub {
     _setup();
 
     my $cmd = _build_cmd();
-    $cmd->run( '--path' => 't/data/migrations/syntax_errors' );
+    $cmd->run( args => { path => 't/data/migrations/syntax_errors', yes => 1 } );
 
     my $clarive = mdb->clarive->find_one();
 
@@ -121,7 +181,7 @@ subtest 'run: stops on first runtime error' => sub {
     _setup();
 
     my $cmd = _build_cmd();
-    $cmd->run( '--path' => 't/data/migrations/runtime_errors' );
+    $cmd->run( args => { path => 't/data/migrations/runtime_errors', yes => 1 } );
 
     my $clarive = mdb->clarive->find_one();
 
@@ -134,11 +194,20 @@ sub _setup {
     mdb->clarive->drop;
 
     mdb->clarive->insert( { initialized => true } ) unless $params{no_system_init};
-    _build_cmd()->run_init unless $params{no_system_init} || $params{no_init};
+    _build_cmd()->run_init( args => { yes => 1 } ) unless $params{no_system_init} || $params{no_init};
 }
 
 sub _build_cmd {
-    return Clarive::Cmd::migra->new( app => $Clarive::app, opts => {} );
+    my (%params) = @_;
+
+    my $cmd = Clarive::Cmd::migra->new( app => $Clarive::app, opts => {} );
+    $cmd = Test::MonkeyMock->new($cmd);
+
+    if ( exists $params{_ask_me} ) {
+        $cmd->mock( _ask_me => sub { $params{_ask_me} } );
+    }
+
+    return $cmd;
 }
 
 done_testing;

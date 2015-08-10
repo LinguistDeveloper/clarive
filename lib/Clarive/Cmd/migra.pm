@@ -12,32 +12,41 @@ use Try::Tiny;
 use Clarive::mdb;
 use Class::Load qw(load_class);
 
-sub run_start { &run }
+sub run { &run_start }
 
-sub run {
+sub run_start {
     my $self = shift;
     my (%opts) = @_;
 
-    $self->run_init if $opts{'--init'};
+    if ( $opts{args}->{init} ) {
+        my $ok = $self->run_init(%opts);
+        return unless $ok;
+    }
 
-    my $clarive = $self->_load_collection( $opts{'--force'} ? ( no_migration_ok => 1, no_init_ok => 1 ) : () );
+    my $clarive = $self->_load_collection( $opts{args}->{force} ? ( no_migration_ok => 1, no_init_ok => 1 ) : () );
 
     die 'ERROR: It seems that the last migration did not succeed. '
       . 'Fix the issue and run migra-fix. Error is: `'
       . $clarive->{migration}->{error} . '`'
       if $clarive->{migration}->{error};
 
-    my $migrations_path = $opts{'--path'} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
+    my $migrations_path = $opts{args}->{path} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
 
-    opendir( my $dh, $migrations_path ) || die "can't opendir $migrations_path $!";
+    opendir( my $dh, $migrations_path ) || die "ERROR: Can't opendir $migrations_path $!";
     my @migrations = sort grep { /^\d+_.*?\.pm/ && -f "$migrations_path/$_" } readdir($dh);
     closedir $dh;
 
+    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Run migrations on database?' );
+    return unless $yes;
+
+    my $count = 0;
     foreach my $migration (@migrations) {
         my ( $version, $name ) = $migration =~ m/^(\d+)_(.*?)\.pm/;
         next unless $version && $name;
 
         next unless ( $clarive->{migration}->{version} || '' ) lt $version;
+
+        print "Running migration '$version-$name'\n" unless $opts{args}->{quiet};
 
         my $error;
         try {
@@ -57,10 +66,18 @@ sub run {
             $error = shift;
 
             mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
+
+            print "ERROR: $error\n. Exiting";
         };
 
         last if $error;
+
+        $count++;
     }
+
+    print "Nothing to migrate\n" unless $opts{args}->{quiet} || $count;
+
+    print "OK\n" if !$opts{args}->{quiet} && $count;
 
     return 1;
 }
@@ -71,7 +88,16 @@ sub run_init {
 
     my $clarive = $self->_load_collection( no_migration_ok => 1 );
 
+    if ( !$opts{args}->{force} ) {
+        die 'Migrations are already initialized' if $clarive->{migration} && $clarive->{migration}->{version};
+    }
+
+    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Initialize migration database?' );
+    return unless $yes;
+
     mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { migration => { version => '0100' } } } );
+
+    return 1;
 }
 
 sub run_fix {
@@ -80,7 +106,32 @@ sub run_fix {
 
     my $clarive = $self->_load_collection;
 
+    my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Remove error from last migration?' );
+    return unless $yes;
+
     mdb->clarive->update( { _id => $clarive->{_id} }, { '$unset' => { 'migration.error' => '' } } );
+
+    return 1;
+}
+
+sub _ask_me {
+    my $self = shift;
+    my (%p) = @_;
+
+    require Term::ReadKey;
+
+    # flush keystrokes
+    while ( defined( my $key = Term::ReadKey::ReadKey(-1) ) ) { }
+
+    print $p{msg};
+    print " [y/N/q]: ";
+
+    unless ( ( my $yn = <STDIN> ) =~ /^y/i ) {
+        exit 1 if $yn =~ /q/i;    # quit
+        return 0;
+    }
+
+    return 1;
 }
 
 sub _compile_migration {
@@ -116,6 +167,9 @@ __END__
 Common options:
 
     --env <environment>
+    --yes answer *yes* to all questions
+    --force do not perform safety checks
+    --quiet be quiet
 
 =head1 migra- subcommands:
 
@@ -128,7 +182,7 @@ Initializes the migrations
 Starts the migrations. Options:
 
     --init run initialization before migrating
-    --force do not perform safety checks
+    --path path to migrations instead of default
 
 =head2 fix
 
