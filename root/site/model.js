@@ -1155,6 +1155,9 @@ Baseliner.model.SelectBaseline = function(c) {
         url: '/baseline/json',
         fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
     });
+    store.on( 'load', function(){
+        self.setValue( self.value );
+    });
     Baseliner.model.SelectBaseline.superclass.constructor.call(this, Ext.apply({
        fieldLabel: _("Baseline"),
            name: 'bl',

@@ -201,7 +201,7 @@
             txt_cont.update( _( '<b>'+txt+'</b>', Cla.ci_loc(params.item), params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: params.rec.bl || ['*'], colspan: 1 });
         var children = new Ext.form.Hidden({ name: 'children', value: params.rec.children });
         var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
         var form = new Baseliner.FormPanel({
@@ -250,9 +250,6 @@
         form.on( 'afterrender', function(){
             params.rec.collection = params.collection;
             params.form = form;
-            bl_combo.getStore().on( 'load', function(){
-                bl_combo.setValue( params.rec.bl );
-            });
             form.getForm().el.set({ autocomplete: 'off' });
             var add_ci_form = function(form_url, params) {
                     Baseliner.ajaxEval( form_url, params, function(res){
