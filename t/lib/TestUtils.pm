@@ -5,13 +5,14 @@ use warnings;
 
 use base 'Exporter';
 
-our @EXPORT_OK = qw(mock_catalyst_req mock_catalyst_res mock_catalyst_c);
+our @EXPORT_OK = qw(mock_catalyst_req mock_catalyst_res mock_catalyst_c mock_time);
 our %EXPORT_TAGS = ( 'catalyst' => [qw/mock_catalyst_req mock_catalyst_res mock_catalyst_c/] );
 
 use Carp;
 use Class::Load ();
 use Clarive::mdb;
 use Clarive::ci;
+use Test::MockTime qw(set_absolute_time restore_time);
 
 sub cleanup_cis {
     my $class = shift;
@@ -64,6 +65,13 @@ sub mock_catalyst_c {
     }
 
     FakeContext->new(%params);
+}
+
+sub mock_time {
+    my ($time,$cb) = @_;
+    set_absolute_time($time);
+    $cb->();
+    restore_time();
 }
 
 package FakeRequest;
