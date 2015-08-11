@@ -4,6 +4,7 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
+use Test::MonkeyMock;
 use TestEnv;
 
 TestEnv->setup;
@@ -90,6 +91,42 @@ subtest 'check: returns false if not initialized' => sub {
     ok !$cmd->check;
 };
 
+subtest 'does nothing if reset flag but user says no' => sub {
+    _setup();
+
+    my $cmd = _build_cmd(ask_me => 0);
+
+    $cmd->run(args => {reset => 1});
+
+    my @user = ci->user->search_cis;
+
+    is scalar @user, 0;
+};
+
+subtest 'does not ask user when yes flag is passed' => sub {
+    _setup();
+
+    my $cmd = _build_cmd(ask_me => 0);
+
+    $cmd->run(args => {reset => 1, yes => 1});
+
+    my @user = ci->user->search_cis;
+
+    is scalar @user, 1;
+};
+
+subtest 'resets everything if reset flag and user says yes' => sub {
+    _setup();
+
+    mdb->activity->insert({});
+
+    my $cmd = _build_cmd(ask_me => 1);
+
+    $cmd->run(args => {reset => 1});
+
+    is(mdb->activity->count, 0);
+};
+
 sub _setup {
     mdb->clarive->drop;
 
@@ -98,7 +135,13 @@ sub _setup {
 }
 
 sub _build_cmd {
-    return Clarive::Cmd::init->new(app => $Clarive::app, opts => {}, @_);
+    my (%params) = @_;
+
+    my $cmd = Clarive::Cmd::init->new(app => $Clarive::app, opts => {}, @_);
+    $cmd = Test::MonkeyMock->new($cmd);
+    $cmd->mock( _ask_me => sub { $params{ask_me} } );
+
+    return $cmd;
 }
 
 done_testing;
