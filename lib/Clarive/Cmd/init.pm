@@ -20,6 +20,7 @@ sub run {
     my $clarive = mdb->clarive->find_one();
 
     if ( !$self->check ) {
+        no warnings 'redefine';
         local *Baseliner::config = \&Clarive::config;
 
         if ( !ci->user->find_one( { name => 'root' } ) ) {
@@ -45,6 +46,8 @@ sub run {
 
         Clarive::Cmd::migra->new( app => $self->app, env => $self->env, opts => {} )
           ->run_init( args => { yes => 1, quiet => 1 } );
+
+        mdb->index_all;
     }
     else {
         die 'ERROR: System is already initialized';
