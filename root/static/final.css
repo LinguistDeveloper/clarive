@@ -5,6 +5,40 @@
     font: normal 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* roadmap dashlet */
+.roadmap-cell-div {
+    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.roadmap-grid .x-grid3-header {
+    background: #fff;
+}
+.roadmap-grid .x-grid3-hd-inner  {
+    font-weight: bold;
+    color: #333;
+    background: #fff;
+    height: 25px;
+    margin-left: 2px !important;
+    padding-left: 2px !important;
+    border-bottom: 2px solid #ccc !important;
+}
+.roadmap-grid .x-grid3-hd .x-grid3-cell {
+    border: 2px #a0a0a0 solid;
+}
+.wrapword{
+    white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    white-space: pre-wrap;       /* css-3 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    word-break: break-all;
+    white-space: normal;
+}
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #boot .topictag {
     font-size: 9px;
     font-family: Arial, Helvetica;

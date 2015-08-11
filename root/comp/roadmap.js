@@ -41,24 +41,29 @@
         } else {
             var first_mid;
             cell_text = '';
+            var width=value.length>0?100/value.length:0;
             for( var i=0; i<value.length; i++ ) {
                 var topic = value[i].topic;
                 var cal   = value[i].cal;
+                var label = value[i].label;
                 var acronym   = value[i].acronym;
                 if( first_mid == undefined ) first_mid = topic.mid;
                 if( !hcolor[topic.mid] ) hcolor[topic.mid] = '#'+all_colors[ color_index++ ];
                 if( color_index >= 64 ) color_index = 0;
+                var topic_name = label ? label : String.format('<b>{2}#{0}</b> {1}', topic.mid, topic.title, acronym );
                 cell_text += String.format(
-                        '<div class="roadmap-cell-div" onclick="javascript:Cla.show_topic_colored(\'{0}\',\'{5}\',\'{6}\');return false;" style="cursor: pointer; padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}" mid="{0}"><b>{4}#{0}</b> {1}</div>', 
-                        topic.mid, topic.title, '#fff', hcolor[topic.mid], acronym, topic.category.name, topic.category.color );
+                        '<td width="{7}%" class="truncate roadmap-cell-div" onclick="javascript:Cla.show_topic_colored(\'{0}\',\'{5}\',\'{6}\');return false;"'
+                        + 'style="cursor: pointer; padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}" mid="{0}">{1}</td>', 
+                        topic.mid, topic_name, '#fff', hcolor[topic.mid], acronym, topic.category.name, topic.category.color, width );
             }
             cell_color = hcolor[first_mid];
         }
 
-        meta.style += cell_color!=undefined 
+        /* meta.style += cell_color!=undefined 
                 ? 'line-height:20px; color: #fff; background-color: '+ cell_color
-                : 'line-height:20px; color: #fff'; 
-        return cell_text; 
+                : 'line-height:20px; color: #fff';  */
+        meta.style += 'line-height:20px; color: #fff'; 
+        return '<table width="100%"><tr>'+cell_text+'</tr></table>'; 
     }
 
     var render_date = function(value,meta,rec,rowIndex,colIndex,store) {
@@ -74,6 +79,8 @@
     });
     var grid = new Ext.grid.GridPanel({
         header: false,
+        cls: 'roadmap-grid',
+        bodyCls: 'roadmap-grid',
         autoScroll: true,
         autoWidth: true,
         stripeRows: true,

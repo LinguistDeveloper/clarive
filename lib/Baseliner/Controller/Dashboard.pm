@@ -998,6 +998,8 @@ sub roadmap : Local {
     my $condition = length $p->{condition} ? Util->_decode_json("{" . $p->{condition} . "}") : {};
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
+    my $default_mask = '<b>${category.acronym}#${topic.mid}</b> ${topic.title}';
+    my $label_mask = $p->{label_mask} || $default_mask;
 
     # my $id_project = $p->{id_project};
     my @rows;
@@ -1013,16 +1015,19 @@ sub roadmap : Local {
         push @mids_in, grep { length } @topics_project;
         $where->{mid} = mdb->in(@mids_in) if @mids_in;
     }
-    my @topics = mdb->topic->find($where)->fields({ category=>1, mid=>1, title=>1 })->all;
+    my @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
     my %master_cal;
     map{ push @{ $master_cal{$$_{mid}} } => $_ } mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics) })->all;
 
     # distribute topics to their corresponding bl
     for my $topic ( @topics ) {
         my $cal = $master_cal{ $topic->{mid} } || next;
+        my $cat = $cats{$topic->{category}{id}};
+        my $label = Util->parse_vars( $label_mask, { topic=>$topic, category=>$cat });
+        $label = Util->parse_vars( $default_mask, { topic=>$topic, category=>$cat }) if $label eq $label_mask; ## oops, the parse didn't parse anything, so use the default
         for my $cc ( _array $cal ) { 
             next unless exists $bls{ $cc->{slotname} };
-            push @{ $bls{ $cc->{slotname} } }, { topic=>$topic, cal=>$cc, acronym=>$cats{$topic->{category}{id}}{acronym} }; 
+            push @{ $bls{ $cc->{slotname} } }, { label=>$label, topic=>$topic, cal=>$cc, acronym=>$cat->{acronym} }; 
         }
     }
 
