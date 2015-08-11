@@ -21,6 +21,7 @@ sub debug   { }
 sub config  { {} }
 sub version { '' }
 
+use Test::MockTime ();
 use Baseliner::Core::Registry;
 
 BEGIN { $ENV{BALI_FAST}++ }

@@ -988,10 +988,10 @@ sub roadmap : Local {
     # we need to determine the first day of the week, going back X weeks
     #   so the start date is always EARLIER than today's date minus X weeks
     my $now = Class::Date->now;
-    my $first_day_week = $p->{first_day_week} // 6;  # 0 is Sunday, 6 is Saturday
+    my $first_weekday = $p->{first_weekday} // 0;  # 0 is Sunday, 6 is Saturday
     my $weeks_from = $p->{weeks_from} // 10;
     my $weeks_until = $p->{weeks_until} // 10;
-    my $first_day_of_my_week = $now->_wday - $first_day_week;
+    my $first_day_of_my_week = $now->_wday - $first_weekday;
     my $first_day = $now - ( ($weeks_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D');
     $first_day = substr( $first_day, 0, 10) . ' 00:00';
     my $categories = $p->{categories};
