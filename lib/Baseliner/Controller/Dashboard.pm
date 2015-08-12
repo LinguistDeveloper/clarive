@@ -177,6 +177,7 @@ sub init : Local {
                 $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
             }
             $$_{js_file} = $reg->{js_file}; # overwrite important stuff
+            $$_{no_boot} = $reg->{no_boot}; # no bootstrap for this dashlet?
             $$_{form} = $reg->{form}; # overwrite important stuff
         }
         $_;
@@ -188,7 +189,6 @@ sub init : Local {
     # now list the dashboards for user
     #my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
     #my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
-
     $c->stash->{json} = { dashlets=>$dashlets, dashboards=>\@all_rules };
     $c->forward( 'View::JSON' );
 }

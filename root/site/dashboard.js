@@ -2,7 +2,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
     title : _('Dashboard'),
     closable: true,
     cls: 'tab-style',
-    style: 'background-color: #FFF;',
+    style: 'background-color: #FFF; padding: 0;',
     tab_icon: '/static/images/icons/dashboard.png',
     initComponent : function(){
         var self = this;
@@ -15,32 +15,10 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var self = this;
         self.dashlets = {};
         var id_class = 'dashboard-' + self.body.id;
-        var dashlet_tpl_bootstrap=function(){/*            
-            <div class="span[%= dashlet.data.columns || 24 %]" style='padding-top:5px'>
-                <div style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
-                    <table width='100%'>
-                        <tr>
-                            <td style='font-weight:bold;'>
-                                [%= dashlet.title %]
-                            </td>
-                            <td id="[%= id_div %]_icons" style='text-align:right;'>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div style='width: 100%;padding:1px;background-color:#FFF;margin-bottom:5px;text-align:center;font-size: 75%;'>
-                        [%= last_update %]
-                </div>
-                <div id="[%= id_div %]" 
-                    style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;" 
-                    onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
-                </div>
-            </div>
-        */};
         var dashlet_tpl=function(){/*            
             <td id="[%= id_div %]_td" rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;'>
               <div style='width: 100%;background-color: #FFF;border-radius: 25px;'>
-                <div style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
+                <div id="boot" style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
                     <table width='100%'>
                         <tr>
                             <td style='font-weight:bold;'>
@@ -56,9 +34,11 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         </tr>
                     </table>
                 </div>
-                <div id="[%= id_div %]" 
-                    style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;text-align:center;vertical-align:middle;" 
-                    onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
+                <div id="[%= no_boot=="1" ? 'no-' : '' %]boot">
+                    <div id="[%= id_div %]" 
+                        style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;text-align:center;vertical-align:middle;" 
+                        onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
+                    </div>
                 </div>
               </div>
             </td>
@@ -80,12 +60,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         filter: alpha(opacity=100);
                     }
                 </style>
-                 <div id="boot" class="[%= id_class %]" style="width: 100%">
+                 <div id="no-boot" class="[%= id_class %]" style="width: 100%">
                  </div>
             */}.tmpl({ id_class: id_class, dashboards: res.dashboards }));
 
-            var html_bootstrap="<div class='row-fluid' style='padding:32px;width:100%;'>";
-            var html="<table style='border:1px;padding:32px;width:100%;table-layout:fixed;'><tr>";
+            var html_bootstrap="<div class='row-fluid' style='padding:2px;width:100%;'>";
+            var html="<table style='border:1px;padding:2px;width:100%;table-layout:fixed;'><tr>";
             for (var i = 0; i < 12; i++) {
                 html += "<td style='width:8.33%;'></td>"
             };
@@ -130,8 +110,10 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
+
                 var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
                     id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
+                    no_boot: dashlet.no_boot,
                     colspan: dashlet.data.columns, 
                     dashlet: dashlet, id_div: id_div });
                 html += dh;
