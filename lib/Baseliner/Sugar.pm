@@ -29,6 +29,7 @@ use Exporter::Tidy default => [qw/
     log_error
     lifecycle
     event_new
+    master_new
     /
 ];
 
