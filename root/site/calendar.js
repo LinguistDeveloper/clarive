@@ -75,7 +75,9 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
                     start: moment(view.start).format(), end: moment(view.end).format(), 
                     id_project: self.id_project, topic_mid: self.topic_mid, 
                     label_mask: self.label_mask, query_type: self.query_type,
-                    categories: self.categories, show_jobs: self.show_jobs, id_fieldlet: self.id_fieldlet }, 
+                    categories: self.categories, show_jobs: self.show_jobs, 
+                    id_fieldlet: self.id_fieldlet, 
+                    start_fieldlet: self.start_fieldlet, end_fieldlet: self.end_fieldlet }, 
               function(res){
                 Ext.each( res.events, function(ev){
                     cal.fullCalendar('renderEvent',

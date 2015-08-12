@@ -17,6 +17,8 @@
         bar_where: 'bottom',
         query_type: params.data.query_type,
         id_fieldlet: params.data.id_fieldlet,
+        start_fieldlet: params.data.start_fieldlet,
+        end_fieldlet: params.data.end_fieldlet,
         default_view: params.data.default_view,
         id_project: project_id,
         topic_mid: topic_mid,

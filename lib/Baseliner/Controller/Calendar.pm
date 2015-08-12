@@ -54,6 +54,8 @@ sub events : Local {
     my $show_jobs = length $p->{show_jobs} ? _bool($p->{show_jobs}) : 1;
     my $query_type = $p->{query_type};
     my $id_fieldlet = $p->{id_fieldlet};
+    my $start_fieldlet = $p->{start_fieldlet};
+    my $end_fieldlet = $p->{end_fieldlet};
     my $not_in_category = $p->{not_in_category} // 0;
 
     my $default_mask = '${category.acronym}#${topic.mid} ${topic.title}';
@@ -87,6 +89,14 @@ sub events : Local {
         @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
         map { push @{ $master_cal{$$_{mid}} } => $_ } 
             mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics), rel_field=>mdb->in( ref $id_fieldlet ? $id_fieldlet : split /,/,$id_fieldlet) })->all;
+    } elsif( $query_type eq 'field_pair' ) {
+        @topics = mdb->topic->find({ %$where,
+                '$or'=>[
+                     { $start_fieldlet=>{ '$lt'=>$calend } }, 
+                     { $end_fieldlet=>{'$gt'=>$calstart} }, 
+                     { '$and'=>[{ $start_fieldlet=>{'$gte'=>$calstart} },{ $end_fieldlet=>{'$lte'=>$calend} }, ] } 
+                 ] })
+                ->fields({ _txt=>0 })->all;
     } elsif( $query_type eq 'open_topics' ) {
         @topics = mdb->topic->find({ %$where,
                 '$or'=>[ 
@@ -99,7 +109,11 @@ sub events : Local {
     } else {
         # start_end
         @topics = mdb->topic->find({ %$where,
-                '$or'=>[ { created_on=>{ '$lt'=>$calend } }, { ts=>{'$gt'=>$calstart} }, { '$and'=>[{ created_on=>{'$gte'=>$calstart} },{ ts=>{'$lte'=>$calend} } ] } ] })
+                '$or'=>[ 
+                     { created_on=>{ '$lt'=>$calend } }, 
+                     { ts=>{'$gt'=>$calstart} }, 
+                     { '$and'=>[{ created_on=>{'$gte'=>$calstart} },{ ts=>{'$lte'=>$calend} } 
+                  ] } ] })
                 ->fields({ _txt=>0 })->all;
     }
 
@@ -123,6 +137,7 @@ sub events : Local {
                     title       => "$label [$cal->{slotname}]",
                     start       => $start,
                     end         => $end,
+                    id_fieldlet => $id_fieldlet,
                     color       => '#' . $color,
                     allDay      => \1,
                     mid         => $topic->{mid},
@@ -130,6 +145,19 @@ sub events : Local {
                     topic_color => $cat->{color},
                   };
             }
+        } elsif( $query_type eq 'field_pair' ) {
+            push @events, {
+                title       => $label,
+                color       => $cat->{color},
+                start       => $topic->{$start_fieldlet},
+                end         => $topic->{$end_fieldlet},
+                start_fieldlet => $start_fieldlet,
+                end_fieldlet   => $end_fieldlet,
+                allDay      => \0,
+                mid         => $topic->{mid},
+                acronym     => $cat->{acronym} || $cat->{name},
+                topic_color => $cat->{color},
+              };
         } elsif( $query_type eq 'open_topics' ) {
             my $start = $topic->{created_on};
             my $end = $topic->{closed_on} || mdb->now;
@@ -169,12 +197,18 @@ sub events : Local {
        } ci->job->find({ schedtime=>{ '$lt'=>$calend }, endtime=>{'$gt'=>$calstart} })->all;
    }
    my @warnings;
-   if( length $id_fieldlet && $query_type eq 'cal_field' ) {
-       for my $id (_array $id_fieldlet ) {
+   # check if fieldlets exists
+   my $checker = sub {
+       my @fields=@_;
+       for my $id (@fields ) {
            next if mdb->topic->find({ %$where_cat, $id=>{'$exists'=>1} })->count;
            push @warnings, _loc('Fieldlet `%1` not in the database for any of the selected topic categories. Removed or misspelled?', $id);
        }
-   }
+   };
+   $checker->(_array $id_fieldlet) if length $id_fieldlet && $query_type eq 'cal_field';
+   $checker->($start_fieldlet) if length $start_fieldlet && $query_type eq 'field_pair';
+   $checker->($end_fieldlet) if length $end_fieldlet && $query_type eq 'field_pair';
+
    $c->stash->{json} = { success=>\1, events=>\@events, warnings=>\@warnings };
    $c->forward('View::JSON');
 }

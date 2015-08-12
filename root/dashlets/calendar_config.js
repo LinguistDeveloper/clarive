@@ -29,17 +29,32 @@
         data: [ 
             ['start_end',_('Topic Activity (from Created to Modified Dates)')], 
             ['open_topics',_('Open Topics (from Created to Closed Dates)')], 
+            ['field_pair',_('Select Your Own Fields')],
             ['cal_field',_('Calendar Field (like Milestones or Environment Planner)')] 
         ]
     });
     query_type.on('change', function(){
+        // cal_field
         query_type.getValue()!='cal_field' ? id_fieldlet.hide() : id_fieldlet.show( );
         id_fieldlet.allowBlank = query_type.getValue()!='cal_field';
+        // field_pair
+        query_type.getValue()!='field_pair' ? (start_fieldlet.hide(),end_fieldlet.hide()) : (start_fieldlet.show(),end_fieldlet.show() );
+        start_fieldlet.allowBlank = query_type.getValue()!='field_pair';
+        end_fieldlet.allowBlank = query_type.getValue()!='field_pair';
     });
 
     var id_fieldlet = new Ext.form.TextField({ 
         anchor:'100%', fieldLabel: _('Calendar Fields'), name: 'id_fieldlet', 
         value: data.id_fieldlet, hidden: data.query_type!='cal_field', allowBlank: data.query_type!='cal_field'
+    });
+
+    var start_fieldlet = new Ext.form.TextField({ 
+        anchor:'50%', fieldLabel: _('Start Date Field'), name: 'start_fieldlet', 
+        value: data.start_fieldlet, hidden: data.query_type!='field_pair', allowBlank: data.query_type!='field_pair'
+    });
+    var end_fieldlet = new Ext.form.TextField({ 
+        anchor:'50%', fieldLabel: _('End Date Field'), name: 'end_fieldlet', 
+        value: data.end_fieldlet, hidden: data.query_type!='field_pair', allowBlank: data.query_type!='field_pair'
     });
 
     var default_view = new Baseliner.ComboDouble({ anchor: '100%', fieldLabel:_('Default View'), name:'default_view', 
@@ -67,6 +82,8 @@
               items: [
                 query_type,
                 id_fieldlet,
+                start_fieldlet,
+                end_fieldlet,
                 default_view,
                 first_weekday,
                 ccategory,
