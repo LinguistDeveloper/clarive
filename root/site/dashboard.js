@@ -153,10 +153,10 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
     show_config : function(id_dashlet){
         var self = this;
         var dashlet = self.dashlets[ id_dashlet ];
-        
         Baseliner.ajaxEval( dashlet.form, { data: dashlet.data }, function(comp){
 
             var save_form = function(){
+                if( ! form.getForm().isValid() ) return;
                 form.data = form.getValues();
 
                 Baseliner.ci_call('user', 'save_dashlet_config', { data: form.data, id_dashlet:id_dashlet}, function(res){
@@ -190,9 +190,9 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 autoScroll: true,
                 tbar: [
                     "->",
-                    { xtype:"button", text:_("Restore originals"), icon:"/static/images/icons/left.png", handler: function(){ restore_originals() } },
-                    { xtype:"button", text:_("Cancel"), icon:"/static/images/icons/delete_.png", handler: function(){ win.destroy() } },
-                    { xtype:"button", text:_("Save"), icon:"/static/images/icons/save.png", handler: function(){ save_form() } }
+                    { xtype:"button", text:_("Restore originals"), icon:IC ('left'), handler: function(){ restore_originals() } },
+                    { xtype:"button", text:_("Cancel"), icon:IC('cancel'), handler: function(){ win.destroy() } },
+                    { xtype:"button", text:_("Save"), icon: IC('save'), handler: function(){ save_form() } }
                 ],
                 bodyStyle: { padding: "4px", "background-color": "#eee" },
                 items: comp
