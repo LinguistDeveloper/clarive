@@ -4140,7 +4140,7 @@ Baseliner.eval_boolean = function(d, default_value){
     default_value = typeof default_value !== 'undefined' ? default_value : true;
     if(d == '0' || d == 'false' || d == 0 || d == false || d=='off') return false;
     if(d == '1' || d == 'true' || d == 1 || d == true || d=='on') return true;
-    if(d == '' || d == undefined) return default_value;
+    if(d == '' || d == undefined) return ( arguments.length>1 ? default_value : false );
 };
 
 
