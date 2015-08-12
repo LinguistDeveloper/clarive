@@ -15,6 +15,7 @@ has alias               => qw(is rw isa Any);
 has project_security    => qw(is rw isa Any), default => sub { +{} };
 has dashboard           => qw(is rw isa Any);
 has language_pref       => qw(is rw isa Any), default=>Baseliner->config->{default_lang};
+has date_format_pref    => qw(is rw isa Str default format_from_local);
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
@@ -72,6 +73,7 @@ sub general_prefs_save {
     my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
     $self = ci->user->search_ci( name=>$username ) unless ref $self;
     $self->language_pref($data->{language_pref});
+    $self->date_format_pref($data->{date_format_pref});
     $self->dashboard($data->{dashboard});
     $self->save;
     { msg => 'ok'};
@@ -187,6 +189,28 @@ method remove_dashlet_config ( :$username=undef, :$id_dashlet) {
         $user->save;
     }
     { ok => \1, msg => _loc('Dashlet config saved') }
+}
+
+method date_format {  # return a momentJS format
+    my $pref = $self->date_format_pref;
+    my $format = $pref eq 'format_from_local' ? _loc('date_format') : $pref;
+    return $format eq 'date_format' ? 'Y-M-D' : $format; 
+}
+
+method cdate_format { # return a Class::Date format
+    my $pref = $self->date_format_pref;
+    my $format = $pref eq 'format_from_local' ? _loc('class_date_format')
+        : do {
+            $pref =~ s/(\w)/%$1/g;
+            $pref =~ tr/y/Y/;
+            $pref
+        };
+    return $format eq 'date_format' ? '%Y-%m-%d' : $format; 
+}
+
+method user_format( $date ) {
+    local $Class::Date::DATE_FORMAT=$self->cdate_format;
+    return Class::Date->new( $date )->string;
 }
 
 1;
