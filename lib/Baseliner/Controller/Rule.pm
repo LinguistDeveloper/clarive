@@ -55,9 +55,11 @@ sub begin : Private {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    my $qry = $p->{query};
     my %query;
     $query{rule_active} = mdb->true;
     $query{rule_type} = $p->{rule_type} if ($p->{rule_type});
+    $query{rule_name} = qr/$qry/i if length $qry && !$p->{valuesqry};
     my @rows = mdb->rule->find({ %query })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
