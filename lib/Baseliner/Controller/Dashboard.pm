@@ -95,7 +95,15 @@ register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap', 
     icon=> '/static/images/icons/calendar.gif',
-    js_file => '/dashlets/topic_roadmap.js'
+    js_file => '/dashlets/topic_roadmap.js',
+};
+
+register 'dashlet.topic.calendar' => {
+    form=> '/dashlets/calendar_config.js',
+    name=> 'Calendar', 
+    icon=> '/static/images/icons/calendar.gif',
+    js_file => '/dashlets/calendar.js',
+    no_boot => 1,
 };
 
 register 'dashlet.iframe' => {
@@ -1004,7 +1012,7 @@ sub roadmap : Local {
     # my $id_project = $p->{id_project};
     my @rows;
     my %bls = map{ $$_{name}=>[] } ci->bl->find->all;
-    my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ id=>1, acronym=>1 })->all;
+    my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ workflow=>0, fieldlets=>0 })->all;
     my $where = { 'category.id'=>mdb->in(keys %cats), %$condition };
     if( length $topic_mid){
         $where->{mid} = $topic_mid;
