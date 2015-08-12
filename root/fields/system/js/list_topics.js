@@ -27,7 +27,7 @@ params:
 	var form = params.form.getForm();
 	
 	var topics = new Array();
-    var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
+    var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
 	var id_required = Ext.id()
 	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
 	
