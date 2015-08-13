@@ -435,6 +435,7 @@ Removes the error from last migration. Use *ONLY* when the issue is really fixed
 
 Upgrade/Downgrade manually by passing the migration name (upgrade by default). Options:
 
+    --name name of the migration
     --downgrade run downgrade instead of upgrading
 
 =cut
