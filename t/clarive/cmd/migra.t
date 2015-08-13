@@ -133,8 +133,14 @@ subtest 'run_fix: does nothing when user says no' => sub {
 subtest 'run: runs upgrade migrations' => sub {
     _setup();
 
+    local $ENV{UPGRADE};
+    local $ENV{DOWNGRADE};
+
     my $cmd = _build_cmd();
     $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } );
+
+    is $ENV{UPGRADE},   1;
+    is $ENV{DOWNGRADE}, undef;
 
     my $clarive = mdb->clarive->find_one();
 
@@ -434,6 +440,61 @@ subtest 'check: returns 0 when everything is up to date' => sub {
     my $rv = $cmd->check( args => { path => 't/data/migrations/all_ok' } );
 
     is $rv, 0;
+};
+
+subtest 'run_specific: throws when unknown name' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    like exception {
+        $cmd->run_specific( args => { path => 't/data/migrations/all_ok', name => 'unknown_name' } )
+    }, qr/Cannot find migration/;
+};
+
+subtest 'run_specific: does nothing when dry run' => sub {
+    _setup();
+
+    local $ENV{UPGRADE};
+    local $ENV{DOWNGRADE};
+
+    my $cmd = _build_cmd();
+    $cmd->run_specific( args => { path => 't/data/migrations/all_ok', name => '0101_foo', yes => 1, 'dry-run' => 1 } );
+
+    is $ENV{UPGRADE},   undef;
+    is $ENV{DOWNGRADE}, undef;
+};
+
+subtest 'run_specific: runs specific migration' => sub {
+    _setup();
+
+    local $ENV{UPGRADE};
+    local $ENV{DOWNGRADE};
+
+    my $cmd = _build_cmd();
+    $cmd->run_specific( args => { path => 't/data/migrations/all_ok', name => '0101_foo', yes => 1 } );
+
+    is $ENV{UPGRADE},   1;
+    is $ENV{DOWNGRADE}, undef;
+
+    my $clarive = mdb->clarive->find_one();
+    cmp_deeply $clarive->{migration}, { version => '0100' };
+};
+
+subtest 'run_specific: runs specific migration with downgrade' => sub {
+    _setup();
+
+    local $ENV{UPGRADE};
+    local $ENV{DOWNGRADE};
+
+    my $cmd = _build_cmd();
+    $cmd->run_specific( args => { path => 't/data/migrations/all_ok', name => '0101_foo', downgrade => 1, yes => 1 } );
+
+    is $ENV{UPGRADE},   undef;
+    is $ENV{DOWNGRADE}, 1;
+
+    my $clarive = mdb->clarive->find_one();
+    cmp_deeply $clarive->{migration}, { version => '0100' };
 };
 
 sub _setup {

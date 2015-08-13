@@ -276,6 +276,36 @@ sub run_set {
     return 1;
 }
 
+sub run_specific {
+    my $self = shift;
+    my (%opts) = @_;
+
+    die '--name is required' unless my $name = $opts{args}->{name};
+
+    $self->_dry_run_banner(%opts);
+
+    my $migrations_path = $opts{args}->{path} || $self->app->home . '/lib/Baseliner/Schema/Migrations';
+    my $migration_path = "$migrations_path/$name.pm";
+
+    die "Cannot find migration with name '$name'" unless -f $migration_path;
+
+    my $direction = $opts{args}->{downgrade} ? 'downgrade' : 'upgrade';
+
+    my $yes =
+      $opts{args}->{yes} || $self->_ask_me( msg => "Are you sure you want to _${direction}_ '$name' migration?" );
+    return unless $yes;
+
+    my ( $migration, $code ) = $self->_compile_migration_from_file($migration_path);
+
+    if ( !$self->_is_dry_run(%opts) ) {
+        $migration->new->$direction;
+    }
+
+    $self->_say( 'OK', %opts );
+
+    return 1;
+}
+
 sub _say {
     my $self = shift;
     my ( $msg, %opts ) = @_;
@@ -386,7 +416,7 @@ Initializes the migrations
 
 =head2 start
 
-Upgrade the migrations. Options:
+Upgrade/Downgrade the migrations. Options:
 
     --init run initialization before migrating
     --path path to migrations instead of default
@@ -400,5 +430,11 @@ Manually set the latest migrations version
 =head2 fix
 
 Removes the error from last migration. Use *ONLY* when the issue is really fixed
+
+=head2 specific
+
+Upgrade/Downgrade manually by passing the migration name (upgrade by default). Options:
+
+    --downgrade run downgrade instead of upgrading
 
 =cut
