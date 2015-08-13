@@ -1,6 +1,7 @@
 package Baseliner::Schema::Migra::MongoMigration;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Core::Registry;
 use v5.10;
 use Try::Tiny;
 require Clarive::mdb;
@@ -84,7 +85,7 @@ sub topic_categories_to_rules {
                   next;
             }
             #_log _dump $fieldlet;
-            my $icon = Baseliner->model('Registry')->get($registers->{$reg_key})->{icon};
+            my $icon = Baseliner::Core::Registry->get($registers->{$reg_key})->{icon};
 
             $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
             $data->{editable} = '1' if not $fieldlet->{editable};
@@ -239,7 +240,7 @@ sub generate_dsl {
             cache->remove_like(qr/^topic:/);
             cache->remove_like(qr/^roles:/);
             cache->remove( { d => "topic:meta" } );
-            Baseliner->registry->reload_all;
+            Baseliner::Core::Registry->reload_all;
         }
         $msg =
           $detected_errors
@@ -275,9 +276,9 @@ sub map_registors {
           } _array $_->{fieldlets}
     } @categories;
     
-    my @reg_fieldlets = Baseliner->registry->starts_with('fieldlet');
+    my @reg_fieldlets = Baseliner::Core::Registry->starts_with('fieldlet');
     map {
-        my $reg = Baseliner->model('registry')->get($_);
+        my $reg = Baseliner::Core::Registry->get($_);
         
         #if ( $reg->{registry_node}->{key} =~ /.*required.*/ ) {
             
@@ -1480,7 +1481,7 @@ sub activity{
         foreach my $event (@events) {
             try{
                 my $key = $event->{event_key};
-                my $ev = Baseliner->model('Registry')->get($key);
+                my $ev = Baseliner::Core::Registry->get($key);
                 if( _array( $ev->{vars} ) > 0 ) {
                     
                     my $ed_reduced={};
