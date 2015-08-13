@@ -9,7 +9,6 @@
     var date_field = params.data.date_field || 'created_on';
     var date_type = params.data.date_type || 'today';
     var days_from = params.data.days_from || 0;
-    var graph_type = params.data.type || 'area';
 
     Cla.ajaxEval('/comp/roadmap.js', params, function(grid){
         var jqid=$('#'+id);

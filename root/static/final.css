@@ -24,6 +24,13 @@
 .roadmap-grid .x-grid3-hd .x-grid3-cell {
     border: 2px #a0a0a0 solid;
 }
+.roadmap-grid .x-grid3-cell-inner {
+    padding: 0 !important;
+}
+.roadmap-grid .x-grid3-col .x-grid3-cell {
+    padding: 0 !important;
+}
+
 .wrapword{
     white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
     white-space: -pre-wrap;      /* Opera 4-6 */

@@ -6,19 +6,23 @@
 
     var common = Cla.dashlet_common(params);
 
-    var weeks_from = new Ext.ux.form.SpinnerField({ 
-        value: data.weeks_from==undefined?10:data.weeks_from, 
-        name: "weeks_from",
+    var scale = new Baseliner.ComboDouble({ anchor: '100%', fieldLabel:_('Scale'), name:'scale', 
+        value: data.scale==undefined ? 'weekly' : data.scale,
+        data: [ ['daily',_('Daily')], ['weekly',_('Weekly')], ['monthly',_('Monthly')] ]
+    });
+    var units_from = new Ext.ux.form.SpinnerField({ 
+        value: data.units_from==undefined?10:data.units_from, 
+        name: "units_from",
         anchor:'100%',
-        fieldLabel: _("Number of weeks back from today to start")
+        fieldLabel: _("Start Time Back From Today")
+    });
+    var units_until = new Ext.ux.form.SpinnerField({ 
+        value: data.units_until==undefined?10:data.units_until, 
+        name: "units_until",
+        anchor:'100%',
+        fieldLabel: _("Start Time Starting Today")
     });
 
-    var weeks_until = new Ext.ux.form.SpinnerField({ 
-        value: data.weeks_until==undefined?10:data.weeks_until, 
-        name: "weeks_until",
-        anchor:'100%',
-        fieldLabel: _("Number of weeks after today to end")
-    });
 
     var first_weekday = new Baseliner.ComboDouble({ anchor: '100%', fieldLabel:_('First Weekday'), name:'first_weekday', 
         value: data.first_weekday==undefined ? 0 : data.first_weekday,
@@ -58,8 +62,9 @@
               columnWidth: .30, 
               bodyStyle: 'background:transparent;',
               items: [
-                weeks_from,
-                weeks_until
+                scale,
+                units_from,
+                units_until
               ]
             }
           ]

@@ -37,7 +37,7 @@
         var cell_color, cell_text;
         if( !value.length ) {
             //cell_color = '#eee';
-            cell_text = '-';
+            cell_text = '';
         } else {
             var first_mid;
             cell_text = '';
@@ -63,11 +63,12 @@
                 ? 'line-height:20px; color: #fff; background-color: '+ cell_color
                 : 'line-height:20px; color: #fff';  */
         meta.style += 'line-height:20px; color: #fff'; 
-        return '<table width="100%"><tr>'+cell_text+'</tr></table>'; 
+        return cell_text ? '<table width="100%" border=0 style="margin-bottom: -2px; margin-top: -2px; margin-left: -2px, margin-right: -2px"><tr>'+cell_text+'</tr></table>' : ''; 
     }
 
     var render_date = function(value,meta,rec,rowIndex,colIndex,store) {
-        meta.style = 'font-weight: bold';
+        meta.style += 'font-weight: bold;';
+        if(rec.data.is_current) meta.style += 'background-color: yellow;';
         return moment(value).format('YYYY-MM-DD');
     }
 
@@ -84,6 +85,7 @@
         autoScroll: true,
         autoWidth: true,
         stripeRows: true,
+        columnLines: true,
         store: store,
         viewConfig: { scrollOffset: 2, forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),

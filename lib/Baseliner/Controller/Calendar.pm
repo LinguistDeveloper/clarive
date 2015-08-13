@@ -145,7 +145,7 @@ sub events : Local {
                 end         => $topic->{$end_fieldlet},
                 start_fieldlet => $start_fieldlet,
                 end_fieldlet   => $end_fieldlet,
-                allDay      => \0,
+                allDay      => \1,
                 mid         => $topic->{mid},
                 acronym     => $cat->{acronym} || $cat->{name},
                 topic_color => $cat->{color},

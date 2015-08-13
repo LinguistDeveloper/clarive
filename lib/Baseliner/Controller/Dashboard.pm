@@ -96,6 +96,7 @@ register 'dashlet.topic.topic_roadmap' => {
     name=> 'Topic Roadmap', 
     icon=> '/static/images/icons/calendar.gif',
     js_file => '/dashlets/topic_roadmap.js',
+    no_boot => 1,
 };
 
 register 'dashlet.topic.calendar' => {
@@ -998,11 +999,9 @@ sub roadmap : Local {
     #   so the start date is always EARLIER than today's date minus X weeks
     my $now = Class::Date->now;
     my $first_weekday = $p->{first_weekday} // 0;  # 0 is Sunday, 6 is Saturday
-    my $weeks_from = $p->{weeks_from} // 10;
-    my $weeks_until = $p->{weeks_until} // 10;
+    my $units_from = $p->{units_from} // 10;
+    my $units_until = $p->{units_until} // 10;
     my $first_day_of_my_week = $now->_wday - $first_weekday;
-    my $first_day = $now - ( ($weeks_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D');
-    $first_day = substr( $first_day, 0, 10) . ' 00:00';
     my $categories = $p->{categories};
     my $condition = length $p->{condition} ? Util->_decode_json("{" . $p->{condition} . "}") : {};
     my $id_project = $p->{project_id};
@@ -1035,11 +1034,35 @@ sub roadmap : Local {
         }
     }
 
+    # find the first day
+    my $first_day = $scale eq 'weekly' 
+            ? ( $now - ( ($units_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D') )
+            : ( $scale eq 'monthly' 
+                   ? Class::Date->new( DateTime->from_epoch( epoch=>$now->epoch )->truncate( to=>'month' ) ) - ( $units_from.'M')
+                   : ( $now - ( $units_from . 'D' ) )
+              )
+      ;
+    $first_day = substr( $first_day, 0, 10) . ' 00:00';
+
     # week by week, find which topics go where
-    for my $st ( map{ Class::Date->new( $first_day ) + (($_*7).'D') } 0..( $weeks_from + $weeks_until ) ) {
-        my $row = { date=>"$st" };
+    my @units = map{ 
+            Class::Date->new( $first_day ) 
+            +  ( $scale eq 'monthly' 
+                    ? $_.'M' 
+                    : ( $scale eq 'weekly' 
+                        ? (($_*7).'D') 
+                        : $_.'D' ) 
+               )
+        } 
+        0..( $units_from + $units_until );
+    
+    my $scale_sum = $scale eq 'monthly' ? '1M' : $scale eq 'weekly' ? '7D' : '1D';
+
+    my $k=0;
+    for my $st ( @units ) {
+        my $row = { date=>"$st", is_current=>($units_from == $k++) };
         for my $bl ( keys %bls ) {
-            my $ed = $st + '7D';
+            my $ed = $st + $scale_sum;
             my @bl_topics = grep { 
                 ($$_{cal}{plan_start_date} ge $st && $$_{cal}{plan_start_date} lt $ed ) 
                 || ( $$_{cal}{plan_end_date} ge $st && $$_{cal}{plan_end_date} lt $ed ) 
