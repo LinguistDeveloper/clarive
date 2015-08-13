@@ -3282,6 +3282,22 @@ sub apply_filter{
     return $where;
 }
 
+sub filter_children {
+    my ($self, $where, %p ) = @_;
+    my $topic_mid = $p{topic_mid};
+    my $id_project = $p{id_project};
+    if( length $topic_mid){
+        # topic and children
+        $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>$topic_mid })->fields({ to_mid=>1 })->all );
+    } elsif( $id_project ){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>$id_project, rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+}
+
 sub get_topics_mdb{
     my ($self, %p ) = @_;
     my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 

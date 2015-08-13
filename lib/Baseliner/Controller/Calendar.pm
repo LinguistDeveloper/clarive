@@ -71,17 +71,9 @@ sub events : Local {
     my %cats = map{ $$_{id}=>$_ } mdb->category->find({ ( $categories ? (id=>mdb->in($categories)) : () ) })->fields({ workflow=>0, fieldlets=>0 })->all;
     my $where_cat = $not_in_category ? { 'category.id'=>mdb->nin(keys %cats) } : { 'category.id'=>mdb->in(keys %cats) };
     my $where = { %$where_cat, %$condition };
-    if( length $topic_mid){
-        # topic and children
-        $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>$topic_mid })->fields({ to_mid=>1 })->all );
-    } elsif( $id_project ){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
 
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    
     my @topics;
     my %master_cal;
     if( $query_type eq 'cal_field' ) {

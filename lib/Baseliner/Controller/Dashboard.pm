@@ -1008,21 +1008,16 @@ sub roadmap : Local {
     my $topic_mid = $p->{topic_mid};
     my $default_mask = '<b>${category.acronym}#${topic.mid}</b> ${topic.title}';
     my $label_mask = $p->{label_mask} || $default_mask;
+    my $scale = $p->{scale} || 'weekly';
 
     # my $id_project = $p->{id_project};
     my @rows;
     my %bls = map{ $$_{name}=>[] } ci->bl->find->all;
     my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ workflow=>0, fieldlets=>0 })->all;
     my $where = { 'category.id'=>mdb->in(keys %cats), %$condition };
-    if( length $topic_mid){
-        $where->{mid} = $topic_mid;
-    } elsif( $id_project ){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+
     my @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
     my %master_cal;
     map{ push @{ $master_cal{$$_{mid}} } => $_ } mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics) })->all;
