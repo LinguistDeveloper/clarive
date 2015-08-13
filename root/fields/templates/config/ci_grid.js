@@ -127,7 +127,6 @@
     }
 
     ret.push([ 
-      { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.cis' },
       {
           xtype: 'container',
           id: 'selection_method',
