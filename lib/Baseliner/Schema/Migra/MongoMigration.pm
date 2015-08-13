@@ -4,6 +4,9 @@ use Baseliner::Utils;
 use Baseliner::Core::Registry;
 use v5.10;
 use Try::Tiny;
+use BaselinerX::Type::Fieldlet;
+use BaselinerX::Fieldlets;
+use Baseliner::Controller::Rule;
 require Clarive::mdb;
 require Clarive::ci;
 require Clarive::model;
@@ -357,7 +360,7 @@ sub activity_to_status_changes {
       _debug "Doc $act->{mid} skipped. Probably deleted" if !$doc;
       next if !$doc;
 
-      if ( $status_changes->{$st{$act->{mid}}} ) {
+      if ( $act && $act->{mid} && $st{$act->{mid}} && $status_changes->{$st{$act->{mid}}} ) {
         my $last = Class::Date->new($status_changes->{last_transition}->{ts});
         my $ts = Class::Date->new($act->{ts});
         my $rel =  $ts - $last;
