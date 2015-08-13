@@ -127,7 +127,7 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     # find a default dashboard
     my @all_rules = $self->user_dashboards({ username => $c->username });
@@ -161,7 +161,7 @@ sub init : Local {
     # now run the dashboard rule
     my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
     my $stash = {
-        project_id => $project_id,
+        project_id => $id_project,
         dashboard_data => { data=>[], count=>0 },
         dashboard_params => {
             %$p,
@@ -317,7 +317,7 @@ sub list_jobs: Local {
     my $perm = Baseliner->model('Permissions');
     my $p = $c->req->params;
 
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     my $states = $p->{states} || [];
     my $not_in_states = $p->{not_in_states} || 'off';
@@ -345,8 +345,8 @@ sub list_jobs: Local {
 
         $where->{'projects'} = mdb->in(@mid_filters) if @mid_filters;
 
-        if ( $project_id ) {
-            $where->{'projects'} = $project_id;
+        if ( $id_project ) {
+            $where->{'projects'} = $id_project;
         }
 
         my @filter_states;
@@ -388,7 +388,7 @@ sub last_jobs : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     my $bls = $p->{bls};
     my @datas;
@@ -404,8 +404,8 @@ sub last_jobs : Local {
         my $username = $c->username;
 
         my @ids_project;
-        if ($project_id) {
-            @ids_project = $project_id;
+        if ($id_project) {
+            @ids_project = $id_project;
         } else {
             @ids_project = $c->model('Permissions')
                 ->user_projects_ids( username => $c->username );
@@ -483,6 +483,9 @@ sub topics_by_category: Local {
     my $not_in_status = $p->{not_in_status};
     my $condition = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -493,6 +496,9 @@ sub topics_by_category: Local {
     }
 
     my $where = $condition;
+
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+
     if ( $statuses ) {
         if ( $not_in_status ) {
             $where->{'category_status.id'} = mdb->nin($statuses);
@@ -572,6 +578,10 @@ sub topics_by_field: Local {
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     my $condition = {};
 
     if ( $group_by eq 'topics_by_category') {
@@ -616,13 +626,7 @@ sub topics_by_field: Local {
 
     $where->{'category.id'} = mdb->in(@user_categories);
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     @topics_by_category = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -805,6 +809,9 @@ sub topics_by_date: Local {
     my $days_until = $p->{days_until};
     my $condition = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -865,13 +872,7 @@ sub topics_by_date: Local {
         $where->{$date_field} = {'$lte' => "$until"};        
     }
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid ); 
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
@@ -1097,6 +1098,9 @@ sub gauge_data {
     my $condition = {};
     my $end_remaining = $p->{end_remaining} || 'off';
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -1157,13 +1161,7 @@ sub gauge_data {
     my $rs_topics;
     my $field_mode = 0;
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     if ( $numeric_field ) {
         $field_mode = 1;
@@ -1283,6 +1281,9 @@ sub list_topics: Local {
     my $condition = {};
     my $where = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -1340,13 +1341,7 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );    
 
     $main_conditions->{'categories'} = \@user_categories;
 
@@ -1382,6 +1377,10 @@ sub topics_burndown : Local {
     my $perm = Baseliner->model('Permissions');
     my $where = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
+
     my @user_categories
         = map { $_->{id}; }
         $c->model('Topic')
@@ -1407,13 +1406,7 @@ sub topics_burndown : Local {
         mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
         ->fields( { mid => 1 } )->all;
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my $remaining_backlog = mdb->topic->find(
         {   'category.id' => mdb->in(@user_categories),
@@ -1513,7 +1506,7 @@ sub list_baseline : Local {
     my $days     = $p->{days}     // 7;
     my $projects = $p->{projects} // 'ALL';
     my $bls      = $p->{bls};
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
 
     my $username = $c->username;
@@ -1523,8 +1516,8 @@ sub list_baseline : Local {
     my @ids_project = $c->model('Permissions')
         ->user_projects_ids( username => $c->username );
 
-    if ( $project_id ) {
-        @ids_project = ($project_id);
+    if ( $id_project ) {
+        @ids_project = ($id_project);
     }
 
     my @filter_bls;
@@ -1635,15 +1628,15 @@ sub list_baseline : Local {
 }
 
 sub viewjobs : Local {
-    my ( $self, $c, $days, $type, $bl, $project_id ) = @_;
+    my ( $self, $c, $days, $type, $bl, $id_project ) = @_;
     my $p = $c->request->parameters;
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
-    if ( $project_id ) {
-        @ids_project = ($project_id);
+    if ( $id_project ) {
+        @ids_project = ($id_project);
     }
     #Filtramos por la parametrización cuando no son todos
     # if($config->{projects} ne 'ALL'){
