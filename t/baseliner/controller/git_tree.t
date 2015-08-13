@@ -79,7 +79,7 @@ subtest 'get_commits_history: returns commits' => sub {
                     'date'   => re_date(),
                     'author' => 'vti <vti@clarive.com>',
                     'ago'    => ignore(),
-                    'tags'   => 'HEAD -> master, release'
+                    'tags'   => re(qr/HEAD.*?master.*?release/)
                 },
                 {
                     'revision' => re_sha8(),
