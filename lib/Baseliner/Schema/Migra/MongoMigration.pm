@@ -3,6 +3,11 @@ use Moose;
 use Baseliner::Utils;
 use v5.10;
 use Try::Tiny;
+require Clarive::mdb;
+require Clarive::ci;
+require Clarive::model;
+require Clarive::cache;
+
 
 sub roles {
     my ($self, $p) = @_;
