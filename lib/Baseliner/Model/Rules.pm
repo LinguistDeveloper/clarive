@@ -1414,6 +1414,57 @@ sub include_rule {
     return $dsl;
 }
 
+sub get_rules_info {
+    my ($self,$p)=@_;
+    my $where = {};
+    my $sort = $p->{sort} || 'ts';
+    $sort = 'name_insensitive' if $sort eq 'rule_name';
+    my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
+    if( $p->{query} ) {
+        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode)] ); 
+    }
+    # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
+    my $rs = mdb->rule->aggregate([
+            { '$match'=>$where },
+            { '$project'=>{ 
+                    rule_name=>1, rule_type=>1, rule_compile_mode=>1, 
+                    rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, 
+                    id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
+                } 
+            },
+            { '$sort'=>mdb->ixhash( $sort=>$dir ) } 
+    ],{ cursor=>1 });
+    my @rules;
+    while (my $rule = $rs->next) {
+        $rule->{event_name} = Baseliner->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};
+        push @rules, $rule;
+    }
+    if($p->{destination} eq 'tree'){
+        my $expanded = $p->{query} ? \1 : \0;
+        my $ids = $p->{ids};
+        my $where = {};
+        $where->{id} = mdb->in($ids) if length $ids;
+        my @rule_types = ('dashboard','form','event','report','chain','webservice');
+        my $folder_structure = [];
+        for my $rule_type (@rule_types){
+            my $temp_structure = {text=>$rule_type, leaf => \0, expandable => \1, expanded => $expanded, children=> [] };
+            map { push $temp_structure->{children}, 
+                { text=>$_->{rule_name}, 
+                  leaf=>\1, 
+                  rule_id=>$_->{id},
+                  rule_ts=>$_->{ts},
+                  rule_type=>$_->{rule_type},
+                  rule_active=>$_->{rule_active},
+                  rule_when=>$_->{rule_when}
+               } if $_->{rule_type} eq $rule_type 
+            } @rules;
+            push $folder_structure, $temp_structure;
+        }
+        @rules = @{$folder_structure};
+    }
+    return @rules;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

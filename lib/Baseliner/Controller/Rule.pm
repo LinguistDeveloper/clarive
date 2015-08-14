@@ -281,36 +281,8 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $where = {};
-    my $sort = $p->{sort} || 'ts';
-    $sort = 'name_insensitive' if $sort eq 'rule_name';
-    my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
-    if( $p->{query} ) {
-        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode)] ); 
-    }
-    # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
-    my $rs = mdb->rule->aggregate([
-            { '$match'=>$where },
-            { '$project'=>{ 
-                    rule_name=>1, rule_type=>1, rule_compile_mode=>1, 
-                    rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, 
-                    id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
-                } 
-            },
-            { '$sort'=>mdb->ixhash( $sort=>$dir ) } 
-    ],{ cursor=>1 });
-    my @rules;
-    while (my $rule = $rs->next) {
-        $rule->{event_name} = $c->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};
-        push @rules, $rule;
-        # $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
-        # $_
-    }
-    # @rules = map {
-    #     $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
-    #     $_
-    # } @rules;
-    #@rules = grep { join(',',values %$_) =~ qr/$p->{query}/i } @rules if length $p->{query}; 
+    $p->{destination} = 'grid';
+    my @rules = Baseliner->model('Rules')->get_rules_info($p); 
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -1056,6 +1028,15 @@ sub default : Path {
             $c->res->body( $ret );
         }
     }
+}
+
+sub tree_structure : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    $p->{destination} = 'tree';
+    my @rules = Baseliner->model('Rules')->get_rules_info($p); 
+    $c->stash->{json} = \@rules;
+    $c->forward( 'View::JSON' );
 }
 
 no Moose;

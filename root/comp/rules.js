@@ -6,12 +6,40 @@
         remoteSort: true,
         fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id','ts' ]
     });
-    var search_field = new Baseliner.SearchField({
+    var search_fieldold = new Baseliner.SearchField({
         store: rules_store,
         width: 140,
         params: {start: 0, limit: ps },
         emptyText: _('<Search>')
     });
+
+    var do_search = function(from){
+        var t = search_field.getValue();
+        var condition = left_panel.getLayout().activeItem.id == rules_grid.id;
+        if(from){
+            condition = !condition;
+        }
+        if( condition ) {
+            rules_store.baseParams.query = t;
+            rules_store.reload();
+        } else {
+            var ids = [];
+            rules_store.each(function(row){
+                ids.push(row.data.id);
+            });
+            var lo = rules_tree.getLoader();
+            lo.baseParams = { query: t, ids: ids };
+            lo.load(rules_tree.root);
+        }
+    };
+
+    var search_field = new Baseliner.SearchSimple({ 
+        width: 140,
+        handler: function(){
+            do_search();
+        }
+    });
+    
 
     var rule_del = function(){
         var sm = rules_grid.getSelectionModel();
@@ -188,12 +216,95 @@
             v, rec.data.id
         );
     };
+
+    var activate_tree_view = function(btn) {
+        left_panel.getLayout().setActiveItem( btn.pressed ? rules_tree : rules_grid );
+    };
+
+    var rules_tree = new Ext.tree.TreePanel({
+        useArrows: true,
+        expanded: true,
+        animate : true, 
+        hidden: true,         
+        rootVisible: false,
+        dataUrl: '/rule/tree_structure',
+        autoScroll : true,
+        containerScroll : true,
+        root: {
+            nodeType: 'async',
+            text: '/',
+            draggable:true,
+            id: '/'
+        },
+        dropConfig : { appendOnly : true }
+    });
+
+    var get_icon_category = function(rule_category){
+        var icon = rule_category=='dashboard' ? IC('dashboard') 
+            : rule_category=='form' ? IC('form') 
+            : rule_category=='event' ? IC('event') 
+            : rule_category=='report' ? IC('report') 
+            : rule_category=='chain' ? IC('job') 
+            : rule_category=='webservice' ? IC('webservice') 
+            : '/static/images/icons/rule.png';
+        return icon;
+    };
+
+    rules_tree.on('beforechildrenrendered', function(params){
+        var root = params;
+        root.eachChild(function(node){
+            var type;
+            if(node.parentNode.id == '/'){
+                type = node.text;
+            }else{
+                //Children
+                type = root.text;
+                node.on('click', function(){
+                    var params = {  
+                        rule_id: node.attributes.rule_id, 
+                        rule_name: node.attributes.text, 
+                        rule_type: node.attributes.rule_type, 
+                        //event_name: node.attributes., 
+                        //rule_event: node.attributes., 
+                        icon: node.attributes.icon
+                    };
+                    show_rules(params);
+                });
+                var rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
+                var rule_text = node.attributes.text + 
+                    String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
+                    rule_when +
+                    String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()); 
+                node.setText(rule_text);
+            }
+            var icon = get_icon_category(type);
+            node.setIcon(icon);
+        });
+    });
+
+    var toggle_button = new Ext.Button(
+        { 
+            tooltip:_(''), 
+            pressed: false, 
+            toggleGroup:'rule-tree-group', 
+            icon: '/static/images/icons/workflow.png', 
+            cls: 'x-btn-icon', 
+            handler: activate_tree_view 
+        }
+    );
+
+
+    toggle_button.on('click', function(){
+        if(toggle_button.pressed){
+            do_search('to_tree');
+        }else{
+            do_search('to_grid');
+        }
+    });
+
+
     var rules_grid = new Ext.grid.GridPanel({
-        region: 'west',
-        width: 320,
-        split: true,
         selModel: new Ext.grid.RowSelectionModel({ singleSelect : true }),
-        collapsible: true,
         viewConfig: {
             enableRowBody: true,
             forceFit: true,
@@ -218,44 +329,40 @@
             { header: _('Rule'), width: 160, dataIndex: 'rule_name', sortable: true, renderer: render_rule },
             { header: _('Type'), hidden: true, width: 40, dataIndex: 'rule_type' },
             { header: _('When'), width: 60, dataIndex: 'ts', sortable: true, renderer: render_rule_ts }
-        ],
-        tbar: [ 
-            search_field,
-            { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
-            { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
-            { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
-            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
-            { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
-                { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
-                { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
-                '-',
-                { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
-                { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
-            ]}
-        ],
-
+        ]
     });
     rules_store.load();
     
-    rules_grid.on('rowclick', function(grid, ix){
-        var rec = rules_store.getAt( ix ); 
-        var get_rule_ts = Baseliner.ajaxEval('/rule/get_rule_ts', { id_rule: rec.data.id }, function(response){
+
+    var show_rules = function(params){
+        var get_rule_ts = Baseliner.ajaxEval('/rule/get_rule_ts', { id_rule: params.rule_id }, function(response){
             if (response.success){
                 Ext.getCmp('x-btn-edit')['enable']();
                 Ext.getCmp('x-btn-del')['enable']();
                 Ext.getCmp('x-btn-act')['enable']();
                 var old_ts = response.ts;
-                if( rec ) {
-                    var tab_arr = tabpanel.find( 'id_rule', rec.data.id );
+                if( params ) {
+                    var tab_arr = tabpanel.find( 'id_rule', params.rule_id );
                     if( tab_arr.length > 0 ) {
                         tabpanel.setActiveTab( tab_arr[0] );
                     } else {
-                        rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts, rec.icon);
+                        rule_flow_show( params.rule_id, params.rule_name, params.event_name, params.rule_event, params.rule_type, old_ts, params.icon);
                     }
                 }
             }
         });
+    };
+
+    rules_grid.on('rowclick', function(grid, ix){
+        var rec = rules_store.getAt( ix );
+        var params = {  rule_id: rec.data.id, 
+                        rule_name: rec.data.rule_name, 
+                        rule_type: rec.data.rule_type, 
+                        event_name: rec.data.event_name, 
+                        rule_event: rec.data.rule_event, 
+                        icon: rec.icon
+        };
+        show_rules(params);
     });
    
     var encode_tree = function( root, include ){
@@ -1222,23 +1329,6 @@
         tabpanel.changeTabIcon( tab, icon || '/static/images/icons/rule.png' );
     };
     
-    /* 
-    var tree = new Ext.tree.TreePanel({
-        region: 'center',
-        autoScroll: true,
-        animate: true,
-        lines: true,
-        enableSort: false,
-        enableDD: true,
-        dataUrl: '/rule/tree',
-        listeners: {
-            beforenodedrop: { fn: drop_handler }
-        },
-        rootVisible: true,
-        useArrows: true,
-        root: { nodeType: 'async', text: 'Reglas', draggable: false, id: 'root', expanded: true }
-    });
-    */
     var menu_tab = new Ext.ux.TabCloseMenu({
         closeTabText: _('Close Tab'),
         closeOtherTabsText: _('Close Other Tabs'),
@@ -1292,10 +1382,41 @@
             }
         });
     });
+
+
+    var left_panel = new Ext.Panel({
+        region: 'west',
+        layout: 'card',
+        width: 320,
+        split: true,
+        collapsible: true,
+        activeItem: 0,
+        items: [ rules_grid, rules_tree ],
+        tbar: [ 
+            search_field,
+            { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
+            { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
+            { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
+            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
+                { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
+                { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
+                '-',
+                { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
+                { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
+            ]},
+            toggle_button
+        ]
+    });
+
+
     var panel = new Ext.Panel({
         layout: 'border',
-        items: [ rules_grid, tabpanel, palette ]
+        items: [ left_panel, tabpanel, palette ]//rules_grid, 
     });
+
+
     panel.on('beforeclose', function(){
         var close_this;
         tabpanel.cascade(function(tree){
