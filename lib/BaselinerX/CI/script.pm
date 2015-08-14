@@ -19,7 +19,8 @@ sub rel_type {
 service 'run_script' => {
     name    => _loc('Run Script'),
     form    => '/forms/test_server_connect.js',
-    icon    => '/static/images/icons/script.png',
+    icon    => '/static/images/icons/cog_java.png',
+    #icon    => '/static/images/icons/script.png',
     handler => sub {
         my ($self,$c,$config) = @_;
         my @output = $self->run( user=>$config->{user} );

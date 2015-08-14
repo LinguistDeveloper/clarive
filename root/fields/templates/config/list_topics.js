@@ -17,7 +17,6 @@
     });
 
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.list_topics' },
         { xtype:'textfield', fieldLabel: _('List of columns to show in grid'), name: 'columns', value: data.columns },
         { xtype:'numberfield', fieldLabel: _('Height of grid in edit mode'), name: 'height', value: data.height || 250 },
     	{ xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size },

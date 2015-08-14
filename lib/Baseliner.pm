@@ -210,7 +210,7 @@ around 'debug' => sub {
     print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
         . " $Baseliner::VERSION. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
-        my $mdbv = mdb->eval('db.version()');
+        my $mdbv = mdb->mongo_version;
         print STDERR "Environment: $bali_env. MongoDB: $mdbv / $MongoDB::VERSION. Catalyst: $Catalyst::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
@@ -464,12 +464,6 @@ if( Clarive->debug ) {
 
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
-
-# now check for migrations: --migrate
-if( $ENV{CLARIVE_MIGRATE_NOW} ) {
-    require Baseliner::Schema::Migrator;
-    Baseliner::Schema::Migrator->check( $ENV{CLARIVE_MIGRATE_NOW} );
-}
 
 # clear cache on restart
 if( Clarive->debug ) {

@@ -5,7 +5,8 @@ with 'Baseliner::Role::CI';
 with 'Baseliner::Role::CI::Infrastructure';
 with 'Baseliner::Role::HasAgent';
 
-sub icon { '/static/images/ci/server.png' }
+#sub icon { '/static/images/ci/server.png' }
+sub icon { '/static/images/icons/server.png' }
 
 
 has os          => qw(default unix lazy 1 required 1 is rw isa), enum [qw(unix win mvs)];

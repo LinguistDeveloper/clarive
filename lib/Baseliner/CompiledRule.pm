@@ -1,6 +1,8 @@
 package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
+use Baseliner::Model::Rules;
+use Baseliner::RuleFuncs;
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -68,7 +70,7 @@ sub is_loaded {
 sub dsl_build { 
     my ($self, %p)=@_;
     return if $self->is_temp_rule;
-    my @tree = model->Rules->build_tree( $self->id_rule, undef );
+    my @tree = Baseliner::Model::Rules->build_tree( $self->id_rule, undef );
     return unless @tree;
     my $dsl = try {
         model->Rules->dsl_build( \@tree, no_tidy=>0, id_rule=>$self->id_rule, rule_name=>$self->rule_name, %p ); 
@@ -136,7 +138,7 @@ sub compile {
                 use Moose;
                 use v5.10;
                 #extends 'Baseliner::Model::Rules';
-                use Baseliner::Model::Rules;
+                use Baseliner::RuleFuncs;
                 use Baseliner::Utils;
                 use Baseliner::Sugar;
                 use Try::Tiny;
@@ -146,6 +148,13 @@ sub compile {
                     my (\$self,\$stash)=\@_;
                     $dsl 
                 };
+                sub call {
+                    my (\$id_rule, \$stash)=\@_;
+
+                    my \$rule = Baseliner::CompiledRule->new(id_rule => "\$id_rule");
+                    \$rule->compile;
+                    return \$rule->run(stash => \$stash)->{ret};
+                }
                 1;
             }
         };

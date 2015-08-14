@@ -11,7 +11,8 @@ with 'Baseliner::Role::Service';
 register 'service.job.pause' => { 
     name => 'Pause a Job', 
     job_service  => 1,
-    icon=>'/static/images/icons/pause.gif',
+    icon=>'/static/images/icons/job.png',
+    #icon=>'/static/images/icons/pause.gif',
     form => '/forms/pause_job.js',
     handler => \&run_pause, };
 

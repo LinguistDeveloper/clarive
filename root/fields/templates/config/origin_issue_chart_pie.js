@@ -42,7 +42,6 @@
         }
     });
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.origin_issue_chart_pie' },
     	{ xtype:'numberfield',fieldLabel: _('Depth'), name: 'depth', allowBlank: false, value: data.depth },
     	{ xtype:'textfield',fieldLabel: _('Role filter'), name: 'filter', value: data.filter },
     	combo_category,

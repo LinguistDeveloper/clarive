@@ -4,111 +4,61 @@ use warnings;
 use lib 't/lib';
 
 use Test::More;
-use Test::Fatal;
-use Test::Deep;
 use TestEnv;
-use TestUtils;
+use TestUtils ':catalyst';
 
 BEGIN {
     TestEnv->setup;
-    $Carp::Verbose ++;
 }
 
-use Clarive::ci;
-use Clarive::mdb;
-use Baseliner::Core::Registry;
-use Baseliner::Controller::User;
-use Baseliner::Model::Permissions;
+use_ok 'Baseliner::ActionRole::Ajax';
 
-subtest 'infodetail: root user is allowed to query any user details' => sub {
+subtest 'returns 1 when called without ajax header but not configured' => sub {
+    my $c = mock_catalyst_c();
 
+    my $action = _build_action();
+
+    ok $action->match($c);
+    ok $action->match_captures($c);
 };
 
-sub _setup {
-    Baseliner::Core::Registry->clear();
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
-}
+subtest 'returns 0 when called without ajax header' => sub {
+    my $c = mock_catalyst_c();
 
-sub _build_controller {
+    $c->config->{deny_non_ajax_access}++;
+
+    my $action = _build_action();
+
+    ok !$action->match($c);
+    ok !$action->match_captures($c);
+};
+
+subtest 'returns 1 when called with ajax header' => sub {
+    my $c = mock_catalyst_c( req => { headers => { 'X-Requested-With' => 'XMLHttpRequest' } } );
+
+    $c->config->{deny_non_ajax_access}++;
+
+    my $action = _build_action();
+
+    ok $action->match($c);
+    ok $action->match_captures($c);
+};
+
+sub _build_action {
+    my $meta = Moose::Meta::Class->initialize('TestAction')->create_anon_class(
+        superclasses => ['TestAction'],
+        roles        => ['Baseliner::ActionRole::Ajax'],
+        cache        => 1,
+    );
+
+    return $meta->name->new;
 }
 
 done_testing;
 
-package FakeRequest;
+package TestAction;
+use Moose;
+BEGIN { extends 'Catalyst::Action' }
 
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{params} = $params{params};
-
-    return $self;
-}
-
-sub parameters { &params }
-sub params     { shift->{params} }
-
-package FakeResponse;
-
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    return $self;
-}
-
-sub status { }
-
-package FakeContext;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{stash} = $params{stash} || {};
-    $self->{req} = $params{req};
-
-    return $self;
-}
-
-sub stash {
-    my $self = shift;
-
-    return $self->{stash} unless @_;
-
-    if ( @_ == 1 ) {
-        return $self->{stash}->{ $_[0] };
-    }
-
-    return $self->{stash}->{ $_[0] } = $_[1];
-}
-
-sub model {
-    Baseliner::Model::Permissions->new();
-}
-
-sub username {
-    shift->{username};
-}
-
-sub request { &req }
-sub req     { shift->{req} }
-sub res     { FakeResponse->new }
-sub forward { 'FORWARD' }
+sub match          { 1 }
+sub match_captures { 1 }

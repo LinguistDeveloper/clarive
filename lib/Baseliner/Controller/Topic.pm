@@ -297,15 +297,19 @@ sub related : Local {
     my $p = $c->request->parameters;
     
     my $where = {};
+    if ( $p->{valuesqry} eq 'true' ){
+        $where->{mid} = [ delete $p->{query} ];
+    }
+    $where->{query} = $p->{query} if length $p->{query};
 
     my %filter;
+
 
     my $start = $p->{start} // 0;
     my $limit = $p->{limit} // 20;
 
     if ( $p->{mids} ){
-        my @mids = _array $p->{mids};
-        $filter{mid} = \@mids;    
+        $filter{mid} = $p->{mids};
     }
 
     $filter{category_type} = 'release' if ($p->{show_release});
@@ -342,22 +346,12 @@ sub related : Local {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
-        $_
+       $_
     }  @result_topics;
     
 
     $c->stash->{json} = { totalCount => $cnt, data => \@topics };
     $c->forward('View::JSON');
-}
-
-sub get_search_query_topic {
-    my ($self, $query, $where) = @_;
-    _fail _loc("Missing parameter query") if ( !$query );
-    $where = {} if ( !$where );
-
-    mdb->query_build( query => $query, where => $where, fields => Baseliner->model('Topic')->get_fields_topic() );
-
-    return $where;
 }
 
 our %field_cache;
@@ -536,6 +530,7 @@ sub view : Local {
             
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
             
+            $c->stash->{dashboard} = $category->{dashboard};
             if ( $category->{is_changeset} ) {
                 if ( !$topic_doc->{category_status}->{bind_releases} ) {
                     my ($id_project) = map {$_->{mid}} $topic_ci->projects;
@@ -624,6 +619,7 @@ sub view : Local {
             $c->stash->{category_meta} = $category->{forms};
             $c->stash->{category_name} = $category->{name};
             $c->stash->{category_color} = $category->{color};
+            $c->stash->{dashboard} = $category->{dashboard};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
 
@@ -738,11 +734,13 @@ sub comment : Local {
             # notification data
             my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
             my @users = Baseliner->model("Topic")->get_users_friend(
+                    mid         => $topic_mid,
                     id_category => $topic_row->{category}{id}, 
                     id_status   => $topic_row->{category_status}{id}, 
                     projects    => \@projects );
             my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
             my $notify = { #'project', 'category', 'category_status'
+                mid             => $topic_row->{mid},
                 category        => $topic_row->{category}{id},
                 category_status => $topic_row->{category_status}{id},
                 project => \@projects,
@@ -842,8 +840,11 @@ sub comment : Local {
             for my $mid_topic ( @mids ) {
                 my $topic_row = mdb->topic->find_one({ mid=>$mid_topic });
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
-                my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
-                    id_status=>$topic_row->{category}{status}, projects=>\@projects);
+                my @users = Baseliner->model("Topic")->get_users_friend(
+                    mid         => $mid_topic,
+                    id_category => $topic_row->{category}{id}, 
+                    id_status   => $topic_row->{category_status}{id}, 
+                    projects    => \@projects );
                 my $subject = _loc("@%1 deleted a post from #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title});
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
@@ -951,7 +952,8 @@ sub list_category : Local {
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
                     default_grid  => $category->{default_grid},
-                    default_field => $category->{default_field},
+                    default_form  => $category->{default_form} // $category->{default_field}, ## FIXME default_field is legacy
+                    dashboard     => $category->{dashboard},
                     statuses      => \@statuses,
                     fields        => \@fieldlets,
                     #priorities    => \@priorities
@@ -1012,7 +1014,22 @@ sub update_topic_labels : Local {
     try{
         if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"}) ) {
             my @current_labels = _array( $doc->{labels} );
+            
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
+            
+            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+            my @users = $c->model('Topic')->get_users_friend(
+                id_category => $doc->{category}{id},
+                id_status   => $doc->{category_status}{id},
+                projects    => \@projects
+            );
+            my $subject = _loc('Labels assigned');
+            event_new 'event.file.labels' => {
+                username        => $c->username,
+                mid             => $topic_mid,
+                notify_default  => \@users,
+                subject         => $subject
+            };          
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ ) 
@@ -1028,7 +1045,22 @@ sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ 
+        my $doc = mdb->topic->find_one({mid=>"$topic_mid"});
         mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
+        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+        my @users = $c->model('Topic')->get_users_friend(
+            id_category => $doc->{category}{id},
+            id_status   => $doc->{category_status}{id},
+            projects    => \@projects
+        );
+        my $subject = _loc('Labels deleted');
+        event_new 'event.file.labels_remove' => {
+            username        => $c->username,
+            mid             => $topic_mid,
+            notify_default  => \@users,
+            subject         => $subject
+        };
+
         $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
     }
     catch{
@@ -2217,7 +2249,6 @@ sub topic_drop : Local {
 sub leer_log : Local {
      my ( $self, $c ) = @_;
      my $p = $c->request->parameters;
-    _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
     my @rows = (1,2,3);
     $c->stash->{json} = { data=>\@rows};
     $c->forward('View::JSON');    

@@ -40,17 +40,6 @@ sub run {
     shift->show_help;
 }
 
-sub run_upgrade {
-    my ($self,%opts) = @_;
-    require Clarive::mdb;
-    require Clarive::ci;
-    require Clarive::model;
-    require Clarive::cache;
-    
-    require Baseliner::Schema::Migrator;
-    Baseliner::Schema::Migrator->check( $opts{migrate} );
-}
-
 sub run_reindex {
     my ($self, %opts)=@_;
     require Clarive::mdb;
@@ -89,20 +78,7 @@ sub run_dump {
 
 =pod
 
-Clarive DB Schema Management. Deploys, fixes and migrates the DB
-
-=head1 cla db-upgrade
-
-Upgrades the schema to the latest version.
-
-Options:
-
-   --migrate migration_name
-
-Examples:
-
-   cla db-upgrade --migrate from61        # migrates from a Clarive 6.1 schema
-   cla db-upgrade --migrate from615       # migrates from a Clarive 6.1.5 schema
+Clarive DB Schema Management
 
 =head1 cla db-reindex
 

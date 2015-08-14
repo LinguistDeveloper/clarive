@@ -55,9 +55,11 @@ sub begin : Private {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    my $qry = $p->{query};
     my %query;
     $query{rule_active} = mdb->true;
     $query{rule_type} = $p->{rule_type} if ($p->{rule_type});
+    $query{rule_name} = qr/$qry/i if length $qry && !$p->{valuesqry};
     my @rows = mdb->rule->find({ %query })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
@@ -211,7 +213,7 @@ sub delete : Local {
         my $name = $row->{rule_name};
         if($row->{rule_type} eq 'fieldlets'){
             #remove relationship between rule and category
-            mdb->category->update({default_field=>"$p->{id_rule}"},{'$set'=>{default_field=>''}});
+            mdb->category->update({default_form=>"$p->{id_rule}"},{'$set'=>{default_form=>''}});
         }
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
         mdb->grid->remove({ id_rule=>"$p->{id_rule}" });
@@ -394,7 +396,8 @@ sub palette : Local {
         } 
         Baseliner->registry->starts_with( 'statement.' );
         push @tree, {
-            icon     => '/static/images/icons/control.gif',
+            icon     => '/static/images/icons/controller.png',
+            #icon     => '/static/images/icons/control.gif',
             text     => _loc('Control'),
             draggable => \0,
             expanded => \1,
@@ -439,7 +442,8 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Generic Services'),
-        icon => '/static/images/icons/job.png',
+        icon => '/static/images/icons/services_new.png',
+        #icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [ 

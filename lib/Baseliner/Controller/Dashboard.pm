@@ -45,21 +45,24 @@ register 'dashlet.job.list_baseline' => {
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart', 
-    icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/job.png',
+    #icon=> '/static/images/silk/chart_pie.png',
     js_file => '/dashlets/job_chart.js'
 };
 
 register 'dashlet.job.day_distribution' => {
     form=> '/dashlets/job_distribution_day_config.js',
     name=> 'Job daily distribution', 
-    icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/job.png',
+    #icon=> '/static/images/silk/chart_line.png',
     js_file => '/dashlets/job_distribution_day.js'
 };
 
 register 'dashlet.topic.number_of_topics' => {
     form=> '/dashlets/number_of_topics_chart_config.js',
     name=> 'Topics chart', 
-    icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_pie.png',
     js_file => '/dashlets/number_of_topics_chart.js'
 };
 
@@ -73,28 +76,49 @@ register 'dashlet.topic.list_topics' => {
 register 'dashlet.topic.topics_by_date_line' => {
     form=> '/dashlets/topics_by_date_line_config.js',
     name=> 'Topics time line', 
-    icon=> '/static/images/silk/chart_curve.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_curve.png',
     js_file => '/dashlets/topics_by_date_line.js'
 };
 
 register 'dashlet.topic.topics_burndown' => {
     form=> '/dashlets/topics_burndown_config.js',
     name=> 'Topics burndown', 
-    icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_line.png',
     js_file => '/dashlets/topics_burndown.js'
 };
 
 register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
-    icon=> '/static/images/icons/gauge.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/icons/gauge.png',
     js_file => '/dashlets/topics_gauge_d3.js'
+};
+
+register 'dashlet.topic.topic_roadmap' => {
+    form=> '/dashlets/topic_roadmap_config.js',
+    name=> 'Topic Roadmap', 
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/icons/calendar.gif',
+    js_file => '/dashlets/topic_roadmap.js',
+    no_boot => 1,
+};
+
+register 'dashlet.topic.calendar' => {
+    form=> '/dashlets/calendar_config.js',
+    name=> 'Calendar', 
+    icon=> '/static/images/icons/calendar.png',
+    js_file => '/dashlets/calendar.js',
+    no_boot => 1,
 };
 
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
-    icon=> '/static/images/silk/world.png',
+    icon=> '/static/images/icons/webservice.png',
+    #icon=> '/static/images/silk/world.png',
     js_file => '/dashlets/iframe.js'
 };
 
@@ -112,7 +136,7 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     # find a default dashboard
     my @all_rules = $self->user_dashboards({ username => $c->username });
@@ -146,7 +170,7 @@ sub init : Local {
     # now run the dashboard rule
     my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
     my $stash = {
-        project_id => $project_id,
+        project_id => $id_project,
         dashboard_data => { data=>[], count=>0 },
         dashboard_params => {
             %$p,
@@ -170,6 +194,7 @@ sub init : Local {
                 $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
             }
             $$_{js_file} = $reg->{js_file}; # overwrite important stuff
+            $$_{no_boot} = $reg->{no_boot}; # no bootstrap for this dashlet?
             $$_{form} = $reg->{form}; # overwrite important stuff
         }
         $_;
@@ -181,7 +206,6 @@ sub init : Local {
     # now list the dashboards for user
     #my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
     #my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
-
     $c->stash->{json} = { dashlets=>$dashlets, dashboards=>\@all_rules };
     $c->forward( 'View::JSON' );
 }
@@ -253,10 +277,8 @@ sub dashboard_list: Local {
             };
     }
 
-    if ( $p->{ordered} ) {
-        my %names = map { $_->{text} => $_ } @trees;
-        @trees = sort { $a->{text} cmp $b->{text} } values %names;
-    }
+    my %names = map { $_->{text} => $_ } @trees;
+    @trees = sort { $a->{text} cmp $b->{text} } values %names;
 
     $c->stash->{json} = \@trees;
     $c->forward('View::JSON');
@@ -304,7 +326,7 @@ sub list_jobs: Local {
     my $perm = Baseliner->model('Permissions');
     my $p = $c->req->params;
 
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     my $states = $p->{states} || [];
     my $not_in_states = $p->{not_in_states} || 'off';
@@ -332,8 +354,8 @@ sub list_jobs: Local {
 
         $where->{'projects'} = mdb->in(@mid_filters) if @mid_filters;
 
-        if ( $project_id ) {
-            $where->{'projects'} = $project_id;
+        if ( $id_project ) {
+            $where->{'projects'} = $id_project;
         }
 
         my @filter_states;
@@ -375,7 +397,7 @@ sub last_jobs : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
     my $bls = $p->{bls};
     my @datas;
@@ -391,8 +413,8 @@ sub last_jobs : Local {
         my $username = $c->username;
 
         my @ids_project;
-        if ($project_id) {
-            @ids_project = $project_id;
+        if ($id_project) {
+            @ids_project = $id_project;
         } else {
             @ids_project = $c->model('Permissions')
                 ->user_projects_ids( username => $c->username );
@@ -470,6 +492,9 @@ sub topics_by_category: Local {
     my $not_in_status = $p->{not_in_status};
     my $condition = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -480,6 +505,9 @@ sub topics_by_category: Local {
     }
 
     my $where = $condition;
+
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+
     if ( $statuses ) {
         if ( $not_in_status ) {
             $where->{'category_status.id'} = mdb->nin($statuses);
@@ -559,6 +587,10 @@ sub topics_by_field: Local {
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     my $condition = {};
 
     if ( $group_by eq 'topics_by_category') {
@@ -603,13 +635,7 @@ sub topics_by_field: Local {
 
     $where->{'category.id'} = mdb->in(@user_categories);
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     @topics_by_category = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -792,6 +818,9 @@ sub topics_by_date: Local {
     my $days_until = $p->{days_until};
     my $condition = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -852,13 +881,7 @@ sub topics_by_date: Local {
         $where->{$date_field} = {'$lte' => "$until"};        
     }
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid ); 
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
@@ -976,6 +999,95 @@ sub topics_by_date: Local {
     $c->forward('View::JSON');
 }
 
+sub roadmap : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+
+    # we need to determine the first day of the week, going back X weeks
+    #   so the start date is always EARLIER than today's date minus X weeks
+    my $now = Class::Date->now;
+    my $first_weekday = $p->{first_weekday} // 0;  # 0 is Sunday, 6 is Saturday
+    my $units_from = $p->{units_from} // 10;
+    my $units_until = $p->{units_until} // 10;
+    my $first_day_of_my_week = $now->_wday - $first_weekday;
+    my $categories = $p->{categories};
+    my $condition = length $p->{condition} ? Util->_decode_json("{" . $p->{condition} . "}") : {};
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+    my $default_mask = '<b>${category.acronym}#${topic.mid}</b> ${topic.title}';
+    my $label_mask = $p->{label_mask} || $default_mask;
+    my $scale = $p->{scale} || 'weekly';
+
+    # my $id_project = $p->{id_project};
+    my @rows;
+    my %bls = map{ $$_{name}=>[] } ci->bl->find->all;
+    my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ workflow=>0, fieldlets=>0 })->all;
+    my $where = { 'category.id'=>mdb->in(keys %cats), %$condition };
+
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+
+    my @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
+    my %master_cal;
+    map{ push @{ $master_cal{$$_{mid}} } => $_ } mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics) })->all;
+
+    # distribute topics to their corresponding bl
+    for my $topic ( @topics ) {
+        my $cal = $master_cal{ $topic->{mid} } || next;
+        my $cat = $cats{$topic->{category}{id}};
+        my $label = Util->parse_vars( $label_mask, { topic=>$topic, category=>$cat });
+        $label = Util->parse_vars( $default_mask, { topic=>$topic, category=>$cat }) if $label eq $label_mask; ## oops, the parse didn't parse anything, so use the default
+        for my $cc ( _array $cal ) { 
+            next unless exists $bls{ $cc->{slotname} };
+            push @{ $bls{ $cc->{slotname} } }, { label=>$label, topic=>$topic, cal=>$cc, acronym=>$cat->{acronym} }; 
+        }
+    }
+
+    # find the first day
+    my $first_day = $scale eq 'weekly' 
+            ? ( $now - ( ($units_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D') )
+            : ( $scale eq 'monthly' 
+                   ? Class::Date->new( DateTime->from_epoch( epoch=>$now->epoch )->truncate( to=>'month' ) ) - ( $units_from.'M')
+                   : ( $now - ( $units_from . 'D' ) )
+              )
+      ;
+    $first_day = substr( $first_day, 0, 10) . ' 00:00';
+
+    # week by week, find which topics go where
+    my @units = map{ 
+            Class::Date->new( $first_day ) 
+            +  ( $scale eq 'monthly' 
+                    ? $_.'M' 
+                    : ( $scale eq 'weekly' 
+                        ? (($_*7).'D') 
+                        : $_.'D' ) 
+               )
+        } 
+        0..( $units_from + $units_until );
+    
+    my $scale_sum = $scale eq 'monthly' ? '1M' : $scale eq 'weekly' ? '7D' : '1D';
+
+    my $k=0;
+    for my $st ( @units ) {
+        my $row = { date=>"$st", is_current=>($units_from == $k++) };
+        for my $bl ( keys %bls ) {
+            my $ed = $st + $scale_sum;
+            my @bl_topics = grep { 
+                ($$_{cal}{plan_start_date} ge $st && $$_{cal}{plan_start_date} lt $ed ) 
+                || ( $$_{cal}{plan_end_date} ge $st && $$_{cal}{plan_end_date} lt $ed ) 
+                || ( $$_{cal}{plan_start_date} le $st && $$_{cal}{plan_end_date} ge $ed ) 
+            } _array( $bls{ $bl } );
+            for my $blt ( @bl_topics ) {
+                push @{ $row->{$bl} }, $blt; 
+            }
+        }
+
+        push @rows, $row;
+    }
+
+    $c->stash->{json} = { data=>\@rows};
+    $c->forward('View::JSON');    
+}
+
 sub topics_gauge: Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -1016,6 +1128,9 @@ sub gauge_data {
     my $input_units = $p->{input_units} || 'day';
     my $condition = {};
     my $end_remaining = $p->{end_remaining} || 'off';
+
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
 
     if ( $p->{condition} ) {
         try {
@@ -1077,13 +1192,7 @@ sub gauge_data {
     my $rs_topics;
     my $field_mode = 0;
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     if ( $numeric_field ) {
         $field_mode = 1;
@@ -1203,6 +1312,9 @@ sub list_topics: Local {
     my $condition = {};
     my $where = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -1260,13 +1372,7 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );    
 
     $main_conditions->{'categories'} = \@user_categories;
 
@@ -1302,6 +1408,10 @@ sub topics_burndown : Local {
     my $perm = Baseliner->model('Permissions');
     my $where = {};
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
+
     my @user_categories
         = map { $_->{id}; }
         $c->model('Topic')
@@ -1327,13 +1437,7 @@ sub topics_burndown : Local {
         mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
         ->fields( { mid => 1 } )->all;
 
-    if($p->{project_id}){
-        my @mids_in = ();
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{project_id}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my $remaining_backlog = mdb->topic->find(
         {   'category.id' => mdb->in(@user_categories),
@@ -1433,7 +1537,7 @@ sub list_baseline : Local {
     my $days     = $p->{days}     // 7;
     my $projects = $p->{projects} // 'ALL';
     my $bls      = $p->{bls};
-    my $project_id = $p->{project_id};
+    my $id_project = $p->{project_id};
 
 
     my $username = $c->username;
@@ -1443,8 +1547,8 @@ sub list_baseline : Local {
     my @ids_project = $c->model('Permissions')
         ->user_projects_ids( username => $c->username );
 
-    if ( $project_id ) {
-        @ids_project = ($project_id);
+    if ( $id_project ) {
+        @ids_project = ($id_project);
     }
 
     my @filter_bls;
@@ -1555,15 +1659,15 @@ sub list_baseline : Local {
 }
 
 sub viewjobs : Local {
-    my ( $self, $c, $days, $type, $bl, $project_id ) = @_;
+    my ( $self, $c, $days, $type, $bl, $id_project ) = @_;
     my $p = $c->request->parameters;
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
-    if ( $project_id ) {
-        @ids_project = ($project_id);
+    if ( $id_project ) {
+        @ids_project = ($id_project);
     }
     #Filtramos por la parametrización cuando no son todos
     # if($config->{projects} ne 'ALL'){
@@ -1905,7 +2009,7 @@ __DATA__
     - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last month","expanded":false,"id":"rule-ext-gen10866-1431204661743","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:58","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1M","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":"0","data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
-    status - Last quearter","expanded":false,"id":"rule-ext-gen10865-1431204661742","semaphore_key":"","leaf":true,"ts":"2015-05-15T18:48:42","name":"Job
+    status - Last quarter","expanded":false,"id":"rule-ext-gen10865-1431204661742","semaphore_key":"","leaf":true,"ts":"2015-05-15T18:48:42","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"3M","autorefresh":"0","columns":"4","bls":[],"type":"donut","rows":"1"},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last year","expanded":false,"id":"rule-ext-gen10862-1431204661738","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:30","name":"Job
     Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1Y","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":60000,"data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-18T22:56:51","name":"Topics
@@ -1922,7 +2026,7 @@ __DATA__
 - rule_active: '1'
   rule_desc: ''
   rule_event: ~
-  rule_name: Release mgr
+  rule_name: Release Manager
   rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
     by date line chart","active":1,"data":{"days_until":"0","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","type":"area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
     created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","isTarget":false,"html":"","text":"Releases
@@ -1961,7 +2065,7 @@ __DATA__
   default_dashboard: '1'
   rule_desc: ''
   rule_event: ~
-  rule_name: Default dashboard
+  rule_name: Main Dashboard
   rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:12","name":"Topics
     chart","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_status","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"Open
     topics by status","expanded":false,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:23","name":"Topics

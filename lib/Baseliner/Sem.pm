@@ -46,6 +46,7 @@ has id_sem   => qw(is rw isa MongoDB::OID);
 has internal => qw(is rw isa Bool default 0);
 has must_release => qw(is rw isa Bool default 0);
 has released     => qw(is rw isa Bool default 0);
+has pid          => qw(is rw isa Any), default => sub { $$ };
 has disp_id => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
 has session => qw(is rw isa Any), default => sub{ 
     my $actual_conection;
@@ -239,6 +240,8 @@ sub maxslots {
 sub release { 
     my ($self, %p) =@_;
     return if $self->released;
+    return if $self->pid != $$;  # fork protection: avoid child working on parent sems
+
     if ( $self->must_release ) {
 
         my $res = mdb->sem->update(

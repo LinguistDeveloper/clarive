@@ -4,8 +4,5 @@
     var value_type = Baseliner.generic_list_fields(data);
     ret.push(value_type);
 
-    ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.tasks' }
-    ]);
     return ret;
 })

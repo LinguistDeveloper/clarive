@@ -37,8 +37,10 @@ sub update_category : Local {
     my $action = $p->{action};
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
-    
     cache->remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^roles:/ );
+    cache->remove({ d=>"topic:meta" });
+    
     $c->registry->reload_all;
     my $assign_type = sub {
         my ($category) = @_;
@@ -74,7 +76,8 @@ sub update_category : Local {
                         statuses => $idsstatus // [], 
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
-                        default_field => $p->{default_field}
+                        default_form => $p->{default_form} // $p->{default_field}, ## FIXME default_field is legacy
+                        dashboard    => $p->{dashboard},
                     };
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
@@ -102,7 +105,8 @@ sub update_category : Local {
                         color         => $p->{category_color},
                         description   => $p->{description},
                         default_grid  => $p->{default_grid},
-                        default_field => $p->{default_field},
+                        default_form => $p->{default_form},
+                        dashboard    => $p->{dashboard},
                         ( $idsstatus ? (statuses=>$idsstatus) : () ),
                         %$iss
                     }

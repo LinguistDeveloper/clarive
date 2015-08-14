@@ -16,8 +16,5 @@
             element.disabled = true;
         }
     });
-    ret.push([ 
-        { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.title' } 
-    ]);
     return ret;
 })

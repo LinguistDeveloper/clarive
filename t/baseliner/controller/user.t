@@ -7,11 +7,10 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
-use TestUtils;
+use TestUtils ':catalyst';
 
 BEGIN {
     TestEnv->setup;
-    $Carp::Verbose ++;
 }
 
 use Clarive::ci;
@@ -25,13 +24,11 @@ subtest 'infoactions: non admin user is not allowed to query other users action'
 
     my $controller = _build_controller();
 
-    my $params = { username => 'root'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'test' );
+    my $c = _build_c( req => { params => { username => 'root' } } );
 
     $controller->infoactions($c);
 
-    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/)} }
+    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
 };
 
 subtest 'infoactions: same user is allowed to query his own actions' => sub {
@@ -39,13 +36,11 @@ subtest 'infoactions: same user is allowed to query his own actions' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { username => 'test'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'test' );
+    my $c = _build_c( req => { params => { username => 'test' } } );
 
     $controller->infoactions($c);
 
-    cmp_deeply $c->stash, { json => { data => ignore()} }
+    cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
 subtest 'infoactions: root user is allowed to query any user actions' => sub {
@@ -53,13 +48,11 @@ subtest 'infoactions: root user is allowed to query any user actions' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { username => 'test'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'root' );
+    my $c = _build_c( req => { params => { username => 'test' } }, username => 'root' );
 
     $controller->infoactions($c);
 
-    cmp_deeply $c->stash, { json => { data => ignore()} }
+    cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
 subtest 'infodetail: non admin user is not allowed to query other users detail' => sub {
@@ -67,13 +60,11 @@ subtest 'infodetail: non admin user is not allowed to query other users detail' 
 
     my $controller = _build_controller();
 
-    my $params = { username => 'root'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'test' );
+    my $c = _build_c( req => { params => { username => 'root' } }, username => 'test' );
 
     $controller->infodetail($c);
 
-    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/)} }
+    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
 };
 
 subtest 'infodetail: non admin user is not allowed to query role details' => sub {
@@ -83,11 +74,11 @@ subtest 'infodetail: non admin user is not allowed to query role details' => sub
 
     my $params = { id_role => 1 };
 
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'test' );
+    my $c = _build_c( req => { params => { id_role => 1 } }, username => 'test' );
 
     $controller->infodetail($c);
 
-    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/)} }
+    cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
 };
 
 subtest 'infodetail: same user is allowed to query his own details' => sub {
@@ -95,13 +86,11 @@ subtest 'infodetail: same user is allowed to query his own details' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { username => 'test'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'test' );
+    my $c = _build_c( req => { params => { username => 'test' } }, username => 'test' );
 
     $controller->infodetail($c);
 
-    cmp_deeply $c->stash, { json => { data => ignore()} }
+    cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
 subtest 'infodetail: root user is allowed to query any user details' => sub {
@@ -109,13 +98,11 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { username => 'test'};
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'root' );
+    my $c = _build_c( req => { params => { username => 'test' } }, username => 'root' );
 
     $controller->infodetail($c);
 
-    cmp_deeply $c->stash, { json => { data => ignore()} }
+    cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
 subtest 'infodetail: root user is allowed to query any user details' => sub {
@@ -123,14 +110,16 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { id_role => 1 };
-
-    my $c = FakeContext->new( req => FakeRequest->new( params => $params) , username => 'root' );
+    my $c = _build_c( req => { params => { id_role => 1 } }, username => 'root' );
 
     $controller->infodetail($c);
 
-    cmp_deeply $c->stash, { json => { data => ignore()} }
+    cmp_deeply $c->stash, { json => { data => ignore() } };
 };
+
+sub _build_c {
+    mock_catalyst_c( username => 'test', model => 'Baseliner::Model::Permissions', @_ );
+}
 
 sub _setup {
     Baseliner::Core::Registry->clear();
@@ -138,7 +127,7 @@ sub _setup {
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
-    my $user = ci->user->new( name => 'test');
+    my $user = ci->user->new( name => 'test' );
     $user->save;
 }
 
@@ -147,81 +136,3 @@ sub _build_controller {
 }
 
 done_testing;
-
-package FakeRequest;
-
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{params} = $params{params};
-
-    return $self;
-}
-
-sub parameters { &params }
-sub params     { shift->{params} }
-
-package FakeResponse;
-
-use strict;
-use warnings;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    return $self;
-}
-
-sub status { }
-
-package FakeContext;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{stash} = $params{stash} || {};
-    $self->{req} = $params{req};
-    $self->{username} = $params{username};
-
-    return $self;
-}
-
-sub stash {
-    my $self = shift;
-
-    return $self->{stash} unless @_;
-
-    if ( @_ == 1 ) {
-        return $self->{stash}->{ $_[0] };
-    }
-
-    return $self->{stash}->{ $_[0] } = $_[1];
-}
-
-sub model {
-    Baseliner::Model::Permissions->new();
-}
-
-sub username {
-    shift->{username};
-}
-
-sub request { &req }
-sub req     { shift->{req} }
-sub res     { FakeResponse->new }
-sub forward { 'FORWARD' }

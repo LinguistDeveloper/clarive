@@ -18,14 +18,16 @@ has include   => qw(is rw isa Any);
 has exclude   => qw(is rw isa Any);
 
 sub collection { 'GitRepository' }
-sub icon       { '/static/images/icons/git-repo.gif' }
+sub icon       { '/static/images/icons/git.png' }
+#sub icon       { '/static/images/icons/git-repo.gif' }
 
 sub has_bl { 1 }
 
 service 'create_tags' => {
     name    => _loc('Create tags'),
     form    => '/forms/repo_create_tags.js',
-    icon    => '/gitweb/images/icons/git.png',
+    icon    => '/static/images/icons/git.png',
+    #icon    => '/gitweb/images/icons/git.png',
     handler => sub {
         my ($self,$c,$config) = @_;
         my $ref = $config->{'ref'};

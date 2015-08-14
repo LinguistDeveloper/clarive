@@ -53,6 +53,7 @@ register 'config.comm.email' => {
 
 register 'service.daemon.email' => {
     name => 'Email Daemon',
+    icon => '/static/images/icons/daemon.gif', 
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;
@@ -63,6 +64,7 @@ register 'service.daemon.email' => {
 
 register 'service.email.flush' => {
     name => 'Email Flush Queue Once',
+    icon => '/static/images/icons/envelope.png', 
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;

@@ -11,7 +11,13 @@
 #
 lang: en_US.UTF-8
 port: 3000
-    
+
+# number of web workers 
+workers: 5
+
+# max requests handled by each web worker before it restarts
+max_requests: 100
+
 # frequency of semaphore attempts
 semaphore_wait_interval: .1
     

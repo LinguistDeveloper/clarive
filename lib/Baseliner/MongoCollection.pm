@@ -19,12 +19,17 @@ sub search {
     my ($self,%p) = @_;
     my $query = delete $p{query} or Util->_throw( 'search: missing query');
     my $limit = delete $p{limit} // 1000;
-    my $mongo_version = $self->_db->eval('db.version()');
-    if($mongo_version le '2.6.8'){
-        $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ;
+    my $mongo_version = mdb->mongo_version;
+    if($mongo_version lt '3'){
+        return $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ;
     }else{
         #TODO: Include options like limit
-        $self->_db->where({'$text' => {'$search' => $query } });
+        my $rs = $self->find({'$text' => {'$search' => $query } })->limit($limit);
+        if( my $project = delete $p{project} ) {
+            $rs->fields($project);
+        }
+        my @results = map { +{ obj=>$_ } } $rs->all;
+        return { ok=>1, results=>\@results };
     }
 }
 

@@ -1,6 +1,7 @@
 (function(params){ 
     var id = params.id_div;
     var project_id = params.project_id;
+    var topic_mid = params.topic_mid;
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
     var not_in_status = params.data.not_in_status;
@@ -31,7 +32,7 @@
     var green = parseInt(params.data.green) || 10;
     var yellow = parseInt(params.data.yellow) || 20;
 
-    Cla.ajax_json('/dashboard/topics_gauge', { max_selection: max_selection, days_from_max: days_from_max, days_until_max: days_until_max, condition_max: condition_max, not_in_status_max: not_in_status_max, categories_max: categories_max, statuses_max: statuses_max, project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
+    Cla.ajax_json('/dashboard/topics_gauge', { project_id: project_id, topic_mid: topic_mid, max_selection: max_selection, days_from_max: days_from_max, days_until_max: days_until_max, condition_max: condition_max, not_in_status_max: not_in_status_max, categories_max: categories_max, statuses_max: statuses_max, project_id: project_id, reverse: reverse, input_units: input_units, end_remaining: end_remaining, units: units, numeric_field: numeric_field, days_from: days_from, days_until: days_until, date_field_start: date_field_start, date_field_end: date_field_end, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var needle_length = 0.85;
         var value_font = "18px";
         var div = document.getElementById(id);

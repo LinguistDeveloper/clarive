@@ -147,6 +147,20 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 value: language_pref || Prefs.language || 'en',
                 data: lang_arr.length ? lang_arr : [ ['en',_('English')], ['es',_('Spanish')] ]
             });
+            // date format
+            var date_format = new Baseliner.ComboDouble({
+                fieldLabel: _('Date Format'), 
+                name: 'date_format_pref', 
+                value: res.data.date_format_pref || Prefs.date_format || 'format_from_local',
+                data: [ 
+                    ['format_from_local', _('Default Format for Current Language')], 
+                    ['d/m/y', 'dd/mm/yyyy'], 
+                    ['m/d/y', 'mm/dd/yyyy'],
+                    ['d-m-y', 'dd-mm-yyyy'], 
+                    ['y-m-d', 'yyyy-mm-dd']
+                ]
+            });
+            
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
 
@@ -155,7 +169,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                  border: false,
                  labelWidth: 100, 
                  timeout: 120,
-                 items: [ language, dashboard ],
+                 items: [ language, date_format, dashboard ],
                  buttons: [
                      { text: username ? _('Save %1', username) : _('Save'),
                           handler: function() {

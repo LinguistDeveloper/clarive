@@ -23,12 +23,14 @@ has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { lc( Sys::Hostname::hostname() ) };
 
 # From Starman (check lib/Starman/Server.pm for options)
-has max_requests => qw(is rw isa Any default 100);
+has max_requests => qw(is rw isa Any);
 has [qw(backlog min_servers min_spare_servers max_spare_servers max_servers)] => qw(is rw isa Any);
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
+with 'Clarive::Role::CheckInitialized';
+with 'Clarive::Role::CheckMigrations';
 
 sub BUILD {
     my $self = shift;
@@ -52,7 +54,6 @@ sub BUILD {
     }
 
     $self->setup_baseliner;
-    
 }
 
 sub setup_vars {
@@ -80,6 +81,10 @@ sub run {
 
 sub run_start {
     my ($self, %opts)=@_; 
+
+    $self->check_initialized;
+
+    $self->check_migrations;
     
     $self->check_pid_exists();
 
@@ -157,7 +162,7 @@ sub run_start {
             $self->_exit(0);
         }
     };
-    
+
     $runner->{options} = [ 
         $self->workers ? (workers => $self->workers) : (),
         pid => $self->pid_web_file,

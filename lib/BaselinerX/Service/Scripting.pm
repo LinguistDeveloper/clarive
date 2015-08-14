@@ -9,12 +9,14 @@ use utf8::all;
 use Encode qw(encode decode);
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/step_run.png';
+#our $ICON_DEFAULT = '/static/images/icons/step_run.png';
+our $ICON_DEFAULT = '/static/images/icons/cog_java.png';
 
 register 'service.scripting.local' => {
     name => 'Run a local script',
     form => '/forms/script_local.js',
-    icon => '/static/images/icons/script-local.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/script-local.png',
     job_service  => 1,
     handler => \&run_local,
 };

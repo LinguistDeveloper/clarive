@@ -10,6 +10,16 @@ use experimental 'autoderef';
 
 with 'Baseliner::Role::Service';
 
+with 'Baseliner::Role::CacheProxy' => {
+    cache_key_cb => sub {
+        shift;
+        my ( $mid, %p ) = @_;
+
+        { mid => "$mid", d => 'events', opts => \%p };    # [ "events:$mid:", \%p ];
+    },
+    methods => [qw/find_by_mid/]
+};
+
 register 'config.events' => {
     name => 'Event daemon configuration',
     metadata => [
@@ -20,6 +30,7 @@ register 'config.events' => {
 
 register 'service.event.daemon' => {
     daemon => 1,
+    icon => '/static/images/icons/daemon.gif', 
     config => 'config.events',
     handler => sub {
         my ($self, $c, $config ) = @_;
@@ -177,10 +188,6 @@ sub find_by_mid {
     my $self = shift;
     my ($mid, %p ) = @_;
 
-    my $cache_key = { mid=>"$mid", d=>'events', opts=>\%p }; # [ "events:$mid:", \%p ];
-    my $cached = cache->get( $cache_key );
-    return $cached if $cached;
-
     my $min_level = $p{min_level} // 0;
 
     my @events = mdb->event->find( { mid => "$mid" } )->sort( { ts => -1 } )->all;
@@ -209,16 +216,14 @@ sub find_by_mid {
         push @elems, \%res;
     }
 
-    cache->set( $cache_key, \@elems );
-
     return \@elems;
 }
 
 sub new_event {
     my $self = shift;
-    my ( $key, $data, $code, $catch ) = @_;
+    my ( $key, $data, $code, $catch, $caller ) = @_;
 
-    my $module = caller;
+    my $module = $caller || caller;
 
     if ( ref $data eq 'CODE' ) {
         $code = $data;
@@ -227,7 +232,7 @@ sub new_event {
     $data ||= {};
 
     my $ev = Baseliner::Core::Registry->get($key);
-    _throw 'Event not found in registry' unless $ev && %$ev;
+    _throw "Event '$key' not found in registry" unless $ev && %$ev;
 
     return try {
         $self->_new_event( $ev, $key, $data, $module, $code );

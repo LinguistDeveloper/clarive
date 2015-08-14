@@ -29,6 +29,7 @@ use Exporter::Tidy default => [qw/
     log_error
     lifecycle
     event_new
+    master_new
     /
 ];
 
@@ -59,6 +60,88 @@ sub log_warn { $job->log->warn( @_ ) }
 
 sub log_section {}
 
-sub event_new { Baseliner::Model::Events->new_event(@_) }
+=head2 master_new
+
+Creates a master row, then your row by calling your code,
+all within a transaction.
+
+Usage:
+
+    master_new 'topic' => 'my_ci_name' => sub {
+       my $mid = shift;
+       ...
+    };
+
+Or:
+
+    master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
+
+=cut
+sub master_new {   
+    my ($collection, $name, $code ) =@_;
+    my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
+    my $class = 'BaselinerX::CI::'.$collection;
+    my $mid = $master_data->{mid};  # user supplied mid? ok. 
+    if( ref $code eq 'HASH' ) {
+        my $ci = $class->new( %$master_data, %$code );
+        return $ci->save;
+        #return $class->save( %$master_data, data=>$code );   # this returns a mid
+    } elsif( ref $code eq 'CODE' ) {
+        return try {
+            my $ret;
+            # txn begin
+            my $ci = $class->new( %$master_data );
+            $ci->save;
+            $mid = $ci->mid;
+            ################################# 
+            $ret = $code->( $mid );
+            ################################# 
+            # txn commit
+            return $ret;
+        } catch {
+            my $e = shift; 
+            ci->delete( $mid ) if length $mid;
+            # txn rollback
+            _throw $e;
+        };
+    } else {
+        _throw 'Invalid master_new syntax';
+    }
+}
+
+sub event_new { Baseliner::Model::Events->new_event(@_, caller) }
+
+=head2 event_hook
+
+Adds hooks to events. 
+
+    event_hook 'event.topic.create' => 'before' => sub {
+         ...
+    };
+
+=cut
+sub event_hook {
+    my ( $keys, $when, $code ) = @_;
+    if( ref $when eq 'CODE' ) {
+        $code = $when;
+        $when = 'after';
+    }
+    my $pkg = caller();
+    my @keys = ref $keys eq 'ARRAY' ? @$keys : ($keys);
+    my $regs = 'Baseliner::Core::Registry';  # Baseliner->model('Registry') not available on startup
+    for my $key ( @keys ) {
+        my $regkey = "$key._hooks";
+        if( my $hooks = $regs->get_node( $regkey ) ) {
+            push @{ $hooks->param->{$when} }, $code;
+        } else {
+            my $param = { 
+                before => [], 
+                after  => [],
+            };
+            push @{ $param->{ $when } }, $code; 
+            Baseliner::Core::Registry->add( $pkg || __PACKAGE__, $regkey, $param );
+        }
+    }
+}
 
 1;

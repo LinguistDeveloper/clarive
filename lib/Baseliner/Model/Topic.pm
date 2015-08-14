@@ -3,6 +3,8 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Users;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -86,6 +88,18 @@ register 'event.file.remove' => {
     text => '%1 removed %2',
     description => 'User removed a file',
     vars => ['username', 'filename', 'ts'],
+};
+
+register 'event.file.labels' => {
+    text => '%1 modify labels',
+    description => 'User modified a topic',
+    vars => ['username', 'ts'],
+};
+
+register 'event.file.labels_remove' => {
+    text => '%1 remove labels',
+    description => 'User modified a topic',
+    vars => ['username', 'ts'],
 };
 
 register 'event.topic.file_remove' => {
@@ -283,9 +297,12 @@ register 'registor.action.topic_category_fields' => {
 };
 
 sub build_field_query {
-    my ($self,$query,$where,$username) = @_;
-    my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
-    mdb->query_build( where=>$where, query=>$query, fields=>['mid', 'category.name', 'category_status.name', '_txt', keys %all_fields] ); 
+    my ($self,$query,$where,$username,%opts) = @_;
+    my $fields = $opts{fields} || do { 
+        my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
+        ['mid', 'category.name', 'category_status.name', '_txt', keys %all_fields];
+    };
+    mdb->query_build( where=>$where, query=>$query, fields=>$fields ); 
 }
 
 sub build_sort {
@@ -306,17 +323,17 @@ sub build_sort {
 }
 
 sub run_query_builder {
-    my ($self,$query,$where,$username) = @_;
+    my ($self,$query,$where,$username, %opts) = @_;
     my @mids_in;
     #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
     my @mids_query;
-    if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+    if( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {  # special queries handled by query_build later
         @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, project=>{mid=>1})->{results} );
     }
     
     if( @mids_query == 0 ) {
-        $self->build_field_query( $query, $where, $username );
+        $self->build_field_query( $query, $where, $username, fields=>$opts{fields} );
     } else {
         push @mids_in, @mids_query > 0 ? @mids_query : -1;
     }
@@ -334,7 +351,7 @@ sub topics_for_user {
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
     my $where = $p->{where} // {};
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
@@ -354,7 +371,7 @@ sub topics_for_user {
         @categories = _array( $p->{categories} );
         my @user_categories = map {
             $_->{id};
-        } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+        } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
         my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
@@ -378,7 +395,7 @@ sub topics_for_user {
     }
 
     # project security - grouped by - into $or 
-    Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
+    Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @categories );
     
     if( $topic_list ) {
         $where->{mid} = mdb->in($topic_list);
@@ -641,7 +658,7 @@ sub update_mid_data {
     my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
     my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
     
-    my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
+    my $user_security = Baseliner::Model::Permissions->new->user_projects_ids_with_collection(username => $username, with_role => 1);
     
     my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ _txt=>0 })->all;
 
@@ -710,13 +727,18 @@ sub update {
             event_new 'event.topic.create' => $stash => sub {
                 mdb->txn(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
+
                     $stash->{topic_meta} = $meta; 
                     my @meta_filter;
                     push @meta_filter, $_
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
-                    $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
-                    $p->{title} = _strip_html($p->{title}) if ($p->{title}); #fix close comments in html templates
+
+                    if ($p->{title}) {
+                        $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
+                        $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
+                    }
+
                     my ($topic) = $self->save_data($meta, undef, $p);
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
@@ -745,11 +767,15 @@ sub update {
                 #$return_options->{reload} = 1;                 
             } 
             => sub { # catch
-                mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
-                mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
-                _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
+                if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
+                    mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                    mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
+                    _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
+                } else {
+                    _throw _loc( 'Error adding Topic: %1', shift() );
+                }
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
@@ -930,11 +956,11 @@ sub next_status_for_user {
     my $id_category = ''.$p{id_category};
     my $where = { id =>$id_category };
     $where->{'workflow.id_status_from'} = mdb->in($p{id_status_from}) if defined $p{id_status_from};
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my @to_status;
     
     if ( !$is_root ) {
-        @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
+        @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $username, mid => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
         my %my_roles = map { $_=>1 } @user_roles;
         my $_tos;
@@ -990,11 +1016,11 @@ sub next_status_for_user {
             
             foreach my $status (@deployable_status){
                 if ( $status->{job_type} eq 'promote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
+                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
                         push @to_status, $status;
                     }
                 }elsif ( $status->{job_type} eq 'demote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
+                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
                         push @to_status, $status;
                     }               
                 }else {
@@ -1276,17 +1302,16 @@ sub get_meta {
     # my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
     # return $cached if $cached;
 
-
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
 
     $id_category = $id_cat;
-    my @fieldlets;
     my @cat_fields;
 
     my $field_order = 0;
-    my @system_fields = Baseliner->registry->starts_with( "fieldlet.required" );
-    foreach my $sys_field (@system_fields){
-        my $fieldRegistry = Baseliner->registry->get($sys_field);
+    # first, the required fields
+    my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
+    foreach my $required_fields (@required_fields){
+        my $fieldRegistry = Baseliner->registry->get($required_fields);
         my $reg_params = $fieldRegistry->{registry_node}{param};
         my $res = {};
         $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
@@ -1296,71 +1321,52 @@ sub get_meta {
         push @cat_fields, $res;
     }
 
+    # now we run the rule to get the custom fieldlets
+    my @custom_fieldlets;
     if($id_category){
         my $cat = mdb->category->find_one({ id=>$id_category });
+        my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
         _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
-            unless length $cat->{default_field};
-        return     unless length $cat->{default_field};
-        my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+            unless length $default_form;
+        return [] unless length $default_form;
+        my $cr = Baseliner::CompiledRule->new( id_rule=> $default_form );
         $cr->compile;
         my $stash = {name_category=>$$cat{name},id_category=>$id_category};
         $cr->run(stash=>$stash);
-        @fieldlets = _array $stash->{fieldlets};
-        # now merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
-        foreach my $fieldlet (@fieldlets){
-            my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
-            my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry;
-            try { 
-                $fieldRegistry = Baseliner->registry->get( $fieldType );
-                my $reg_params = $fieldRegistry->{registry_node}{param};
-                $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
-                $res->{params}{field_order} = $field_order++;
-                push @cat_fields, $res;
-            } catch {
-                _error "FieldType $fieldType not found in registry for category $$cat{name}: ".shift;
-            };
+        push @custom_fieldlets, _array( $stash->{fieldlets} );
+    } else {
+        my @user_categories = $username 
+            ? map { $_->{id} } $self->get_categories_permissions( username=>$username, type=>'view' )
+            : map { $_->{id} } mdb->category->find->all;
+        foreach my $category (@user_categories){
+            my $cat = mdb->category->find_one({ id=>$category });
+            my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+            $cr->compile;
+            my $stash = {id_category=>$category};
+            $cr->run(stash=>$stash);
+            push @custom_fieldlets, _array( $stash->{fieldlets} );
         }
-    }else{
-        if ($username){
-            my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            foreach my $category (@user_categories){
-                my $cat = mdb->category->find_one({ id=>$category });
-                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
-                $cr->compile;
-                my $stash = {id_category=>$category};
-                $cr->run(stash=>$stash);
-                push @fieldlets, _array $stash->{fieldlets};
+    }
+
+    # merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
+    foreach my $fieldlet ( @custom_fieldlets ){
+        my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
+        my $key = $fieldlet->{fieldletType} || $fieldlet->{key};  # FIXME fieldletType is deprecated
+        try { 
+            my $registered_fieldlet = Baseliner->registry->get( $key );
+            my $reg_params = $registered_fieldlet->{registry_node}{param};
+            $res->{params}{$_} = $reg_params->{$_} for grep !/^(registry_node|data_gen)$/, keys $reg_params;
+            $res->{params}{field_order} = $field_order++;
+            if( my $data_gen = $registered_fieldlet->data_gen ) {
+                my $data = $data_gen->( $res->{params} ) // {};
+                $res->{params}{$_} = $data->{$_} for keys %$data;
             }
-        } else {
-            my @user_categories =  map { $_->{id} } mdb->category->find->all;
-            foreach my $category (@user_categories){
-                my $cat = mdb->category->find_one({ id=>$category });
-                my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
-                $cr->compile;
-                my $stash = {id_category=>$category};
-                $cr->run(stash=>$stash);
-                push @fieldlets, _array $stash->{fieldlets};
-            }
-        }
-        foreach my $fieldlet (_array @fieldlets){
-            my $res;
-            my $fieldType = $fieldlet->{fieldletType};
-            my $fieldRegistry;
-            try {
-                $fieldRegistry = Baseliner->registry->get( $fieldType );
-                foreach my $field (keys $fieldlet){
-                    $fieldRegistry->{registry_node}->{param}->{$field} = $fieldlet->{$field};
-                }
-                $res->{id_field} = $fieldRegistry->{registry_node}->{param}->{id_field};
-                map { $res->{params}->{$_} =  $fieldRegistry->{registry_node}->{param}->{$_} if $_ ne 'registry_node'  } keys $fieldRegistry->{registry_node}->{param};
-                $res->{params}->{field_order} = $field_order;
-                $field_order++;
-                push @cat_fields, $res;
-            } catch {
-                _error "FieldType $fieldType not found in registry: ".shift;
-            };
-        }
+            push @cat_fields, $res;
+        } catch {
+            my $err = shift;
+            # TODO consider showing the form, but with a special "error" fieldlet 
+            _error _loc "Fieldlet `$%1` not found in registry: %2", $key, $err;
+        };
     }
 
     my @meta =
@@ -1371,7 +1377,7 @@ sub get_meta {
             if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
                 $d->{default_value} = eval $1;
             }
-            $d->{editable} //= (length $d->{js} || $d->{editable} eq '1') ? '1' : '0';
+            $d->{editable} //= (length $d->{js} || ($d->{editable} // '') eq '1') ? '1' : '0';
             $d->{field_order_html} ||= 0;
             $d->{bd_field} ||= $d->{id_field};
             $d->{meta_type} ||= $d->{set_method} 
@@ -1627,14 +1633,14 @@ sub save_data {
         my @std_fields =
             map {
             +{
-                name     => $_->{id_field},
-                column   => $_->{bd_field},
-                method   => $_->{set_method},
-                relation => $_->{relation}
+                name     => $_->{id_field} // '',
+                column   => $_->{bd_field} // '',
+                method   => $_->{set_method} // '',
+                relation => $_->{relation} // ''
                 }
             }
             grep {
-            $_->{origin} eq 'system'
+            $_->{origin} && $_->{origin} eq 'system'
             } _array( $meta );
 
         my %row;
@@ -1841,7 +1847,7 @@ sub save_data {
                 $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta, $cancelEvent );
             }
         } 
-        
+
         # save to mongo
         $self->save_doc(
             $meta, +{ %$topic }, $data,
@@ -1871,7 +1877,7 @@ sub save_data {
 sub update_project_security {
     my ($self, $doc )=@_;
 
-    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid}, $doc->{id_category});
+    my $meta = Baseliner::Model::Topic->new->get_meta ($doc->{mid}, $doc->{id_category});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
@@ -1915,8 +1921,12 @@ sub save_doc {
             $doc->{$field} = {};
             for my $cal ( _array($arr) ) {
                 _fail "field $field is not a calendar?" unless ref $cal;
-                my $slot = Util->_name_to_id( $cal->{slotname} );
-                $doc->{$field}{$slot} = $cal;
+                if( length $cal->{slotname} ) {
+                    my $slot = Util->_name_to_id( $cal->{slotname} );
+                    $doc->{$field}{$slot} = $cal;
+                } else {
+                    _fail _loc 'Field `%1` is missing the `slotname` column to properly be stored as a calendar', $field;
+                }
             }
         }
         elsif( $mt eq 'number' ) {
@@ -2039,7 +2049,7 @@ sub update_rels {
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
         
         #adding title to sorting
-        my $title = lc $topic_titles{$mid};
+        my $title = lc($topic_titles{$mid} // '');
         $title =~ s/^\s+//;
         $d{_sort}{title} = $title;
 
@@ -2278,7 +2288,7 @@ sub set_topics {
         my @category_single_mode;
         my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
         for my $topic_category (@categories){
-            my $meta = Baseliner->model('Topic')->get_meta(undef, $topic_category);
+            my $meta = Baseliner::Model::Topic->new->get_meta(undef, $topic_category);
             my @data_field = map {$_}grep{$_->{parent_field} eq $id_field} grep { exists $_->{parent_field}} @$meta;
             if (!@data_field){
                 @data_field = map {$_}grep{$_->{release_field} eq $id_field} grep { exists $_->{release_field}} @$meta;
@@ -2763,14 +2773,14 @@ sub get_categories_permissions{
     my $rs = mdb->category->find($where);
     $rs->fields({ id=>1, name=>1, color=>1 }) if !$param{all_fields}; 
     my @categories  = $rs->sort({ $sort=>$dir })->all;
-    if ( Baseliner->model('Permissions')->is_root( $username) ) {
+    if ( Baseliner::Model::Permissions->new->is_root( $username) ) {
         return @categories;
     }
     
     push @permission_categories, _unique map { 
         $_ =~ $re_action;
         $1;
-    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
+    } Baseliner::Model::Permissions->new->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
     
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
@@ -2937,7 +2947,7 @@ Workflow for a user. Gets the user role, then search for workflows.
 sub user_workflow {
     my ( $self, $username, %p ) = @_;
     
-    return Baseliner->model('Permissions')->is_root( $username ) 
+    return Baseliner::Model::Permissions->new->is_root( $username ) 
         ? $self->root_workflow(%p) 
         : $self->non_root_workflow($username, %p);
 }
@@ -2950,7 +2960,7 @@ called by user_workflow.
 =cut
 sub non_root_workflow {
     my ( $self, $username, %p ) = @_;
-    my %roles = map { $_=>1 } Baseliner->model('Permissions')->user_role_ids($username);
+    my %roles = map { $_=>1 } Baseliner::Model::Permissions->new->user_role_ids($username);
     my $where = { 'workflow.id_role'=>mdb->in(keys %roles) };
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
     return _array( map { 
@@ -3115,20 +3125,25 @@ sub status_changes {
 }
 
 sub get_users_friend {
-    my ($self, %p) = @_;
+    my ( $self, %p ) = @_;
+
+    my $mid         = $p{mid}         or _throw 'Missing parameter mid';
+    my $id_category = $p{id_category} or _throw 'Missing parameter id_category';
+    my $id_status   = $p{id_status}   or _throw 'Missing parameter id_status';
+
+    my $category = mdb->category->find_one( { id => '' . $id_category }, { workflow => 1 } );
+    return () unless $category;
+
+    my @roles =
+      _unique map { $_->{id_role} } grep { $_->{id_status_from} == $id_status } _array( $category->{workflow} );
 
     my @users;
-    my $mid = $p{mid};
-    my @roles = _unique map { $_->{id_role} } grep { $$_{id_status_from} == $p{id_status} } _array(
-        mdb->category->find_one( 
-            { id => ''.$p{id_category} },
-            { workflow=>1 })->{workflow}
-    );
-    if (@roles){
-        @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
+    if (@roles) {
+        @users = Baseliner::Model::Users->new->get_users_from_mid_roles( mid => $mid, roles => \@roles );
         @users = _unique @users;
     }
-    return @users
+
+    return @users;
 }
 
 sub check_fields_required {
@@ -3136,18 +3151,18 @@ sub check_fields_required {
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     my $username = $p{username} or _throw 'Missing parameter username';
     
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my $isValid = 1;
     my @fields_required = ();
     my $field_name;
     if (!$is_root){
         if($mid != -1){
-            my $meta = Baseliner->model('Topic')->get_meta( $mid );
+            my $meta = Baseliner::Model::Topic->new->get_meta( $mid );
             my %fields_required =  map { $_->{id_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
-            my $data = Baseliner->model('Topic')->get_data( $meta, $mid, no_cache => 1 );  
+            my $data = Baseliner::Model::Topic->new->get_data( $meta, $mid, no_cache => 1 );  
             
             for my $field ( keys %fields_required){
-                next if !Baseliner->model('Permissions')->user_has_action( 
+                next if !Baseliner::Model::Permissions->new->user_has_action( 
                     username => $username, 
                     action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write',
                     mid => $mid
@@ -3164,7 +3179,7 @@ sub check_fields_required {
             }
         } else {
             my $data = $p{data} or _throw 'Missing parameter data';
-            my $meta = Baseliner->model('Topic')->get_meta(undef, $data->{category} );
+            my $meta = Baseliner::Model::Topic->new->get_meta(undef, $data->{category} );
             my $category = mdb->category->find_one({ id=>''.$data->{category} });
             my $status = ci->status->find_one({ id_status=>''. $data->{status_new} });
             
@@ -3172,7 +3187,7 @@ sub check_fields_required {
                 map { $_->{id_field} => $_->{name_field} }
                 grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array($meta);
             for my $field ( keys %fields_required){
-                next if !Baseliner->model('Permissions')->user_has_action( 
+                next if !Baseliner::Model::Permissions->new->user_has_action( 
                     username => $username, 
                     action => 'action.topicsfield.'._name_to_id($category->{name}).'.'.$field.'.'._name_to_id($status->{name}).'.write',
                     mid => $mid
@@ -3201,7 +3216,7 @@ sub get_short_name {
 
 sub user_can_search {
     my ($self, $username) = @_;
-    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.topic');
+    return Baseliner::Model::Permissions->new->user_has_action( username => $username, action => 'action.search.topic');
 }
 
 sub apply_filter{
@@ -3267,20 +3282,37 @@ sub apply_filter{
     return $where;
 }
 
+sub filter_children {
+    my ($self, $where, %p ) = @_;
+    my $topic_mid = $p{topic_mid};
+    my $id_project = $p{id_project};
+    if( length $topic_mid){
+        # topic and children
+        $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>$topic_mid })->fields({ to_mid=>1 })->all );
+    } elsif( $id_project ){
+        my @mids_in = ();
+        my @topics_project = map { $$_{from_mid} } 
+            mdb->master_rel->find({ to_mid=>$id_project, rel_type=>'topic_project' })->all;
+        push @mids_in, grep { length } @topics_project;
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
+    }
+}
+
 sub get_topics_mdb{
     my ($self, %p ) = @_;
     my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 
     try{
         $where = {} if !$where;
         my @mids_in = _array( delete $where->{mid} );
+        push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
         if( my $query = delete $where->{query} ) {
-            @mids_in = $self->run_query_builder($query,$where,$username);
+            push @mids_in, $self->run_query_builder($query,$where,$username, build_query=>1);
         }
         $where->{mid} = mdb->in( @mids_in ) if @mids_in; 
 
         _throw _loc('Missing username') if !$username;
 
-        Baseliner->model('Permissions')->build_project_security( $where, $username );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username );
         #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
@@ -3294,14 +3326,6 @@ sub get_topics_mdb{
     catch{
         _throw _loc( 'Error getting Topics ( %1 )', shift() );
     }
-}
-
-sub get_fields_topic{
-    my ($self) = @_;
-
-    my @fields = map {$_} keys mdb->topic->find_one({},{ _txt=>0 }); #TODO: Improve to get all fields from topic collection. 
-
-    return \@fields;
 }
 
 sub group_by_status { 
@@ -3366,14 +3390,14 @@ sub get_status_history_topics{
     my $cnt = 0;
     for ($i=0; $i<$total; $i=$i+$limit){
         if ($i+$limit>$total) { $limit = $total-$i; };
-        my ($partial_cnt, @res ) = Baseliner->model('Topic')->topics_for_user({ username => $username, start=>$i, limit=>$limit, query=>undef });
+        my ($partial_cnt, @res ) = Baseliner::Model::Topic->new->topics_for_user({ username => $username, start=>$i, limit=>$limit, query=>undef });
         push @rows, @res;
         $cnt = $cnt + $partial_cnt;
     }
 
     #############################################################
 
-    # my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $username, limit=>1000, query=>undef });
+    # my ($cnt, @rows ) = Baseliner::Model::Topic->new->topics_for_user({ username => $username, limit=>1000, query=>undef });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
     my @status_changes;
@@ -3542,7 +3566,7 @@ sub get_downloadable_files {
     $where->{username} = $p->{username} || _throw _loc('Missing username');
     $where->{query_id} = $p->{mid};
 
-    my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user( $where );
+    my ($cnt, @user_topics) = Baseliner::Model::Topic->new->topics_for_user( $where );
 
     my $filter = { 
         # mid => mdb->in(map {$_->{mid}} @user_topics), 

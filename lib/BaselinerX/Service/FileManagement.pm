@@ -9,9 +9,12 @@ use utf8::all;
 use experimental 'autoderef';
 with 'Baseliner::Role::Service';
 
+our $ICON_DEFAULT = '/static/images/icons/file.gif';
+
 register 'service.fileman.foreach' => {
     name => 'Load files/items into stash',
     form => '/forms/file_foreach.js',
+    icon => $ICON_DEFAULT,
     job_service  => 1,
     handler => \&run_load_files,
 };
@@ -34,6 +37,7 @@ register 'statement.fileman.foreach' => {
 
 register 'service.fileman.tar' => {
     name => 'Tar Local Files',
+    icon => $ICON_DEFAULT,
     form => '/forms/tar_local.js',
     job_service  => 1,
     handler => \&run_tar,
@@ -42,7 +46,8 @@ register 'service.fileman.tar' => {
 register 'service.fileman.zip' => {
     name => 'Zip Local Files',
     form => '/forms/zip_local.js',
-    icon => '/static/images/icons/package_add.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/package_add.png',
     job_service  => 1,
     handler => \&run_zip,
 };
@@ -50,6 +55,7 @@ register 'service.fileman.zip' => {
 register 'service.fileman.tar_nature' => {
     name => 'Tar Nature Files',
     form => '/forms/tar_local_nature.js',
+    icon => $ICON_DEFAULT,
     job_service  => 1,
     handler => \&run_tar_nature,
 };
@@ -57,7 +63,8 @@ register 'service.fileman.tar_nature' => {
 register 'service.fileman.zip_nature' => {
     name => 'Zip Nature Files',
     form => '/forms/zip_local_nature.js',
-    icon => '/static/images/icons/package_add.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/package_add.png',
     job_service  => 1,
     handler => \&run_zip_nature,
 };
@@ -65,6 +72,7 @@ register 'service.fileman.zip_nature' => {
 register 'service.fileman.zip' => {
     name => 'Zip Files',
     form => '/forms/zip_files.js',
+    icon => $ICON_DEFAULT,
     job_service  => 1,
     handler => \&run_zip,
 };
@@ -72,14 +80,16 @@ register 'service.fileman.zip' => {
 register 'service.fileman.ship' => {
     name => 'Ship a File Remotely',
     form => '/forms/ship_remote.js',
-    icon => '/static/images/icons/ship.gif',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/ship.gif',
     job_service  => 1,
     handler => \&run_ship,
 };
 
 register 'service.fileman.retrieve' => {
     name => 'Retrieve a Remote File',
-    icon => '/static/images/icons/retrieve.gif',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/retrieve.gif',
     form => '/forms/retrieve_remote.js',
     job_service  => 1,
     handler => \&run_retrieve,
@@ -88,7 +98,8 @@ register 'service.fileman.retrieve' => {
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
-    icon => '/static/images/icons/drive_disk.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/drive_disk.png',
     job_service  => 1,
     handler => \&run_store,
 };
@@ -96,21 +107,24 @@ register 'service.fileman.store' => {
 register 'service.fileman.write' => {
     name => 'Write Local File',
     form => '/forms/write_file.js',
-    icon => '/static/images/icons/drive_edit.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/drive_edit.png',
     job_service  => 1,
     handler => \&run_write,
 };
 
 register 'service.fileman.rm' => {
     name => 'Delete Local File',
-    icon => '/static/images/icons/drive_delete.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/drive_delete.png',
     job_service  => 1,
     handler => \&run_rm,
 };
 
 register 'service.fileman.rmtree' => {
     name => 'Delete Local Directory',
-    icon => '/static/images/icons/drive_delete.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/drive_delete.png',
     job_service  => 1,
     handler => \&run_rmtree,
 };
@@ -118,7 +132,8 @@ register 'service.fileman.rmtree' => {
 register 'service.fileman.parse_config' => {
     name => 'Parse a Config File',
     form => '/forms/parse_config.js',
-    icon => '/static/images/icons/drive_go.png',
+    icon => '/static/images/icons/page_lens.png',
+    #icon => '/static/images/icons/drive_go.png',
     job_service  => 1,
     handler => \&run_parse_config,
 };
@@ -126,7 +141,8 @@ register 'service.fileman.parse_config' => {
 register 'service.fileman.write_config' => {
     name => 'Write a Config File',
     form => '/forms/write_config.js',
-    icon => '/static/images/icons/drive_go.png',
+    icon => $ICON_DEFAULT,
+    #icon => '/static/images/icons/drive_go.png',
     job_service  => 1,
     handler => \&run_write_config,
 };

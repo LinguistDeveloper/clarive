@@ -34,7 +34,8 @@ register 'service.ci.update' => {
         _fail _loc 'User not found for query %1', JSON::XS->new->encode($args->{query}) unless $ci;
         $ci->update( %{ $args->{update} || _fail('Missing parameter: update') } );
         _log _loc "Update user ok";
-    }
+    },
+     icon => '/static/images/icons/class.gif',
 };
 no Moose;
 __PACKAGE__->meta->make_immutable;

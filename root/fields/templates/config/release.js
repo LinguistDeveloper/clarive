@@ -5,7 +5,6 @@
     ret.push(value_type);
 
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.release' },
     	{ xtype:'textfield', name:'release_field', fieldLabel: _('Release field'), value: data.release_field }
     ]);
     return ret;

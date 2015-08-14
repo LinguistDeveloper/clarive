@@ -8,14 +8,18 @@ use TestEnv;
 
 TestEnv->setup;
 
+use Baseliner::Role::CI;
+use Baseliner::Core::Registry;
+use BaselinerX::Type::Statement;
+
 use_ok 'Baseliner::Model::Rules';
 
 subtest 'does compile when config flag is conditional and rule is on' => sub {
-    setup_db( rule_compile_mode => 'precompile' );
+    _setup( rule_compile_mode => 'precompile' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'depends' );
+    $rules->compile_rules( rule_precompile => 'depends' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
     ok $cr->package->can('meta');
@@ -24,22 +28,22 @@ subtest 'does compile when config flag is conditional and rule is on' => sub {
 };
 
 subtest 'does not compile when config flag is conditional and rule is off' => sub {
-    setup_db( rule_compile_mode => 'none' );
+    _setup( rule_compile_mode => 'none' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'depends' );
+    $rules->compile_rules( rule_precompile => 'depends' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok ! $cr->package->can('meta');
+    ok !$cr->package->can('meta');
 };
 
 subtest 'does compile when config flag is on and rule is off' => sub {
-    setup_db( rule_compile_mode => 'none' );
+    _setup( rule_compile_mode => 'none' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'always' );
+    $rules->compile_rules( rule_precompile => 'always' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
     ok $cr->package->can('meta');
@@ -48,11 +52,11 @@ subtest 'does compile when config flag is on and rule is off' => sub {
 };
 
 subtest 'does compile when config flag is on and rule is on' => sub {
-    setup_db( rule_compile_mode => 'precompile' );
+    _setup( rule_compile_mode => 'precompile' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'always' );
+    $rules->compile_rules( rule_precompile => 'always' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
     ok $cr->package->can('meta');
@@ -61,29 +65,33 @@ subtest 'does compile when config flag is on and rule is on' => sub {
 };
 
 subtest 'does not compile when config flag is off and rule is on' => sub {
-    setup_db( rule_compile_mode => 'precompile' );
+    _setup( rule_compile_mode => 'precompile' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'none' );
+    $rules->compile_rules( rule_precompile => 'none' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok ! $cr->package->can('meta');
+    ok !$cr->package->can('meta');
 };
 
 subtest 'does not compile when config flag is off and rule is off' => sub {
-    setup_db( rule_compile_mode => 'none' );
+    _setup( rule_compile_mode => 'none' );
 
-    my $rules = build_model();
+    my $rules = _build_model();
 
-    $rules->compile_rules( rule_precompile=>'none' );
+    $rules->compile_rules( rule_precompile => 'none' );
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok ! $cr->package->can('meta');
+    ok !$cr->package->can('meta');
 };
 
-sub setup_db {
+sub _setup {
     my (%params) = @_;
+
+    Baseliner::Core::Registry->clear;
+
+    _register_statements();
 
     my $code = $params{code} || q%return 'hi there';%;
 
@@ -111,7 +119,38 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
     );
 }
 
-sub build_model {
+sub _register_statements {
+    Baseliner::Core::Registry->add_class( undef, 'statement' => 'BaselinerX::Type::Statement' );
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'statement.step' => {
+            dsl => sub {
+                my ( $self, $n, %p ) = @_;
+                sprintf(
+                    q{
+            if( $stash->{job_step} eq q{%s} ) {
+                %s
+            }
+        }, $n->{text}, $self->dsl_build( $n->{children}, %p )
+                );
+            }
+        }
+    );
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'statement.perl.code' => {
+            data => { code => '' },
+            dsl  => sub {
+                my ( $self, $n, %p ) = @_;
+                sprintf( q{ %s; }, $n->{code} // '' );
+            },
+        }
+    );
+}
+
+sub _build_model {
     return Baseliner::Model::Rules->new();
 }
 

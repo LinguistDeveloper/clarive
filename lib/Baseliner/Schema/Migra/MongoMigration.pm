@@ -1,8 +1,17 @@
 package Baseliner::Schema::Migra::MongoMigration;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Core::Registry;
 use v5.10;
 use Try::Tiny;
+use BaselinerX::Type::Fieldlet;
+use BaselinerX::Fieldlets;
+use Baseliner::Controller::Rule;
+require Clarive::mdb;
+require Clarive::ci;
+require Clarive::model;
+require Clarive::cache;
+
 
 sub roles {
     my ($self, $p) = @_;
@@ -79,7 +88,7 @@ sub topic_categories_to_rules {
                   next;
             }
             #_log _dump $fieldlet;
-            my $icon = Baseliner->model('Registry')->get($registers->{$reg_key})->{icon};
+            my $icon = Baseliner::Core::Registry->get($registers->{$reg_key})->{icon};
 
             $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
             $data->{editable} = '1' if not $fieldlet->{editable};
@@ -206,7 +215,7 @@ sub topic_categories_to_rules {
         #_decode_json($rule->{rule_tree});
         #_log "LA REGLA "._dump $rule;
         mdb->rule->insert($rule);
-        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_field=>"$rule->{id}"} });
+        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
         _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
         generate_dsl($rule);
     }
@@ -234,7 +243,7 @@ sub generate_dsl {
             cache->remove_like(qr/^topic:/);
             cache->remove_like(qr/^roles:/);
             cache->remove( { d => "topic:meta" } );
-            Baseliner->registry->reload_all;
+            Baseliner::Core::Registry->reload_all;
         }
         $msg =
           $detected_errors
@@ -270,9 +279,9 @@ sub map_registors {
           } _array $_->{fieldlets}
     } @categories;
     
-    my @reg_fieldlets = Baseliner->registry->starts_with('fieldlet');
+    my @reg_fieldlets = Baseliner::Core::Registry->starts_with('fieldlet');
     map {
-        my $reg = Baseliner->model('registry')->get($_);
+        my $reg = Baseliner::Core::Registry->get($_);
         
         #if ( $reg->{registry_node}->{key} =~ /.*required.*/ ) {
             
@@ -351,7 +360,7 @@ sub activity_to_status_changes {
       _debug "Doc $act->{mid} skipped. Probably deleted" if !$doc;
       next if !$doc;
 
-      if ( $status_changes->{$st{$act->{mid}}} ) {
+      if ( $act && $act->{mid} && $st{$act->{mid}} && $status_changes->{$st{$act->{mid}}} ) {
         my $last = Class::Date->new($status_changes->{last_transition}->{ts});
         my $ts = Class::Date->new($act->{ts});
         my $rel =  $ts - $last;
@@ -1475,7 +1484,7 @@ sub activity{
         foreach my $event (@events) {
             try{
                 my $key = $event->{event_key};
-                my $ev = Baseliner->model('Registry')->get($key);
+                my $ev = Baseliner::Core::Registry->get($key);
                 if( _array( $ev->{vars} ) > 0 ) {
                     
                     my $ed_reduced={};

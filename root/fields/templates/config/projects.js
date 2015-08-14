@@ -40,7 +40,6 @@
     });
 
     ret.push([ 
-    	{ xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.projects' },
     	ci_class_box,
     	collection,
     	{ xtype:'textfield', fieldLabel: _('Default Value'), name:'default_value', value: data.default_value || '' },

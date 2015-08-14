@@ -20,12 +20,51 @@
     var cal_ns = '<% $cal->{ns} %>';
     
     var cal_form = new Ext.FormPanel({
-                url: '/job/calendar_update',
-                frame: true,
-                title: _('Calendar Info'),
-                autoHeight: true,
-                autoWidth: true,
-                defaults: { width: 300 },
+        url: '/job/calendar_update',
+        frame: true,
+        title: _('Calendar Info'),
+        autoHeight: true,
+        autoWidth: true,
+        defaults: { width: 300 },
+        items: [                
+            { layout:'column', anchor:'90%',  
+            items:[
+                { layout: 'form', columnWidth: 0.5, defaults:{ anchor:'90%' },
+                items: [
+                    {  xtype: 'textfield',
+                        fieldLabel: _loc('Name'),
+                        name: 'name',
+                        value: '<% $cal->{name} %>'
+                    },
+                    {  xtype: 'textfield',
+                        fieldLabel: _loc('Priority'),
+                        name: 'seq',
+                        value: '<% $cal->{seq} %>'
+                    },
+                    {  xtype: 'textarea',
+                        fieldLabel: _('Description'),
+                        name: 'description',
+                        value: '<% $cal->{description} %>'
+                    } 
+                ] },
+                { layout: 'form', columnWidth: 0.5, 
+                items: [
+                    {  xtype: 'combo', 
+                               name: 'bl', 
+                               hiddenName: 'bl',
+                               fieldLabel: _('Baseline'),
+                               mode: 'local', 
+                               editable: false,
+                               forceSelection: true,
+                               triggerAction: 'all',
+                               store: bl_store, 
+                               valueField: 'value',
+                               value: '<% $cal->{bl}  %>',
+                               displayField:'name', 
+                               allowBlank: false
+                    },
+                    Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'], width: 180, fieldLabel:_('Namespace'), value: cal_ns != 'Global' ? cal_ns : undefined , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
+                    ],
                 buttons: [                  
                     /*{  text: _('Ayuda'),
                         handler: function(){ 
@@ -71,57 +110,22 @@
                             });
                         } 
                     }                   
-                ],
-                items: [
-                    { layout:'column', anchor:'90%',  items:[
-                        { layout: 'form', columnWidth: 0.5, defaults:{ anchor:'90%' },items: [
-                            {  xtype: 'textfield',
-                                fieldLabel: _loc('Name'),
-                                name: 'name',
-                                value: '<% $cal->{name} %>'
-                            },
-                            {  xtype: 'textfield',
-                                fieldLabel: _loc('Priority'),
-                                name: 'seq',
-                                value: '<% $cal->{seq} %>'
-                            },
-                            {  xtype: 'textarea',
-                                fieldLabel: _('Description'),
-                                name: 'description',
-                                value: '<% $cal->{description} %>'
-                            } ] },
-                        { layout: 'form', columnWidth: 0.5, items: [
-                            {  xtype: 'combo', 
-                                       name: 'bl', 
-                                       hiddenName: 'bl',
-                                       fieldLabel: _('Baseline'),
-                                       mode: 'local', 
-                                       editable: false,
-                                       forceSelection: true,
-                                       triggerAction: 'all',
-                                       store: bl_store, 
-                                       valueField: 'value',
-                                       value: '<% $cal->{bl}  %>',
-                                       displayField:'name', 
-                                       allowBlank: false
-                            },
-                            Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'], width: 180, fieldLabel:_('Namespace'), value: cal_ns != 'Global' ? cal_ns : undefined , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
-                       ]}
-                    ]}
-                ]
+               ]},
+            ]}
+        ]
     });
 
     var cal_slots = new Ext.Panel({    
         id: id,
-        //region:'west',
+        //region:'center',
         frame: true,
         autoHeight: true,
         autoWidth: true,
-        defaults: { width: 300 },
+        defaults: { height: 300, width: 300 },
+        maxWidth: 400,
         //width: 720,             
         autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } },
         split: true,
-        //frame: true
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
@@ -160,7 +164,6 @@
         layout: 'column',
         anchor:'90%',
         frame: true,
-        //layout: 'border',
         title: _('Calendar Windows'),
         hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
         style: 'margin-top: 20px', 
@@ -168,17 +171,22 @@
         autoWidth: true,
         defaults: { width: 900 },
         height: 450,
-        //frame: true,
         items: [
-        { layout: 'column', columnWidth: 0.5, items: [    
+        { layout: 'column', columnWidth: 0.7, anchor: '90%', items: [    
             cal_slots,
             ]},
-        { layout: 'column', columnWidth: 0.5 ,style: 'margin-left: 5px', items: [               
+        { layout: 'column', columnWidth: 0.3, anchor: '90%' ,style: 'align: middle; margin:50px 5px 15px 10px', //margin-left: 5px'
+        frame: true,
+        autoHeight: true,
+        autoWidth: true,
+        maxWidth: 150,
+        defaults: { height: 300, width: 100 },
+        items: [               
                 {
                     xtype: 'datepickerplus',
                     value: _CurrentDate,    
-                    noOfMonth : 4, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
-                    noOfMonthPerRow : 2, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
+                    noOfMonth : 1, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
+                    //noOfMonthPerRow : 2, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
                     multiSelection: true,
                     allowMouseWheel: false,
                     showWeekNumber: true,
@@ -218,7 +226,8 @@
     });
 
     var panel = new Ext.Panel({
-        //layout: 'fit',
+        //layout: 'border',
+        id: id2,
         style: 'padding: 5px',
         autoScroll: true,
         items: [ cal_form, cal_windows ]

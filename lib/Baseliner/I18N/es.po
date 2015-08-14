@@ -8018,4 +8018,7 @@ msgstr "No hay tareas para realiar"
 msgid "No data for selection dates.  Please select another period"
 msgstr "No hay datos para las fechas seleccionadas.  Por favor, selecciona otro periodo"
 
+msgid "Are you sure you want to delete all rows?"
+msgstr "¿Está seguro de que quiere borrar todas las filas?"
+
 ### EOF - do not write anything bellow this

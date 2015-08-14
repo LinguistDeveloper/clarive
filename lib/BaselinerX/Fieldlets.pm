@@ -7,7 +7,7 @@ use Path::Class;
 use Try::Tiny;
 
 register 'fieldlet.attach_file' => {
-    name        => _loc('attach files'),
+    name        => _loc('Attach Files'),
     html        => '/fields/templates/html/upload_files.html',
     js          => '/fields/templates/js/upload_files.js',
     form        => '/fields/templates/config/upload_files.js',
@@ -19,7 +19,7 @@ register 'fieldlet.attach_file' => {
 };
 
 register 'fieldlet.progressbar' => {
-    name        => _loc('progress bar'),
+    name        => _loc('Progress Bar'),
     html        => '/fields/templates/html/progress_bar.html',
     js          => '/fields/templates/js/progress_bar.js',
     form        => '/fields/templates/config/progress_bar.js',
@@ -28,7 +28,7 @@ register 'fieldlet.progressbar' => {
 };
 
 register 'fieldlet.calculated_number' => {
-    name        => _loc('calculated numberfield'),
+    name        => _loc('Calculated Numberfield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/calculated_numberfield.js',
     form        => '/fields/templates/config/calculated_numberfield.js',
@@ -38,7 +38,7 @@ register 'fieldlet.calculated_number' => {
 };
 
 register 'fieldlet.datetime' => {
-    name        => _loc('datefield'),
+    name        => _loc('Datefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/datetimefield.js',
     form        => '/fields/templates/config/datetimefield.js',
@@ -49,7 +49,7 @@ register 'fieldlet.datetime' => {
 };
 
 register 'fieldlet.time' => {
-    name        => _loc('timefield'),
+    name        => _loc('Timefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/timefield.js',
     form        => '/fields/templates/config/timefield.js',
@@ -61,7 +61,7 @@ register 'fieldlet.time' => {
 
 
 register 'fieldlet.ci_grid' => {
-    name        => _loc('ci grid'),
+    name        => _loc('CI Grid'),
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/templates/js/ci_grid.js',
     form        => '/fields/templates/config/ci_grid.js',
@@ -70,7 +70,7 @@ register 'fieldlet.ci_grid' => {
 };
 
 register 'fieldlet.combo' => {
-    name        => _loc('combo'),
+    name        => _loc('Combo'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
@@ -79,7 +79,7 @@ register 'fieldlet.combo' => {
 };
 
 register 'fieldlet.dbi_query' => {
-    name        => _loc('dbi query'),
+    name        => _loc('DB Query'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
@@ -89,7 +89,7 @@ register 'fieldlet.dbi_query' => {
 };
 
 register 'fieldlet.download_all_files' => {
-    name        => _loc('download all files'),
+    name        => _loc('Download All Files'),
     html        => '/fields/templates/html/download_all.html',
     form        => '/fields/templates/config/download_all.js',
     icon        => '/static/images/icons/download.png',
@@ -101,7 +101,7 @@ register 'fieldlet.download_all_files' => {
 };
 
 register 'fieldlet.grid_editor' => {
-    name        => _loc('grid editor'),
+    name        => _loc('Grid Editor'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/grid_editor.js',
     form        => '/fields/templates/config/grid_editor.js',
@@ -111,7 +111,7 @@ register 'fieldlet.grid_editor' => {
 };
 
 register 'fieldlet.milestones' => {
-    name        => _loc('milestones'),
+    name        => _loc('Milestones'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/milestones.js',
     form        => '/fields/templates/config/milestones.js',
@@ -121,6 +121,27 @@ register 'fieldlet.milestones' => {
     set_method  => 'set_cal',
     type        => 'generic',
     meta_type   => 'calendar',
+    section_allowed => ['head','more']
+};
+
+register 'fieldlet.env_planner' => {
+    name        => _loc('Environment Planner'),
+    html        => '/fields/templates/html/grid_editor.html',
+    js          => '/fields/templates/js/env_planner.js',
+    form        => '/fields/templates/config/env_planner.js',
+    icon        => '/static/images/icons/milestone.png',
+    relation    => 'system',
+    get_method  => 'get_cal',
+    set_method  => 'set_cal',
+    type        => 'generic',
+    meta_type   => 'calendar',
+    data_gen    => sub{
+        +{
+            columns=>sprintf(
+                '%s[slotname],bl_combo,100;%s[plan_start_date],datefield,80;%s[plan_end_date],datefield,80', 
+                _loc('Environment'), _loc('Planned Start'), _loc('Planned End') )
+        }
+    },
     section_allowed => ['head','more']
 };
 
@@ -139,14 +160,13 @@ register 'fieldlet.scheduler' => {
 };
 
 register 'fieldlet.html_editor' => {
-    name        => _loc('html/editor'),
+    name        => _loc('HTML Editor'),
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/templates/js/html_editor.js',
     form        => '/fields/templates/config/html_editor.js',
     icon        => '/static/images/icons/html.png',
     type        => 'html/editor',
     meta_type   => 'content',
-    #data        => 'clob',
     section_allowed => ['head','more']
 };
 
@@ -323,7 +343,8 @@ register 'fieldlet.system.description' => {
 
 register 'fieldlet.system.revisions' => {
     name        => _loc('Revision Box'),
-    icon        => '/static/images/icons/listbox.png',
+    #icon        => '/static/images/icons/report_default.png',
+    icon        => '/static/images/icons/combo_box.png',
     get_method  => 'get_revisions',
     set_method  => 'set_revisions',
     html        => '/fields/system/html/field_revisions.html',
@@ -337,7 +358,8 @@ register 'fieldlet.system.revisions' => {
 
 register 'fieldlet.system.release' => {
     name        => _loc('Release Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_release',
     set_method  => 'set_release',
     html        => '/fields/system/html/field_release.html',
@@ -353,7 +375,8 @@ register 'fieldlet.system.release' => {
 
 register 'fieldlet.system.projects' => {
     name        => _loc('Project Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_projects',
     set_method  => 'set_projects',
     html        => '/fields/system/html/field_projects.html',
@@ -369,7 +392,8 @@ register 'fieldlet.system.projects' => {
 
 register 'fieldlet.system.users' => {
     name        => _loc('User Combo'),
-    icon        => '/static/images/icons/listbox.png',
+     icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_users',
     set_method  => 'set_users',
     html        => '/fields/system/html/field_users.html',
@@ -400,7 +424,8 @@ register 'fieldlet.system.topics' => {
 
 register 'fieldlet.system.list_topics' => {
     name        => _loc('Topic Selector'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/report_default.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
     section_allowed => ['head','more'],
@@ -416,7 +441,8 @@ register 'fieldlet.system.list_topics' => {
 
 register 'fieldlet.system.list_topics_selector' => {
     name        => _loc('Topic Selector'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/report_default.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
     section_allowed => ['head','more'],
@@ -433,7 +459,8 @@ register 'fieldlet.system.list_topics_selector' => {
 
 register 'fieldlet.system.cis' => {
     name        => _loc('CI Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_cis',
     set_method  => 'set_cis',
     html        => '/fields/system/html/field_cis.html',
@@ -449,7 +476,8 @@ register 'fieldlet.system.cis' => {
 
 register 'fieldlet.system.tasks' => {
     name        => _loc('Task Grid'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/grid.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => '',
     set_method  => '',
     html        => '',

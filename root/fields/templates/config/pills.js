@@ -19,7 +19,6 @@
 //     viewConfig: { forceFit: true }
 // });
      ret.push([  
-       { xtype:'hidden', name:'fieldletType', value: 'fieldlet.pills' },
        { xtype:'textfield',fieldLabel: _('Option settings'), name: 'options', value: data.options },
        { xtype:'textfield',fieldLabel: _('Default value'), name: 'default_value', value: data.default_value }
        //opitions 

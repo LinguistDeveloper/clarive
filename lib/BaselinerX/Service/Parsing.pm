@@ -6,7 +6,8 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/parser.png';
+#our $ICON_DEFAULT = '/static/images/icons/parser.png';
+our $ICON_DEFAULT = '/static/images/icons/page_lens.png';
 
 register 'service.parsing.parse_files' => {
     name => 'Parse Files',
