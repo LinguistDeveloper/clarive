@@ -467,9 +467,23 @@ a {
     line-height:40px;
 }
 
+
+/*resizing icons for a better definition*/
+
 .x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
     padding-left: 20px;
     background-position: 0 3px;
     background-repeat: no-repeat;
     background-size: 16px;
 }
+<<<<<<< Updated upstream
+=======
+
+.x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
+    background-position: 0 center;
+    background-repeat: no-repeat;
+    padding-left: 18px;
+    height: 16px;
+    background-size: 16px;
+}
+>>>>>>> Stashed changes

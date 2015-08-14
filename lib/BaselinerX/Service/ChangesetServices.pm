@@ -559,7 +559,8 @@ sub nature_items {
     
 register 'service.approval.request' => {
     name    => 'Request Approval',
-    icon => '/static/images/icons/user_delete.gif', 
+    #icon => '/static/images/icons/user_delete.gif', 
+    icon => '/static/images/icons/user_green.png', 
     form => '/forms/approval_request.js',
     job_service  => 1,
     handler => \&request_approval,
