@@ -734,11 +734,13 @@ sub comment : Local {
             # notification data
             my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
             my @users = Baseliner->model("Topic")->get_users_friend(
+                    mid         => $topic_mid,
                     id_category => $topic_row->{category}{id}, 
                     id_status   => $topic_row->{category_status}{id}, 
                     projects    => \@projects );
             my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
             my $notify = { #'project', 'category', 'category_status'
+                mid             => $topic_row->{mid},
                 category        => $topic_row->{category}{id},
                 category_status => $topic_row->{category_status}{id},
                 project => \@projects,
@@ -838,8 +840,11 @@ sub comment : Local {
             for my $mid_topic ( @mids ) {
                 my $topic_row = mdb->topic->find_one({ mid=>$mid_topic });
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
-                my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
-                    id_status=>$topic_row->{category}{status}, projects=>\@projects);
+                my @users = Baseliner->model("Topic")->get_users_friend(
+                    mid         => $mid_topic,
+                    id_category => $topic_row->{category}{id}, 
+                    id_status   => $topic_row->{category_status}{id}, 
+                    projects    => \@projects );
                 my $subject = _loc("@%1 deleted a post from #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title});
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
