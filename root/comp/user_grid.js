@@ -350,6 +350,7 @@
                 forceFit: true
             },          
             height:200,
+            // loadMask: true,
             columns: [
                 check_roles_sm,
                 { hidden: true, dataIndex:'id' }, 
@@ -470,6 +471,72 @@
             var script = String.format('javascript:Baseliner.user_actions({ username: \"{0}\", id_role: \"{1}\"})', rec_grid.data.username, rec_grid.data.id_role );
             return String.format("<a href='{0}'>{1}</a>", script, value );
         };
+
+        var btn_delete_row = new Ext.Toolbar.Button({
+            text: _('Delete row'),
+            icon:'/static/images/icons/delete_red.png',
+            cls: 'x-btn-text-icon',
+            disabled: true,
+            handler: function() {
+                var sm = grid_user_roles_projects.getSelectionModel();
+                if (sm.hasSelection()) {
+                    var row = sm.getSelected();
+                    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            var form = form_user.getForm();
+                            var id_role = row.data.id_role;
+                            var username = form.getValues()['username'];
+                            Baseliner.ajaxEval( '/user/update',{ action: 'delete_roles_projects', roles_checked: id_role, type:'roles_projects', username: username },
+                                function(response) {
+                                    if ( response.success ) {
+                                        Baseliner.message( _('Success'), response.msg );
+                                        store_user_roles_projects.load({ params: {username: username } });
+                                        btn_delete_row.disable();
+                                    } else {
+                                        Baseliner.message( _('ERROR'), response.msg );
+                                    }
+                                }
+                            );
+                        }
+                    });
+                }
+            }
+        });
+
+        var btn_delete_all = new Ext.Toolbar.Button({
+            text: _('Delete All'),
+            icon:'/static/images/icons/del_all.png',
+            cls: 'x-btn-text-icon',
+            // disabled: true,
+            handler: function() {
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){ 
+                    if(btn=='yes') {
+                        var form = form_user.getForm();
+                        var action = 'delete_roles_projects';                   
+                        var projects_checked = new Array();
+                        var projects_parents_checked = new Array();
+                        var roles_checked = new Array();;
+
+                        store_user_roles_projects.getRange().forEach(function(rec){
+                            roles_checked.push(rec.id);
+                        });
+                        if(roles_checked.length>0){
+                            Baseliner.ajaxEval( '/user/update',{ action: 'delete_roles_projects', roles_checked: roles_checked, type:'roles_projects', username: username },
+                                function(response) {
+                                    if ( response.success ) {
+                                        Baseliner.message( _('Success'), response.msg );
+                                        store_user_roles_projects.load({ params: {username: username } });
+                                    } else {
+                                        Baseliner.message( _('ERROR'), response.msg );
+                                    }
+                                }
+                            );
+                        }
+                    }
+                });
+            }
+        })
         
         var grid_user_roles_projects = new Ext.grid.GridPanel({
             title: _('Roles/Projects User'),
@@ -489,7 +556,17 @@
             ],
             autoSizeColumns: true,
             deferredRender:true,
-            height:200
+            height:200,
+            bbar: [
+                btn_delete_row,
+                btn_delete_all
+            ]
+        });
+
+        grid_user_roles_projects.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+            if(columnIndex == 1){
+                btn_delete_row.enable();
+            }
         });
         
         var form_user = new Ext.FormPanel({
@@ -688,9 +765,9 @@
                 form_user
             ]
         });
-        store_roles.load({params:{start:0 , limit: ps}});
-        store_user_roles_projects.load({ params: {username: username} });       
         win.show();
+        store_user_roles_projects.load({ params: {username: username} });       
+        store_roles.load({params:{start:0 , limit: ps}});
     };
     
  
