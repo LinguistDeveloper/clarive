@@ -3,6 +3,7 @@
 
     var project_id = params.project_id;
     var topic_mid = params.topic_mid;
+alert('aaaa' + topic_mid);
     var categories = params.data.categories || [];
     var statuses = params.data.statuses || [];
     var not_in_status = params.data.not_in_status;
