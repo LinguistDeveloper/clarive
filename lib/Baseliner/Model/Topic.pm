@@ -1040,251 +1040,6 @@ sub next_status_for_user {
     return @to_status;
 }
 
-sub get_system_fields {
-    my ($self);
-    my $pathHTML = '/fields/system/html/';
-    my $pathJS = '/fields/system/js/';
-    my @system_fields = (
-        {
-            id_field => 'title',
-            params   => {
-                name_field       => 'Title',
-                bd_field         => 'title',
-                origin           => 'system',
-                html             => $pathHTML . 'field_title.html',
-                js               => '/fields/templates/js/textfield.js',
-                field_order      => -1,
-                font_weigth      => 'bold',
-                section          => 'head',
-                meta_type        => 'title',
-                field_order_html => 1,
-                allowBlank       => \0,
-                system_force     => \1
-            }
-        },
-        {
-            id_field => 'moniker',
-            params   => {
-                name_field       => 'Moniker',
-                bd_field         => 'moniker',
-                origin           => 'system',
-                js               => '/fields/templates/js/textfield.js',
-                html          => '/fields/templates/html/row_body.html',
-                field_order      => -8,
-                section          => 'body',
-                allowBlank       => \1
-            }
-        },
-        {
-            id_field => 'category',
-            params   => {
-                name_field  => 'Category',
-                bd_field    => 'id_category',
-                origin      => 'system',
-                js          => $pathJS . 'field_category.js',
-                field_order => -2,
-                section     => 'body',
-                relation    => 'categories',
-                allowBlank       => \0,
-                system_force     => \1
-            }
-        },
-        {
-            id_field => 'status_new',
-            params   => {
-                name_field    => 'Status',
-                bd_field      => 'id_category_status',
-                display_field => 'name_status',
-                origin        => 'system',
-                html          => '/fields/templates/html/row_body.html',
-                js            => $pathJS . 'field_status.js',
-                field_order   => -3,
-                section       => 'body',
-                relation      => 'status',
-                framed        => 1,
-                allowBlank    => \0,
-                system_force  => \1,
-                meta_type     => 'status',
-            }
-        },
-        {
-            id_field => 'created_by',
-            params   => { name_field => 'Created By', bd_field => 'created_by', origin => 'default' }
-        },
-        {
-            id_field => 'created_on',
-            params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default', meta_type => 'date' }
-        },
-        {
-            id_field => 'modified_by',
-            params   => { name_field => 'Modified By', bd_field => 'modified_by', origin => 'default' }
-        },
-        {
-            id_field => 'modified_on',
-            params   => { name_field => 'Modified On', bd_field => 'modified_on', origin => 'default', meta_type => 'date' }
-        },        
-        {
-            id_field => 'labels',
-            params   => {
-                name_field       => 'Labels',
-                bd_field         => 'labels',
-                origin           => 'default',
-                relation         => 'system',
-                get_method       => 'get_labels',
-                field_order_html => 1
-            }
-        },
-        {
-            id_field => 'description',
-            params   => {
-                name_field       => 'Description',
-                bd_field         => 'description',
-                origin           => 'system',
-                html             => '/fields/templates/html/dbl_row_body.html',
-                js               => '/fields/templates/js/html_editor.js',
-                field_order      => -7,
-                section          => 'head',
-                field_order_html => 2
-            }
-        },
-        # {
-        #     id_field => 'progress',
-        #     params   => {
-        #         name_field  => 'Progress',
-        #         bd_field    => 'progress',
-        #         origin      => 'system',
-        #         html        => '/fields/templates/html/progress_bar.html',
-        #         js          => '/fields/templates/js/progress_bar.js',
-        #         field_order => -8,
-        #         section     => 'body'
-        #     }
-        # },
-        {
-            id_field => 'include_into',
-            params   => {
-                name_field  => 'Included in',
-                bd_field    => 'include_into',
-                origin      => 'default',
-                html        => $pathHTML . 'field_include_into.html',
-                field_order => 0,
-                section     => 'details'
-            }
-        },
-    );
-    return \@system_fields
-}
-
-# sub tratar{
-#     my $field = shift;
-#     my $params = $field->{params};
-#     if ($params->{origin} eq 'custom'){ 
-#         $_->{type} = $params->{type};
-#         $_->{js} = $params->{js};
-#         return 1;
-#     }
-#     else {
-#         return 0;
-#     }
-# }
-    
-sub get_update_system_fields {
-    my ($self, $id_category) = @_;
-    
-    my $system_fields = $self->get_system_fields();
-    my $cat = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
-    my @rs_categories_fields = _array( $cat->{fieldlets} );
-    my %fields = map { $$_{id_field} => $_ } @rs_categories_fields;
-    for my $category ( @rs_categories_fields ){
-        my $id_category = $category->{id_category};
-        for (_array $system_fields){
-            if (my $field = $fields{$$_{id_field}} ){
-                my $tmp_params = $field->{params};
-                for my $attr (keys %{ $_->{params} || {} }){
-                    next unless $attr ne 'field_order';
-                    $tmp_params->{$attr} = $_->{params}->{$attr};
-                    mdb->category->update({ id=>"$id_category", 'fieldlets.id_field'=>$$field{id_field} },
-                            { '$set'=>{ 'fieldlets.$.params'=>$tmp_params } }) 
-                }
-            }
-        }
-    }
-    
-    my @template_dirs;
-    push @template_dirs, Baseliner->path_to( 'root/fields/templates/js' ) . "/*.js";
-    push @template_dirs, Baseliner->path_to( 'root/fields/system/js' ) . "/list*.js";
-    #@template_dirs = grep { -d } @template_dirs;
-    
-    my @tmp_templates = map {
-        my @ret;
-        for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
-            my $d = $f->slurp;
-            my $yaml = Util->_load_yaml_from_comment( $d );
-           
-            my $metadata;
-            if(length $yaml ) {
-                $metadata =  _load( $yaml );    
-            } else {
-                $metadata = {};
-            }
-            my @rows = map {
-                +{  field=>$_, value => $metadata->{$_} } 
-            } keys %{ $metadata || {} };
-            
-            push @ret, {
-                file => "$f",
-                yaml => $yaml,
-                metadata => $metadata,
-                rows => \@rows,
-            };
-        }
-       @ret;
-    } @template_dirs;
-    
-    my @fields =  map { _array($_->{fieldlets}) } mdb->category->find->fields({ fieldlets=>1 })->all;    #grep { tratar $_ }
-    
-    for my $template (  grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
-        if( $template->{metadata}->{name} ){
-    	    my @select_fields = grep { $_->{type} eq $template->{metadata}->{params}->{type}} @fields;
-            for my $select_field (@select_fields){
-                my ($update_field) = 
-                    grep { $$_{id_field} eq $select_field->{id_field} } 
-                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fieldlets} );
-                if ($update_field){
-                    my $tmp_params = $update_field->{params};
-                    for my $attr (keys %{ $template->{metadata}->{params} || {} } ){
-                        next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' && $attr ne 'name_field' && $attr ne 'origin';
-                        $tmp_params->{$attr} = $template->{metadata}->{params}->{$attr};
-
-                    }   
-                    $update_field->{params} = $tmp_params;
-                    $update_field->update();                    
-                }
-            }
-        }
-    }
-    
-    for my $system_listbox ( grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
-        if( $system_listbox->{metadata}->{name} ){
-    		my @select_fields = grep { $_->{js} eq $system_listbox->{metadata}->{params}->{js}} @fields;
-            for my $select_field (@select_fields){
-                my ($update_field) = 
-                    grep { $$_{id_field} eq $select_field->{id_field} } 
-                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fieldlets} );
-                if ($update_field){
-                    my $tmp_params = $update_field->{params};
-                    for my $attr (keys %{ $system_listbox->{metadata}->{params} || {} } ){
-                        next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' 
-                        && $attr ne 'name_field' && $attr ne 'origin' && $attr ne 'singleMode' && $attr ne 'filter' ;
-                        $tmp_params->{$attr} = $system_listbox->{metadata}->{params}->{$attr};
-                    }
-                    $update_field->{params} = $tmp_params;
-                    $update_field->update();
-                }
-            }
-        }
-    }
-}
-
 our %meta_types = (
     set_projects   => 'project',
     set_topics     => 'topic',
@@ -1413,7 +1168,6 @@ sub get_data {
     if ($topic_mid){
         if( !$meta && $with_meta ) {
             $meta = $self->get_meta( $topic_mid );
-            # _debug $meta;
         }
         my $cache_key = { d=>'topic:data', mid=>"$topic_mid", opts=>\%opts }; # ["topic:data:$topic_mid:", \%opts];
         my $cached = cache->get( $cache_key ) unless $no_cache; 
@@ -1421,10 +1175,6 @@ sub get_data {
             _debug( "CACHE HIT get_data: topic_mid = $topic_mid" );
             return $cached;
         }
-        
-        ##************************************************************************************************************************
-        ##CAMPOS DE SISTEMA ******************************************************************************************************
-        ##************************************************************************************************************************
         
         $data = mdb->topic->find_one({ mid=>"$topic_mid" },{ _txt=>0 }) 
                 or _error( "topic mid $topic_mid document not found" );
@@ -1438,11 +1188,11 @@ sub get_data {
         ##*************************************************************************************************************************
         ###************************************************************************************************************************
         
-        my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
         my %metadata = map { $_->{id_field} => $_  } _array( $meta );
 
         # build rel fields from master_rel
+        # my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         # my @rels = mdb->master_rel->find({ from_mid=>"$topic_mid" })->all;
         # for my $rel ( @rels ) {
         # next unless $rel->{rel_field};
