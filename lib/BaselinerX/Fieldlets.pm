@@ -343,7 +343,8 @@ register 'fieldlet.system.description' => {
 
 register 'fieldlet.system.revisions' => {
     name        => _loc('Revision Box'),
-    icon        => '/static/images/icons/listbox.png',
+    #icon        => '/static/images/icons/report_default.png',
+    icon        => '/static/images/icons/combo_box.png',
     get_method  => 'get_revisions',
     set_method  => 'set_revisions',
     html        => '/fields/system/html/field_revisions.html',
@@ -357,7 +358,8 @@ register 'fieldlet.system.revisions' => {
 
 register 'fieldlet.system.release' => {
     name        => _loc('Release Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_release',
     set_method  => 'set_release',
     html        => '/fields/system/html/field_release.html',
@@ -373,7 +375,8 @@ register 'fieldlet.system.release' => {
 
 register 'fieldlet.system.projects' => {
     name        => _loc('Project Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_projects',
     set_method  => 'set_projects',
     html        => '/fields/system/html/field_projects.html',
@@ -389,7 +392,8 @@ register 'fieldlet.system.projects' => {
 
 register 'fieldlet.system.users' => {
     name        => _loc('User Combo'),
-    icon        => '/static/images/icons/listbox.png',
+     icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_users',
     set_method  => 'set_users',
     html        => '/fields/system/html/field_users.html',
@@ -420,7 +424,8 @@ register 'fieldlet.system.topics' => {
 
 register 'fieldlet.system.list_topics' => {
     name        => _loc('Topic Selector'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/report_default.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
     section_allowed => ['head','more'],
@@ -436,7 +441,8 @@ register 'fieldlet.system.list_topics' => {
 
 register 'fieldlet.system.list_topics_selector' => {
     name        => _loc('Topic Selector'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/report_default.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
     section_allowed => ['head','more'],
@@ -453,7 +459,8 @@ register 'fieldlet.system.list_topics_selector' => {
 
 register 'fieldlet.system.cis' => {
     name        => _loc('CI Combo'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/combo_box.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_cis',
     set_method  => 'set_cis',
     html        => '/fields/system/html/field_cis.html',
@@ -469,7 +476,8 @@ register 'fieldlet.system.cis' => {
 
 register 'fieldlet.system.tasks' => {
     name        => _loc('Task Grid'),
-    icon        => '/static/images/icons/listbox.png',
+    icon        => '/static/images/icons/grid.png',
+    #icon        => '/static/images/icons/listbox.png',
     get_method  => '',
     set_method  => '',
     html        => '',

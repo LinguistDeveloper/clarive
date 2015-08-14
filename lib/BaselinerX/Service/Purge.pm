@@ -50,6 +50,7 @@ register 'config.purge' => {
 register 'service.purge.daemon' => {
     daemon => 1,
     name => 'Purge Daemon',
+    icon => '/static/images/icons/daemon.gif',
     scheduled => 1,
     config => 'config.daemon.purge',
     handler => sub {

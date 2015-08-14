@@ -45,21 +45,24 @@ register 'dashlet.job.list_baseline' => {
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart', 
-    icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/job.png',
+    #icon=> '/static/images/silk/chart_pie.png',
     js_file => '/dashlets/job_chart.js'
 };
 
 register 'dashlet.job.day_distribution' => {
     form=> '/dashlets/job_distribution_day_config.js',
     name=> 'Job daily distribution', 
-    icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/job.png',
+    #icon=> '/static/images/silk/chart_line.png',
     js_file => '/dashlets/job_distribution_day.js'
 };
 
 register 'dashlet.topic.number_of_topics' => {
     form=> '/dashlets/number_of_topics_chart_config.js',
     name=> 'Topics chart', 
-    icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_pie.png',
     js_file => '/dashlets/number_of_topics_chart.js'
 };
 
@@ -73,28 +76,32 @@ register 'dashlet.topic.list_topics' => {
 register 'dashlet.topic.topics_by_date_line' => {
     form=> '/dashlets/topics_by_date_line_config.js',
     name=> 'Topics time line', 
-    icon=> '/static/images/silk/chart_curve.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_curve.png',
     js_file => '/dashlets/topics_by_date_line.js'
 };
 
 register 'dashlet.topic.topics_burndown' => {
     form=> '/dashlets/topics_burndown_config.js',
     name=> 'Topics burndown', 
-    icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/silk/chart_line.png',
     js_file => '/dashlets/topics_burndown.js'
 };
 
 register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
-    icon=> '/static/images/icons/gauge.png',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/icons/gauge.png',
     js_file => '/dashlets/topics_gauge_d3.js'
 };
 
 register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap', 
-    icon=> '/static/images/icons/calendar.gif',
+    icon=> '/static/images/icons/topic.png',
+    #icon=> '/static/images/icons/calendar.gif',
     js_file => '/dashlets/topic_roadmap.js',
     no_boot => 1,
 };
@@ -102,7 +109,7 @@ register 'dashlet.topic.topic_roadmap' => {
 register 'dashlet.topic.calendar' => {
     form=> '/dashlets/calendar_config.js',
     name=> 'Calendar', 
-    icon=> '/static/images/icons/calendar.gif',
+    icon=> '/static/images/icons/calendar.png',
     js_file => '/dashlets/calendar.js',
     no_boot => 1,
 };
@@ -110,7 +117,8 @@ register 'dashlet.topic.calendar' => {
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
-    icon=> '/static/images/silk/world.png',
+    icon=> '/static/images/icons/webservice.png',
+    #icon=> '/static/images/silk/world.png',
     js_file => '/dashlets/iframe.js'
 };
 
