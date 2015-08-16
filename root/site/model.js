@@ -2089,14 +2089,18 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         self.doLayout();
     },
     // turn the form into a hash
-    serialize : function(){
+    serialize : function(opts){
         var self = this;
         self.cascade( function(obj){
             if( Ext.isFunction( obj.getValue ) ) {
                 self.data[ obj.name ] = obj.getValue();
             }
         });
-        return self.data;
+        if( opts && opts.name && self.data ) {
+            return self.data[ opts.name ];
+        } else {
+            return self.data;
+        }
     },
     // on close
     done : function(saving){
@@ -2273,6 +2277,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     activeItem: 0,
     show_tbar: true,
     type_in: false,
+    variable_mid: null,  // if set, we work with only this variable instead of var combo
     bodyStyle: {
         'background-color': 'white'
     },
@@ -2304,32 +2309,44 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                minChars: 1, 
                store: !self.type_in ? self.store_vars : new Ext.data.SimpleStore({ fields:[] }), 
                editable: true, 
+               hidden: !!self.variable_name,
                forceSelection: !self.type_in, 
                triggerAction: 'all',
                allowBlank: true
         });
-        // adds variable on combo click
-        self.combo_vars.on('select', function(cb,rec){
-            self.add_field_from_rec( rec );
-        });
-        self.btn_add = new Ext.Button({ icon:'/static/images/icons/add.gif', handler:function(){
-            var ix = self.combo_vars.view.getSelectedIndexes()[0];
-            if( ix!==undefined ) {
-                var rec = self.store_vars.getAt(ix);
+
+        if( !self.variable_name ) {
+            // adds variable on combo click
+            self.combo_vars.on('select', function(cb,rec){
                 self.add_field_from_rec( rec );
-            }
-            else if( self.type_in ) {
-                var varname = self.combo_vars.getRawValue();
-                if( varname.length > 0 ) {
-                    self.add_field_from_rec({ data:{ name: varname, var_type:'value', var_default:'' } });
+            });
+        }
+        self.btn_add = new Ext.Button({ icon:'/static/images/icons/add.gif', handler:function(){
+            if( self.variable_name ) {
+                self.load_initial_var(self.variable_name);
+            } else {
+                var ix = self.combo_vars.view.getSelectedIndexes()[0];
+                if( ix!==undefined ) {
+                    var rec = self.store_vars.getAt(ix);
+                    self.add_field_from_rec( rec );
+                }
+                else if( self.type_in ) {
+                    var varname = self.combo_vars.getRawValue();
+                    if( varname.length > 0 ) {
+                        self.add_field_from_rec({ data:{ name: varname, var_type:'value', var_default:'' } });
+                    }
                 }
             }
         }});
         self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete_.png', handler:function(){
-            var ix = self.combo_vars.view.getSelectedIndexes()[0];
-            if( ix!==undefined ) {
-                var rec = self.store_vars.getAt(ix);
-                self.del_field_from_rec( rec );
+            if( self.variable_name ) {
+                    self.del_field( self.variable_name );
+            } else {
+                var ix = self.combo_vars.view.getSelectedIndexes()[0];
+                if( ix!==undefined ) {
+                    var rec = self.store_vars.getAt(ix);
+                    self.del_field_from_rec( rec );
+                }
             }
         }});
         
@@ -2354,9 +2371,16 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id; 
                     // create metaform
+                    var data;
+                    if( self.variable_name ) {
+                        data = {};
+                        data[self.variable_name] = self.data[bl.id];
+                    } else { 
+                        data = self.data[bl.id] || {}; 
+                    }
                     var mf = new Baseliner.MetaForm({ 
                         bl: bl.id,
-                        data: self.data[bl.id] || {}, 
+                        data: data, 
                         tbar: false,
                         autoScroll: true
                     });
@@ -2374,7 +2398,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     // add to card
                     self.add( mf ); 
                     // add to toolbar
-                    tbar.add({ xtype:'button', enableToggle: true, 
+                    tbar.add({ xtype:'button', enableToggle: true, allowDepress: false,
                         pressed: (bl.id==def_bl ?true:false), 
                         width: '30',
                         bl_id: bl.id,
@@ -2396,6 +2420,16 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         
         // get metadata from data variable names
     },
+    load_initial_var : function(varname) {
+        var self = this;
+        var ix = self.store_vars.find( 'name', varname ); 
+        if( ix==undefined || ix==-1 ) {
+            Baseliner.error( _('Variable'), _('Variable `%1` not found', varname) );
+        } else {
+            var rec = self.store_vars.getAt(ix);
+            self.add_field_from_rec( rec );
+        }
+    },
     add_field_from_rec : function(rec){
         var self = this;
         var id = rec.data.name;
@@ -2404,24 +2438,24 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         if( mf.data==undefined || mf.data[ id ] === undefined ) {
             var d = Ext.apply({}, rec.data);
             d = Ext.apply(d, rec.data.data );
-            var meta = self.var_to_meta( d );
+            var meta = self.var_to_meta( d, bl );
             var field = mf.add_field_from_meta( meta );
             var value = field.getValue() || meta['default'];
             if( !self.data[bl] ) self.data[bl]={};
             self.data[bl][id] = value;
-            
-            //self.data[bl.id] = mf.serialize();
-            //mf.serialize();
-            //self.data[ bl ] = meta['default'];
         } else {
             Baseliner.message( _('Variables'), _('Variable `%1` already exists', id) );
         }
     },
+    del_field : function(id_field){
+        var self = this;
+        var mf = self.current_mf();
+        mf.remove_field( id_field );
+    },
     del_field_from_rec : function(rec){
         var self = this;
         var id = rec.data.name;
-        var mf = self.current_mf();
-        mf.remove_field( id );
+        self.del_field(id);
     },
     current_bl : function(){
         var self = this;
@@ -2439,23 +2473,17 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         var var_ci_mandatory;
         var var_ci_multiple;
-        if (ci.var_ci_mandatory == 1){
-            var_ci_mandatory = false;
-        }else{
-            var_ci_mandatory = true;
-        }
-
-        if (ci.var_ci_multiple == 1){
-            var_ci_multiple = false;
-        }else{
-            var_ci_multiple = true;
-        }
+        var_ci_mandatory = ci.var_ci_mandatory != 1;
+        var_ci_multiple  = ci.var_ci_multiple != 1;
+        var default_value = Ext.isObject(ci.variables) 
+                ? ( ci.variables[bl]==undefined  ? ci.variables['*'] : ci.variables[bl]) 
+                : ci.var_default;  // FIXME var_default is legacy
 
         var meta = {
             id: ci.name,
             type: ci.var_type,
             description: ci.description,
-            'default': ci.var_default,
+            'default': default_value,
             classname: ci.var_ci_class,
             role: ci.var_ci_role,
             field_attributes: { allowBlank: var_ci_mandatory, singleMode: var_ci_multiple },
@@ -2472,7 +2500,15 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         var vars=[];
         if( !self.data ) return;
-        var bl_data = self.data[bl];
+        var bl_data;
+        if( self.variable_name ) {
+            if( self.data[bl]!==undefined ) {
+                bl_data = {};
+                bl_data[self.variable_name] = self.data[bl];
+            }
+        } else { 
+            bl_data = self.data[bl];
+        }
         mf.data = bl_data;
         // get variable names from hash keys
         for( v in bl_data ) {
@@ -2507,7 +2543,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         Ext.each( self.items.items, function(mf) {
             if( bl && mf.bl != bl ) return;
-            self.data[ mf.bl ] = mf.serialize();
+            self.data[ mf.bl ] = mf.serialize({ name: self.variable_name });
         });
         return self.data;
     }, 

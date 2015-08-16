@@ -337,6 +337,7 @@ sub variables_for_bl {
     my $vars = $ci->variables // { _no_vars=>1 }; 
     my $vars_common_bl = $vars->{'*'} // {};
     my $vars_for_bl = $vars->{$bl} // { _no_vars_for_bl=>$bl } if length $bl && $bl ne '*';
+    $vars_for_bl //= {};
     +{ %$vars_common_bl, %$vars_for_bl };
 }
 
