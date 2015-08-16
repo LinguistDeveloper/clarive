@@ -982,6 +982,33 @@ sub load : Local {
     $c->forward('View::JSON');
 }
 
+sub new_ci : Local {
+    my ($self, $c, $action) = @_;
+    my $p = $c->req->params;
+    my $collection = $p->{collection} || _throw 'Missing parameter collection';
+    try {
+        _fail(_loc('User %1 not authorized to view CI of class %2', $c->username, $collection) )
+            unless $c->has_action("action.ci.view.%.$collection");
+        my $obj = ci->$collection;
+        my $rec = {};
+        my $attrib = $obj->attribute_default_values;
+        $rec->{has_bl} = $obj->has_bl;
+        $rec->{has_description} = $obj->has_description;
+        $rec->{classname} = $rec->{class} = $collection;
+        $rec->{icon} = $obj->icon;
+        $rec->{ci_form} = $obj->ci_form;
+        $rec->{active} = \1;
+        $rec->{services} = [ $obj->service_list ];
+        $rec->{password} = '*' x 30;
+        $c->stash->{json} = { success=>\1, msg=>_loc('CI class %1 loaded ok', $collection ), rec=>$rec };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        $c->stash->{json} = { success=>\0, msg=>_loc('CI class load error: %1', $err ) };
+    };
+    $c->forward('View::JSON');
+}
+
 sub delete : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;

@@ -34,14 +34,6 @@
         });
         var gr = new Baseliner.CIGraph({ mid: mids });
         gr.window_show();
-        /*
-        Baseliner.ajaxEval( '/ci/json_tree', { mid: mids, direction:'related', depth:2 }, function(res){
-            if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-            var rg = new Baseliner.JitRGraph({ json: res.data });
-            var graph_win = new Baseliner.Window({ layout:'fit', width: 800, height: 600, items: rg });
-            graph_win.show();
-        });
-        */
     };
     // only globals can be seen from grid
     Baseliner.ci_edit = function( gridid, ix ){
@@ -53,33 +45,6 @@
     var ci_edit = function(store, rec){
         var data = store.baseParams;
         Baseliner.add_tabcomp( '/ci/edit', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
-        /* DEPRECATED:
-        //var classname = data.class ;
-        var classname = data["class"] ;
-        Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
-            if( res.success ) {
-                var rec = res.rec;
-                    {
-                        _parent_grid: ci_grid.id,
-                        collection: rec.collection,
-                        item: rec.collection,
-                        has_bl: data.has_bl,
-                        has_description: data.has_description,
-                        bl: data.bl,
-                        //class: rec.class,
-                        "class": rec["class"],
-                        ci_form: rec.ci_form,
-                        mid: rec.mid,
-                        rec: rec,
-                        tab_icon: rec.icon,
-                        action: 'edit'
-                    }
-                );
-            } else {
-                Ext.Msg.alert( _('Error'), _(res.msg) );
-            }
-        });
-        */
     };
 
     // only globals can be seen from grid
@@ -103,7 +68,6 @@
 
     var ci_add = function(){
         var data = store_ci.baseParams;
-        //var classname = data.class ;
         var classname = data["class"] ;
         var rec = {};
         if (check_sm.hasSelection()) {
@@ -355,50 +319,31 @@
             displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: _('There are no rows available')
         });
-//{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
+
     var btn_create = new Baseliner.Grid.Buttons.Add({
         //disabled: false,
         handler: ci_add,
         hidden: !can_save
     })
 
-//{ xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
+
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
         handler: ci_delete,
         hidden: !can_save
     })
 
-    /*var hbl;
-    if(!store_ci.baseParams.has_bl){
-        hbl = true;
-    }
-    else{
-        hbl = false;
-    }*/
-
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: Cla.ci_loc(params.item),
         autoScroll: true,
         autoWidth: true,
         sortable: true,
-        //header: false,
-        //hideHeaders: true,
         store: store_ci,
         sm: check_sm,
-
-        //enableSort: false,
-        //lines: true,
-        //enableDD: true,
-
         tbar: [ 
-            //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
             btn_create,
             btn_delete,
-            //{ xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            //{ xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
-            //{ xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
@@ -420,24 +365,9 @@
             { icon:'/static/images/icons/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
         ],
         viewConfig: {
-            //headersDisabled: true,
             enableRowBody: true,
             scrollOffset: 2,
             forceFit: true
-            /*,
-            getRowClass: function(record, index, p, store){
-                var css='';
-                p.body='';
-                var title = record.data.title;
-                if( title && title.length > 0  ) {
-                    p.body +='<div style="color: #333; font-weight: normal; padding-left: 100px; margin: 0 0 5 150;">';
-                    //p.body += '<img style="vertical-align:middle" src="/static/images/icons/post.gif">';
-                    p.body += '&nbsp;' + title + '</div>';
-                    css += ' x-grid3-row-expanded '; 
-                }
-                //css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
-                return css;
-            } */
         },
         master_column_id : id_auto,
         autoExpandColumn: id_auto,
@@ -466,24 +396,6 @@
 
     ci_grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
     });
-    // Explorer tree node listener on click
-    /*  TODO needs to setTimeout on dblclick
-    var click_foo = function(n, ev){ 
-        if( ! ci_grid.isVisible() ) return;
-        var data = n.attributes.data;
-        if( data.class == undefined ) return;  // make sure this is a ci node
-        if( data.type != 'class' ) return;  // only classes on grid
-        ci_grid.setTitle(_('CI: %1', data.item ) );
-        store_ci.additional_params = true;
-        store_ci.baseParams = data;
-        if( search_field.hasSearch ) store_ci.baseParams.query = search_field.getRawValue();
-        store_ci.load(); 
-    };
-    Baseliner.explorer.on('click', click_foo );
-    ci_grid.on('destroy', function(){
-        Baseliner.explorer.removeListener('click', click_foo );
-    });
-    */
 
     store_ci.on('beforeload', function(s,obj) {
         if( store_ci.additional_params ) {
