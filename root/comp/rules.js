@@ -357,8 +357,8 @@
                             rule_id: node.attributes.rule_id, 
                             rule_name: node.attributes.text, 
                             rule_type: node.attributes.rule_type, 
-                            //event_name: node.attributes., 
-                            //rule_event: node.attributes., 
+                            event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name, 
+                            rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name, 
                             icon: node.attributes.icon
                         };
                         show_rules(params);

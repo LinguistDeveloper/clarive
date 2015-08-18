@@ -1199,6 +1199,9 @@ sub get_rules_info {
                   rule_type=>$_->{rule_type},
                   rule_active=>$_->{rule_active},
                   rule_when=>$_->{rule_when},
+                  rule_event=>$_->{rule_event},
+                  event_name=>$_->{event_name},
+                  rule_name=>$_->{rule_name},
                   username=>$_->{username}
                } if $_->{rule_type} eq $rule_type 
             } @rules;
@@ -1217,6 +1220,9 @@ sub get_rules_info {
                   rule_type=>$_->{rule_type},
                   rule_active=>$_->{rule_active},
                   rule_when=>$_->{rule_when},
+                  rule_event=>$_->{rule_event},
+                  rule_name=>$_->{rule_name},
+                  event_name=>$_->{event_name},
                   username=>$_->{username}
                 } if $rule_folder->{id} ~~ $_->{folders};
             } @rules;
