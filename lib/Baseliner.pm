@@ -282,14 +282,29 @@ around 'debug' => sub {
         return \%data;
     }
 
-sub decrypt {
+sub encrypt_key { $_[0]->decrypt_key(@_) }
+sub decrypt_key {
     my $c = shift;
-    require Crypt::Blowfish::Mod;
     my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
-    die "Error: missing 'decrypt_key' config parameter" unless length $key;
+    Util->_fail("Error: missing 'decrypt_key' config parameter") unless length $key;
+    return $key;
+}
 
+sub encrypt {
+    my ($c,$str,$key) = @_;
+    require Crypt::Blowfish::Mod;
+    $key //= $c->encrypt_key;
     my $b = Crypt::Blowfish::Mod->new( $key );
-    $b->decrypt( @_ );
+    $b->encrypt( $str );
+}
+
+sub decrypt {
+    my ($c,$str,$key) = @_;
+    require Crypt::Blowfish::Mod;
+    $key //= $c->encrypt_key;
+    die "Error: missing 'decrypt_key' config parameter" unless length $key;
+    my $b = Crypt::Blowfish::Mod->new( $key );
+    $b->decrypt( $str );
 }
 
 # user shortcut
