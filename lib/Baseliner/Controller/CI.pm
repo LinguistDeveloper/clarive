@@ -307,7 +307,7 @@ sub tree_objects {
     my @tree = map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : $row;
-        my $row_class = $class_coll{ $row->{collection} };
+        my $row_class = $class_coll{ $row->{collection} } // 'ci';
         # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
         my $ci_form = $forms{ $row->{collection} } 
             // ( $forms{ $row->{collection} } = $self->form_for_ci( $row_class, $row->{collection} ) );
@@ -582,8 +582,14 @@ sub store : Local : Does('Ajax') {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
+    my $nin = delete $p->{nin};
     my $where = {};
     $where->{active} = '1';
+    if( ref $nin eq 'HASH') {
+        push @{ $where->{ '$and' } }, { $_ => mdb->nin($nin->{$_}) } for keys %$nin;
+    } elsif( length $nin ) {
+        _fail "CI store: invalid parameter value: `nin`: $nin";
+    }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
     if ( defined $mid_param ) {
@@ -979,6 +985,33 @@ sub load : Local {
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
     cache->set( $cache_key, $c->stash->{json} ) if defined $cache_key;
+    $c->forward('View::JSON');
+}
+
+sub new_ci : Local {
+    my ($self, $c, $action) = @_;
+    my $p = $c->req->params;
+    my $collection = $p->{collection} || _throw 'Missing parameter collection';
+    try {
+        _fail(_loc('User %1 not authorized to view CI of class %2', $c->username, $collection) )
+            unless $c->has_action("action.ci.view.%.$collection");
+        my $obj = ci->$collection;
+        my $rec = {};
+        my $attrib = $obj->attribute_default_values;
+        $rec->{has_bl} = $obj->has_bl;
+        $rec->{has_description} = $obj->has_description;
+        $rec->{classname} = $rec->{class} = $collection;
+        $rec->{icon} = $obj->icon;
+        $rec->{ci_form} = $obj->ci_form;
+        $rec->{active} = \1;
+        $rec->{services} = [ $obj->service_list ];
+        $rec->{password} = '*' x 30;
+        $c->stash->{json} = { success=>\1, msg=>_loc('CI class %1 loaded ok', $collection ), rec=>$rec };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        $c->stash->{json} = { success=>\0, msg=>_loc('CI class load error: %1', $err ) };
+    };
     $c->forward('View::JSON');
 }
 

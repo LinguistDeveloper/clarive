@@ -3,6 +3,7 @@ package Clarive::PSGI::Web;
 use Plack::Builder;
 eval {
     require Baseliner;
+    Baseliner->build_app();
 };
 if( $@ ) {
     print "\n\nBaseliner Startup Error:\n";

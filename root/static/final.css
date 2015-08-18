@@ -1,5 +1,18 @@
 /* Last css to be executed by Baseliner */
 
+body {
+    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* REPL style */
+.CodeMirror pre {
+    font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Courier, monospace;
+    font-size: 12px;
+    line-height: 16px;
+    height: auto;
+    text-shadow: rgb(38, 38, 38) 0px -1px 1px;
+}
+
 /* fullcalendar font, otherwise it uses body font and ajusts */
 .fc, .fc-event, .fc table {
     font: normal 12px "Helvetica Neue", Helvetica, Arial, sans-serif;

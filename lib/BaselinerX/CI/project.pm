@@ -59,4 +59,17 @@ after save_data => sub {
     mdb->master_rel->insert({ from_mid=>$self->mid, to_mid=>$_, rel_type=>'project_variable', rel_field=>'variables' }) for _unique( @var_cis );
 };
     
+sub merged_variables {
+    my ($self, $bl)=@_;
+    $bl //= '*';
+    my $vars = BaselinerX::CI::variable->default_hash($bl);
+    my $variables = ref $self->variables ? $self->variables->{$bl//'*'} : {};
+
+    for my $key ( keys %$variables ) {
+        $vars->{$key} = $variables->{$key}; 
+    }
+
+    return $vars;
+}
+
 1;

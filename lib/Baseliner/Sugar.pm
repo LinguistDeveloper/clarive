@@ -13,7 +13,6 @@ Some convenient sugar to over called methods.
 use strict;
 use Try::Tiny;
 use Baseliner::Utils;
-use Baseliner::Model::Events;
 use Exporter::Tidy default => [qw/
     config_store
     config_get
@@ -32,6 +31,7 @@ use Exporter::Tidy default => [qw/
     master_new
     /
 ];
+use Baseliner::Model::Events;
 
 sub mdl {  }
 

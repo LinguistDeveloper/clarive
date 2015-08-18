@@ -24,6 +24,7 @@ sub run_list {
    
     if( $opts{mid} ) {
         require Baseliner;
+        Baseliner->build_app();
         $classname = ref Baseliner::CI->new( $opts{mid} ); 
         $classname = ( split /::/, $classname )[-1];
         say "mid classname=$classname";

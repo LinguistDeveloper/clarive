@@ -44,89 +44,18 @@ use Catalyst (@modules);
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 use Try::Tiny;
+use FindBin '$Bin';
+
 my $t0 = [ gettimeofday ];
-extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
+
+extends 'Catalyst';
 
 our $VERSION = Clarive->version;
 
 # find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} //= getppid();
 
-__PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
-__PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
-__PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
-
-__PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
-        'static',
-        qr/images/,
-    ];
-__PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];    
-
-__PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
-
-__PACKAGE__->config( {
-        'View::JSON' => {
-            decode_utf8  => 0,
-            json_driver  => 'JSON::XS',
-            expose_stash => 'json',
-            encoding     => 'utf-8',
-        },
-    });
-
-# __decrypt( ... )__  conf definition
-__PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
-    decrypt => sub {
-        my $c = shift;
-        $c->decrypt( @_ );
-    }
-};
-
-if( $ENV{BALI_CMD} ) {
-    # only load the root controller, for capturing $c
-    __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
-    require Baseliner::Standalone;
-}
-
-__PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
-    
-use FindBin '$Bin';
-#$c->languages( ['es'] );
-__PACKAGE__->config(
-    'Plugin::I18N' => {
-        maketext_options => {
-            Style => 'gettext',
-            Path => $Bin.'/../lib/Baseliner/I18N',
-            Decode => 0,
-        }
-    }
-);
-
-## Authentication
-    __PACKAGE__->config(
-        'authentication' => {
-            realms => {
-                ldap => {
-                    store => {
-                        class               => "LDAP",
-                        user_class          => "Baseliner::Core::User::LDAP",
-                        entry_class         => "Baseliner::LDAP::Entry",
-                        user_results_filter => sub { return shift->pop_entry },
-                    },
-                },
-            },
-        },
-    );
-    __PACKAGE__->config(
-        'authentication' => {
-            realms => {
-                ldap_no_pw =>
-                  \%{ __PACKAGE__->config->{authentication}->{realms}->{ldap} },
-            },
-        },
-    );
-
-# Start the application
 if( $ENV{BALI_CMD} ) {
     # no controllers on command line mode
     around 'locate_components' => sub {
@@ -138,6 +67,7 @@ if( $ENV{BALI_CMD} ) {
         return @comps;
     };
 }
+
 if( $ENV{BALI_FAST} ) {
     around 'locate_components' => sub {
         my $orig = shift;
@@ -163,16 +93,7 @@ after 'setup_finalize' => sub {
     $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
 };
 
-#############################
-__PACKAGE__->setup();
-#############################
-
-# Capture Signals
-$SIG{INT} = \&signal_interrupt;
-$SIG{KILL} = \&signal_interrupt;
-
 # setup the DB package
-
 around 'debug' => sub {
     my $orig = shift;
     my $c = shift;
@@ -180,7 +101,103 @@ around 'debug' => sub {
     $c->$orig( @_ ) unless $Baseliner::DebugForceOff;
 };
 
-    
+# cache legacy, for unmigrated features
+sub cache_get { shift; cache->get( @_ ) }
+sub cache_set { shift; cache->set( @_ ) }
+sub cache_remove { shift; cache->remove( @_ ) }
+sub cache_remove_like { shift; cache->remove_like( @_ ) }
+sub cache_keys { shift; cache->keys( @_ ) }
+sub cache_keys_like { shift; cache->keys_like( @_ ) }
+sub cache_clear { shift; cache->clear( @_ ) }
+   
+sub config_catalyst {
+    __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
+    __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
+    __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
+
+    __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
+            'static',
+            qr/images/,
+        ];
+    __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];    
+
+    __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
+
+    __PACKAGE__->config( {
+            'View::JSON' => {
+                decode_utf8  => 0,
+                json_driver  => 'JSON::XS',
+                expose_stash => 'json',
+                encoding     => 'utf-8',
+            },
+        });
+
+    # __decrypt( ... )__  conf definition
+    __PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
+        decrypt => sub {
+            my $c = shift;
+            $c->decrypt( @_ );
+        }
+    };
+
+    if( $ENV{BALI_CMD} ) {
+        # only load the root controller, for capturing $c
+        __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
+        require Baseliner::Standalone;
+    }
+
+    __PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
+        
+    #$c->languages( ['es'] );
+    __PACKAGE__->config(
+        'Plugin::I18N' => {
+            maketext_options => {
+                Style => 'gettext',
+                Path => $Bin.'/../lib/Baseliner/I18N',
+                Decode => 0,
+            }
+        }
+    );
+
+    ## Authentication
+    __PACKAGE__->config(
+        'authentication' => {
+            realms => {
+                ldap => {
+                    store => {
+                        class               => "LDAP",
+                        user_class          => "Baseliner::Core::User::LDAP",
+                        entry_class         => "Baseliner::LDAP::Entry",
+                        user_results_filter => sub { return shift->pop_entry },
+                    },
+                },
+            },
+        },
+    );
+    __PACKAGE__->config(
+        'authentication' => {
+            realms => {
+                ldap_no_pw =>
+                  \%{ __PACKAGE__->config->{authentication}->{realms}->{ldap} },
+            },
+        },
+    );
+}
+
+# Start the application
+sub build_app { 
+    my $c = shift;
+
+    $c->config_catalyst;
+
+    #############################
+    $c->setup();
+    #############################
+
+    # Capture Signals
+    $SIG{INT} = \&signal_interrupt;
+    $SIG{KILL} = \&signal_interrupt;
+
     # Inversion of Control
     if( $ENV{BALI_FAST} ) {
         for my $component ( grep !/(Controller|Model|View)/, @{ Baseliner->config->{ all_components } } ) {
@@ -193,15 +210,6 @@ around 'debug' => sub {
     $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
     $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    # cache legacy, for unmigrated features
-    sub cache_get { shift; cache->get( @_ ) }
-    sub cache_set { shift; cache->set( @_ ) }
-    sub cache_remove { shift; cache->remove( @_ ) }
-    sub cache_remove_like { shift; cache->remove_like( @_ ) }
-    sub cache_keys { shift; cache->keys( @_ ) }
-    sub cache_keys_like { shift; cache->keys_like( @_ ) }
-    sub cache_clear { shift; cache->clear( @_ ) }
-    
     # cache setup
     cache->remove( qr/registry:/ );
 
@@ -214,82 +222,105 @@ around 'debug' => sub {
         print STDERR "Environment: $bali_env. MongoDB: $mdbv / $MongoDB::VERSION. Catalyst: $Catalyst::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
-    # Make registry easily available to contexts
-    sub registry {
-        my $c = shift;
-        return 'Baseliner::Core::Registry';
-    }
 
-    # this is deprecated
-    sub c {
-        use Carp;
-        Catalyst->log->warn( Carp::longmess 'Use of Baseliner->c() is deprecated' );
-        __PACKAGE__->commandline;
+    # clear cache on restart
+    if( Clarive->debug ) {
+        cache->clear;  
+        mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
+        Util->_debug( "Cache cleared" );
     }
+        
+    # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
+    # otherwise mongo hell breaks loose
+    mdb->disconnect;
 
-    # elegant shutdown
-    sub signal_interrupt {
-        print STDERR "Baseliner server interrupt requested.\n";
-        eval {
-            local $SIG{ALRM} = sub { die "alarm\n" };
-            alarm 5;
-            exit 0;
-        };
-        kill 9,$$;
-        #exit 0;
-    }
-    
-    our $_logger;
-    our $_thrower;
-    
-    sub launch {
-        my $c = shift;
-        ref $c or $c = Baseliner->app($c);
-        # Baseliner->app($c);
-        return $c->model('Services')->launch(@_, c=>$c);
-    }
+    __PACKAGE__->meta->make_immutable;
+}
 
-    our $global_app;
-    sub app {
-        # TODO use this only: 
-        #         return bless {} => __PACKAGE__;  # so it won't break $c->{...} calls
-        Baseliner->instance and return __PACKAGE__->instance;  # depends on Catalyst Plugin "Singleton"
-        my ($class, $c ) = @_;
-        return $global_app = $c if ref $c;
-        return $global_app if ref $global_app;
-        return bless {} => 'Baseliner';  # so it won't break $c->{...} calls
-    }
+# Make registry easily available to contexts
+sub registry {
+    my $c = shift;
+    return 'Baseliner::Core::Registry';
+}
 
-    #TODO move this to a model
-    sub inf {
-        my $c = shift;
-        my %p = @_;
-        $p{ns} ||= '/';
-        $p{bl} ||= '*';
-        if( $p{domain} ) {
-            $p{domain} =~ s{\.$}{}g;
-            # $p{key}={ -like => "$p{domain}.%" };
-            $p{key}= qr/^$p{domain}\./ ;
-        }
-        print "KEY==$p{domain}\n";
-        my %data;
-        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
-        while( my $r = $rs->next  ) {
-            (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
-            $c->stash->{$var} = $r->value;
-            $data{$var} = $r->value;
-        }
-        return \%data;
+# elegant shutdown
+sub signal_interrupt {
+    print STDERR "Baseliner server interrupt requested.\n";
+    eval {
+        local $SIG{ALRM} = sub { die "alarm\n" };
+        alarm 5;
+        exit 0;
+    };
+    kill 9,$$;
+    #exit 0;
+}
+
+our $_logger;
+our $_thrower;
+
+sub launch {
+    my $c = shift;
+    ref $c or $c = Baseliner->app($c);
+    # Baseliner->app($c);
+    return $c->model('Services')->launch(@_, c=>$c);
+}
+
+our $global_app;
+sub app {
+    # TODO use this only: 
+    #         return bless {} => __PACKAGE__;  # so it won't break $c->{...} calls
+    Baseliner->can('instance') and return __PACKAGE__->instance;  # depends on Catalyst Plugin "Singleton"
+    my ($class, $c ) = @_;
+    return $global_app = $c if ref $c;
+    return $global_app if ref $global_app;
+    return bless {} => 'Baseliner';  # so it won't break $c->{...} calls
+}
+
+#TODO move this to a model
+sub inf {
+    my $c = shift;
+    my %p = @_;
+    $p{ns} ||= '/';
+    $p{bl} ||= '*';
+    if( $p{domain} ) {
+        $p{domain} =~ s{\.$}{}g;
+        # $p{key}={ -like => "$p{domain}.%" };
+        $p{key}= qr/^$p{domain}\./ ;
     }
+    print "KEY==$p{domain}\n";
+    my %data;
+    my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
+    while( my $r = $rs->next  ) {
+        (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
+        $c->stash->{$var} = $r->value;
+        $data{$var} = $r->value;
+    }
+    return \%data;
+}
+
+sub encrypt_key { $_[0]->decrypt_key(@_) }
+sub decrypt_key {
+    my $c = shift;
+    my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
+    Util->_fail("Error: missing 'decrypt_key' config parameter") unless length $key;
+    return $key;
+}
+
+sub encrypt {
+    my ($c,$str,$key) = @_;
+    require Crypt::Blowfish::Mod;
+    $key //= $c->encrypt_key;
+    my $b = Crypt::Blowfish::Mod->new( $key );
+    $b->encrypt( $str );
+}
 
 sub decrypt {
-    my $c = shift;
+    my ($c,$str,$key) = @_;
     require Crypt::Blowfish::Mod;
-    my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
+    $key //= $c->encrypt_key;
     die "Error: missing 'decrypt_key' config parameter" unless length $key;
-
     my $b = Crypt::Blowfish::Mod->new( $key );
-    $b->decrypt( @_ );
+    $b->decrypt( $str );
 }
 
 # user shortcut
@@ -465,17 +496,6 @@ if( Clarive->debug ) {
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
 
-# clear cache on restart
-if( Clarive->debug ) {
-    cache->clear;  
-    mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
-    Util->_debug( "Cache cleared" );
-}
-    
-# disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
-# otherwise mongo hell breaks loose
-mdb->disconnect;
-
 =head1 NAME
 
 Baseliner - A Catalyst-based Release Management Automation framework
@@ -495,6 +515,5 @@ L<Baseliner::Controller::Root>, L<Catalyst>
 =cut
 
 no Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

@@ -98,8 +98,7 @@ subtest 'roadmap: build a daily scaled calendar' => sub {
                     my $tday = Class::Date->now;
                     $stash = $c->stash;
                     $data = $stash->{json}{data};
-                warn Util->_dump( $data );
-                    is( (Class::Date->new($data->[0]->{date})+ ($unit_shift . 'D') )->string, $tday->string, "$data->[0]->{date} first day is a $unit_shift shift units away from today $tday" );
+                    is( (Class::Date->new($data->[0]->{date})+ ($unit_shift . 'D') )->string, substr( $tday->string, 0,10).' 00:00:00', "$data->[0]->{date} first day is a $unit_shift shift units away from today $tday" );
                 };
                 is( (Class::Date->new($data->[0]->{date})+'1D')->string, $data->[1]->{date}, 'first and second separated by a day' );
             }

@@ -24,7 +24,6 @@
         eval('btn_duplicate_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
         eval('btn_edit_fields.' + action + '()');
-        eval('btn_admin_category.' + action + '()');
     }   
     
     var init_buttons_label = function(action) {
@@ -57,7 +56,7 @@
             bodyStyle:'padding:10px 10px 0',
             buttons: [
                     {
-                        text: _('Accept'),
+                        text: _('Save'),
                         icon:'/static/images/icons/save.png',
                         type: 'submit',
                         handler: function() {
@@ -97,7 +96,7 @@
             defaults: { anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'),
+                { xtype:'textfield', name:'name', fieldLabel:_('States'),
                   allowBlank:false, emptyText:_('Name of status'),
                   regex: /^[^\.]+$/,
                   regexText: _('Character dot not allowed')             
@@ -223,13 +222,13 @@
         return str;
     }   
 
-    var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
+    var render_status = function(value,meta,rec,rowIndex,colIndex,store){
         var ret = 
             '<b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111">' + value + '</span></b>';
         return ret;
     };
     
-    var render_status2 = function(value,metadata,rec,rowIndex,colIndex,store){
+    var render_status2 = function(value,meta,rec,rowIndex,colIndex,store){
         if( typeof value == 'object' ) 
             value = value.join(', ');
         value = '<div style="white-space:normal !important;">'+ value +'</div>';
@@ -237,12 +236,12 @@
             '<span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111">' + value + '</span>';
         return ret;
     };
-    var render_status_arrow = function(value,metadata,rec,rowIndex,colIndex,store){
+    var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){
         return '<img src="/static/images/icons/right-arrow.png" />';
     };
     
     var grid_status = new Ext.grid.GridPanel({
-        title : _('Topics: Statuses'),
+        title : _('States'),
         sm: check_status_sm,
         height: 400,
         header: true,
@@ -257,7 +256,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             // check_status_sm,
-            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
+            { header: _('State'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
             { header: _('Baseline'), dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
@@ -367,7 +366,7 @@
 
         // Topic dashboards
         var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Dashboard'), name:'dashboard', singleMode: true, 
-                   allowBlank: true, baseParams: { username: true }, value: rec.data.dashboard });
+                   allowBlank: true, baseParams: { username: true }, value: (rec ? rec.data.dashboard : undefined) });
 
         var ta = new Ext.form.TextArea({
             name: 'description',
@@ -466,6 +465,7 @@
             height: 350,
             stripeRows: true,
             autoScroll: true,
+            autoHeight: true,
             enableHdMenu: false,
             store: store_status,
             viewConfig: {forceFit: true, scrollOffset: 2},
@@ -474,7 +474,7 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true },
+                { header: _('States'), dataIndex: 'name', width:100, sortable: true },
                 { header: _('Description'), dataIndex: 'description', sortable: true } 
             ],
             autoSizeColumns: true,
@@ -509,16 +509,54 @@
         
         
         var form_category = new Ext.FormPanel({
+            title: _('General'),
             frame: true,
+            border: false,
+            padding: 10,
             url:'/topicadmin/update_category',
             layout: {
                 type: 'column',
                 padding: '5'
             },          
-            buttons: [
+            items: [
+                column1,
+                column2
+            ]           
+        });
+
+        form_category.on('afterrender',function(){
+            combo_providers.setValue('internal');
+        });
+
+        if(rec){
+            var ff = form_category.getForm();
+            ff.loadRecord( rec );
+            title = String.format( '<span id="boot"><span class="label" style="background-color: {0}">{1}</span></span>',
+                                                                rec.data.color, rec.data.name );
+        }
+        var tabpanel = new Ext.TabPanel({ 
+            activeTab: 0, items: [ form_category, add_workflow(rec) ]
+        });
+        win = new Baseliner.Window({
+            title: _(title),
+            width: 800,
+            height: 600,
+            layout:'fit',
+            resizable: true,
+            maximizable: true,
+            items: [tabpanel],
+            tbar: [
+                '->', 
                     {
-                        text: _('Accept'),
-                        type: 'submit',
+                    text: _('Close'),
+                    icon: IC('close'),
+                    handler: function(){ 
+                            win.close();
+                        }
+                    },
+                    {
+                        text: _('Save'),
+                        icon: IC('save'),
                         handler: function() {
                             var form = form_category.getForm();
                             var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
@@ -551,37 +589,8 @@
                                 });
                             }
                         }
-                    },
-                    {
-                    text: _('Close'),
-                    handler: function(){ 
-                            win.close();
-                        }
                     }
-            ],
-            items: [
-                column1,
-                column2
-            ]           
-        });
-
-        form_category.on('afterrender',function(){
-            combo_providers.setValue('internal');
-        });
-
-        if(rec){
-            var ff = form_category.getForm();
-            ff.loadRecord( rec );
-            title = 'Edit category';
-        }
-        
-        win = new Baseliner.Window({
-            title: _(title),
-            width: 800,
-            autoHeight: true,
-            resizable: false,
-            maximizable: false,
-            items: form_category
+            ]
         });
         win.show();     
     };
@@ -678,33 +687,10 @@
         }
     });
      
-    //var btn_update_fields = new Ext.Toolbar.Button({
-    //    text: _('System'),
-    //    icon:'/static/images/icons/restart.png',
-    //     cls: 'x-btn-text-icon',
-   //     handler: function() {
-   //         Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to update the system?'), 
-   //         function(btn){ 
-   //             if(btn=='yes') {
-   //                 Baseliner.ajaxEval( '/topicadmin/update_system',{},
-   //                     function(response) {
-   //                         if ( response.success ) {
-  //                              Baseliner.message( _('Success'), response.msg );
-  //                          } else {
-  //                              Baseliner.message( _('ERROR'), response.msg );
-  //                          }
-  //                      }
-  //                  
-  //                  );
-  //              }
-   //         });
-   //    }
-   // }); 
-    
-
-    var add_edit_admin_category = function(rec) {
+    var add_workflow = function(rec) {
+        if( ! rec ) return [];
         var win;
-        var title = _('Workflow: %1', rec.data.name );
+        var title = _('Workflow' );
         var id = Ext.id();
 
         var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
@@ -751,6 +737,7 @@
             if( flag && ( rec.data.is_changeset==1 || rec.data.is_release )
                 && data.bl!= undefined && data.bl.bl!='' && data.bl.bl != '*' ) {
                 combo_job_type.show();
+                form_category_admin.doLayout();
                 combo_job_type.setValue('promote');
             } else {
                 combo_job_type.hide();
@@ -780,7 +767,7 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                   check_admin_status_sm,
-                { header: _('Status To'), dataIndex: 'name', width:50, sortable: false }
+                { header: _('To State'), dataIndex: 'name', width:50, sortable: false }
             ],
             autoSizeColumns: true,
             deferredRender:true
@@ -788,6 +775,7 @@
         
         var column2 = {
            xtype:'panel',
+           layout:'fit',
            defaults:{anchor:'98%'},
            columnWidth:0.50,
            items: grid_admin_status
@@ -799,7 +787,7 @@
             forceSelection: true,
             triggerAction: 'all',
             emptyText: _('select status...'),
-            fieldLabel: _('Status From'),
+            fieldLabel: _('From State'),
             name: 'status_from',
             hiddenName: 'status_from',
             displayField: 'name',
@@ -847,7 +835,7 @@
             autoSizeColumns: true
         });      
     
-        var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+        var render_project = function(value,meta,rec,rowIndex,colIndex,store){
             if(rec.data.projects){
                 for(i=0;i<rec.data.projects.length;i++){
                     tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
@@ -880,9 +868,9 @@
             ]
         );
         
-        var store_categories_admin = new Baseliner.GroupingStore({           
+        var store_workflow = new Baseliner.GroupingStore({           
             reader: reader,
-            url: '/topicadmin/list_categories_admin',
+            url: '/topicadmin/list_workflow',
             groupField: 'role',
             sortInfo:{field: 'role', direction: "ASC"}
         });
@@ -893,7 +881,7 @@
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
-                var sm = grid_categories_admin.getSelectionModel();
+                var sm = grid_workflow.getSelectionModel();
                 if (sm.hasSelection()) {
                     var row = sm.getSelected();
                     Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), 
@@ -907,7 +895,7 @@
                                     if ( response.success ) {
                                         Baseliner.message( _('Success'), response.msg );
                                         btn_delete_row.disable();
-                                        store_categories_admin.load({params:{categoryId: id_category}});
+                                        store_workflow.load({params:{categoryId: id_category}});
                                     } else {
                                         Baseliner.message( _('ERROR'), response.msg );
                                     }
@@ -920,13 +908,13 @@
         });
         
         
-        var grid_categories_admin = new Ext.grid.GridPanel({
-            height: 300,
+        var grid_workflow = new Ext.grid.GridPanel({
             title: _('Roles/Workflow'),
+            flex: 1,
             stripeRows: true,
             autoScroll: true,
             autoWidth: true,
-            store: store_categories_admin,
+            store: store_workflow,
             view: new Ext.grid.GroupingView({
                 forceFit:true,
                 groupTextTpl: '{[ values.rs[0].data["role"] ]}'
@@ -936,20 +924,19 @@
             loadMask:'true',
             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', hidden: true }, 
-                { header: _('From Status'), width: 60, dataIndex: 'status_from', renderer: render_status },
+                { header: _('From State'), width: 60, dataIndex: 'status_from', renderer: render_status },
                 { width: 16, renderer: render_status_arrow },
-                { header: _('To Status'), width: 150, dataIndex: 'statuses_to', renderer: render_status2 }
+                { header: _('To State'), width: 150, dataIndex: 'statuses_to', renderer: render_status2 }
             ],
             autoSizeColumns: true,
-            deferredRender:true,
             bbar: [btn_delete_row]
         });
         
-        grid_categories_admin.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+        grid_workflow.on('rowclick', function(grid, rowIndex, columnIndex, e) {
             btn_delete_row.enable();
         });     
          
-        store_categories_admin.load({params:{categoryId: rec.data.id}});
+        store_workflow.load({params:{categoryId: rec.data.id}});
 
         // Combo Job Type
         var store_job_type =new Ext.data.SimpleStore({
@@ -963,6 +950,7 @@
         });
         
         var combo_job_type = new Ext.form.ComboBox({
+            autoHeight: true,
             store: store_job_type,
                 displayField: 'name',
                 valueField: 'job_type',
@@ -979,8 +967,11 @@
         });
         var form_category_admin = new Ext.FormPanel({
             frame: true,
+            flex: 1,
+            defaults: { bodyStyle:'padding:0 18px 0 0', anchor:'100%'},
             url:'/topicadmin/update_category_admin',
             buttons: [
+                    combo_job_type,
                     {
                         //text: _('Add'),
                         type: 'submit',
@@ -1009,10 +1000,10 @@
                                 if(roles_checked.length>0 && statuses_to_checked.length>0){
                                     form.submit({
                                         submitEmptyText: false,
-                                        params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
+                                        params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked, job_type: combo_job_type.getValue() },
                                         success: function(f,a){
                                             Baseliner.message(_('Success'), a.result.msg );
-                                            store_categories_admin.load({params:{categoryId: rec.data.id}});
+                                            store_workflow.load({params:{categoryId: rec.data.id}});
                                         },
                                         failure: function(f,a){
                                             Ext.Msg.show({  
@@ -1029,7 +1020,6 @@
                             }
                         }
                     },
-                    '-',
                     {
                         //text: _('Delete'),
                         cls: 'btn-text-icon',
@@ -1056,36 +1046,26 @@
                                 Baseliner.ajaxEval('/topicadmin/workflow/delete', d , function(res){
                                     if( res.success ) {
                                         Baseliner.message(_('Success'), res.msg );
-                                        store_categories_admin.load({params:{categoryId: rec.data.id}});
+                                        store_workflow.load({params:{categoryId: rec.data.id}});
                                     } else {
                                         Ext.Msg.alert( _('Error'), res.msg ); 
                                     }
                                 });
                             }
                         }
-                    },
-                    '-',
-                    {
-                    text: _('Close'),
-                    handler: function(){ 
-                            win.close();
-                        }
-                    }
+                    } 
             ],
-            defaults: { bodyStyle:'padding:0 18px 0 0', anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype: 'container', style: { padding: '10px' },
-                        html: String.format( '<span id="boot"><span class="label" style="background-color: {0}">{1}</span></span>',
-                                                                rec.data.color, rec.data.name ) },
                 {
                     // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:10px 10px 10px 10px'
+                    layout:'column',
+                    autoHeight: true,
+                    defaults:{
+                        layout:'form',
+                        border:false,
+                        xtype:'panel',
+                        bodyStyle:'padding:10px 10px 10px 10px'
                     }
                     ,items:[
                         {
@@ -1106,8 +1086,7 @@
                             ]
                         }
                     ]
-                },
-                combo_job_type
+                }
             ]           
         });
 
@@ -1116,18 +1095,18 @@
             ff.loadRecord( rec );
         }
         
-        win = new Baseliner.Window({
+        win = new Ext.Panel({
             title: _(title),
-            width: 700,
-            autoHeight: true,
+            layout:'vbox',
+            layoutConfig: { align: 'stretch' },
             items: [form_category_admin,
-                    grid_categories_admin
+                    grid_workflow
             ]
         });
-        win.show();     
+        return win;
     };
     
-    var edit_fields = function(rec) {
+    var edit_fields = function(rec,meta) {
         var title = render_category( rec.data.name, {}, rec);
         
         var id_category = rec.data.id;
@@ -1160,22 +1139,6 @@
         }
     });
 
-    var btn_admin_category = new Ext.Toolbar.Button({
-        text: _('Workflow'),
-        icon:'/static/images/icons/workflow.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var sm = grid_categories.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                add_edit_admin_category(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };          
-        }
-    });
-    
     var btn_tools_category = new Ext.Toolbar.Button({
         icon:'/static/images/icons/wrench.gif',
         cls: 'x-btn-text-icon',
@@ -1208,9 +1171,10 @@
         checkOnly: true
     });
     
-    var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+    var render_category = function(value,meta,rec,rowIndex,colIndex,store){
+        meta.style += ';cursor: pointer;'; 
         var color = rec.data.color;
-        var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+        var ret = '<div id="boot"><span class="label" style="cursor: pointer; float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
         return ret;
     };
 
@@ -1248,7 +1212,6 @@
                 //btn_update_fields,
                 // btn_edit_fields,
                 //btn_form_category,
-                btn_admin_category,
                 btn_tools_category
         ]       
     }); 
@@ -1272,6 +1235,10 @@
                     btn_admin_category.disable();
                 }
             }
+        }
+        else {
+            var sel = grid.getStore().getAt( rowIndex );
+            if(sel) add_edit_category(sel);
         }
     });
     
@@ -1534,7 +1501,7 @@
         ]
     });
     
-    var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
+    var render_color = function(value,meta,rec,rowIndex,colIndex,store) {
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
 
@@ -1655,7 +1622,7 @@
         
     }
                 
-    var show_expr = function(value,metadata,rec,rowIndex,colIndex,store) {
+    var show_expr = function(value,meta,rec,rowIndex,colIndex,store) {
         var expr = value.split(':');
         var str_expr = '';
         for(i=0; i < expr.length; i++)

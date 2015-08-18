@@ -13,6 +13,7 @@ has var_default          => qw(is rw isa Any);
 has old_name             => qw(is rw isa Str), default=>sub{my $self= shift; $self->name};
 
 with 'Baseliner::Role::CI::Variable';
+with 'Baseliner::Role::CI::VariableStash';
 
 after save => sub {
     my ($self, $master_row, $data ) = @_;
@@ -41,12 +42,11 @@ sub default_hash {
     my @all = BaselinerX::CI::variable->search_cis;
     for my $var ( @all ) {
         next unless ! length($var->bl) || $var->bl eq '*' || $var->bl eq $bl;
-        if( $var->var_type eq 'ci' ) {
-            my $def = $var->var_default;
-            $vars{ $var->name } = $def; #Baseliner::CI->new( $def ) if length $def;   
-        } else {
-            $vars{ $var->name } = $var->var_default;
-        }
+        my $variables = $var->variables;
+        my $def = ref $variables 
+            ? (exists $variables->{$bl} ? $variables->{$bl} : $variables->{'*'} ) 
+            : $var->var_default;
+        $vars{ $var->name } = $def; 
     } 
     \%vars;
 }

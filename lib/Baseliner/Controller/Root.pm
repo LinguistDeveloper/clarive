@@ -49,8 +49,9 @@ sub begin : Private {
         my $body = $c->req->body;
         my $body_data = <$body>;
         my $json = Util->_from_json( $body_data ) if $body_data;
-        if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
+        if( ref $json eq 'HASH' ) {  
             my $p = $c->req->params || {};
+            $p->{body_data} = $json;
             my $d = { %$p, %$json };
             delete $d->{as_json};
             delete $d->{$_} for grep /^_bali/, keys $d;

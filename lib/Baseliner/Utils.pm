@@ -265,7 +265,8 @@ sub _loc {
         loc_lang( $default_lang );
         return loc( @args );
     } else {
-        return $c->localize( @args );
+        return $c->localize( @args ) if $c->can('localize');  # when testing, no i18n
+        return $args[0] =~ s{\%(\d)}{$args[$1]//''}egr;  # poor man's loc()
     }
 }
 

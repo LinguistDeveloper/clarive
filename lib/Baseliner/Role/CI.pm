@@ -407,7 +407,6 @@ sub load {
     # in cache ?
     my $cache_key = { d=>'ci', mid=>"$mid" }; #"ci:$mid:";
     my $cached = cache->get( $cache_key );
-    #Util->_warn( "Cached $mid" ) if $cached;
     return $cached if $cached;
 
     if( !$data ) {
@@ -434,8 +433,17 @@ sub load {
         }
     }
     
-    # load pre-data
-    $data = { %$data, %{ $self->load_pre_data($mid, $data) || {} } };
+    # grab the returned data, in case someone did an 'around' and returned it, otherwise == addr $data
+    my $final_data = $self->load_data( $mid, $data, $class, $yaml, $rel_data );
+    $Baseliner::CI::mid_scope->{ "$mid" } = $final_data if $Baseliner::CI::mid_scope;
+    cache->set($cache_key, $final_data);
+    return $final_data;
+}
+
+# load_data($mid,$data) is perfect for after, around, before intercepts in a CI class
+#   you can also use around BUILDARGS => sub{} for the next level of instantiation
+sub load_data {
+    my ($self,$mid,$data,$class,$yaml,$rel_data) = @_;
     # get my storage type
     my $storage = $class->storage;
     if( $storage eq 'yaml' ) {
@@ -449,13 +457,12 @@ sub load {
         };
         Util->_error( Util->_loc( "Error deserializing CI %1. Missing or invalid YAML ref: %2", $mid, ref $y || '(empty)' ) ) 
             unless ref $y eq 'HASH';
-        $data = { %{ $data || {} }, %{ $y || {} } };   # TODO yaml should be blessed obj?
+        $y //= {};
+        $data->{$_} = $y->{$_} for keys %$y; # TODO yaml should be blessed obj?
     }
     else {  
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
     }
-    # load post-data and merge
-    $data = { %$data, %{ $self->load_post_data($mid, $data) || {} } };
     # look for relationships
     if( ! $Baseliner::CI::no_rels ) {
         my $rel_types = $self->rel_type;
@@ -497,8 +504,6 @@ sub load {
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form if $Baseliner::CI::get_form;
     $data->{ci_class} //= $class;
-    $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
-    cache->set($cache_key, $data);
     return $data;
 }
 
@@ -542,9 +547,6 @@ sub query {
     return @recs;
 }
         
-sub load_pre_data { +{} }
-sub load_post_data { +{} }
-
 =head2 _build_ci_instance_from_rec
 
 Creates a CI obj from a hash.
