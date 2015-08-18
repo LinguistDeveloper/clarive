@@ -1189,7 +1189,7 @@ sub get_data {
         ###************************************************************************************************************************
         
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
-        my %metadata = map { $_->{id_field} => $_  } _array( $meta );
+        my %metadata = map { $_->{id_field} => $_  } grep { defined $_->{id_field} } _array( $meta );
 
         # build rel fields from master_rel
         # my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
@@ -1231,7 +1231,7 @@ sub get_release {
     my ($self, $topic_mid, $key, $meta ) = @_;
 
     my @meta_local = _array($meta);
-    my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
+    my ($field_meta) = grep { $_->{id_field} eq $key } grep { defined $_->{id_field} } @meta_local;
     my $rel_type = $field_meta->{rel_type} // "topic_topic";
     my $where = { is_release => 1, rel_type=>$rel_type, to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
@@ -1312,7 +1312,7 @@ sub get_topics {
     my ($self, $topic_mid, $id_field, $meta, $data, %opts) = @_;
 
     my @topics;
-    my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    my $field_meta = [ grep { $_->{id_field} eq $id_field } grep { defined $_->{id_field} } _array($meta) ]->[0];
     
     my $rel_type = $field_meta->{rel_type} // 'topic_topic';
     # Am I parent or child?
@@ -1334,7 +1334,11 @@ sub get_topics {
             $_->{name_status} //= $data->{name_status};
             $_->{data} //= $data;
             # _warn $meta;
-            my @topic_fields = map { $_->{id_field} } grep {  $_->{get_method} && $_->{get_method} eq 'get_topics' } _array($meta);
+            my @topic_fields =
+              map { $_->{id_field} }
+              grep { $_->{get_method} && $_->{get_method} eq 'get_topics' }
+              grep { defined $_->{id_field} }
+              _array($meta);
 
             for my $topic_field ( @topic_fields ) {
                 _warn "Adding ". '_title_list_'.$topic_field;
