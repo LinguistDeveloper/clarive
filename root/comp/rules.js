@@ -19,10 +19,12 @@
         if(from){
             condition = !condition;
         }
-        if( condition ) {
+        if( condition && t) {
+            // Search in grid mode and toggle to grid mode
             rules_store.baseParams.query = t;
             rules_store.reload();
-        } else {
+        } else if(t) {
+            // Search in tree mode and toggle to tree mode
             var ids = [];
             rules_store.each(function(row){
                 ids.push(row.data.id);
@@ -30,6 +32,15 @@
             var lo = rules_tree.getLoader();
             lo.baseParams = { query: t, ids: ids };
             lo.load(rules_tree.root);
+        }else if(!from && toggle_button.pressed){
+            // For empty search in tree mode
+            var lo = rules_tree.getLoader();
+            lo.baseParams = { query: t };
+            lo.load(rules_tree.root);
+        } else {
+            // Empty search for grid and toggle with empty search to grid mode
+            rules_store.baseParams.query = t;
+            rules_store.reload();
         }
     };
 
@@ -221,11 +232,81 @@
         left_panel.getLayout().setActiveItem( btn.pressed ? rules_tree : rules_grid );
     };
 
+    var add_custom_folder = function(node){
+        Ext.Msg.prompt(_('Add new custom folder'), _('New folder:'), function(btn, text){
+            if( btn == 'ok' ) {
+                Baseliner.ajaxEval('/rule/add_custom_folder', { folder_name: text }, function(response){
+                    var rule_info = response.data;
+                    var new_node = new Ext.tree.TreeNode({
+                        leaf: false,
+                        text: rule_info.name,
+                        rule_folder_id: rule_info.id,
+                        is_folder: true,
+                        expandable: true,
+                        allowDrop:true
+                    });
+                    node.appendChild(new_node);
+                    node.expand();
+                });
+            }
+        }, this, false );
+    };
+
+    var rename_rule_folder = function(node){
+        Ext.Msg.prompt(_('Rename folder'), _('New name:'), function(btn, text){
+            if( btn == 'ok' ) {
+                Baseliner.ajaxEval('/rule/rename_rule_folder', { folder_name: text, rule_folder_id: node.attributes.rule_folder_id }, function(response){
+                    node.setText(text);
+                });
+            }
+        }, this, false );
+    };
+
+    var delete_rule_folder = function(node){
+        Baseliner.confirm(_('Are you sure you want delete the folder?'), function(){ 
+            Baseliner.ajaxEval('/rule/delete_rule_folder', { rule_folder_id: node.attributes.rule_folder_id }, function(response){ 
+                node.remove();
+            });
+        }, function(){  });
+    };
+
+    var deal_rule_drop = function(dropEvent){
+        console.log(dropEvent.dropNode.parentNode.findChild( 'rule_id', dropEvent.dropNode.attributes.rule_id));
+        // if(copy.parentNode.findChild( 'rule_id', copy.attributes.rule_id)){
+        //     console.log('encontrado!!');
+        // }
+    };
+
+    var menu_custom_folder = function(node,event){
+        if(node.attributes.is_custom_folders_node){
+            node.select();
+            var stmts_menu = new Ext.menu.Menu({
+                items: [
+                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.gif' }
+                    //{ text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/rename_.png' },
+                    //{ text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete_.png' } 
+                ]
+            });
+            stmts_menu.showAt(event.xy);
+        } else if(node.attributes.is_folder){
+            node.select();
+            var stmts_menu = new Ext.menu.Menu({
+                items: [
+                    { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/rename_.png' },
+                    { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.gif' } 
+                ]
+            });
+            stmts_menu.showAt(event.xy);
+        }
+    };
+
     var rules_tree = new Ext.tree.TreePanel({
         useArrows: true,
         expanded: true,
         animate : true, 
-        hidden: true,         
+        stateful:true,
+        hidden: true,
+        enableDD: true,        
         rootVisible: false,
         dataUrl: '/rule/tree_structure',
         autoScroll : true,
@@ -236,8 +317,19 @@
             draggable:true,
             id: '/'
         },
-        dropConfig : { appendOnly : true }
+        dropConfig : { appendOnly : true },
+        listeners: {
+            contextmenu: menu_custom_folder,
+            nodedrop: deal_rule_drop
+        }
     });
+
+    rules_tree.on('beforenodedrop', function(e){
+        var n = e.dropNode;
+        var copy = new Ext.tree.TreeNode( Ext.apply({}, n.attributes) );
+        e.dropNode = copy;
+    });
+
 
     var get_icon_category = function(rule_category){
         var icon = rule_category=='dashboard' ? IC('dashboard') 
@@ -259,48 +351,38 @@
             }else{
                 //Children
                 type = root.text;
-                node.on('click', function(){
-                    var params = {  
-                        rule_id: node.attributes.rule_id, 
-                        rule_name: node.attributes.text, 
-                        rule_type: node.attributes.rule_type, 
-                        //event_name: node.attributes., 
-                        //rule_event: node.attributes., 
-                        icon: node.attributes.icon
-                    };
-                    show_rules(params);
-                });
+                if(!(node.attributes.is_folder || node.attributes.is_custom_folders_node)){
+                    node.on('click', function(){
+                        var params = {  
+                            rule_id: node.attributes.rule_id, 
+                            rule_name: node.attributes.text, 
+                            rule_type: node.attributes.rule_type, 
+                            //event_name: node.attributes., 
+                            //rule_event: node.attributes., 
+                            icon: node.attributes.icon
+                        };
+                        show_rules(params);
+                    });
+                }
                 var rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
-                var rule_text = node.attributes.text + 
-                    String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
+                var rule_text = node.attributes.text;
+                if(!node.attributes.is_folder){
+                    rule_text = rule_text + String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
                     rule_when +
-                    String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()); 
+                    String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()) +
+                    String.format('<span style="padding-left: 5px;color:#bbb">by {0}</span>', node.attributes.username); 
+                }
                 node.setText(rule_text);
             }
-            var icon = get_icon_category(type);
-            node.setIcon(icon);
+            if(node.attributes.is_folder || node.attributes.is_custom_folders_node){
+                node.setIcon('/static/images/icons/folder.gif');
+            } else {    
+                var icon = get_icon_category(type);
+                node.setIcon(icon);
+            }
         });
     });
 
-    var toggle_button = new Ext.Button(
-        { 
-            tooltip:_(''), 
-            pressed: false, 
-            toggleGroup:'rule-tree-group', 
-            icon: '/static/images/icons/workflow.png', 
-            cls: 'x-btn-icon', 
-            handler: activate_tree_view 
-        }
-    );
-
-
-    toggle_button.on('click', function(){
-        if(toggle_button.pressed){
-            do_search('to_tree');
-        }else{
-            do_search('to_grid');
-        }
-    });
 
 
     var rules_grid = new Ext.grid.GridPanel({
@@ -1024,7 +1106,6 @@
                     // });
 
                     // object.dropNode.attributes.name = "JOEEEEEEEE";
-                    // console.log(object.dropNode.attributes);
                     // drop_handler(object);
                 // },
                 contextmenu: menu_click,
@@ -1383,6 +1464,41 @@
         });
     });
 
+    var toggle_button = new Ext.Button(
+        { 
+            tooltip:_(''), 
+            pressed: false,
+            stateful: true,
+            toggleGroup:'rule-tree-group'+Ext.id(), 
+            icon: '/static/images/icons/workflow.png', 
+            cls: 'x-btn-icon', 
+            handler: activate_tree_view 
+        }
+    );
+
+
+    toggle_button.on('click', function(){
+        if(toggle_button.pressed){
+            do_search('to_tree');
+        }else{
+            do_search('to_grid');
+        }
+    });
+
+    var reload_data = function(){
+        var t = search_field.getValue();
+        if(toggle_button.pressed){
+            // Tree mode reload
+            var lo = rules_tree.getLoader();
+            lo.baseParams = { query: t };
+            lo.load(rules_tree.root);
+        } else {
+            // Grid mode reload
+            rules_store.baseParams.query = t;
+            rules_store.reload();
+        }
+    };
+
 
     var left_panel = new Ext.Panel({
         region: 'west',
@@ -1394,7 +1510,7 @@
         items: [ rules_grid, rules_tree ],
         tbar: [ 
             search_field,
-            { xtype:'button', tooltip:_('Refresh'), handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
+            { xtype:'button', tooltip:_('Refresh'), handler: function(){ reload_data() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},

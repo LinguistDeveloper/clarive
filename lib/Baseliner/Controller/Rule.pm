@@ -1043,6 +1043,49 @@ sub tree_structure : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub add_custom_folder : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    my $folder_name = $p->{folder_name};
+    $p->{username} = $c->username;
+    $c->stash->{json} = try {
+        my $ret = Baseliner->model('Rules')->add_custom_folder($p);
+        { success=>\1, msg=>_loc('Rule folder %1 added successfully', $folder_name), data=>$ret };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error adding rule folder: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub rename_rule_folder : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    my $folder_name = $p->{folder_name};
+    $p->{username} = $c->username;
+    $c->stash->{json} = try {
+        Baseliner->model('Rules')->rename_rule_folder($p);
+        { success=>\1, msg=>_loc('Rule folder %1 renamed successfully', $folder_name) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error renaming rule folder: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub delete_rule_folder : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    $c->stash->{json} = try {
+        Baseliner->model('Rules')->delete_rule_folder($p);
+        { success=>\1, msg=>_loc('Rule folder %1 deleted successfully', $p->{rule_folder_id}) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error deleting rule folder: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

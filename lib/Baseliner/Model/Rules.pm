@@ -1163,14 +1163,14 @@ sub get_rules_info {
     $sort = 'name_insensitive' if $sort eq 'rule_name';
     my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
     if( $p->{query} ) {
-        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode)] ); 
+        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode username)] ); 
     }
     # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
     my $rs = mdb->rule->aggregate([
             { '$match'=>$where },
             { '$project'=>{ 
                     rule_name=>1, rule_type=>1, rule_compile_mode=>1, 
-                    rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, 
+                    rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, username=>1, 
                     id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
                 } 
             },
@@ -1186,25 +1186,79 @@ sub get_rules_info {
         my $ids = $p->{ids};
         my $where = {};
         $where->{id} = mdb->in($ids) if length $ids;
-        my @rule_types = ('dashboard','form','event','report','chain','webservice');
+        my @rule_types = ('dashboard','form','event','report','chain','webservice','independent');
         my $folder_structure = [];
         for my $rule_type (@rule_types){
-            my $temp_structure = {text=>$rule_type, leaf => \0, expandable => \1, expanded => $expanded, children=> [] };
+            my $temp_structure = {text=>$rule_type, leaf => \0, expandable => \1, expanded => $expanded, allowDrop=>\0, allowDrag=>\0, draggable=>\0, children=> [] };
             map { push $temp_structure->{children}, 
+                { text=>$_->{rule_name}, 
+                  leaf=>\1,
+                  draggable=>\1,
+                  rule_id=>$_->{id},
+                  rule_ts=>$_->{ts},
+                  rule_type=>$_->{rule_type},
+                  rule_active=>$_->{rule_active},
+                  rule_when=>$_->{rule_when},
+                  username=>$_->{username}
+               } if $_->{rule_type} eq $rule_type 
+            } @rules;
+            push $folder_structure, $temp_structure;
+        }
+        my $custom_folder_node = {text=>'custom folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
+        my $rs = mdb->rule_folder->find;
+        while( my $rule_folder = $rs->next ) {
+            my $temp_structure = {text=>$rule_folder->{name}, rule_folder_id=>$rule_folder->{id}, is_folder=>\1, leaf => \0, expandable => \1, expanded => $expanded, children=> [], allowDrop=>\1 };
+            map {
+                push $temp_structure->{children}, 
                 { text=>$_->{rule_name}, 
                   leaf=>\1, 
                   rule_id=>$_->{id},
                   rule_ts=>$_->{ts},
                   rule_type=>$_->{rule_type},
                   rule_active=>$_->{rule_active},
-                  rule_when=>$_->{rule_when}
-               } if $_->{rule_type} eq $rule_type 
+                  rule_when=>$_->{rule_when},
+                  username=>$_->{username}
+                } if $rule_folder->{id} ~~ $_->{folders};
             } @rules;
-            push $folder_structure, $temp_structure;
+            push $custom_folder_node->{children}, $temp_structure;
         }
+        push $folder_structure, $custom_folder_node;
         @rules = @{$folder_structure};
     }
     return @rules;
+}
+
+sub add_custom_folder {
+    my ($self,$p)=@_;
+    my $folder_name = $p->{folder_name};
+    my $rule_folder_seq;
+    die _loc('Folder already exists') if mdb->rule_folder->find({name=>$folder_name})->count();
+    if(mdb->master_seq->find_one({_id=>'rule_folder'})){    
+        $rule_folder_seq = mdb->master_seq->find_one({_id=>'rule_folder'})->{seq};
+    }else{
+        $rule_folder_seq = 1;
+        mdb->master_seq->insert({_id=>'rule_folder'});
+    }
+    my $new_id = $rule_folder_seq+1;
+    my $folder_info = { name=>$folder_name, id=>$new_id.'', username=>$p->{username}, ts=>mdb->now().'' };
+    mdb->rule_folder->insert($folder_info);
+    my $ret = mdb->master_seq->update({ _id => 'rule_folder', seq =>$rule_folder_seq }, { '$set' => { seq => $new_id } });
+    $folder_info;  
+}
+
+sub rename_rule_folder {
+    my ($self,$p)=@_;
+    my $folder_name = $p->{folder_name};
+    die _loc('Folder already exists') if mdb->rule_folder->find({name=>$folder_name})->count();
+    my $rule_folder_id = $p->{rule_folder_id};
+    my $ret = mdb->rule_folder->update({ id =>$rule_folder_id }, { '$set' => { name => $folder_name, username=>$p->{username}, ts=>mdb->now().'' } });
+}
+
+sub delete_rule_folder {
+    my ($self,$p)=@_;
+    my $rule_folder_id = $p->{rule_folder_id};
+    mdb->rule_folder->remove({id=>$rule_folder_id});
+    #mdb->rule->    
 }
 
 no Moose;
