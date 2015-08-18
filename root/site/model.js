@@ -798,7 +798,7 @@ Baseliner.ci_box = function(c) {
 	var security = c.security; delete c.security;
     var cl = c['class'] || c['isa'] || c['classname']; delete c['class']; // IE - class is syntax errors due to reserved word
     var order_by = c.order_by; delete c.order_by;
-    var bp = {};
+    var bp = c.baseParams || {};
     if( cl !=undefined ) bp['class'] = cl;
     if( from_mid != undefined ) bp.from_mid = from_mid;
     if( to_mid != undefined ) bp.to_mid = to_mid;
@@ -808,7 +808,7 @@ Baseliner.ci_box = function(c) {
     if( security != undefined ) bp.security = 1;
 	if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ autoLoad:true, baseParams: bp });
+    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
