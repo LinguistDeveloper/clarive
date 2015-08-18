@@ -307,7 +307,7 @@ sub tree_objects {
     my @tree = map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : $row;
-        my $row_class = $class_coll{ $row->{collection} };
+        my $row_class = $class_coll{ $row->{collection} } // 'ci';
         # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
         my $ci_form = $forms{ $row->{collection} } 
             // ( $forms{ $row->{collection} } = $self->form_for_ci( $row_class, $row->{collection} ) );
@@ -582,8 +582,14 @@ sub store : Local : Does('Ajax') {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
+    my $nin = delete $p->{nin};
     my $where = {};
     $where->{active} = '1';
+    if( ref $nin eq 'HASH') {
+        push @{ $where->{ '$and' } }, { $_ => mdb->nin($nin->{$_}) } for keys %$nin;
+    } elsif( length $nin ) {
+        _fail "CI store: invalid parameter value: `nin`: $nin";
+    }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
     if ( defined $mid_param ) {

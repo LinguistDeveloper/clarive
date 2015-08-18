@@ -19,7 +19,7 @@
     return {
         beforesubmit: on_submit,
         fields: [
-           Baseliner.ci_box({ name:'bls', fieldLabel:_('Environments'), allowBlank: true,
+           Baseliner.ci_box({ name:'bls', fieldLabel:_('Environments'), allowBlank: true, baseParams: { nin:{ bl:['*'] } },
                'class':'bl', value: params.rec.bls, force_set_value: true, singleMode: false }),
            Baseliner.ci_box({ name:'parent_project', fieldLabel:_('Parent Project'), allowBlank: true,
                role:'Project', value: params.rec.parent_project, force_set_value: true, singleMode: true }),
