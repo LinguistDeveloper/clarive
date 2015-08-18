@@ -1086,6 +1086,19 @@ sub delete_rule_folder : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub added_rule_to_folder : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    $c->stash->{json} = try {
+        Baseliner->model('Rules')->added_rule_to_folder($p);
+        { success=>\1, msg=>_loc('Rule %1 addeded successfully', $p->{rule_id}) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error adding rule to folder: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

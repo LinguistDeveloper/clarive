@@ -271,10 +271,8 @@
     };
 
     var deal_rule_drop = function(dropEvent){
-        console.log(dropEvent.dropNode.parentNode.findChild( 'rule_id', dropEvent.dropNode.attributes.rule_id));
-        // if(copy.parentNode.findChild( 'rule_id', copy.attributes.rule_id)){
-        //     console.log('encontrado!!');
-        // }
+        Baseliner.ajaxEval('/rule/added_rule_to_folder', { rule_folder_id: dropEvent.target.attributes.rule_folder_id, rule_id: dropEvent.dropNode.attributes.rule_id }, function(response){ 
+        });
     };
 
     var menu_custom_folder = function(node,event){
@@ -283,8 +281,6 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.gif' }
-                    //{ text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/rename_.png' },
-                    //{ text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete_.png' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -325,9 +321,13 @@
     });
 
     rules_tree.on('beforenodedrop', function(e){
+        var existing_node = e.target.findChild( 'rule_id', e.data.node.attributes.rule_id);
         var n = e.dropNode;
         var copy = new Ext.tree.TreeNode( Ext.apply({}, n.attributes) );
         e.dropNode = copy;
+        if(existing_node){
+            existing_node.remove();
+        }
     });
 
 
