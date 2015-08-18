@@ -352,7 +352,7 @@ sub update_category_admin : Local {
     $c->forward('View::JSON');    
 }
 
-sub list_categories_admin : Local {
+sub list_workflow : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $cnt;
