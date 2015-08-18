@@ -71,6 +71,7 @@ sub bali_service {
     my ($self,$service_name,%opts) = @_;
     $ENV{BALI_CMD} = 1;
     require Baseliner; 
+    Baseliner->build_app();
     require Baseliner::Standalone;
     my $c = Baseliner::Standalone->new;
     Baseliner->app( $c );

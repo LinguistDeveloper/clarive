@@ -71,6 +71,7 @@ sub run_startup {
     say "Starting system test...";
     eval {
         require Baseliner;
+        Baseliner->build_app();
     };
     if( $@ ) {
         die "Clarive: error during system prove: $@\n";

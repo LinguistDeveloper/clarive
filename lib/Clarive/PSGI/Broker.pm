@@ -7,6 +7,7 @@ eval {
     #warn ">>>>>>>>>>>>>>RELOADING";
     $ENV{BALI_CMD} = 1; 
     require Baseliner;
+    Baseliner->build_app();
 };
 if( $@ ) {
     print "\n\nBaseliner Startup Error:\n";

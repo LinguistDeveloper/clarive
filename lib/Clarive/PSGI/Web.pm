@@ -7,6 +7,7 @@ our $PP = $$;
 
 eval {
     require Baseliner;
+    Baseliner->build_app();
 };
 
 if( $@ ) {
