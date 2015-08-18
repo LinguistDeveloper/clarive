@@ -834,7 +834,7 @@ sub update {
 
                         try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                         ci->delete( $mid );
-                        my $topic = mdb->topic->find_one({ mid=>"$mid" });
+                        my $topic = mdb->topic->find_one({ mid=>"$mid" },{ _txt=>0, _id=>0 });
                         mdb->topic->remove({ mid=>"$mid" });
                         mdb->master_seen->remove({ mid=>"$mid" });
                         
@@ -1176,7 +1176,7 @@ sub get_data {
             return $cached;
         }
         
-        $data = mdb->topic->find_one({ mid=>"$topic_mid" },{ _txt=>0 }) 
+        $data = mdb->topic->find_one({ mid=>"$topic_mid" },{ _id=>0, _txt=>0 }) 
                 or _error( "topic mid $topic_mid document not found" );
         my @labels = _array( $data->{labels} );
         $data->{topic_mid} = "$topic_mid";
@@ -1322,7 +1322,9 @@ sub get_topics {
         : mdb->master_rel->find_values(to_mid => { from_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field  });
         # : _array($$data{$id_field});
 
-    my @rs_ord = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->sort({rel_seq=>1})->all if @rel_topics;
+    my @rs_ord = mdb->topic->find( { mid => mdb->in(@rel_topics) } )
+                  ->fields({ _id => 0, _txt => 0 })->sort( { rel_seq => 1 } )->all
+                  if @rel_topics;
     @topics = map { $_->{categories} = $_->{category}; $_ } @rs_ord;
     @topics = $self->append_category( @topics );
     
@@ -1656,7 +1658,7 @@ sub save_doc {
     $doc->{mid} = $mid;
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
-    my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
+    my $old_doc = mdb->topic->find_one({ mid=>"$mid" },{ _txt=>0, _id=>0 }) // {};
     $ci_topic->{created_on} = mdb->ts if !exists $old_doc->{created_on};
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
@@ -2277,7 +2279,7 @@ sub set_release {
     my $where = { rel_type=>$rel_type, to_mid=>"$topic_mid" };
     $where->{rel_field} = $release_field if $release_field;
     my @rel_mids = map { $$_{from_mid} } mdb->master_rel->find($where)->fields({ from_mid=>1 })->all;
-    my $release_row = mdb->topic->find_one({ is_release=>mdb->true, mid=>mdb->in(@rel_mids) });
+    my $release_row = mdb->topic->find_one({ is_release=>mdb->true, mid=>mdb->in(@rel_mids) },{ _txt=>0, _id=>0 });
     my $old_release = '';
     my $old_release_name = '';
     if($release_row) {
@@ -2303,7 +2305,7 @@ sub set_release {
         }
         # release
         if( $new_release ) {
-            my $row_release = mdb->topic->find_one({ mid=>$new_release });
+            my $row_release = mdb->topic->find_one({ mid=>$new_release },{ _id=>0, _txt=>0 });
             my $rdoc = { from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$release_field };
             mdb->master_rel->update($rdoc, { %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
     
@@ -2811,12 +2813,43 @@ sub cache_topic_remove {
     };
 }
 
+sub change_bls {
+    my ($self,%opts) = @_;
+    my $action = $opts{action} // _throw 'Missing parameter action [add|delete]'; 
+    my $bls = $opts{bls} // _throw 'Missing parameter bls'; 
+    my $mid = $opts{mid} // _throw 'Missing parameter mid'; 
+    my $username = $opts{username} // _throw 'Missing parameter username'; 
+
+    for my $bl ( _array $bls ) {
+        my $id_bl = ci->bl->find_one({ bl => $bl })->{mid};
+        my $topic = mdb->topic->find_one({ mid => "$mid"},{ bls=>1, _id=>0 });
+        my @cs_bls = _array $topic->{bls};
+        if (!( $id_bl ~~ @cs_bls)) {
+            push @cs_bls,$id_bl;
+            my %p;
+            $p{topic_mid} = $mid;
+            $p{bls} = \@cs_bls;
+            $p{username} = $username;
+            Baseliner->model('Topic')->update( { action => 'update', %p } );
+            _info( _loc("Added %1 to changeset %2 bls",$bl,$mid) );
+            mdb->master_rel->remove({from_mid=>$mid,rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});
+            for my $bl_id ( @cs_bls ) {
+                mdb->master_rel->update(
+                    {from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},
+                    {'$set'=>{ from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'} },
+                    {upsert=>1}
+                );
+            }
+        }
+    }
+}
+
 sub change_status {
     my ($self, %p) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     $p{id_status} or _throw 'Missing parameter id_status';
     
-    my $doc = mdb->topic->find_one({ mid=>"$mid" });
+    my $doc = mdb->topic->find_one({ mid=>"$mid" },{ _txt=>0, _id=>0 });
     my $id_old_status = $p{id_old_status} || $doc->{category_status}{id};
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
@@ -3052,7 +3085,7 @@ sub filter_children {
     }
 }
 
-sub get_topics_mdb{
+sub get_topics_mdb {
     my ($self, %p ) = @_;
     my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 
     try{
@@ -3070,7 +3103,8 @@ sub get_topics_mdb{
         #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
-        $rs_topics->fields($fields) if $fields;
+        $fields //= {};
+        $rs_topics->fields({ _id=>0, _txt=>0, %$fields });
         my $cnt = $rs_topics->count;
         $rs_topics->skip($start) if ($start);
         $rs_topics->limit($limit) if ($limit);
