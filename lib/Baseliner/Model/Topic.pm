@@ -1095,7 +1095,12 @@ sub get_meta {
             : map { $_->{id} } mdb->category->find->all;
         foreach my $category (@user_categories){
             my $cat = mdb->category->find_one({ id=>$category });
-            my $cr = Baseliner::CompiledRule->new( id_rule=> $cat->{default_field} );
+            my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
+            if( !$default_form ) {
+                _warn _loc 'Category %1 does not have an associated form', $cat->{name};
+                next;
+            }
+            my $cr = Baseliner::CompiledRule->new( id_rule=>$default_form );
             $cr->compile;
             my $stash = {id_category=>$category};
             $cr->run(stash=>$stash);
