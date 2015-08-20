@@ -1267,7 +1267,6 @@ sub delete_rule_folder {
     my $rs = mdb->rule->find({ folders=>{ '$elemMatch'=> {'$eq'=>$rule_folder_id } } })->fields({_id=>0, id=>1, folders=>1 });
     while (my $rule = $rs->next) {
         my @new_folders = grep { _log "Valor tratado=>".$_; _log "valor a eliminar=>".$rule_folder_id; $_ ne $rule_folder_id } _array $rule->{folders};
-        _log "FOLDERS==>"._dump @new_folders;
         mdb->rule->update({id=>$rule->{id}}, {'$set'=>{folders=>@new_folders}} );
     }
 }
@@ -1279,6 +1278,15 @@ sub added_rule_to_folder {
     my $folders = mdb->rule->find_one({id=>$rule_id})->{folders} // [];
     push $folders, $rule_folder_id if $rule_folder_id !~ $folders;
     mdb->rule->update({id=>$rule_id}, {'$set'=>{folders=>$folders}} );
+}
+
+sub delete_rule_from_folder {
+    my ($self,$p)=@_;
+    my $rule_id = $p->{rule_id};
+    my $rule_folder_id = $p->{rule_folder_id};
+    my $folders = mdb->rule->find_one({ id=>$rule_id })->{folders};
+    my @new_folders = grep { $_ ne $rule_folder_id } _array $folders;
+    mdb->rule->update({id=>$rule_id}, {'$set'=>{folders=>@new_folders}});
 }
 
 no Moose;

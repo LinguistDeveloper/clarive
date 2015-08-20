@@ -53,24 +53,43 @@
     
 
     var rule_del = function(){
-        var sm = rules_grid.getSelectionModel();
-        if( sm.hasSelection() ) {
-            Baseliner.confirm( _('Delete rule %1?', sm.getSelected().data.rule_name ), function(){
-                var id_rule = sm.getSelected().data.id;
-                Baseliner.ajaxEval( '/rule/delete', { id_rule: id_rule }, function(res){
+        var rule_id;
+        var rule_name;
+        var call_del = function(){
+            Baseliner.confirm( _('Delete rule %1?', rule_name ), function(){
+                Baseliner.ajaxEval( '/rule/delete', { id_rule: rule_id }, function(res){
                     if( res.success ) {
                         rules_store.reload();
                         Baseliner.message( _('Rule'), res.msg );
                         // remove tab if any
-                        var tab_arr = tabpanel.find( 'id_rule', id_rule );
+                        var tab_arr = tabpanel.find( 'id_rule', rule_id );
                         if( tab_arr.length > 0 ) {
                             tabpanel.remove( tab_arr[0] );
                         }
                     } else {
                         Baseliner.error( _('Error'), res.msg );
                     }
+                    if(toggle_button.pressed){
+                        rules_tree.getSelectionModel().selNode.remove();
+                    }else{
+                        var lo = rules_tree.getLoader();
+                        lo.baseParams = { query: '' };
+                        lo.load(rules_tree.root);
+                    }
                 });
             });
+        };
+        if(toggle_button.pressed){
+            rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+            rule_name = rules_tree.getSelectionModel().selNode.attributes.rule_name;
+            call_del();
+        } else {
+            var sm = rules_grid.getSelectionModel();
+            rule_name = sm.getSelected().data.rule_name;
+            rule_id = sm.getSelected().data.id;
+            if( sm.hasSelection() ) {
+                call_del();        
+            }
         }
     };
 
@@ -150,10 +169,10 @@
     };
     
     var rule_activate = function(){
-        var sm = rules_grid.getSelectionModel();
-        if( sm.hasSelection() ) {
-            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
-            Baseliner.ajaxEval( '/rule/activate', { id_rule: sm.getSelected().data.id, activate: activate }, function(res){
+        var rule_id;
+        var rule_active;
+        var call_active = function(){
+            Baseliner.ajaxEval( '/rule/activate', { id_rule: rule_id, activate: rule_active }, function(res){
                 if( res.success ) {
                     rules_store.reload();
                     Baseliner.message( _('Rule'), res.msg );
@@ -161,22 +180,54 @@
                     Baseliner.error( _('Error'), res.msg );
                 }
             });
+        };
+        if(toggle_button.pressed){
+            rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+            rule_active = parseInt(rules_tree.getSelectionModel().selNode.attributes.rule_active) > 0 ? 0 : 1;
+            rules_tree.getSelectionModel().selNode.attributes.rule_active = rule_active.toString();
+            var temp_text = rules_tree.getSelectionModel().selNode.text;
+            if(!rule_active){
+                temp_text = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>'+temp_text;
+            } else {
+                temp_text = temp_text.replace(/<figure.*<\/figure>/, '');
+            }
+            rules_tree.getSelectionModel().selNode.setText(temp_text);
+            call_active();
+        }else{
+            var sm = rules_grid.getSelectionModel();
+            rule_id = sm.getSelected().data.id;
+            rule_active = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+            if( sm.hasSelection() ) {
+                call_active();
+            }
         }
     };
+
     var rule_edit = function(){
-        var sm = rules_grid.getSelectionModel();
-        if( sm.hasSelection() ) {
-            Baseliner.ajaxEval( '/rule/get', { id_rule: sm.getSelected().data.id }, function(res){
+        var rule_id;
+        var call_edit = function(){
+            Baseliner.ajaxEval( '/rule/get', { id_rule: rule_id }, function(res){
                 if( res.success ) {
                     rule_editor( res.rec );
                 } else {
                     Baseliner.error( _('Error'), res.msg );
                 }
             });
+        };
+        if(toggle_button.pressed){
+            rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+            call_edit();
+        } else {
+            var sm = rules_grid.getSelectionModel();
+            rule_id = sm.getSelected().data.id;
+            if( sm.hasSelection() ) {
+                call_edit();    
+            }
         }
     };
+
     var rule_add = function(){
-        rule_editor({});
+        rule_editor({ origin: 'rule_add'});
     };
     var rule_editor = function(rec){
         Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
@@ -189,6 +240,9 @@
                 comp.on('destroy', function(){
                     win.close()
                     rules_store.reload();
+                    var lo = rules_tree.getLoader();
+                    lo.baseParams = { query: '' };
+                    lo.load(rules_tree.root);
                 });
                 win.show();
             }
@@ -275,6 +329,14 @@
         });
     };
 
+    var delete_rule_from_folder = function(node){
+        var rule_id = node.attributes.rule_id;
+        var rule_folder_id = node.parentNode.attributes.rule_folder_id;
+        Baseliner.ajaxEval('/rule/delete_rule_from_folder', { rule_folder_id: rule_folder_id, rule_id: rule_id }, function(response){
+            node.remove(); 
+        });
+    };
+
     var menu_custom_folder = function(node,event){
         if(node.attributes.is_custom_folders_node){
             node.select();
@@ -290,6 +352,14 @@
                 items: [
                     { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/rename_.png' },
                     { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.gif' } 
+                ]
+            });
+            stmts_menu.showAt(event.xy);
+        } else if(node.parentNode.attributes.is_folder){
+            node.select();
+            var stmts_menu = new Ext.menu.Menu({
+                items: [
+                    { text: _('Remove from folder'), handler: function(item){ delete_rule_from_folder(node);  }, icon:'/static/images/icons/delete.gif' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -364,8 +434,16 @@
                         show_rules(params);
                     });
                 }
-                var rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
-                var rule_text = node.attributes.text;
+                var rule_when = '';
+                var inactive_rule = '';
+                if(node.attributes.rule_type == 'chain' || node.attributes.rule_type == 'event'){
+                    rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
+                }
+console.log(node.attributes);
+                if(node.attributes.rule_active == "0"){
+                    inactive_rule = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>';
+                }
+                var rule_text = inactive_rule + node.attributes.text;
                 if(!node.attributes.is_folder){
                     rule_text = rule_text + String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
                     rule_when +
@@ -1512,17 +1590,17 @@
             search_field,
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ reload_data() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
-            { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
+            { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: function(){ rule_edit(); }, disabled: true },
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            toggle_button,
             { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
                 '-',
                 { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
                 { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
-            ]},
-            toggle_button
+            ]}
         ]
     });
 
