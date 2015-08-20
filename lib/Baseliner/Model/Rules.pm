@@ -1276,6 +1276,7 @@ sub added_rule_to_folder {
     my $rule_id = $p->{rule_id};
     my $rule_folder_id = $p->{rule_folder_id};
     my $folders = mdb->rule->find_one({id=>$rule_id})->{folders} // [];
+    $folders = [$folders] if ref $folders ne 'ARRAY';
     push $folders, $rule_folder_id if $rule_folder_id !~ $folders;
     mdb->rule->update({id=>$rule_id}, {'$set'=>{folders=>$folders}} );
 }
