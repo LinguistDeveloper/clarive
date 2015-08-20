@@ -181,17 +181,19 @@
                 }
             });
         };
-        if(toggle_button.pressed){
-            rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
-            rule_active = parseInt(rules_tree.getSelectionModel().selNode.attributes.rule_active) > 0 ? 0 : 1;
-            rules_tree.getSelectionModel().selNode.attributes.rule_active = rule_active.toString();
-            var temp_text = rules_tree.getSelectionModel().selNode.text;
+        var change_active = function(node){
+            node.attributes.rule_active = rule_active.toString();
+            var temp_text = node.text;
             if(!rule_active){
                 temp_text = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>'+temp_text;
             } else {
                 temp_text = temp_text.replace(/<figure.*<\/figure>/, '');
             }
-            rules_tree.getSelectionModel().selNode.setText(temp_text);
+            node.setText(temp_text);
+        };
+        if(toggle_button.pressed){
+            rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+            rule_active = parseInt(rules_tree.getSelectionModel().selNode.attributes.rule_active) > 0 ? 0 : 1;
             call_active();
         }else{
             var sm = rules_grid.getSelectionModel();
@@ -201,6 +203,20 @@
                 call_active();
             }
         }
+        rules_tree.root.eachChild(function(child){
+            var node_found = child.findChild('rule_id', rule_id);
+            if(node_found){
+                change_active(node_found);
+            }
+            if(child.attributes.is_custom_folders_node){
+                child.eachChild(function(child_folder){
+                    node_found = child_folder.findChild('rule_id', rule_id);
+                    if(node_found){
+                        change_active(node_found);
+                    }
+                });
+            }
+        });
     };
 
     var rule_edit = function(){
@@ -439,7 +455,6 @@
                 if(node.attributes.rule_type == 'chain' || node.attributes.rule_type == 'event'){
                     rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
                 }
-console.log(node.attributes);
                 if(node.attributes.rule_active == "0"){
                     inactive_rule = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>';
                 }
