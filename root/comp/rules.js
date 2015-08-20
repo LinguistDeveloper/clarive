@@ -12,6 +12,14 @@
         params: {start: 0, limit: ps },
         emptyText: _('<Search>')
     });
+    
+    var reload_tree = function(query, ids){
+        var t = query ? query : '';
+        var lo = rules_tree.getLoader();
+        lo.baseParams = { query: t };
+        if(ids) lo.baseParams.ids = ids; 
+        lo.load(rules_tree.root);
+    };
 
     var do_search = function(from){
         var t = search_field.getValue();
@@ -29,14 +37,10 @@
             rules_store.each(function(row){
                 ids.push(row.data.id);
             });
-            var lo = rules_tree.getLoader();
-            lo.baseParams = { query: t, ids: ids };
-            lo.load(rules_tree.root);
+            reload_tree(t, ids);
         }else if(!from && toggle_button.pressed){
             // For empty search in tree mode
-            var lo = rules_tree.getLoader();
-            lo.baseParams = { query: t };
-            lo.load(rules_tree.root);
+            reload_tree(t);
         } else {
             // Empty search for grid and toggle with empty search to grid mode
             rules_store.baseParams.query = t;
@@ -72,9 +76,7 @@
                     if(toggle_button.pressed){
                         rules_tree.getSelectionModel().selNode.remove();
                     }else{
-                        var lo = rules_tree.getLoader();
-                        lo.baseParams = { query: '' };
-                        lo.load(rules_tree.root);
+                        reload_tree();
                     }
                 });
             });
@@ -256,9 +258,7 @@
                 comp.on('destroy', function(){
                     win.close()
                     rules_store.reload();
-                    var lo = rules_tree.getLoader();
-                    lo.baseParams = { query: '' };
-                    lo.load(rules_tree.root);
+                    reload_tree();
                 });
                 win.show();
             }
@@ -1578,13 +1578,12 @@
         }
     });
 
+
     var reload_data = function(){
         var t = search_field.getValue();
         if(toggle_button.pressed){
             // Tree mode reload
-            var lo = rules_tree.getLoader();
-            lo.baseParams = { query: t };
-            lo.load(rules_tree.root);
+            reload_tree(t);
         } else {
             // Grid mode reload
             rules_store.baseParams.query = t;
