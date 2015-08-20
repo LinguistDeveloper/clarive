@@ -1210,7 +1210,7 @@ sub get_rules_info {
         my $custom_folder_node = {text=>'custom folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
         my $rs = mdb->rule_folder->find;
         while( my $rule_folder = $rs->next ) {
-            my $temp_structure = {text=>$rule_folder->{name}, rule_folder_id=>$rule_folder->{id}, is_folder=>\1, leaf => \0, expandable => \1, expanded => $expanded, children=> [], allowDrop=>\1 };
+            my $temp_structure = {text=>$rule_folder->{name}, rule_folder_id=>$rule_folder->{id}, is_folder=>\1, leaf => \0, expandable => \1, expanded => $expanded, children=> [], allowDrop=>\1, allowDrag=>\0 };
             map {
                 push $temp_structure->{children}, 
                 { text=>$_->{rule_name}, 
@@ -1266,7 +1266,7 @@ sub delete_rule_folder {
     mdb->rule_folder->remove({id=>$rule_folder_id});
     my $rs = mdb->rule->find({ folders=>{ '$elemMatch'=> {'$eq'=>$rule_folder_id } } })->fields({_id=>0, id=>1, folders=>1 });
     while (my $rule = $rs->next) {
-        my @new_folders = grep { _log "Valor tratado=>".$_; _log "valor a eliminar=>".$rule_folder_id; $_ ne $rule_folder_id } _array $rule->{folders};
+        my @new_folders = grep { $_ ne $rule_folder_id } _array $rule->{folders};
         mdb->rule->update({id=>$rule->{id}}, {'$set'=>{folders=>@new_folders}} );
     }
 }

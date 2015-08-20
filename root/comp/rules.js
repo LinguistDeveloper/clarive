@@ -436,7 +436,7 @@
                 type = node.text;
             }else{
                 //Children
-                type = root.text;
+                type = node.attributes.rule_type;
                 if(!(node.attributes.is_folder || node.attributes.is_custom_folders_node)){
                     node.on('click', function(){
                         var params = {  
