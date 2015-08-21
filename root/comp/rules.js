@@ -6,12 +6,6 @@
         remoteSort: true,
         fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id','ts' ]
     });
-    var search_fieldold = new Baseliner.SearchField({
-        store: rules_store,
-        width: 140,
-        params: {start: 0, limit: ps },
-        emptyText: _('<Search>')
-    });
     
     var reload_tree = function(query, ids){
         var t = query ? query : '';
@@ -24,7 +18,7 @@
     var on_click_rule_action = function(node){
         var params = {  
             rule_id: node.attributes.rule_id, 
-            rule_name: node.attributes.text, 
+            rule_name: node.attributes.rule_name, 
             rule_type: node.attributes.rule_type, 
             event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name, 
             rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name, 
@@ -185,16 +179,6 @@
     var rule_activate = function(){
         var rule_id;
         var rule_active;
-        var call_active = function(){
-            Baseliner.ajaxEval( '/rule/activate', { id_rule: rule_id, activate: rule_active }, function(res){
-                if( res.success ) {
-                    rules_store.reload();
-                    Baseliner.message( _('Rule'), res.msg );
-                } else {
-                    Baseliner.error( _('Error'), res.msg );
-                }
-            });
-        };
         var change_active = function(node){
             node.attributes.rule_active = rule_active.toString();
             var temp_text = node.text;
@@ -204,6 +188,31 @@
                 temp_text = temp_text.replace(/<figure.*<\/figure>/, '');
             }
             node.setText(temp_text);
+        };
+        var call_active = function(){
+            Baseliner.ajaxEval( '/rule/activate', { id_rule: rule_id, activate: rule_active }, function(res){
+                if( res.success ) {
+                    rules_store.reload();
+                    Baseliner.message( _('Rule'), res.msg );
+                    // Modify active for the appropriate nodes
+                    rules_tree.root.eachChild(function(child){
+                        var node_found = child.findChild('rule_id', rule_id);
+                        if(node_found){
+                            change_active(node_found);
+                        }
+                        if(child.attributes.is_custom_folders_node){
+                            child.eachChild(function(child_folder){
+                                node_found = child_folder.findChild('rule_id', rule_id);
+                                if(node_found){
+                                    change_active(node_found);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    Baseliner.error( _('Error'), res.msg );
+                }
+            });
         };
         if(toggle_button.pressed){
             rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
@@ -217,20 +226,6 @@
                 call_active();
             }
         }
-        rules_tree.root.eachChild(function(child){
-            var node_found = child.findChild('rule_id', rule_id);
-            if(node_found){
-                change_active(node_found);
-            }
-            if(child.attributes.is_custom_folders_node){
-                child.eachChild(function(child_folder){
-                    node_found = child_folder.findChild('rule_id', rule_id);
-                    if(node_found){
-                        change_active(node_found);
-                    }
-                });
-            }
-        });
     };
 
     var rule_edit = function(){
