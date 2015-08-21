@@ -21,6 +21,18 @@
         lo.load(rules_tree.root);
     };
 
+    var on_click_rule_action = function(node){
+        var params = {  
+            rule_id: node.attributes.rule_id, 
+            rule_name: node.attributes.text, 
+            rule_type: node.attributes.rule_type, 
+            event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name, 
+            rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name, 
+            icon: node.attributes.icon
+        };
+        show_rules(params);
+    };
+
     var do_search = function(from){
         var t = search_field.getValue();
         var condition = left_panel.getLayout().activeItem.id == rules_grid.id;
@@ -382,6 +394,7 @@
         }
     };
 
+
     var rules_tree = new Ext.tree.TreePanel({
         useArrows: true,
         expanded: true,
@@ -411,6 +424,8 @@
         var n = e.dropNode;
         var copy = new Ext.tree.TreeNode( Ext.apply({}, n.attributes) );
         e.dropNode = copy;
+        e.dropNode.on('click', function(){ on_click_rule_action(e.dropNode); });
+        n.on('click', function(){ on_click_rule_action(n); });
         if(existing_node){
             existing_node.remove();
         }
@@ -438,17 +453,7 @@
                 //Children
                 type = node.attributes.rule_type;
                 if(!(node.attributes.is_folder || node.attributes.is_custom_folders_node)){
-                    node.on('click', function(){
-                        var params = {  
-                            rule_id: node.attributes.rule_id, 
-                            rule_name: node.attributes.text, 
-                            rule_type: node.attributes.rule_type, 
-                            event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name, 
-                            rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name, 
-                            icon: node.attributes.icon
-                        };
-                        show_rules(params);
-                    });
+                    node.on('click', function() { on_click_rule_action(node); });
                 }
                 var rule_when = '';
                 var inactive_rule = '';
