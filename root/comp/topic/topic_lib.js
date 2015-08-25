@@ -1627,7 +1627,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             title: { header:_('Title'), dataindex:'title', renderer: function(v){ return '<b>'+v+'</b>'; } },
             name_status: { header:_('Status'), dataindex:'name_status', width: 80, renderer: Baseliner.render_status }
         };
-        var col_prefs = Ext.isArray( c.columns ) ? c.columns : Ext.isString(c.columns) ? c.columns.split(';') : [];
+        var col_prefs = Ext.isArray( c.columns ) ? c.columns : (Ext.isString(c.columns) && c.columns != '') ? c.columns.split(';') : [];
         if( col_prefs.length > 0 ) {
             // from get_topics, which puts a lot of values
             Ext.each( col_prefs, function(ck){
