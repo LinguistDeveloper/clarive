@@ -42,11 +42,16 @@
         store.commitChanges();
     });
     store.sort('line', 'ASC');
+
+    var is_dir = new Baseliner.ComboDouble({
+        fieldLabel: _('Is Directory?'), anchor: '30%', 
+        data: [ [0, _('No')], [1,_('Yes')] ], value: rec.is_dir==undefined?0:rec.is_dir
+    });
     
     return [
        { xtype:'textfield', fieldLabel: _('Directory'), name:'dir', allowBlank: true, anchor: '100%' },
-       { xtype:'textfield', fieldLabel: _('Path'), name:'path', allowBlank: true, anchor: '100%' },
-       { xtype:'textfield', fieldLabel: _('Directory?'), name:'is_dir', allowBlank: true, anchor: '100%'},
+       { xtype:'textarea', height: 80, fieldLabel: _('Path'), name:'path', allowBlank: true, anchor: '100%' },
+       is_dir, 
        tree
     ]
 })
