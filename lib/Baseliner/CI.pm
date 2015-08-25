@@ -8,6 +8,7 @@ our $no_throw_on_search = 1;
 
 our $scope = {};
 
+our $password_hide_str = 'clarive_hidden_pass: ' . ('*' x 30);
 
 =head2 new
 

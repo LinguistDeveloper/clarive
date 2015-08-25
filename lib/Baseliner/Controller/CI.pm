@@ -897,6 +897,9 @@ sub update : Local {
     my $active = $form_data->{active};
     $form_data->{active} = $active = $active eq 'on' ? 1 : 0;
     
+    if( $form_data->{password} && $form_data->{password} eq $Baseliner::CI::password_hide_str ) {
+        delete $form_data->{password};
+    }
     my $mid = delete $p->{mid};
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
@@ -977,7 +980,7 @@ sub load : Local {
         $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $rec->{services} = [ $obj->service_list ];
-        $rec->{password} = '*' x 30;
+        $rec->{password} = $Baseliner::CI::password_hide_str; 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;
