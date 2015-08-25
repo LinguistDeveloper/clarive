@@ -10,17 +10,6 @@ use experimental 'switch', 'autoderef';
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-# register 'dashlet.job.burndown' => {
-#     form=> '/dashlets/job_burndown_config.js',
-#     name=> 'Job Burndown', 
-#     icon=> '/static/images/icons/job.png',
-#     js_file => '/dashlets/job_burndown.js',
-#     data => {
-#         days_avg  => '1000D',
-#         days_last => '100D',
-#     }
-# };
-
 register 'dashlet.job.last_jobs' => {
     form=> '/dashlets/last_jobs_config.js',
     name=> 'Last jobs by app', 
