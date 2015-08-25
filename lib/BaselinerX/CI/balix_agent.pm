@@ -442,7 +442,7 @@ sub _crc_local {
 
 sub _crc_match {
     my ($self, $local, $remote ) = @_;
-    return 1 if $self->is_win; # XXX crc not matching in windows
+    return 1 if $self->is_win || $^O eq 'cygwin'; # XXX crc not matching in windows
     my $crc_local = $self->_crc_local( $local );
     my $crc_remote = $self->_crc( $remote );
     return $crc_local eq $crc_remote;
