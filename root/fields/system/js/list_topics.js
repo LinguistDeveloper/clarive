@@ -41,7 +41,7 @@ params:
 	}
 	
     var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
-    var display_field = meta.display_field || undefined;
+    var display_field = meta.display_field==undefined ? 'title' : meta.display_field;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
     var topic_box;
