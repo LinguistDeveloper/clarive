@@ -105,22 +105,7 @@ sub update_changesets_bls {
     
     if ( !$job->is_failed( status => 'last_finish_status') ) {
         for my $cs ( @changesets ) {
-            my $id_bl = ci->bl->find_one({ bl => $bl })->{mid};
-            my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
-            my @cs_bls = _array $topic->{bls};
-            if (!( $id_bl ~~ @cs_bls)) {
-                push @cs_bls,$id_bl;
-                my %p;
-                $p{topic_mid} = $cs->{mid};
-                $p{bls} = \@cs_bls;
-                $p{username} = $stash->{username};
-                Baseliner->model('Topic')->update( { action => 'update', %p } );
-                $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );
-                mdb->master_rel->remove({from_mid=>$cs->{mid},rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});
-                for my $bl_id ( @cs_bls ) {
-                    mdb->master_rel->update({from_mid=>$cs->{mid}, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},{'$set'=>{from_mid=>$cs->{mid}, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'}},{upsert=>1});
-                }
-            }            
+            model->Topic->change_bls( mid=>$cs->{mid}, action=>'add', bls=>[$bl], username=>$stash->{username} );
         }
     }
 }
@@ -139,6 +124,7 @@ sub topic_status {
             change     => 1, 
             id_status  => $new_status,
             mid        => $mid,
+            bl         => $stash->{bl}, 
         );
     }
 }
@@ -197,6 +183,7 @@ sub changeset_update {
            change          => 1, 
            username        => $job->username,
            id_status       => $status,
+           bl              => $stash->{bl}, 
            #id_old_status   => $cs->id_category_status,
            mid             => $cs->mid,
         );
