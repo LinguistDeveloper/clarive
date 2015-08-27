@@ -5,18 +5,18 @@
         data: [ ['static',_('Static')], ['promote',_('Promote')], ['demote',_('Demote')] ]
     });
     var combo_bl = Baseliner.combo_baseline({ value: data.bl });
-    var store_chain = new Baseliner.JsonStore({
-        url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id',
+    var store_pipeline = new Baseliner.JsonStore({
+        url: '/job/pipelines', root: 'data', totalProperty: 'totalCount', id: 'id',
         autoLoad: true,
         fields:['id','rule_name','rule_type']
     });
-    var combo_chain = new Ext.form.ComboBox({ //new Baseliner.SuperBox({
-        fieldLabel: _('Job Chain'),
+    var combo_pipeline = new Ext.form.ComboBox({ //new Baseliner.SuperBox({
+        fieldLabel: _('Job Pipeline'),
         name: 'id_rule',
         displayField:'rule_name',
         hiddenName:'id_rule', 
         valueField: 'id',
-        store: store_chain,
+        store: store_pipeline,
         mode: 'remote',
         minChars: 0, //min_chars ,
         loadingText: _('Searching...'),
@@ -38,7 +38,7 @@
             { xtype:'panel', frame: true, border: false, height: 500, layout:'form', defaults:{ anchor:'100%' }, title:_('Options'), items:[
                     job_type,
                     combo_bl,
-                    combo_chain,
+                    combo_pipeline,
                     { xtype:'textfield', fieldLabel: _('Scheduled time'), name: 'schedtime', value: data.schedtime },
                     { xtype:'textfield', fieldLabel: _('Expiration time'), name: 'expiry_time', value: data.expiry_time },
                     { xtype:'textfield', fieldLabel: _('Changesets'), name: 'changesets', value: data.changesets },

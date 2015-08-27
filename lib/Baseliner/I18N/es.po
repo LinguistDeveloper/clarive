@@ -2115,16 +2115,16 @@ msgstr "Rutas"
 msgid "Close"
 msgstr "Cerrar"
 
-msgid "Chain"
+msgid "Pipeline"
 msgstr "Cadena"
 
-msgid "Job Chains"
+msgid "Job Pipelines"
 msgstr "Cadenas de Pase"
 
 msgid "Active"
 msgstr "Activado"
 
-msgid "Service Chain"
+msgid "Service Pipeline"
 msgstr "Cadena de Servicios"
 
 msgid "Auto Refresh"
@@ -2983,22 +2983,22 @@ msgstr "Editar demonio"
 msgid "Not Active"
 msgstr "Desactivado"
 
-msgid "Chain activated"
+msgid "Pipeline activated"
 msgstr "Cadena activada"
 
 msgid "Error changing the chain"
 msgstr "Error modificando la cadena"
 
-msgid "Chain added"
+msgid "Pipeline added"
 msgstr "Cadena añadida"
 
-msgid "Error adding Chain: %1"
+msgid "Error adding Pipeline: %1"
 msgstr "Error añadiendo Cadena: %1"
 
-msgid "Chain modified"
+msgid "Pipeline modified"
 msgstr "Cadena modificada"
 
-msgid "Error modifying Chain: %1"
+msgid "Error modifying Pipeline: %1"
 msgstr "Error modificando Cadena"
 
 msgid "Service added"
@@ -3013,10 +3013,10 @@ msgstr "Servicio modificado"
 msgid "Error modifying Service: %1"
 msgstr "Error modificando Servicio: %1"
 
-msgid "Chain deleted"
+msgid "Pipeline deleted"
 msgstr "Cadena borrada"
 
-msgid "Error deleting Chain"
+msgid "Error deleting Pipeline"
 msgstr "Error borrando la cadena"
 
 msgid "Configuration changed"
@@ -3879,7 +3879,7 @@ msgstr "Paquete"
 msgid "Switch"
 msgstr "Switch"
 
-msgid "Chains"
+msgid "Pipelines"
 msgstr "Cadenas"
 
 msgid "Servicio"
@@ -3891,7 +3891,7 @@ msgstr "OK"
 msgid "Saved"
 msgstr "Guardado"
 
-msgid "New Chain"
+msgid "New Pipeline"
 msgstr "Nueva cadena"
 
 msgid "No rows selected"
@@ -6840,7 +6840,7 @@ msgstr "Espera"
 msgid "SUCCESS"
 msgstr "ÉXITO"
 
-msgid "Job Chain"
+msgid "Job Pipeline"
 msgstr "Cadena de pase"
 
 msgid "Cannot promote/demote this entity type"
@@ -6960,13 +6960,13 @@ msgstr "Tipo de evento"
 msgid "Independent"
 msgstr "Independiente"
 
-msgid "Chain Description"
+msgid "Pipeline Description"
 msgstr "Descripción de la cadena"
 
 msgid "Web Service Type"
 msgstr "Tipo de Web Service"
 
-msgid "Job Chain Details"
+msgid "Job Pipeline Details"
 msgstr "Detalles de la cadena de pase"
 
 msgid "Pre Online"

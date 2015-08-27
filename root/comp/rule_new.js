@@ -47,7 +47,7 @@
                typeAhead: false, minChars: 1, mode: 'local', 
                store: [
                   [ 'event', _('Event') ],
-                  [ 'chain', _('Job Chain') ],
+                  [ 'pipeline', _('Job Pipeline') ],
                   [ 'report', _('Report') ],
                   [ 'webservice', _('Webservice') ],
                   [ 'independent', _('Independent') ],
@@ -63,17 +63,17 @@
         store_events.load({ params: { event_type: v } });
     });
     var reconfigure_on_type = function(v){
-        if( v == 'chain' ) {
+        if( v == 'pipeline' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
-            job_chain_form.show();
+            job_pipeline_form.show();
             msg_job.show();
             msg_ev.hide();
             grid_events.hide();
         } else if( v == 'independent' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
-            job_chain_form.hide();
+            job_pipeline_form.hide();
             webservice_form.hide();
             msg_job.hide();
             msg_ev.hide();
@@ -81,7 +81,7 @@
         } else if( v == 'webservice' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
-            job_chain_form.hide();
+            job_pipeline_form.hide();
             webservice_form.show();
             msg_job.hide();
             msg_ev.hide();
@@ -89,7 +89,7 @@
         } else if( v == 'report' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
-            job_chain_form.hide();
+            job_pipeline_form.hide();
             webservice_form.hide();
             msg_job.hide();
             msg_ev.hide();
@@ -97,7 +97,7 @@
         } else if( v == 'form' || v == 'dashboard' ) {
             wiz.last = wiz.current;
             wiz.button_setup();
-            job_chain_form.hide();
+            job_pipeline_form.hide();
             webservice_form.hide();
             msg_job.hide();
             msg_ev.hide();
@@ -105,7 +105,7 @@
         } else if( v == 'event' ) {
             wiz.last = wiz.current + 1;
             wiz.button_setup();
-            job_chain_form.hide();
+            job_pipeline_form.hide();
             msg_job.hide();
             msg_ev.show();
             grid_events.show();
@@ -118,17 +118,17 @@
                'precompile'
            ]});
     
-    // job chain form
-    var job_chain_form = new Ext.form.FieldSet({
+    // job pipeline form
+    var job_pipeline_form = new Ext.form.FieldSet({
         hidden: true, border: false,
         items: [
-            new Baseliner.ComboSingle({ fieldLabel: _('Default'), name:'chain_default', value: params.rec.chain_default, data: [
+            new Baseliner.ComboSingle({ fieldLabel: _('Default'), name:'pipeline_default', value: params.rec.pipeline_default, data: [
                 '-',
                 'promote',
                 'demote',
                 'static'
             ]}),
-            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Chain Description'), name: 'rule_desc', value: params.rec.rule_desc }
+            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Pipeline Description'), name: 'rule_desc', value: params.rec.rule_desc }
         ]
     });
     // webservice-soap form
@@ -151,14 +151,14 @@
     });
     // other panes
     var msg_ev = new Ext.Container({ border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' });
-    var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Chain Details') + ':</h4></p>' });
+    var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Pipeline Details') + ':</h4></p>' });
     // PAGE 1
     var form_events = new Baseliner.FormPanel({
         defaults: { anchor: '90%' },
         border: false,
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
-            combo_type, compile_mode, msg_ev, msg_job, grid_events, job_chain_form, webservice_form
+            combo_type, compile_mode, msg_ev, msg_job, grid_events, job_pipeline_form, webservice_form
         ]
     });
 

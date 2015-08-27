@@ -403,7 +403,7 @@
         });
           
         //var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
-        var store_chain = new Baseliner.JsonStore({
+        var store_pipeline = new Baseliner.JsonStore({
             url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
             fields:['id','rule_name','rule_type', 'rule_desc']
         });
@@ -424,7 +424,7 @@
                 displayField:'rule_name',
                 hiddenName:'id_rule', 
                 valueField: 'id',
-            store: store_chain,
+            store: store_pipeline,
             //anchor: '50%',
             mode: 'remote',
             minChars: 0, //min_chars ,
@@ -435,19 +435,19 @@
             editable: false,
             lazyRender: true
         });
-        /* store_chain.on('load', function(){
-            var row = store_chain.getAt(0);
+        /* store_pipeline.on('load', function(){
+            var row = store_pipeline.getAt(0);
             if( row ) {
-                combo_chain.setValue( row.data.id );
+                combo_pipeline.setValue( row.data.id );
             } else {
-                Baseliner.message(_('Job'), _('No job chains available') );
+                Baseliner.message(_('Job'), _('No job pipelines available') );
             }
         });
         */
-        store_chain.load();
+        store_pipeline.load();
         
         var check_configuration = function(id_service){
-            // Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
+            // Baseliner.ajaxEval( '/pipeline/getconfig', {id: id_service}, function(res) {
             //     if( !res.success ) {
             //         //Baseliner.error( _('YAML'), res.msg );
             //     } else {

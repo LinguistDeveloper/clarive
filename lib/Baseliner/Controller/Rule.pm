@@ -232,7 +232,7 @@ sub get : Local {
     try {
         my $doc = mdb->rule->find_one({ id=>"$p->{id_rule}" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $doc;
-        $doc->{chain_default} = $doc->{rule_type} eq 'chain' ? $doc->{rule_when} : '-';
+        $doc->{pipeline_default} = $doc->{rule_type} eq 'pipeline' ? $doc->{rule_when} : '-';
         $c->stash->{json} = { success=>\1, rec=>$doc };
     } catch {
         my $err = shift;
@@ -317,8 +317,8 @@ sub save : Local {
         my $data = {
             rule_active => '1',
             rule_name  => $p->{rule_name},
-            rule_when  => ( $p->{rule_type} eq 'chain' 
-                ? $p->{chain_default}  
+            rule_when  => ( $p->{rule_type} eq 'pipeline' 
+                ? $p->{pipeline_default}  
                 : $p->{rule_when} ),
             rule_event => $p->{rule_event},
             rule_type  => $p->{rule_type},
@@ -813,7 +813,7 @@ sub dsl : Local {
         my $doc = mdb->rule->find_one({ id=>$id_rule },{ rule_tree=>0 }) // {};
         my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
         my $data;
-        if( $rule_type eq 'chain' ) {
+        if( $rule_type eq 'pipeline' ) {
             $data = {
                 job_step   => 'CHECK',
                 elements   => [],

@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0100_default_field;
+package Baseliner::Schema::Migrations::0101_default_field;
 use Moose;
 
 sub upgrade {

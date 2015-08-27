@@ -293,7 +293,7 @@
                 : type=='form' ? IC('form') 
                 : type=='event' ? IC('event') 
                 : type=='report' ? IC('report') 
-                : type=='chain' ? IC('job') 
+                : type=='pipeline' ? IC('job') 
                 : type=='webservice' ? IC('webservice') 
                 : '/static/images/icons/rule.png';
         rec.icon = icon;
@@ -432,7 +432,7 @@
             : rule_category=='form' ? IC('form') 
             : rule_category=='event' ? IC('event') 
             : rule_category=='report' ? IC('report') 
-            : rule_category=='chain' ? IC('job') 
+            : rule_category=='pipeline' ? IC('job') 
             : rule_category=='webservice' ? IC('webservice') 
             : '/static/images/icons/rule.png';
         return icon;
@@ -452,7 +452,7 @@
                 }
                 var rule_when = '';
                 var inactive_rule = '';
-                if(node.attributes.rule_type == 'chain' || node.attributes.rule_type == 'event'){
+                if(node.attributes.rule_type == 'pipeline' || node.attributes.rule_type == 'event'){
                     rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
                 }
                 if(node.attributes.rule_active == "0"){
@@ -488,9 +488,9 @@
                 var caption = '';
                 if( rec.data.rule_type == 'event' ) {
                     caption =  _("%1 for event '%2'", _(rec.data.rule_when), rec.data.rule_event );
-                } else if( rec.data.rule_type == 'chain' ) {
-                    var default_chain = rec.data.rule_when || '-';
-                    caption =  _('job chain: %1', '<span style="font-weight: bold; color: #48b010">'+default_chain+'</span>' );
+                } else if( rec.data.rule_type == 'pipeline' ) {
+                    var default_pipeline = rec.data.rule_when || '-';
+                    caption =  _('pipeline: %1', '<span style="font-weight: bold; color: #48b010">'+default_pipeline+'</span>' );
                 } else {
                     caption =  _(rec.data.rule_type);
                 }
@@ -1226,7 +1226,7 @@
                 name: _('Start: %1', event_name || short_name),
                 draggable: false, 
                 id: 'root', 
-                icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
+                icon: (rule_type=='pipeline'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
         });
        
         rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };

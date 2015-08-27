@@ -17,7 +17,7 @@ BEGIN {
 
 register 'action.job.viewall' => { name=>'View All Jobs' };
 register 'action.job.restart' => { name=>'Restart Jobs' };
-register 'action.job.chain_change' => { name=>'Change default chain in job_new window' };
+register 'action.job.chain_change' => { name=>'Change default pipeline in job_new window' };
 register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web Server' };
 
 register 'config.job.states' => {
@@ -70,7 +70,7 @@ sub bl_combo : Local {
     $c->forward('View::JSON');
 }
 
-sub chains : Local {
+sub pipelines : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $type = $p->{type} // 'promote';
@@ -78,9 +78,9 @@ sub chains : Local {
     try {
         my $where;
         if ( !Baseliner->model('Permissions')->is_root($c->username) ) {
-            $where = { rule_type=>'chain', rule_active => mdb->true, rule_when => $type };
+            $where = { rule_type=>'pipeline', rule_active => mdb->true, rule_when => $type };
         } else {
-            $where = { rule_type=>'chain', rule_active => mdb->true };
+            $where = { rule_type=>'pipeline', rule_active => mdb->true };
         }
         my @rules = sort {
            my $r = $a->{rule_when} eq $type ? -1
@@ -88,7 +88,7 @@ sub chains : Local {
            : $a cmp $b;
            $r;
         } 
-        sort mdb->rule->find({ rule_type=>'chain', rule_active => mdb->true })->fields({ rule_tree=>0 })->all;
+        sort mdb->rule->find({ rule_type=>'pipeline', rule_active => mdb->true })->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
     } catch {

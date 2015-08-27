@@ -185,12 +185,12 @@
     });
 
     var store_chain = new Baseliner.JsonStore({
-        url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id',
+        url: '/job/pipelines', root: 'data', totalProperty: 'totalCount', id: 'id',
         autoLoad: false,
         fields:['id','rule_name','rule_type']
     });
     var combo_chain = new Ext.form.ComboBox({ //new Baseliner.SuperBox({
-        fieldLabel: _('Job Chain'),
+        fieldLabel: _('Pipeline'),
             name: 'id_rule',
             displayField:'rule_name',
             hiddenName:'id_rule', 
@@ -213,7 +213,7 @@
         if( row ) {
             combo_chain.setValue( row.data.id );
         } else {
-            Baseliner.error(_('Job'), _('No job chains available') );
+            Baseliner.error(_('Job'), _('No job pipelines available') );
         }
     });
     store_chain.load(); // {params: { type: 'promote'}});

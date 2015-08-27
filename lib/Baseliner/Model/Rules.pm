@@ -108,7 +108,7 @@ sub build_tree {
         return $self->tree_format( @$rule_tree );
         return @$rule_tree;
     } else {
-        if( $rule->{rule_type} eq 'chain' ) {
+        if( $rule->{rule_type} eq 'pipeline' ) {
             return $self->init_job_tasks;
         }
         if ( $rule->{rule_type} eq 'form') {
@@ -414,7 +414,7 @@ sub run_rules {
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }
 
-# used by job_chain
+# used by pipelines
 sub run_single_rule {
     my ($self, %p ) = @_;
     local $Baseliner::_no_cache = 0;
@@ -1186,7 +1186,7 @@ sub get_rules_info {
         my $ids = $p->{ids};
         my $where = {};
         $where->{id} = mdb->in($ids) if length $ids;
-        my @rule_types = ('dashboard','form','event','report','chain','webservice','independent');
+        my @rule_types = sort ('dashboard','form','event','report','pipeline','webservice','independent');
         my $folder_structure = [];
         for my $rule_type (@rule_types){
             my $temp_structure = {text=>$rule_type, leaf => \0, expandable => \1, expanded => $expanded, allowDrop=>\0, allowDrag=>\0, draggable=>\0, children=> [] };
