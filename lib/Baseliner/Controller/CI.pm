@@ -1562,7 +1562,7 @@ sub default : Path Args(2) {
     my $collection = $p->{collection};
     my $res_key = delete $p->{_res_key}; # return call response in this hash key
     my $mid_as_param = $p->{mid};
-    my $json = $c->req->{body_data} // $p;
+    my $json = $p;
     delete $p->{api_key};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;

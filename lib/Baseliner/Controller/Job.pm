@@ -52,8 +52,8 @@ sub job_create : Path('/job/create')  {
 # fill job_new.js combo_baselines
 sub bl_combo : Local {
     my ($self,$c)=@_;
-    my $p = $c->req->{body_data} // $c->req->params;
-    
+    my $p = $c->req->params;
+   
     my $bls = $p->{bls};
     my $action = 'action.job.create';  # we use the action to find which bls this role can create jobs on
     my @bl_arr = ();
@@ -577,7 +577,7 @@ sub resume : Local {
 
 sub jc_store : Local  {
     my ( $self, $c ) = @_;
-    my $p = $c->req->{body_data} // $c->req->params;
+    my $p = $c->req->params;
     my $topics = $$p{topics} || {} ;
     my @data;
     my $k = 1;

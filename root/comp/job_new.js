@@ -2,7 +2,7 @@
     job_new.js - new job creation screen
 </%doc>
 <%perl>
-    use Baseliner::Utils qw(_nowstamp);
+    use Baseliner::Utils qw(_nowstamp _array);
     use Baseliner::Sugar qw(config_value);
     use utf8;
     my $iid = "div-" . _nowstamp;
