@@ -148,7 +148,7 @@
     var rule_import = function(){
         var yaml = new Baseliner.MonoTextArea({ fieldLabel:_('YAML'), value:'' });
         var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
-            Baseliner.ajaxEval('/rule/import', { data: yaml.getValue(), type:'yaml' }, function(res){
+            Baseliner.ajaxEval('/rule/import_yaml', { data: yaml.getValue(), type:'yaml' }, function(res){
                 if( res.success ) { 
                     rules_store.reload();
                     Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );

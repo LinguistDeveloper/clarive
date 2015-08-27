@@ -164,7 +164,7 @@ sub import_rule {
     return $rule;
 }
 
-sub import : Local {
+sub import_yaml : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $data = $p->{data};
