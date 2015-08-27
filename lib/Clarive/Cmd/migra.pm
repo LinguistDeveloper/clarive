@@ -243,6 +243,8 @@ sub run_fix {
     my $clarive = $self->_load_collection( error_ok => 1 );
 
     $self->_dry_run_banner(%opts);
+    my $doc = mdb->clarive->find_one({ _id => $clarive->{_id} });
+    $self->_say( length $doc->{migration}{error} ? "Last error: $doc->{migration}{error}" : "(no error)" ); 
 
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Remove error from last migration?' );
     return unless $yes;
@@ -389,7 +391,7 @@ sub _load_collection {
         die 'ERROR: It seems that the last migration did not succeed. '
           . 'Fix the issue and run migra-fix. Error is: `'
           . $clarive->{migration}->{error} . '`'
-          if $clarive->{migration}->{error};
+              if $clarive->{migration}->{error};
     }
 
     return $clarive;
