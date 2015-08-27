@@ -16,8 +16,16 @@
 </%args>
 <%perl>
     use Baseliner::Utils;
+ 
+    my @form = grep { $_->{fields} } _array( $topic_meta );
+    my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
+    my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
+    my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
+    my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;
+    my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'more' } _array( $topic_meta ) ;
     my $tabactive = $has_comments ? 'discussion' : 
         $permissionDashboard && length($dashboard) ? 'dashboard' : 
+        @more ? 'more' :
         $permissionActivity ? 'activity' : 
         $permissionJobs ? 'jobs' : 
         'none';
@@ -99,13 +107,6 @@ $('.bali-topic-editor-image').click(function(){
 if (imagen.width()>600) { captura.show(); }
 });
 </script>
-% 
-% my @form = grep { $_->{fields} } _array( $topic_meta );
-% my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
-% my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
-% my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
-% my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;
-% my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'more' } _array( $topic_meta ) ;
 % if (@form) {
 <div id="boot" >
 % foreach my $field (  @form ) {
@@ -182,9 +183,6 @@ if (imagen.width()>600) { captura.show(); }
 </table>
 %}
 
-% if( @more ) {
-%    $tabactive = 'more';
-%}    
 <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
@@ -299,9 +297,6 @@ if (imagen.width()>600) { captura.show(); }
                                     dashboard.render( dashboard_off );
                                 }
                             }
-                        } else if( target_id == "tab-more"+ii && topic_mid != '' ) {
-
-                            document.getElementById("topic-more<% $ii %>").innerHTML = more_html ;
                         }// if tab
 
                         // sync dashboard div with tab div
