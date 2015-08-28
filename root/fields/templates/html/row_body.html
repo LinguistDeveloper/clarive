@@ -17,6 +17,6 @@
       <td 
           class="fieldlet-html"
           style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" width="50%">
-          <% is_number($val)?$val:_loc( $val ) %></td>
+          <% is_number($val)?$val:( $val ) %></td>
     </tr>
 % }
