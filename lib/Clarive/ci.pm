@@ -1,5 +1,7 @@
 package ci;
 use strict;
+use Baseliner::CI;
+
 our $AUTOLOAD;
 sub AUTOLOAD {
     my $self = shift;

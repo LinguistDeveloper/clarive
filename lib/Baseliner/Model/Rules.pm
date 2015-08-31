@@ -220,7 +220,8 @@ sub dsl_build {
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
             my $key = $attr->{key};
-            my $reg = Baseliner->registry->get( $key );
+            use Baseliner::Model::Registry;
+            my $reg = Baseliner::Model::Registry->get( $key );
             _fail _loc 'Could not find rule key `%1`', $key unless blessed $reg;
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';

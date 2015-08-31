@@ -610,7 +610,8 @@ sub local_stmts_save {
     #_debug $stmts;
     # check if DSL is buildable
     my $detected_errors = try { 
-        my $dsl = Baseliner->model('Rules')->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
+        use Baseliner::Model::Rules;
+        my $dsl = Baseliner::Model::Rules->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
         _debug "Caching rule $id_rule for further use";
         mdb->grid->remove({id_rule=> "$id_rule"});
         mdb->grid_insert( $dsl ,id_rule => $id_rule );
