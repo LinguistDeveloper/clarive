@@ -4,7 +4,7 @@ use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
 our $CAPTION         = 'Run migrations';
-our $DEFAULT_VERSION = '0099';
+our $DEFAULT_VERSION = '0100';
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Baseliner';

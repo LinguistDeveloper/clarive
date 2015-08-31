@@ -460,13 +460,15 @@ sub index_all {
             if( $p{drop} && $cn ne 'fs.files' ) {
                 Util->_info('Dropping indexes first.');
                 $self->$cn->drop_indexes;
+            } else {
+                $self->$cn->drop_index( '$**_text' );
             }
             for my $ix ( @{ $idx->{$cn} } ) {
                 my $json = ref $ix ? Util->_encode_json($ix) : $ix;
                 try {
                     if( ref $ix eq 'ARRAY' ) {
                         _log "ENSURING $cn INDEX: $json";
-                        $coll->ensure_index( @$ix );
+                        $coll->ensure_index( @$ix ) 
                     } else {
                         _log _loc 'Eval collection %1 index %2', $cn, $ix;
                         mdb->db->eval($ix); 
