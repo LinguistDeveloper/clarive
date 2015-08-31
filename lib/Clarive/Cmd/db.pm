@@ -82,7 +82,7 @@ Clarive DB Schema Management
 
 =head1 cla db-reindex
 
-Reindexes the database, droping old-indexes.
+Reindexes the database, dropping old-indexes.
 
 Uses all standard indexes, plus any
 feature-defined index in C<etc/index/*.yml>
