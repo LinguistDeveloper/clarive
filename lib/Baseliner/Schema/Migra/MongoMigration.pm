@@ -45,7 +45,8 @@ sub list_roles {
 }
 
 sub topic_categories_to_rules {
-    mdb->rule->remove({rule_type=>mdb->in('form','fieldlets') });
+    Util->_fail('System already has form rules. Remove them before migrating.')
+            if mdb->rule->find({rule_type=>mdb->in('form','fieldlets') })->count;
     my @topic_category = mdb->category->find->all;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
