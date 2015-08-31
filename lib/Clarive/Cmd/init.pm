@@ -69,7 +69,7 @@ sub run {
           ->run_init( args => { yes => 1, quiet => 1 } );
 
         $self->_say('Initializing indexes', %opts);
-        mdb->index_all;
+        mdb->index_all( drop=>0 );
     }
     else {
         die 'ERROR: System is already initialized';
