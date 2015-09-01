@@ -2,11 +2,11 @@
     var data = params.data || {};
 
 
-    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Use these statuses'), value: data.statuses || ''});
-    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Use these categories'), value: data.categories || ''  });
+    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
+    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
 
-    var cstatus_max = new Baseliner.StatusBox({ name: 'statuses_max', fieldLabel: _('Use these statuses'), value: data.statuses_max || ''});
-    var ccategory_max = new Baseliner.CategoryBox({ name: 'categories_max', fieldLabel: _('Use these categories'), value: data.categories_max || ''  });
+    var cstatus_max = new Baseliner.StatusBox({ name: 'statuses_max', fieldLabel: _('Select topics in statuses'), value: data.statuses_max || ''});
+    var ccategory_max = new Baseliner.CategoryBox({ name: 'categories_max', fieldLabel: _('Select topics in categories'), value: data.categories_max || ''  });
 
     var common = Cla.dashlet_common(params);
 
@@ -135,7 +135,7 @@
         },
         {
             xtype: 'label',
-            text: _('Topic selection criteria'),
+            text: _('Topics selection criteria'),
             style: {
                 // 'margin': '10px',
                 'font-size': '12px',
@@ -153,7 +153,7 @@
               items: [
                 ccategory,
                 cstatus,
-                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude statuses above') },
+                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
                 { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition, anchor: '100%' }
               ]
             },
@@ -193,7 +193,7 @@
               items: [
                 ccategory_max,
                 cstatus_max,
-                { xtype : "checkbox", name : "not_in_status_max", checked: data.not_in_status_max=='on' ? true : false, boxLabel : _('Exclude statuses above') },
+                { xtype : "checkbox", name : "not_in_status_max", checked: data.not_in_status_max=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
                 { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition_max', value: data.condition_max, anchor: '100%' }
               ]
             },

@@ -7975,7 +7975,6 @@ msgstr "Descartar Acciones Inválidas"
 msgid "Collapse Rows"
 msgstr "Colapsar Filas"
 
-
 msgid "Detail View"
 msgstr "Vista detalle"
 
@@ -8020,5 +8019,224 @@ msgstr "No hay datos para las fechas seleccionadas.  Por favor, selecciona otro 
 
 msgid "Are you sure you want to delete all rows?"
 msgstr "¿Está seguro de que quiere borrar todas las filas?"
+
+msgid "General dashlet"
+msgstr "Dashlet general"
+
+msgid "Chart options"
+msgstr "Opciones del gráfico"
+
+msgid "Height in canvas rows"
+msgstr "Altura en canvas (filas)"
+
+msgid "Width in canvas columns"
+msgstr "Anchura en canvas (columnas)"
+
+msgid "Autorefresh frequency in minutes (0 disabled)"
+msgstr "Frecuencia de autorefresco en minutos (0 deshabilitado)"
+
+msgid "Chart will be shown as ..."
+msgstr "El gráfico se mostrará como ..."
+
+msgid "Select or type the grouping field"
+msgstr "Selecciona o teclea el campo de agrupación"
+
+msgid "Minimum % to group series in Others group"
+msgstr "% mínimo para mostrar serie en el grupo 'Otro'"
+
+msgid "Topics selection criteria"
+msgstr "Criterio de selección de tópicos"
+
+msgid "Select topics in categories"
+msgstr "Seleccionar tópicos en categorías"
+
+msgid "Select topics in statuses"
+msgstr "Seleccionar tópicos en estados"
+
+msgid "Exclude selected statuses?"
+msgstr "Excluir estados seleccionados?"
+
+msgid "Advanced JSON/MongoDB condition for filter"
+msgstr "Condición avanzada JSON/MongoDB"
+
+msgid "Shift in days from today to start timeline. 0 or blank means one day"
+msgstr "Desplazamiento en días desde hoy para inicio del periodo. 0 o vacío para 1 día"
+
+msgid "Shift in days from today to end timeline. 0 or blank means today"
+msgstr "Desplazamiento en días desde hoy para fin del periodo. 0 o vacío para HOY"
+
+msgid "Date field in topics to use as X axis"
+msgstr "Campo de fecha en tópicos para el eje X"
+
+msgid "Data grouped by"
+msgstr "Los datos se agruparan por"
+
+msgid "List of fields to view in grid"
+msgstr "Lista de campos a visualizar en el grid"
+
+msgid "Maximum number of topics to list"
+msgstr "Número máximo de tópicos a listar"
+
+msgid "User assigned to topics"
+msgstr "Usuario asignado a los tópicos"
+
+msgid "Shift in days from today to show in chart. 0 or blank means today"
+msgstr "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío para HOY"
+
+msgid "Date field with scheduled start date"
+msgstr "Campo de fecha con la fecha de inicio planificada"
+
+msgid "Job selection criteria"
+msgstr "Criterios de selección de pases"
+
+msgid "Select job in states"
+msgstr "Selección de pases en estados"
+
+msgid "Exclude selected states?"
+msgstr "Excluir estados seleccionados?"
+
+msgid "Which bls do you want to see"
+msgstr "Qué entornos quieres ver?"
+
+msgid "Maximum number of jobs to list"
+msgstr "Número máximos de pases a listar"
+
+msgid "Do you want the data to be shown by bl?"
+msgstr "Quieres que los datos se muestren por entorno?"
+
+msgid "Period to be shown. Last ..."
+msgstr "Mostrar último ..."
+
+msgid "Switch to YELLOW when value reaches"
+msgstr "Cambiar a AMARILLO cuando el valor llegue a"
+
+msgid "Switch away from YELLOW when the value reaches"
+msgstr "Alejarse del AMARILLO cuando el valor llegue a"
+
+msgid "Reverse gauge"
+msgstr "Gauge inverso"
+
+msgid "(* default color = RED instead of GREEN, switch away from yellow color = GREEN instead of RED)"
+msgstr "(* color por defecto = ROJO en vez de VERDE, color al alejarse del amarillo = VERDE en vez de ROJO)"
+
+msgid "START value for gauge. Blank defaults to 0"
+msgstr "Valor de INICIO para el gauge. Vacío para 0"
+
+msgid "END value for gauge. Blank defaults to 100"
+msgstr "Valor de FIN para el gauge.  Vacío para 100"
+
+msgid "Which data you want to collect"
+msgstr "Qué dato quieres mostrar?"
+
+msgid "Use as Percentage gauge"
+msgstr "Usar como gauge de %"
+
+msgid "General gauge"
+msgstr "Gauge general"
+
+msgid "Use these categories"
+msgstr "Usar categorías"
+
+msgid "END value selection criteria"
+msgstr "Criterio de selección del valor FIN"
+
+msgid "Select to ignore END value above"
+msgstr "Selecciona para ignorar el valor FIN mas arriba"
+
+msgid "Data collection"
+msgstr "Criterios de datos"
+
+msgid "Date field in topics to use as start"
+msgstr "Campo de fecha en tópicos a usar como inicio"
+
+msgid "Date field in topics to use as end"
+msgstr "Campo de fecha en tópicos a usar como fin"
+
+msgid "The result will be shown in"
+msgstr "El resultado se mostrará en ..."
+
+msgid "Use END date as remaining"
+msgstr "Usar FECHA FIN como restante"
+
+msgid "Numeric field in topics to use as data (leave dates blank)"
+msgstr "Campo numérico en tópicos para usar como dato (blanco para fechas)"
+
+msgid "The field data units are"
+msgstr "La unidad de los datos del campo son ..."
+
+msgid "Restore originals"
+msgstr "Restaurar configuración original"
+
+msgid "Background Color"
+msgstr "Color de fondo"
+
+msgid "Swarm configuration"
+msgstr "Configuración de Swarm"
+
+msgid "Animation Start Mode"
+msgstr "Modol de inicio de la animación"
+
+msgid "Automatically"
+msgstr "Automáticamente"
+
+msgid "Manually"
+msgstr "Manualmente"
+
+msgid "Date from"
+msgstr "Fecha de inicio"
+
+msgid "Date to"
+msgstr "Fecha de fin"
+
+msgid "Maximum Node"
+msgstr "Número máximo de nodos. 0 para ilimitados"
+
+msgid "Minimum Node Category"
+msgstr "Mínimo de nodos por categoría. 0 para ilimitados"
+
+msgid "Node groupping"
+msgstr "Agrupación de nodos"
+
+msgid "First Weekday"
+msgstr "Primer día de la semana"
+
+msgid "Environments"
+msgstr "Entornos"
+
+msgid "Exclude selected environments?"
+msgstr "Excluir entornos seleccionados?"
+
+msgid "Exclude selected categories?"
+msgstr "Excluir categorías seleccionadas?"
+
+msgid "Scale"
+msgstr "Escala"
+
+msgid "Daily"
+msgstr "Diario"
+
+msgid "Weekly"
+msgstr "Semanal"
+
+msgid "Monthly"
+msgstr "Mensual"
+
+msgid "Shift back in days from today to start timeline"
+msgstr "Inicio (desplazamiento hacia atrás en días desde hoy)"
+
+msgid "Shift forward in days from today to end timeline"
+msgstr "Fin (desplazamiento hacia delante en días desde hoy)"
+
+msgid "Label Mask"
+msgstr "Máscara de etiqueta de tópicos"
+
+msgid "Calendar Query"
+msgstr "Consulta de calendario"
+
+msgid "Topic Activity (from Created to Modified Dates)"
+msgstr "Actividad de tópico (desde Creado hasta Modificación)"
+
+msgid "Open Topics (from Created to Closed Dates)"
+msgstr "Tópicos abiertos (desde Creado hasta Cerrado)"
 
 ### EOF - do not write anything bellow this

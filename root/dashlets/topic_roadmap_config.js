@@ -14,13 +14,13 @@
         value: data.units_from==undefined?10:data.units_from, 
         name: "units_from",
         anchor:'100%',
-        fieldLabel: _("Start Time Back From Today")
+        fieldLabel: _("Shift back in days from today to start timeline")
     });
     var units_until = new Ext.ux.form.SpinnerField({ 
         value: data.units_until==undefined?10:data.units_until, 
         name: "units_until",
         anchor:'100%',
-        fieldLabel: _("Start Time Starting Today")
+        fieldLabel: _("Shift forward in days from today to end timeline")
     });
 
 
