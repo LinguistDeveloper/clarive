@@ -789,6 +789,7 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 //      Baseliner.ci_box({ name:'repo', 'class':'BaselinerX::CI::GitRepository', fieldLabel:_('Git Repository'), value: data.repo })
 
 Baseliner.ci_box = function(c) {
+    var firstload = true;
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
     var show_class = c.showClass; delete c.showClass;
@@ -836,8 +837,10 @@ Baseliner.ci_box = function(c) {
         showClass: show_class
     }, c )); 
     store.on('load', function(){
-        if( c.force_set_value )
+        if( c.force_set_value && firstload ) { // For default value purpose
+            firstload = false;
            ci_box.setValue( value );
+        } 
     });
     if( autoload ) {
         if( value != undefined && value.length > 0 )  {
