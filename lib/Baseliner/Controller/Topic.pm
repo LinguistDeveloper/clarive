@@ -360,7 +360,7 @@ sub get_field_bodies {
     my ($self, $meta ) = @_;
     # load comp body for each field
     for my $field ( _array( $meta ) ) {
-        next unless defined $field->{js};
+        next unless length $field->{js};
         my $file = Baseliner->path_to( 'root', $field->{js} );
         _debug "field file: $file";
         if( !ref $file || $file->is_dir ) {
