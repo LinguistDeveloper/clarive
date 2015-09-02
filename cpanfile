@@ -95,7 +95,7 @@ requires 'Git::Wrapper';
 requires 'Graph';
 requires 'Hash::Diff';
 requires 'HTML::Mason';
-requires 'HTML::Strip';
+requires 'HTML::Restrict';
 requires 'HTTP::Daemon';
 requires 'Image::Identicon';
 requires 'IO::All';
