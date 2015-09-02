@@ -20,7 +20,7 @@ sub text {
     my ($self)=@_;
     my $d = $self->get_data;
     my $txt = $d->slurp;
-    utf8::decode( $txt ); # probably needed for every GridFS data? or just a slurp thing? maybe use a better file reader
+    $txt = Util->_utf8($txt); # probably needed for every GridFS data? or just a slurp thing? maybe use a better file reader
     return $d ? $txt : '';
 } 
 

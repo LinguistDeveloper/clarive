@@ -756,9 +756,23 @@ sub comment : Local {
                         created_by   => $c->username,
                         created_on   => mdb->ts,
                 });
+
+                #old posts..
+                my @mids_only = map { $_->{to_mid} } mdb->master_rel->find({from_mid=>"$topic_mid", rel_type=>"topic_post"})->fields({to_mid=>1})->all;
+                my @old_post;
+                for my $old_post (@mids_only){
+                    my $post = ci->new($old_post);
+                    my $text;
+                    $text->{username} = $post->{created_by};
+                    $text->{created_on} = $post->{created_on};
+                    $text->{text} = $post->text;
+                    print $text->{text};
+                    push @old_post, $text if($text);
+                }
+                @old_post = sort { $b->{created_on} cmp $a->{created_on} } @old_post;
+
                 local $Baseliner::CI::ci_record = 1;
 
-                
                 # save the post
                 my $mid_post = $post->save;
                 $post->put_data( $text ); 
@@ -771,6 +785,7 @@ sub comment : Local {
                     notify_default  => \@users,
                     subject         => $subject,
                     project        => \@name_projects,
+                    old_post        => \@old_post,
                     notify=>$notify 
                 };
                 # mentioned people? event this...

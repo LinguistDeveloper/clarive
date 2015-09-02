@@ -701,10 +701,14 @@ sub _replace_tags {
 sub _strip_html {
     my $d = shift;
     return $d unless length $d;
-    require HTML::Strip;
-    my $hs = HTML::Strip->new();
-    my $clean_text = $hs->parse($d);
-    $clean_text = Encode::decode('UTF-8', $clean_text);
+    # require HTML::Strip;
+    # my $hs = HTML::Strip->new();
+    # my $clean_text = $hs->parse($d);
+    # $clean_text = Encode::decode('UTF-8', $clean_text);
+    use HTML::Restrict;
+
+    my $hr = HTML::Restrict->new();
+    my $clean_text = $hr->process($d);
     $clean_text;
 }
 
