@@ -4124,16 +4124,21 @@ Baseliner.generic_fields = function(params){
     hide_from_edit_cb.on('check', function(cb){
         active.setValue(!cb.checked);
     });
-    return [
-        { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', fieldClass: "x-item-disabled", allowBlank: false, readOnly:true, value: data.id_field },
-        combo_section,
-        combo_colspan,
-        new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
-        hide_from_edit_cb,
-        mandatory_cb,
-        allowBlank_field,
-        active
-    ]
+    return [{
+        xtype: 'fieldset',
+        collapsible: true, 
+        title: _('Common Options'),
+        items: [
+            { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', fieldClass: "x-item-disabled", allowBlank: false, readOnly:true, value: data.id_field },
+            combo_section,
+            combo_colspan,
+            new Baseliner.CBox({ name: 'hidden', checked: data.hidden, fieldLabel: _('Hidden from view mode') }),
+            hide_from_edit_cb,
+            mandatory_cb,
+            allowBlank_field,
+            active
+        ]
+    }];
 };
 
 Baseliner.eval_boolean = function(d, default_value){
