@@ -170,15 +170,6 @@ register 'fieldlet.html_editor' => {
     section_allowed => ['head','more']
 };
 
-register 'fieldlet.origin_issue_chart_pie' => {
-    name        => _loc('Pie Chart For Issue'),
-    html        => '/fields/templates/html/origin_issue_pie.html',
-    js          => '',
-    form        => '/fields/templates/config/origin_issue_chart_pie.js',
-    icon        => '/static/images/icons/chart-pie.png',
-    section_allowed => ['between']
-};
-
 register 'fieldlet.pagedown' => {
     name        => _loc('pagedown editor'),
     html        => '/fields/templates/html/markdown.html',
