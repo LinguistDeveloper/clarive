@@ -1300,6 +1300,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.detail.body.parent().parent().setStyle('width', null);
                     self.detail.body.setStyle('width', null);
                     self.detail.body.setStyle('height', null);
+                    $( self.detail.body.dom ).find('.field-dashlet').each(function(a,b){
+                        var field = $(this);
+                        Cla.ajax_json( field.attr('js_file'), { 
+                            topic_mid: self.topic_mid, id_div: field.attr('id'), 
+                            data: Ext.util.JSON.decode( field.attr('dashlet_data') ) }, function(){});
+                    });
                 }
             });
         self.detail.body.setStyle('overflow', 'auto');

@@ -4,7 +4,7 @@
     var bl_combo = new Baseliner.model.SelectBaseline({ value: data.bl, fieldLabel: _('Environments') });
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
 
-    var common = Cla.dashlet_common(params);
+    var common = params.common_options || Cla.dashlet_common(params);
 
     var scale = new Baseliner.ComboDouble({ anchor: '100%', fieldLabel:_('Scale'), name:'scale', 
         value: data.scale==undefined ? 'weekly' : data.scale,

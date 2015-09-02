@@ -1,0 +1,28 @@
+<!--
+name: velocity-project
+description: Velocity by Project 
+config: ''
+url: /dashboard/generic
+html: /dashlets/velocity_project.html
+-->
+<%perl>
+    use Baseliner::Utils;
+    use Class::Date;
+</%perl>
+
+    <div style="clear:left;">
+        <h2><% _loc('Velocity by Project') %></h2>
+        <table class="table table-bordered table-condensed dashboard">
+            <tbody>
+% for my $prj ( ci->project->find->sort({ name=>1 })->all ) {
+                <tr>
+                    <td width='5px' style="padding: 10px 10px 10px 10px; font-size: 16px; font-weight: bold">
+                        <span style="width: 5px;margin: 0px 5px 0px 5px;"><% _loc($prj->{name}) %></td>
+                    <td style="padding: 10px 10px 10px 10px; font-size: 20px; font-weight: bold"><% _loc('%1 days', int(rand(32)) ) %></td>
+                </tr>
+% }
+            </tbody>
+        </table>
+    </div>
+
+

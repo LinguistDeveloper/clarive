@@ -16,7 +16,7 @@
       ] 
     });
 
-    var common = Cla.dashlet_common(params);
+    var common = params.common_options || Cla.dashlet_common(params);
 
     return common.concat([
         {

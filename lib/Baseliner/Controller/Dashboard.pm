@@ -82,6 +82,7 @@ register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
     icon=> '/static/images/icons/topic.png',
+    field_width => '80%', 
     #icon=> '/static/images/icons/gauge.png',
     js_file => '/dashlets/topics_gauge_d3.js'
 };

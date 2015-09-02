@@ -5,7 +5,7 @@
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
 
-    var common = Cla.dashlet_common(params);
+    var common = params.common_options || Cla.dashlet_common(params);
 
     return common.concat([
         {

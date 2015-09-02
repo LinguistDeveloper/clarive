@@ -775,6 +775,7 @@ sub edit_key : Local {
         _fail _loc "Key %1 not found in registry", $key unless $r;
         my $form = $r->form;
         my $config = $r->config;
+        my $params = $c->registry->get_params($key); 
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
             # service
@@ -795,7 +796,7 @@ sub edit_key : Local {
             $config_data = $config ? $self->config_to_data( $config ) : {};
             $config_data = { %$config_data, %{ $r->data } } ;
         }
-        $c->stash->{json} = { success=>\1, msg => 'ok', form=>$form, config=>$config_data };
+        $c->stash->{json} = { success=>\1, msg => 'ok', params=>$params, form=>$form, config=>$config_data };
     } catch {
         my $err = shift;
         _error $err;

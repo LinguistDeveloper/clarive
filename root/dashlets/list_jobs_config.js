@@ -1,5 +1,6 @@
 (function(params){
-    var common = Cla.dashlet_common(params);
+    var common = params.common_options || Cla.dashlet_common(params);
+
     var data = params.data;
     var states_store = new Baseliner.JsonStore({ 
         id: 'id', 

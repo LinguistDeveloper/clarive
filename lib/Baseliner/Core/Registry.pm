@@ -300,6 +300,18 @@ sub get_partial {
     return wantarray ? @found : $found[0];
 }
 
+=head2 get_params
+
+Returns clean original params.
+
+=cut
+sub get_params {
+    my ($self,$key)=@_;
+    my $node = $self->get( $key )->registry_node->param;
+    $node = +{ map { $_ => $node->{$_} } grep !/registry_node/, keys %$node };
+    return $node;
+}
+
 sub dir {
     my ($self,$key)=@_;
     return keys %{ $self->registrar || {} }

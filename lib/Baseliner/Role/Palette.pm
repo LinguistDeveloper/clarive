@@ -17,5 +17,6 @@ has on_drop        => ( is => 'rw', isa => 'CodeRef' );
 has sub_name       => ( is => 'rw', isa => 'Str' );
 has sub_mode       => ( is => 'rw', isa => 'Str', default=>'none' );
 has has_shortcut   => ( is => 'rw', isa => 'Bool', default=>0 );
+has data_gen    => ( is => 'rw', isa => 'CodeRef');
 
 1;

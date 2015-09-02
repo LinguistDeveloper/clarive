@@ -1,14 +1,13 @@
 (function(params){
     var data = params.data || {};
 
-
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
 
     var cstatus_max = new Baseliner.StatusBox({ name: 'statuses_max', fieldLabel: _('Select topics in statuses'), value: data.statuses_max || ''});
     var ccategory_max = new Baseliner.CategoryBox({ name: 'categories_max', fieldLabel: _('Select topics in categories'), value: data.categories_max || ''  });
 
-    var common = Cla.dashlet_common(params);
+    var common = params.common_options || Cla.dashlet_common(params);
 
     var days_from = new Ext.ux.form.SpinnerField({ 
         value: data.days_from, 

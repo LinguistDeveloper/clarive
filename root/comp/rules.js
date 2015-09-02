@@ -865,9 +865,27 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
+                    var reg_params = res.params;
                     var data = node.attributes.data;
                     data.config = res.config;
-                    Baseliner.ajaxEval( res.form, { data: data || {}, attributes: node.attributes }, function(comp){
+                    // dashlet in forms need a different set of options
+                    var is_dashlet = /^dashlet\./.test(key);
+                    var is_dashboard = true;
+                    var common_options = undefined;
+                    if( is_dashlet && node.getOwnerTree().rule_type == 'form' ) {
+                        common_options = [{
+                            xtype: 'fieldset',
+                            collapsible: true, 
+                            title: _('Common Dashlet as a Field Options'),
+                            items: [
+                                { xtype:'textfield', fieldLabel:_('Width'), name:'field_width', 
+                                    value: data.field_width||reg_params.field_width||'100%' }, 
+                                { xtype:'textfield', fieldLabel:_('Height'), name:'field_height', 
+                                    value: data.field_height||reg_params.field_height||'220px' }
+                            ]
+                        }];
+                    }
+                    Baseliner.ajaxEval( res.form, { common_options: common_options, data: data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
                             if(form.is_valid()){
@@ -1178,6 +1196,7 @@
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
+            rule_type: rule_type,
             closable: true,
             title: String.format('{0}: {1}', id_rule, short_name), 
             autoScroll: true,

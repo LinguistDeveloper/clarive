@@ -1086,7 +1086,7 @@ sub get_meta {
         return [] unless length $default_form;
         my $cr = Baseliner::CompiledRule->new( id_rule=> $default_form );
         $cr->compile;
-        my $stash = {name_category=>$$cat{name},id_category=>$id_category};
+        my $stash = { name_category=>$$cat{name},id_category=>$id_category, rule_context=>'form' };
         $cr->run(stash=>$stash);
         push @custom_fieldlets, _array( $stash->{fieldlets} );
     } else {
@@ -1102,7 +1102,7 @@ sub get_meta {
             }
             my $cr = Baseliner::CompiledRule->new( id_rule=>$default_form );
             $cr->compile;
-            my $stash = {id_category=>$category};
+            my $stash = { id_category=>$category, rule_context=>'form' };
             $cr->run(stash=>$stash);
             push @custom_fieldlets, _array( $stash->{fieldlets} );
         }
@@ -3080,7 +3080,7 @@ sub filter_children {
     my $id_project = $p{id_project};
     if( length $topic_mid){
         # topic and children
-        $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>$topic_mid })->fields({ to_mid=>1 })->all );
+        $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>"$topic_mid" })->fields({ to_mid=>1 })->all );
     } elsif( $id_project ){
         my @mids_in = ();
         my @topics_project = map { $$_{from_mid} } 
