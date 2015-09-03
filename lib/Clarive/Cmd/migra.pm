@@ -4,7 +4,7 @@ use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
 our $CAPTION         = 'Run migrations';
-our $DEFAULT_VERSION = '0100';
+our $DEFAULT_VERSION = '0099';
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Baseliner';
@@ -13,6 +13,7 @@ use Try::Tiny;
 use Capture::Tiny qw(capture);
 use Clarive::mdb;
 use Class::Load qw(load_class);
+use Clarive::Cmd::init;
 
 sub run { &run_start }
 
