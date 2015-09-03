@@ -34,24 +34,21 @@ register 'dashlet.job.list_baseline' => {
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart', 
-    icon=> '/static/images/icons/job.png',
-    #icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/chart_pie.png',
     js_file => '/dashlets/job_chart.js'
 };
 
 register 'dashlet.job.day_distribution' => {
     form=> '/dashlets/job_distribution_day_config.js',
     name=> 'Job daily distribution', 
-    icon=> '/static/images/icons/job.png',
-    #icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/chart_line.png',
     js_file => '/dashlets/job_distribution_day.js'
 };
 
 register 'dashlet.topic.number_of_topics' => {
     form=> '/dashlets/number_of_topics_chart_config.js',
     name=> 'Topics chart', 
-    icon=> '/static/images/icons/topic.png',
-    #icon=> '/static/images/silk/chart_pie.png',
+    icon=> '/static/images/icons/chart_pie.png',
     js_file => '/dashlets/number_of_topics_chart.js'
 };
 
@@ -65,33 +62,29 @@ register 'dashlet.topic.list_topics' => {
 register 'dashlet.topic.topics_by_date_line' => {
     form=> '/dashlets/topics_by_date_line_config.js',
     name=> 'Topics time line', 
-    icon=> '/static/images/icons/topic.png',
-    #icon=> '/static/images/silk/chart_curve.png',
+    icon=> '/static/images/icons/chart_curve.png',
     js_file => '/dashlets/topics_by_date_line.js'
 };
 
 register 'dashlet.topic.topics_burndown' => {
     form=> '/dashlets/topics_burndown_config.js',
     name=> 'Topics burndown', 
-    icon=> '/static/images/icons/topic.png',
-    #icon=> '/static/images/silk/chart_line.png',
+    icon=> '/static/images/icons/chart_line.png',
     js_file => '/dashlets/topics_burndown.js'
 };
 
 register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
-    icon=> '/static/images/icons/topic.png',
     field_width => '80%', 
-    #icon=> '/static/images/icons/gauge.png',
+    icon=> '/static/images/icons/gauge.png',
     js_file => '/dashlets/topics_gauge_d3.js'
 };
 
 register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap', 
-    icon=> '/static/images/icons/topic.png',
-    #icon=> '/static/images/icons/calendar.gif',
+    icon=> '/static/images/icons/calendar.gif',
     js_file => '/dashlets/topic_roadmap.js',
     no_boot => 1,
 };
@@ -107,8 +100,7 @@ register 'dashlet.topic.calendar' => {
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
-    icon=> '/static/images/icons/webservice.png',
-    #icon=> '/static/images/silk/world.png',
+    icon=> '/static/images/icons/world.png',
     js_file => '/dashlets/iframe.js'
 };
 
@@ -1996,36 +1988,36 @@ __DATA__
   rule_tree: '[{"attributes":{"icon":"/static/images/icons/let.gif","palette":false,"disabled":false,"on_drop_js":null,"key":"statement.var.set_expr","who":"root","text":"SET
     six_months_ago","expanded":false,"id":"rule-ext-gen10859-1431204661737","run_sub":true,"leaf":true,"ts":"2015-05-03T16:58:32","name":"SET
     EXPR","active":1,"holds_children":false,"data":{"expr":"my $now = Class::Date->now();\n''''.($now
-    - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last month","expanded":false,"id":"rule-ext-gen10866-1431204661743","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:58","name":"Job
-    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1M","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":"0","data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1M","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":"0","data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last quarter","expanded":false,"id":"rule-ext-gen10865-1431204661742","semaphore_key":"","leaf":true,"ts":"2015-05-15T18:48:42","name":"Job
-    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"3M","autorefresh":"0","columns":"4","bls":[],"type":"donut","rows":"1"},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"3M","autorefresh":"0","columns":"4","bls":[],"type":"donut","rows":"1"},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
     status - Last year","expanded":false,"id":"rule-ext-gen10862-1431204661738","semaphore_key":"","leaf":true,"ts":"2015-05-11T08:57:30","name":"Job
-    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1Y","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":60000,"data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-18T22:56:51","name":"Topics
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","active":1,"data":{"period":"1Y","parallel_mode":"none","trap_timeout_action":"abort","rows":"1","error_trap":"none","needs_rollback_mode":"none","sub_name":"","needs_rollback_key":"<always>","autorefresh":60000,"data_key":"","timeout":"","columns":"4","trap_timeout":"0","type":"donut","semaphore_key":""},"trap_rollback":true,"error_trap":"none","needs_rollback_mode":"none","note":"","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-18T22:56:51","name":"Topics
     burndown","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","date_field":"created_on","date_type":"today"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
-    topics burndown","expanded":false,"id":"rule-ext-gen10861-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","isTarget":false,"html":"","text":"Job
+    topics burndown","expanded":false,"id":"rule-ext-gen10861-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","isTarget":false,"html":"","text":"Job
     daily distribution","key":"dashlet.job.day_distribution","leaf":true,"id":"rule-ext-gen2666-1431982805405","name":"Job
-    daily distribution","data":{"rows":"1","columns":"6","autorefresh":"0","period":"1Y","type":"stack-area","joined":"0","bls":[]},"ts":"2015-05-18T23:01:02","who":"root","expanded":false},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_curve.png","disabled":false,"ts":"2015-05-15T09:31:46","name":"Topics
+    daily distribution","data":{"rows":"1","columns":"6","autorefresh":"0","period":"1Y","type":"stack-area","joined":"0","bls":[]},"ts":"2015-05-18T23:01:02","who":"root","expanded":false},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-15T09:31:46","name":"Topics
     by date line chart","active":1,"data":{"days_until":"","days_from":"-365","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"6","type":"stack-area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
     created monthly - Last year","expanded":false,"id":"rule-ext-gen10863-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-05-18T22:55:52","name":"List
     topics","active":1,"data":{"rows":"1","columns":"8","autorefresh":60000,"statuses":"","categories":"","assigned_to":"","condition":"{\"created_on\":{\"$lte\":\"${six_months_ago}\"},\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}","fields":""},"key":"dashlet.topic.list_topics","html":"","who":"root","text":"Open
-    topics older than 6 months","expanded":false,"id":"rule-ext-gen10864-1431204661742","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/world.png","palette":false,"disabled":true,"ts":"2015-05-08T04:01:15","active":0,"name":"Internet
+    topics older than 6 months","expanded":false,"id":"rule-ext-gen10864-1431204661742","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/world.png","palette":false,"disabled":true,"ts":"2015-05-08T04:01:15","active":0,"name":"Internet
     frame","data":{"autorefresh":"0","columns":"12","url":"http://www.clarive.com/","rows":"2"},"key":"dashlet.iframe","who":"root","html":"","text":"Clarive.com","expanded":false,"id":"rule-ext-gen10867-1431204661743","leaf":true},"children":[]}]'
   rule_type: dashboard
 - rule_active: '1'
   rule_desc: ''
   rule_event: ~
   rule_name: Release Manager
-  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
+  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
     by date line chart","active":1,"data":{"days_until":"0","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","type":"area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
-    created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","isTarget":false,"html":"","text":"Releases
+    created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","isTarget":false,"html":"","text":"Releases
     aprobadas","key":"dashlet.topic.number_of_topics","leaf":true,"id":"rule-ext-gen6948-1431424514648","name":"Topics
-    chart","data":{"rows":"1","columns":"4","autorefresh":"0","statuses":"122","categories":["7","44","45"],"condition":"","group_threshold":"5","type":"donut","group_by":"topics_by_category"},"ts":"2015-05-12T11:55:47","who":"root","expanded":false},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:38","name":"Topics
+    chart","data":{"rows":"1","columns":"4","autorefresh":"0","statuses":"122","categories":["7","44","45"],"condition":"","group_threshold":"5","type":"donut","group_by":"topics_by_category"},"ts":"2015-05-12T11:55:47","who":"root","expanded":false},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:38","name":"Topics
     burndown","active":1,"data":{"date_type":"yesterday","autorefresh":"0","date_field":"scheduled_start_date","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Yesterday''s
-    topics burndown","expanded":false,"id":"rule-ext-gen12565-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:44","name":"Topics
+    topics burndown","expanded":false,"id":"rule-ext-gen12565-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:44","name":"Topics
     burndown","active":1,"data":{"date_type":"today","autorefresh":"0","date_field":"scheduled_start_date","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
-    topics burndown","expanded":false,"id":"rule-ext-gen12566-1431198379636","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-11T16:01:34","active":1,"name":"Topics
+    topics burndown","expanded":false,"id":"rule-ext-gen12566-1431198379636","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-11T16:01:34","active":1,"name":"Topics
     chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"6","group_by":"topics_by_status","type":"pie","statuses":"","condition":""},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"Topics
     chart","expanded":false,"id":"rule-ext-gen5382-1431341288631","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-08T03:56:48","active":1,"name":"List
     topics","data":{"categories":"","rows":"1","autorefresh":"0","fields":"","columns":"8","assigned_to":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"Open
@@ -2039,11 +2031,11 @@ __DATA__
     jobs","active":1,"data":{"autorefresh":"0","columns":"6","states":["APPROVAL","PAUSED","TRAPPED","TRAPPED_PAUSED","PENDING","READY","RUNNING","WAITING","IN-EDIT","RESUME"],"bls":[],"limit":"100","rows":"1"},"key":"dashlet.job.list_jobs","html":"","who":"root","text":"Pending
     jobs","expanded":false,"id":"rule-ext-gen16612-1431299434041","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-05-11T02:27:28","name":"List
     jobs","active":1,"data":{"autorefresh":"0","columns":"6","states":["APPROVAL","PAUSED","TRAPPED","TRAPPED_PAUSED","PENDING","READY","RUNNING","WAITING","IN-EDIT","RESUME"],"not_in_states":"on","bls":[],"limit":"100","rows":"1"},"key":"dashlet.job.list_jobs","html":"","who":"root","text":"Last
-    finished jobs","expanded":false,"id":"rule-ext-gen20048-1431304009089","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-14T13:30:01","active":1,"name":"Job
+    finished jobs","expanded":false,"id":"rule-ext-gen20048-1431304009089","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-14T13:30:01","active":1,"name":"Job
     daily day_distribution","data":{"period":"1Y","autorefresh":"0","columns":"6","bls":[],"type":"stack-area","rows":"1","joined":"0"},"key":"dashlet.job.day_distribution","who":"root","html":"","text":"Job
-    daily distribution - By BL","expanded":false,"id":"rule-ext-gen9103-1431252639222","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-14T13:30:13","active":1,"name":"Job
+    daily distribution - By BL","expanded":false,"id":"rule-ext-gen9103-1431252639222","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-14T13:30:13","active":1,"name":"Job
     daily day_distribution","data":{"period":"1Y","autorefresh":"0","columns":"6","bls":[],"type":"stack-area","rows":"1","joined":"1"},"key":"dashlet.job.day_distribution","who":"root","html":"","text":"Job
-    daily distribution - Total","expanded":false,"id":"rule-ext-gen14674-1431291038500","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-18T23:04:51","active":1,"name":"Job
+    daily distribution - Total","expanded":false,"id":"rule-ext-gen14674-1431291038500","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-18T23:04:51","active":1,"name":"Job
     chart","data":{"rows":"1","columns":"4","autorefresh":"0","period":"1Y","type":"donut","bls":[]},"key":"dashlet.job.chart","who":"root","html":"","text":"Jobs
     quality - Last year","expanded":false,"id":"rule-ext-gen14005-1431284044680","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-05-11T00:19:37","name":"Last
     jobs by app","active":1,"data":{"autorefresh":"0","columns":"8","bls":[],"rows":"1"},"key":"dashlet.job.last_jobs","html":"","who":"root","text":"Last
@@ -2056,15 +2048,15 @@ __DATA__
   rule_desc: ''
   rule_event: ~
   rule_name: Main Dashboard
-  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:12","name":"Topics
+  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:12","name":"Topics
     chart","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_status","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"Open
-    topics by status","expanded":false,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:23","name":"Topics
+    topics by status","expanded":false,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"ts":"2015-05-19T00:41:23","name":"Topics
     chart","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_category","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"Open
-    topics by category","expanded":false,"id":"rule-ext-gen4884-1431988740944","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_curve.png","palette":false,"disabled":false,"ts":"2015-05-19T00:43:52","active":1,"name":"Topics
+    topics by category","expanded":false,"id":"rule-ext-gen4884-1431988740944","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_curve.png","palette":false,"disabled":false,"ts":"2015-05-19T00:43:52","active":1,"name":"Topics
     time line","data":{"days_until":"","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"4","type":"stack-area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","who":"root","html":"","text":"Topics
     open last trimester","expanded":false,"id":"rule-ext-gen8029-1431988988253","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-19T00:45:25","active":1,"name":"List
     topics","data":{"categories":"","rows":"1","autorefresh":"0","fields":"","columns":"6","assigned_to":"Actual","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"My
-    open topics","expanded":false,"id":"rule-ext-gen8196-1431989095468","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-18T22:56:51","active":1,"name":"Topics
+    open topics","expanded":false,"id":"rule-ext-gen8196-1431989095468","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-18T22:56:51","active":1,"name":"Topics
     burndown","data":{"date_type":"today","autorefresh":"0","date_field":"created_on","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","who":"root","html":"","text":"Today''s
     changesets burndown","expanded":false,"id":"rule-ext-gen741-1431989460664","leaf":true},"children":[]}]'
   rule_type: dashboard
