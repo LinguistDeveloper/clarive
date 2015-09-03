@@ -5,6 +5,9 @@
 BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 LOCALDIR="$BINDIR/../../local"
 PERL="$LOCALDIR/perl/bin/perl"
+if [ ! -e $PERL ]; then
+    PERL=`which perl`
+fi
 export PATH="$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
 
