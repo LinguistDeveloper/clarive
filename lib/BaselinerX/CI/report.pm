@@ -1102,6 +1102,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
         for my $k ( keys %row ) {
             my $v = $row{$k};
+            $v = [] if (!ref $v);
 
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
@@ -1137,10 +1138,23 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
+                        my $meta = model->Topic->get_meta($_->{mid});
+                        my $field_meta = [ grep { $_->{id_field} eq $k } _array($meta) ]->[0];
+                        my $rel_field = $field_meta->{release_field};
+                        my $dir_from = "from_mid";
+                        my $dir_to = "to_mid";
+                        if ($rel_field){
+                            $dir_from = "to_mid";
+                            $dir_to = "from_mid";
+                        } else {
+                            $rel_field = $field_meta->{id_field};
+                        }
+                        my @mid_objs = map { $_->{$dir_to} } mdb->master_rel->find({$dir_from=>$_->{mid},rel_type=>"topic_topic",rel_field=>$rel_field})->all;
+                        push $v, $_ for @mid_objs;
                         my @objs = $mdb2->topic->find({ mid=>mdb->in($v) })->fields({ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
-                    } if ($v);				
+                    } if ($v);
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) {
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
