@@ -1066,10 +1066,9 @@ sub get_meta {
     # first, the required fields
     my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
     foreach my $required_fields (@required_fields){
-        my $fieldRegistry = Baseliner->registry->get($required_fields);
-        my $reg_params = $fieldRegistry->{registry_node}{param};
         my $res = {};
-        $res->{params}{$_} = $reg_params->{$_} for grep !/^registry_node$/, keys $reg_params;
+        my $reg_params = Baseliner->registry->get_params($required_fields);
+        $res->{params}{$_} = $reg_params;
         $res->{id_field} = $reg_params->{id};
         $res->{params}{field_order} = $field_order;
         $field_order++;
@@ -1114,7 +1113,7 @@ sub get_meta {
         my $key = $fieldlet->{fieldletType} || $fieldlet->{key};  # FIXME fieldletType is deprecated
         try { 
             my $registered_fieldlet = Baseliner->registry->get( $key );
-            my $reg_params = $registered_fieldlet->{registry_node}{param};
+            my $reg_params = $registered_fieldlet->registry_node->raw;
             $res->{params}{$_} = $reg_params->{$_} for grep !/^(registry_node|data_gen)$/, keys $reg_params;
             $res->{params}{field_order} = $field_order++;
             if( my $data_gen = $registered_fieldlet->data_gen ) {

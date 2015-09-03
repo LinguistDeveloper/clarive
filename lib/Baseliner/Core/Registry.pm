@@ -307,8 +307,7 @@ Returns clean original params.
 =cut
 sub get_params {
     my ($self,$key)=@_;
-    my $node = $self->get( $key )->registry_node->param;
-    $node = +{ map { $_ => $node->{$_} } grep !/registry_node/, keys %$node };
+    my $node = $self->get( $key )->registry_node->raw;
     return $node;
 }
 
