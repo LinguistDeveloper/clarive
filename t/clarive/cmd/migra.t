@@ -265,7 +265,7 @@ subtest 'run: does nothing when user says no' => sub {
 
     my $clarive = mdb->clarive->find_one();
 
-    cmp_deeply $clarive->{migration}, { version => '0100' };
+    cmp_deeply $clarive->{migration}, { version => '0099' };
 };
 
 subtest 'run: does nothing when dry run' => sub {
@@ -276,7 +276,7 @@ subtest 'run: does nothing when dry run' => sub {
 
     my $clarive = mdb->clarive->find_one();
 
-    cmp_deeply $clarive->{migration}, { version => '0100' };
+    cmp_deeply $clarive->{migration}, { version => '0099' };
 };
 
 subtest 'run: runs migrations when init and not initialized' => sub {
@@ -478,7 +478,7 @@ subtest 'run_specific: runs specific migration' => sub {
     is $ENV{DOWNGRADE}, undef;
 
     my $clarive = mdb->clarive->find_one();
-    cmp_deeply $clarive->{migration}, { version => '0100' };
+    cmp_deeply $clarive->{migration}, { version => '0099' };
 };
 
 subtest 'run_specific: runs specific migration with downgrade' => sub {
@@ -494,7 +494,7 @@ subtest 'run_specific: runs specific migration with downgrade' => sub {
     is $ENV{DOWNGRADE}, 1;
 
     my $clarive = mdb->clarive->find_one();
-    cmp_deeply $clarive->{migration}, { version => '0100' };
+    cmp_deeply $clarive->{migration}, { version => '0099' };
 };
 
 sub _setup {
