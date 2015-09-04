@@ -3313,7 +3313,8 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var arr = [];
         self.store.each( function(r) {
-			if(r.data[self.fields[0].name] != '') {
+			var res = r.data[self.fields[0].name];
+            if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') {
                 var arr2 = [];
                 Ext.iterate( r.data, function(k,v){
                     arr2.push( v );
@@ -3327,7 +3328,8 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var arr = [];
         self.store.each( function(r) {
-			if(r.data[self.fields[0].name] != '') arr.push( r.data );
+            var res = r.data[self.fields[0].name];
+			if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
         });
         return arr;
     }, 
@@ -3335,7 +3337,8 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var cont = 0;
         self.store.each( function(r) {
-			if(r.data[self.fields[0].name] != '') cont++;
+			var res = r.data[self.fields[0].name];
+            if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') cont++;
         });
         return cont > 0 ;
     }
