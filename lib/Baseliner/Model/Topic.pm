@@ -1068,7 +1068,7 @@ sub get_meta {
     foreach my $required_fields (@required_fields){
         my $res = {};
         my $reg_params = Baseliner->registry->get_params($required_fields);
-        $res->{params}{$_} = $reg_params;
+        $res->{params} = $reg_params;
         $res->{id_field} = $reg_params->{id};
         $res->{params}{field_order} = $field_order;
         $field_order++;
