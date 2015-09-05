@@ -23,7 +23,6 @@
         eval('btn_edit_category.' + action + '()');
         eval('btn_duplicate_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
-        eval('btn_edit_fields.' + action + '()');
     }   
     
     var init_buttons_label = function(action) {
@@ -1106,39 +1105,6 @@
         return win;
     };
     
-    var edit_fields = function(rec,meta) {
-        var title = render_category( rec.data.name, {}, rec);
-        
-        var id_category = rec.data.id;
-        Baseliner.require('/comp/topic/form_editor.js' + '?'+Math.random(), function(){
-            var form_fields = new Baseliner.FieldEditor({ id_category: id_category });
-            
-            var win = new Baseliner.Window({
-                title: _(title),
-                width: 700,
-                autoHeight: true,
-                items: [form_fields]
-            });
-            win.show();     
-        });
-    };
-
-    var btn_edit_fields = new Ext.Toolbar.Button({
-        text: _('Fields'),
-        icon:'/static/images/icons/detail.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var sm = grid_categories.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                edit_fields(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };          
-        }
-    });
-
     var btn_tools_category = new Ext.Toolbar.Button({
         icon:'/static/images/icons/wrench.gif',
         cls: 'x-btn-text-icon',
@@ -1206,12 +1172,8 @@
                 //'-',
                 btn_delete_category,
                 //'-',
-                //btn_edit_category,
                 btn_duplicate_category,
                 '->',
-                //btn_update_fields,
-                // btn_edit_fields,
-                //btn_form_category,
                 btn_tools_category
         ]       
     }); 
@@ -1230,8 +1192,6 @@
                     btn_delete_category.enable();
                     btn_edit_category.disable();
                     btn_duplicate_category.disable();
-                    btn_edit_fields.disable();
-                    //btn_form_category.disable();
                     btn_admin_category.disable();
                 }
             }
