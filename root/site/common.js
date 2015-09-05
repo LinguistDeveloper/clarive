@@ -3991,72 +3991,54 @@ Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
 });
 
 Baseliner.datatable = function( el, opts, cb) {
-    var foo = function(){
-        var opt = $.extend({
-            paging: true,
-            ordering: true,
-            searching: true,
-            language: {
-                "emptyTable":     _("No data available in table"),
-                "info":           _("Showing _START_ to _END_ of _TOTAL_ entries"),
-                "infoEmpty":      _("Showing 0 to 0 of 0 entries"),
-                "infoFiltered":   _("(filtered from _MAX_ total entries)"),
-                "infoPostFix":    "",
-                "thousands":      ",",
-                "lengthMenu":     _("Show _MENU_ entries"),
-                "loadingRecords": _("Loading..."),
-                "processing":     _("Processing..."),
-                "search":         _("Search:"),
-                "zeroRecords":    _("No matching records found"),
-                "paginate": {
-                    "first":      '',
-                    "last":       '',
-                    "next":       '',
-                    "previous":   ''
-                },
-                "aria": {
-                    "sortAscending":  _(": activate to sort column ascending"),
-                    "sortDescending": _(": activate to sort column descending")
-                }
+    var opt = $.extend({
+        paging: true,
+        ordering: true,
+        searching: true,
+        language: {
+            "emptyTable":     _("No data available in table"),
+            "info":           _("Showing _START_ to _END_ of _TOTAL_ entries"),
+            "infoEmpty":      _("Showing 0 to 0 of 0 entries"),
+            "infoFiltered":   _("(filtered from _MAX_ total entries)"),
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     _("Show _MENU_ entries"),
+            "loadingRecords": _("Loading..."),
+            "processing":     _("Processing..."),
+            "search":         _("Search:"),
+            "zeroRecords":    _("No matching records found"),
+            "paginate": {
+                "first":      '',
+                "last":       '',
+                "next":       '',
+                "previous":   ''
+            },
+            "aria": {
+                "sortAscending":  _(": activate to sort column ascending"),
+                "sortDescending": _(": activate to sort column descending")
             }
-        },opts);
-        $(el).DataTable(opt);
-        if(Ext.isFunction(cb)) cb(); 
-    };
-    if( !$.fn.DataTable ) {
-        Cla.use(["/static/datatables/js/jquery.dataTables.js", "/static/datatables/js/dataTables.bootstrap.js"], function(){
-            foo();
-        });
-    } else {
-        foo();
-    }
+        }
+    },opts);
+    $(el).DataTable(opt);
+    if(Ext.isFunction(cb)) cb(); 
 };
 
 Baseliner.datatable_toggle = function(el,show){
-    var foo = function(){
-        var dt = $(el).dataTable();
-        // toggle dataEditor controls
-        var obj = $( '#'+ dt.api().table().container().id + ' .row-fluid' );
-        if( show === false ) 
-            obj.hide();
-        else 
-            obj.toggle();
-        // change page length so that we can see the whole table
-        if( !obj.is(':visible') || show===false) {
-            $(el).data('oldlen', dt.api().page.len() );
-            dt.api().page.len(10e10);
-        } else {
-            dt.api().page.len( $(el).data('oldlen') || 10 );
-        }
-        dt.api().draw();
-    };
-    if( !$.fn.DataTable ) {
-        Cla.use(["/static/datatables/js/jquery.dataTables.js", "/static/datatables/js/dataTables.bootstrap.js"], function(){
-            foo();
-        });
+    var dt = $(el).dataTable();
+    // toggle dataEditor controls
+    var obj = $( '#'+ dt.api().table().container().id + ' .row-fluid' );
+    if( show === false ) 
+        obj.hide();
+    else 
+        obj.toggle();
+    // change page length so that we can see the whole table
+    if( !obj.is(':visible') || show===false) {
+        $(el).data('oldlen', dt.api().page.len() );
+        dt.api().page.len(10e10);
     } else {
-        foo();
+        dt.api().page.len( $(el).data('oldlen') || 10 );
     }
+    dt.api().draw();
 };
 
 Baseliner.generic_fields = function(params){
