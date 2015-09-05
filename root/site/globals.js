@@ -43,7 +43,7 @@ Cla.use = function(urls, callback, cache){
             });
         }
     };
-    if( typeof urls == 'array' ) {
+    if( urls instanceof Array ) {
         var counter = urls.length;
         var rets = [];
         var done_cb = function(a,b){
