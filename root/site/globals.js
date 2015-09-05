@@ -24,3 +24,37 @@ IC = function(icon){
 }
 
 Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;
+
+// our own, simpler requirejs
+Cla.loaded_scripts = new Array();
+Cla.use = function(urls, callback, cache){
+    var load_url = function(url,cb){
+        if ($.inArray(url, Cla.loaded_scripts) > -1) {
+            cb();
+        }
+        else {
+            Cla.loaded_scripts.push(url);       
+            jQuery.ajax({
+                type: "GET",
+                url: url,
+                success: cb,
+                dataType: "script",
+                cache: cache
+            });
+        }
+    };
+    if( typeof urls == 'array' ) {
+        var counter = urls.length;
+        var rets = [];
+        var done_cb = function(a,b){
+            rets.push([a,b]);
+            counter--;
+            if( counter <= 0 ) {
+                callback(rets);
+            }
+        };
+        $(urls).each(function(ix,url){ load_url(url,done_cb) });
+    } else {
+        load_url( urls, callback );
+    }
+};
