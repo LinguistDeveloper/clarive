@@ -686,8 +686,8 @@
         var json = Ext.util.JSON.encode( stmts[0] );
         var editor = new Baseliner.MonoTextArea({ value: json });
         var btn_beau = new Ext.Button({ text:_('Beautify'), handler: function(){
-            Baseliner.require('/static/jsbeautifier/beautify.js',function(x){
-                json = x.js_beautify(json,{});
+            Cla.use('/static/jsbeautifier/beautify.js',function(){
+                json = js_beautify(json,{});
                 editor.setValue( json );
             });
         }});
@@ -731,8 +731,8 @@
             win.close();
         }
         var btn_beau = new Ext.Button({ text:_('Beautify'), handler: function(){
-            Baseliner.require('/static/jsbeautifier/beautify.js',function(x){
-                var json = x.js_beautify(impbox.getValue(),{});
+            Cla.use('/static/jsbeautifier/beautify.js',function(){
+                var json = js_beautify(impbox.getValue(),{});
                 impbox.setValue( json );
             });
         }});

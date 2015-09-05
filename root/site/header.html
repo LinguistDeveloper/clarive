@@ -181,7 +181,7 @@
     <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 
 
     <script type="text/javascript" src="/site/prefs.js"></script>
-    
+
     <script type="text/javascript">
         // create global Prefs object
         Prefs = new Baseliner.Prefs({
@@ -200,7 +200,7 @@
         });
 
         if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('98%');}
-        require(['moment', '/site/main.js'], function(main){
+        Cla.use(['/site/main.js'], function(){
             // after main loaded
             if( Ext.get('bali-loading') )
                 Ext.get('bali-loading').remove();

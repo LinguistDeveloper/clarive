@@ -393,8 +393,8 @@ Ext.onReady(function(){
     }
 
     // create the global moment object
-    Cla.moment = require('moment');
-    Cla.moment.locale( Prefs.language );
+    Cla.moment = moment;
+    moment.locale( Prefs.language );
 
 % if( Clarive->opts->{websockets} ) { 
     // XXX this is not serious yet, no production use, just for play from REPL
@@ -402,7 +402,7 @@ Ext.onReady(function(){
     Baseliner.Socket = Ext.extend( Ext.util.Observable, {
         constructor: function(){
             var self = this;
-            Baseliner.require("/static/socketio/socket.js", function(io){
+            Cla.use("/static/socketio/socket.js", function(io){
                 self.socket = io ? io.connect() : window.io ? window.io.connect() : null; 
             });
         },
@@ -437,7 +437,7 @@ Ext.onReady(function(){
     // socket io better loaded via require js
     /*  deactivated: requires nginx with websockets
     if( ! Ext.isIE9m ) {
-        Baseliner.require("/static/socketio/socket.js", function(){
+        Cla.use("/static/socketio/socket.js", function(){
             Baseliner.socket = io.connect({});
         });
     }

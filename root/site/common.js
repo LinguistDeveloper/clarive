@@ -45,8 +45,8 @@ Baseliner.loadFile = function(filename, filetype){
        document.getElementsByTagName("head")[0].appendChild(fileref)
 };
 
-Baseliner.require = function(url, cb){
-    require([url + '?' + Date.now()], cb );
+Baseliner.require = function(url, cb, cache){
+    Cla.use(url, cb, cache===undefined?false:cache ); 
 };
 
 Baseliner.clone = function(obj){
@@ -3364,7 +3364,7 @@ Baseliner.timeline = function(args){
     var render_to = args.render_to; 
     var parent_id = args.parent_id;  // optional
     
-    require(['/static/timeline/jquery.timeline.js'], function(){
+    Cla.use(['/static/timeline/jquery.timeline.js'], function(){
         Timeline.urlPrefix = '/static/timeline/';
         Baseliner.ajaxEval( '/ci/'+mid+'/timeline', { mid: mid }, function(res){
             if( ! 'Timeline' in window ) return;
@@ -4024,10 +4024,8 @@ Baseliner.datatable = function( el, opts, cb) {
         if(Ext.isFunction(cb)) cb(); 
     };
     if( !$.fn.DataTable ) {
-        Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
-            Baseliner.require("/static/datatables/js/dataTables.bootstrap.js", function(){
-                foo();
-            });
+        Cla.use(["/static/datatables/js/jquery.dataTables.js", "/static/datatables/js/dataTables.bootstrap.js"], function(){
+            foo();
         });
     } else {
         foo();
@@ -4053,10 +4051,8 @@ Baseliner.datatable_toggle = function(el,show){
         dt.api().draw();
     };
     if( !$.fn.DataTable ) {
-        Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
-            Baseliner.require("/static/datatables/js/dataTables.bootstrap.js", function(){
-                foo();
-            });
+        Cla.use(["/static/datatables/js/jquery.dataTables.js", "/static/datatables/js/dataTables.bootstrap.js"], function(){
+            foo();
         });
     } else {
         foo();

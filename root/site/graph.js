@@ -641,7 +641,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     },
     to_img : function(){
         var self = this;
-        require(['/static/html2canvas/html2canvas.js'], function(){
+        Cla.use('/static/html2canvas/html2canvas.js', function(){
             html2canvas(self.getLayout().activeItem.el.dom, {
               onrendered: function(canvas) {
                   var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
