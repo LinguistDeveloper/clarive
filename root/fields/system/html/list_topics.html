@@ -98,11 +98,11 @@ if( ! $meta->{hidden} ) {
     (function(){
         try {  // to support legacy
 % if( $$meta{datatable} eq 'always' ) {
-    Baseliner.datatable('#<% $iid %>',{});
-% } elsif( Util->is_number($$meta{datatable}) && @topics > $$meta{datatable} ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true });
+    Baseliner.datatable('#<% $iid %>',{ pageLength: <% $$meta{paging_datatable} || 10 %> });
+% } elsif( $$meta{datatable} eq 'paging' && @topics > ($$meta{paging_datatable}||10) ) { 
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> });
 % } elsif( $$meta{datatable} ne 'never' ) {
-    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true }, function(){
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> }, function(){
         Baseliner.datatable_toggle('#<% $iid %>',false);  // false => hide now
     });
 % }

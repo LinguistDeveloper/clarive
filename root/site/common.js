@@ -3995,6 +3995,7 @@ Baseliner.datatable = function( el, opts, cb) {
         paging: true,
         ordering: true,
         searching: true,
+        pageLength: 10,
         language: {
             "emptyTable":     _("No data available in table"),
             "info":           _("Showing _START_ to _END_ of _TOTAL_ entries"),
