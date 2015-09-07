@@ -53,7 +53,9 @@ params:
                 return editor.getValue();
             },
             is_valid : function(){
-                var is_valid = editor.getValue() != '' ? true : false;
+                var text = editor.getValue();
+                text = jQuery(text).text();
+                var is_valid = text != '' ? true : false;
                 if (is_valid && this.on_change_lab){
                     this.getEl().applyStyles('border: none; margin_bottom: 0px');
                     this.on_change_lab.style.display = 'none';
