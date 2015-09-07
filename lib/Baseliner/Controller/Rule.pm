@@ -776,7 +776,7 @@ sub edit_key : Local {
         my $form = $r->form;
         my $config = $r->config;
         my $params = $c->registry->get_params($key); 
-        delete $params->{$_} for qw(data_gen dsl);  ## these are code ref
+        delete $params->{$_} for qw(data_gen dsl handler);  ## these are code ref
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
             # service
