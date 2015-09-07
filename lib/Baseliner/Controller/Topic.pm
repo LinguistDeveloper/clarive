@@ -2042,41 +2042,6 @@ sub change_status : Local {
     $c->forward('View::JSON');
 }
 
-sub xget_files : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $ucmserver = 'moniker:ucm';
-    my $name = $p->{name};
-    my $topic_mid = $p->{id_release};
-    my @topics = mdb->master_rel->find( { from_mid => $topic_mid } )->all;
-    my @mids = map { $_->{to_mid} } @topics;
-    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
-    my @result = grep { $_->{category_name} eq 'Petición' } @topics;
-    my $download_path = Baseliner->model( 'ConfigStore' )->get( 'config.specifications' )->{download_specification_directory};
-    my $agrupador_path;
-    mkdir $download_path unless -d $download_path;
-    foreach my $peticion (@result) {
-        my $ucm = ci->new($ucmserver) or _fail _loc 'UCM server not found';
-        $agrupador_path = $download_path.'/'.$peticion->{agrupador};
-        mkdir $agrupador_path unless -d $agrupador_path;
-        my $peticion_path = $agrupador_path.'/Peticion_'.$peticion->{mid};
-        mkdir $peticion_path if (!-d $peticion_path and $peticion->{especificaciones}[0] );
-        foreach my $specification ( @{ $peticion->{especificaciones} } ) {
-           my ( $file_name, $body ) =
-             $ucm->getfile( params => { docid => $specification->{id} } );
-           open my $temp_file, ">>:raw", $peticion_path.'/'.$file_name;
-           print $temp_file $body;
-           close $temp_file;
-        }
-    }
-    my $file_path = $agrupador_path.'.zip';
-    Baseliner::Utils->zip_dir(source_dir=>$agrupador_path,zipfile=>$file_path);
-    File::Path::rmtree $agrupador_path;
-    $c->stash->{serve_file} = $file_path;
-    $c->stash->{serve_filename} = $name.'_specifications.zip';
-    $c->forward('/serve_file');
-}
-
 sub grid_count : Local {
     my ($self,$c)=@_;
     if( my $lq = $c->req->params->{lq} ) {
@@ -2260,13 +2225,6 @@ sub topic_drop : Local {
         $c->stash->{json} = { success => \0, msg => _loc('Missing mid') };
     }
     $c->forward('View::JSON');
-}
-sub leer_log : Local {
-     my ( $self, $c ) = @_;
-     my $p = $c->request->parameters;
-    my @rows = (1,2,3);
-    $c->stash->{json} = { data=>\@rows};
-    $c->forward('View::JSON');    
 }
 
 no Moose;
