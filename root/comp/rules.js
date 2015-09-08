@@ -561,8 +561,12 @@
     };
 
     var show_win = function(node, item, opts, foo) {
+        var id_rule = node.getOwnerTree().id_rule;
+        var key = node.attributes.key || 'none';
         var win = new Baseliner.Window(Ext.apply({
             layout: 'fit',
+            stateful: true,
+            stateId: 'rule-config-'+key+'-'+id_rule,  // state unique for node key for a given rule
             title: _('Edit: %1', node.text),
             items: item
         }, opts));
