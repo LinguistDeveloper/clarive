@@ -84,7 +84,8 @@ register 'dashlet.topic.gauge' => {
 register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap', 
-    icon=> '/static/images/icons/calendar.gif',
+    icon=> '/static/images/icons/roadmap.png',
+    #icon=> '/static/images/icons/calendar.gif',
     js_file => '/dashlets/topic_roadmap.js',
     no_boot => 1,
 };
@@ -100,7 +101,8 @@ register 'dashlet.topic.calendar' => {
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame', 
-    icon=> '/static/images/icons/world.png',
+    icon=> '/static/images/icons/webservice.png',
+    #icon=> '/static/images/icons/world.png',
     js_file => '/dashlets/iframe.js'
 };
 
