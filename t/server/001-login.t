@@ -44,6 +44,4 @@ for (my $var = 0; $var < 2; $var++) {
 	test_login('local/root','admin');
 }
 
-
-
 done_testing;
