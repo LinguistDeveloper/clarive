@@ -27,7 +27,7 @@
             fieldLabel: _('Type'),
             defaults: {xtype: "radio",name: "type"},
             items: [
-                {boxLabel: _('General'), inputValue: 'G', checked: params.rec.type == undefined || params.rec.type == 'G'},
+                {boxLabel: _('Generic'), inputValue: 'G', checked: params.rec.type == undefined || params.rec.type == 'G'},
                 {boxLabel: _('Initial'), inputValue: 'I', checked: params.rec.type == 'I'},
                 {boxLabel: _('Deployable'), inputValue: 'D', checked: params.rec.type == 'D'},
                 {boxLabel: _('Canceled'), inputValue: 'FC', checked: params.rec.type == 'FC'},

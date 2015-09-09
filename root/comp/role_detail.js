@@ -150,7 +150,7 @@
         viewConfig: { forceFit: true },
         columns: [
             { header: _('User'), width: 100, dataIndex: 'user', sortable: true },	
-            { header: _('Projects'), width: 100, dataIndex: 'projects', sortable: true, renderer: Baseliner.render_wrap }
+            { header: _('Scopes'), width: 100, dataIndex: 'projects', sortable: true, renderer: Baseliner.render_wrap }
         ]
     });
     role_users.on('activate', function(){
@@ -168,13 +168,13 @@
         fields: [ 'project','users' ]
     });
     var role_projects = new Ext.grid.GridPanel({
-        title: _('Projects'),
+        title: _('Scopes'),
         store: store_role_projects,
         defaults: { sortable: true },
         autoScroll: true,
         viewConfig: { forceFit: true },
         columns: [
-            { header: _('Project'), width: 100, dataIndex: 'project', sortable: true },	
+            { header: _('Scopes'), width: 100, dataIndex: 'project', sortable: true },	
             { header: _('Users'), width: 100, dataIndex: 'users', sortable: true, renderer: Baseliner.render_wrap }
         ]
     });
