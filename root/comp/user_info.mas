@@ -74,7 +74,7 @@
         //{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },
         { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },	    
         { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
-        { header: _('Namespace'), width: 100, dataIndex: 'projects', sortable: false, renderer: render_projects }
+        { header: _('Scope'), width: 100, dataIndex: 'projects', sortable: false, renderer: render_projects }
     ],
     autoSizeColumns: true,
     deferredRender:true,

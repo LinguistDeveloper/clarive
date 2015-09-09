@@ -21,7 +21,7 @@ var resolve_config = function(rec) {
         url:'/configlist/resolve',
         items: [
             { xtype:'textfield', fieldLabel: '<% _loc('Key') %>' , name: 'key', anchor:'100%', allowBlank: false },
-            { xtype:'textfield', fieldLabel: '<% _loc('Namespace') %>' , name: 'ns', anchor:'100%', value:'/' },
+            { xtype:'textfield', fieldLabel: '<% _loc('Scope') %>' , name: 'ns', anchor:'100%', value:'/' },
             { xtype:'textfield', fieldLabel: '<% _loc('Baseline') %>' , name: 'bl', anchor:'100%', value:'*' },
             { xtype: xtype, fieldLabel: '<% _loc('Value') %>' ,
                 hideLabel: input_type=='password' ? false : true,

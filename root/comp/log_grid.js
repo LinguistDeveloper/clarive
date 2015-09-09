@@ -485,7 +485,7 @@
                 { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true }, 
                 { header: _('Op'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: false, renderer: render_task },
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
-                { header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
+                { header: _('Scope'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
                 { header: _('Provider'), width: 100, dataIndex: 'provider', sortable: true, hidden: true },
                 { header: _('PID'), width: 45, dataIndex: 'pid', sortable: true, hidden: true },
                 { header: _('Module'), width: 280, id: 'module', dataIndex: 'module', sortable: true, hidden: true, editor: new Ext.form.TextArea() },

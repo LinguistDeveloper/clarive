@@ -173,7 +173,7 @@
                                     
 % }	#LISTBOX			
                 
-%##Atajo para dibujar los combos de Namespace y Baseline
+%##Atajo para dibujar los combos de Scope y Baseline
 
 % when /NAMESPACES/ {
                     xtype: "combo",

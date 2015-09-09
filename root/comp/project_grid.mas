@@ -37,7 +37,7 @@
                 { header: _('Project'), width: 120, dataIndex: 'name', sortable: true },	
                 { header: _('Parent'), width: 40, dataIndex: 'id_parent', sortable: true },	
                 { header: _('Nature'), width: 80, dataIndex: 'nature', sortable: true },	
-                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
+                { header: _('Scope'), width: 150, dataIndex: 'ns', sortable: true },	
                 { header: _('Description'), width: 150, dataIndex: 'description', sortable: true },
                 { header: _('Data'), width: 350, dataIndex: 'data', sortable: true, editor: new Ext.form.TextArea({ grow: true }) }
             ],

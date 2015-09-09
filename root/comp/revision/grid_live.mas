@@ -92,7 +92,7 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _("Namespace"), width: 120, dataIndex: 'ns', sortable: true },	
+            { header: _("Scope"), width: 120, dataIndex: 'ns', sortable: true },	
             { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
             { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
             { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	

@@ -71,7 +71,7 @@
                 { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
                 { header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
-                { header: _('Namespace'), width: 50, dataIndex: 'ns', sortable: true },	
+                { header: _('Scope'), width: 50, dataIndex: 'ns', sortable: true },	
                 { header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
                 { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
                 { header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },

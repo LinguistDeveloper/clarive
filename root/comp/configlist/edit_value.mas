@@ -21,7 +21,7 @@ var edit_config = function(rec) {
         url:'/configlist/update',
         items: [
             { xtype:'textfield', fieldLabel: '<% _loc('Key') %>' , name: 'key', anchor:'100%', allowBlank: false },
-            { xtype:'textfield', fieldLabel: '<% _loc('Namespace') %>' , name: 'ns', anchor:'100%', value:'/' },
+            { xtype:'textfield', fieldLabel: '<% _loc('Scope') %>' , name: 'ns', anchor:'100%', value:'/' },
             { xtype:'textfield', fieldLabel: '<% _loc('Baseline') %>' , name: 'bl', anchor:'100%', value:'*' },
             { xtype:'textfield', fieldLabel: '<% _loc('Default Value') %>' , name: 'config_default', anchor:'100%', value:'*', readOnly:true },
             //{ xtype: 'label', text: 'Valor:' },

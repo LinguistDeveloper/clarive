@@ -33,7 +33,7 @@
             { header: '<% _loc('Role') %>', width: 150, dataIndex: 'role', sortable: true },	
             { header: '<% _loc('Description') %>', width: 150, dataIndex: 'description', sortable: true },	
             { header: '<% _loc('Action') %>', width: 150, dataIndex: 'action', sortable: true },	
-            { id: 'ns', header: '<% _loc('Namespace') %>', width: 100, dataIndex: 'ns', sortable: true }	
+            { id: 'ns', header: '<% _loc('Scope') %>', width: 100, dataIndex: 'ns', sortable: true }	
         ]
     });
     return grid;

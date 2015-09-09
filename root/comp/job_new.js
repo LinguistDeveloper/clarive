@@ -910,7 +910,7 @@
                 { header:_('Calendar'), dataIndex:'name', width: 140, renderer: function(v){ return '<b>'+v+'</b>' } },
                 { header:_('Description'), dataIndex:'description', width: 200, renderer: Baseliner.render_wrap },
                 { header:_('Baseline'), dataIndex:'bl' },
-                { header:_('Namespace'), dataIndex:'ns' }
+                { header:_('Scope'), dataIndex:'ns' }
             ]
         }, c) );
     };
