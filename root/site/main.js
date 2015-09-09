@@ -6,11 +6,27 @@ Ext.onReady(function(){
     Baseliner.VERSION = '<% $Baseliner::VERSION %>';
 
 
-    Baseliner.help_menu = new Ext.menu.Menu({});
+    Baseliner.help_menu = new Ext.menu.Menu({
+        fresh_menu: true,
+        items: [
+            { text:_('Clarive Help'), handler:function(){
+                                Cla.help_show();
+                            }
+            },
+            '-',
+        ]
+    });
+    Baseliner.help_menu.on('beforeadd', function(ev,hp){
+        if( hp.fresh_menu ) {
+            Baseliner.help_menu.removeAll();
+        }
+        hp.fresh_menu = false;
+    });
+
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.png',
        cls: 'x-btn-icon',
-       hidden: true,
+       hidden: false,
        menu: Baseliner.help_menu
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });

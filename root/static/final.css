@@ -4,6 +4,27 @@ body {
     font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* Help style */
+
+.help-doc ul {
+    list-style: square !important;
+    list-style-position: inside !important;
+    margin-bottom: 8px !important;
+}
+
+.help-doc ol {
+    list-style-position: inside !important;
+    margin-bottom: 8px !important;
+}
+
+.help-note {
+    background-color: #FFDD82;
+    border-radius: 2px 2px 2px 2px !important;
+    margin: 0px 0px 20px 0px !important;
+    padding: 10px 10px 10px 10px !important;
+}
+
+
 /* REPL style */
 .CodeMirror pre {
     font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Courier, monospace;
