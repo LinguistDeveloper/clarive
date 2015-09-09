@@ -29,6 +29,10 @@ Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;
 Cla.loaded_scripts = new Array();
 Cla.use = function(urls, callback, cache){
     var load_url = function(url,cb){
+        if( !cache ) {
+            var sep = (url.indexOf('?') > -1) ? '&' : '?';
+            url += sep + 'clarnd=' + Math.random();
+        }
         if ($.inArray(url, Cla.loaded_scripts) > -1) {
             cb();
         }

@@ -90,26 +90,30 @@ Baseliner.errorWin = function( p_title, p_html ) {
 
 Baseliner.js_reload = function(msg) {
     // if you reload globals.js, tabs lose their info, and hell breaks loose
-    Baseliner.loadFile( '/i18n/js', 'js' );
-    Baseliner.loadFile( '/site/common.js', 'js' );
-    Baseliner.loadFile( '/site/tabfu.js', 'js' );
-    Baseliner.loadFile( '/site/model.js', 'js' );
-    Baseliner.loadFile( '/site/kanban.js', 'js' );
-    Baseliner.loadFile( '/site/calendar.js', 'js' );
-    Baseliner.loadFile( '/site/explorer.js', 'js' ); 
-    Baseliner.loadFile( '/site/dashboard.js', 'js' ); 
-    Baseliner.loadFile( '/site/editors.js', 'js' ); 
-    Baseliner.loadFile( '/site/graph.js', 'js' );
-    Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
-    Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
-    Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
-    Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
-    Baseliner.loadFile( '/comp/topic/topic_lib_grid.js', 'js' );
-    Baseliner.loadFile( '/site/prefs.js', 'js' );
     Baseliner.loadFile( '/static/site.css', 'css' );
     Baseliner.loadFile( '/static/final.css', 'css' );
-
-    if( msg ) Baseliner.message(_('JS'), _('Reloaded successfully') );  
+    Cla.use([
+        '/i18n/js', 
+        '/site/common.js', 
+        '/site/tabfu.js', 
+        '/site/model.js', 
+        '/site/kanban.js', 
+        '/site/calendar.js', 
+        '/site/explorer.js',  
+        '/site/dashboard.js',  
+        '/site/editors.js',  
+        '/site/graph.js', 
+        '/site/portal/Portal.js', 
+        '/site/portal/Portlet.js', 
+        '/site/portal/PortalColumn.js', 
+        '/comp/topic/topic_lib.js', 
+        '/comp/topic/topic_lib_grid.js', 
+        '/site/prefs.js', 
+        '/site/help.js', 
+        ], function(){
+            if( msg ) Baseliner.message(_('JS'), _('Reloaded successfully') );  
+        }, false
+    );
 };
 
 Baseliner.alert = function(title, format){
