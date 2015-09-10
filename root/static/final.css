@@ -17,6 +17,12 @@ body {
     margin-bottom: 8px !important;
 }
 
+.help-doc li {
+    list-style-position: inside !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+}
+
 .help-note {
     background-color: #FFDD82;
     border-radius: 2px 2px 2px 2px !important;

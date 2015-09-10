@@ -9,7 +9,7 @@ use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 use experimental qw(autoderef state);
 
-sub docs_tree : Local {
+sub docs_treex: Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $path = $p->{path};
@@ -56,7 +56,7 @@ sub docs_tree : Local {
         
     }
     push @tree, $_ for sort { $a->{index} <=> $b->{index} } @dirs;
-    for my $doc ( sort { $a->{index} <=> $b->{index} } @docs ) {
+    for my $doc ( sort { $a->{index} <=> $b->{index} } sort { lc $a->{title} cmp lc $b->{title} } @docs ) {
         push @tree, { 
             leaf => \1, 
             icon => '/static/images/icons/page.png',
@@ -68,6 +68,113 @@ sub docs_tree : Local {
     #_warn( \@tree );
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
+}
+
+sub docs_tree : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $path = $p->{path};
+    my $query = $p->{query};
+
+    my @tree = $self->build_doc_tree( $c->path_to('docs'), query=>$query );
+
+    #_warn( \@tree );
+    $c->stash->{json} = \@tree;
+    $c->forward('View::JSON');
+}
+
+sub build_doc_tree {
+    my $self = shift;
+    my ($root,%p) = @_;
+    my $query = $p{query};
+    
+    my $docs_root = Baseliner->path_to('docs');
+    my @tree;
+
+    my (@docs, @dirs);
+    my %uniq_dirs; 
+    while( my $dir_or_file = $root->next ) {
+        my $name = $dir_or_file->basename;
+        my $rel  = $dir_or_file->relative($docs_root);
+        my $dir_markdown = $dir_or_file->basename . '.markdown';
+        next if $name =~ /^\./; 
+        if( $dir_or_file->is_dir ) {
+            my @children = $self->build_doc_tree( $dir_or_file, %p ); 
+            if( $dir_or_file->parent->contains(_file($dir_or_file->parent, $dir_markdown)) ) {
+                my $md_file = _file($dir_or_file->parent,$dir_markdown);
+                my $data = $self->parse_body( $md_file, $docs_root );
+                $data->{rel} = "$rel";
+                $uniq_dirs{ $data->{uniq_id} } = 1;
+                push @dirs, {
+                    leaf => \0, 
+                    expanded => \1,
+                    index => $data->{index},
+                    icon => '/static/images/icons/catalog-folder.png',
+                    data => { path=>"$rel" },
+                    children => \@children,
+                    text=> $data->{title}, 
+                }
+            } else {
+                push @tree, { 
+                    leaf => \0, 
+                    expanded => \1,
+                    icon => '/static/images/icons/catalog-folder.png',
+                    data => { path=>"$rel" },
+                    children => \@children,
+                    text=> $name, 
+                }
+            }
+        } else {
+            my $data = $self->parse_body( $dir_or_file, $docs_root );
+            next if exists $uniq_dirs{ $data->{uniq_id} }; ## prevent dir markdown descriptors from showing up twice
+            next if length $query && !$self->doc_search($data,$query);
+            $data->{rel} = "$rel";
+            push @docs, $data;
+        }
+        
+    }
+    push @tree, $_ for sort { $a->{index} <=> $b->{index} } @dirs;
+    for my $doc ( sort { $a->{index} <=> $b->{index} } sort { lc $a->{title} cmp lc $b->{title} } @docs ) {
+        push @tree, { 
+            leaf => \1, 
+            icon => '/static/images/icons/page.png',
+            data => { path=>$doc->{rel} },
+            search_results => {
+                found => $doc->{found},
+                matches => $doc->{matches},
+            },
+            text=> $doc->{title},
+        }
+    }
+    return @tree;
+}
+
+sub clean_match {
+    my $self = shift;
+    #$_[0] =~ s/^\B+\b(.*)$/X=$1=/; 
+    $_[0] =~ s/^\S+\s+(.*)$/$1/g; 
+   #$_[0] =~ s/^(.*)\s+\S+$/$1/g; 
+}
+
+sub doc_search {
+    my ($self,$doc,$query)=@_;
+    next if exists $$doc{search} && !$$doc{search};
+    my @found;
+    my $doc_txt = $$doc{text};
+    my $tmatch = ( $$doc{title} =~ /($query)/gsi );
+    while( $doc_txt =~ /(?<bef>.{0,40})?(?<mat>$query)(?<aft>.{0,40})?/gsi ) {
+        my ($bef,$mat,$aft) = ($+{bef},$+{mat},$+{aft});
+        $self->clean_match( $bef );
+        #$self->clean_match( $aft );
+        my $t = sprintf '%s<strong>%s</strong>%s', $bef, $mat, $aft;
+        push @found, $t;
+    }
+    if( $tmatch + @found ) {
+        $$doc{found} = join("...", @found) . '...';
+        $$doc{matches} = $tmatch*20 + scalar @found;
+        return 1;
+    }
+    return 0;
 }
 
 sub get_doc : Local {
@@ -90,11 +197,11 @@ sub parse_body {
 
     my ($id,$type) = $path->basename =~ /^([^\.]+)(?:\.(\w+))?$/;
     my ($uniq_id) = $path->relative($root) =~ /^([^\.]+)(?:\.(\w+))?$/;
-    state $idx = 100;
+    my $idx = 100;
     # in cache? 
     my $cache_key = { d=>'help-doc', path=>"$path" };
     if( my $cached =  cache->get( $cache_key ) ) {
-        #return $cached;
+        return $cached;
     }
     $path = _file("$path.markdown") if -d $path;
     # no, so open it
@@ -131,7 +238,7 @@ sub parse_body {
         $$data{tags} = [];
     }
     
-    $data = { id=>$id, uniq_id=>$uniq_id, name=>$id, title=>$id, body=>$body, yaml=>$yaml, text=>$clean_text, index=>$idx++, 
+    $data = { id=>$id, uniq_id=>$uniq_id, name=>$id, title=>$id, body=>$body, yaml=>$yaml, text=>$clean_text, index=>$idx, 
         html=>$html, tpl=>( $type eq 'html' ? 'raw' : 'default' ), %$data };
     # $$data{path} //= "/$$data{parent}/$$data{id}", 
     $$data{path} //= ''. $path->relative( Baseliner->path_to('docs') );
