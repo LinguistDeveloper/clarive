@@ -1,4 +1,4 @@
-package BaselinerX::Fieldlets;
+package BaselinerX::Dashlets;
 use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
