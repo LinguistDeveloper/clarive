@@ -1,5 +1,5 @@
 (function(){
-    var store_status = new Baseliner.Topic.StoreStatus();
+    var store_status = new Baseliner.Topic.StoreStatus({ baseParams: { sort : 'name' } });
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
     var store_roles = new Baseliner.JsonStore({
