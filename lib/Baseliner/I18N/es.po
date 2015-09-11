@@ -973,7 +973,7 @@ msgid "Pending Approval"
 msgstr "Pendiente de Aprobación"
 
 msgid "Request is already in a %1 state"
-msgstr "Solicitud está en el estadio %1"
+msgstr "Solicitud está en el estado %1"
 
 msgid "Requesting approval for baseline %1, item %2"
 msgstr "Solicitando aprobación para el pase en el entorno %1, elemento %2"
@@ -1819,7 +1819,7 @@ msgid "Harvest Nature"
 msgstr "Naturaleza de Harvest"
 
 msgid "State"
-msgstr "Estadio"
+msgstr "Estado"
 
 msgid "Create a new Release"
 msgstr "Crear Release"
@@ -2761,7 +2761,7 @@ msgid "Notify when job has finished"
 msgstr "Notificar cuando haya finalizado el pase"
 
 msgid "Invalid release state"
-msgstr "Estadio de release inválido"
+msgstr "Estado de release inválido"
 
 msgid "No release contents"
 msgstr "La release está vacía"
@@ -4111,7 +4111,7 @@ msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
 msgid "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
-msgstr "'%1' está en un pase activo: %2 (%3) con promoción/devolución a un estadio diferente (%4)"
+msgstr "'%1' está en un pase activo: %2 (%3) con promoción/devolución a un estado diferente (%4)"
 
 msgid "'%1' is in an active job to bl %3: %2"
 msgstr "'%1' está en un pase activo al entorno %3: %2"
@@ -4558,7 +4558,7 @@ msgid "Change Status"
 msgstr "Cambiar estado"
 
 msgid "Change State"
-msgstr "Cambiar estadio"
+msgstr "Cambiar estado"
 
 msgid "Changed status"
 msgstr "Estado cambiado"
@@ -6056,7 +6056,7 @@ msgid "Get seq value of "
 msgstr "Obtener valor de secuencia de "
 
 msgid "Initial state establishet"
-msgstr "Estadio inicial establecido"
+msgstr "Estado inicial establecido"
 
 msgid "Missing class for %1"
 msgstr "Falta la clase para %1"
