@@ -461,10 +461,10 @@
         var grid_category_status = new Ext.grid.GridPanel({
             sm: check_category_status_sm,
             header: false,
-            height: 350,
+            height: 450,
             stripeRows: true,
             autoScroll: true,
-            autoHeight: true,
+            // autoHeight: true,
             enableHdMenu: false,
             store: store_status,
             viewConfig: {forceFit: true, scrollOffset: 2},
