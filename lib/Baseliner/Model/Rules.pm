@@ -124,6 +124,17 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+sub all_nodes {
+    my ($self, %p )=@_;
+    my @nodes = $self->build_tree( $p{id_rule} );
+    my $dig; $dig = sub{ 
+        map { 
+          ( $_, $dig->( _array( $$_{children} ) ) ) 
+        } @_;
+    };
+    $dig->( @nodes );
+}
+
 # called when rule is saved
 sub dsl_build_and_test {
     my ($self,$stmts, %p )=@_;

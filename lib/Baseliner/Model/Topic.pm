@@ -1060,25 +1060,11 @@ sub get_meta {
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
 
     $id_category = $id_cat;
-    my @cat_fields;
-
-    my $field_order = 0;
-    # first, the required fields
-    my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
-    foreach my $required_fields (@required_fields){
-        my $res = {};
-        my $reg_params = Baseliner->registry->get_params($required_fields);
-        $res->{params} = $reg_params;
-        $res->{id_field} = $reg_params->{id};
-        $res->{params}{field_order} = $field_order;
-        $field_order++;
-        push @cat_fields, $res;
-    }
 
     # now we run the rule to get the custom fieldlets
     my @custom_fieldlets;
     if($id_category){
-        my $cat = mdb->category->find_one({ id=>$id_category });
+        my $cat = mdb->category->find_one({ id=>"$id_category" });
         my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
         _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.' 
             unless length $default_form;
@@ -1093,7 +1079,7 @@ sub get_meta {
             ? map { $_->{id} } $self->get_categories_permissions( username=>$username, type=>'view' )
             : map { $_->{id} } mdb->category->find->all;
         foreach my $category (@user_categories){
-            my $cat = mdb->category->find_one({ id=>$category });
+            my $cat = mdb->category->find_one({ id=>"$category" });
             my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
             if( !$default_form ) {
                 _warn _loc 'Category %1 does not have an associated form', $cat->{name};
@@ -1105,6 +1091,32 @@ sub get_meta {
             $cr->run(stash=>$stash);
             push @custom_fieldlets, _array( $stash->{fieldlets} );
         }
+    }
+
+    my @meta =
+        sort { $a->{field_order} <=> $b->{field_order} }
+        $self->rule_node_to_fieldlet( @custom_fieldlets );
+    
+    # cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
+    # _log _dump \@meta;
+    return \@meta;
+}
+
+sub rule_node_to_fieldlet {
+    my ($self, @custom_fieldlets) = @_;
+
+    my @cat_fields;
+    my $field_order = 0;
+    # first, the required fields
+    my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
+    foreach my $required_fields (@required_fields){
+        my $res = {};
+        my $reg_params = Baseliner->registry->get_params($required_fields);
+        $res->{params} = $reg_params;
+        $res->{id_field} = $reg_params->{id};
+        $res->{params}{field_order} = $field_order;
+        $field_order++;
+        push @cat_fields, $res;
     }
 
     # merge registry data over configuration defaults, that way we overwrite js, html, etc with product ones
@@ -1127,9 +1139,7 @@ sub get_meta {
             _error _loc "Fieldlet `$%1` not found in registry: %2", $key, $err;
         };
     }
-
-    my @meta =
-        sort { $a->{field_order} <=> $b->{field_order} }
+    @cat_fields = 
         map  { 
             my $d = $_->{params};
             $d->{id_category} = $_->{id_category};
@@ -1144,19 +1154,38 @@ sub get_meta {
                 : $d->{get_method} ? $meta_types{ $d->{get_method} } : '';
             $d
         } @cat_fields;
-    
-    # cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
-    # _log _dump \@meta;
-    return \@meta;
+    return @cat_fields;
 }
-
-
 
 sub get_meta_hash {
     my $self = shift;
     my $meta = $self->get_meta( @_ );
     my %meta = map { $_->{id_field} => $_ } @{ $meta || [] };
     return \%meta;
+}
+
+sub get_fieldlet_nodes {
+    my ($self, $id_category, $filter) = @_;
+    my $all_fields = !length $id_category;
+    my $where = { id=>mdb->in($id_category) } if !$all_fields;
+    my $cats = mdb->category->find($where)->fields({ name=>1, default_form=>1 });
+    _throw _loc 'One or more categories not found: %1', join(',',_array($id_category))
+        if ref $id_category && scalar(_array($id_category)) != $cats->count;
+    my @all_nodes;
+    while( my $cat = $cats->next ) {
+        next if $all_fields && !length $cat->{default_form};
+        my @nodes = model->Rules->all_nodes( id_rule=>$cat->{default_form} );
+        @nodes = grep { $_->{key} =~ /^(fieldlet|dashlet)/ } @nodes;
+        @nodes = map { 
+            $$_{category_name} = $cat->{name};
+            $$_{name_field} ||= $$_{text};
+            $_;
+        } $self->rule_node_to_fieldlet( map{ 
+            +{ %{ $$_{data}||{} }, name_field=>$$_{text}, key=>$$_{key} }   ## simulate what BaselinerX::Type::Fieldlet dsl does
+          } @nodes );
+        push @all_nodes, @nodes;
+    }
+    return @all_nodes;
 }
 
 sub get_data {
@@ -2434,7 +2463,7 @@ sub set_users{
         field           => $id_field
     };
 
-    my $name_category = mdb->category->find_one({ id=>$ci_topic->{id_category} })->{name};
+    my $name_category = mdb->category->find_one({ id=>''.$ci_topic->{id_category} })->{name};
     
     my @projects = sort { $a <=> $b } map { $_->{to_mid} } 
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;

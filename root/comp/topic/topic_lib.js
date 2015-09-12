@@ -2066,6 +2066,40 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     }
 });
 
+Baseliner.TopicFieldsCombo = Ext.extend( Ext.form.ComboBox, {
+    displayField: 'fieldlet_name',
+    valueField: 'id_field',
+    minChars: 2,
+    msgTarget: 'under',
+    forceSelection: true,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: false,
+    maskRe: '\w',
+    //lazyRender: false,
+    //pageSize: true,
+    triggerAction: 'all',
+    initComponent: function(){
+        var self = this;
+
+        if( self.name ) {
+            self.hiddenName = self.name;
+        }
+        self.store = new Baseliner.JsonStore({
+            root: 'data', remoteSort: false, id: 'id_uniq', totalProperty: 'totalCount', 
+            baseParams: { id_category: self.id_category },
+            url: '/topic/topic_fieldlet_nodes', fields: ['id','id_uniq','id_field', 'key','name_field','fieldlet_name','category_name'] 
+        });
+        
+        self.store.load({ callback: function(store) {
+            var ix = self.store.find( self.valueField, self.value ); 
+            if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
+        } });
+        Baseliner.TopicFieldsCombo.superclass.initComponent.call(this);
+    }
+});
+
 Baseliner.jobs_for_topic = function(args) {
     Baseliner.ci_call( args.mid, 'jobs', { no_rels: 1 }, function(res){
         var div = document.getElementById( args.render_to );

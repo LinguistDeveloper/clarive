@@ -43,17 +43,17 @@
         end_fieldlet.allowBlank = query_type.getValue()!='field_pair';
     });
 
-    var id_fieldlet = new Ext.form.TextField({ 
+    var id_fieldlet = new Cla.TopicFieldsCombo({
         anchor:'100%', fieldLabel: _('Calendar Fields'), name: 'id_fieldlet', 
         value: data.id_fieldlet, hidden: data.query_type!='cal_field', allowBlank: data.query_type!='cal_field'
     });
 
-    var start_fieldlet = new Ext.form.TextField({ 
-        anchor:'50%', fieldLabel: _('Start Date Field'), name: 'start_fieldlet', 
+    var start_fieldlet = new Cla.TopicFieldsCombo({
+        anchor:'100%', fieldLabel: _('Start Date Field'), name: 'start_fieldlet', 
         value: data.start_fieldlet, hidden: data.query_type!='field_pair', allowBlank: data.query_type!='field_pair'
     });
-    var end_fieldlet = new Ext.form.TextField({ 
-        anchor:'50%', fieldLabel: _('End Date Field'), name: 'end_fieldlet', 
+    var end_fieldlet = new Cla.TopicFieldsCombo({
+        anchor:'100%', fieldLabel: _('End Date Field'), name: 'end_fieldlet', 
         value: data.end_fieldlet, hidden: data.query_type!='field_pair', allowBlank: data.query_type!='field_pair'
     });
 

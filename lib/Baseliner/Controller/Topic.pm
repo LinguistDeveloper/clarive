@@ -2134,6 +2134,35 @@ sub get_files : Local {
     $c->forward('/serve_file');
 }
 
+sub topic_fieldlet_nodes : Local {
+     my ( $self, $c ) = @_;
+     my $p = $c->request->parameters;
+     my $id_category = $p->{id_category};
+     my $query = $p->{query};
+
+     my @nodes = model->Topic->get_fieldlet_nodes( $id_category );
+     @nodes = map { 
+        my $id = $$_{id_field} || $$_{id};
+        $$_{fieldlet_name} = _array($id_category)==1 ? "$$_{name_field} [$id]" : "$$_{category_name}: $$_{name_field} [$id]";
+        $$_{id_uniq} = Util->_md5();
+        $_;
+     } @nodes;
+
+     @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes; 
+     @nodes = grep { query_re_hash($query,$_) } @nodes if length $query; 
+     $c->stash->{json} = { data=>\@nodes, totalCount=>scalar(@nodes) };
+     $c->forward('View::JSON');    
+}
+
+sub query_re_hash {
+    my ($query,$hash) = @_;
+    return 0 unless ref $hash eq 'HASH';
+    return 1 if !length $query;
+    $query =~ s{[^\w]}{}g;
+    my $str = join '][', grep { defined } values %$hash;
+    "[$str]" =~ m/$query/i;
+}
+
 =pod
 
 ---
