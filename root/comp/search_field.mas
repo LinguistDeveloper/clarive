@@ -40,7 +40,7 @@
                 this.onTrigger1Click();
                 return;
             }
-            var o = {start: 0, limit: 100};
+            var o = {start: 0};
             this.store.baseParams = this.store.baseParams || {};
             this.store.baseParams[this.paramName] = v;
             if(this.params.treegrid){
