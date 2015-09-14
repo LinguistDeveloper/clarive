@@ -22,8 +22,6 @@ params:
     var data = params.topic_data;
     var meta = params.topic_meta;
 
-console.dir(meta);
-
     var projects = [];
     var firstload = true;
 
