@@ -223,6 +223,6 @@ sub DESTROY {
 
 no Moose;
 
-__PACKAGE__->meta->make_immutable( replace_destructor => 1 );
+__PACKAGE__->meta->make_immutable( inline_destructor => 0 );
 
 1;
