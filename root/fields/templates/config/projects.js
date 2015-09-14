@@ -42,7 +42,8 @@
     ret.push([ 
     	ci_class_box,
     	collection,
-    	{ xtype:'textfield', fieldLabel: _('Default Value'), name:'default_value', value: data.default_value || '' },
+        { xtype:'textfield', fieldLabel: _('Default Value'), name:'default_value', value: data.default_value || '' },
+    	{ xtype:'textfield', fieldLabel: _('Roles (comma separated)'), name:'roles', value: data.roles || '' },
     ]);
     return ret;
 })

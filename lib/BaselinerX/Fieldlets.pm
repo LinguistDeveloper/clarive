@@ -379,7 +379,8 @@ register 'fieldlet.system.projects' => {
     relation    => 'system',
     include_root    => 'true',
     type        => 'listbox',
-    section_allowed => ['details']
+    section_allowed => ['details'],
+    roles       => ''
 };
 
 
