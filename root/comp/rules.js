@@ -102,10 +102,9 @@
     };
 
     var rule_export = function(){
-        var sm = rules_grid.getSelectionModel();
-        if( sm.hasSelection() ) {
-            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
-            Baseliner.ajaxEval( '/rule/export', { id_rule: sm.getSelected().data.id }, function(res){
+        var rule_id;
+        var call_rule_export = function(){
+            Baseliner.ajaxEval( '/rule/export', { id_rule: rule_id }, function(res){
                 if( res.success ) {
                     var win = new Baseliner.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.yaml }), 
                          layout:'fit' });       
@@ -114,8 +113,23 @@
                     Baseliner.error( _('Rule Export'), res.msg );
                 }
             });
+        };
+        if(toggle_button.pressed){
+            if(rules_tree.getSelectionModel().selNode){
+                rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+                call_rule_export();
+            }else{
+                Baseliner.message( _('Error'), _('Select rule to export first') );
+            }
         } else {
-            Baseliner.message( _('Error'), _('Select rows first') );
+            rule_id = sm.getSelected().data.id;
+            var sm = rules_grid.getSelectionModel();
+            if( sm.hasSelection() ) {
+                var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+                call_rule_export();
+            } else {
+                Baseliner.message( _('Error'), _('Select rows first') );
+            }
         }
     };
     
@@ -129,10 +143,10 @@
         ]
     });
     var rule_export_file = function(){
-        var sm = rules_grid.getSelectionModel();
-        if( sm.hasSelection() ) {
+        var rule_id;
+        var call_rule_export_file = function() {
             var form = form_export_file.getForm(); 
-            form.findField('id_rule').setValue( sm.getSelected().data.id );
+            form.findField('id_rule').setValue( rule_id );
             form.findField('format').setValue( 'yaml' );
             var el = form.getEl().dom;
             var targetD = document.createAttribute("target");
@@ -140,8 +154,22 @@
             el.setAttributeNode(targetD);
             el.action = '/rule/export_file';
             el.submit(); 
+        };
+        if(toggle_button.pressed){
+            if(rules_tree.getSelectionModel().selNode){
+                rule_id = rules_tree.getSelectionModel().selNode.attributes.rule_id;
+                call_rule_export_file();
+            }else{
+                Baseliner.message( _('Error'), _('Select rule to export first') );
+            }
         } else {
-            Baseliner.message( _('Error'), _('Select rows first') );
+            var sm = rules_grid.getSelectionModel();
+            if( sm.hasSelection() ) {
+                rule_id = sm.getSelected().data.id;
+                call_rule_export_file();
+            }else{
+                Baseliner.message( _('Error'), _('Select rows first') );   
+            }
         }
     };
     
@@ -151,6 +179,7 @@
             Baseliner.ajaxEval('/rule/import_yaml', { data: yaml.getValue(), type:'yaml' }, function(res){
                 if( res.success ) { 
                     rules_store.reload();
+                    reload_tree();
                     Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );
                     win.close();
                 }
@@ -169,6 +198,7 @@
             height: 300
         });
         up.on('complete', function(){
+            reload_tree();
             rules_store.reload();
         });
         var win = new Baseliner.Window({ title:_('Import'), layout:'form', 
@@ -183,11 +213,13 @@
             node.attributes.rule_active = rule_active.toString();
             var temp_text = node.text;
             if(!rule_active){
-                temp_text = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>'+temp_text;
+                temp_text = '<span style="text-decoration: line-through; color:#bbb">'+temp_text+'</span>';
             } else {
-                temp_text = temp_text.replace(/<figure.*<\/figure>/, '');
+                temp_text = temp_text.replace(/<span style="text-decoration: line-through; color:#bbb">/, '');
+                temp_text = temp_text.replace(/\<\/span\>$/,'');
             }
             node.setText(temp_text);
+
         };
         var call_active = function(){
             Baseliner.ajaxEval( '/rule/activate', { id_rule: rule_id, activate: rule_active }, function(res){
@@ -455,15 +487,15 @@
                 if(node.attributes.rule_type == 'pipeline' || node.attributes.rule_type == 'event'){
                     rule_when = node.attributes.rule_when ? String.format('<span style="font-weight: bold; color: #48b010">{0}</span>', node.attributes.rule_when) : '';
                 }
-                if(node.attributes.rule_active == "0"){
-                    inactive_rule = '<figure style="display: inline-block; margin: 0px 2px; background: red; border-radius: 50%; height:7px; width:7px;"></figure>';
-                }
-                var rule_text = inactive_rule + node.attributes.text;
+                var rule_text = node.attributes.text;
                 if(!node.attributes.is_folder){
                     rule_text = rule_text + String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
                     rule_when +
                     String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()) +
                     String.format('<span style="padding-left: 5px;color:#bbb">by {0}</span>', node.attributes.username); 
+                    if(node.attributes.rule_active == "0"){
+                        rule_text = String.format('<span style="text-decoration: line-through; color:#bbb">{0}</span>', rule_text);
+                    }
                 }
                 node.setText(rule_text);
             }
