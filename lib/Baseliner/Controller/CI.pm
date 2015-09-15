@@ -801,11 +801,13 @@ sub sync : Local {
     my $name = delete $p->{name};
     my $mid = delete $p->{mid};
     my $ns = delete $p->{ns};
+    my $repo_dir = delete $p->{repo_dir};
     my $repo_mid = $p->{repo};
     my $branch = $p->{branch};
 
     my $valid_repo = 1;
-    my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
+
+    my $data = exists $p->{ci_json} ? _decode_json( $p->{ci_json} ) : $p;
 
     if ( $p->{topic_mid} ) {
         my %topic_projects = map { $_=>1 } mdb->master_rel->find_values( to_mid => { from_mid=> "$p->{topic_mid}", rel_type=>'topic_project' });
@@ -842,7 +844,6 @@ sub sync : Local {
     }
 
     if ( $valid_repo ) {
-
         try {
             # check for prereq relationships
             my @ci_pre_mid;
@@ -850,7 +851,6 @@ sub sync : Local {
             while( my ($k,$v) = each %$data ) {
                 if( $k eq 'ci_pre' ) {
                     for my $ci ( _array $v ) {
-                        #_log( _dump( $ci ) );
                         push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
                     }
                 }
@@ -863,8 +863,17 @@ sub sync : Local {
                 }
             }
 
-            $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, 
-                username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+            $mid = $self->ci_create_or_update(
+                rel_field  => $collection,
+                name       => $name,
+                class      => $class,
+                username   => $c->username,
+                ns         => $ns,
+                collection => $collection,
+                repo_dir   => $repo_dir,
+                mid        => $mid,
+                data       => \%ci_data
+            );
 
             $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
             $c->stash->{json}{mid} = $mid;

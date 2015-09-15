@@ -114,6 +114,7 @@ params:
                     var attr = n.attributes;
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
+                    if (node_data.repo_dir != undefined) { ci.data.repo_dir = node_data.repo_dir };
                     var mid = node_data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
                         Baseliner.message( _('Error'), _('Node is not a revision'));
@@ -122,10 +123,16 @@ params:
                         // TODO
                     }
                     else if ( ci !=undefined ) {
-                        Baseliner.ajaxEval('/ci/sync',
-                            { name: ci.name, 'class': ci['class'], ns: ci.ns, 
-                                ci_json: Ext.util.JSON.encode( ci.data ), repo: node_data.click.repo_mid, topic_mid: topic_data.topic_mid, branch: meta.branch },
-                            function(res) {
+                        Baseliner.ajaxEval('/ci/sync', { 
+                                name: ci.name, 
+                                'class': ci['class'], 
+                                ns: ci.ns, 
+                                ci_json: Ext.util.JSON.encode( ci.data ), 
+                                repo: node_data.click.repo_mid, 
+                                topic_mid: topic_data.topic_mid, 
+                                branch: meta.branch,
+                                repo_dir: node_data.repo_dir
+                            }, function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
                                     if( revision_store.find('mid', mid ) > -1 ) {

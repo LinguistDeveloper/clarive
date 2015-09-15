@@ -472,28 +472,29 @@ sub list_repo_contents : Local {
 sub branches : Local {
     my ($self,$c) = @_;
     my @tree;
+    my @changes;
 
     my $p = $c->req->params;
     my $project = $p->{project} or _throw 'missing project';
     my $id_project = $p->{id_project} or _throw 'missing project id';
     my $id_repo = $p->{id_repo} or _throw 'missing repo id';
     my $config = config_get 'config.lc';
+
     # provider-by-provider:
     # get all the changes for this project + baseline
-    my @cs;
-
-    if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
-
+    if ( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
         try {
             my $repo = Baseliner::CI->new( $id_repo );
-
-            my @changes = $repo->can('list_contents') 
-                ?  $repo->list_contents( request=>$p )
-                : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
+            if ($repo->{navigation_type} && $repo->{navigation_type} eq 'Directory'){
+                my $res = $repo->list_directories( project=>$project, repo_mid=>$id_repo, username => $c->username, directory=>'', id_project=>$id_project );
+                push @tree, $_ for _array($res->{directories});
+                push @changes, $_ for _array($res->{repositories});
+            } else {
+                @changes = $repo->can('list_contents') ? $repo->list_contents( request=>$p ) : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
+            }
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
-            push @cs, @changes;
             # loop through the branch objects 
-            for my $cs ( @cs ) {
+            for my $cs ( @changes ) {
                 my $menu = [];
                 # get menu extensions (find packages that do)
                 # get node menu
