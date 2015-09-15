@@ -8,6 +8,6 @@
         div.innerHTML = '';
         var config = Ext.apply({ project_id: project_id, start_mode: 'auto', height: div.offsetHeight, width: div.offsetWidth, renderTo: id }, meta);
         var swarm = new Cla.Swarm(config);
-    },true);
+    });
 });
 
