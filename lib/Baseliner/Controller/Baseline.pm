@@ -82,6 +82,21 @@ sub list : Local {
     $c->forward('View::JSON');    
 }
 
+sub bounds : Private {
+    my ($self,$c)=@_;
+    my $p = $c->request->parameters;
+    $c->forward('/baseline/list');
+    my $rows = $c->stash->{json}{data}; 
+    $c->stash->{bound_list} = [ 
+        map {
+            +{
+                id   => $_->{id},
+                name => "$_->{name} [$_->{bl}]",
+            }
+        } _array( $rows )
+    ];
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

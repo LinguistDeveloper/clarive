@@ -49,27 +49,6 @@ sub job_create : Path('/job/create')  {
     $c->stash->{template} = '/comp/job_new.js';
 }
 
-# fill job_new.js combo_baselines
-sub bl_combo : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-   
-    my $bls = $p->{bls};
-    my $action = 'action.job.create';  # we use the action to find which bls this role can create jobs on
-    my @bl_arr = ();
-    my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
-    return $c->stash->{baselines} = [ [ '*', 'Common' ] ] unless @bl_list > 0;
-
-    my $is_root = $c->model('Permissions')->is_root( $c->username );
-    foreach my $n ( @bl_list ) {
-        next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
-        my $arr = { bl=>$n->{bl}, name=>_loc($n->{name}) };
-        push @bl_arr, $arr if !defined $bls || $bls->{$n->{bl}};
-    }
-    $c->stash->{json} = { data=>\@bl_arr, totalCount=>scalar(@bl_arr) };
-    $c->forward('View::JSON');
-}
-
 sub pipelines : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
