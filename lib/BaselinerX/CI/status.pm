@@ -78,12 +78,20 @@ after delete => sub {
 };
 
 sub combo_list {
-    my ($self) = @_;
+    my ($self, $p) = @_;
+_warn $p;
+    my $where = {};
+
+    if ( $p->{category} ) {
+        my $category = mdb->category->find_one({ name => $p->{category} });
+        my @statuses_in_category = _array($category->{statuses}) if $category;
+        $where->{id_status} = mdb->in(@statuses_in_category) if @statuses_in_category;
+    }
     {
         data => [
             map { +{ id_status => $_->id_status, name => $_->name } } 
             sort { lc $a->name cmp lc $b->name } 
-            $self->search_cis
+            $self->search_cis(%$where)
         ]
     };
 }
