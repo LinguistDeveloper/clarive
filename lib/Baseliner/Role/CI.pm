@@ -124,7 +124,6 @@ sub compare_data{
 sub update {
     my $self = shift;
     my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
-
     my $class = ref $self || _fail _loc 'CI must exist for update to work';
     
     # detect changed fields, in case it's a new row then all data is changed
@@ -146,7 +145,7 @@ sub update {
 
 sub save {
     my ($self,%opts) = @_;
-    
+
     my $collection = $self->collection;
 
     my $mid = $self->mid;
@@ -175,41 +174,52 @@ sub save {
     if( $exists ) { 
         ######## UPDATE CI
         if( $master_row ) {
-            $master_old = +{ %$master_row };
-            $master_row->{bl} = join ',', Util->_array( $bl );
-            $master_row->{name} = $self->name;
-            $master_row->{active} = $self->active;
-            $master_row->{versionid} = $self->versionid || '1';
-            $master_row->{moniker} = $self->moniker;
-            $master_row->{ns} = $self->ns;
-            $master_row->{ts} = mdb->ts;
-            $self->update_ci( $master_row, undef, \%opts, $master_old );
+            event_new 'event.ci.update' => { username => $self->modified_by, mid => $mid, new_ci => $self} => sub {
+                my $old_ci = Util->_clone($self);
+                $master_old = +{ %$master_row };
+                $master_row->{bl} = join ',', Util->_array( $bl );
+                $master_row->{name} = $self->name;
+                $master_row->{active} = $self->active;
+                $master_row->{versionid} = $self->versionid || '1';
+                $master_row->{moniker} = $self->moniker;
+                $master_row->{ns} = $self->ns;
+                $master_row->{ts} = mdb->ts;
+                my $ci = $self->update_ci( $master_row, undef, \%opts, $master_old );
+                delete $ci->{yaml};
+                $ci;
+            }
         }
     } else {
-        ######## NEW CI
-        $master_row = {
-                collection => $collection,
-                name       => $self->name,
-                ns         => $self->ns,
-                ts         => mdb->ts,
-                moniker    => $self->moniker, 
-                bl         => join( ',', Util->_array( $bl ) ),
-                active     => $self->active // 1,
-                versionid  => $self->versionid || 1,
-        };
-        # update mid into CI
-        $mid = length($mid) ? $mid : mdb->seq('mid');
-        $self->mid( $mid );
-        $$master_row{mid} = $mid;
-        # put a default name
-        if( !length $self->name ) {
-            my $name = $collection . ':' . $mid;
-            $$master_row{name} = $name;
-            $self->name( $name );
+
+
+        event_new 'event.ci.create' => { username => $self->created_by, ci => $self} => sub {
+
+            ######## NEW CI
+            $master_row = {
+                    collection => $collection,
+                    name       => $self->name,
+                    ns         => $self->ns,
+                    ts         => mdb->ts,
+                    moniker    => $self->moniker, 
+                    bl         => join( ',', Util->_array( $bl ) ),
+                    active     => $self->active // 1,
+                    versionid  => $self->versionid || 1,
+            };
+            # update mid into CI
+            $mid = length($mid) ? $mid : mdb->seq('mid');
+            $self->mid( $mid );
+            $$master_row{mid} = $mid;
+            # put a default name
+            if( !length $self->name ) {
+                my $name = $collection . ':' . $mid;
+                $$master_row{name} = $name;
+                $self->name( $name );
+            }
+            
+            # now save the rest of the ci data (yaml)
+            $self->new_ci( $master_row, undef, \%opts );
+            { mid => $mid, username => $self->created_by };
         }
-        
-        # now save the rest of the ci data (yaml)
-        $self->new_ci( $master_row, undef, \%opts );
     }
     return $mid; 
 }
@@ -219,12 +229,14 @@ sub delete {
     
     $mid //= $self->mid;
     if( $mid ) {
-        # first relations, so nobody can find me
-        mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
-        mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
-        mdb->master->remove({ mid=>"$mid" },{multiple=>1});
-        cache->remove({ d=>'ci' });
-        delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
+        event_new 'event.ci.delete' => { username => $self->modified_by, ci => $self} => sub {
+            # first relations, so nobody can find me
+            mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
+            mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
+            mdb->master->remove({ mid=>"$mid" },{multiple=>1});
+            cache->remove({ d=>'ci' });
+            delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
+        };
         return 1;
     } else {
         return undef;
