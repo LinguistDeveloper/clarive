@@ -535,6 +535,7 @@ sub all_fields {
                 gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
                 category    => $p->{name_category},
                 options     => $user_categories_fields_meta->{$name_category}->{$_}->{options},
+                format     => $user_categories_fields_meta->{$name_category}->{$_}->{format},
                 leaf        =>\1
             } if !($_ eq 'priority' && $user_categories_fields_meta->{$name_category}->{$_}->{meta_type} eq 'priority'); # temporal solution to hide system_priority
         
@@ -915,7 +916,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     if($relation[$i]){
                         $rel_name = $relation[$i]->{"relation"}[0];
                         $name_relation = $relation[$i]->{"name_category"}[0];
-                        my @data_relation = $mdb2->topic->find({name_category=>qr/^$name_relation$/i})->all;
+                        my $rel_where;
+                        $rel_where->{name_category} = qr/^$name_relation$/i;
+                        $rel_where = $self->get_where({filters_where => $fields{where}, name_category => $name_relation, dynamic_filter => \%dynamic_filter, where => $rel_where });
+                        my @data_relation = $mdb2->topic->find($rel_where)->all;                        
                         my %data_to_compare = map { $_->{mid} => 1 } @data_relation; 
                         my @all_mids;
                         map {
@@ -1131,7 +1135,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
         for my $k ( keys %row ) {
             my $v = $row{$k};
-            $v = [] if (!ref $v);
+            #$v = [] if (!ref $v);
 
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
