@@ -14,7 +14,7 @@ use Baseliner::Core::Registry;
 use Baseliner::Validator::valid_ci;
 
 subtest 'builds not valid result when unknown ci' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $rule = _build_rule();
 
@@ -24,7 +24,7 @@ subtest 'builds not valid result when unknown ci' => sub {
 };
 
 subtest 'builds not valid result when ci with wrong isa' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $ci = ci->GitRepository->new;
     $ci->save;
@@ -37,7 +37,7 @@ subtest 'builds not valid result when ci with wrong isa' => sub {
 };
 
 subtest 'builds valid result when known ci' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $ci = ci->GitRepository->new;
     $ci->save;
@@ -50,7 +50,7 @@ subtest 'builds valid result when known ci' => sub {
 };
 
 subtest 'builds valid result when known ci and isa' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $ci = ci->GitRepository->new;
     $ci->save;
@@ -63,8 +63,8 @@ subtest 'builds valid result when known ci and isa' => sub {
 };
 
 subtest 'returns loaded ci' => sub {
-    TestUtils->cleanup_cis;
-
+    _setup();
+    
     my $ci = ci->GitRepository->new;
     $ci->save;
 
@@ -81,4 +81,10 @@ done_testing;
 
 sub _build_rule {
     return Baseliner::Validator::valid_ci->new(@_);
+}
+
+sub _setup {
+    Baseliner::Core::Registry->clear();
+    TestUtils->register_ci_events();
+    TestUtils->cleanup_cis;
 }

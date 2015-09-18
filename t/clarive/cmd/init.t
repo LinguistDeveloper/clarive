@@ -6,6 +6,7 @@ use Test::More;
 use Test::Fatal;
 use Test::MonkeyMock;
 use TestEnv;
+use TestUtils;
 
 TestEnv->setup;
 
@@ -128,6 +129,8 @@ subtest 'resets everything if reset flag and user says yes' => sub {
 };
 
 sub _setup {
+    Baseliner::Core::Registry->clear();
+    TestUtils->register_ci_events();
     mdb->clarive->drop;
 
     mdb->master->drop;

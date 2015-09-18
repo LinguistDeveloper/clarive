@@ -9,6 +9,7 @@ use Test::MockSleep;
 
 use lib 't/lib';
 use TestEnv;
+use TestUtils;
 
 TestEnv->setup;
 
@@ -349,7 +350,8 @@ sub _setup {
 
     mdb->queue->drop;
 
-    Baseliner::Core::Registry->clear;
+    Baseliner::Core::Registry->clear();
+    TestUtils->register_ci_events();
 }
 
 package TestService;

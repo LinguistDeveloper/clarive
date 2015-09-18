@@ -36,7 +36,7 @@ sub re_sha  { re(qr/^$RE_sha$/) }
 sub re_date { re(qr/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$/) }
 
 subtest 'get_commits_history: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();    
 
     my $controller = _build_controller();
 
@@ -51,7 +51,7 @@ subtest 'get_commits_history: returns validation errors' => sub {
 };
 
 subtest 'get_commits_history: returns commits' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -97,7 +97,7 @@ subtest 'get_commits_history: returns commits' => sub {
 };
 
 subtest 'branch_commits: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -112,7 +112,7 @@ subtest 'branch_commits: returns validation errors' => sub {
 };
 
 subtest 'branch_commits: returns commits' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     BaselinerX::CI::bl->new( bl => 'release' )->save;
 
@@ -180,7 +180,7 @@ subtest 'branch_commits: returns commits' => sub {
 };
 
 subtest 'branch_changes returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -195,7 +195,7 @@ subtest 'branch_changes returns validation errors' => sub {
 };
 
 subtest 'branch_changes returns changes' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -221,7 +221,7 @@ subtest 'branch_changes returns changes' => sub {
 };
 
 subtest 'branch_tree: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -236,7 +236,7 @@ subtest 'branch_tree: returns validation errors' => sub {
 };
 
 subtest 'branch_tree: returns tree' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -287,7 +287,7 @@ subtest 'branch_tree: returns tree' => sub {
 };
 
 subtest 'branch_tree: returns tree from a subdirectory' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -327,7 +327,7 @@ subtest 'branch_tree: returns tree from a subdirectory' => sub {
 };
 
 subtest 'get_file_revisions: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -348,7 +348,7 @@ subtest 'get_file_revisions: returns validation errors' => sub {
 };
 
 subtest 'get_file_revisions: returns commits' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -372,7 +372,7 @@ subtest 'get_file_revisions: returns commits' => sub {
 };
 
 subtest 'view_file: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -393,7 +393,7 @@ subtest 'view_file: returns validation errors' => sub {
 };
 
 subtest 'view_file: returns file content' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -418,7 +418,7 @@ subtest 'view_file: returns file content' => sub {
 };
 
 subtest 'get_file_blame: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -439,7 +439,7 @@ subtest 'get_file_blame: returns validation errors' => sub {
 };
 
 subtest 'get_file_blame: returns blame' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -463,7 +463,7 @@ subtest 'get_file_blame: returns blame' => sub {
 };
 
 subtest 'view_diff_file: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -484,7 +484,7 @@ subtest 'view_diff_file: returns validation errors' => sub {
 };
 
 subtest 'view_diff_file: returns diff' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -526,7 +526,7 @@ subtest 'view_diff_file: returns diff' => sub {
 };
 
 subtest 'view_diff: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -547,7 +547,7 @@ subtest 'view_diff: returns validation errors' => sub {
 };
 
 subtest 'view_diff: returns diff' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -589,7 +589,7 @@ subtest 'view_diff: returns diff' => sub {
 };
 
 subtest 'get_file_history: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -610,7 +610,7 @@ subtest 'get_file_history: returns validation errors' => sub {
 };
 
 subtest 'get_file_history: returns diff' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -635,7 +635,7 @@ subtest 'get_file_history: returns diff' => sub {
 };
 
 subtest 'get_tags: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -656,7 +656,7 @@ subtest 'get_tags: returns validation errors' => sub {
 };
 
 subtest 'get_tags: returns tags' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -673,7 +673,7 @@ subtest 'get_tags: returns tags' => sub {
 };
 
 subtest 'get_commits_search: returns validation errors' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $controller = _build_controller();
 
@@ -694,7 +694,7 @@ subtest 'get_commits_search: returns validation errors' => sub {
 };
 
 subtest 'get_commits_search: returns found commits by comment' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -728,7 +728,7 @@ subtest 'get_commits_search: returns found commits by comment' => sub {
 };
 
 subtest 'get_commits_search: returns found commits by author' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -772,7 +772,7 @@ subtest 'get_commits_search: returns found commits by author' => sub {
 };
 
 subtest 'get_commits_search: returns found commits by revision' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -806,7 +806,7 @@ subtest 'get_commits_search: returns found commits by revision' => sub {
 };
 
 subtest 'get_commits_search: returns empty result when nothing found' => sub {
-    TestUtils->cleanup_cis;
+    _setup();
 
     my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
     $repo_ci->save;
@@ -834,4 +834,9 @@ sub _build_controller {
     Baseliner::Controller::GitTree->new( application => '' );
 }
 
+sub _setup {
+    Baseliner::Core::Registry->clear();
+    TestUtils->register_ci_events();
+    TestUtils->cleanup_cis;
+}
 done_testing;

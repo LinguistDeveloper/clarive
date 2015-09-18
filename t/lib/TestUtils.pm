@@ -22,31 +22,19 @@ sub cleanup_cis {
     mdb->master_rel->drop;
 }
 
-sub create_amazon_account {
-    my $class = shift;
-
-    my $account = ci->amazon_account->new(
-        mid        => "1",
-        access_key => 'ACCESS KEY',
-        secret_key => 'SECRET KEY',
-        region     => 'us-west-2',
-        active     => 1,
-        @_
-    );
-    $account->save;
-    return $account;
+sub registry {
+    'Baseliner::Core::Registry';
 }
 
-sub create_amazon_instance {
+sub register_ci_events {
     my $class = shift;
 
-    my $instance = ci->amazon_instance->new(
-        mid         => "2",
-        instance_id => 'i-1234567890',
-        @_
-    );
-    $instance->save;
-    return $instance;
+    require BaselinerX::Type::Event;
+
+    $class->registry->add_class( undef, 'event' => 'BaselinerX::Type::Event' );
+    $class->registry->add( 'BaselinerX::CI', 'event.ci.create', { foo => 'bar' } );
+    $class->registry->add( 'BaselinerX::CI', 'event.ci.update', { foo => 'bar' } );
+    $class->registry->add( 'BaselinerX::CI', 'event.ci.delete', { foo => 'bar' } );
 }
 
 sub mock_catalyst_req {

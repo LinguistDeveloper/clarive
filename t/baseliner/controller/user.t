@@ -122,7 +122,9 @@ sub _build_c {
 }
 
 sub _setup {
+
     Baseliner::Core::Registry->clear();
+    TestUtils->register_ci_events();
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;
