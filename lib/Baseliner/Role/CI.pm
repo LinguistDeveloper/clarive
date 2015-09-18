@@ -153,7 +153,8 @@ sub save {
     $bl = '*' if !length $bl; # fix empty submits from web
     # make sure we have a mid AND it's in mongo
     Util->_fail( Util->_loc('CI mid cannot start with `name:` nor `mid:`') ) if $mid && $mid=~/^(name|moniker):/;
-    my $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
+    my $master_row;
+    $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
     my $master_old;
     my $exists = length($mid) && $master_row; 
     
@@ -187,7 +188,7 @@ sub save {
                 my $ci = $self->update_ci( $master_row, undef, \%opts, $master_old );
                 delete $ci->{yaml};
                 $ci;
-            }
+            };
         }
     } else {
 
@@ -219,7 +220,7 @@ sub save {
             # now save the rest of the ci data (yaml)
             $self->new_ci( $master_row, undef, \%opts );
             { mid => $mid, username => $self->created_by };
-        }
+        };
     }
     return $mid; 
 }
