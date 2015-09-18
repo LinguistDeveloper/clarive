@@ -8,7 +8,7 @@ use TestEnv;
 
 TestEnv->setup;
 
-sub Clarive::config { {} }
+# sub Clarive::config { {} }
 
 use Clarive::cache;
 
