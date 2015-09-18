@@ -6,6 +6,8 @@ use parent 'Plack::Middleware';
 use Time::HiRes qw(time);
 use Plack::Util::Accessor qw(file);
 use Plack::Request;
+use Plack::Response;
+use Scalar::Util qw(blessed);
 use Baseliner::Utils qw(_dump);
 
 sub new {
@@ -48,13 +50,13 @@ sub call {
             my $content_type = Plack::Util::header_get( $res->[1], 'Content-Type' );
 
             if ( $content_type && $content_type =~ m{text/html} ) {
-                $body = '*** HTML ***';
+                $body = ['*** HTML ***'];
             }
 
             $entry->{response} = {
                 status  => $res->[0],
                 headers => $res->[1],
-                body    => $body
+                body    => $self->_read_body($body)
             };
 
             print $fh _dump $entry;
@@ -62,6 +64,25 @@ sub call {
             close $fh;
         }
     );
+}
+
+sub _read_body {
+    my $self = shift;
+    my ($body) = @_;
+
+    my $content = '';
+    foreach my $part (@$body) {
+        if (ref $part) {
+            while (my $line = $part->getline) {
+                $content .= $line;
+            }
+        }
+        else {
+            $content .= $part;
+        }
+    }
+
+    return $content;
 }
 
 1;

@@ -41,7 +41,36 @@ subtest 'records request and response' => sub {
     my $res = $dump->{response};
     is $res->{status}, 200;
     is_deeply $res->{headers}, [];
-    is_deeply $res->{body}, ['OK'];
+    is $res->{body}, 'OK';
+};
+
+subtest 'records body response if is an io object' => sub {
+    my $file = File::Temp->new;
+
+    my $mw = _build_mw(
+        file => $file,
+        app  => sub {
+            my $env = shift;
+
+            my $buffer = 'hello';
+            open my $fh, '<', \$buffer;
+
+            return [ 200, [], [$fh] ];
+        }
+    );
+
+    my $env = { REQUEST_METHOD => 'GET', PATH_INFO => '/' };
+
+    $mw->call($env);
+
+    my $log = _slurp($file);
+
+    ok $log =~ s{^\*\*\* \d+\.\d+ \*\*\*}{}ms;
+
+    my $dump = _load $log;
+
+    my $res = $dump->{response};
+    is $res->{body}, 'hello';
 };
 
 sub _slurp {

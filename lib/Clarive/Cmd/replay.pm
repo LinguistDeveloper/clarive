@@ -54,7 +54,15 @@ sub run {
 
         my $content_type = $response->headers->header('Content-Type');
         if ( $content_type =~ m/json/ ) {
-            ok !exception { JSON::decode_json( join '', @{ $data->{response}->{body} } ) }, 'JSON expected'
+            ok !exception {
+                JSON::decode_json(
+                    join '',
+                    ref $data->{response}->{body} eq 'ARRAY'
+                    ? @{ $data->{response}->{body} }
+                    : ( $data->{response}->{body} )
+                  )
+            },
+              'JSON expected'
               or _fail( $response, $data->{response} );
         }
     }
