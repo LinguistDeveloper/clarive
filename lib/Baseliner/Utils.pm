@@ -94,6 +94,7 @@ use Exporter::Tidy default => [
     _get_dotted_keys
     _reg_line
     _pointer
+    query_grep
     _clone
     _stash_dump
     _stash_load
@@ -530,13 +531,45 @@ sub parse_dt {
     };
 }
 
-sub query_array {
-    my $query = shift;
-    {
-        no warnings;  # may be empty strings, unitialized
-        my $txt = join ',', @_;    ##TODO check for "and", "or", etc. with text::query
-        return $txt =~ m/$query/i;
+sub query_grep {
+    my (%p) = @_;
+    my $wh = mdb->query_build( %p );
+    my @ret;
+    for my $row ( _array( $p{rows} ) ) {
+        push @ret,$row if _probe_one_row('and',$row,$wh);
     }
+    return @ret;
+}
+    
+sub _probe_one_row {
+    my $mode = shift;
+    my $row = shift;
+    for my $term ( @_ ) {
+       my $res = 0;
+       for my $k ( keys $term ) {
+           if( $k eq '$and' ) {
+               $res = _probe_one_row('and',$row,_array($term->{$k}));
+               return 0 if $mode eq 'and' && !$res;
+           }
+           elsif( $k eq '$or' ) {
+               $res = _probe_one_row('or',$row,_array($term->{$k}));
+               return 1 if $mode eq 'or' && $res;
+           }
+           elsif( ref $term->{$k} eq 'HASH' && (my $re = $term->{$k}{'$not'}) ) {
+               $res = $row->{$k} !~ $re;
+               return 0 if $mode eq 'and' && !$res;
+               return 1 if $mode eq 'or' && $res;
+           }
+           else {
+               $res = $row->{$k} =~ $term->{$k};
+               return 0 if $mode eq 'and' && !$res;
+               return 1 if $mode eq 'or' && $res;
+           }
+       }
+       return 0 if $mode eq 'and' && !$res;
+       return 1 if $mode eq 'or' && $res;
+    }
+    return $mode eq 'and';
 }
 
 sub packages_that_do {

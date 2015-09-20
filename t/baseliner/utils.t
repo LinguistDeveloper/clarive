@@ -7,7 +7,14 @@ use Test::More;
 use Test::Fatal;
 use TestEnv;
 
-use Baseliner::Utils qw(_pointer);
+BEGIN {
+    TestEnv->setup;
+}
+
+use Baseliner::Utils qw(_pointer query_grep);
+use Clarive::mdb;
+
+####### _pointer 
 
 subtest '_pointer returns value from valid structures' => sub {
     is _pointer( 'foo', { foo => 'bar' } ), 'bar';
@@ -32,6 +39,58 @@ subtest '_pointer throws on invalid structures' => sub {
     like exception { _pointer( 'hello.[0]', { hello => {} }, throw => 1 ) }, qr/array ref expected at 'hello'/;
 
     like exception { _pointer( '[0].foo.[1]', [ { foo => {} } ], throw => 1 ) }, qr/array ref expected at '\[0\]\.foo'/;
+};
+
+####### query_grep
+
+my @rows = (
+    { id=>'bart', name=>'Bart Simpson' },
+    { id=>'lisa', name=>'Lisa Simpson' },
+    { id=>'moe', name=>'Moe' },
+    { id=>'kasim', name=>'Kasim' },
+);
+
+subtest 'query_grep finds rows single field' => sub {
+    is scalar query_grep( query=>'bart', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'"Bart"', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'simpson', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'Simpson', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'"sim"', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'"Sim"', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'"Sim" -bart', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'+Si', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'ba +Si', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'li ba +Si', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'ba?t', fields=>['name'], rows=>\@rows ), 1;
+    #is scalar query_grep( query=>'"Sim" -"Bart"', fields=>['name'], rows=>\@rows ), 1;
+};
+
+subtest 'query_grep finds rows single field masked' => sub {
+    is scalar query_grep( query=>'S?mp', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'Simp*', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'+lisa Simp*', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'+lisa Simp*', fields=>['name'], rows=>\@rows ), 1;
+};
+
+subtest 'query_grep finds rows single field regexp' => sub {
+    is scalar query_grep( query=>'/S..p/', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'/S.*ps/', fields=>['name'], rows=>\@rows ), 2;
+};
+
+subtest 'query_grep finds rows multi-field' => sub {
+    is scalar query_grep( query=>'bart', fields=>['name','id'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'bart Bart', fields=>['name','id'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'simpson', fields=>['name','id'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'Simpson', fields=>['name','id'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'"sim"', fields=>['name','id'], rows=>\@rows ), 1;
+    is scalar query_grep( query=>'"Sim"', fields=>['name','id'], rows=>\@rows ), 2;
+    is scalar query_grep( query=>'"Sim" -bart', fields=>['name','id'], rows=>\@rows ), 1;
+};
+
+subtest 'query_grep finds none' => sub {
+    is scalar query_grep( query=>'hank', fields=>['name','id'], rows=>\@rows ), 0;
+    is scalar query_grep( query=>'"bart"', fields=>['name'], rows=>\@rows ), 0;
+    is scalar query_grep( query=>'-k -m -l -b', fields=>['name'], rows=>\@rows ), 0;
 };
 
 done_testing;
