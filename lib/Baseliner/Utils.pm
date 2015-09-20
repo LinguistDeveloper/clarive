@@ -104,6 +104,7 @@ other => [qw(
     _markdown
     hash_shallow
     ago
+    query_grep
 )],
 logging => [qw(
     _debug _fail _log _info _fixascii_sql _throw _loc _error _whereami _warn
@@ -532,6 +533,10 @@ sub parse_dt {
 
 sub query_grep {
     my (%p) = @_;
+    if( $p{all_fields} ) {
+        $p{fields} = [ sort keys +{ map { $_=>undef } map { keys $_ } _array( $p{rows} ) } ];
+    }
+    _throw( 'Missing field list' ) unless ref $p{fields};
     my $wh = mdb->query_build( %p );
     my @ret;
     for my $row ( _array( $p{rows} ) ) {

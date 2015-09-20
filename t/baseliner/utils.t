@@ -72,6 +72,11 @@ subtest 'query_grep finds rows single field masked' => sub {
     is scalar query_grep( query=>'+lisa Simp*', fields=>['name'], rows=>\@rows ), 1;
 };
 
+subtest 'query_grep all fields' => sub {
+    is scalar query_grep( query=>'Simp', all_fields=>1, rows=>\@rows ), 2;
+    is scalar query_grep( query=>'bart', all_fields=>1, rows=>\@rows ), 1;
+};
+
 subtest 'query_grep finds rows single field regexp' => sub {
     is scalar query_grep( query=>'/S..p/', fields=>['name'], rows=>\@rows ), 2;
     is scalar query_grep( query=>'/S.*ps/', fields=>['name'], rows=>\@rows ), 2;
