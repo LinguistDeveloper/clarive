@@ -299,7 +299,7 @@ register 'registor.action.topic_category_fields' => {
 sub build_field_query {
     my ($self,$query,$where,$username,%opts) = @_;
     my $fields = $opts{fields} || do { 
-        my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
+        my %all_fields = map { $_->{id_field} => undef } $self->get_fieldlet_nodes();
         ['mid', 'category.name', 'category_status.name', '_txt', keys %all_fields];
     };
     mdb->query_build( where=>$where, query=>$query, fields=>$fields ); 
@@ -1183,7 +1183,7 @@ sub get_fieldlet_nodes {
         } $self->rule_node_to_fieldlet( map{ 
             +{ %{ $$_{data}||{} }, name_field=>$$_{text}, key=>$$_{key} }   ## simulate what BaselinerX::Type::Fieldlet dsl does
           } @nodes );
-        push @all_nodes, @nodes;
+        push @all_nodes, grep { length $$_{id_field} } @nodes;
     }
     return @all_nodes;
 }

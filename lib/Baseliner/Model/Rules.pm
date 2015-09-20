@@ -105,8 +105,8 @@ sub build_tree {
     if( $rule_tree_json ) {
         my $rule_tree = Util->_decode_json( $rule_tree_json );
         _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
-        return $self->tree_format( @$rule_tree );
-        return @$rule_tree;
+        my @tf = $self->tree_format( @$rule_tree );
+        return @tf;
     } else {
         if( $rule->{rule_type} eq 'pipeline' ) {
             return $self->init_job_tasks;
