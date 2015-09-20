@@ -7,7 +7,7 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
-use TestUtils ':catalyst', 'mock_time';
+use TestUtils ':catalyst';
 
 BEGIN {
     TestEnv->setup;
