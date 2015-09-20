@@ -1186,8 +1186,8 @@ sub zip_files {
 }
 sub zip_tree {
 my (%p) =@_;
-    my $source = $p{source} // _fail _loc 'Missing parameter source'; 
-    my $zipfile = $p{to} // _fail _loc 'Missing parameter zipfile';
+    my $source = $p{source} // _throw _loc 'Missing parameter source'; 
+    my $zipfile = $p{to} // _throw _loc 'Missing parameter zipfile';
 my $base = $p{base} // $source;
     my $verbose = $p{verbose};
 
@@ -1443,7 +1443,7 @@ sub parse_vars_raw {
 
                 # control recursion and create a path for a clearer error message
                 my $k = $1;
-                _fail _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k, '${'.join('}/${',_array($stack->{path})).'}' 
+                _throw _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k, '${'.join('}/${',_array($stack->{path})).'}' 
                     if exists $stack->{unresolved}{$k};
                 $stack->{unresolved}{$k}=1;
                 $stack->{path} or local $stack->{path} = []; 
@@ -1657,7 +1657,7 @@ sub _size_unit {
 sub _dbis {
     my( $dbh ) = @_;
     $dbh ||= Clarive->config->{rdbms}{connect_info} // Clarive->config->{baseliner}{'Model::Baseliner'}{connect_info};
-    _fail( 'Missing RDBMS database configuration' ) unless length $dbh;
+    _throw( 'Missing RDBMS database configuration' ) unless length $dbh;
     $ENV{NLS_LANG} = 'AMERICAN_AMERICA.AL32UTF8';  # needed when called from a Clarive Cmd
     require DBIx::Simple;
     my $conn = DBIx::Simple->connect( ref $dbh eq 'ARRAY' ? @$dbh : $dbh );
