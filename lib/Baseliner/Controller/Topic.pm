@@ -2149,18 +2149,9 @@ sub topic_fieldlet_nodes : Local {
      } @nodes;
 
      @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes; 
-     @nodes = grep { query_re_hash($query,$_) } @nodes if length $query; 
+     @nodes = Util->query_grep( query=>$query, fields=>['id_field','name_field','category_name'], rows=>\@nodes ) if length $query; 
      $c->stash->{json} = { data=>\@nodes, totalCount=>scalar(@nodes) };
      $c->forward('View::JSON');    
-}
-
-sub query_re_hash {
-    my ($query,$hash) = @_;
-    return 0 unless ref $hash eq 'HASH';
-    return 1 if !length $query;
-    $query =~ s{[^\w]}{}g;
-    my $str = join '][', grep { defined } values %$hash;
-    "[$str]" =~ m/$query/i;
 }
 
 =pod
