@@ -96,10 +96,12 @@
        if (obj.hasSelection()) {
            var sel = get_valid_selections();
            var data = [];
+           var collection;
            for( var i=0; i<sel.length; i++ ) {
                data.push( sel[i].data[field] );
+               collection = sel[i].data.collection;
            }
-           return { count: data.length, data: data };
+           return { count: data.length, data: data, collection: collection };
        }
        return { count: 0, data:[] };
     };
@@ -107,8 +109,23 @@
     var ci_delete = function(){
         var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
-            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data }, function(res) {
-                if( res.success ) {
+            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data, collection: checked.collection }, function(res) {
+                if( res.success && res.exists ) {
+                    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the project') + ' <b>' + checked.data  + '</b>? <br><br>'+ res.msg, 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data, collection: checked.collection, remove_data: '1' }, function(res) {
+                                if( res.success ) {
+                                    Baseliner.message(_('CI'), res.msg );
+                                    check_sm.clearSelections();  // otherwise it refreshes current selected nodes
+                                    ci_grid.getStore().reload();
+                                } else {
+                                    Ext.Msg.alert( _('CI'), res.msg );
+                                }
+                            });
+                        };
+                    });
+                } else if( res.success && !res.exists ) {
                     Baseliner.message(_('CI'), res.msg );
                     check_sm.clearSelections();  // otherwise it refreshes current selected nodes
                     ci_grid.getStore().reload();
