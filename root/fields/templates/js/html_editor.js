@@ -27,6 +27,12 @@ params:
         readOnly: Baseliner.eval_boolean(meta.readonly)
     });
 
+    function strip_html(html){
+       var tmp = document.createElement("DIV");
+       tmp.innerHTML = html;
+       return tmp.textContent || tmp.innerText || "";
+    }
+
 
     return [
         {   xtype: 'panel',
