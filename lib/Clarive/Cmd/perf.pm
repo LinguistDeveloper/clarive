@@ -9,6 +9,7 @@ use Socket;
 use WWW::Mechanize;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::Utils qw(_load);
+use Baseliner::RequestRecorder::Vars;
 
 sub run {
     my $self = shift;
@@ -234,6 +235,7 @@ sub _do {
 
     my $mech = WWW::Mechanize->new( onerror => sub { } );
 
+    my $vars = Baseliner::RequestRecorder::Vars->new(quiet => 1);
     while (1) {
         foreach my $data (@$datas) {
             my $env = $data->{request}->{env};
@@ -242,9 +244,12 @@ sub _do {
             $url .= "?$env->{QUERY_STRING}" if length $env->{QUERY_STRING};
             my $method = $env->{REQUEST_METHOD};
 
+            $url = $vars->replace_vars($url);
+
             my @params;
             if ( $method eq 'POST' ) {
-                push @params, Content => $data->{request}->{body};
+                my $body = $vars->replace_vars($data->{request}->{body});
+                push @params, Content => $body;
             }
 
             if ( my $with = $env->{'HTTP_X_REQUESTED_WITH'} ) {
@@ -270,6 +275,10 @@ sub _do {
             my $request_elapsed = tv_interval($request_time);
 
             print $fh "REQUEST ELAPSED=$request_elapsed\n";
+
+            if (my $captures = $data->{response}->{captures}) {
+                $vars->extract_captures($captures, $response->content);
+            }
         }
 
         print $fh "SCENARIO\n";

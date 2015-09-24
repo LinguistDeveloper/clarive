@@ -9,6 +9,7 @@ use Test::Fatal;
 use Test::WWW::Mechanize;
 use JSON ();
 use Baseliner::Utils qw(_load);
+use Baseliner::RequestRecorder::Vars;
 
 sub run {
     my $self = shift;
@@ -22,6 +23,7 @@ sub run {
 
     my $mech = Test::WWW::Mechanize->new;
 
+    my $vars = Baseliner::RequestRecorder::Vars->new;
     foreach my $case (@cases) {
         next unless $case;
 
@@ -33,9 +35,12 @@ sub run {
         $url .= "?$env->{QUERY_STRING}" if length $env->{QUERY_STRING};
         my $method = $env->{REQUEST_METHOD};
 
+        $url = $vars->replace_vars($url);
+
         my @params;
         if ( $method eq 'POST' ) {
-            push @params, Content => $data->{request}->{body};
+            my $body = $vars->replace_vars($data->{request}->{body});
+            push @params, Content => $body;
         }
 
         if ( my $with = $env->{'HTTP_X_REQUESTED_WITH'} ) {
@@ -52,18 +57,19 @@ sub run {
         is $response->code, $data->{response}->{status}, "$method $url ($data->{response}->{status})"
           or _fail( $response, $data->{response} );
 
+        my $expected_body =
+          join '', ref $data->{response}->{body} eq 'ARRAY'
+          ? @{ $data->{response}->{body} }
+          : ( $data->{response}->{body} );
+
         my $content_type = $response->headers->header('Content-Type');
         if ( $content_type =~ m/json/ ) {
-            ok !exception {
-                JSON::decode_json(
-                    join '',
-                    ref $data->{response}->{body} eq 'ARRAY'
-                    ? @{ $data->{response}->{body} }
-                    : ( $data->{response}->{body} )
-                  )
-            },
-              'JSON expected'
+            ok !exception { JSON::decode_json($expected_body) }, 'JSON expected'
               or _fail( $response, $data->{response} );
+        }
+
+        if (my $captures = $data->{response}->{captures}) {
+            $vars->extract_captures($captures, $response->content);
         }
     }
 
