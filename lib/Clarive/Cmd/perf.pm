@@ -116,18 +116,19 @@ sub run {
         print $child_fh "GO\n";
     }
 
-    $self->_benchmark( \%pids, forks => $forks, time => $time );
+    $self->_benchmark( \%pids, forks => $forks, time => $time, scenarios => \@scenarios );
 }
 
 sub _benchmark {
     my $self = shift;
     my ($pids, %params) = @_;
 
-    my $start = [gettimeofday];
-    my $total_elapsed   = 0;
-    my $scenarios       = 0;
-    my $requests        = 0;
-    my $failed_requests = 0;
+    my $start                     = [gettimeofday];
+    my $total_elapsed             = 0;
+    my $total_elapsed_per_request = {};
+    my $scenarios                 = 0;
+    my $requests                  = 0;
+    my $failed_requests           = 0;
 
     print "Benchmarking (be patient)....";
 
@@ -162,8 +163,10 @@ sub _benchmark {
                     elsif ( $line =~ m/REQUEST FAILED/ ) {
                         $failed_requests++;
                     }
-                    elsif ( $line =~ m/REQUEST ELAPSED=(.*)/ ) {
-                        $total_elapsed += $1;
+                    elsif ( $line =~ m/REQUEST=(.*?) ELAPSED=(.*)/ ) {
+                        $total_elapsed_per_request->{$1}->{elapsed} += $2;
+                        $total_elapsed_per_request->{$1}->{requests}++;
+                        $total_elapsed += $2;
                     }
                     elsif ( $line =~ m/SCENARIO/ ) {
                         $scenarios++;
@@ -199,14 +202,54 @@ sub _benchmark {
 
     print <<"";
     Concurrency level:        $params{forks}
-    Time taken for tests      $elapsed [s]
-    Time taken for requests   $total_elapsed [s]
-    Complete scenarios        $scenarios
+    Time taken for tests:     $elapsed [s]
+    Time taken for requests:  $total_elapsed [s]
+    Complete scenarios:       $scenarios
     Complete requests:        $requests
     Failed requests:          $failed_requests
     Requests per second:      $rps [#/s]
     Time per request:         $tpr [s]
 
+    print "\n\nPer request statistics:\n\n";
+
+    my $stats_by_order = [sort { $a <=> $b } keys %$total_elapsed_per_request];
+    $self->_per_request_info($stats_by_order, $total_elapsed_per_request, $params{scenarios});
+
+    print "\n\n";
+    print "Ordered by elapsed time\n\n";
+
+    my $stats_by_elapsed =
+      [ sort { $total_elapsed_per_request->{$b}->{elapsed} <=> $total_elapsed_per_request->{$a}->{elapsed} }
+          keys %$total_elapsed_per_request ];
+    $self->_per_request_info($stats_by_elapsed, $total_elapsed_per_request, $params{scenarios});
+
+    print "\n\n";
+}
+
+sub _per_request_info
+{
+    my $self = shift;
+    my ($stats, $timings, $scenarios) = @_;
+
+    print "        Elapsed [s]  Requests per second [#/s]  Time per request [s]  URL\n\n";
+    foreach my $index (@$stats) {
+        my $number  = sprintf '%3d',  $index + 1;
+        my $elapsed = sprintf '%7.03f', $timings->{$index}->{elapsed};
+        my $requests = $timings->{$index}->{requests};
+
+        my $rps = sprintf( '%18.03f', $elapsed  ? $requests / $elapsed : 0 );
+        my $tpr = sprintf( '%25.03f', $requests ? $elapsed / $requests : 0 );
+
+        my $data = $scenarios->[$index];
+        my $env = $data->{request}->{env};
+
+        my $method = $env->{REQUEST_METHOD};
+        $method .= ' ' if length $method < 4;
+        my $info = "$method $env->{PATH_INFO}";
+        $info .= "?$env->{QUERY_STRING}" if length $env->{QUERY_STRING};
+
+        print "   $number: $elapsed $rps $tpr           $info\n";
+    }
 }
 
 sub _kill_children
@@ -237,6 +280,7 @@ sub _do {
 
     my $vars = Baseliner::RequestRecorder::Vars->new(quiet => 1);
     while (1) {
+        my $request = 0;
         foreach my $data (@$datas) {
             my $env = $data->{request}->{env};
 
@@ -274,11 +318,13 @@ sub _do {
 
             my $request_elapsed = tv_interval($request_time);
 
-            print $fh "REQUEST ELAPSED=$request_elapsed\n";
+            print $fh "REQUEST=$request ELAPSED=$request_elapsed\n";
 
             if (my $captures = $data->{response}->{captures}) {
                 $vars->extract_captures($captures, $response->content);
             }
+
+            $request++;
         }
 
         print $fh "SCENARIO\n";
