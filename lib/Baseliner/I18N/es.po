@@ -4305,6 +4305,9 @@ msgstr "%1 modificó tópico: release cambió a %4"
 msgid "%1 deleted all revisions"
 msgstr "%1 borró todas las revisiones"
 
+msgid "%1 deleted all users"
+msgstr "%1 borró todos los usuarios"
+
 msgid "attached revisions"
 msgstr "revisiones adjuntos"
 
@@ -4760,6 +4763,9 @@ msgstr "Regla: %1"
 
 msgid "Topic %1 (%2) has been assigned to you"
 msgstr "El tópico %1 (%2) ha sido asignado a ti"
+
+msgid "%1 Assigned To %2"
+msgstr "%1 ha asignado a: %2"
 
 msgid "AND?"
 msgstr "¿Y?"

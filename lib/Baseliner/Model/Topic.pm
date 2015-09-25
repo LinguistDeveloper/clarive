@@ -2486,14 +2486,18 @@ sub set_users{
 
             my $users = join(',', @name_users);
 
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => $users,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                                mid => $ci_topic->{mid},
-                                               } => sub {
-                { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, notify => $notify, subject => _loc("Topic %1 (%2) has been assigned to you",$ci_topic->{mid},$name_category) }   # to the event
+            event_new 'event.topic.modify_field' => { 
+                username   => $user,
+                field      => $id_field,
+                old_value      => '',
+                new_value  => $users,
+                text_new      => _loc('%1 Assigned To %2',$user, $users),
+                mid => $ci_topic->{mid},
+            } => sub {
+                { mid => $ci_topic->{mid}, 
+                topic => $ci_topic->{title}, 
+                notify => $notify, 
+                subject => _loc("Topic %1 (%2) has been assigned to you",$ci_topic->{mid},$name_category) } 
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2505,7 +2509,7 @@ sub set_users{
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => '',
-                                                    text_new      => '%1 deleted all users',
+                                                    text_new      => _loc('%1 deleted all users',$user),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                     { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, notify => $notify }   # to the event
