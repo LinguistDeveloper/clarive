@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use parent 'Plack::Middleware';
 
+use Fcntl ':flock';
 use Time::HiRes qw(time);
 use Plack::Util::Accessor qw(file);
 use Plack::Request;
@@ -28,6 +29,8 @@ sub call {
     my ($env) = @_;
 
     open my $fh, '>>', $self->file or die $!;
+
+    flock( $fh, LOCK_EX ) or die "Could not lock '" . $self->file . "': $!";
 
     print $fh sprintf "*** %s ***\n", time;
 
