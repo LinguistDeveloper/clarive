@@ -109,6 +109,14 @@ register 'dashlet.email' => {
     js_file => '/dashlets/emails.js'
 };
 
+register 'dashlet.html' => {
+    form=> '/dashlets/html_config.js',
+    name=> 'HTML', 
+    icon=> '/static/images/icons/html.png',
+    js_file => '/dashlets/html.js',
+    no_boot => 1,
+};
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
