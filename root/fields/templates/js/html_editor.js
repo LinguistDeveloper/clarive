@@ -53,8 +53,8 @@ params:
                 return editor.getValue();
             },
             is_valid : function(){
-                var text = editor.getValue();
-                text = jQuery(text).text();
+                var text = strip_html(editor.getValue());
+                text = text.replace(/\s+/g, '');
                 var is_valid = text != '' ? true : false;
                 if (is_valid && this.on_change_lab){
                     this.getEl().applyStyles('border: none; margin_bottom: 0px');
@@ -66,4 +66,4 @@ params:
             }               
         }               
     ]
-})
+});
