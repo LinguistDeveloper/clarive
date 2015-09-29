@@ -12,6 +12,8 @@ use Clarive::mdb;
 use Clarive::ci;
 use Clarive::Cmd::migra;
 use Baseliner::Utils qw(_md5);
+use BaselinerX::Type::Event;
+use BaselinerX::CI;
 
 sub run {
     my $self = shift;
