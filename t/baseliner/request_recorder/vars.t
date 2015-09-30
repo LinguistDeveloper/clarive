@@ -45,6 +45,14 @@ subtest 'replace vars' => sub {
     is $output, 'hello bar';
 };
 
+subtest 'leave out unknown vars' => sub {
+    my $vars = _build_vars();
+
+    my $output = $vars->replace_vars('hello ${foo}');
+
+    is $output, 'hello ${foo}';
+};
+
 sub _build_vars {
     Baseliner::RequestRecorder::Vars->new(@_);
 }

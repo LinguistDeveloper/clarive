@@ -48,7 +48,7 @@ sub replace_vars {
     my ( $data ) = @_;
 
     my $first = 1;
-    while ($data =~ m/\${(.*?)}/) {
+    while ($data =~ m/\${(.*?)}/g) {
         my $var = $1;
 
         if (exists $self->{vars}->{$var}) {
