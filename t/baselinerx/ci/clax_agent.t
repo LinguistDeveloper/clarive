@@ -105,7 +105,7 @@ subtest 'put_file: sends correct request' => sub {
 
     my ( $url ) = $ua->mocked_call_args('post');
 
-    is $url, 'http://bar:8888/tree/';
+    is $url, 'http://bar:8888/tree/?crc=3610a686';
     cmp_deeply $headers,
       {
         'Content-Length' => '159',
@@ -130,7 +130,7 @@ subtest 'put_file: sends request with attributes' => sub {
     my ( $url ) = $ua->mocked_call_args('post');
 
     my @stat = stat $local_file;
-    is $url, "http://bar:8888/tree/?time=$stat[9]";
+    is $url, "http://bar:8888/tree/?time=$stat[9]&crc=3610a686";
 };
 
 sub _mock_ua {

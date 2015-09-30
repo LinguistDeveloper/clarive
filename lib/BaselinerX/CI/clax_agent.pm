@@ -3,6 +3,8 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use HTTP::Tiny;
 use File::Basename qw(basename dirname);
+use URI;
+use String::CRC32 ();
 
 has user => qw(is rw isa Str);
 
@@ -113,10 +115,14 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 
     my $url = $self->_build_url("/tree/$dir");
 
+    my %query;
     if ($self->copy_attrs) {
         my @stat = stat $local;
-        $url .= "?time=$stat[9]";
+        $query{time} = $stat[9];
     }
+    $query{crc} = $self->_crc32_from_file($local);
+
+    $url->query_form(%query) if %query;
 
     my $response = $ua->post(
         $url => {
@@ -193,12 +199,24 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 method remote_eval( $code ) {
 }
 
+sub _crc32_from_file {
+    my $self = shift;
+    my ($file ) = @_;
+
+    open my $fh, '<', $file or die $!;
+    binmode $fh;
+    my $crc = String::CRC32::crc32($fh);
+    close $fh;
+
+    return sprintf '%x', $crc;
+}
+
 sub _build_url {
     my $self = shift;
     my ($path) = @_;
 
     my $url = $self->server->hostname . ':' . $self->port;
-    return "http://$url$path",
+    return URI->new("http://$url$path");
 }
 
 sub _build_ua {
