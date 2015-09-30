@@ -89,6 +89,36 @@ method is_writeable( $file_or_dir ) {
 }
 
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
+    $remote = $self->normalize_path( $remote );
+
+    my $ua = $self->_build_ua();
+
+    open my $fh, '<', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
+    binmode $fh;
+
+    my $url      = $self->_build_url("/tree/$remote");
+    my $response = $ua->post(
+        $url => {
+            content => sub {
+                my $rcount = read $fh, my $buffer, 8192;
+
+                die 'error reading from file' if $rcount < 0;
+
+                if ($rcount == 0) {
+                    close $fh;
+                    return;
+                }
+
+                return $buffer;
+            }
+        }
+    );
+
+    if (!$response->{success}) {
+        _fail( _loc( "clax put_file: error while sending remote file") );
+    }
+
+    return $self->tuple;
 }
 
 method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {

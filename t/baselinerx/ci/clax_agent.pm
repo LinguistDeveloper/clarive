@@ -74,6 +74,37 @@ subtest 'get_file: sends correct request' => sub {
     is_deeply $ret, {rc => 0, ret => '', output => ''};
 };
 
+subtest 'put_file: sends correct request' => sub {
+    my $ua = _mock_ua();
+
+    my $sent = '';
+    $ua->mock(
+        post => sub {
+            shift;
+            my ( $url, $options ) = @_;
+
+            while (defined(my $buffer = $options->{content}->())) {
+                $sent .= $buffer;
+            }
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my ($local_fh, $local_file) = tempfile();
+    print $local_fh 'hello';
+    close $local_fh;
+
+    my $ret = $clax_agent->put_file( local => $local_file, remote => 'remote-file', user => 'user' );
+
+    my ( $url ) = $ua->mocked_call_args('post');
+
+    is $url, 'http://bar:8888/tree/remote-file';
+    is $sent, 'hello';
+};
+
 sub _mock_ua {
     my $mock = Test::MonkeyMock->new;
 
