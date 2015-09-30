@@ -193,6 +193,15 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 
     close $fh;
 
+    if (my $exp_crc32 = $response->{headers}->{'x-clax-crc32'}) {
+        my $got_crc32 = $self->_crc32_from_file($local);
+
+        if ($exp_crc32 ne $got_crc32) {
+            unlink $local;
+            _fail( _loc( "clax get_file: crc32 check failed") )
+        }
+    }
+
     return $self->tuple;
 }
 
