@@ -39,5 +39,12 @@ builder {
             [ 401, ["Content-Type","text/html"], ["Clarive: no auth"] ];
         }
     };
-    mount '/' => Baseliner->psgi_app;
+    mount '/' => builder {
+        if ( my $record_file = Clarive->opts->{'record'} ) {
+            enable_if { $_[0]->{PATH_INFO} !~ /(?:woff|png|css|js|gif)$/ } '+Baseliner::Middleware::RecordRequests',
+              file => $record_file;
+        }
+
+        Baseliner->psgi_app;
+    };
 };
