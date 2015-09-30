@@ -111,7 +111,13 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     my $first_header_sent = 0;
     my $last_header_sent = 0;
 
-    my $url      = $self->_build_url("/tree/$dir");
+    my $url = $self->_build_url("/tree/$dir");
+
+    if ($self->copy_attrs) {
+        my @stat = stat $local;
+        $url .= "?time=$stat[9]";
+    }
+
     my $response = $ua->post(
         $url => {
             headers => {
