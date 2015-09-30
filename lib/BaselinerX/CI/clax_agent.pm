@@ -2,6 +2,7 @@ package BaselinerX::CI::clax_agent;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use HTTP::Tiny;
+use File::Basename qw(basename dirname);
 
 has user => qw(is rw isa Str);
 
@@ -96,17 +97,46 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     open my $fh, '<', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
     binmode $fh;
 
-    my $url      = $self->_build_url("/tree/$remote");
+    my $basename = basename $local;
+    my $dir = dirname $remote;
+    $dir = '' if $dir eq '/' || $dir eq '.';
+
+    my @alpha = ('0' .. '9', 'a' .. 'z', 'A' .. 'Z');
+    my $boundary = '------------clax';
+    $boundary .= $alpha[rand($#alpha)] for 1 .. 20;
+
+    my $first_header = qq{--$boundary\r\nContent-Disposition: form-data; name="file"; filename="$basename"\r\n\r\n};
+    my $last_header  = qq{\r\n--$boundary--\r\n};
+
+    my $first_header_sent = 0;
+    my $last_header_sent = 0;
+
+    my $url      = $self->_build_url("/tree/$dir");
     my $response = $ua->post(
         $url => {
+            headers => {
+                'Content-Type'   => qq{multipart/form-data; boundary=$boundary},
+                'Content-Length' => length($first_header) + ( -s $fh ) + length($last_header)
+            },
             content => sub {
                 my $rcount = read $fh, my $buffer, 8192;
 
-                die 'error reading from file' if $rcount < 0;
+                die "error reading from file: $!" unless defined $rcount;
 
                 if ($rcount == 0) {
+                    if (!$last_header_sent) {
+                        $last_header_sent++;
+
+                        return $last_header;
+                    }
+
                     close $fh;
                     return;
+                }
+
+                if (!$first_header_sent) {
+                    $buffer = $first_header . $buffer;
+                    $first_header_sent++;
                 }
 
                 return $buffer;

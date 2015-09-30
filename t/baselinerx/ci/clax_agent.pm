@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::MonkeyMock;
+use Test::Deep;
 
 use lib 't/lib';
 use TestEnv;
@@ -78,10 +79,13 @@ subtest 'put_file: sends correct request' => sub {
     my $ua = _mock_ua();
 
     my $sent = '';
+    my $headers = {};
     $ua->mock(
         post => sub {
             shift;
             my ( $url, $options ) = @_;
+
+            $headers = $options->{headers};
 
             while (defined(my $buffer = $options->{content}->())) {
                 $sent .= $buffer;
@@ -101,8 +105,13 @@ subtest 'put_file: sends correct request' => sub {
 
     my ( $url ) = $ua->mocked_call_args('post');
 
-    is $url, 'http://bar:8888/tree/remote-file';
-    is $sent, 'hello';
+    is $url, 'http://bar:8888/tree/';
+    cmp_deeply $headers,
+      {
+        'Content-Length' => '159',
+        'Content-Type'   => re(qr{multipart/form-data; boundary=------------clax[0-9a-zA-Z]+})
+      };
+    like $sent, qr/hello/;
 };
 
 sub _mock_ua {
