@@ -908,6 +908,8 @@ sub default : Path {
     my $p = $c->req->params;
     $meth //= 'json';
     my $ret = {};
+    my $username = $c->username;
+    $p->{username} = $username;
     my $body_file = $c->req->body ? _file($c->req->body) : undef;
     my $body = $body_file && -e $body_file ? $body_file->slurp : '';
     my $uri = $c->req->uri;
