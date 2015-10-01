@@ -55,6 +55,7 @@ sub run {
           };
     }
 
+    my $id = 1;
     foreach my $pair (@pairs) {
         if ( my $pid = fork ) {
             close $pair->{parent};
@@ -77,7 +78,15 @@ sub run {
             }
 
             eval {
-                $self->_do( $parent_fh, scenarios => \@scenarios, loop => $loop );
+                my %params;
+                if (my $eval_file = $opts{args}->{vars_eval}) {
+                    my $eval_cb = do $eval_file or die $@;
+                    $params{vars} = $eval_cb->($id);
+                }
+
+                $self->_do( $parent_fh, id => $id, scenarios => \@scenarios, loop => $loop, %params );
+            } or do {
+                warn $@;
             };
 
             print $parent_fh "DONE\n";
@@ -85,6 +94,8 @@ sub run {
 
             exit(0);
         }
+
+        $id++;
     }
 
     $SIG{INT} = sub {
@@ -274,11 +285,12 @@ sub _do {
     my $self = shift;
     my ( $fh, %params ) = @_;
 
+    my $id    = $params{id};
     my $datas = $params{scenarios};
 
     my $mech = WWW::Mechanize->new( onerror => sub { } );
 
-    my $vars = Baseliner::RequestRecorder::Vars->new(quiet => 1);
+    my $vars = Baseliner::RequestRecorder::Vars->new(vars => $params{vars}, quiet => 1);
     while (1) {
         my $request = 0;
         foreach my $data (@$datas) {
