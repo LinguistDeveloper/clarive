@@ -29,8 +29,8 @@ sub call {
     my ($env) = @_;
 
     open my $fh, '>>', $self->file or die $!;
-
-    flock( $fh, LOCK_EX ) or die "Could not lock '" . $self->file . "': $!";
+    flock( $fh, LOCK_EX ) or die "Could not lock '" . $self->file . "': $!"
+       unless $^O eq 'darwin'; # there's no (good) flock in OSX; will lock forever
 
     print $fh sprintf "*** %s ***\n", time;
 
