@@ -230,6 +230,9 @@ sub delete {
     
     $mid //= $self->mid;
     if( $mid ) {
+        my $ci = mdb->master->find_one({'mid' => $mid});
+        return 0 unless $ci;
+
         event_new 'event.ci.delete' => { username => $self->modified_by, ci => $self} => sub {
             # first relations, so nobody can find me
             mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
@@ -240,7 +243,7 @@ sub delete {
         };
         return 1;
     } else {
-        return undef;
+        return 0;
     }
 }
 
