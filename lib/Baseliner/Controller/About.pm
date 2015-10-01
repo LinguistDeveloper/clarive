@@ -6,8 +6,22 @@ use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.help.server_info' => { name => 'View server info in about window'};
-register 'menu.help' => { label => 'Help', index=>999 };
-register 'menu.help.about' => { label => 'About...', icon  => '/static/images/icons/about.png', url => '/about/show', title=>'About ' . ( Baseliner->config->{app_name} // 'Baseliner' ), index=>999 };
+register 'menu.help' => { label => 'Help', index => 999 };
+
+register 'menu.help.help_main' => {
+    label => 'Clarive Help',
+    title => 'Clarive Help',
+    icon  => '/static/images/icons/help.png',
+    url_eval => '/site/help-show.js',
+    index => 10
+};
+register 'menu.help.about' => {
+    label => 'About...',
+    icon  => '/static/images/icons/about.png',
+    url   => '/about/show',
+    title => 'About ' . ( Baseliner->config->{app_name} // 'Baseliner' ),
+    index => 999
+};
 
 sub dehash {
     my $v = shift;
