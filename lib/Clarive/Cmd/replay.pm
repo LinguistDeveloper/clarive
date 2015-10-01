@@ -23,7 +23,13 @@ sub run {
 
     my $mech = Test::WWW::Mechanize->new;
 
-    my $vars = Baseliner::RequestRecorder::Vars->new;
+    my %params;
+    if (my $eval_file = $opts{args}->{vars_eval}) {
+        my $eval_cb = do $eval_file or die $@;
+        $params{vars} = $eval_cb->(1);
+    }
+
+    my $vars = Baseliner::RequestRecorder::Vars->new(%params);
     foreach my $case (@cases) {
         next unless $case;
 
@@ -104,5 +110,6 @@ __END__
 Common options:
 
     --file <file>           file to replay
+    --vars_eval <file>      file to run for getting vars
 
 =cut

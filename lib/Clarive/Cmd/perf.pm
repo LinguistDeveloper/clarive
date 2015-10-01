@@ -85,6 +85,8 @@ sub run {
                 }
 
                 $self->_do( $parent_fh, id => $id, scenarios => \@scenarios, loop => $loop, %params );
+
+                1;
             } or do {
                 warn $@;
             };
@@ -360,5 +362,6 @@ Common options:
     --loop <loop>           how many times to run a scenario
     --forks <forks>         parallel requests
     --time <time>           seconds to run the tests
+    --vars_eval <file>      file to run for getting vars
 
 =cut
