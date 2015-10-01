@@ -25,6 +25,12 @@ IC = function(icon){
 
 Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;
 
+Cla.BrowserVersion = function(){
+    var ua = navigator.userAgent.toLowerCase();
+    var match = ua.match('version/([^ ]+)') || ua.match('chrome/([^ ]+)');
+    return match && match[1] ? match[1] : -1;
+}();
+
 // our own, simpler requirejs
 Cla.loaded_scripts = new Array();
 Cla.use = function(urls, callback, cache){
