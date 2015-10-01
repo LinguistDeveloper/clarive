@@ -46,7 +46,7 @@ sub branch : Local {
         {
             url  => '/gittree/branch_commits',
             text => _loc('revisions'),
-            icon       => '/static/images/icons/commite_.png',
+            icon       => '/static/images/icons/commite_new_.png',
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
