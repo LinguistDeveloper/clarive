@@ -102,7 +102,7 @@ around 'BUILDARGS' => sub {
 
     # merge config and args
     my %opts = ( %$parsed_config, %$parsed_args );
-    $opts{config} = $parsed_config;
+    $opts{config} = \%opts;    # this becomes Clarive->config later
     $opts{opts}   = $self->clone( \%opts );
     
     warn "app args: " . $self->yaml( \%opts ) if $args{v};
