@@ -2606,7 +2606,7 @@ sub get_meta_permissions {
     my @user_read_actions_for_topic = $user_actions->{negative};
 
     for (_array $meta){
-        my $parse_id_field = _name_to_id($_->{name_field});
+        my $parse_id_field = $_->{id_field};
         
         if($_->{fieldlets}){
         	my @fields_form = _array $_->{fieldlets};
