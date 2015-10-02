@@ -867,11 +867,6 @@ sub sync : Local {
                     $ci_data{ $k } = $v;
                 }
             }
-            if($p->{folder_or_file} eq 'true'){
-                $ci_data{ folder_or_file } = $is_folder_or_file;
-                $ci_data{ sha } = $sha;
-                $ci_data{ rev } = $rev;
-            }
             $mid = $self->ci_create_or_update(
                 rel_field  => $collection,
                 name       => $name,

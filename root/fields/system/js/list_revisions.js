@@ -131,10 +131,7 @@ params:
                                 repo: node_data.click.repo_mid, 
                                 topic_mid: topic_data.topic_mid, 
                                 branch: meta.branch,
-                                folder_or_file: node_data.ci.folder_or_file,
-                                repo_dir: node_data.repo_dir,
-                                rev: node_data.ci.rev,
-                                sha: node_data.ci.sha
+                                repo_dir: node_data.repo_dir
                             }, function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
