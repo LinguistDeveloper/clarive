@@ -4,11 +4,11 @@ Ext.onReady(function(){
 
     var after_login = Base64.decode("<% Util->to_base64( $c->stash->{after_login}, '' ) %>");
     var after_login_query = Base64.decode("<% Util->to_base64( $c->stash->{after_login_query}, '' ) %>");
-    
+
     var login_txt = '<% _loc("Login") %>';
 
     Baseliner.doLoginForm = function(){
-        /* 
+        /*
             Another way of getting the query:
             var getParams = document.URL.split("?");
             var tab_params = {};
@@ -22,7 +22,7 @@ Ext.onReady(function(){
         ff.submit({
             success: function(form, action) {
                             var last_login = form.findField('login').getValue();
-                            Baseliner.cookie.set( 'last_login', last_login ); 
+                            Baseliner.cookie.set( 'last_login', last_login );
                             if( after_login_query.length > 0 ) {
                                 after_login = after_login + '?' + after_login_query;
                             }
@@ -49,14 +49,15 @@ Ext.onReady(function(){
                             } else {
                                 Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
                                 login_form.getForm().findField('login').focus('',100);
-                            }      
+                            }
                       }
         });
    };
 
-    var login_button = new Ext.Button({ 
+    var login_button = new Ext.Button({
         text: login_txt,
-        handler: Baseliner.doLoginForm
+        handler: Baseliner.doLoginForm,
+        cls: 'ui-button-login'
     });
     var login_form = new Ext.FormPanel({
             id: 'lf',
@@ -78,17 +79,17 @@ Ext.onReady(function(){
                 }
             ],
             items: [
-                {  xtype: 'textfield', name: 'login', width: "100%", fieldLabel: "<% _loc('Username') %>", selectOnFocus: true }, 
-                {  xtype: 'textfield', name: 'password', width: "100%", inputType:'password', fieldLabel: "<% _loc('Password') %>", selectOnFocus: true} 
+                {  xtype: 'textfield', name: 'login', width: "100%", fieldLabel: "<% _loc('Username') %>", selectOnFocus: true },
+                {  xtype: 'textfield', name: 'password', width: "100%", inputType:'password', fieldLabel: "<% _loc('Password') %>", selectOnFocus: true}
             ]
         });
 
      var map = new Ext.KeyMap(document, [{
             key : [10, 13],
             fn : Baseliner.doLoginForm
-        }]); 
+        }]);
 
-     var last_login = Baseliner.cookie.get( 'last_login'); 
+     var last_login = Baseliner.cookie.get( 'last_login');
 
      setTimeout(function(){
         Ext.get('bali-loading').remove();
@@ -102,5 +103,5 @@ Ext.onReady(function(){
 
         Ext.get('bali-loading-mask').fadeOut({ remove: true });
      }, 400);
-     
+
 });

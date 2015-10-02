@@ -185,8 +185,8 @@ Ext.onReady(function(){
             user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.png' });
         }
         
-        user_menu.push({ text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 999, icon: '/static/images/icons/logout.png' });
-        tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu });
+        user_menu.push({ text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 999, icon: '/static/images/icons/logout.png', cls: 'ui-user-menu-logout' });
+        tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
     } else {
         tbar_items.push({ text: _('Login'), handler: function(){ Baseliner.login(); } });
     }

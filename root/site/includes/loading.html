@@ -1,0 +1,19 @@
+<%args>
+    $loading_mask => 1
+</%args>
+
+    <!-- Loading masks -->                                            
+% if( $loading_mask ) {
+    <div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
+    <div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">
+      <img id="bali-loading-img" style="display: block" src="/static/images/loading.gif" />
+      <div id="boot" class="loading-progress" style="display: none; height: 2px">
+          <div class="progress" style="height: 2px" >
+              <div class="bar" style="width: 0%"></div>
+          </div>
+      </div>
+      <div id="bali-loading-text" style="text-align: center; text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">
+          <% _loc('Loading') %>
+      </div>
+    </div>
+% }

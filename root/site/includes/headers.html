@@ -1,0 +1,74 @@
+<%args>
+    $theme_dir => ''
+</%args>
+<%perl>
+    my $debug = $c->debug ? '-debug' : '';
+</%perl>
+    <title><% _loc( $c->config->{name} ) %></title>
+% if( my $favicon = $c->config->{favicon} ) {
+    <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
+% }
+
+
+    <!-- Twitter Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
+    
+    <!--JQuery -->
+    <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
+    <!--JQuery draggable plugin, etc -->
+    <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
+
+    <script>$('#bali-loading .progress .bar').width('20%');</script>
+    
+    <!-- ExtJS -->
+    <!-- <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" /> -->
+    <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
+
+    <!-- <script type="text/javascript" src="/site/stacktrace.js"></script> -->
+    <script type="text/javascript" src="/static/ext/adapter/ext/ext-base<% $debug %>.js"></script>
+    <!-- script type="text/javascript" src="/static/ext/adapter/jquery/ext-jquery-adapter<% $debug %>.js"></script -->
+
+    <script type="text/javascript" src="/static/ext/ext-all-nochart<% $debug %>.js"></script>
+    <!-- script type="text/javascript" src="/static/ext/jitx<% $debug %>.js"></script -->
+
+    <!-- ux -->
+    <link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
+    <script type="text/javascript" src="/static/ext/examples/ux/ux-all<% $debug %>.js"></script>
+
+    <!-- <script type="text/javascript" src="/static/ext/build/locale/ext-lang-es-min.js"></script> -->
+    <script type="text/javascript" src="/static/ext/src/locale/ext-lang-<% $c->language %>.js"></script>
+
+    <!-- D3 and C3, before use strict makes it impossible to load window.d3 and window.c3 -->
+    <script src="/static/d3/d3.min.js"></script>
+    <script src="/static/c3/c3.min.js"></script>
+
+    <!-- C3 Stylesheet -->
+    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
+
+    <!-- site is the global stylesheet -->
+    <link rel="stylesheet" type="text/css" href="/static/site.css" />
+
+    <!-- base64 for mason safe data sends -->
+    <script type="text/javascript" src="/static/base64/base64.js"></script>
+
+    <!-- Gritter, used in common.js -->
+    <script src="/static/gritter/js/jquery.gritter.min.js"></script>
+    <link rel="stylesheet" href="/static/gritter/css/jquery.gritter.css">
+    
+    <script type="text/javascript" src="/i18n/js"></script>
+    <script type="text/javascript" src="/site/globals.js"></script>
+    <script type="text/javascript" src="/site/common.js"></script>
+    <script type="text/javascript" src="/site/tmpl.js"></script>
+
+    <script>$('#bali-loading .progress .bar').width('30%');</script>
+    <!-- #reset namespace
+        <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
+    -->
+% if( my $theme_dir = $c->stash->{theme_dir} ) {
+    <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
+% }
+
+
+%# consider including templates <& /site/templates.html &>, and adding it to JS Reload menu option for testing

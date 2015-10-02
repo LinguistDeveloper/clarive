@@ -1,64 +1,69 @@
+<!doctype html>
 <head>
-	<& '/site/nocache.html' &>
-	<& '/site/top.html' &>
-</head>
-<style type="text/css" media="screen">
-	body {
-        height: 100%;
-        padding: 0;
-        margin: 0;
-        font-family: Verdana, Arial, Helvetica, sans-serif;
-        background-repeat: repeat-x;
-        background-image: url(/static/themes/clarive/images/gradient.gif);
-	} 
-	.logo {
-		 position: absolute;
-		 top: 60px;
-		 left: 35%;
-		 padding: 5px;
-	} 
-	.logo-lower {
-		 padding: 5px;
-    }
-    .bottom {
-        display:block;
-        position:absolute;
-        bottom:0;
-        right:0;
-        width: 150px;
-	} 
-	.copyright {
-		position: absolute;
-        font-family: Calibri, Arial;
-        font-size: 9px;
-		padding: 5px;
-		top: 260px;
-		left: 53%;
-    }
-	.centered {
-		position: absolute;
-		top: 140px;
-		left: 35%;
-		width: 30%;
-		background-color: #CCCCCC;
-		padding: 5px;
-	} 
-</style>
+    <& '/site/nocache.html' &>
+    <& '/site/includes/headers.html' &>
 
-<script type="text/javascript">
-<& /site/login.js &>
-</script>
+    <style type="text/css" media="screen">
+        body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            background-repeat: repeat-x;
+            background-image: url(/static/themes/clarive/images/gradient.gif);
+        }
+        .logo {
+             position: absolute;
+             top: 60px;
+             left: 35%;
+             padding: 5px;
+        }
+        .logo-lower {
+             padding: 5px;
+        }
+        .bottom {
+            display:block;
+            position:absolute;
+            bottom:0;
+            right:0;
+            width: 150px;
+        }
+        .copyright {
+            position: absolute;
+            font-family: Calibri, Arial;
+            font-size: 9px;
+            padding: 5px;
+            top: 260px;
+            left: 53%;
+        }
+        .centered {
+            position: absolute;
+            top: 140px;
+            left: 35%;
+            width: 30%;
+            background-color: #CCCCCC;
+            padding: 5px;
+        }
+    </style>
+</head>
 <body>
+    <& '/site/includes/loading.html' &>
+
+    <script type="text/javascript">
+    <& '/site/login.js' &>
+    </script>
+
     <div class='band-white'></div>
-    <img class='logo' src='/static/themes/clarive/images/clarive-logo-black.png'></img>
+    <img class='logo' src='/static/themes/clarive/images/clarive-logo-black.png' />
 <%doc>
     <div class="bottom">
-        <img class='logo-lower' src='/static/themes/clarive/images/vasslabs-logo-black.png'></img>
+        <img class='logo-lower' src='/static/themes/clarive/images/vasslabs-logo-black.png' />
     </div>
 </%doc>
     <div class="copyright"> </div>
+    <script>
+    $(document).ready(function() {
+        $( ".copyright" ).text( 'Copyright(C) 2010-' + new Date().getFullYear() + ', Clarive Software, Inc.' );
+    });
+    </script>
 </body>
-<script>
-$( ".copyright" ).text( 'Copyright(C) 2010-' + new Date().getFullYear() + ', Clarive Software, Inc.' );
-</script>
-
