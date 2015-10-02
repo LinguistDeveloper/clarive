@@ -473,6 +473,30 @@ Details
 
     For capturing and settings variables see `replay` documentation.
 
+    Passing predefined variables to scenario
+    ----------------------------------------
+
+    If instead of a HASH reference the file returns a CODE
+    reference, it will be called with a fork id argument. This
+    allows setting different variables for every fork.
+
+        sub {
+            my ($fork_id) = @_;
+
+            my $vars = {};
+
+            if ( $fork_id == 1 ) {
+                $vars->{login}    = 'admin';
+                $vars->{password} = 'password';
+            }
+            else {
+                $vars->{login}    = 'user';
+                $vars->{password} = 'password';
+            }
+
+            return $vars;
+          }
+
     Grouping
     --------
 

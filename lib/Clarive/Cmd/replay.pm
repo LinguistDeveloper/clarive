@@ -26,7 +26,7 @@ sub run {
     my %params;
     if (my $eval_file = $opts{args}->{'vars-eval'}) {
         my $eval_cb = do $eval_file or die $@;
-        $params{vars} = $eval_cb->(1);
+        $params{vars} = ref $eval_cb eq 'CODE' ? $eval_cb->(1) : $eval_cb;
     }
 
     my $vars = Baseliner::RequestRecorder::Vars->new(%params);
@@ -144,24 +144,13 @@ Details
         }
 
     If instead of a HASH reference the file returns a CODE
-    reference, it will be called with a fork id argument. This
-    allows setting different variables for every fork.
+    reference, it will be called.
 
         sub {
-            my ($fork_id) = @_;
-
-            my $vars = {};
-
-            if ( $fork_id == 1 ) {
-                $vars->{login}    = 'admin';
-                $vars->{password} = 'password';
+            {
+                login    => 'local/root',
+                password => 'admin'
             }
-            else {
-                $vars->{login}    = 'user';
-                $vars->{password} = 'password';
-            }
-
-            return $vars;
-          }
+        }
 
 =cut
