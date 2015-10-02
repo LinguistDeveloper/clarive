@@ -24,7 +24,7 @@ sub run {
     my $mech = Test::WWW::Mechanize->new;
 
     my %params;
-    if (my $eval_file = $opts{args}->{vars_eval}) {
+    if (my $eval_file = $opts{args}->{'vars-eval'}) {
         my $eval_cb = do $eval_file or die $@;
         $params{vars} = $eval_cb->(1);
     }
@@ -110,6 +110,58 @@ __END__
 Common options:
 
     --file <file>           file to replay
-    --vars_eval <file>      file to run for getting vars
+    --vars-eval <file>      file to run for getting vars
+
+Details
+
+    Capturing variables in scenario
+    -------------------------------
+
+    In order to capture variables and reuse them in scenarios,
+    add the `captures` section to the `response` data in
+    scenario yaml file:
+
+        response:
+          captures:
+            - names: 'mid'
+              re: '"mid":"(\d+)"'
+          body: '{"mid":"123"}'
+
+    Then later in other requests, you can reuse `mid` variable:
+
+        request:
+          body: '{"mid":"${mid}"}'
+
+    Passing predefined variables to scenario
+    ----------------------------------------
+
+    By using `--vars-eval` option one can provide a Perl script
+    that will set variables:
+
+        {
+            login    => 'local/root',
+            password => 'admin'
+        }
+
+    If instead of a HASH reference the file returns a CODE
+    reference, it will be called with a fork id argument. This
+    allows setting different variables for every fork.
+
+        sub {
+            my ($fork_id) = @_;
+
+            my $vars = {};
+
+            if ( $fork_id == 1 ) {
+                $vars->{login}    = 'admin';
+                $vars->{password} = 'password';
+            }
+            else {
+                $vars->{login}    = 'user';
+                $vars->{password} = 'password';
+            }
+
+            return $vars;
+          }
 
 =cut

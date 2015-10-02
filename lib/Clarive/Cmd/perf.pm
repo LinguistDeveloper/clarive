@@ -17,9 +17,14 @@ sub run {
 
     die "--file is required\n" unless my $file = $opts{args}->{file};
 
-    my $forks = $opts{args}->{forks} || 1;
-    my $time  = $opts{args}->{time};
-    my $loop  = $time ? -1 : ($opts{args}->{loop}  || 1);
+    my $forks                = $opts{args}->{forks} || 1;
+    my $time                 = $opts{args}->{time};
+    my $loop                 = $time ? -1 : ( $opts{args}->{loop} || 1 );
+    my $with_request_details = !!$opts{args}->{'with-request-details'};
+    my $with_group_details   = !!$opts{args}->{'with-group-details'};
+
+    my $vars_by_fork  = {};
+    my $vars_by_group = {};
 
     open my $fh, '<', $file or die "Can't open file '$file': $!\n";
     my @cases = split /\s*\*\*\* \d+\.\d+ \*\*\*\s*/ms, do { local $/; <$fh> };
@@ -41,7 +46,7 @@ sub run {
 
     print "Forking....";
 
-    for ( 1 .. $forks ) {
+    for my $fork ( 1 .. $forks ) {
         socketpair( my $child, my $parent, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
           || die "socketpair: $!";
 
@@ -53,6 +58,17 @@ sub run {
             child  => $child,
             parent => $parent
           };
+
+        if (my $eval_file = $opts{args}->{'vars-eval'}) {
+            my $eval_cb = do $eval_file or die $@;
+
+            $vars_by_fork->{$fork} = ref $eval_cb eq 'CODE' ? $eval_cb->($fork) : $eval_cb;
+
+            if (my $group = $vars_by_fork->{$fork}->{-group}) {
+                $vars_by_group->{$group} = {%{$vars_by_fork->{$fork}}};
+                delete $vars_by_group->{$group}->{-group};
+            }
+        }
     }
 
     my $id = 1;
@@ -78,13 +94,13 @@ sub run {
             }
 
             eval {
-                my %params;
-                if (my $eval_file = $opts{args}->{vars_eval}) {
-                    my $eval_cb = do $eval_file or die $@;
-                    $params{vars} = $eval_cb->($id);
-                }
-
-                $self->_do( $parent_fh, id => $id, scenarios => \@scenarios, loop => $loop, %params );
+                $self->_do(
+                    $parent_fh,
+                    id        => $id,
+                    scenarios => \@scenarios,
+                    loop      => $loop,
+                    vars      => $vars_by_fork->{$id}
+                );
 
                 1;
             } or do {
@@ -129,19 +145,34 @@ sub run {
         print $child_fh "GO\n";
     }
 
-    $self->_benchmark( \%pids, forks => $forks, time => $time, scenarios => \@scenarios );
+    $self->_benchmark(
+        \%pids,
+        forks                => $forks,
+        time                 => $time,
+        scenarios            => \@scenarios,
+        vars_by_group        => $vars_by_group,
+        vars_by_fork         => $vars_by_fork,
+        with_request_details => $with_request_details,
+        with_group_details   => $with_group_details,
+    );
 }
 
 sub _benchmark {
     my $self = shift;
     my ($pids, %params) = @_;
 
-    my $start                     = [gettimeofday];
-    my $total_elapsed             = 0;
-    my $total_elapsed_per_request = {};
-    my $scenarios                 = 0;
-    my $requests                  = 0;
-    my $failed_requests           = 0;
+    my $start                           = [gettimeofday];
+    my $total_elapsed                   = 0;
+    my $total_elapsed_per_request       = {};
+    my $total_elapsed_per_group_request = {};
+    my $scenarios                       = 0;
+    my $requests                        = 0;
+    my $failed_requests                 = 0;
+
+    my $with_request_details = $params{with_request_details};
+    my $with_group_details   = $params{with_group_details};
+    my $vars_by_fork         = $params{vars_by_fork};
+    my $vars_by_group        = $params{vars_by_group};
 
     print "Benchmarking (be patient)....";
 
@@ -176,9 +207,13 @@ sub _benchmark {
                     elsif ( $line =~ m/REQUEST FAILED/ ) {
                         $failed_requests++;
                     }
-                    elsif ( $line =~ m/REQUEST=(.*?) ELAPSED=(.*)/ ) {
+                    elsif ( $line =~ m/REQUEST=(.*?) ELAPSED=(.*) GROUP=(.*)/ ) {
                         $total_elapsed_per_request->{$1}->{elapsed} += $2;
                         $total_elapsed_per_request->{$1}->{requests}++;
+
+                        $total_elapsed_per_group_request->{$3}->{$1}->{elapsed} += $2;
+                        $total_elapsed_per_group_request->{$3}->{$1}->{requests}++;
+
                         $total_elapsed += $2;
                     }
                     elsif ( $line =~ m/SCENARIO/ ) {
@@ -208,8 +243,8 @@ sub _benchmark {
     }
 
     my $elapsed = sprintf( '%0.3f', tv_interval($start));
-    my $rps = sprintf( '%0.3f', $total_elapsed ? $requests / $total_elapsed : 0 );
-    my $tpr = sprintf( '%0.3f', $requests ? $total_elapsed / $requests: 0);
+    my $rps = $self->_calculate_rps( $requests, $total_elapsed );
+    my $tpr = $self->_calculate_tpr( $total_elapsed, $requests );
 
     print "done\n\n";
 
@@ -223,20 +258,86 @@ sub _benchmark {
     Requests per second:      $rps [#/s]
     Time per request:         $tpr [s]
 
-    print "\n\nPer request statistics:\n\n";
-
-    my $stats_by_order = [sort { $a <=> $b } keys %$total_elapsed_per_request];
-    $self->_per_request_info($stats_by_order, $total_elapsed_per_request, $params{scenarios});
-
     print "\n\n";
-    print "Ordered by elapsed time\n\n";
 
-    my $stats_by_elapsed =
-      [ sort { $total_elapsed_per_request->{$b}->{elapsed} <=> $total_elapsed_per_request->{$a}->{elapsed} }
-          keys %$total_elapsed_per_request ];
-    $self->_per_request_info($stats_by_elapsed, $total_elapsed_per_request, $params{scenarios});
+    if ($with_request_details) {
+        print "Per request statistics:\n\n";
 
-    print "\n\n";
+        my $stats_by_order = [sort { $a <=> $b } keys %$total_elapsed_per_request];
+        $self->_per_request_info($stats_by_order, $total_elapsed_per_request, $params{scenarios});
+
+        print "\n\n";
+        print "Ordered by elapsed time\n\n";
+
+        my $stats_by_elapsed =
+          [ sort { $total_elapsed_per_request->{$b}->{elapsed} <=> $total_elapsed_per_request->{$a}->{elapsed} }
+              keys %$total_elapsed_per_request ];
+        $self->_per_request_info($stats_by_elapsed, $total_elapsed_per_request, $params{scenarios});
+
+        print "\n\n";
+    }
+
+    if ($with_group_details && keys %{$total_elapsed_per_group_request} > 1) {
+        print "Statistics by groups\n\n";
+
+        foreach my $group (sort keys %{$total_elapsed_per_group_request}) {
+            print "Group: $group\n\n";
+
+            print "    Variables:\n\n";
+            foreach my $var (sort keys %{$vars_by_group->{$group}}) {
+                my $value = $vars_by_group->{$group}->{$var};
+                $value = '******' if $var eq 'password';
+                print "        $var: '$value'\n";
+            }
+            print "\n\n";
+
+            my $total_group_requests = 0;
+            my $total_group_elapsed = 0;
+            foreach my $index (keys %{$total_elapsed_per_group_request->{$group}}) {
+                my $request = $total_elapsed_per_group_request->{$group}->{$index};
+
+                $total_group_elapsed += $request->{elapsed};
+                $total_group_requests++;
+            }
+
+            my $rps = $self->_calculate_rps( $total_group_requests, $total_group_elapsed );
+            my $tpr = $self->_calculate_tpr( $total_group_elapsed, $total_group_requests );
+
+            my $forks = 0;
+            foreach my $fork_id (keys %$vars_by_fork) {
+                my $fork_vars = $vars_by_fork->{$fork_id};
+                $forks++ if $fork_vars->{-group} && $fork_vars->{-group} eq $group;
+            }
+
+            print <<"";
+    Concurrency level:        $forks
+    Time taken for requests:  $total_group_elapsed [s]
+    Complete requests:        $total_group_requests
+    Requests per second:      $rps [#/s]
+    Time per request:         $tpr [s]
+
+            print "\n\n";
+
+            my $stats_by_order = [sort { $a <=> $b } keys %{$total_elapsed_per_group_request->{$group}}];
+            $self->_per_request_info($stats_by_order, $total_elapsed_per_request, $params{scenarios});
+
+            print "\n\n";
+        }
+    }
+}
+
+sub _calculate_rps {
+    my $self = shift;
+    my ($requests, $elapsed) = @_;
+
+    return sprintf( '%0.3f', $elapsed ? $requests / $elapsed : 0 );
+}
+
+sub _calculate_tpr {
+    my $self = shift;
+    my ($elapsed, $requests) = @_;
+
+    return sprintf( '%0.3f', $requests ? $elapsed / $requests: 0);
 }
 
 sub _per_request_info
@@ -292,9 +393,10 @@ sub _do {
 
     my $mech = WWW::Mechanize->new( onerror => sub { } );
 
+    my $group = delete $params{vars}->{'-group'} || 'default';
     my $vars = Baseliner::RequestRecorder::Vars->new(vars => $params{vars}, quiet => 1);
     while (1) {
-        my $request = 0;
+        my $request_num = 0;
         foreach my $data (@$datas) {
             my $env = $data->{request}->{env};
 
@@ -332,13 +434,13 @@ sub _do {
 
             my $request_elapsed = tv_interval($request_time);
 
-            print $fh "REQUEST=$request ELAPSED=$request_elapsed\n";
+            print $fh "REQUEST=$request_num ELAPSED=$request_elapsed GROUP=$group\n";
 
             if (my $captures = $data->{response}->{captures}) {
                 $vars->extract_captures($captures, $response->content);
             }
 
-            $request++;
+            $request_num++;
         }
 
         print $fh "SCENARIO\n";
@@ -362,6 +464,38 @@ Common options:
     --loop <loop>           how many times to run a scenario
     --forks <forks>         parallel requests
     --time <time>           seconds to run the tests
-    --vars_eval <file>      file to run for getting vars
+    --vars-eval <file>      file to run for getting vars
+
+    --with-request-details  show statistics by every request
+    --with-group-details    show statistics by every group
+
+Details
+
+    For capturing and settings variables see `replay` documentation.
+
+    Grouping
+    --------
+
+    If it is needed to group the forks for displaying more
+    granular statistics one can set a special `-group` variable.
+
+        sub {
+            my ($fork_id) = @_;
+
+            my $vars = {};
+
+            if ( $fork_id == 1 ) {
+                $vars->{-group}   = 'admin user';
+                $vars->{login}    = 'admin';
+                $vars->{password} = 'password';
+            }
+            else {
+                $vars->{-group}   = 'normal user';
+                $vars->{login}    = 'user';
+                $vars->{password} = 'password';
+            }
+
+            return $vars;
+          }
 
 =cut
