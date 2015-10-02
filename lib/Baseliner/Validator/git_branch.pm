@@ -6,7 +6,7 @@ sub validate {
     my $self = shift;
     my ($value) = @_;
 
-    return $self->_build_not_valid unless $value =~ qr/^[[:alnum:]\-#\.]+$/;
+    return $self->_build_not_valid unless $value =~ qr/^[[:alnum:]\-_#\.]+$/;
     return $self->_build_valid;
 }
 
