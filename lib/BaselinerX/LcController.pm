@@ -473,7 +473,6 @@ sub branches : Local {
     my ($self,$c) = @_;
     my @tree;
     my @changes;
-
     my $p = $c->req->params;
     my $project = $p->{project} or _throw 'missing project';
     my $id_project = $p->{id_project} or _throw 'missing project id';
@@ -525,7 +524,7 @@ sub branches : Local {
             };
         };
     }
-
+_log "TREE=====>"._dump @tree;
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }

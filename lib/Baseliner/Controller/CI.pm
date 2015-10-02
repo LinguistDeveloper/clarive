@@ -806,7 +806,6 @@ sub sync : Local {
     my $branch = $p->{branch};
 
     my $valid_repo = 1;
-
     my $data = exists $p->{ci_json} ? _decode_json( $p->{ci_json} ) : $p;
 
     if ( $p->{topic_mid} ) {
@@ -874,7 +873,6 @@ sub sync : Local {
                 mid        => $mid,
                 data       => \%ci_data
             );
-
             $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
             $c->stash->{json}{mid} = $mid;
         } catch {
