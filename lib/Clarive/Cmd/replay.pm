@@ -10,6 +10,7 @@ use Test::WWW::Mechanize;
 use JSON ();
 use Baseliner::Utils qw(_load);
 use Baseliner::RequestRecorder::Vars;
+use Baseliner::RequestRecorder::VarsLoader;
 
 sub run {
     my $self = shift;
@@ -23,13 +24,13 @@ sub run {
 
     my $mech = Test::WWW::Mechanize->new;
 
-    my %params;
+    my %vars_params;
     if (my $eval_file = $opts{args}->{'vars-eval'}) {
-        my $eval_cb = do $eval_file or die $@;
-        $params{vars} = ref $eval_cb eq 'CODE' ? $eval_cb->(1) : $eval_cb;
+        $vars_params{vars} = Baseliner::RequestRecorder::VarsLoader->load_from_file($eval_file);
     }
 
-    my $vars = Baseliner::RequestRecorder::Vars->new(%params);
+    my $vars = Baseliner::RequestRecorder::Vars->new(%vars_params);
+
     foreach my $case (@cases) {
         next unless $case;
 

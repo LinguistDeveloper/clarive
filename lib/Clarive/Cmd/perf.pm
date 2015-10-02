@@ -10,6 +10,7 @@ use WWW::Mechanize;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::Utils qw(_load);
 use Baseliner::RequestRecorder::Vars;
+use Baseliner::RequestRecorder::VarsLoader;
 
 sub run {
     my $self = shift;
@@ -60,9 +61,9 @@ sub run {
           };
 
         if (my $eval_file = $opts{args}->{'vars-eval'}) {
-            my $eval_cb = do $eval_file or die $@;
+            my $vars = Baseliner::RequestRecorder::VarsLoader->load_from_file($eval_file, $fork);
 
-            $vars_by_fork->{$fork} = ref $eval_cb eq 'CODE' ? $eval_cb->($fork) : $eval_cb;
+            $vars_by_fork->{$fork} = $vars;
 
             if (my $group = $vars_by_fork->{$fork}->{-group}) {
                 $vars_by_group->{$group} = {%{$vars_by_fork->{$fork}}};
@@ -345,7 +346,7 @@ sub _per_request_info
     my $self = shift;
     my ($stats, $timings, $scenarios) = @_;
 
-    print "        Elapsed [s]  Requests per second [#/s]  Time per request [s]  URL\n\n";
+    print "        Elapsed [s]  Requests per second [#/s]  Time per request [s]   URL\n\n";
     foreach my $index (@$stats) {
         my $number  = sprintf '%3d',  $index + 1;
         my $elapsed = sprintf '%7.03f', $timings->{$index}->{elapsed};
