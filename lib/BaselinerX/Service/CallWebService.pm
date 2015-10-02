@@ -65,6 +65,8 @@ sub web_request {
 
     my $response = $ua->request( $request );
 
+    $c->stash->{_ws_body} = $response->decoded_content;
+    
     if( ! $response->is_success ) {
         _error( $response->decoded_content );
         _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args);
