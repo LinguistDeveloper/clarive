@@ -4299,6 +4299,9 @@ msgstr "tópicos adjuntos"
 msgid "%1 deleted release %3"
 msgstr "%1 borró release %3"
 
+msgid "%1 deleted %2"
+msgstr "%1 borró %2"
+
 msgid "%1 modified topic: changed release to %4"
 msgstr "%1 modificó tópico: release cambió a %4"
 

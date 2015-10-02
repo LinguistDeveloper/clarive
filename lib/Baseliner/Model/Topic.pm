@@ -2419,7 +2419,7 @@ sub set_projects {
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => $projects,
-                                                    text_new      => '%1 modified topic: %2 ( %4 )',
+                                                    text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title}, $projects, $name_field),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: %4 (%3)", $ci_topic->{mid}, $ci_topic->{title}, $projects, $name_field);
@@ -2436,7 +2436,7 @@ sub set_projects {
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => '',
-                                                    text_new      => '%1 deleted %2',
+                                                    text_new      => _loc('%1 deleted %2',$user, $ci_topic->{title}, $name_field),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: %3 deleted", $ci_topic->{mid}, $ci_topic->{title}, $name_field );
