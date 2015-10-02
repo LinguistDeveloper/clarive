@@ -15,6 +15,7 @@ etc/lc.yaml
 *.bak
 *.new
 *.SWP
+*.swp
 *.log
 *.orig
 sqlnet.log
@@ -37,6 +38,7 @@ features/svnscm
 features/cvsscm
 features/jazztel
 features/bi
+features/*
 inc
 t/balitest.db
 t/old
