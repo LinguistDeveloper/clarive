@@ -10,6 +10,7 @@ our %EXPORT_TAGS = ( 'catalyst' => [qw/mock_catalyst_req mock_catalyst_res mock_
 
 use Carp;
 use Class::Load ();
+use Class::Refresh ();
 use Clarive::mdb;
 use Clarive::ci;
 use Test::MockTime qw(set_absolute_time restore_time);
@@ -35,6 +36,25 @@ sub register_ci_events {
     $class->registry->add( 'BaselinerX::CI', 'event.ci.create', { foo => 'bar' } );
     $class->registry->add( 'BaselinerX::CI', 'event.ci.update', { foo => 'bar' } );
     $class->registry->add( 'BaselinerX::CI', 'event.ci.delete', { foo => 'bar' } );
+}
+
+sub reload_module {
+    my $class = shift;
+    my ($module) = @_;
+
+    Class::Refresh->refresh_module($module);
+}
+
+sub clear_registry {
+    Baseliner::Core::Registry->clear();
+}
+
+sub setup_registry {
+    my $class = shift;
+    my (@modules) = @_;
+
+    $class->clear_registry;
+    $class->reload_module($_) for @modules;
 }
 
 sub mock_catalyst_req {

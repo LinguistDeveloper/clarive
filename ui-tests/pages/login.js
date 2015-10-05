@@ -14,6 +14,7 @@ module.exports = {
     elements: {
         loginButton: '.ui-button-login button',
         loginInput: 'input[name=login]',
+        loginInputInvalid: 'input[name=login].x-form-invalid',
         loginPassword: 'input[name=password]',
         loadingMask: '#bali-loading-img',
         logo: 'img[src*="logo.png"]',

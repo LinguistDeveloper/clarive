@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use BaselinerX::Auth;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;
 use MIME::Base64;
@@ -234,6 +235,15 @@ sub login : Global {
     my $p = $c->req->params;
     my $login= $c->stash->{login} // $p->{login};
     my $password = $c->stash->{password} // $p->{password};
+
+    if ( !$login ) {
+        my $msg = _loc("Missing User");
+        event_new 'event.auth.failed' => { username => '', login => $login, mode => 'login', msg => $msg };
+        $c->stash->{json} = { success => \0, msg => $msg, errors => { login => $msg } };
+        $c->forward('View::JSON');
+        return;
+    }
+
     # configure user login case
     my $case = $c->config->{user_case} // '';
     my $config_login = Baseliner->model('ConfigStore')->get('config.login');
@@ -248,109 +258,103 @@ sub login : Global {
     my $id_browser = $c->req->user_agent;
     my $block_datetime = mdb->ts;
     try {
-        if( $login ) {
-            
-            # check if exists before insert in db attempts
-            my $attempts_query = mdb->user_login_attempts->find_one({ id_login => $id_login, id_browser => $id_browser });
-            my $num_attempts = $attempts_query->{num_attempts}; $num_attempts = 0 if !$num_attempts;
-            # check the user hasn't been blocked.
-            ########################################################
-            my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
-            $time_user_block = $time_user_block + "$attempts_duration s";
-            my $block_expired = 1 if $time_user_block lt mdb->ts;
-            ########################################################
-            if (($attempts_query->{block_datetime} == 0) || ( $block_expired && $block_expired == 1)){
-                # go to the main authentication worker
-                $c->stash->{login} = $login; 
-                $c->stash->{password} = $password;
-                my $auth_ok = $c->forward('authenticate');
-                $msg = $c->stash->{auth_message};
-                # check if user logins correctly into corresponding realm
-                if( $auth_ok ) {
-                    # authentication ok, but user ci exists in db?
-                    if( model->Users->user_exists( $c->username ) ) {
-                        $msg //= _loc("OK");
-                        event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
-                        $c->stash->{json} = { success => \1, msg => $msg };
-                        #remove from user login attempts if loggin has ok
-                        mdb->user_login_attempts->remove({ id_login => $id_login, id_browser => $id_browser });
-                    } else {
-                        my $usr = $c->username;
-                        $c->full_logout;  # destroy $c->username, session, etc.
-                        _fail _loc('User not found: %1', $usr );
-                    }
+        # check if exists before insert in db attempts
+        my $attempts_query = mdb->user_login_attempts->find_one({ id_login => $id_login, id_browser => $id_browser });
+        my $num_attempts = $attempts_query->{num_attempts}; $num_attempts = 0 if !$num_attempts;
+        # check the user hasn't been blocked.
+        ########################################################
+        my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
+        $time_user_block = $time_user_block + "$attempts_duration s";
+        my $block_expired = 1 if $time_user_block lt mdb->ts;
+        ########################################################
+        if (($attempts_query->{block_datetime} == 0) || ( $block_expired && $block_expired == 1)){
+            # go to the main authentication worker
+            $c->stash->{login} = $login; 
+            $c->stash->{password} = $password;
+            my $auth_ok = $c->forward('authenticate');
+            $msg = $c->stash->{auth_message};
+            # check if user logins correctly into corresponding realm
+            if( $auth_ok ) {
+                # authentication ok, but user ci exists in db?
+                if( model->Users->user_exists( $c->username ) ) {
+                    $msg //= _loc("OK");
+                    event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
+                    $c->stash->{json} = { success => \1, msg => $msg };
+                    #remove from user login attempts if loggin has ok
+                    mdb->user_login_attempts->remove({ id_login => $id_login, id_browser => $id_browser });
                 } else {
-                    # insert in db;
-                    if ($num_attempts >= $attempts_login) {
-                        mdb->user_login_attempts->update(
-                            { id_login => $id_login, id_browser => $id_browser },
-                            { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
-                            { upsert => 1 }
-                        );
-                        if($attempts_query->{block_datetime} != 0) { 
-                                my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
-                                $time_user_block = $time_user_block + "$attempts_duration s";
-                                if($time_user_block < mdb->ts) {
-                                    #remove from db if time has expired
-                                    $block_datetime = 0;
-                                    mdb->user_login_attempts->update(
-                                        { id_login => $id_login, id_browser => $id_browser },
-                                        { id_login => $id_login, id_browser => $id_browser, num_attempts => 1, block_datetime => $block_datetime },
-                                        { upsert => 1 }); 
-                                } #end if $time_user_block < mdb->ts
-                            } #end else $attempts_query->{block_datetime} == 0
-                        $msg //= _loc("Too many attempts");
-                        event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-                        $c->stash->{json} = { 
-                            success => \0, 
-                            msg => $msg,
-                            attempts_login => $attempts_login-$num_attempts, 
-                            block_datetime => $block_datetime, 
-                            attempts_duration => $attempts_duration };
-                    } else {
-                        $block_datetime = 0;
-                        mdb->user_login_attempts->update(
-                            { id_login => $id_login, id_browser => $id_browser },
-                            { id_login => $id_login, id_browser => $id_browser ,num_attempts => $num_attempts+1, block_datetime => $block_datetime },
-                            { 'upsert' => 1 }
-                        );
-                        $msg //= _loc("Invalid User or Password");
-                        event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-                        $c->stash->{json} = { 
-                            success => \0, 
-                            msg => $msg,
-                            attempts_login => $attempts_login-$num_attempts, 
-                            block_datetime => $block_datetime };
-                    } 
-                } 
-            } else { 
-                $block_datetime = 0 if $block_expired == 1;
-                $num_attempts = 0 if $block_expired == 1;
-                mdb->user_login_attempts->update(
-                { id_login => $id_login, id_browser => $id_browser },
-                { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
-                { upsert => 1 }); 
-                $msg //= _loc("Attempts exhausted, please wait");
-                event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-                $c->stash->{json} = { 
+                    my $usr = $c->username;
+                    $c->full_logout;  # destroy $c->username, session, etc.
+                    _fail _loc('User not found: %1', $usr );
+                }
+            } else {
+                # insert in db;
+                if ($num_attempts >= $attempts_login) {
+                    mdb->user_login_attempts->update(
+                        { id_login => $id_login, id_browser => $id_browser },
+                        { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
+                        { upsert => 1 }
+                    );
+                    if($attempts_query->{block_datetime} != 0) { 
+                            my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
+                            $time_user_block = $time_user_block + "$attempts_duration s";
+                            if($time_user_block < mdb->ts) {
+                                #remove from db if time has expired
+                                $block_datetime = 0;
+                                mdb->user_login_attempts->update(
+                                    { id_login => $id_login, id_browser => $id_browser },
+                                    { id_login => $id_login, id_browser => $id_browser, num_attempts => 1, block_datetime => $block_datetime },
+                                    { upsert => 1 }); 
+                            } #end if $time_user_block < mdb->ts
+                        } #end else $attempts_query->{block_datetime} == 0
+                    $msg //= _loc("Too many attempts");
+                    event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+                    $c->stash->{json} = { 
                         success => \0, 
                         msg => $msg,
                         attempts_login => $attempts_login-$num_attempts, 
                         block_datetime => $block_datetime, 
-                        attempts_duration => $attempts_duration
-                }; 
+                        attempts_duration => $attempts_duration };
+                } else {
+                    $block_datetime = 0;
+                    mdb->user_login_attempts->update(
+                        { id_login => $id_login, id_browser => $id_browser },
+                        { id_login => $id_login, id_browser => $id_browser ,num_attempts => $num_attempts+1, block_datetime => $block_datetime },
+                        { 'upsert' => 1 }
+                    );
+                    $msg //= _loc("Invalid User or Password");
+                    event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+                    $c->stash->{json} = { 
+                        success => \0, 
+                        msg => $msg,
+                        errors => {login => $msg},
+                        attempts_login => $attempts_login-$num_attempts, 
+                        block_datetime => $block_datetime };
+                } 
             } 
         } else { 
-            # invalid form input
-            $msg //= _loc("Missing User");
+            $block_datetime = 0 if $block_expired == 1;
+            $num_attempts = 0 if $block_expired == 1;
+            mdb->user_login_attempts->update(
+            { id_login => $id_login, id_browser => $id_browser },
+            { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
+            { upsert => 1 }); 
+            $msg //= _loc("Attempts exhausted, please wait");
             event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-            $c->stash->{json} = { success => \0, msg => $msg };
+            $c->stash->{json} = { 
+                    success => \0, 
+                    msg => $msg,
+                    errors => {login => $msg},
+                    attempts_login => $attempts_login-$num_attempts, 
+                    block_datetime => $block_datetime, 
+                    attempts_duration => $attempts_duration
+            }; 
         } 
     } catch {
         my $err = shift;
         my $msg_err = _loc('Login error: %1', $err);
         event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg_err };
-        $c->stash->{json} = { success=>\0, msg=>$msg_err };
+        $c->stash->{json} = { success=>\0, msg=>$msg_err, errors => {login => $msg_err} };
     };
     
     _log _loc('------| Login in attempt: `%1`. Result=',$c->username, 0+${ $c->stash->{json}{success} || \-1 } );

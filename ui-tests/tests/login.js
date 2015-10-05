@@ -25,9 +25,7 @@ module.exports = new (function() {
       .setValue('@loginInput', '')
       .setValue('@loginPassword', '')
       .click('@loginButton')
-      .waitForElementVisible('@alertBoxButton', 5000)
-      .click('@alertBoxButton')
-      .waitForElementNotVisible('@alertBoxButton', 1000);
+      .waitForElementVisible('@loginInputInvalid', 5000);
 
     browser.end();
   };
@@ -40,9 +38,7 @@ module.exports = new (function() {
       .setValue('@loginInput', 'unknown')
       .setValue('@loginPassword', '')
       .click('@loginButton')
-      .waitForElementVisible('@alertBoxButton', 5000)
-      .click('@alertBoxButton')
-      .waitForElementNotVisible('@alertBoxButton', 1000);
+      .waitForElementVisible('@loginInputInvalid', 5000);
 
     browser.end();
   };
@@ -55,9 +51,7 @@ module.exports = new (function() {
       .setValue('@loginInput', 'local/root')
       .setValue('@loginPassword', 'wrong password')
       .click('@loginButton')
-      .waitForElementVisible('@alertBoxButton', 5000)
-      .click('@alertBoxButton')
-      .waitForElementNotVisible('@alertBoxButton', 1000);
+      .waitForElementVisible('@loginInputInvalid', 5000);
 
     browser.end();
   };
