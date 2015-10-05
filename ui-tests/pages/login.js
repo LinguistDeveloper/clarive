@@ -9,7 +9,7 @@ var commands = {
 };
 
 module.exports = {
-    url: 'http://localhost:3000/',
+    url: function () { return this.api.launchUrl + '/' },
     commands: [commands],
     elements: {
         loginButton: '.ui-button-login button',

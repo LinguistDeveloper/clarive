@@ -4,7 +4,6 @@
   "custom_commands_path" : "commands",
   "custom_assertions_path" : "",
   "page_objects_path" : "pages",
-  "globals_path" : "",
 
   "selenium" : {
     "start_process" : true,
@@ -21,6 +20,7 @@
 
   "test_settings" : {
     "default" : {
+      "launchUrl" : "http://localhost:3000",
       "desiredCapabilities": {
         "browserName": "firefox",
         "javascriptEnabled": true,
