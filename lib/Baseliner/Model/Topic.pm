@@ -2115,7 +2115,7 @@ sub set_topics {
                                                 field               => $id_field,
                                                 old_value           => '',
                                                 new_value           => $topics,
-                                                text_new            => '%1 modified topic: %2 ( %4 )',
+                                                text_new            => _loc('%1 modified topic: %2 ( %4 )',$user,$ci_topic->{title}, $topics),
                                                 mid => $mid,
                                                } => sub {
                                 my $subject = _loc("#%1 %2 updated", $mid, $ci_topic->{title});
@@ -2262,7 +2262,7 @@ sub set_revisions {
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => $revisions,
-                                                    text_new      => '%1 modified topic: %2 ( %4 )',
+                                                    text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title}, $revisions),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: new revisions", $ci_topic->{mid}, $ci_topic->title);
