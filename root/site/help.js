@@ -32,6 +32,7 @@ Cla.help_show = function(params) {
             */}.tmpl(data);
             doc_reader.update(html);
             doc_reader.doLayout();
+            doc_reader.is_loaded = true;
             $(doc_reader.el.dom).find('a').each(function(){
                 var link = $(this);
                 $(this).on('click', function(){
@@ -77,11 +78,16 @@ Cla.help_show = function(params) {
                 */}.tmpl(doc);
             });
             doc_reader.update( '<div id="boot">' + html + '</div>' );
-            $('.help-search-result').click(function(){
-                var path = $(this).attr('path');
-                goto_doc( path );
-            });
+            doc_reader.is_loaded = true;
         }
+        else {
+            do_intro_doc();
+        }
+        $('.help-search-result').click(function(){
+            var path = $(this).attr('path');
+            goto_doc( path );
+            return false;
+        });
     });
     docs_tree.on('click', function(node){
         var attr = node.attributes;
@@ -92,6 +98,33 @@ Cla.help_show = function(params) {
         region: 'center', bodyStyle: 'padding: 20px 20px 20px 20px;',
         autoScroll: true,
     });
+    var do_intro_doc = function(){
+        var html_chi='';
+        html_chi_tpl = function(){/*
+            [% if( node.leaf ) { %]
+                <li class="square" style="margin-left: [%= depth * 12 %]px">
+                <a href="#" class="help-search-result" path="[%= node.attributes.data.path %]">
+                    [%= node.text %]
+                </a>
+                </li>
+            [% } else { %]
+                <h[%= depth>=4?5:depth+1 %] style="margin-left: [%= depth * 8 %]px">[%= node.text %]</h[%= depth>=4?5:depth+1 %]>
+            [% } %]
+        */};
+        treeRoot.cascade(function(node){
+            var dep = node.getDepth();
+            html_chi += html_chi_tpl.tmpl({ node: node, depth: dep });
+        });
+        var html = function(){/*
+             <div id="boot">
+                 <h1>Clarive Help</h1>
+                 <hr />
+                 [%= chi %]
+             </div>
+        */}.tmpl({ chi: html_chi });
+        doc_reader.update(html);
+        doc_reader.is_loaded = true;
+    };
     var search_box = new Baseliner.SearchSimple({ 
         width: 240,
         handler: function(){
@@ -102,6 +135,13 @@ Cla.help_show = function(params) {
             lo.load(docs_tree.root);
         }
     });
+
+    var btn_home = new Ext.Button({ icon: IC('home.gif'), tooltip: _('Show Help Index'), handler: function(){
+        search_box.setValue('');
+        docs_tree.getLoader().baseParams.query = '';
+        docs_tree.getLoader().load(docs_tree.root);
+        //docs_tree.refresh();
+    }});
 
     var btn_refresh = new Ext.Button({ icon: IC('refresh'), handler: function(){
         docs_tree.refresh();
@@ -147,7 +187,7 @@ Cla.help_show = function(params) {
         history: [],
         history_curr: -1,
         tbar: [
-            btn_refresh, search_box, '->', btn_left, btn_right
+            search_box, btn_refresh, '->', btn_home, btn_left, btn_right
         ],
         items: [ docs_tree, doc_reader ]
     });

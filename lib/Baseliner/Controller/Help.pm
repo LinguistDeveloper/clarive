@@ -1,74 +1,13 @@
 package Baseliner::Controller::Help;
 use Moose;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(_load _dump _loc _fail _warn _error _debug _dir _file);
+use Baseliner::Utils qw(_load _dump _loc _fail _log _warn _error _debug _dir _file);
 use Baseliner::Sugar;
 use HTML::Strip;
 use Text::Markdown 'markdown';
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
-use experimental qw(autoderef state);
-
-sub docs_treex: Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    my $path = $p->{path};
-
-    my @tree;
-
-    my $docs_root = $c->path_to('docs');
-    my $root = _dir($docs_root, $path)->resolve;
-    _fail _loc 'Invalid doc path' unless $docs_root->contains($root);  # don't want anyone to traverse up!
-    my (@docs, @dirs);
-    my %uniq_dirs; 
-    while( my $dir_or_file = $root->next ) {
-        my $name = $dir_or_file->basename;
-        my $rel  = $dir_or_file->relative($docs_root);
-        my $dir_markdown = $dir_or_file->basename . '.markdown';
-        next if $name =~ /^\./; 
-        if( $dir_or_file->is_dir ) {
-            if( $dir_or_file->parent->contains(_file($dir_or_file->parent, $dir_markdown)) ) {
-                my $md_file = _file($dir_or_file->parent,$dir_markdown);
-                my $data = $self->parse_body( $md_file, $docs_root );
-                $data->{rel} = "$rel";
-                $uniq_dirs{ $data->{uniq_id} } = 1;
-                push @dirs, { 
-                    leaf => \0, 
-                    index => $data->{index},
-                    icon => '/static/images/icons/catalog-folder.png',
-                    data => { path=>"$rel" },
-                    text=> $data->{title}, 
-                }
-            } else {
-                push @tree, { 
-                    leaf => \0, 
-                    icon => '/static/images/icons/catalog-folder.png',
-                    data => { path=>"$rel" },
-                    text=> $name, 
-                }
-            }
-        } else {
-            my $data = $self->parse_body( $dir_or_file, $docs_root );
-            next if exists $uniq_dirs{ $data->{uniq_id} }; ## prevent dir markdown descriptors from showing up twice
-            $data->{rel} = "$rel";
-            push @docs, $data;
-        }
-        
-    }
-    push @tree, $_ for sort { $a->{index} <=> $b->{index} } @dirs;
-    for my $doc ( sort { $a->{index} <=> $b->{index} } sort { lc $a->{title} cmp lc $b->{title} } @docs ) {
-        push @tree, { 
-            leaf => \1, 
-            icon => '/static/images/icons/page.png',
-            data => { path=>$doc->{rel} },
-            text=> $doc->{title},
-        }
-    }
-
-    #_warn( \@tree );
-    $c->stash->{json} = \@tree;
-    $c->forward('View::JSON');
-}
+use experimental qw(autoderef);
 
 sub docs_tree : Local {
     my ($self,$c)=@_;
@@ -237,8 +176,8 @@ sub parse_body {
     } else {
         $$data{tags} = [];
     }
-    
-    $data = { id=>$id, uniq_id=>$uniq_id, name=>$id, title=>$id, body=>$body, yaml=>$yaml, text=>$clean_text, index=>$idx, 
+    $data = { id=>$id, uniq_id=>$uniq_id, name=>$id, title=>$id, 
+        body=>$body, yaml=>$yaml, text=>$clean_text, index=>$idx, 
         html=>$html, tpl=>( $type eq 'html' ? 'raw' : 'default' ), %$data };
     # $$data{path} //= "/$$data{parent}/$$data{id}", 
     $$data{path} //= ''. $path->relative( Baseliner->path_to('docs') );
