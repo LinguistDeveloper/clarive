@@ -180,9 +180,13 @@ sub authenticate : Private {
         my $local_store = try { $c->config->{authentication}{realms}{local}{store}{users}{ $username } } catch { +{} };
         _debug $c->config->{authentication}{realms}{local};
         _debug $local_store; 
-        if( exists $local_store->{api_key} && $password eq $local_store->{ api_key } ) {
-            _debug "Login with API_KEY";
-            $auth = $c->authenticate({ id=>$username }, 'none');
+        if( exists $local_store->{api_key} && $password eq $local_store->{api_key} ) {
+            if( $c->stash->{api_key_authentication} ) {
+                _debug "Login with API_KEY";
+                $auth = $c->authenticate({ id=>$username }, 'none');
+            } else {
+                $c->log->error( "**** LOGIN ERROR: api_key authentication not enabled for this url" );
+            }
         } else {
             $auth = try {
                 # see the password: _debug BaselinerX::CI::user->encrypt_password( $login, $password ) ;
@@ -206,10 +210,13 @@ sub authenticate : Private {
                         $c->stash->{auth_message} = _loc( 'User is not active');
                         $auth = undef;
                     }
+                    my $api_key_ok = $row->{api_key} eq $password;
                     if ( BaselinerX::CI::user->encrypt_password( $login, $password ) ne $row->{password} 
-                        && $row->{api_key} ne $password )
+                        && ( !$c->stash->{api_key_authentication} || !$api_key_ok ) )
                     {
                         $auth = undef;
+                        $c->stash->{auth_message} = _loc( 'api-key authentication is not enabled for this url') 
+                            if $api_key_ok && !$c->stash->{api_key_authentication};
                     }
                 } else {
                     $auth = undef;

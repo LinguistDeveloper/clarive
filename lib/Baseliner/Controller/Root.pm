@@ -149,16 +149,24 @@ sub auto : Private {
     }
     
     # api_key ?
+    $c->stash->{api_key_authentication} ||= Clarive->config->{api_key_authentication}; 
+
     if( my $api_key = $c->request->params->{api_key} ) {
-        my $user = ci->user->find({ api_key=>$api_key })->fields({username => 1, _id => 0})->next;
-        if( ref $user && ( my $auth = $c->authenticate({ id=>$$user{username} }, 'none') ) ) {
-            $c->session->{username} = $user->{username};
-            $c->session->{user} = $c->user_ci;
-            return 1;
+        if( $c->stash->{api_key_authentication} ) {
+            my $user = ci->user->find({ api_key=>$api_key })->fields({username => 1, _id => 0})->next;
+            if( ref $user && ( my $auth = $c->authenticate({ id=>$$user{username} }, 'none') ) ) {
+                $c->session->{username} = $user->{username};
+                $c->session->{user} = $c->user_ci;
+                return 1;
+            } else {
+                event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
+                $c->stash->{auth_logon_type} = 'json';
+                $c->stash->{last_msg} = _loc('invalid api-key');
+            }
         } else {
             event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
             $c->stash->{auth_logon_type} = 'json';
-            $c->stash->{last_msg} = _loc('invalid api-key');
+            $c->stash->{last_msg} = _loc('api-key authentication is not enabled for this url');
         }
     }
     

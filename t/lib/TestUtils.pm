@@ -109,6 +109,7 @@ sub new {
 
     $self->{params}  = $params{params};
     $self->{headers} = $params{headers} || {};
+    $self->{path}    = $params{path} || '/';
 
     foreach my $key (keys %{$self->{headers}}) {
         $self->{headers}->{lc($key)} = delete $self->{headers}->{$key};
@@ -120,7 +121,10 @@ sub new {
 sub user_agent { 'Mozilla/1.0' }
 sub address { '127.0.0.1' }
 sub parameters { &params }
+sub query_parameters { &params }
 sub params     { shift->{params} }
+sub path       { shift->{path} }
+sub headers    { shift->{headers} }
 
 sub header {
     my $self = shift;
@@ -229,6 +233,7 @@ sub authenticate {
 }
 
 sub request { &req }
+sub response{ &res }
 sub req     { shift->{req} || FakeRequest->new }
 sub res     { FakeResponse->new }
 sub forward { 'FORWARD' }

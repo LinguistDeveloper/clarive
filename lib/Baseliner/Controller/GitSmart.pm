@@ -28,6 +28,7 @@ sub begin : Private {  #TODO control auth here
          $c->stash->{auth_skip} = 1;
      } elsif( ! length $c->username ) {
          $c->stash->{auth_basic} = 1;
+         $c->stash->{api_key_authentication} = 1;
      } 
      _debug "GIT USER=" . ( $c->username // '');
 }

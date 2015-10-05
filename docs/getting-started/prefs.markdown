@@ -32,4 +32,4 @@ Here you can select the avatar for your user profile.
 ## API
 
 Users with API access permissions can get an api key from here.
-Read more about API Keys [here](admin/api_key)
+Read more about API Keys [here](concepts/api_key)

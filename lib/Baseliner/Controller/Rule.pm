@@ -48,6 +48,7 @@ sub begin : Private {
              $c->stash->{auth_skip} = 1 
          } else {
              $c->stash->{auth_logon_type} = $meth; 
+             $c->stash->{api_key_authentication} = 1;
          }
      }
 }

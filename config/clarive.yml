@@ -30,6 +30,11 @@ cache_config:
 redis:
     server: 'localhost:6379'
 
+# Allow api_key_authentication into the site. 
+#    0 = When off (default), api-key only gives access to selected urls, mostly rule/ webservices
+#    1 = Switching this on will allow access to any request url in the Clarive server with an api-key. 
+api_key_authentication: 0
+
 # mongo database setup
 mongo:
     dbname: acmebank 
