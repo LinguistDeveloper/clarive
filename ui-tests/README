@@ -1,0 +1,13 @@
+1. Download selenium
+
+    https://selenium-release.storage.googleapis.com/2.47/selenium-server-standalone-2.47.1.jar
+
+2. Install node/npm/nightwatch
+
+    npm install nightwatch
+
+3. Copy nightwatch.json.example to nightwatch.json and adjust to your needs
+
+4. Run the tests
+
+    node_modules/nightwatch/bin/nightwatch nightwatch.json
