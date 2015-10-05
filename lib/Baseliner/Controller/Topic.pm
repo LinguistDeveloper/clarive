@@ -1874,20 +1874,23 @@ sub report_csv : Local {
         push my @names_category, map {$_->{name}} @cats;
         # _log "categories "._dump @cats;
 
-        # Columns are taken from user grid.
-        for( grep { length $_->{name} } _array( $data->{columns} ) ) { 
-            push @cols, qq{"$_->{name}"}; #"
-        }
-        for(@cols){s/Comentarios/Mas info/g};
-        
-        push @csv, join ';', @cols;
-
-        for my $row (_array $rows->{data}){    
+        my ($ref_in, $ref_out, $num_file, $numcomment);
+        for my $row (_array $rows->{data}){ 
             my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
             my @cells;
             for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-                my $col_id = $col->{id};
-                
+                my $col_id = $col->{id};                
+    COMMENTS:   if ($col->{id} eq 'numcomment' && $params !~ /report/) {    # Look for all fields managed in this column
+                    if ( $col_id eq 'numcomment') {
+                        $col_id = 'referenced_in';                        
+                    } elsif ($col_id eq 'referenced_in') {
+                        $col_id = 'references_out';                       
+                    } elsif ($col_id eq 'references_out') {
+                        $col_id = 'num_file';                        
+                    } elsif ($col_id eq 'num_file' ) {
+                        $col_id = 'numcomment';
+                    }                       
+                }
                 my $v = $row->{ $col_id };
                 if( ref $v eq 'ARRAY' ) {
                     if ($col->{id} eq 'projects') {
@@ -1899,13 +1902,13 @@ sub report_csv : Local {
                     }
                     (my $du) = _array $v;
                     if( ref $du eq 'HASH' && exists $du->{mid}) {
-                            $v = $du->{mid};
-                    } else {        
+                        $v = $du->{category}->{name}." #$du->{mid}";
+                    } else {       
                         $v = join ',', @$v;
                     }
                 } elsif( ref $v eq 'HASH' ) {
-                    if ($v && $v->{mid}){
-                        $v = $v->{mid};
+                    if ($v && exists $v->{mid}){
+                        $v = $v->{category}->{name}." #$v->{mid}";
                     } else {
                         # $v = Util->hash_flatten($v);
                         # $v = Util->_encode_json($v);
@@ -1917,24 +1920,32 @@ sub report_csv : Local {
                         if($result) { $v = $result } else{ $v = ''; };
                     }
                 };
-                if ( $v &&  $v !~ /^\s?$/ && $col_id ) { # Look for related category for prepending 
-                    my $rel_category; 
-                    if (ref $row->{$col_id} eq 'HASH' ){            
-                         $rel_category = $row->{$col_id}->{category}->{name};
-                         $v = $rel_category.' #'.$v if ($rel_category);
-                    } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
-                        (my $du) = _array $row->{$col_id};
-                        if( ref $du eq 'HASH' && exists $du->{category}) {
-                            $rel_category = $du->{category}->{name};
-                            $v = $rel_category.' #'.$v ; 
-                        }
-                    } else {
-                        my ($tail) = ($col->{name} =~ m/^.*[^:]:\s(.*)$/);
-                        $tail = lc(unac_string($tail) ) if ($tail);
-                        if ($tail && grep /^$tail$/i, @names_category) {
-                            (my $id) = map { $_->{id}} grep { $_->{name} eq $tail } @cats;                
-                            $rel_category = mdb->category->find_one({id => $id})->{name};
-                            $v = $rel_category.' #'.$v if ($rel_category) ;
+                if ( $v && ($v =~ /^[\d,]+$/) && $col_id) { # Look for related category for prepending if $v is a mid or several. 
+                    my $rel_category;
+                    ($col_id) = ($col->{id} =~ m/^(.*[^_])_.*$/) if $col_id ne 'topic_mid';
+                    if (!defined $col_id || !$row->{$col_id} ) { # Fields in database have not homegeneous format.
+                            $col_id = $col->{id}
+                    }  
+                    if ($col_id ) {
+                        if ($col_id !~ /agrupador/) {
+                            ($col_id) = lc ($col_id);
+                            ($col_id) =~ s/\s/_/;  
+                        }             
+                        if (ref $row->{$col_id} eq 'HASH' ){   
+                             $rel_category = $row->{$col_id}->{category}->{name};
+                             $v = $rel_category.' #'.$v if ($rel_category);
+                        } elsif ( ref $row->{$col_id} eq 'ARRAY' ){ 
+                            my @v = split ',', $v;
+                            my $i = 0;
+                            for ( @{$row->{$col_id}}) {
+                                (my $du) = _array $_;
+                                if( ref $du eq 'HASH' && exists $du->{category}) {
+                                    my $rel_category = $du->{category}->{name};
+                                    $v[$i] = $rel_category.' #'.$v[$i] ;
+                                }                            
+                                $i++;
+                            }
+                            $v = join (' ',@v);
                         }
                     }
                 }
