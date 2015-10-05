@@ -29,6 +29,7 @@ Hardcore, url based logout. Always redirects otherwise
 we get into a /logout loop
 
 =cut
+
 sub logout : Global {
     my ( $self, $c ) = @_;
     event_new 'event.auth.logout'=>{ username=>$c->username, mode=>'url' };
@@ -92,7 +93,7 @@ sub login_basic : Local {
         _debug "LOGIN BASIC=$login";
         $c->stash->{login} = $login; 
         $c->stash->{password} = $password; 
-        $c->forward('authenticate');
+        $self->authenticate($c);
         _debug "LOGIN USER=" . $c->user;
         event_new 'event.auth.ok'=>{ username=>$c->username, mode=>'basic' };
         return 1; # don't stop chain on auto, let the caller decide based on $c->username
@@ -246,7 +247,7 @@ sub login : Global {
 
     # configure user login case
     my $case = $c->config->{user_case} // '';
-    my $config_login = Baseliner->model('ConfigStore')->get('config.login');
+    my $config_login = $c->model('ConfigStore')->get('config.login');
     $login= $case eq 'uc' ? uc($login)
      : ( $case eq 'lc' ) ? lc($login) : $login;
     $c->log->info( "LOGIN: " . $login );
@@ -265,13 +266,13 @@ sub login : Global {
         ########################################################
         my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
         $time_user_block = $time_user_block + "$attempts_duration s";
-        my $block_expired = 1 if $time_user_block lt mdb->ts;
+        my $block_expired = $time_user_block lt mdb->ts ? 1 : 0;
         ########################################################
-        if (($attempts_query->{block_datetime} == 0) || ( $block_expired && $block_expired == 1)){
+        if (!$attempts_query->{block_datetime} || ( $block_expired && $block_expired == 1)){
             # go to the main authentication worker
             $c->stash->{login} = $login; 
             $c->stash->{password} = $password;
-            my $auth_ok = $c->forward('authenticate');
+            my $auth_ok = $self->authenticate($c);
             $msg = $c->stash->{auth_message};
             # check if user logins correctly into corresponding realm
             if( $auth_ok ) {

@@ -82,6 +82,19 @@ sub mock_time {
     restore_time();
 }
 
+package FakeLogger;
+sub new {
+    my $class = shift;
+
+    my $self = {};
+    bless $self, $class;
+
+    return $self;
+}
+sub debug {}
+sub info {}
+sub error {}
+
 package FakeRequest;
 
 use strict;
@@ -104,6 +117,8 @@ sub new {
     return $self;
 }
 
+sub user_agent { 'Mozilla/1.0' }
+sub address { '127.0.0.1' }
 sub parameters { &params }
 sub params     { shift->{params} }
 
@@ -142,11 +157,13 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $self->{stash}    = $params{stash} || {};
-    $self->{req}      = $params{req};
-    $self->{username} = $params{username};
-    $self->{model}    = $params{model};
-    $self->{config}   = $params{config} || {};
+    $self->{stash}        = $params{stash} || {};
+    $self->{session}      = $params{session} || {};
+    $self->{req}          = $params{req};
+    $self->{username}     = $params{username};
+    $self->{model}        = $params{model};
+    $self->{config}       = $params{config} || {};
+    $self->{authenticate} = $params{authenticate};
 
     return $self;
 }
@@ -165,10 +182,32 @@ sub stash {
     return $self->{stash}->{ $_[0] } = $_[1];
 }
 
-sub model {
+sub session {
     my $self = shift;
 
-    my $model_class = $self->{model};
+    return $self->{session} unless @_;
+
+    if ( @_ == 1 ) {
+        return $self->{session}->{ $_[0] };
+    }
+
+    return $self->{session}->{ $_[0] } = $_[1];
+}
+
+sub model {
+    my $self = shift;
+    my ($model_name) = @_;
+
+    my $model_class;
+    if (ref $self->{model} eq 'HASH') {
+        $model_class = $self->{model}->{$model_name};
+    }
+    else {
+        $model_class = $self->{model};
+    }
+
+    return $model_class if ref $model_class;
+
     croak 'no model defined' unless $model_class;
 
     Class::Load::load_class($model_class);
@@ -176,11 +215,35 @@ sub model {
     return $model_class->new;
 }
 
-sub username { shift->{username} }
+sub username     { shift->{username} }
+sub authenticate { 
+    my $self = shift;
+
+    my $auth = $self->{authenticate};
+
+    if ($auth && $auth->{id}) {
+        $self->{username} = $auth->{id};
+    }
+
+    return $auth;
+}
 
 sub request { &req }
 sub req     { shift->{req} || FakeRequest->new }
 sub res     { FakeResponse->new }
 sub forward { 'FORWARD' }
+sub log { FakeLogger->new }
+sub logout {}
+sub full_logout {}
+
+sub user_ci {
+    my ($c,$username) = @_;
+
+    $username //= $c->username;
+    return unless $username;
+
+    ci->user->search_ci( name=>( $username ) );
+}
+
 
 1;

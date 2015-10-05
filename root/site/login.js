@@ -76,6 +76,7 @@ Ext.onReady(function() {
         labelAlign: 'right',
         timeout: 120, // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something
         defaults: {
+            msgTarget: 'under'
         },
         buttons: [
             login_button, {

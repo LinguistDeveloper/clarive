@@ -99,7 +99,7 @@ sub encrypt_password {
         Util->_fail( Util->_loc('Password length is less than %1 characters. Rule: %1', $password_len ) )
            if $password_len > 0 && length($password)<$password_len;
     }
-    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} ) .reverse ( $username );
+    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} // '' ) .reverse ( $username );
     require Crypt::Blowfish::Mod;
     my $b = Crypt::Blowfish::Mod->new( $user_key );
     return Digest::MD5::md5_hex( $b->encrypt($password) );    

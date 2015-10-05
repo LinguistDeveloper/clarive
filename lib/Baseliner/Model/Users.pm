@@ -14,6 +14,8 @@ sub get {
 
 sub user_exists {
     my ($self,$username) = @_;
+
+    return unless $username;
     return !! ci->user->find({ username=>$username })->count;
 }
 

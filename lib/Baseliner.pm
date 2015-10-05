@@ -338,9 +338,14 @@ sub username {
         return undef;   
     } and return $user;
 }
+
 sub user_ci {
     my ($c,$username) = @_;
-    ci->user->search_ci( name=>( $username // $c->username ) );
+
+    $username //= $c->username;
+    return unless $username;
+
+    ci->user->search_ci( name=>( $username ) );
 }
 
 sub user_languages {
