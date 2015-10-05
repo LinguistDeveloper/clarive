@@ -3,6 +3,8 @@
     $topic_mid
     $topic_meta
     $topic_data
+    $permissionJobs => 0
+    $permissionJobsLink => 0
     $has_comments
     $HTMLbuttons => 0
     $permissionEdit => 0
@@ -10,7 +12,6 @@
     $permissionComment => 0
     $permissionActivity => 0
     $permissionDashboard => 1
-    $permissionJobs => 0
     $user_security
     $dashboard => ''
 </%args>
@@ -291,7 +292,7 @@ if (imagen.width()>600) { captura.show(); }
                                 mid: topic_mid,
                                 render_to: "topic-jobs"+ii,
                                 parent_id: ii,
-                                link: <% $permissionJobs %>
+                                link: <% $permissionJobsLink %>
                             });
                         } else if( target_id == "tab-dashboard"+ii && topic_mid != '' ) {
                             var dashboard_rule = '<% $dashboard %>'; 
