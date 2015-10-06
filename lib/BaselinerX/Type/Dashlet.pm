@@ -25,7 +25,7 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
             if( $stash->{rule_context} eq 'form' ) {
                 push @{ $stash->{fieldlets} }, {
                     section=>'between',
-                    %{$config},
+                    %%{$config},
                     type => 'generic',
                     id_field => $id_field,
                     bd_field => $id_field,
