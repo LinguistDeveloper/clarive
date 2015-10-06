@@ -1,9 +1,12 @@
+# Runtime
+
+# Have to be installed first
+
 requires 'Algorithm::C3';
 requires 'Algorithm::Diff::XS';
 requires 'AnyEvent';
 requires 'AnyEvent::Run';
 requires 'Any::Moose';
-requires 'App::Ack';
 requires 'Archive::Tar';
 requires 'Archive::Zip';
 requires 'Array::Utils';
@@ -52,6 +55,7 @@ requires 'CHI::Driver::FastMmap';
 requires 'CHI::Driver::Redis';
 requires 'Class::C3::XS';
 requires 'Class::Date';
+requires 'Class::Refresh';
 requires 'Compress::Raw::Zlib';
 requires 'Compress::Zlib';
 requires 'Config::General';
@@ -106,6 +110,7 @@ requires 'JSON';
 requires 'JSON::XS';
 requires 'List::MoreUtils';
 requires 'Locale::Maketext::Simple';
+requires 'local::lib';
 requires 'Lucy';
 requires 'Lucy::Simple';
 requires 'LucyX::Simple::Result::Hash';
@@ -174,7 +179,7 @@ requires 'Time::Interval';
 requires 'Try::Tiny';
 requires 'Twiggy';
 requires 'Twiggy::Prefork';
-requires 'V';
+requires 'utf8::all';
 requires 'XML::Compile::SOAP::Daemon::CGI';
 requires 'XML::Compile::SOAP::Util';
 requires 'XML::Compile::WSDL11';
@@ -211,3 +216,7 @@ requires 'Test::MonkeyMock';
 requires 'Test::MockSleep';
 requires 'Test::MockTime';
 requires 'Test::Deep';
+
+# Utils
+requires 'App::Ack';
+requires 'V';
