@@ -13,7 +13,8 @@ has collectionname => (
     lazy_build => 1,
 );
 
-use Sereal;
+use Sereal::Encoder;
+use Sereal::Decoder;
 has _encoder => qw(is rw isa Object lazy 1 default), sub{ 
     Sereal::Encoder->new({ compress=>1, compress_threshold=>1_024_000, compress_level=>1, canonical=>1 }) 
 }; 
