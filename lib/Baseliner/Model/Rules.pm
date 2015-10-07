@@ -795,16 +795,18 @@ register 'statement.shortcut' => {
 };
 
 register 'statement.log' => {
-    text => 'LOG message or variable',
-    data => { msg => '', level=>'info', content_type=>'literal' },
-    icon => '/static/images/icons/cog_perl.png',
-    #icon => '/static/images/icons/log-msg.gif',
+    text => 'LOG message',
+    data => { text => 'Message', level=>'info' },
+    # icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/log_16.png',
     form => '/forms/log.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
-        my $txt = sprintf( ($n->{data}{content_type} eq 'literal' ? 'qq{%s}' : '%s'), $n->{data}{text} );
+        my $txt = sprintf('q{%s}', $n->{data}{text} );
         sprintf(q{
-            Util->_%s(%s); 
+            Util->_%s(
+                parse_vars(%s,$stash)
+            ); 
         }, $n->{data}{level}, $txt);
     }
 };
