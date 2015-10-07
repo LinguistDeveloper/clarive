@@ -37,7 +37,7 @@ body {
     font-size: 12px;
     line-height: 16px;
     height: auto;
-    text-shadow: rgb(38, 38, 38) 0px -1px 1px;
+    /*text-shadow: rgb(38, 38, 38) 0px -1px 1px;*/
 }
 
 /* fullcalendar font, otherwise it uses body font and ajusts */
