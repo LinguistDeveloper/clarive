@@ -808,9 +808,7 @@ sub sync : Local {
     my $repo_dir = delete $p->{repo_dir};
     my $repo_mid = $p->{repo};
     my $branch = $p->{branch};
-    my $is_folder_or_file = $p->{folder_or_file};
-    my $sha = $p->{sha};
-    my $rev = $p->{rev};
+
     my $valid_repo = 1;
     my $data = exists $p->{ci_json} ? _decode_json( $p->{ci_json} ) : $p;
 
@@ -867,11 +865,7 @@ sub sync : Local {
                     $ci_data{ $k } = $v;
                 }
             }
-            if($p->{folder_or_file} eq 'true'){
-                $ci_data{ folder_or_file } = $is_folder_or_file;
-                $ci_data{ sha } = $sha;
-                $ci_data{ rev } = $rev;
-            }
+
             $mid = $self->ci_create_or_update(
                 rel_field  => $collection,
                 name       => $name,
