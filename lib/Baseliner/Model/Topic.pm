@@ -2395,7 +2395,7 @@ sub set_topics {
                                                 field               => $id_field,
                                                 old_value           => '',
                                                 new_value           => $topics,
-                                                text_new            => _loc('%1 modified topic: %2 ( %4 )',$user,$ci_topic->{title}, $topics),
+                                                text_new            => _loc('%1 modified topic: %2 ( %4 )',$user,$id_field,'', $topics),
                                                 mid => $mid,
                                                } => sub {
                                 my $subject = _loc("#%1 %2 updated", $mid, $ci_topic->{title});
@@ -2414,7 +2414,7 @@ sub set_topics {
                                                 field               => $id_field,
                                                 old_value           => '',
                                                 new_value           => '',
-                                                text_new            => '%1 deleted all attached topics of ' . $id_field ,
+                                                text_new            => _loc('%1 deleted all attached topics of %2',$user, $id_field),
                                                 mid => $mid,
                                                } => sub {
                                 my $subject = _loc("#%1 %2 updated", $mid, $ci_topic->{title});
@@ -2492,7 +2492,7 @@ sub set_cis {
                 field     => $field_meta->{id_field},
                 old_value => $del_cis,
                 new_value => join(',', grep { length } $add_cis, $del_cis ),
-                text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
+                text_new  => ( $field_meta->{modify_text_new} // _loc('%1 modified topic (%2): %4 ',$user,$ci_topic->{title},'', join(',', grep { length } $add_cis, $del_cis )) ),
                 mid => $ci_topic->{mid},
             } => sub {
                 my $subject = _loc("#%1 %2 updated: %3 changed", $ci_topic->{mid}, $ci_topic->{title}, $name_field);
@@ -2536,13 +2536,13 @@ sub set_revisions {
             }
             
             my $revisions = join(',', map { ci->new($_->{mid})->load->{name}} @rs_revs);
-    
+
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => $revisions,
-                                                    text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title}, $revisions),
+                                                    text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title},'', $revisions),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: new revisions", $ci_topic->{mid}, $ci_topic->title);
@@ -2560,7 +2560,7 @@ sub set_revisions {
                                                     field      => $id_field,
                                                     old_value      => '',
                                                     new_value  => '',
-                                                    text_new      => '%1 deleted all revisions',
+                                                    text_new      => _loc('%1 deleted all revisions',$user),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: all revisions removed", $ci_topic->{mid}, $ci_topic->title);
@@ -2627,7 +2627,7 @@ sub set_release {
                                                     field      => $id_field,
                                                     old_value      => $old_release_name,
                                                     new_value  => $row_release->{title},
-                                                    text_new      => '%1 modified topic: changed %2 to %4',
+                                                    text_new      => _loc('%1 modified topic: changed %2 to %4',$user, $old_release_name,'',$row_release->{title}),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: %4 changed to %3", $ci_topic->{mid}, $ci_topic->{title}, $row_release->{title}, $name_field);
@@ -2645,7 +2645,7 @@ sub set_release {
                                                     field      => $id_field,
                                                     old_value      => $old_release_name,
                                                     new_value  => '',
-                                                    text_new      => '%1 deleted %2 %3',
+                                                    text_new      => _loc('%1 deleted %2 %3',$user, $old_release_name, $release_field),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: removed from %4 %3", $ci_topic->{mid}, $ci_topic->{title}, $old_release_name, $release_field);

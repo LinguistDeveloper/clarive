@@ -4331,8 +4331,8 @@ msgstr "%1 modificó el campo %2  de %3 a %4"
 msgid "%1 modified the field %2"
 msgstr "%1 modificó el campo %2"
 
-msgid "%1 deleted all attached topics of "
-msgstr "%1 borró todos los tópicos adjuntos de "
+msgid "%1 deleted all attached topics of %2"
+msgstr "%1 borró todos los tópicos adjuntos de %2"
 
 msgid "%1 modified topic: %2 ( %4 )"
 msgstr "%1 modificó el tópico: %2 ( %4 )"
