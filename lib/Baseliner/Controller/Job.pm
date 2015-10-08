@@ -587,8 +587,6 @@ sub jc_store : Local  {
         my $id_project = $$node{project} eq 'all' ? '': $$node_data{id_project};
         my $id = $k++;
 
-        my %projects = map {$_->{mid} => $_->{name}} ci->project->find()->all;
-        
         my @chi;
         if( $ci->is_release ) {
             my @changesets = $ci->children( where=>{collection=>'topic'}, 'category.is_changeset' => 1, no_rels=>1, depth => 2, mids_only => 1 );
@@ -610,14 +608,14 @@ sub jc_store : Local  {
                         is_release     => $$cs_data{category}{is_release},
                         is_changeset   => $$cs_data{category}{is_changeset},
                     },
-                    text=>$$cs_data{title},
-                    date=>$$cs_data{modified_on},
-                    modified_by=>$$cs_data{modified_by},
-                    created_by=>$$cs_data{created_by},
-                    ns=> "changeset/" . $$cs_data{mid},
-                    mid=>$$cs_data{mid},
-                    id_project => $id_project,
-                    project_name => join(',',_array($$cs_data{project_report}))
+                    text          => $$cs_data{title},
+                      date        => $$cs_data{modified_on},
+                      modified_by => $$cs_data{modified_by},
+                      created_by  => $$cs_data{created_by},
+                      ns          => "changeset/" . $$cs_data{mid},
+                      mid         => $$cs_data{mid},
+                      id_project  => $id_project,
+                      project_name => join( ',', _array( $$cs_data{project_report} ) ),
                 }
             } 
             grep {
@@ -644,7 +642,8 @@ sub jc_store : Local  {
             text => $$node{text},
             ns   => $$node_data{ns},
             mid  => $$node_data{topic_mid},
-            id_project => $id_project
+            id_project => $id_project,
+            project_name => join( ',', map { $_->name } $ci->projects ),
         };
         push @data, $row;
         push @data, @chi if @chi;

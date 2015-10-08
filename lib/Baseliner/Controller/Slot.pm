@@ -450,8 +450,8 @@ sub build_job_window : Path('/job/build_job_window') {
             my $ci = _ci( $mid );
             # recurse into ci relations up to depth
             my @related; 
-            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }) ;   
-            my @projects = $ci->children( depth => 1, where => { collection => 'Project'} ) ;   
+            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;   
+            my @projects = $ci->children( depth => 1, where => { collection => 'project'}, docs_only => 1 ) ;   
             push @all_projects, @projects;
             push @related, @projects;
 
@@ -470,7 +470,7 @@ sub build_job_window : Path('/job/build_job_window') {
         
         # build statistics
         my %stats;
-        my $prj_list = mdb->in( map { $_->mid } @all_projects ); 
+        my $prj_list = mdb->in( map { $_->{mid} } @all_projects ); 
         # TODO loop by project here so we get 1000 from one, 1000 from another...
         my $rs = ci->job->find({ projects=>$prj_list, bl=>$bl })->sort({ starttime=>-1 })->limit(1000);
         while( my $job = $rs->next ) {

@@ -522,7 +522,7 @@
                  }), v.title);
              },
              dataIndex: 'item'},
-        { header: _('Project'),
+        { header: _('Scope'),
              width: 20 + adder,
              sortable: true,
              hidden: false,
