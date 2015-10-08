@@ -610,14 +610,16 @@ Cla.topic_grid = function(params){
             var sm = grid_topics.getSelectionModel();
             if (sm.hasSelection()) {
                 Ext.each( sm.getSelections(), function(r) {
-                    mids.push( r.get('topic_mid') );
+                    var topic_mid = r.get('topic_mid');
+                    mids.push( topic_mid );
                 });
             } else {
                store_topics.each( function(r){
-                    mids.push( r.get('topic_mid') );
+                    var topic_mid = r.get('topic_mid');
+                    mids.push( topic_mid );
                });
             }
-            var kanban = new Baseliner.Kanban({ topics: mids });
+            var kanban = new Baseliner.Kanban({ topics: mids, data_source: { base_params: store_topics.baseParams } });
             kanban.fullscreen();
         }
     }); 

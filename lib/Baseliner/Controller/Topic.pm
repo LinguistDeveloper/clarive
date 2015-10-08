@@ -1743,8 +1743,14 @@ sub kanban_status : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
     my $topic_list = $p->{topics};
+    my $mid = $p->{mid};
     my $data = {};
     my @columns;
+    my $config = {};
+    if( length $mid ) {
+        my $doc = mdb->topic->find_one({ mid=>"$mid" },{ _kanban=>1 });
+        $config = $doc->{_kanban};
+    }
     $c->stash->{json} = try {
         my @topics = mdb->topic->find({ mid=>mdb->in($topic_list) })->fields({ id_category=>1, mid=>1, id_category_status=>1, _id=>0 })->all;
         _fail( _loc('No topics available') ) unless @topics;
@@ -1773,8 +1779,8 @@ sub kanban_status : Local {
         for my $wf ( @transitions ) {
             next if $$wf{id_status_from} == $$wf{id_status_to}; # don't need static promotions in Kanban
             # for each mid in this category
-            for my $t ( _array $cats{ $$wf{id_category} } ) {
-                my $mid = $$t{mid};
+            for my $topic ( _array $cats{ $$wf{id_category} } ) {
+                my $mid = $$topic{mid};
                 push @{ $workflow{ $mid } }, {
                     from_name          => $$wf{status_name_from},
                     from_seq           => $$wf{seq_from},
@@ -1789,9 +1795,9 @@ sub kanban_status : Local {
                 push @{ $status_mids{ $wf->{id_status_from} } }, $mid;
                 push @{ $status_mids{ $wf->{id_status_to} } }, $mid;
                 # visible status: only the ones that match topics current status + destination status
-                if( $$t{id_category_status} == $$wf{id_status_from} ) {
-                    $visible_status{ $$wf{id_status_from} } = 1;
-                    $visible_status{ $$wf{id_status_to} } = 1;
+                if( $$topic{id_category_status} == $$wf{id_status_from} ) {
+                    $visible_status{ $$wf{id_status_from} } = 0+( $config->{statuses}{$$wf{id_status_from}} // 1 );
+                    $visible_status{ $$wf{id_status_to} } = 0+ ( $config->{statuses}{$$wf{id_status_to}} // 1 );
                 }
             }
         }
@@ -1801,6 +1807,21 @@ sub kanban_status : Local {
         my $err = shift;
         { success=>\0, msg=> _loc( "Error rendering kanban: %1", "$err" ) };
     };
+    $c->forward('View::JSON');
+}
+
+sub kanban_config : Local {
+    my ($self, $c) = @_;
+    my $mid = $c->req->params->{mid};
+    if( my $statuses = $c->req->params->{statuses} ) {
+        mdb->topic->update({ mid=>"$mid" },{ '$set'=>{ '_kanban.statuses'=>$statuses } });
+        $c->stash->{json} = { success=>\1 };
+    } elsif( length $mid )  {
+        my $doc = mdb->topic->find_one({ mid=>"$mid" },{ _kanban=>1 });
+        $c->stash->{json} = { success=>\1, config=>$doc->{_kanban} };
+    } else {
+        $c->stash->{json} = { success=>\1, config=>{} };
+    }
     $c->forward('View::JSON');
 }
 

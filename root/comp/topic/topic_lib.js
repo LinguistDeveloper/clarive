@@ -1237,6 +1237,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.kanban = new Baseliner.Kanban({ 
                 //background: '#888',
                 title: self.title,
+                topic_mid: self.topic_mid,
                 topics: topics
             });
             self.kanban.on('beforeclose', function(tabid){

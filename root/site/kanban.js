@@ -22,7 +22,8 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     width: 800,
     is_fullscreen : false,
     is_tab : false,
-    background: "#555 url('/static/images/bg/cork.jpg')",
+    // background: "#555 url('/static/images/bg/cork.jpg')",
+    background: "#535051",
     title: _('Kanban'),
     header: false,
     constructor : function(c) {
@@ -48,6 +49,12 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     self.goto_tab();
             }
         });
+        self.btn_save = new Ext.Button({ 
+            text:_('Save Layout'), icon:IC('save'), tooltip:_('Save Current Layout'), hidden: self.topic_mid==undefined, 
+            handler: function(){
+                self.save_statuses();
+            }
+        });
         self.bodyCfg = { 
             style: {
              'background': self.background,
@@ -59,7 +66,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             'KANBAN',
             '-',
             { icon:'/static/images/icons/refresh.png',tooltip: _('Refresh Node'), iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
-            self.status_btn,
+            self.status_btn, self.btn_save,
             '->',
             self.tab_btn,
             { icon:'/static/images/icons/close.png', iconCls:'x-btn-icon', handler: function(){ 
@@ -238,7 +245,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     load_workflow : function(topics) {
         var self = this;
-        Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
+        Baseliner.ajaxEval( '/topic/kanban_status', { mid: self.topic_mid, topics: topics }, function(res){
             if( res.success ) {
                 //console.log( res.workflow );
                 var statuses = res.statuses;
@@ -369,6 +376,16 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             cols[i].columnWidth = col_width;
         };
         self.doLayout();
+    },
+    // method to save current status visibility
+    save_statuses :  function(){
+        var self = this;
+        var cols = self.items.items;
+        var statuses = {};
+        for( var i = 0; i<cols.length; i++ ) {
+            statuses[ cols[i].id_status ] = !cols[i].hidden;
+        }
+        Cla.ajax_json('/topic/kanban_config', { mid: self.topic_mid, statuses: statuses }, function(){ });
     },
     render_me : function(){
         var self = this;
