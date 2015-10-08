@@ -650,7 +650,7 @@
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {
-                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all release changesets in the same state from all projects?'), 
+                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all grouped changesets in the same state from all projects?'), 
                     function(btn){ 
                         if(btn=='yes') {
                             project = 'all';
