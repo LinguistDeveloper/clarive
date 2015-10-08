@@ -78,7 +78,7 @@ sub json : Local {
         }
         my $actions_txt = \@actions;
         next if $query
-            && !query_array($query, $r->{role}, $r->{description}, $r->{mailbox}, map { values %$_ } @actions, @invalid_actions );
+            && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r, map { +{ action=>$_ } } @actions, @invalid_actions ] );
         
         # if the query has a dot, filter actions
         if( defined $query && $query =~ /\./ ) {

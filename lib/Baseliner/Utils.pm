@@ -60,7 +60,6 @@ use Exporter::Tidy default => [
     to_base64
     from_base64
     packages_that_do
-    query_array
     _file
     _dir
     _fail
@@ -531,14 +530,17 @@ sub parse_dt {
     };
 }
 
-sub query_array {
-    my $query = shift;
-    {
-        no warnings;  # may be empty strings, unitialized
-        my $txt = join ',', @_;    ##TODO check for "and", "or", etc. with text::query
-        return $txt =~ m/$query/i;
-    }
-}
+=head2 query_grep
+
+Use mongo style queries against an array.
+
+    Util->query_grep( query=>'kk +yy', fields=>['key'], rows=>[ {key=>'kk yy'} ] );
+
+Or if you don't know the fields:
+
+    Util->query_grep( query=>'kk +yy', all_fields=>1, rows=>[ {key=>'kk yy'} ] );
+
+=cut
 
 sub query_grep {
     my (%p) = @_;

@@ -393,7 +393,7 @@ sub list : Local {
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
     my @rows;
     for my $f ( $c->features->list ) {
-        next if( $query && !query_array($query, $f->id, $f->name, $f->version ));
+        next if( $query && !Util->query_grep(query=>$query, fields=>[qw(id name version)], rows=>[{id=>$f->id}, {name=>$f->name}, {version=>$f->version} ] ));
         push @rows, {
             id      => $f->id,
             name    => $f->name,

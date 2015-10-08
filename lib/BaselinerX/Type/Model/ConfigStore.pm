@@ -393,7 +393,7 @@ sub search_registry {
             $parms{config_default} = $self->check_value_type( $parms{config_default} );
             $parms{value} = $self->check_value_type( $parms{value} );
             $parms{data} = $self->check_value_type( $parms{data} );
-            next unless query_array( $p->{query}, %parms ) || !$p->{query};
+            next unless Util->query_grep( query=>$p->{query}, all_fields=>1, rows=>[ \%parms ] ) || !$p->{query};
             push @rows, \%parms;
         }
     }

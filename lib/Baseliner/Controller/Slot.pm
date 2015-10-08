@@ -87,7 +87,7 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
     my @rows;
 
     while ( my $r = $rs->next ) {
-        next if ( $query && !query_array( $query, $r->{name}, $r->{description}, $r->{ns} ) ); # TODO use mongo regex
+        next if $query && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r ] ); 
         push @rows,
             {
             id          => $r->{id},
