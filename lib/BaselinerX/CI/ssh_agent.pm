@@ -125,6 +125,19 @@ sub put_file {
     $self->put_dir( @_, file_to_file=>1 );
 }
 
+sub put_data {
+    my ($self, %p) = @_;
+    my $data = $p{data};
+    my $remote = $p{remote};
+    my $local = _file(sprintf '%s/%s_weblogic_%s_%s.sh', _tmp_dir, $self->server->hostname, $self->server->mid, Util->_md5);
+    $local->spew(iomode => '>:raw', $data);
+    if (-e $local){
+        $self->put_file(local => $local, remote => $remote);
+    } else {
+        _throw _loc("File %1 not found",$local->{file});
+    }
+}
+
 sub delete_file {
     my $self = shift;
     my %p = @_;
