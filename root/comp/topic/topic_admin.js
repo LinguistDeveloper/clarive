@@ -730,7 +730,7 @@
             if (sel.length > 0 ) { flag = true; }
             for( var i=0; i<sel.length; i++ ) {
                 var bl = sel[i].data.bl;
-                if( bl==undefined || bl == ''  || bl == '*' ) 
+                if( bl==undefined || bl.bl == ''  || bl.bl == '*' ) 
                     flag = false;
             }
             if( flag && ( rec.data.is_changeset==1 || rec.data.is_release )
