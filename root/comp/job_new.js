@@ -144,8 +144,11 @@
             hidden_state_to.setValue(data.status_to);
             //jc_store.reload();
             calendar_reload();
-
-        } 
+        } else if( store_transitions.getCount() == 1 ) {
+            // maybe it's only one transition anyway, select it. If 2, better not to do it, leads to possible error
+            var row = store_transitions.getAt(0); 
+            combo_transitions.setValue( row.data.id  );
+        }
     });
 
     var tpl_transitions = new Ext.XTemplate(
