@@ -175,7 +175,9 @@ sub save {
     if( $exists ) { 
         ######## UPDATE CI
         if( $master_row ) {
-            event_new 'event.ci.update' => { username => $self->modified_by, mid => $mid, new_ci => $self} => sub {
+            my $username = 'clarive';
+            try { $username = $self->modified_by };
+            event_new 'event.ci.update' => { username => $username, mid => $mid, new_ci => $self} => sub {
                 my $old_ci = Util->_clone($self);
                 $master_old = +{ %$master_row };
                 $master_row->{bl} = join ',', Util->_array( $bl );
@@ -233,7 +235,15 @@ sub delete {
         my $ci = mdb->master->find_one({'mid' => $mid});
         return 0 unless $ci;
 
-        event_new 'event.ci.delete' => { username => $self->modified_by, ci => $self} => sub {
+        my $username = 'clarive';
+        try {
+            $username = $self->modified_by;
+        }
+        catch {
+            Util->_error("Problem here");
+        };
+
+        event_new 'event.ci.delete' => { username => $username, ci => $self} => sub {
             # first relations, so nobody can find me
             mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
             mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});

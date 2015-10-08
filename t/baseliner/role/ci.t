@@ -37,8 +37,6 @@ subtest 'returns false when deleting deleted ci' => sub {
     my $old_ci = _build_ci();
     my $mid = $old_ci->save;
 
-    my $ci = ci->new($mid);
-
     $old_ci->delete;
 
     is(ci->delete($mid), 0);
