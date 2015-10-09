@@ -2086,9 +2086,7 @@ sub grid_count : Local {
     my ($self,$c)=@_;
     if( my $lq = $c->req->params->{lq} ) {
         my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
-        my @rows = mdb->topic->find($lq)->all;
-        $c->stash->{json} = { data =>\@rows, count=>$cnt };
-
+        $c->stash->{json} = { count=>$cnt };
     } else {
         $c->stash->{json} = { count=>9999999 };
     }
