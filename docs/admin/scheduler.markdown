@@ -2,6 +2,9 @@
 title: Scheduler
 ---
 
+The scheduler is an administrator facility 
+for scheduling the execution rules in set intervals. 
+
 The Scheduler allows to you to plan, enable, disable or run independent rules in the background,
 at given frequencies or times. 
 
