@@ -42,13 +42,14 @@ sub build_doc_tree {
             if( $dir_or_file->parent->contains(_file($dir_or_file->parent, $dir_markdown)) ) {
                 my $md_file = _file($dir_or_file->parent,$dir_markdown);
                 my $data = $self->parse_body( $md_file, $docs_root );
+                my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
                 $data->{rel} = "$rel";
                 $uniq_dirs{ $data->{uniq_id} } = 1;
                 push @dirs, {
                     leaf => \0, 
                     expanded => \1,
                     index => $data->{index},
-                    icon => '/static/images/icons/catalog-folder.png',
+                    icon => $icon,
                     data => { path=>"$rel" },
                     children => \@children,
                     text=> $data->{title}, 
@@ -74,9 +75,10 @@ sub build_doc_tree {
     }
     push @tree, $_ for sort { $a->{index} <=> $b->{index} } @dirs;
     for my $doc ( sort { $a->{index} <=> $b->{index} } sort { lc $a->{title} cmp lc $b->{title} } @docs ) {
+        my $icon = Util->icon_path( $doc->{icon} || '/static/images/icons/page.png');
         push @tree, { 
             leaf => \1, 
-            icon => '/static/images/icons/page.png',
+            icon => $icon,
             data => { path=>$doc->{rel} },
             search_results => {
                 found => $doc->{found},

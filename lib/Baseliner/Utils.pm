@@ -362,6 +362,14 @@ sub _log {
     _log_me( 'info', $cl, $fi, $li, @_ );
 }
 
+sub icon_path {
+    my ($path) = @_;
+    my $home = '/static/images/icons/';
+    return $path =~ /\// ? $path
+        : ( $path =~ /\./ ? $home . $path
+                          : $home . $path . '.png' ); 
+}
+
 sub job_icon {
     my ($status, $rollback) = @_;
 

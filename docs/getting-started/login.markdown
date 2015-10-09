@@ -1,5 +1,6 @@
 ---
 title: Login
+index: 30
 ---
 
 Before you can log in to Clarive, your Clarive Administrator must add you as a User of Clarive. 
