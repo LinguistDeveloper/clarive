@@ -801,7 +801,7 @@ Options:
 sub related {
     my ($self_or_class, %opts)=@_;
     my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
-    $mid // _fail 'Missing parameter `mid`';
+    return () if !$mid; # // _fail 'Missing parameter `mid`';
 
     my @edges;
 
