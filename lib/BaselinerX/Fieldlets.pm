@@ -346,7 +346,7 @@ register 'fieldlet.system.revisions' => {
     meta_type   => 'revision',
     relation    => 'system',
     type        => 'listbox',
-    section_allowed => ['details']
+    section_allowed => ['head', 'details']
 };
 
 register 'fieldlet.system.release' => {

@@ -3,20 +3,43 @@
     $data
 </%args>
 
-% if( _array( $data->{$meta->{id_field}} ) ) {
+% if ($meta->{section} eq 'detail'){
+%   if( _array( $data->{$meta->{id_field}} ) ) {
     <ul class="nav nav-list">
         <li class="nav-header">
             <% _loc($meta->{name_field}) %>
         </li>
     </ul>
     <ul class="" style="margin-left: 20px">
-% foreach my $revision ( _array( $data->{$meta->{id_field}} ) ) {
+%   foreach my $revision ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px">
             <div class="bl-text-over" style="width:300px" title="<% $revision->{name} %>">
                 <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
                 <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{reponame} %>: <% $revision->{name} %></a>
             </div>
         </li>
-% }
+%   }
     </ul>
-% }
+%   }
+% } else {
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+    </tr>
+    <tr><td>
+       <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+         <tr>
+         <th width="1"><% _loc('Repository') %></th>
+         <th><% _loc('Commit') %></th>
+         </tr>
+%   foreach my $revision ( _array( $data->{$meta->{id_field}} ) ) {
+         <td colspan="1" class="fieldlet-html">
+                <% $revision->{reponame} %>
+         </td>
+         <td colspan="1" class="fieldlet-html">
+                <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{name} %></a>
+         </td>
+%   }
+       </table>
+    </td></tr>
+% } 
+
