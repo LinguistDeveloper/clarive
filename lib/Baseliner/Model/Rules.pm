@@ -378,8 +378,9 @@ sub run_rules {
         $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when", internal=>1 );
         $sem->take;
     }
-
+    $stash->{rules_exec}{$p{event}}{ $when } = 0;
     for my $rule ( @rules ) {
+        $stash->{rules_exec}{$p{event}}{ $when }++;
         my ($runner_output, $rc, $ret,$err);
         my $id_rule = $rule->{id};
         try {

@@ -806,8 +806,8 @@ sub update {
                 $return = 'Topic modified';
                 my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                 $rollback = 0;
-                if ( %change_status ) {
-                    $self->change_status( %change_status );
+                if ( %change_status || $stash->{return_options}{reload}) {
+                    $self->change_status( %change_status ) if %change_status;
                     $return_options->{reload} = 1;
                 }
 
@@ -815,7 +815,6 @@ sub update {
                     category => $id_category,
                     category_status => $status,
                 };
-                    
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
 
             } => sub {

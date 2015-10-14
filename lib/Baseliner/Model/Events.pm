@@ -273,6 +273,9 @@ sub _new_event {
 
     # PRE rules
     my $rules_pre = $ev->rules_pre_online($data);
+    
+    $data->{return_options}{reload} = 1 if $rules_pre->{stash}{rules_exec}{$ev->key}{'pre-online'};
+
     push @rule_log, _array( $rules_pre->{rule_log} );
 
     my $obj = Baseliner::Core::Event->new( data => $data );
