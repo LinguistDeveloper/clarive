@@ -1,5 +1,6 @@
 ---
 title: Rule
+icon: rule
 ---
 
 A Clarive rule is a decision tree used for customizing most critical

@@ -1,5 +1,6 @@
 ---
 title: Job
+icon: job
 ---
 
 Jobs are rules executed by the Clarive server. 

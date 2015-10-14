@@ -1,5 +1,6 @@
 ---
 title: Roles
+icon: role
 ---
 
 Clarive roles are somewhat similar to groups, 

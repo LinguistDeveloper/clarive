@@ -1,5 +1,6 @@
 ---
 title: Topic
+icon: topic
 ---
 
 The topic is Clarive's central lifecycle entity. 

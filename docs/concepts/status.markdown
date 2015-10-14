@@ -1,6 +1,7 @@
 ---
 title: Statuses and transitions
 index: 400
+icon: status
 ---
 
 A status represents the state of an issue at a particular point in a specific workflow. An issue can be in only one status at a given point in time.

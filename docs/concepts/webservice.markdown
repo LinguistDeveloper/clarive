@@ -1,5 +1,6 @@
 ---
 title: Webservice
+icon: webservice
 ---
 
 In Clarive, a webservice is a type of rule

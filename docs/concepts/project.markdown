@@ -1,5 +1,6 @@
 ---
 title: Project
+icon: project
 ---
 
 A Project is the most common Clarive security scope. 

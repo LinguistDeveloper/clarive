@@ -366,7 +366,7 @@
     var panel_title = params.id_role ? _('Role: %1', params.role ) : _('New Role');
     var role_panel = new Ext.Panel({
         layout: 'border',
-        tab_icon:'/static/images/icons/users.gif',
+        tab_icon:IC('role'),
         tbar: [
             '->',
             {  text: _('Save'),

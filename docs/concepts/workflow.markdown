@@ -1,5 +1,6 @@
 ---
 title: Workflow
+icon: workflow
 ---
 
 A Clarive workflow is the set of statuses and transitions that a topic

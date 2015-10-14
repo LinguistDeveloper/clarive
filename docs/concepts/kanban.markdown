@@ -1,6 +1,7 @@
 ---
 title: Kanban
 index: 5000
+icon: kanban
 ---
 
 Kanban usually means a board for visualizing the flow of work. 
