@@ -531,6 +531,15 @@ sub parse_dt {
     };
 }
 
+sub query_array {
+    my $query = shift;
+    {
+        no warnings;  # may be empty strings, unitialized
+        my $txt = join ',', @_;    ##TODO check for "and", "or", etc. with text::query
+        return $txt =~ m/$query/i;
+    }
+}
+
 sub query_grep {
     my (%p) = @_;
     if( $p{all_fields} ) {
