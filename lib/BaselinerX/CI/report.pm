@@ -664,7 +664,7 @@ sub get_where {
 	my $name_category = $p->{name_category};
 	my %dynamic_filter = %{$p->{dynamic_filter}};
 	my $where = $p->{where};
-	
+
 	map {
 		if (!exists $_->{category} || $_->{category} eq $name_category){
 			my $field=$_;
@@ -897,11 +897,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my @All_Categories;
 
     _fail( _loc("Missing 'Categories' in search configuration") ) unless keys %{ $rel_query || {} };	
-    
 	foreach my $key (sort { $b <=> $a} keys $rel_query) {
         my $wh = {};
 		my @ids_category = _array $rel_query->{$key}->{id_category};
-		my @names_category = _array $rel_query->{$key}->{name_category};
+        my @names_category = _array $rel_query->{$key}->{name_category};
 		my @relation = _array $rel_query->{$key}->{relation};
         my $length = scalar @ids_category;
 		map{
@@ -919,8 +918,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my $rel_where;
                         $rel_where->{name_category} = qr/^$name_relation$/i;
                         $rel_where = $self->get_where({filters_where => $fields{where}, name_category => $name_relation, dynamic_filter => \%dynamic_filter, where => $rel_where });
-                        my @data_relation = $mdb2->topic->find($rel_where)->all;                        
-                        my %data_to_compare = map { $_->{mid} => 1 } @data_relation; 
+                        my @data_relation = $mdb2->topic->find($rel_where)->all;
+                        my %data_to_compare =  map { $_->{mid} => 1 } @data_relation;
                         my @all_mids;
                         map {
                             if (ref $_->{$rel_name} eq'ARRAY'){
@@ -936,11 +935,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         map{
                             $categories_queries->{$_->{name_category}}->{$_->{mid}} = $_ if ($queries{$rel_name}->{$_->{mid}});    
                         } @data_relation;
+                    @all_mids = _unique @all_mids;
                     #if exists mismatch rel_name...
                     if ($where->{$rel_name}) {
                         push @all_mids, _array $where->{$rel_name}->{'$in'};
                     }
-                    $where->{$rel_name} = { '$in' => \@all_mids };
+                    $where->{$rel_name} = { '$in' => _unique \@all_mids };
                     }
                 }
             }
@@ -1010,7 +1010,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
       ->skip( $start )
       ->limit($rows)
       ->all;
-    my @parse_data;  
+    my @parse_data;
     map {
         foreach my $field (keys $fields){
             if (!exists $_->{$field}) {
@@ -1029,6 +1029,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             }
         }
         if (%queries){
+            use Storable 'dclone';
+            my $tmp_data = dclone $_;
             for my $relation ( keys %queries ){
                 my @ids_where;
                 if ( ref $where->{'$or'} eq 'HASH' ) {
@@ -1038,7 +1040,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     push @ids_where, _array $where->{$relation}->{'$in'}
                 }
                 my %ids_where = map { $_ => 1 } @ids_where;
-
                 for my $field (_array $_->{$relation}){
                     next unless $ids_where{$field}; #Para evitar que cuando haya filtros saque todos los correspondientes a la peticion
                     if ( exists $queries{$relation}{$field} ){ #mids
@@ -1046,9 +1047,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my $i = 1;
                         my $value;
                         my %alias;
-                        use Storable 'dclone';
-                        my $tmp_data = dclone $_;
-                        $tmp_data->{$relation} = $field;  
+                        $tmp_data->{$relation} = $field;
                         for my $select (@selects){
                             if ($i % 2 == 0){  
                                 if (exists $categories_queries->{$select}->{$field}){
@@ -1061,7 +1060,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_value = $tmp_data->{$inner_field};
                                         }
                                     }
-                                    #my $tmp_ref = $_;
                                     my $tmp_ref = $tmp_data;
                                     for my $inner_field ( @fields ) {
                                         if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
@@ -1070,7 +1068,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
                                             $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};
                                             delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
-                                            # delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }
                                     $tmp_ref->{'mid' . "_$select"} = $categories_queries->{$select}->{$field}->{mid} // $tmp_data->{mid};
@@ -1083,11 +1080,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $tmp_data;
                                     for my $inner_field ( @fields ) {
-                                        if($tmp_value->{$inner_field}){
-                                            $tmp_value = $tmp_value->{$inner_field};
-                                        } else {
-                                            $tmp_value = $tmp_data->{$inner_field};
-                                        }
+                                        if($tmp_value->{$inner_field} || $tmp_data->{$inner_field}){
+                                            $tmp_value = $tmp_value->{$inner_field} // $tmp_data->{$inner_field};
+                                        } else { $tmp_value = undef };
                                     }
                                     my $tmp_ref = $tmp_data;
                                     for my $inner_field ( @fields ) {
@@ -1095,12 +1090,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         }
                                         else{
-                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};# if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
-                                            delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
+                                            if ( $tmp_value ) {
+                                                $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
+                                                $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field};# if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                                delete $tmp_ref->{$inner_field} if ($inner_field ne $relation && $tmp_ref->{$inner_field . "_$select"});
+                                            }
                                         }
                                     }
-                                    # $tmp_ref->{$relation . "_$select"} = $field; 
                                 }
                                 $value = '';
                             }else{
@@ -1108,10 +1104,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                             }
                             $i++;
                         }
-                        push @parse_data, $tmp_data;
                     }
                 }
             }
+            push @parse_data, $tmp_data;
         }else{
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
@@ -1121,9 +1117,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     } @data;
 
     @parse_data = @data if !@parse_data;
-    
-    # _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
-    
+        
     my %scope_topics;
     my %scope_cis;
     my %all_labels = map { $_->{id} => $_ } $mdb2->label->find->all;
