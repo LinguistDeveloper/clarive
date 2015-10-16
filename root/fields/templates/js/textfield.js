@@ -29,8 +29,9 @@ params:
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: meta.id_field == 'title' ? false : Baseliner.eval_boolean(meta.allowBlank),
-            readOnly: Baseliner.eval_boolean(meta.readonly),
+            allowBlank: allowBlank,
+            readOnly: meta ? meta.readonly : true,
+            maxLength: meta ? meta.maxLength : '',
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
