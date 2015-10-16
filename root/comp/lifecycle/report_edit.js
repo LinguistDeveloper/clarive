@@ -332,6 +332,10 @@
         
         var set_select = function(){
             var vals = form_value.getValues();
+            if (!vals) {
+                Baseliner.message( 'Error', _('Loading Error') );
+                return;
+            }
             Ext.apply( node.attributes.data, vals );
             node.setText( String.format('{0}', vals.alias ) );
             var root = tree_selected.getRootNode();
@@ -346,7 +350,7 @@
                     if (query[parent.attributes.data.id_category].relation[i].id_category == attr.data.id_category){
                         query[parent.attributes.data.id_category].relation[i] = {id_category : [node.attributes.data.id_category], name_category: [node.attributes.data.name_category], relation: [node.attributes.data.relation]};
                     }
-                };
+                }
             } else {
                 query[node.attributes.data.id_category].id_category = [node.attributes.data.id_category], 
                 query[node.attributes.data.id_category].name_category = [node.attributes.data.name_category]
@@ -359,7 +363,7 @@
         
         form_value.add(options);
         form_value.items.each(function(fi){
-            fi.on('change', function(){ set_select() });
+            fi.on('select', function(){ set_select(); });
         });
         form_value.setTitle( String.format('{0}', node.text) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
