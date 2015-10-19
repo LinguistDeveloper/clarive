@@ -812,14 +812,16 @@ sub related {
         @edges = ( 'in', 'out');
     }
 
-    my @cis;
+    my @old_cis;
 
     for my $edge ( @edges ){
         $opts{edge} = $edge;
-        push @cis, $self_or_class->related_mids( %opts, mid => $mid );
+        push @old_cis, $self_or_class->related_mids( %opts, mid => $mid );
     }
+    my %edges = map { $_->{mid} => $_->{_edge} } @old_cis;
 
-    my @ands = ( { mid => mdb->in(map{$_->{mid}} @cis)} );
+
+    my @ands = ( { mid => mdb->in(map{$_->{mid}} @old_cis)} );
 
     if( $opts{where} ) {
         push @ands, $opts{where};
@@ -835,13 +837,23 @@ sub related {
     $rs->limit( $opts{limit} ) if $opts{limit} > 0;
     $rs->sort( $opts{sort} ) if ref $opts{sort};
 
-    @cis = $rs->all;
+    my @cis = $rs->all;
     
     if ( $opts{mids_only} ) {
         @cis = map { +{ mid => $_->{mid} } } @cis;
+        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
     } elsif ( !$opts{docs_only} ) {
-         @cis = map { ci->new($_->{mid}) } @cis;
-         @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+        @cis = map {
+            my $ci = ci->new( $_->{mid} );
+            $ci->{_edge} = $edges{ $_->{mid} } if $edges{ $_->{mid} };
+            $ci->{collection} = $ci->collection;
+            $ci->{ci_class} = ref $ci;
+            $ci->{ci_icon} = $ci->icon;
+            $ci
+        } @cis;
+        @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    } else {
+        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
     }
     return @cis;
 }

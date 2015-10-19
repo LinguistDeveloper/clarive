@@ -450,8 +450,8 @@ sub build_job_window : Path('/job/build_job_window') {
             my $ci = _ci( $mid );
             # recurse into ci relations up to depth
             my @related; 
-            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;   
-            my @projects = $ci->children( depth => 1, where => { collection => 'Project'}, docs_only => 1 ) ;   
+            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }) ;   
+            my @projects = $ci->children( depth => 1, where => { collection => 'Project'} ) ;   
             push @all_projects, @projects;
             push @related, @projects;
 

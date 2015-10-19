@@ -380,6 +380,7 @@
                     { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: date_format  },
                     function(res){
                         if( res.success ) {
+                            // debugger;
                             store_time.loadData( res.data ); // async
                             jc_store.each(function( jc_row ){
                                 if( ! jc_row.data.mid ) return;
@@ -421,7 +422,7 @@
     });
 
     var render_icon = function( v ) {
-        return String.format('<img style="float:left;vertical-align:top;" src="{0}" />', v );
+        return String.format('<img style="float:left;vertical-align:top;width:16px;" src="{0}" />', v || '/static/images/icons/class.gif' );
     };
 
     var button_remove_item = new Ext.Button({
@@ -457,7 +458,8 @@
     });
 
     var render_edge = function( v ) {
-        return String.format('{0} - {1}<p>{2}</p>', v.rel_type, v.rel, v.path.join('/') );
+        return String.format('{0} - {1}', v.rel_type, v.rel );
+        // return String.format('{0} - {1}<p>{2}</p>', v.rel_type, v.rel, v.name );
     };
 
     var render_ci_name = function( v ) {
@@ -474,7 +476,7 @@
             var sel = sm.getSelected();
             if( sel ) {
                 var store_rel = new Ext.data.Store({});
-                Ext.each( sel.data.rels, function(rel){
+                Ext.each( row_data[sel.data.mid].rels, function(rel){
                     var rec = new Ext.data.Record( Ext.apply( rel, rel._ci ) );
                     store_rel.add( rec );
                 });
@@ -483,8 +485,8 @@
                     store: store_rel,
                     viewConfig: { forceFit: true },
                     columns: [
-                        { header:_(''), dataIndex:'ci_icon', width: 18, renderer: render_icon },
-                        { header:_('Name'), dataIndex:'name', sortable: true, renderer: render_ci_name },
+                        { header:_(''), dataIndex:'ci_icon', width: 25, renderer: render_icon },
+                        { header:_('Name'), dataIndex:'name', width: 130, sortable: true, renderer: render_ci_name },
                         { header:_('Collection'), dataIndex:'collection', sortable: true, width: 50 },
                         { header:_('Class'), sortable: true, dataIndex:'ci_class' },
                         { header:_('ID'), dataIndex:'mid', sortable: true, width: 30 },
