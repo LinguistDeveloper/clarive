@@ -1973,6 +1973,12 @@ sub report_csv : Local {
                     (my $du) = _array $v;
                     if( ref $du eq 'HASH' && exists $du->{mid}) {
                         $v = $du->{category}->{name}." #$du->{mid}";
+                    } elsif( ref $du eq 'HASH' ) {
+                        my @res;
+                        foreach ( keys $du ){
+                            push @res, "$_:$du->{$_}";
+                        }
+                        $v = join ';',@res;
                     } else {       
                         $v = join ',', @$v;
                     }
