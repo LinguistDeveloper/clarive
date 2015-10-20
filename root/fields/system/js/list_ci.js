@@ -27,7 +27,6 @@ params:
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;
     else if( meta.ci_class ) ci['class'] = meta.ci_class;
-	 meta.show_class = false;
 	return [
        Baseliner.ci_box(Ext.apply({
            fieldLabel: _(meta.name_field),
