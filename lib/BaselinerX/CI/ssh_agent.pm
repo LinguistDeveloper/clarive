@@ -173,6 +173,7 @@ sub put_dir {
     # run 
     _log "URI=" . $self->_build_uri . ", L=$local, R=$remote";
     my $ret = $self->ssh->$method( \%p, $local, $remote ); 
+    $ret = defined $ret ? $ret : 127;
 
     my $out = Util->_slurp( $p{stdout_file} );
     unlink $p{stdout_file};

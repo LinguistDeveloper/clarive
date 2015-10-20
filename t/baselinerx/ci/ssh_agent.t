@@ -12,6 +12,7 @@ TestEnv->setup;
 use Baseliner::Role::CI;    # WTF this is needed for CI
 use BaselinerX::CI::generic_server;
 use BaselinerX::CI::ssh_agent;
+use File::Temp qw(tempfile);
 
 subtest 'builds openssh with correct params' => sub {
     my $ssh_agent =
@@ -76,6 +77,22 @@ subtest 'builds openssh with correct params when private_key' => sub {
             -F => '/dev/null',
         ]
       };
+};
+
+subtest 'returns error exit_code when put_file fails' => sub {
+    my $ssh = _mock_openssh();
+    $ssh->mock( scp_put => sub { undef } );
+
+    my $ssh_agent = _build_ssh_agent(
+        user        => 'foo',
+        server      => BaselinerX::CI::generic_server->new( hostname => 'bar' ),
+        private_key => '/foo/bar',
+        openssh     => $ssh
+    );
+
+    my ($fh, $filename) = tempfile();
+
+    ok $ssh_agent->put_file(local => $filename, remote => 'bar') != 0;
 };
 
 sub _mock_openssh {
