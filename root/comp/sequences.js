@@ -13,7 +13,7 @@
         ]
 	});
 
-	var btn_submit = new Ext.Button({ text:_('Submit'), icon:'/static/images/icons/save.png', handler: function(){
+	var btn_submit = new Ext.Button({ text:_('Save'), icon:IC('save'), handler: function(){
 		Baseliner.ajaxEval( '/repl/sequences_update',{modified_records: Ext.util.JSON.encode(modified_records)},
                             function(response) {
                                 if ( response.success ) {

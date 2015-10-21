@@ -1072,15 +1072,15 @@
 
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
 % if( $c->stash->{user_action}->{'action.job.resume'} ) {
         else if( status == 'PAUSED' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.resume_job({0},\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name ); 
+            value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name ); 
         }
 % }
         else if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
-            value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
+            value = String.format("<a href='javascript:Baseliner.trap_check(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
@@ -1097,7 +1097,7 @@
         var contents = ''; record.data.contents.join('<br />');
         var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';
         return String.format(
-                '<b><a href="javascript:Baseliner.openLogTab({1}, \'{2}\');" style="font-family: Tahoma;">{0}{3}</a></b><br />',
+                '<b><a href="javascript:Baseliner.openLogTab(\'{1}\', \'{2}\');" style="font-family: Tahoma;">{0}{3}</a></b><br />',
                 value, record.data.mid, record.data.name, execs ); 
     };
 

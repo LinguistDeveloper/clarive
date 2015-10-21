@@ -41,7 +41,7 @@ my $iid = Util->_md5;
         }
 
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", obj.mid, _(status) ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\");'><b>{1}</b></a>", obj.mid, _(status) ); 
         }
             
         if( icon!=undefined ) {

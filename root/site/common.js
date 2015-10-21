@@ -339,8 +339,6 @@ Cla.ci_loc = function(cls){
     return trans;
 }
 
-//return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
-
 // from /root/static/images/icons/mime/*
 var extensions_available = {
 "3gp":0, "7z":0, "ace":0, "ai":0, "aif":0, "aiff":0, "amr":0, "asf":0, "asx":0, "bat":0, "bin":0,
@@ -1990,7 +1988,7 @@ Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
 
 Baseliner.render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
     var mid = rec.data.mid;
-    return String.format('<a href="javascript:Baseliner.show_ci({0})">{1}</a>', mid, value );
+    return String.format('<a href="javascript:Baseliner.show_ci(\'{0}\')">{1}</a>', mid, value );
 };
 
 Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {

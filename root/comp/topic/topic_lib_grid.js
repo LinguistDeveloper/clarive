@@ -684,12 +684,12 @@ Cla.topic_grid = function(params){
     
     var body_mini_tpl = function(){/*
                   <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
-                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");return false;'>[%=value%][%=folders%] </span>
+                  onclick='javascript:Baseliner.show_topic_colored("[%=mid%]","[%=category_name%]","[%=category_color%]", "[%=id%]");return false;'>[%=value%][%=folders%] </span>
           */}.tmpl();
     
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
-                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]"); return false;'>[%=value%] </span>
+                onclick='javascript:Baseliner.show_topic_colored("[%=mid%]","[%=category_name%]","[%=category_color%]", "[%=id%]"); return false;'>[%=value%] </span>
                         <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %] </font>[%=folders%]
                         <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
@@ -980,7 +980,7 @@ Cla.topic_grid = function(params){
             var img = dir =='in' ? 'referenced_in' : 'references_out';
             var ret = [];
             // open children
-            ret.push("<a href='javascript:void(0);' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", "+rec.data.topic_mid+"); return false'>");
+            ret.push("<a href='javascript:void(0);' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", \""+rec.data.topic_mid+"\"); return false'>");
             ret.push("<span class='label' style='cursor:pointer; color:#333; borderx: 1px #2ECC71 solid; padding-left: 0px; background-color: transparent; font-size:10px; margin-top:0px'>");
             ret.push("<img src='/static/images/icons/"+img+".png'>");
             ret.push( refs.length );

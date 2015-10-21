@@ -15,31 +15,38 @@
         <li style="margin: 6px 0px 6px 0px">
             <div class="bl-text-over" style="width:300px" title="<% $revision->{name} %>">
                 <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
-                <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{reponame} %>: <% $revision->{name} %></a>
+                <a href="javascript:Baseliner.show_revision('<% $revision->{mid} %>')"><% $revision->{reponame} %>: <% $revision->{name} %></a>
             </div>
         </li>
 %   }
     </ul>
 %   }
 % } else {
+%   my @revs = _array( $data->{$meta->{id_field}} );
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>
     <tr><td>
+% if( !@revs ) {
+       <% _loc("No revisions available") %>
+% } else { 
        <table class="table table-bordered" style="margin-top: 10px; width: 100%">
          <tr>
          <th width="1"><% _loc('Repository') %></th>
          <th><% _loc('Revision') %></th>
          </tr>
-%   foreach my $revision ( _array( $data->{$meta->{id_field}} ) ) {
+%   foreach my $revision ( @revs ) {
+         <tr>
          <td colspan="1" class="fieldlet-html">
                 <% $revision->{reponame} %>
          </td>
          <td colspan="1" class="fieldlet-html">
-                <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{name} %></a>
+                <a href="javascript:Baseliner.show_revision('<% $revision->{mid} %>')"><% $revision->{name} %></a>
          </td>
+         </tr>
 %   }
        </table>
+%   }
     </td></tr>
 % } 
 

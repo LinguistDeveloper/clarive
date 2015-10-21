@@ -47,12 +47,12 @@ params:
           { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
           { header: _('Name'), width: 240, dataIndex: 'name',
               renderer: function(v,metadata,rec){
-                  return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision({1})"><span id="boot"><h6>{0}</h6></span></a>', v, rec.data.mid ) );
+                  return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision(\'{1}\')"><span id="boot"><h6>{0}</h6></span></a>', v, rec.data.mid ) );
               }
           },
           { width: 20, dataIndex: 'mid',
               renderer: function(v,meta,rec,rowIndex){
-                  return '<a href="javascript:Baseliner.delete_revision_row(\''+revision_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+                  return '<a href="javascript:Baseliner.delete_revision_row(\''+revision_grid.id+'\', \''+v+'\')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
               }
           }
 

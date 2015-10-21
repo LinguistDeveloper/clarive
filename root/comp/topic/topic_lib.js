@@ -203,7 +203,7 @@ Baseliner.topic_name = function(args) {
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
-        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored({0},"{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';  
+        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored("{0}","{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';  
         var cursor = args.link ? 'cursor:pointer' : '';
 
         var ret = args.mini 
@@ -326,7 +326,7 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
 
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
-            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{short_name}</span>',
+            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored(\'{mid}\', \'{name}\', \'{color}\');">{short_name}</span>',
             ( self.display_field ? '&nbsp;{'+self.display_field+'}' : '' ),
             // '<span style="padding-left:4px">{title}</span>',
             '</div></tpl>' );
@@ -371,7 +371,7 @@ Baseliner.model.Topics = function(c) {
         '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">',
         '<span id="boot" style="background:transparent; margin-right: 8px"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
-        ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
+        ' onclick="javascript:Baseliner.show_topic_colored(\'{mid}\', \'{name}\', \'{color}\');">{name}</span>{title}</span>',
         '</tpl>' );
     Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
@@ -2188,10 +2188,10 @@ Baseliner.comments_for_topic = function(args) {
 
 [% if ( can_edit ) { %]
 
-                    | <a href="javascript:Baseliner.Topic.comment_edit( [%= topic_mid %], [%= id %], '[%= parent %]')">[%= _("edit") %]</a>
+                    | <a href="javascript:Baseliner.Topic.comment_edit( '[%= topic_mid %]', '[%= id %]', '[%= parent %]')">[%= _("edit") %]</a>
 [% } %]
 [% if ( can_delete ) { %]
-                    | <a href="javascript:Baseliner.Topic.comment_delete([%= topic_mid %], [%= id %], '[%= id_div_com %]')">[%= _("delete") %]</a>
+                    | <a href="javascript:Baseliner.Topic.comment_delete('[%= topic_mid %]', '[%= id %]', '[%= id_div_com %]')">[%= _("delete") %]</a>
 
 [% } %]
                     </small></p>
