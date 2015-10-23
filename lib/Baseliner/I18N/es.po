@@ -621,6 +621,9 @@ msgstr "Revisiones"
 msgid "revisions"
 msgstr "revisiones"
 
+msgid "No revisions available"
+msgstr "No hay revisiones"
+
 msgid "Login Failed"
 msgstr "Login Inválido"
 
