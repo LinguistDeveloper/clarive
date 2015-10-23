@@ -433,7 +433,7 @@ register 'fieldlet.system.list_topics' => {
 };
 
 register 'fieldlet.system.list_topics_selector' => {
-    name        => _loc('Topic Selector'),
+    name        => _loc('Topic Selector with filter'),
     icon        => '/static/images/icons/combo_box.png',
     #icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
