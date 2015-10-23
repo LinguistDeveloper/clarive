@@ -2628,6 +2628,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     value: '',
     initComponent : function(){
         Baseliner.Pills.superclass.initComponent.apply(this, arguments);
+        this.addEvents('change');
     },
     defaultAutoCreate : {tag: 'div', 'class':'', style:'margin-top: 0px; height: 30px;' },
     onRender : function(){
@@ -2647,7 +2648,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 var anchor = document.createElement('a');
                 if( bg && self.value == v ) anchor.style['backgroundColor'] = bg;
                 anchor.href = '#'; 
-                anchor.onclick = function(){ 
+                anchor.onclick = function(){
                     for( var i=0; i<self.list.length; i++) {
                         self.list[i].className = '';
                     }
@@ -2658,6 +2659,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                     if( bg ) anchor.style['backgroundColor'] = bg;
                     self.value = v;
                     self.$field.value = v;
+                    self.change(v);
                     return false;
                 }
                 anchor.innerHTML = v;
@@ -2701,6 +2703,10 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     setValue: function( v ){
         this.value = v || '';
         this.redraw();
+        this.change(v);
+    },
+    change : function( v ) {
+        this.fireEvent('change');
     },
     setSize : Ext.emptyFn,
     setWidth : Ext.emptyFn,

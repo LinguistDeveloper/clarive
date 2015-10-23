@@ -21,26 +21,25 @@ params:
 */
 
 (function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
-	var form = params.form.getForm();
-
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+	var obj = [];
+    var form = params.form.getForm();
     var filter_field = form.findField( meta.filter_field );
-
-	var topics = new Array();
+    var topics = new Array();
     var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
-	var id_required = Ext.id()
-	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
-	
-	if(data && data[ meta.bd_field] ){
-		var eval_topics = data[ meta.bd_field ];
-		for(i=0; i<eval_topics.length;i++){
-			topics.push(eval_topics[i].mid);
-		}
-	}else{
-		topics = [];
-	}
-	
+    var id_required = Ext.id()
+    //var lbl_required = 'lbl_' + meta.id_field + '_' + id
+    
+    if(data && data[ meta.bd_field] ){
+        var eval_topics = data[ meta.bd_field ];
+        for(i=0; i<eval_topics.length;i++){
+            topics.push(eval_topics[i].mid);
+        }
+    }else{
+        topics = [];
+    }
+    
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
@@ -59,17 +58,17 @@ params:
 
     if( meta.list_type == 'grid' ) {
         // Grid
-		
+        
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
         });
-		
-		var readonly = meta && meta.readonly ? meta.readonly : false,
-		
+        
+        var readonly = meta && meta.readonly ? meta.readonly : false,
+        
         topic_box = new Baseliner.TopicGrid({
-			fieldLabel: _(meta.name_field),
-			sm: sm ,
+            fieldLabel: _(meta.name_field),
+            sm: sm ,
             //fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
@@ -79,12 +78,12 @@ params:
             name: meta.id_field,
             height: meta.height || 250,
             value: data[ meta.id_field ],
-			enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
-			readOnly:  readonly,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-			allowBlank: readonly ? true : meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
+            enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
+            readOnly:  readonly,
+            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            allowBlank: readonly ? true : meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
         });
-		
+        
 
     } else {
         topic_box = new Baseliner.TopicBox({
@@ -98,7 +97,7 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });
@@ -133,7 +132,6 @@ params:
             });
         }
     }
-	var obj = [];
 //	if (meta.list_type == 'grid') {
 //        var allow;
 //        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
@@ -143,28 +141,6 @@ params:
 	obj.push(topic_box);
 
     if ( filter_field ) {
-            topic_box_store.on('load',function(argument){
-            var mids = "";
-            var value = filter_field.items.items;
-            value.forEach(function(val){
-                mids += val.value + ",";
-            });
-            mids = mids.substr(0, mids.length-1);
-            var meta_filter = meta.filter;
-            var txt_filter
-            if ( meta.filter != 'none' && meta_filter.length>0 ) {
-               meta_filter = "," + meta_filter.replace("{","");
-            } else {
-              meta_filter = "}";
-            }
-            if (meta.filter_data) { 
-                txt_filter = '{ "'+ meta.filter_data +'":["' + mids + '"]' + meta_filter;
-            } else {
-                txt_filter = '{ "'+ filter_field.name +'":["' + mids + '"]' + meta_filter;
-            };
-            topic_box_store.baseParams['filter'] = txt_filter;
-            topic_box.removeAll();
-        });
         filter_field.on('change',function (argument) {
             var meta_filter = meta.filter;
             var txt_filter
@@ -181,8 +157,9 @@ params:
 
             topic_box_store.baseParams['filter'] = txt_filter;
             topic_box.setValue(undefined);
-            topic_box.removeAll();
-            topic_box.killItems();
+            try { 
+                topic_box.killItems()
+            } catch(e) {};
             topic_box_store.load();
         });
     }
