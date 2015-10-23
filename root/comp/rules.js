@@ -837,6 +837,10 @@
         });
         var trap_rollback = new Ext.form.Checkbox({ fieldLabel:_('Trap in Rollback?'), checked: _bool(attr.trap_rollback,true) });
 
+        var debug_mode = new Baseliner.ComboDouble({ 
+            fieldLabel: _('Debug Mode'), name:'debug_mode', value: attr.debug_mode || 'none', 
+            data: [ ['none',_('No Debug')], ['op',_('Op Trace')], ['stash',_('Op Trace + Stash Dump')] ]
+        });
         var parallel_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
@@ -845,7 +849,7 @@
         var sub_name = new Ext.form.TextField({ fieldLabel:_('Sub Name'), name:'sub_name', readOnly: true, value: attr.sub_name });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, 
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode, 
             error_trap, trap_timeout, trap_timeout_action, trap_rollback, sub_name
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
@@ -863,6 +867,7 @@
             node.attributes.needs_rollback_mode = needs_rollback_mode.getValue();
             node.attributes.run_forward = run_forward.checked;
             node.attributes.run_rollback = run_rollback.checked;
+            node.attributes.debug_mode = debug_mode.getValue();
             node.attributes.parallel_mode = parallel_mode.getValue();
             node.attributes.error_trap = error_trap.getValue();
             node.attributes.trap_timeout = trap_timeout.getValue();
@@ -1366,7 +1371,7 @@
             var attr = node.attributes;
             var rf = _bool(attr.run_forward,true);
             var rr = _bool(attr.run_rollback,true);
-            var props = [], parallel_mode=[], parallel_stash_keys='', data_key='';
+            var props = [], parallel_mode=[], debug_mode=[], parallel_stash_keys='', data_key='';
             var blame = false;
             var semaphore_key='';
             var shortcut = false;
@@ -1379,6 +1384,9 @@
                 }
                 else if( !rr && !rf ) {
                     props.push('NO RUN');
+                }
+                if( attr.debug_mode && attr.debug_mode!='none' ) {
+                    debug_mode.push( attr.debug_mode );
                 }
                 if( attr.parallel_mode && attr.parallel_mode!='none' ) {
                     parallel_mode.push( attr.parallel_mode );
@@ -1412,6 +1420,7 @@
                 if( data_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+data_key+'</span>&nbsp;';
                 if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
                 if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
+                if( debug_mode.length ) badges += debug_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#404040; text-transform: uppercase;">DEBUG: '+r+'</span>&nbsp;' }).join('');
                 if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
                 if( parallel_stash_keys.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+parallel_stash_keys+'</span>&nbsp;';
                 if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
@@ -1506,6 +1515,8 @@
                     depth:depth, 
                     icon: attr.icon,
                     lev: lev.length>0 ? lev.join('.')+'.'+k : k,
+                    debug_mode: attr.debug_mode && attr.debug_mode!='none' 
+                        ? _(attr.debug_mode) : '',
                     parallel_mode: attr.parallel_mode && attr.parallel_mode!='none' 
                         ? _(attr.parallel_mode) : '',
                     run_mode: rf && !rb ? _('NO ROLLBACK') 
@@ -1529,6 +1540,7 @@
                 [%= lev %]
                 <img style="vertical-align: middle; float: left" src="[%= icon %]"> [%= text %]
             [% if( run_mode ) { %]<span class="badge">[%= run_mode %]</span>[% } %]
+            [% if( debug_mode ) { %]<span class="badge" style="background-color: #404040; text-transform: uppercase;">[%= debug_mode %]</span>[% } %]
             [% if( parallel_mode ) { %]<span class="badge" style="background-color: #609060; text-transform: uppercase;">[%= parallel_mode %]</span>[% } %]
             </h3>
             <div style="margin-left: 16px">

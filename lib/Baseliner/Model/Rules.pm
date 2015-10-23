@@ -183,6 +183,7 @@ sub dsl_build {
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // '';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
+        my $debug_mode = length $attr->{debug_mode} && $attr->{debug_mode} ne 'none' ? $attr->{debug_mode} : '';
         push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
         push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};  
 
@@ -222,6 +223,7 @@ sub dsl_build {
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name // '')."\n";
         }
+        push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $attr->{debug_mode} eq 'stash';  
         if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
@@ -263,6 +265,7 @@ sub dsl_build {
             push @dsl, "};\n";
             push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} && $attr->{sub_mode} eq 'run';
         }
+        push @dsl, sprintf( '_debug("AFTER STASH", $stash);' ) . "\n" if $attr->{debug_mode} eq 'stash';  
     }
 
     my $dsl = join "\n", @dsl;
