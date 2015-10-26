@@ -3116,7 +3116,7 @@ sub filter_children {
     if( length $topic_mid){
         # topic and children
         my $ci = ci->new($topic_mid);
-        $where->{mid} = mdb->in( $topic_mid, map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1)) if $ci;
+        $where->{mid} = mdb->in( $topic_mid, map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1, depth => 5)) if $ci;
         # $where->{mid} = mdb->in( $topic_mid, map{ $$_{to_mid} } mdb->master_rel->find({ from_mid=>"$topic_mid" })->fields({ to_mid=>1 })->all );
     } elsif( $id_project ){
         my @mids_in = ();
