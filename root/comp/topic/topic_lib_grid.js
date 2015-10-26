@@ -1461,7 +1461,9 @@ Cla.topic_grid = function(params){
     var deferred_count = function(st,r,o){
         var lq = st.reader.jsonData.last_query;
         if( !lq ) return;
+        var tg_id = grid_topics.id;
         Cla.ajax_json('/topic/grid_count', { lq: lq }, function(res){
+            if( !Ext.getCmp(tg_id) ) return;  // maybe topic grid is gone by then
             if( st.totalLength != res.count ) {
                 st.totalLength = res.count;
                 st.baseParams.last_count = res.count;
