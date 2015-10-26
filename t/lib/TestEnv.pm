@@ -15,7 +15,6 @@ BEGIN {
 }
 
 use lib "$root/../../lib";
-use local::lib "$root/../../../local/";
 
 sub debug   { }
 sub config  { {} }
