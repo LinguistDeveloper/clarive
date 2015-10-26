@@ -41,6 +41,14 @@ register 'dashlet.job.day_distribution' => {
     js_file => '/dashlets/job_distribution_day.js'
 };
 
+register 'dashlet.ci.tree' => {
+    form=> '/dashlets/ci_tree_config.js',
+    name=> 'CI Graph', 
+    icon=> '/static/images/icons/ci-grey.png',
+    js_file => '/dashlets/ci_tree.js',
+    no_boot => 1,
+};
+
 register 'dashlet.topic.number_of_topics' => {
     form=> '/dashlets/number_of_topics_chart_config.js',
     name=> 'Topics chart', 

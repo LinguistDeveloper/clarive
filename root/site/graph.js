@@ -469,8 +469,9 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     depth: 1,
     title: _('CI Graph'),
     header: false,
-    limit: 50,
+    limit: Ext.isIE ? 50 : 150,
     which: 'st',
+    toolbar: true,
     constructor : function(c){
         var self = this;
         Baseliner.CIGraph.superclass.constructor.call(this, Ext.apply({
@@ -528,18 +529,20 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             tooltip: _('Start on Last'), handler: function(){ self.mid = self.last_mid; self.reload_current(); }, hidden: true
         });
         self.lab_depth = new Ext.Container({ hidden: true, html:_('dph')+':' });
-        self.tbar = [
-            self.btn_st, self.btn_rg, self.btn_d3g,
-            '-',
-            btn_redraw, self.btn_recenter, 
-            '-', 
-            //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
-            self.lab_depth, self.field_depth, 
-            _('lim')+':', field_limit,
-            _('dir')+':', self.field_direction, '-',
-            '->', 
-            self.btn_to_img
-        ];
+        if( self.toolbar ) {
+            self.tbar = [
+                self.btn_st, self.btn_rg, self.btn_d3g,
+                '-',
+                btn_redraw, self.btn_recenter, 
+                '-', 
+                //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
+                self.lab_depth, self.field_depth, 
+                _('lim')+':', field_limit,
+                _('dir')+':', self.field_direction, '-',
+                '->', 
+                self.btn_to_img
+            ];
+        }
         self.title = _('%1: %2', self.title, self.mid );
         Baseliner.CIGraph.superclass.initComponent.call(this);
         var first = true ;
@@ -570,13 +573,18 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         graph_win.show();
         return graph_win; 
     },
+    setActive : function(obj){
+        var self = this; 
+        var foo= function(){ self.getLayout().setActiveItem( obj ) };
+        self.getLayout().setActiveItem ? foo() : self.on('afterrender', foo);
+    },
     load_st : function(){
         var self = this; 
         self.btn_st.toggle(true);
         self.field_depth.hide(); self.lab_depth.hide();
         self.btn_recenter.show();
         if( self.st ) {
-            self.getLayout().setActiveItem( self.st );
+            self.setActive( self.st );
             return;
         }
         self.st = new Baseliner.ST({ request: function(id,lev,onComplete){
@@ -592,7 +600,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         }});
         self.st.which = 'st';
         self.add( self.st );
-        self.getLayout().setActiveItem( self.st );
+        self.setActive( self.st );
     },
     load_rg : function(){
         var self = this; 
@@ -600,7 +608,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.field_depth.show(); self.lab_depth.show();
         self.btn_recenter.hide();
         if( self.rg ) {
-            self.getLayout().setActiveItem( self.rg );
+            self.setActive( self.rg );
             return;
         }
         self.rg = new Baseliner.JitRGraph({ request: function(id,lev,onComplete){
@@ -611,7 +619,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
                 depth: self.depth, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count > self.limit ) {
-                        Baseliner.confirm( _('graph_high_load %1', res.count ), function(){
+                        Baseliner.confirm( _('High number of nodes (%1) can make browser sluggish. Continue?', res.count ), function(){
                             onComplete.onComplete(id, res.data);    
                         });
                     } else {
@@ -621,7 +629,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         }});
         self.rg.which = 'rg';
         self.add( self.rg );
-        self.getLayout().setActiveItem( self.rg );
+        self.setActive( self.rg );
     },
     load_d3g : function(){
         var self = this;
@@ -629,7 +637,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.field_depth.show(); self.lab_depth.show();
         self.btn_recenter.hide();
         if( self.d3g ) {
-            self.getLayout().setActiveItem( self.d3g );
+            self.setActive( self.d3g );
             return;
         }
         var w = 960, h = 500;
@@ -637,7 +645,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction });
         self.add( self.d3g );
         self.d3g.which = 'd3g';
-        self.getLayout().setActiveItem( self.d3g );
+        self.setActive( self.d3g );
     },
     to_img : function(){
         var self = this;
