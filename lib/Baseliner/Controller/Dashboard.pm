@@ -1253,12 +1253,19 @@ sub list_topics: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );    
-
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
     $main_conditions->{'categories'} = \@user_categories;
 
     my $cnt = 0;
-    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    my $complete_parms = { limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username };
+    
+    if ( $topic_mid ) {
+        my $ci = ci->new($topic_mid);
+        my @related_topics = map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1, depth => 5) if $ci;
+        $complete_parms->{topic_list} = \@related_topics;
+        delete $where->{mid};
+    }
+    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user($complete_parms); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
 
     my @topic_cis = map {$_->{mid}} @topics;
     @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;

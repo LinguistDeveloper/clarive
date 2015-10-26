@@ -346,6 +346,7 @@ sub run_query_builder {
 sub topics_for_user {
     my ($self, $p) = @_;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
+
     $start||= 0;
     $limit ||= 100;
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
@@ -354,7 +355,7 @@ sub topics_for_user {
     my $perm = Baseliner::Model::Permissions->new;
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
-    my $topic_list = $p->{topic_list};
+    my @topic_list = _array($p->{topic_list});
     my ( @mids_in, @mids_nin, @mids_or );
     if( length($query) ) {
         @mids_in = $self->run_query_builder($query,$where,$username);
@@ -397,10 +398,11 @@ sub topics_for_user {
     # project security - grouped by - into $or 
     Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @categories );
     
-    if( $topic_list ) {
-        $where->{mid} = mdb->in($topic_list);
+    if( @topic_list ) {
+        $where->{mid} = mdb->in(@topic_list);
     }
     
+# _debug( $where );
     #DEFAULT VIEWS***************************************************************************************************************
     if($p->{today}){
         my $now1 = my $now2 = mdb->now;
@@ -458,6 +460,7 @@ sub topics_for_user {
             }
         }            
     }
+# _debug( $where );
     
     my $default_filter;
     if($p->{statuses}){
@@ -529,6 +532,7 @@ sub topics_for_user {
         push @mids_in, 'xxx' if !@topics_project;  # FIXME
     }
     
+# _debug( $where );
     if( @mids_in || @mids_nin ) {
         my $w = {};
         $w->{'$in'} = \@mids_in if @mids_in;
@@ -553,7 +557,7 @@ sub topics_for_user {
     }
     #_debug( $order_by );
     
-    # _debug( $where );
+# _debug( $where );
     my $rs = mdb->topic->find( $where ); 
     #_debug( $rs->explain );
     $rs->fields({ mid=>1, labels=>1 }); 
@@ -1375,7 +1379,7 @@ sub get_topics {
               _array($meta);
 
             for my $topic_field ( @topic_fields ) {
-                _warn "Adding ". '_title_list_'.$topic_field;
+                # _warn "Adding ". '_title_list_'.$topic_field;
                 $_->{$topic_field.'._title_list'} = '<li>'.join('</li><li>', map { $_->{title} } _array($data->{$topic_field})).'</li>' if _array($data->{$topic_field});
             };
             $_
