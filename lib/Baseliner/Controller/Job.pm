@@ -686,6 +686,7 @@ sub by_status : Local {
     my $p = $c->request->parameters;
 
     my $project_id = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
 
     my $period = $p->{period} // '1D';
     try {
@@ -696,6 +697,13 @@ sub by_status : Local {
         if ( $project_id ) {
             $wh->{projects} = $project_id;
         }
+
+        if ( $topic_mid ) {
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            $wh->{changesets} = mdb->in(@related_topics);
+        }
+        
+
         map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
         my @data = ();
         for ( keys %st ) {
@@ -718,6 +726,7 @@ sub burndown_new : Local {
     my $bls = $p->{bls};
     my $joined = $p->{joined} // '1';
     my $project_id = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
 
     try {
 
@@ -735,6 +744,12 @@ sub burndown_new : Local {
         if ( $project_id ) {
             $where->{projects} = $project_id;
         }
+
+        if ( $topic_mid ) {
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            $where->{changesets} = mdb->in(@related_topics);
+        }
+        
         my $jobs = ci->job->find( $where );
 
         my %job_stats;

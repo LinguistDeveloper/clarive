@@ -8,6 +8,8 @@ my $iid = Util->_md5;
     var rows = params.data.rows;
     var days = params.data.days || 1000;
     var bls = params.data.bls;
+    var topic_mid = params.topic_mid;
+
     var style_tpl = function(){/*
     <style>
         .progress {
@@ -97,7 +99,7 @@ my $iid = Util->_md5;
           </div>
         </div>        
     */};
-    Cla.ajax_json('/dashboard/list_baseline', {project_id: project_id, days: days, bls: bls, _ignore_conn_errors: true }, function(res){
+    Cla.ajax_json('/dashboard/list_baseline', { topic_mid: topic_mid, project_id: project_id, days: days, bls: bls, _ignore_conn_errors: true }, function(res){
       Ext.each(res.data, function(bl) {
         html = html + bl_tpl.tmpl({project_id:project_id, total: bl.total, bl: bl.bl, porcentOk: bl.porcentOk, totOk: bl.totOk, porcentError: bl.porcentError, totError: bl.totError, days:days});
       });

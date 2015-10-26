@@ -208,6 +208,7 @@ sub list_jobs: Local {
     my $p = $c->req->params;
 
     my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
 
     my $states = $p->{states} || [];
     my $not_in_states = $p->{not_in_states} || 'off';
@@ -247,6 +248,12 @@ sub list_jobs: Local {
                 $where->{status} = mdb->in(_array($states));
             }
         }
+
+        if ( $topic_mid ) {
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            $where->{changesets} = mdb->in(@related_topics);
+        }
+
         my $rs_search = ci->job->find( $where )->sort({ starttime => -1 })->limit($limit);
 
         while ( my $job = $rs_search->next() ) {
@@ -282,6 +289,7 @@ sub last_jobs : Local {
 
     my $bls = $p->{bls};
     my @datas;
+    my $topic_mid = $p->{topic_mid};
     
     try {
 
@@ -299,6 +307,11 @@ sub last_jobs : Local {
         } else {
             @ids_project = $c->model('Permissions')
                 ->user_projects_ids( username => $c->username );
+        }
+        
+        if ( $topic_mid ) {
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            $where->{changesets} = mdb->in(@related_topics);
         }
         
         if ( @ids_project ) {
@@ -1426,7 +1439,7 @@ sub list_baseline : Local {
     my $projects = $p->{projects} // 'ALL';
     my $bls      = $p->{bls};
     my $id_project = $p->{project_id};
-
+    my $topic_mid = $p->{topic_mid};
 
     my $username = $c->username;
     my ( @jobs, $job, @datas, @temps, $SQL );
@@ -1457,16 +1470,22 @@ sub list_baseline : Local {
         my $date_str = $date->ymd;
         $date_str =~ s/\//\-/g;
 
+        my $where = {
+            bl           => mdb->in(@filter_bls),
+            'projects'   => mdb->in(@ids_project),
+            'collection' => 'job',
+            'status'     => 'FINISHED',
+            'endtime'    => { '$gte' => '' . $date_str }
+        };
+
+        my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+        if ( $topic_mid ) {
+            $where->{changesets} = mdb->in(@related_topics);
+        }
+        
         my @jobs_ok = _array(
             mdb->master_doc->aggregate(
-                [   {   '$match' => {
-                            bl           => mdb->in(@filter_bls),
-                            'projects'   => mdb->in(@ids_project),
-                            'collection' => 'job',
-                            'status'     => 'FINISHED',
-                            'endtime'    => { '$gte' => '' . $date_str }
-                        }
-                    },
+                [   {   '$match' => $where},
                     {   '$group' => {
                             _id      => '$bl',
                             'result' => { '$max' => 'OK' },
@@ -1477,19 +1496,25 @@ sub list_baseline : Local {
             )
         );
 
+        $where = {
+            bl           => mdb->in(@filter_bls),
+            'projects'   => mdb->in(@ids_project),
+            'collection' => 'job',
+            'status'     => mdb->in(
+                (   'ERROR', 'CANCELLED', 'KILLED',
+                    'REJECTED'
+                )
+            ),
+            'endtime' => { '$gte' => '' . $date_str }
+        };
+
+        if ( $topic_mid ) {
+            $where->{changesets} = mdb->in(@related_topics);
+        }
+        
         my @jobs_ko = _array(
             mdb->master_doc->aggregate(
-                [   {   '$match' => {
-                            bl           => mdb->in(@filter_bls),
-                            'projects'   => mdb->in(@ids_project),
-                            'collection' => 'job',
-                            'status'     => mdb->in(
-                                (   'ERROR', 'CANCELLED', 'KILLED',
-                                    'REJECTED'
-                                )
-                            ),
-                            'endtime' => { '$gte' => '' . $date_str }
-                        }
+                [   {   '$match' => $where
                     },
                     {   '$group' => {
                             _id      => '$bl',

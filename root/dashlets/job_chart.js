@@ -6,6 +6,8 @@
     var graph_type = params.data.type || 'donut';
     var graph_period = params.data.period || '1M';
     var graph_title;
+    var topic_mid = params.topic_mid;
+
 
     if ( graph_period == '1D') {
       graph_title = _('Last day');
@@ -25,7 +27,7 @@
         graph_period = period;
         if (graph) graph.unload();
 
-        Cla.ajax_json('/job/by_status', { project_id: project_id, period: period, _ignore_conn_errors: true  }, function(res){
+        Cla.ajax_json('/job/by_status', { topic_mid: topic_mid, project_id: project_id, period: period, _ignore_conn_errors: true  }, function(res){
                 c3.generate({
                      bindto: '#'+id,
                      data: {
