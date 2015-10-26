@@ -14,7 +14,7 @@ has
   port    => qw(is rw isa Num),
   default => sub {
     return Baseliner->model('ConfigStore')->get( 'clax_port', value => 1 )
-      || 11800;
+      || 11801;
   };
 
 with 'Baseliner::Role::CI::Agent';
