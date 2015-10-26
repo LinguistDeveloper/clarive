@@ -122,8 +122,8 @@
                 Baseliner.message( _('Error'), _('Select rule to export first') );
             }
         } else {
-            rule_id = sm.getSelected().data.id;
             var sm = rules_grid.getSelectionModel();
+            rule_id = sm.getSelected().data.id;
             if( sm.hasSelection() ) {
                 var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
                 call_rule_export();
