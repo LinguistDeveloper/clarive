@@ -1473,25 +1473,27 @@ _warn \@user_categories;
         my $due_date = $row->{$date_field} ? Class::Date->new($row->{$date_field}): $end + "1D";
         
         for my $date ( sort(keys %dates) ) {
-            my $new_real = $dates{$date}->{real};
-            my $new_expected = $dates{$date}->{expected};
             if ( ''.$created le $date ) {
-                $new_real = $new_real + 1;
-                $new_expected = $new_expected + 1;
+                my $new_real = $dates{$date}->{real} + 1;
+                my $new_expected = $dates{$date}->{expected} + 1;
+                $dates{$date} = { real => $new_real, expected => $new_expected};
             }
             if ( ''.$real_closed lt $date ) {
-                $new_real = $new_real - 1;
+                my $new_real = $dates{$date}->{real} - 1;
+                my $new_expected = $dates{$date}->{expected};
+                $dates{$date} = { real => $new_real, expected => $new_expected};
             }
             if ( ''.$due_date lt $date ) {
-                $new_expected = $new_expected - 1;
+                my $new_real = $dates{$date}->{real};
+                my $new_expected = $dates{$date}->{expected} - 1;
+                $dates{$date} = { real => $new_real, expected => $new_expected};
             }
-            $dates{$date} = { real => $new_real, expected => $new_expected};
         }
     }
-
+_warn \%dates;
     my @data_dates = sort(keys %dates);
-    my @real_data = map { $dates{$_}->{real}} keys %dates;
-    my @expected_data = map { $dates{$_}->{expected}} keys %dates;
+    my @real_data = map { $dates{$_}->{real}} sort(keys %dates);
+    my @expected_data = map { $dates{$_}->{expected}} sort(keys %dates);
 
     my $today = Class::Date->now();
     $today = $today + '1D';
@@ -1507,7 +1509,6 @@ _warn \@user_categories;
         future_start => substr($today,0,10),
         data    => [ \@data_dates, \@real_data, \@expected_data ]
     };
-_warn $c->stash->{json};
     $c->forward('View::JSON');
 }
 
