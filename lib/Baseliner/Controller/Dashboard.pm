@@ -1288,7 +1288,6 @@ sub list_topics: Local {
     $c->stash->{json} = { success => \1, data=>\@topics, cis=>\%ci_names };
     $c->forward('View::JSON'); 
 }
-
 sub topics_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
@@ -1405,6 +1404,110 @@ sub topics_burndown : Local {
         date    => $date->ymd,
         data    => [ \@hours_list, \@data, \@reg_line ]
     };
+    $c->forward('View::JSON');
+}
+
+sub topics_period_burndown : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+_warn $p;
+    my $days_before = $p->{days_before} || -10;
+    my $days_after = $p->{days_after} || 10;
+
+    my $start;
+    my $end;
+
+    $start = Class::Date->now();
+    $start = $start + ($days_before .'D');
+
+    $end = Class::Date->now();
+    $end = $end + ($days_after .'D');
+
+    my $date_field = $p->{date_field} || 'closed_on';
+    my $categories = $p->{categories};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+    my $where = {};
+
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
+
+    my @user_categories
+        = map { $_->{id}; }
+        $c->model('Topic')
+        ->get_categories_permissions( username => $username, type => 'view' );
+_warn \@user_categories;
+
+    if ( _array($categories) ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect( @categories_ids, @user_categories );
+    }
+
+    my $is_root = $perm->is_root($username);
+    if ( $username && !$is_root ) {
+        Baseliner->model('Permissions')
+            ->build_project_security( $where, $username, $is_root,
+            @user_categories );
+    } else {
+        $where->{category_id} = mdb->in(@user_categories);
+    }
+
+    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+
+    my %dates;
+
+    for ( my $date = $start; $date <= $end; $date = $date + "1D" ) {
+         $dates{substr($date,0,10)} = { real => 0, expected => 0};
+    }
+
+    $where->{'$or'} = [ { closed_on => { '$gt' => ''.$start }}, { closed_on => { '$exists' => 0 }}];
+
+    my $rs = mdb->topic->find( $where )->sort({ created_on => 1});
+
+    while ( my $row = $rs->next() ) {
+
+        my $created = Class::Date->new($row->{created_on});
+        my $real_closed = $row->{closed_on} ? Class::Date->new($row->{closed_on}): $end + "1D";
+        my $due_date = $row->{$date_field} ? Class::Date->new($row->{$date_field}): $end + "1D";
+        
+        for my $date ( sort(keys %dates) ) {
+            my $new_real = $dates{$date}->{real};
+            my $new_expected = $dates{$date}->{expected};
+            if ( ''.$created le $date ) {
+                $new_real = $new_real + 1;
+                $new_expected = $new_expected + 1;
+            }
+            if ( ''.$real_closed lt $date ) {
+                $new_real = $new_real - 1;
+            }
+            if ( ''.$due_date lt $date ) {
+                $new_expected = $new_expected - 1;
+            }
+            $dates{$date} = { real => $new_real, expected => $new_expected};
+        }
+    }
+
+    my @data_dates = sort(keys %dates);
+    my @real_data = map { $dates{$_}->{real}} keys %dates;
+    my @expected_data = map { $dates{$_}->{expected}} keys %dates;
+
+    my $today = Class::Date->now();
+    $today = $today + '1D';
+
+    unshift @data_dates,    'x';
+    unshift @real_data,     'Real';
+    unshift @expected_data, 'Expected';
+
+    $c->stash->{json} = {
+        success => \1,
+        date_from    => substr($start,0,10),
+        date_to    => substr($end,0,10),
+        future_start => substr($today,0,10),
+        data    => [ \@data_dates, \@real_data, \@expected_data ]
+    };
+_warn $c->stash->{json};
     $c->forward('View::JSON');
 }
 

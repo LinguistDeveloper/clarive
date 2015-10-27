@@ -69,6 +69,13 @@ register 'dashlet.topic.topics_burndown' => {
     js_file => '/dashlets/topics_burndown.js'
 };
 
+register 'dashlet.topic.topics_period_burndown' => {
+    form=> '/dashlets/topics_period_burndown_config.js',
+    name=> 'Topics period burndown', 
+    icon=> '/static/images/icons/chart_line.png',
+    js_file => '/dashlets/topics_period_burndown.js'
+};
+
 register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge', 
