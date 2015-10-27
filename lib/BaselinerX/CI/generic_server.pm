@@ -6,6 +6,7 @@ use Try::Tiny;
 has connect_worker => qw(is rw isa Bool default 1);
 has connect_balix  => qw(is rw isa Bool default 1);
 has connect_ssh    => qw(is rw isa Bool default 1);
+has connect_clax   => qw(is rw isa Bool default 1);
 
 with 'Baseliner::Role::CI::Server';
 
@@ -79,6 +80,16 @@ method connect( :$user='' ) {
                 do { alarm 0; return $chi };
 	    }
             BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
+        } catch { $err.=shift . "\n" };       
+    }
+    if( !$agent && $self->connect_clax ) {
+        $agent = try { 
+            my ($chi) = $self->children( where=>{collection=>'clax_agent'} ) if $self->mid;
+            if(ref $chi){
+	        $chi->os( $self->os );
+                do { alarm 0; return $chi };
+	    }
+            BaselinerX::CI::clax_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
     if( $err ) {

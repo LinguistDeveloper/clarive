@@ -101,6 +101,7 @@ requires 'Hash::Diff';
 requires 'HTML::Mason';
 requires 'HTML::Restrict';
 requires 'HTTP::Daemon';
+requires 'HTTP::Tiny';
 requires 'Image::Identicon';
 requires 'IO::All';
 requires 'IO::Compress::Gzip';
