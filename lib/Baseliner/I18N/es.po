@@ -5725,6 +5725,9 @@ msgstr "Por proyecto"
 msgid "Minimum %1 characters"
 msgstr "Mínimo %1 caracteres"
 
+msgid "Maximum characters"
+msgstr "Máximo carácteres"
+
 msgid "Eclipse Java/J2EE Mapping"
 msgstr "Mapeo en Eclipse Java/J2EE"
 

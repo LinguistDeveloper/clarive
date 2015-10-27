@@ -18,7 +18,6 @@ params:
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';    
-    
     return [
         {
             xtype:'textfield',
@@ -31,7 +30,7 @@ params:
             height: meta.height || 30,
             allowBlank: allowBlank,
             readOnly: meta ? meta.readonly : true,
-            maxLength: meta ? meta.maxLength : '',
+            maxLength: meta ? meta.maxLength : undefined,
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
