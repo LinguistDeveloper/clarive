@@ -598,6 +598,7 @@ sub related_mids {
     $opts{mode} //= 'flat';
     $opts{visited} //= {};
     $opts{path} //= $opath // [];
+    my $tree_relations = $opts{tree_relations};
     push @{ $opts{path} }, $mid;
     my @mids_to_visit = _array($mid);
     my @not_visited_mids = ();
@@ -633,7 +634,9 @@ sub related_mids {
 
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
-                push @{ $ci->{ci_rel} }, $self->related_mids( %opts, mid=>$ci->{mid}, depth=>$depth, path=>$path );
+                my @rel_mids = $self->related_mids( %opts, mid=>$ci->{mid}, depth=>$depth, path=>$path );
+                push @{ $ci->{ci_rel} }, @rel_mids;
+                $tree_relations->{ $ci->{mid} } = \@rel_mids if ref $tree_relations;
             }
         } else {  # flat mode
             my @mids = map { $_->{mid} } @cis;
@@ -812,7 +815,8 @@ sub related {
         @edges = ( 'in', 'out');
     }
 
-    my @old_cis;
+    my @cis;
+    $opts{tree_relations} = my $tree_relations = {} if $opts{mode} && $opts{mode} eq 'tree';
 
     for my $edge ( @edges ){
         $opts{edge} = $edge;
@@ -821,7 +825,8 @@ sub related {
     my %edges = map { $_->{mid} => $_->{_edge} } @old_cis;
 
 
-    my @ands = ( { mid => mdb->in(map{$_->{mid}} @old_cis)} );
+    my @all_cis = ( @cis, map { _array($_) } values %$tree_relations );  
+    my @ands = ( { mid => mdb->in(map{$_->{mid}} @all_cis)} );
 
     if( $opts{where} ) {
         push @ands, $opts{where};
@@ -840,20 +845,16 @@ sub related {
     my @cis = $rs->all;
     
     if ( $opts{mids_only} ) {
-        @cis = map { +{ mid => $_->{mid} } } @cis;
-        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
+        @cis = map { +{ mid => $_->{mid}, ci_rel=>$tree_relations->{$_->{mid}}  } } @cis;
     } elsif ( !$opts{docs_only} ) {
-        @cis = map {
-            my $ci = ci->new( $_->{mid} );
-            $ci->{_edge} = $edges{ $_->{mid} } if $edges{ $_->{mid} };
-            $ci->{collection} = $ci->collection;
-            $ci->{ci_class} = ref $ci;
-            $ci->{ci_icon} = $ci->icon;
+        my $to_ci;
+        $to_ci = sub {
+            my $ci = ci->new($_->{mid});
+            $ci->{ci_rel} = [ map { $to_ci->($_) } _array( $tree_relations->{ $_->{mid} } ) ]; # put ci_rel back in
             $ci
-        } @cis;
+        };
+        @cis = map { $to_ci->($_) } @cis;
         @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
-    } else {
-        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
     }
     return @cis;
 }

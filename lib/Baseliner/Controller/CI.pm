@@ -1239,7 +1239,10 @@ sub json_tree : Local {
     my $show_root = delete $p->{root} // 1;
     my $direction = delete $p->{direction} || 'related';
     my $d = length $p->{node_data} ? _from_json( delete $p->{node_data} ) : {};
+    my $rd = length $p->{root_node_data} ? _from_json( delete $p->{root_node_data} ) : {};
     my %node_data = %$d if ref $d eq 'HASH';
+    my %root_node_data = %$d if ref $d eq 'HASH';
+    my $depth = length $p->{depth} ? $p->{depth} : 2;
     $p->{limit} //= 50;  
     my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '-' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
@@ -1249,7 +1252,7 @@ sub json_tree : Local {
         for my $mid ( _array( $mids ) ) { 
             $mid =~ s{^.+-(.+)$}{$1}; 
             my $ci = ci->new( $mid );
-            my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
+            my @rels = $ci->$direction( depth=>$depth, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
@@ -1260,7 +1263,7 @@ sub json_tree : Local {
                     id       => $prefix . $chi->{mid},
                     name     => '#' . $chi->{mid} . ' ' . $name,
                     data => {
-                        '$type' => 'icon',
+                        #'$type' => 'icon',
                         %node_data,
                         icon     => $chi->icon,
                     },
@@ -1274,6 +1277,7 @@ sub json_tree : Local {
                 name => $ci->name, 
                 data => {
                     %node_data,
+                    %root_node_data,
                     icon => $ci->icon
                 },
                 children => \@data,
