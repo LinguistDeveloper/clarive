@@ -223,7 +223,7 @@ sub dsl_build {
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name // '')."\n";
         }
-        push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $attr->{debug_mode} eq 'stash';  
+        push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';  
         if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
@@ -265,7 +265,7 @@ sub dsl_build {
             push @dsl, "};\n";
             push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} && $attr->{sub_mode} eq 'run';
         }
-        push @dsl, sprintf( '_debug("AFTER STASH", $stash);' ) . "\n" if $attr->{debug_mode} eq 'stash';  
+        push @dsl, sprintf( '_debug("AFTER STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';  
     }
 
     my $dsl = join "\n", @dsl;
