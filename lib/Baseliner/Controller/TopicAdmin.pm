@@ -39,7 +39,9 @@ sub update_category : Local {
     my $type = $p->{type};
     cache->remove_like( qr/^topic:/ );
     cache->remove_like( qr/^roles:/ );
+    cache->remove_like( qr/^ci:/ );
     cache->remove({ d=>"topic:meta" });
+    cache->remove({ d=>"topic:data" });
     
     $c->registry->reload_all;
     my $assign_type = sub {
