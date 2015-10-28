@@ -290,6 +290,157 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
     }
 });
 
+Baseliner.Sunburst = Ext.extend( Ext.Panel, {
+    layout: 'fit',
+    initComponent: function(){
+        var self = this;
+        self.bodyCfg = Ext.apply({ style:{ 'background-color':'#000' } }, self.bodyCfg );
+
+        Baseliner.Sunburst.superclass.initComponent.call( this );
+        
+        self.on( 'resize', function(panel,w,h,rw,rh){
+            //if( self._resize ) self._resize( args ); 
+            self.redraw();
+        });
+        self.images = {}; // indexed by mid
+    },
+    redraw : function(){
+        var self = this;
+        self.body.update('');
+        self.gen_tree( self.body ); 
+        self.request(null, null, { onComplete:function(id, data){
+            self.load_data( data );
+        }});
+    },
+    request : function( id, lev, onComplete) {
+        if( this.data ) 
+            onComplete.onComplete( id, this.data );
+    },
+    load_data : function(data){
+        var self = this;
+        self.jit.loadJSON(data);
+        self.jit.refresh();
+    },
+    gen_tree : function( el ) {
+        var self = this;
+        var w = el.getWidth();
+        var h = el.getHeight();
+        self.jit = new $jit.Sunburst({
+            //id container for the visualization
+            injectInto: el.id,
+            //Distance between levels
+            levelDistance: 120,
+            width: w,
+            height: h,
+            Navigation: {
+                  enable: true,
+                  panning: true,
+                  zooming: 20
+            },
+            //Change node and edge styles such as
+            //color, width and dimensions.
+            Node: {
+              overridable: true,
+              type: true? 'gradient-multipie' : 'multipie'
+            },
+            //Select canvas labels
+            //'HTML', 'SVG' and 'Native' are possible options
+            Label: {
+              type: 'HTML'
+            },
+            //Change styles when hovering and clicking nodes
+            NodeStyles: {
+              enable: true,
+              type: 'Native',
+              stylesClick: {
+                'color': '#33dddd'
+              },
+              stylesHover: {
+                'color': '#dd3333'
+              }
+            },
+            //Add tooltips
+            Tips: {
+              enable: true,
+              onShow: function(tip, node) {
+                var html = "<div class=\"tip-title\">" + node.name + "</div>"; 
+                var data = node.data;
+                if("days" in data) {
+                  html += "<b>Last modified:</b> " + data.days + " days ago";
+                }
+                if("size" in data) {
+                  html += "<br /><b>File size:</b> " + Math.round(data.size / 1024) + "KB";
+                }
+                tip.innerHTML = html;
+              }
+            },
+            //implement event handlers
+            Events: {
+              enable: true,
+              onClick: function(node) {
+                if(!node) return;
+                //Build detailed information about the file/folder
+                //and place it in the right column.
+                var html = "<h4>" + node.name + "</h4>", data = node.data;
+                if("days" in data) {
+                  html += "<b>Last modified:</b> " + data.days + " days ago";
+                }
+                if("size" in data) {
+                  html += "<br /><br /><b>File size:</b> " + Math.round(data.size / 1024) + "KB";
+                }
+                if("description" in data) {
+                  html += "<br /><br /><b>Last commit was:</b><br /><pre>" + data.description + "</pre>";
+                }
+                //$jit.id('inner-details').innerHTML = html;
+                //hide tip
+                self.jit.tips.hide();
+                //rotate
+                self.jit.rotate(node, true? 'animate' : 'replot', {
+                  duration: 1000,
+                  transition: $jit.Trans.Quart.easeInOut
+                });
+              }
+            },
+            // Only used when Label type is 'HTML' or 'SVG'
+            // Add text to the labels. 
+            // This method is only triggered on label creation
+            onCreateLabel: function(domElement, node){
+              var labels = self.jit.config.Label.type,
+                  aw = node.getData('angularWidth');
+              if (labels === 'HTML' && (node._depth < 2 || aw > 2000)) {
+                domElement.innerHTML = node.name;
+              } else if (labels === 'SVG' && (node._depth < 2 || aw > 2000)) {
+                domElement.firstChild.appendChild(document.createTextNode(node.name));
+              }
+            },
+            // Only used when Label type is 'HTML' or 'SVG'
+            // Change node styles when labels are placed
+            // or moved.
+            onPlaceLabel: function(domElement, node){
+              var labels = self.jit.config.Label.type;
+              if (labels === 'SVG') {
+                var fch = domElement.firstChild;
+                var style = fch.style;
+                style.display = '';
+                style.cursor = 'pointer';
+                style.fontSize = "0.8em";
+                fch.setAttribute('fill', "#fff");
+              } else if (labels === 'HTML') {
+                var style = domElement.style;
+                style.display = '';
+                style.cursor = 'pointer';
+                style.fontSize = "0.8em";
+                style.color = "#ddd";
+                var left = parseInt(style.left);
+                var w = domElement.offsetWidth;
+                style.left = (left - w / 2) + 'px';
+              }
+            }
+       });   
+
+    }
+});
+
 Baseliner.ST = Ext.extend( Ext.Panel, {
     layout: 'fit',
     initComponent: function(){
@@ -500,6 +651,13 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/rgraph.png',
             text: _('RGraph'), handler: function(){ self.load_rg() }
         });
+
+        // TODO Sunburst has issues, disabled for now
+        self.btn_sunburst = new Ext.Button({
+            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
+            icon: '/static/images/icons/spacetree.png',
+            text: _('Sunburst'), handler: function(){ self.load_sunburst() }
+        });
         self.btn_d3g = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
             icon: '/static/images/icons/d3graph.png', hidden: Ext.isIE9m, 
@@ -601,6 +759,29 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.st.which = 'st';
         self.add( self.st );
         self.setActive( self.st );
+    },
+    load_sunburst : function(){
+        var self = this; 
+        self.btn_sunburst.toggle(true);
+        self.field_depth.hide(); self.lab_depth.hide();
+        self.btn_recenter.show();
+        if( self.sunburst ) {
+            self.setActive( self.sunburst );
+            return;
+        }
+        self.sunburst = new Baseliner.Sunburst({ request: function(id,lev,onComplete){
+            var mid = id || self.mid;
+            self.last_mid = mid;
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, direction: self.direction, root_node_data:'{ "$type":"none" }',
+                depth: 2, limit: self.limit }, function(res){
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+                    if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
+                    onComplete.onComplete(id, res.data);    
+                });
+        }});
+        self.sunburst.which = 'sunburst';
+        self.add( self.sunburst );
+        self.setActive( self.sunburst );
     },
     load_rg : function(){
         var self = this; 
