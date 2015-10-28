@@ -1531,6 +1531,7 @@ sub file : Local {
                 my @users = $c->model('Topic')->get_users_friend(
                     id_category => $topic->{category}{id},
                     id_status   => $topic->{category_status}{id},
+                    mid         => "$$p{topic_mid}",
                     projects    => \@projects
                 );
                 
