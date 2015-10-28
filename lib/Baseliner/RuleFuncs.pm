@@ -20,6 +20,7 @@ use Exporter::Tidy default => [
       merge_data
       merge_into_stash
       parallel_run
+      wait_for_children
       project_changes
       semaphore
       stash_has_nature
@@ -67,6 +68,7 @@ sub parallel_run {
         mdb->disconnect;    # will reconnect later
 
         my ( $ret, $err );
+        my $orig_stash = $stash;
         $stash = $stash_child;
 
         try {
@@ -80,12 +82,56 @@ sub parallel_run {
         if ( $mode eq 'fork' ) {
 
             # fork and wait.., communicate results to parent
-            my $res = { ret => $ret, err => $err };
+            my $res = { ret => $ret, err => $err, stash => $orig_stash };
             queue->push( msg => "rule:child:results:$$", data => $res );
         }
 
         exit 0;    # cannot update stash, because it would override the parent run copy
     }
+}
+
+sub wait_for_children {
+    my ($stash, %p ) = @_;
+
+    my $config = $p{config};
+    my $stash_keys = $config->{parallel_stash_keys} || [];
+    my $results = [];
+
+    my $chi_pids = $stash->{_forked_pids};
+    if( my @pids = keys %$chi_pids ) {
+        _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
+        my @failed;
+        my @oks;
+       
+        for my $pid ( @pids ) {
+            waitpid $pid, 0;
+            delete $chi_pids->{$pid};
+            if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
+                if( $res->{err} ) {
+                    _error( $res->{err} );
+                    push @failed, $pid;
+                } else {
+                    push @oks, $pid;
+                }
+
+                my $fork_stash = {};
+                foreach my $stash_key (@$stash_keys) {
+                    $fork_stash->{$stash_key} = $res->{stash}->{$stash_key};
+                }
+
+                push @$results, $fork_stash;
+            }
+        }
+        if( @failed ) {
+            _fail( _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) ) );
+        } else {
+            _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
+        }
+    } else {
+#        _debug( _loc('No children to wait for.') );
+    }
+
+    return $results;
 }
 
 sub error_trap {

@@ -277,36 +277,6 @@ sub dsl_build {
     }
 }
 
-sub wait_for_children {
-    my ($self, $stash, %p ) = @_;
-    my $chi_pids = $stash->{_forked_pids};
-    if( my @pids = keys %$chi_pids ) {
-        _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
-        my @failed;
-        my @oks;
-       
-        for my $pid ( @pids ) {
-            waitpid $pid, 0;
-            delete $chi_pids->{$pid};
-            if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                if( $res->{err} ) {
-                    _error( $res->{err} );
-                    push @failed, $pid;
-                } else {
-                    push @oks, $pid;
-                }
-            }
-        }
-        if( @failed ) {
-            _fail( _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) ) );
-        } else {
-            _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
-        }
-    } else {
-#        _debug( _loc('No children to wait for.') );
-    }
-}
-
 sub dsl_run {
     my ($self, %p ) = @_;
     my $id_rule = $p{id_rule};
@@ -664,14 +634,25 @@ register 'statement.delete.key' => {
 
 register 'statement.parallel.wait' => {
     text => 'WAIT for children',
-    data => { variable=>'stash_var', local_var=>'value' },
+    form => '/forms/wait_for_children.js',
     icon => '/static/images/icons/time.png',
-    holds_children => 0, 
-    dsl => sub { 
+    holds_children => 0,
+    dsl => sub {
         my ($self, $n, %p ) = @_;
-        sprintf(q{
-            Baseliner::Model::Rules->wait_for_children( $stash );
-        });
+
+        local $Data::Dumper::Terse = 1;
+        my $vars = Data::Dumper::Dumper($n->{data});
+
+        my $code = '';
+        if (my $data_key = $n->{data}->{data_key}) {
+            $code .= qq/\$stash->{$data_key} = /;
+        }
+
+        $code .= sprintf(q{
+            wait_for_children( $stash, config => %s );
+        }, $vars);
+
+        return $code;
     },
 };
 

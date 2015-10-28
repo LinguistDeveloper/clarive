@@ -2,7 +2,7 @@ package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
 use Baseliner::Model::Rules;
-use Baseliner::RuleFuncs;
+use Baseliner::RuleFuncs ();
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -193,7 +193,7 @@ sub run {
     $self->runtime_error( $err );
 
     # wait for children to finish
-    Baseliner::Model::Rules->wait_for_children( $stash );
+    Baseliner::RuleFuncs::wait_for_children( $stash );
     
     # reset log reporting to "Core"
     if( my $job = $stash->{job} ) {

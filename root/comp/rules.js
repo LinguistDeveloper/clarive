@@ -1366,7 +1366,7 @@
             var attr = node.attributes;
             var rf = _bool(attr.run_forward,true);
             var rr = _bool(attr.run_rollback,true);
-            var props = [], parallel_mode=[], data_key='';
+            var props = [], parallel_mode=[], parallel_stash_keys='', data_key='';
             var blame = false;
             var semaphore_key='';
             var shortcut = false;
@@ -1382,6 +1382,9 @@
                 }
                 if( attr.parallel_mode && attr.parallel_mode!='none' ) {
                     parallel_mode.push( attr.parallel_mode );
+                }
+                if( attr.data.parallel_stash_keys && attr.data.parallel_stash_keys.length ) {
+                    parallel_stash_keys = '\u21D0 ' + attr.data.parallel_stash_keys;
                 }
                 if( attr.data_key ) {
                     data_key = '= ' + attr.data_key;
@@ -1410,6 +1413,7 @@
                 if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
                 if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
                 if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
+                if( parallel_stash_keys.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+parallel_stash_keys+'</span>&nbsp;';
                 if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
                 if( blame ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+blame+'</span>&nbsp;';
                 if( badges.length ) {
