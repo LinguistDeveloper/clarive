@@ -1,0 +1,49 @@
+<%args>
+    $topics
+    $title_max_length => 32
+    $title_font_size => '11px'
+    $show_title => 0
+    $show_progress => 1
+    $show_short_name => '0'
+    $soy => 'nadie'
+    $show_name_tooltip => 1
+</%args>
+<%perl>
+    my $title_short = sub {
+        my ($t) = @_;
+    #    if( length $t > $title_max_length ) {
+    #        $t = substr( $t, 0, $title_max_length ) . "\N{U+2026}";
+    #    } 
+        $t;
+    };
+    my @topics = mdb->topic->find({mid=>mdb->in(_array $topics)})->fields({mid=>1,name=>1,category=>1,title=>1})->all;
+</%perl>
+% for my $topic (@topics){
+% my $topic_id = $topic->{mid} . _nowstamp;
+<span id="topic<% $topic_id %>" class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{category}{color} %>')" 
+    style="cursor:pointer;background: <% $topic->{category}{color} %>"><% $topic->{name} %></span>
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
+% if( $show_title ) {
+            &nbsp;&nbsp;<span style="font-weight: bold; font-size: <% $title_font_size %>"><% $title_short->($topic->{title}) %></span>&nbsp;&nbsp;
+% }
+% if( $show_progress && $topic->{progress}){
+            <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
+%}
+% if( $show_short_name ) {
+<script>
+    var obj_topic_name = Ext.query('#topic<%$topic_id %>');
+    obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{category}{name} %>', '<% $topic->{category}{color} %>', true );
+</script>
+%}
+% if( $show_name_tooltip ) {
+%    my $title = $title_short->($topic->{title});
+%    $title =~ s/\"/\\\"/g;
+<script>
+    var obj_topic_name = Ext.query('#topic<% $topic_id %>');
+    obj_topic_name.forEach(function(element){
+       element.setAttribute("title", "<% $title %>"); 
+    });
+</script>
+% }
+% }
+

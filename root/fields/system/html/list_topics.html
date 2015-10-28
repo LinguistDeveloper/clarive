@@ -65,6 +65,9 @@ if( ! $meta->{hidden} ) {
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px;" class="fieldlet-html">
                 <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
+%    } elsif( $$h{type} eq 'topics' ) {
+            <td style="font-size: <% $meta->{td_font_size} // 12 %>px;" class="fieldlet-html">
+                <& /partial/topic_name_multi.html, topics => $val, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
 %    } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
 %    } elsif( $$h{key} eq 'name_status' ) {
@@ -76,7 +79,7 @@ if( ! $meta->{hidden} ) {
                             ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.png">' : '<img src="/static/images/icons/checkbox.png">')
                             : ( defined $$h{type} && $$h{type}  eq 'index')
                             ? ++$ix
-                            : ref $val ? $val : Util->_markdown($val, { tab_width=>2 })
+                            : ref $val ? Util->_markdown(join("<br>", _array($val)), { tab_width=>2 }) : Util->_markdown($val, { tab_width=>2 })
 
                         %>
 %    }
