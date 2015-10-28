@@ -3268,7 +3268,7 @@ sub upload {
     my $success;
     my $status;
     try {
-        if((length $p->{topic_mid}) && (my $topic = mdb->topic->find_one({mid=>$p->{topic_mid}},{ mid=>1, category=>1 }))) {
+        if((length $p->{topic_mid}) && (my $topic = mdb->topic->find_one({mid=>$p->{topic_mid}},{ mid=>1, category=>1, category_status=>1 }))) {
             my ($topic_mid, $file_mid);
             $topic_mid = $topic->{mid};
             my $file_field = $$p{filter};
@@ -3295,6 +3295,7 @@ sub upload {
             }
 
             #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
+
             my @users = Baseliner->model("Topic")->get_users_friend(
                 mid         => $p->{topic_mid}, 
                 id_category => $topic->{category}{id}, 
