@@ -121,6 +121,12 @@ sub compare_data{
     };
 }
 
+sub gen_mid {
+    my $self = shift;
+    my $coll =  $self->collection;
+    $coll . '-' . mdb->seq( "mid-$coll" );
+}
+
 sub update {
     my $self = shift;
     my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
@@ -209,7 +215,7 @@ sub save {
                     versionid  => $self->versionid || 1,
             };
             # update mid into CI
-            $mid = length($mid) ? $mid : mdb->seq('mid');
+            $mid = length($mid) ? $mid : $self->gen_mid; 
             $self->mid( $mid );
             $$master_row{mid} = $mid;
             # put a default name

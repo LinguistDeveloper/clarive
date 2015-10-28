@@ -51,6 +51,12 @@ after load_data => sub {
     $data->{$_} = $topic_data->{$_} for keys %$topic_data;
 };
 
+sub gen_mid {
+    my $self = shift;
+    my $coll =  $self->collection;
+    mdb->seq( "mid" );
+}
+
 sub files {
     my $self  = shift;
     my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
