@@ -1410,7 +1410,7 @@ sub topics_burndown : Local {
 sub topics_period_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-_warn $p;
+
     my $days_before = $p->{days_before} || -10;
     my $days_after = $p->{days_after} || 10;
 
@@ -1425,6 +1425,7 @@ _warn $p;
 
     my $date_field = $p->{date_field} || 'closed_on';
     my $categories = $p->{categories};
+    my $group = $p->{group} // 'day';
     my $username = $c->username;
     my $perm = Baseliner->model('Permissions');
     my $where = {};
@@ -1437,7 +1438,6 @@ _warn $p;
         = map { $_->{id}; }
         $c->model('Topic')
         ->get_categories_permissions( username => $username, type => 'view' );
-_warn \@user_categories;
 
     if ( _array($categories) ) {
         use Array::Utils qw(:all);
@@ -1458,8 +1458,21 @@ _warn \@user_categories;
 
     my %dates;
 
+    my $quarters = { 'Q1' => '01-01', 'Q2' => '04-01', 'Q3' => '07-01', 'Q4' => '10-01'};
+
     for ( my $date = $start; $date <= $end; $date = $date + "1D" ) {
-         $dates{substr($date,0,10)} = { real => 0, expected => 0};
+        my $dt = DateTime->from_epoch( epoch => $date->epoch() );
+        $dt->set_time_zone( _tz );
+        my $fdate;
+        if ( $group !~ /day|quarter/ ) {    
+            $dt->truncate( to => $group);
+            $fdate = substr(''.$dt,0,10);
+        } elsif ( $group eq 'quarter' ){
+            $fdate = $dt->year . "-". $quarters->{$dt->quarter_abbr};
+        } else {
+            $fdate = substr(''.$dt,0,10);
+        }
+        $dates{$fdate} = { real => 0, expected => 0};
     }
 
     $where->{'$or'} = [ { closed_on => { '$gt' => ''.$start }}, { closed_on => { '$exists' => 0 }}];
@@ -1490,7 +1503,7 @@ _warn \@user_categories;
             }
         }
     }
-_warn \%dates;
+
     my @data_dates = sort(keys %dates);
     my @real_data = map { $dates{$_}->{real}} sort(keys %dates);
     my @expected_data = map { $dates{$_}->{expected}} sort(keys %dates);

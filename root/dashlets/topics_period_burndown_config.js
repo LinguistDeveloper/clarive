@@ -52,7 +52,15 @@
                     ['bar', _('Bar')], 
                     ['scatter', _('Scatter')]
                   ] 
-                })              
+                }),
+                new Baseliner.ComboDouble({ fieldLabel: _('Data grouped by'), name:'group', value: data.group, data: [
+                    ['day', _('Day')],
+                    ['week', _('Week')],
+                    ['month', _('Month')],
+                    ['quarter', _('Quarter')],
+                    ['year', _('Year')]
+                  ] 
+                })
               ]
             },
             { layout:'form', 
