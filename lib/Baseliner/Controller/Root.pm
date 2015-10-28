@@ -33,12 +33,15 @@ All root / urls are installed here.
 
 =cut
 
-sub begin : Private {
+sub response_headers {
     my ( $self, $c ) = @_;
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
+}
 
+sub process_content_type {
+    my ( $self, $c ) = @_;
     my $content_type = $c->req->content_type;
     
     # cleanup 
@@ -73,7 +76,10 @@ sub begin : Private {
     else {
         $c->req->{body_data} = {};
     }
-    
+}
+
+sub process_run_token {
+    my ( $self, $c ) = @_;
     # run_token ?  (used by Util->async_request
     if( my $run_token = $c->req->headers->{'run-token'} // $c->req->params->{run_token} // $c->req->{body_data}->{run_token} ){
         _debug "RUN TOKEN $run_token";
@@ -89,20 +95,6 @@ sub begin : Private {
             }
         }
     }
-
-    $self->_set_user_lang($c);
-
-    Baseliner->app( $c );
-
-    $c->forward('/theme');
-
-    #my $logged_on = defined $c->username;
-    # catch invalid user object sessions
-    #try {
-        #die unless $c->session->{user} || $c->stash->{auth_skip};
-    ##} catch {
-        #my $path = $c->request->{path} || $c->request->path;
-    #};
 }
 
 =head2 auto
@@ -112,6 +104,14 @@ auto centralizes all auhtentication check and dispatch.
 =cut
 sub auto : Private {
     my ( $self, $c ) = @_;
+
+    $self->response_headers($c);
+    $self->process_content_type($c);
+    $self->process_run_token($c);
+    $self->_set_user_lang($c);
+    Baseliner->app( $c );
+    $self->theme($c);
+
     my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     my $path = $c->request->{path} || $c->request->path;
@@ -250,7 +250,7 @@ sub serve_file : Private {
     }
 }
 
-sub theme : Private {
+sub theme {
     my ( $self, $c ) = @_;
 
     # check if theme dir is in the session already

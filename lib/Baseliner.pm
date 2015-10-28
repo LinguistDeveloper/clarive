@@ -148,7 +148,6 @@ sub config_catalyst {
 
     __PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
         
-    #$c->languages( ['es'] );
     __PACKAGE__->config(
         'Plugin::I18N' => {
             maketext_options => {
@@ -229,7 +228,7 @@ sub build_app {
         mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
         Util->_debug( "Cache cleared" );
     }
-        
+
     # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
     # otherwise mongo hell breaks loose
     mdb->disconnect;
@@ -500,24 +499,6 @@ if( Clarive->debug ) {
 
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
-
-=head1 NAME
-
-Baseliner - A Catalyst-based Release Management Automation framework
-
-=head1 SYNOPSIS
-
-    script/baseliner_server.pl
-
-=head1 DESCRIPTION
-
-This is the main Baseliner app object.
-
-=head1 SEE ALSO
-
-L<Baseliner::Controller::Root>, L<Catalyst>
-
-=cut
 
 no Moose;
 
