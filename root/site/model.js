@@ -809,6 +809,20 @@ Baseliner.ci_box = function(c) {
 	if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp });
+    var tpl = new Ext.XTemplate( 
+        '<tpl for=".">'
+       +  '<div class="search-item"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{collection}</span>'
+       +  '</span></div>'
+       +'</tpl>'  
+    );
+    var displayFieldTpl = new Ext.XTemplate( 
+        '<tpl for=".">'
+       +  '<span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{collection}</span>'
+       +  '</span>'
+       +'</tpl>'  
+    );
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
@@ -817,6 +831,8 @@ Baseliner.ci_box = function(c) {
         name: 'ci',
         hiddenName: 'ci', 
         allowBlank: true,
+        tpl: tpl, 
+        displayFieldTpl: displayFieldTpl,
         showClass: show_class
     }, c )); 
     store.on('load', function(){

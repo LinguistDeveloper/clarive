@@ -240,6 +240,7 @@ sub tree_objects {
         else {
             # probably just mids, no class or collection
             #  consider creating a %class_coll of all classes
+            %class_coll = map{ $$_{name} => $$_{classname} } $self->list_classes;
         }
     }
     my $opts;
@@ -321,6 +322,10 @@ sub tree_objects {
                 } grep { length $data->{$_} } keys %$data ) }
             : '';
         my $noname = $row->{collection}.':'.$row->{mid};
+        my $icon = $icons{ $row_class } 
+            // ( $icons{$row_class} = $row_class 
+                ? try { $row_class->icon } catch { $generic_icon } 
+                : $generic_icon );
         +{
             _id               => $row->{mid},
             _parent           => $p{parent} || undef,
@@ -334,7 +339,7 @@ sub tree_objects {
             classname         => $row_class || '', 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? try { $row_class->icon } catch {$generic_icon} : $generic_icon ) ),
+            icon              => $icon, 
             ts                => $row->{ts},
             modified_by       => $row->{modified_by},
             bl                => $row->{bl},
