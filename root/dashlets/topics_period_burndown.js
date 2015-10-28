@@ -12,10 +12,11 @@
     var days_before = params.data.days_before || 0;
     var days_after = params.data.days_after || 0;
     var graph_type = params.data.type || 'area';
+    var group = params.data.group || 'day';
 
     var format = '%Y/%m/%d';
 
-      Cla.ajax_json('/dashboard/topics_period_burndown', { topic_mid: topic_mid, project_id: project_id, days_before: days_before, days_after: days_after, date_type: date_type, date: date, categories: categories, date_field: date_field, _ignore_conn_errors: true  }, function(res){
+      Cla.ajax_json('/dashboard/topics_period_burndown', { group: group, topic_mid: topic_mid, project_id: project_id, days_before: days_before, days_after: days_after, date_type: date_type, date: date, categories: categories, date_field: date_field, _ignore_conn_errors: true  }, function(res){
            graph = c3.generate({
                 bindto: '#'+id,
                 data: {
