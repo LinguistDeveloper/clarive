@@ -93,16 +93,17 @@ sub parallel_run {
 sub wait_for_children {
     my ($stash, %p ) = @_;
 
-    my $config = $p{config};
+    my $config     = $p{config};
+    my $errors     = $config->{errors} || 'fail';
     my $stash_keys = $config->{parallel_stash_keys} || [];
-    my $results = [];
+    my $results    = [];
 
     my $chi_pids = $stash->{_forked_pids};
     if( my @pids = keys %$chi_pids ) {
         _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
         my @failed;
         my @oks;
-       
+
         for my $pid ( @pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
@@ -114,7 +115,7 @@ sub wait_for_children {
                     push @oks, $pid;
                 }
 
-                my $fork_stash = {};
+                my $fork_stash = {ret => $res->{ret}, err => $res->{err}};
                 foreach my $stash_key (@$stash_keys) {
                     $fork_stash->{$stash_key} = $res->{stash}->{$stash_key};
                 }
@@ -123,7 +124,14 @@ sub wait_for_children {
             }
         }
         if( @failed ) {
-            _fail( _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) ) );
+            my $error_msg = _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) );
+
+            if ($errors eq 'fail') {
+                _fail( $error_msg );
+            }
+            elsif ($errors eq 'warn') {
+                _warn( $error_msg );
+            }
         } else {
             _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
         }

@@ -355,7 +355,43 @@ subtest 'wait_for_children: gathers values from forks' => sub {
 
     my $result = wait_for_children( $stash, config => { parallel_stash_keys => ['fork_result'] } );
 
-    is_deeply $result, [ { fork_result => 123 } ];
+    is_deeply $result, [ { ret => '123', err => undef, fork_result => 123 } ];
+};
+
+subtest 'wait_for_children: gathers values from forks with errors in silent errors mode' => sub {
+    _setup();
+
+    my $stash = {};
+
+    my @behaviours = (sub { $stash->{fork_result} = 'ok' }, sub { die 'error' });
+
+    foreach my $behavior (@behaviours) {
+        parallel_run( 'task', 'fork', $stash, $behavior );
+    }
+
+    my $result = wait_for_children( $stash, config => { errors => 'silent', parallel_stash_keys => ['fork_result'] } );
+
+    my ($ok)    = grep { defined $_->{ret} } @$result;
+    my ($error) = grep { !defined $_->{ret} } @$result;
+
+    cmp_deeply $ok, { ret => 'ok', err => undef, fork_result => 'ok' };
+    cmp_deeply $error, { ret => undef, err => re(qr/error/), fork_result => undef };
+};
+
+subtest 'wait_for_children: throws when one of the forks fails in fail errors mode' => sub {
+    _setup();
+
+    my $stash = {};
+
+    my @behaviours = (sub { $stash->{fork_result} = 'ok' }, sub { die 'error' });
+
+    foreach my $behavior (@behaviours) {
+        parallel_run( 'task', 'fork', $stash, $behavior );
+    }
+
+    like
+      exception { wait_for_children( $stash, config => { errors => 'fail', parallel_stash_keys => ['fork_result'] } ) },
+      qr/^Error detected in children, pids failed: \d+\./;
 };
 
 done_testing;
