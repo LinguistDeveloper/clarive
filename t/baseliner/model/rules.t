@@ -10,7 +10,6 @@ use TestUtils;
 TestEnv->setup;
 
 use Baseliner::Role::CI;
-use Baseliner::Core::Registry;
 use BaselinerX::Type::Statement;
 
 use_ok 'Baseliner::Model::Rules';
@@ -132,9 +131,7 @@ subtest 'statement.call with parse_vars' => sub {
 sub _setup {
     my (%params) = @_;
 
-    Baseliner::Core::Registry->clear;
-
-    _register_statements();
+    TestUtils->setup_registry('BaselinerX::Type::Statement', 'Baseliner::Model::Rules');
 
     my $code = $params{code} || q%return 'hi there';%;
 
@@ -158,37 +155,6 @@ sub _setup {
             "detected_errors" => "",
             "rule_tree" =>
 qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.png","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.png","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.png","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.png","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"2015-06-30T13:42:57","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.png","id":"xnode-1027"},"children":[]}]%
-        }
-    );
-}
-
-sub _register_statements {
-    Baseliner::Core::Registry->add_class( undef, 'statement' => 'BaselinerX::Type::Statement' );
-
-    Baseliner::Core::Registry->add(
-        'main',
-        'statement.step' => {
-            dsl => sub {
-                my ( $self, $n, %p ) = @_;
-                sprintf(
-                    q{
-            if( $stash->{job_step} eq q{%s} ) {
-                %s
-            }
-        }, $n->{text}, $self->dsl_build( $n->{children}, %p )
-                );
-            }
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'main',
-        'statement.perl.code' => {
-            data => { code => '' },
-            dsl  => sub {
-                my ( $self, $n, %p ) = @_;
-                sprintf( q{ %s; }, $n->{code} // '' );
-            },
         }
     );
 }
