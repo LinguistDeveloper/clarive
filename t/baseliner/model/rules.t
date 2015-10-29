@@ -128,6 +128,27 @@ subtest 'statement.call with parse_vars' => sub {
     is $args->[0], 'hi!';
 };
 
+subtest 'statement.parallel.wait: saves result to data_key' => sub {
+    TestUtils->setup_registry('Baseliner::Model::Rules');
+
+    my $statement = TestUtils->registry->registrar->{'statement.parallel.wait'};
+
+    my $dsl = $statement->{param}->{dsl};
+
+    my $code = $dsl->(undef, {data_key => 'output'});
+
+    my $package = 'test_statement_call_' . int(rand(1000));
+
+    $code = sprintf q/package %s; my $stash = {}; sub wait_for_children { '123' } sub { %s; $stash }/,
+      $package, $code;
+
+    $code = eval $code;
+
+    my $args = $code->();
+
+    is_deeply $args, {output => '123'};
+};
+
 sub _setup {
     my (%params) = @_;
 

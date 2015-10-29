@@ -644,7 +644,7 @@ register 'statement.parallel.wait' => {
         my $vars = Data::Dumper::Dumper($n->{data});
 
         my $code = '';
-        if (my $data_key = $n->{data}->{data_key}) {
+        if (my $data_key = $n->{data_key}) {
             $code .= qq/\$stash->{$data_key} = /;
         }
 
