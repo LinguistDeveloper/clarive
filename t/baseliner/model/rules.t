@@ -5,6 +5,7 @@ use Test::More;
 
 use lib 't/lib';
 use TestEnv;
+use TestUtils;
 
 TestEnv->setup;
 
@@ -84,6 +85,48 @@ subtest 'does not compile when config flag is off and rule is off' => sub {
 
     my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
     ok !$cr->package->can('meta');
+};
+
+subtest 'statement.call' => sub {
+    TestUtils->setup_registry('Baseliner::Model::Rules');
+
+    my $statement = TestUtils->registry->registrar->{'statement.call'};
+
+    my $dsl = $statement->{param}->{dsl};
+
+    my $code = $dsl->(undef, {id_rule => '123'});
+
+    my $package = 'test_statement_call_' . int(rand(1000));
+
+    $code = sprintf q/package %s; use Baseliner::Utils 'parse_vars'; my $stash = {}; sub call { \@_ } sub { %s }/,
+      $package, $code;
+
+    $code = eval $code;
+
+    my $args = $code->();
+
+    is $args->[0], '123';
+};
+
+subtest 'statement.call with parse_vars' => sub {
+    TestUtils->setup_registry('Baseliner::Model::Rules');
+
+    my $statement = TestUtils->registry->registrar->{'statement.call'};
+
+    my $dsl = $statement->{param}->{dsl};
+
+    my $code = $dsl->(undef, {id_rule => '${some_var}'});
+
+    my $package = 'test_statement_call_' . int(rand(1000));
+
+    $code = sprintf q/package %s; use Baseliner::Utils 'parse_vars'; my $stash = {some_var => 'hi!'}; sub call { \@_ } sub { %s }/,
+      $package, $code;
+
+    $code = eval $code;
+
+    my $args = $code->();
+
+    is $args->[0], 'hi!';
 };
 
 sub _setup {
