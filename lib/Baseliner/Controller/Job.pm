@@ -593,7 +593,7 @@ sub jc_store : Local  {
         if( $ci->is_release ) {
             my @changesets = $ci->children( where=>{collection=>'topic'}, 'category.is_changeset' => 1, no_rels=>1, depth => 2, mids_only => 1 );
             my @cs_mids = map { $_->{mid} } @changesets;
-            my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids });
+            my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids, limit => 1000 });
             @chi = map {
                my $cs_data = $_;
                $children{ $$cs_data{mid} } = 1;
