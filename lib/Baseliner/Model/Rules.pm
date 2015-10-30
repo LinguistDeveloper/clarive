@@ -782,8 +782,7 @@ register 'statement.shortcut' => {
 register 'statement.log' => {
     text => 'LOG message',
     data => { text => 'Message', level=>'info' },
-    # icon => '/static/images/icons/cog_perl.png',
-    icon => '/static/images/icons/log_16.png',
+    icon => '/static/images/icons/log.png',
     form => '/forms/log.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
