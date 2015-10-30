@@ -980,7 +980,7 @@ sub next_status_for_user {
         if( !( my $cat = mdb->category->find_one($where) ) ) {
             my $catname = mdb->category->find_one({ id=>$id_category });
             $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
-                    : _fail(_loc('Category id `%1 `not found', $id_category));
+                    : _fail(_loc('Category id `%1` not found', $id_category));
         } else {
             my %uniq;
             my @all_to_status =
@@ -1258,7 +1258,7 @@ sub get_data {
 
 sub rel_signature {
     my ($self,$mid) = @_;
-    join ',', sort { $a <=> $b } _unique 
+    join ',', sort { $a cmp $b } _unique 
         map { ($_->{from_mid}, $_->{to_mid}) } 
         mdb->master_rel->find({ rel_type=>'topic_topic', '$or'=>[{ from_mid=>"$mid" },{ to_mid=>"$mid" }] })->all;
 }
@@ -2389,8 +2389,8 @@ sub set_projects {
     my $topic_mid = $ci_topic->{mid};
     my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
     
-    my @new_projects = sort { $a <=> $b } _array( $projects ) ;
-    my @old_projects = sort { $a <=> $b } map { $_->{to_mid} } 
+    my @new_projects = sort { $a cmp $b } _array( $projects ) ;
+    my @old_projects = sort { $a cmp $b } map { $_->{to_mid} } 
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;
 
     my $notify = {
@@ -2468,7 +2468,7 @@ sub set_users{
 
     my $name_category = mdb->category->find_one({ id=>''.$ci_topic->{id_category} })->{name};
     
-    my @projects = sort { $a <=> $b } map { $_->{to_mid} } 
+    my @projects = sort { $a cmp $b } map { $_->{to_mid} } 
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;
     $notify->{project} = \@projects if @projects;
     
