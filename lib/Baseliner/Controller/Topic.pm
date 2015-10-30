@@ -1449,26 +1449,29 @@ sub list_admin_category : Local {
         }
 
     } else {
-        my @statuses = $c->model('Topic')->next_status_for_user(
-            id_category    => $p->{categoryId},
-            id_status_from => $p->{statusId},
+        my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ status=>1, name_status=>1, category=>1 }) or _fail _loc 'Topic %1 not found', $topic_mid;
+        my $id_category = $doc->{category}{id};
+        my $id_status   = $doc->{status};
+
+        my @statuses = model->Topic->next_status_for_user(
+            id_category    => $id_category,
+            id_status_from => $id_status, 
             username       => $c->username,
-            topic_mid     => $topic_mid
+            topic_mid      => $topic_mid
         );
 
-        my $status_id   = $p->{statusId};
-        my $current_status = ci->status->find_one({ id_status=>''.$p->{statusId} }) // _fail( _loc('Status not found: %1', $p->{statusId}) );
-        my $status_name = _loc( $p->{statusName} || $current_status->{name} );
+        my $current_status = ci->status->find_one({ id_status=>"$id_status" }) or _fail( _loc('Status not found: %1', $id_status ) );
+        my $status_name = _loc( $doc->{name_status} || $current_status->{name} );
         push @rows, { 
-            id          => $status_id,
+            id          => $id_status,
             name        => $status_name,
-            status      => $status_id,
+            status      => $id_status,
             status_name => $status_name,
-            action      => $c->model('Topic')->getAction($current_status->{type}),
+            action      => Baseliner::Model::Topic->getAction($current_status->{type}),
         };
         
         push @rows , map {
-            my $action = $c->model('Topic')->getAction($_->{status_type});
+            my $action = model->Topic->getAction($_->{status_type});
             +{
                 id          => $_->{id_status},
                 status      => $_->{id_status},
