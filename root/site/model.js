@@ -2224,13 +2224,16 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
     to_field_container : function(field){
         var self = this;
         //return field;
+        if ( field.fieldLabel.length > 30){
+            field.fieldLabel = "<span ext:qwidth=500 ext:qtip="+field.fieldLabel+">"+field.fieldLabel.substr(0,28) +"... </span>";
+        }
         var pn = new Ext.Panel({ 
             layout:'column',
             width: '100%',
             frame: false,
             border: false,
             items:[
-                { layout:'form', border: false, columnWidth:.9, items:[field], labelWidth: 320, labelAlign: 'right' },
+                { layout:'form', border: false, columnWidth:.9, items:[field], labelWidth: 200, labelAlign: 'right' },
                 { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({ 
                         icon:'/static/images/icons/delete_.png',
                         handler: function(){
