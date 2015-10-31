@@ -34,6 +34,7 @@ if( ! $meta->{hidden} ) {
                   <% _loc($meta->{name_field}) %>
 % if( @topics && $$meta{datatable} ne 'never' ) {
                    <div style="float:right; cursor:pointer">
+                       <img src="/static/images/icons/topic-grid.png" onclick="javascript:Cla.open_grid_from_field('#<% $iid %>','<% $data->{mid} %>', '<% $data->{category}{name} %>', '<% $meta->{name_field} %>')">
                        <img src="/static/images/icons/services-16.png" onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
                    </div>
 % }
@@ -56,7 +57,7 @@ if( ! $meta->{hidden} ) {
               </thead>
               <tbody>
 % foreach my $topic ( @topics ) {
-                <tr>
+                <tr class="topic-row" mid="<% $topic->{mid} %>">
 % foreach my $h ( @head  ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
 %    if( $$h{key} eq 'name' ) {
