@@ -812,14 +812,14 @@ Baseliner.ci_box = function(c) {
     var tpl = new Ext.XTemplate( 
         '<tpl for=".">'
        +  '<div class="search-item"><span id="boot" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{collection}</span>'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
        +  '</span></div>'
        +'</tpl>'  
     );
     var displayFieldTpl = new Ext.XTemplate( 
         '<tpl for=".">'
        +  '<span id="boot" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{collection}</span>'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
        +  '</span>'
        +'</tpl>'  
     );
