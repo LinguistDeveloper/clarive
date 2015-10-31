@@ -17,6 +17,7 @@
             {  name: 'email' },
             {  name: 'language_pref' },
             {  name: 'phone' },
+            {  name: 'ts' },
             {  name: 'active'}
         ],
         listeners: {
@@ -909,9 +910,10 @@
                 { header: _('Id'), hidden: true, dataIndex: 'id' },
                 { header: _('Avatar'), hidden: false, width: 64, dataIndex: 'username', renderer: Baseliner.render_avatar },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
-                { header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
+                { header: _('Name'), width: 300, dataIndex: 'realname', sortable: true },
                 { header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true },
                 { header: _('Language'), width: 60, dataIndex: 'language_pref', sortable: true },
+                { header: _('Modified On'), width: 120, dataIndex: 'ts', sortable: true, renderer: Cla.render_date },
                 { header: _('Email'), width: 150, dataIndex: 'email'  },
                 { header: _('Phone'), width: 100, dataIndex: 'phone' }
             ],

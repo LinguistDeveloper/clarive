@@ -147,20 +147,67 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 value: language_pref || Prefs.language || 'en',
                 data: lang_arr.length ? lang_arr : [ ['en',_('English')], ['es',_('Spanish')] ]
             });
+
+            var date_formats = [
+                    ['format_from_local', _('Default Format for Current Language')], 
+                    ['DD-MM-YY' ], 
+                    ['DD-MM-YYYY' ], 
+                    ['YY-MM-DD' ], 
+                    ['YYYY-MM-DD' ], 
+                    ['MM/DD/YY' ], 
+                    ['MM/DD/YYYY' ], 
+                    ['DD/MM/YY' ], 
+                    ['DD/MM/YYYY' ], 
+                    ['l' ], 
+                    ['L' ], 
+                    ['ll' ],
+                    ['LL' ],
+                    ['lll' ], 
+                    ['LLL' ], 
+                    ['LLLL' ],
+                    ['llll' ]
+            ].map(function(row){
+                row[1] = row[0]=='format_from_local'
+                    ? moment().format( _('momentjs_date_format') ) + ' (' + row[1] + ')'
+                    : moment().format(row[0]) + ' (' + row[0] + ')';
+                return row;
+            });
             // date format
             var date_format = new Baseliner.ComboDouble({
                 fieldLabel: _('Date Format'), 
                 name: 'date_format_pref', 
                 value: res.data.date_format_pref || Prefs.date_format || 'format_from_local',
-                data: [ 
-                    ['format_from_local', _('Default Format for Current Language')], 
-                    ['d/m/y', 'dd/mm/yyyy'], 
-                    ['m/d/y', 'mm/dd/yyyy'],
-                    ['d-m-y', 'dd-mm-yyyy'], 
-                    ['y-m-d', 'yyyy-mm-dd']
-                ]
+                data: date_formats
             });
             
+            var time_formats = [
+                    ['format_from_local', _('Default Format for Current Language')], 
+                    ['H:mm' ],
+                    ['HH:mm' ],
+                    ['h:mma' ],
+                    ['hh:mma' ]
+            ].map(function(row){
+                row[1] = row[0]=='format_from_local'
+                    ? moment().format( _('momentjs_time_format') ) + ' (' + row[1] + ')'
+                    : moment().format(row[0]) + ' (' + row[0] + ')';
+                return row;
+            });
+            var time_format = new Baseliner.ComboDouble({
+                fieldLabel: _('Time Format'), 
+                name: 'time_format_pref', 
+                value: res.data.time_format_pref || Prefs.time_format || 'format_from_local',
+                data: time_formats
+            });
+            
+            var timezone = new Baseliner.ComboDouble({
+                fieldLabel: _('Timezone'), 
+                name: 'timezone_pref', 
+                value: res.data.timezone_pref || Prefs.timezone || 'server_timezone',
+                data: [ 
+                    ['server_timezone', _('Server Timezone')], 
+                    ['browser_timezone', _('Browser Timezone')]
+                ].concat( Cla.timezone_list )
+            });
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
 
@@ -169,13 +216,26 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                  border: false,
                  labelWidth: 100, 
                  timeout: 120,
-                 items: [ language, date_format, dashboard ],
+                 items: [ 
+                    language, 
+                    timezone, 
+                    { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
+                            fieldLabel:'Current Browser Timezone', html: _('<b>%1</b>',Cla.timezone_str()) },
+                    { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
+                            fieldLabel:'Current Server Timezone', html: _('<b>%1</b>', Prefs.server_timezone ) },
+                    date_format, 
+                    time_format, 
+                    dashboard 
+                 ],
                  buttons: [
                      { text: username ? _('Save %1', username) : _('Save'),
                           handler: function() {
                              var form = change_dashboard_form.getForm();
                              if (form.isValid()) {
                                  var form_data = change_dashboard_form.getValues() || {};
+                                 Prefs.date_format = date_format.get_save_data();
+                                 Prefs.time_format = time_format.get_save_data();
+                                 Prefs.timezone = timezone.get_save_data();
                                  Baseliner.ci_call( 'user', 'general_prefs_save', { data:form_data, for_username: username }, function(res){
                                      Cla.message(_('Save'), _('General Preferences Saved') );
                                      if( !username && language.getValue() != language_pref ) {

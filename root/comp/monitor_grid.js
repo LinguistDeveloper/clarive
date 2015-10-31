@@ -1214,11 +1214,15 @@
                 { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
                 { header: _('Changesets'), width: 100, dataIndex: 'changesets', renderer: render_contents, sortable: true, hidden: true },
                 { header: _('Releases'), width: 100, dataIndex: 'releases', renderer: render_releases, sortable: true, hidden: true },
-                { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true , hidden: is_portlet ? true : false},	
-                { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true , hidden: is_portlet ? true : false},	
-                { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, hidden: true }, 
+                { header: _('Local Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date , hidden: true},	
+                { header: _('Local Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date , hidden: true},	
+                { header: _('Local Max Start Date'), width: 130, dataIndex: 'maxstarttime', renderer: Cla.render_date, sortable: true, hidden: true }, 
+                { header: _('Local End Date'), width: 130, dataIndex: 'endtime', renderer: Cla.render_date, sortable: true , hidden: true},	
+                { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},	
+                { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},	
+                { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, renderer: Cla.render_date_format, hidden: true }, 
+                { header: _('End Date'), width: 130, dataIndex: 'endtime', sortable: true, renderer: Cla.render_date, hidden: is_portlet ? true : false},	
                 { header: _('Approval expiration'), width: 130, dataIndex: 'approval_expiration', sortable: true, hidden: true },	
-                { header: _('End Date'), width: 130, dataIndex: 'endtime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
@@ -1261,7 +1265,7 @@
                             var sel = sm.getSelected();
                             Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid+'&auto_refresh=1', sel.data.name );
                         } else {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                            Cla.message(_('Error'), _('Select a row first'));   
                         };
                     }
                 }),

@@ -95,7 +95,7 @@ baseliner:
     #favicon: /static/themes/clarive/favicon.ico
     #login_page: /clarive/login.html
     decrypt_key: 1234567
-    time_zone: CET
+    #time_zone: UTC
     web_host: '{{baseliner.host}}'
     web_port: '{{port}}'
     job_runner: service.job.runner.rule

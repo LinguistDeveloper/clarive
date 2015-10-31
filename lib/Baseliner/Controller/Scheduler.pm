@@ -146,6 +146,8 @@ sub save_schedule : Local {
     my $description = $p->{description};
     my $workdays    = $p->{workdays} && $p->{workdays} eq 'on' ? 1 : 0;
 
+    $next_exec = $c->user_ci->from_user_date( $next_exec );
+
     _log "Valor de workdays: $workdays";
 
     #_debug $p;
@@ -157,7 +159,7 @@ sub save_schedule : Local {
                 status      => 'IDLE',
                 pid         => 0,
                 id_rule     => $p->{id_rule},
-                next_exec   => $next_exec,
+                next_exec   => "$next_exec",
                 parameters  => $parameters,
                 frequency   => $frequency,
                 description => $description,
@@ -165,7 +167,7 @@ sub save_schedule : Local {
             });
         } else {
             mdb->scheduler->update({ _id=>mdb->oid($id) },{ '$set'=>{ 
-                    name=>$name, next_exec=>$next_exec, 
+                    name=>$name, next_exec=>"$next_exec", 
                     id_rule=>$p->{id_rule},
                     parameters=>$parameters, frequency=>$frequency, description=>$description,
                     workdays=>$workdays,

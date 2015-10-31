@@ -2870,11 +2870,65 @@ Baseliner.field_label_top = function( label, hidden, allowBlank, readOnly ) {
     ]
 };
 
-Baseliner.render_date = function(v){
+Cla.timezone_str = function() {
+    var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
+    return (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
+}
+
+Cla.user_date_timezone = function(dt,tz) {
+    var stz = Prefs.server_timezone;
+    return Prefs.timezone == 'server_timezone'
+        ? moment(dt).tz( stz )
+        : Prefs.timezone == 'browser_timezone' 
+            ? moment(dt).tz( stz ).utcOffset( moment().utcOffset() )
+            : moment(dt).tz( stz ).tz( Prefs.timezone );
+}
+
+Cla.user_date_format = function(dt,date_format,time_format) {
+    var format = '';
+    if(date_format) {
+        format += date_format;
+    } else {
+        format += (Prefs.date_format == 'format_from_local' 
+            ? _('momentjs_date_format')
+            : Prefs.date_format);
+    } 
+    if(time_format) {
+        format += ' ' + time_format;
+    } else if( time_format!==null ) {
+        format += ' ' + (Prefs.time_format =='format_from_local'
+            ? _('momentjs_time_format')
+            : Prefs.time_format);
+    }
+    return format;
+}
+
+Cla.user_js_date_format = function(){
+    var jsd = Cla.moment_to_js_date_hash[ Cla.user_date_format(undefined,undefined,null) ] || _('js_date_format');
+    return jsd;
+}
+
+
+Cla.user_date_formatted = function(dt,date_format,time_format) {
+    return moment(dt).format(Cla.user_date_format(date_format,time_format));
+}
+
+Cla.user_date = function(dt,date_format,time_format,tz) {
+    var tz_dt = Cla.user_date_timezone( dt, tz );
+    return Cla.user_date_formatted(tz_dt, date_format, time_format);
+}
+
+Cla.render_date = function(v){
     var d;
     if( !v ) return '';
-    try { d=new Date(v) } catch(ee){}
-    return Ext.isDate(d) ? d.format( Prefs.js_date_format ) : v;
+    try { d=Cla.user_date(v) } catch(ee){ d='' }
+    return d;
+};
+Cla.render_date_format = function(v){
+    var d;
+    if( !v ) return '';
+    try { d=Cla.user_date_formatted(v) } catch(ee){ d='' }
+    return d;
 };
 Baseliner.render_checkbox = function(v){
     return v 

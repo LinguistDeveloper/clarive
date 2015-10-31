@@ -398,7 +398,7 @@
             { header: _('Class'),  width: 160, dataIndex: 'classname', sortable: true, hidden: true },
             { header: _('Baseline'), hidden: true, width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl, sortable: true },
             { header: _('Version'), width: 50, dataIndex: 'versionid', sortable: true },
-            { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
+            { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true, renderer: Cla.render_date },
             { header: _('Modified By'), width: 100, dataIndex: 'modified_by', sortable: true },
             { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags, sortable: true },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties, sortable: true },

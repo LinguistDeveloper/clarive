@@ -2149,7 +2149,7 @@ Baseliner.activity_for_topic = function(args) {
                         </a>
                         [%= text %]&nbsp&nbsp
                         <small>
-                            [%= ts %]
+                            [%= Cla.user_date(ts) %]
                         </small>
                     </p>
                 <hr /></div> 

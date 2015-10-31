@@ -158,6 +158,7 @@ use Term::ANSIColor;
 use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use experimental 'switch';
+use DateTime::TimeZone;
 
 BEGIN {
     # enable a TO_JSON converter
@@ -480,7 +481,7 @@ sub _say {
 
 sub _tz {
     my $tz = try { Baseliner->config->{time_zone} } catch {''};
-    $tz || 'CET';
+    $tz || DateTime::TimeZone->new( name => 'local' )->name() || 'UTC';
 }
 
 sub _dt { 
@@ -498,7 +499,8 @@ sub _now_log {
 }
 
 sub _ts {
-    Class::Date->now()->to_tz(_tz())
+    my $tz = shift || _tz();
+    Class::Date->now()->to_tz( $tz );
 }
 
 sub _now {

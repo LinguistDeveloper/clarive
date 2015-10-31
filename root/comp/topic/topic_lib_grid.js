@@ -753,7 +753,7 @@ Cla.topic_grid = function(params){
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
                 onclick='javascript:Baseliner.show_topic_colored("[%=mid%]","[%=category_name%]","[%=category_color%]", "[%=id%]"); return false;'>[%=value%] </span>
-                        <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %] </font>[%=folders%]
+                        <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= Cla.user_date(modified_on) %] </font>[%=folders%]
                         <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
 
@@ -926,10 +926,10 @@ Cla.topic_grid = function(params){
         for( var slot in value ) {
             var cal = value[slot];
             if( !cal ) continue;
-            // if(cal.start_date) cal.start_date = Date.parseDate(cal.start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            // if(cal.plan_start_date) cal.plan_start_date = Date.parseDate(cal.plan_start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            // if(cal.end_date) cal.end_date = Date.parseDate(cal.end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            // if(cal.plan_end_date) cal.plan_end_date = Date.parseDate(cal.plan_end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
+            // if(cal.start_date) cal.start_date = Cla.user_date( Date.parseDate(cal.start_date,'d/m/Y H:i:s') );
+            // if(cal.plan_start_date) cal.plan_start_date = Cla.user_date( Date.parseDate(cal.plan_start_date,'d/m/Y H:i:s') );
+            // if(cal.end_date) cal.end_date = Cla.user_date( Date.parseDate(cal.end_date,'d/m/Y H:i:s') );
+            // if(cal.plan_end_date) cal.plan_end_date = Cla.user_date( Date.parseDate(cal.plan_end_date,'d/m/Y H:i:s') );
             arr.push( html_cal(cal) );
         }
         return arr.join('\n');
@@ -950,7 +950,7 @@ Cla.topic_grid = function(params){
         return parseFloat(value);
     };
 
-    var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
+    var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {  // TODO deprecated
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
@@ -1264,8 +1264,8 @@ Cla.topic_grid = function(params){
         assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee', renderer: render_default},
         current_job : { header: _('Current Job'), hidden: true, sortable: true, dataIndex: 'current_job', renderer: render_default},
         modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by', renderer: render_default },
-        modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on', renderer: render_date },
-        created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: render_date },
+        modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on', renderer: Cla.render_date },
+        created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: Cla.render_date },
         created_by : { header: _('Created By'), width: 40, hidden: true, sortable: true, dataIndex: 'created_by', renderer: render_default}
     };
     var gridlets = {
@@ -1275,7 +1275,7 @@ Cla.topic_grid = function(params){
         number : { sortable: true, width: 100, renderer: render_number  },
         job_id : { sortable: true, width: 100, hidden: true  },
         calendar : { sortable: true, width: 250, renderer: render_cal  },
-        date : { sortable: true, width: 100, renderer: render_date  },
+        date : { sortable: true, width: 100, renderer: Cla.render_date  },
         bool : { sortable: true, width: 100, renderer: render_bool  },
         ci : { sortable: true, width: 100, renderer: render_ci  },
         project : { sortable: true, width: 100, renderer: render_ci  },

@@ -4,12 +4,11 @@
 </%args>
 
 % if( !$meta->{hidden} ) {
-% #my $date = DateTime->new($data->{created_on});
 
 %use Date::Parse;
 %use DateTime;
 
-%my $epoch = str2time($data->{created_on});
+%my $epoch = str2time( $c->user_date($data->{created_on}) );
 %my $datetime = DateTime->from_epoch(epoch => $epoch);
 
     <tr>

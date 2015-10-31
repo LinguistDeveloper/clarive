@@ -99,7 +99,7 @@
             { header: _('ID'), width: 30, dataIndex: 'mid', sortable: true},
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class', sortable: true},
             { header: _('Version'), width: 50, dataIndex: 'versionid', sortable: true},
-            { header: _('Timestamp'), width: 80, dataIndex: 'ts', sortable: true},
+            { header: _('Timestamp'), width: 80, dataIndex: 'ts', sortable: true, renderer: Cla.render_date },
             { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags, sortable: true},
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties, sortable: true},
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }

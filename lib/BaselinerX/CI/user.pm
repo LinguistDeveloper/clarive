@@ -16,6 +16,8 @@ has project_security    => qw(is rw isa Any), default => sub { +{} };
 has dashboard           => qw(is rw isa Any);
 has language_pref       => qw(is rw isa Any), default=>Baseliner->config->{default_lang};
 has date_format_pref    => qw(is rw isa Str default format_from_local);
+has time_format_pref    => qw(is rw isa Str default format_from_local);
+has timezone_pref    => qw(is rw isa Str default server_timezone);
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
@@ -74,6 +76,8 @@ sub general_prefs_save {
     $self = ci->user->search_ci( name=>$username ) unless ref $self;
     $self->language_pref($data->{language_pref});
     $self->date_format_pref($data->{date_format_pref});
+    $self->time_format_pref($data->{time_format_pref});
+    $self->timezone_pref($data->{timezone_pref});
     $self->dashboard($data->{dashboard});
     $self->save;
     { msg => 'ok'};
@@ -197,20 +201,58 @@ method date_format {  # return a momentJS format
     return $format eq 'date_format' ? 'Y-M-D' : $format; 
 }
 
-method cdate_format { # return a Class::Date format
-    my $pref = $self->date_format_pref;
+method cdate_format( $format='' ) { # return a Class::Date format
+    my $pref = $format || $self->date_format_pref;
     my $format = $pref eq 'format_from_local' ? _loc('class_date_format')
         : do {
-            $pref =~ s/(\w)/%$1/g;
-            $pref =~ tr/y/Y/;
+            $pref =~ s/Y+/%Y/gi;
+            $pref =~ s/M+/%m/g;
+            $pref =~ s/D+/%d/g;
+            if( $pref =~ /L+/i ) {
+                $pref = _loc('class_date_format');
+            }
             $pref
         };
     return $format eq 'date_format' ? '%Y-%m-%d' : $format; 
 }
 
-method user_format( $date ) {
-    local $Class::Date::DATE_FORMAT=$self->cdate_format;
-    return Class::Date->new( $date )->string;
+method ctime_format( $format='' ) { # return a Class::Date format
+    my $pref = $format || $self->time_format_pref;
+    my $format = $pref eq 'format_from_local' ? _loc('class_date_time')
+        : do {
+            $pref =~ s/hh/%L/g || $pref =~ s/h/%l/g;
+            $pref =~ s/HH/%H/g || $pref =~ s/H/%k/g;
+            $pref =~ s/m+/%M/gi;
+            $pref =~ s/a/%p/gi;
+            #$pref =~ s/(\w)/%$1/g;
+            $pref
+        };
+    return $format eq 'date_format' ? '%l:%M%p' : $format; 
+}
+
+method user_dt( $date='' ) {
+    my $epoch = $self->user_cdate($date)->epoch;
+    my $dt = DateTime->from_epoch( epoch=>$epoch );
+    $dt->set_time_zone( $self->timezone_pref ) if length $self->timezone_pref && $self->timezone_pref ne 'server_timezone';
+    return $dt; 
+}
+
+method user_cdate( $date='' ) {
+    my $cdate = $date ? Class::Date->new( $date ) : Util->_ts;
+    $cdate = $cdate->to_tz( $self->timezone_pref ) if length $self->timezone_pref && $self->timezone_pref ne 'server_timezone';
+    return $cdate;
+}
+
+method user_date( $date='' ) {
+    my $format = $self->cdate_format . ' ' . $self->ctime_format;
+    my $fd = $self->user_cdate($date)->strftime( $format );
+    $fd =~ s/\s+/ /g;
+    return $fd;
+}
+
+method from_user_date( $date ) {
+    my $cdate = Class::Date->new( $date, $self->timezone_pref eq 'server_timezone' ? undef : $self->timezone_pref );
+    return $cdate->to_tz( Util->_tz() );
 }
 
 1;

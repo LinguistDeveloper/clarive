@@ -347,6 +347,11 @@ sub user_ci {
     ci->user->search_ci( name=>( $username ) );
 }
 
+sub user_date {
+    my ($c,$date) = @_;
+    return $c->user_ci->user_date( $date );
+}
+
 sub user_languages {
     my ($c) = @_;
     if( my $user_ci = $c->user_ci ) {

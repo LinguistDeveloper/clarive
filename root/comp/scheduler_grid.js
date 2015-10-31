@@ -199,8 +199,8 @@
         columns: [
             { header: _('Name'), width: 300, dataIndex: 'name', sortable: true, renderer: render_name },   
             { header: _('Status'), width: 60, dataIndex: 'status', sortable: true },
-            { header: _('Next execution'), width: 100, dataIndex: 'next_exec', sortable: true },   
-            { header: _('Last execution'), width: 100, dataIndex: 'last_exec', sortable: true },
+            { header: _('Next execution'), width: 100, dataIndex: 'next_exec', sortable: true, renderer: Cla.render_date },   
+            { header: _('Last execution'), width: 100, dataIndex: 'last_exec', sortable: true, renderer: Cla.render_date },
             { header: _('PID'), width: 60, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
             { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },

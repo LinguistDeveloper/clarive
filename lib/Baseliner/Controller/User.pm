@@ -697,7 +697,8 @@ sub list : Local : Does('Ajax') {
 
     $where->{active} = '1' if $p->{active_only};
 
-    my $rs = ci->user->find($where)->fields({ username => 1, realname => 1, alias => 1, email => 1, active => 1, phone => 1, mid => 1, language_pref=>1, _id => 0 });
+    my $rs = ci->user->find($where)->fields({ username => 1, realname => 1, alias => 1, email => 1, active => 1, phone => 1, mid => 1, language_pref=>1, _id => 0, 
+            ts=>1 });
     $rs->sort($sort ? { $sort => $dir } : {username => 1});
     $rs->skip($start);
     $rs->limit($limit);

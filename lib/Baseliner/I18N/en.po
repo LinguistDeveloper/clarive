@@ -5,8 +5,17 @@
 msgid ""
 msgstr ""
 
+msgid "momentjs_date_format"
+msgstr "MM/DD/YYYY"
+
+msgid "momentjs_time_format"
+msgstr "h:mma"
+
 msgid "class_date_format"
 msgstr "%m/%d/%Y"
+
+msgid "class_date_time"
+msgstr "%l:%M%p"
 
 msgid "js_date_format"
 msgstr "m/d/Y"

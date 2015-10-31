@@ -21,7 +21,7 @@
 % if ( !$meta->{show_real_dates} ) {
                             <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111; " title="<% $ch->{username}  %>"><% Util->ago( $ch->{when} )  %></td>
 % } else {
-                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111; " title="<% $ch->{username}  %>"><% $ch->{when} %></td>
+                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111; " title="<% $ch->{username}  %>"><% $c->user_date($ch->{when}) %></td>
 
 % }
                             <!-- <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $ch->{username} %>/image.png" /><% $ch->{username}  %></td> -->
@@ -36,7 +36,7 @@
 % if ( !$meta->{show_real_dates} ) {
                         <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% Util->ago( $data->{created_on_epoch} )   %></td>
 % } else {
-                        <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% $data->{created_on}   %></td>
+    <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% $c->user_date($data->{created_on})   %></td>
 % }
                          <!-- <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /><% $data->{created_by}  %></td> -->
                          <!--<td><% $data->{created_by}  %></td>-->

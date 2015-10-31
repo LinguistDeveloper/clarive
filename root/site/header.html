@@ -20,6 +20,7 @@
     <script type="text/javascript" src="/site/panelresizer.js"></script>
      <script type="text/javascript" src="/site/dnd_tabpanel.js"></script>
     <script type="text/javascript" src="/static/momentjs/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="/static/momentjs/moment-timezones.min.js"></script>
     <!-- script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script -->
     <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
 
@@ -189,6 +190,10 @@
         Prefs = new Baseliner.Prefs({
             username: '<% $c->username %>',
             language: '<% [ _array( $c->languages ) ]->[0] %>',
+            date_format: '<% $c->user_ci->date_format_pref %>' || 'format_from_local',
+            time_format: '<% $c->user_ci->time_format_pref %>' || 'HH:mm',
+            timezone: '<% $c->user_ci->timezone_pref %>' || 'server_timezone',
+            server_timezone: '<% _tz() %>',
             logo_file: '<% $c->config->{logo_file} %>',
             logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
             site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,

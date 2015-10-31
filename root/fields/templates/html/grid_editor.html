@@ -87,7 +87,7 @@
                                             my $st = $row->{overdue} ? 'color: #f34' : '';
                                             my $wd = $cd->wdayname;
                                             $wd = Encode::decode('UTF-8', $wd);
-                                            _loc($wd) . " " . $c->user_ci->user_format($cd) . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
+                                            _loc($wd) . " " . $c->user_ci->user_date($cd) . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
                                         } else {
                                             $val;
                                         }

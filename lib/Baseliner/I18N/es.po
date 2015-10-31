@@ -9,8 +9,17 @@ msgstr "Datos de Registro"
 msgid "Site License"
 msgstr "Datos de Registro"
 
+msgid "momentjs_date_format"
+msgstr "DD/MM/YYYY"
+
+msgid "momentjs_time_format"
+msgstr "HH:mm"
+
 msgid "class_date_format"
 msgstr "%d/%m/%Y"
+
+msgid "class_date_time"
+msgstr "%H:%M"
 
 msgid "js_date_format"
 msgstr "d/m/Y"

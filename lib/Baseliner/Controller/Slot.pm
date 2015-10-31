@@ -583,7 +583,8 @@ sub check_dates {
     }
     # get it ready for a combo simplestore
     my $hour_store = [ map {
-       [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+        my $server_date = Class::Date->new( $date->ymd . ' ' .  $hours->{$_}{hour}, _tz() );
+        [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $server_date->strftime('%Y-%m-%d %k:%M %z') ]
     } sort keys %$hours ];
 
     return $hour_store, @rel_cals;

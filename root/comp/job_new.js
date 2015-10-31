@@ -7,9 +7,7 @@
     use utf8;
     my $iid = "div-" . _nowstamp;
     my $now = _dt();
-    my $date_format = config_value('calendar_date_format') || '%Y-%m-%d';
-    my $today =  $now->strftime( $date_format ); # '%d/%m/%Y'
-    ( my $picker_format = $date_format || 'd/m/Y' ) =~ s{%}{}g;
+    my $date_format = $c->user_ci->cdate_format;
 
     my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
@@ -27,8 +25,8 @@
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
     var date_format = '<% $date_format %>';  // %Y-%m-%d 
-    var picker_format = '<% $picker_format %>'; // Y-m-d
-    var today = '<% $today %>';
+    var picker_format = Cla.user_js_date_format(); 
+    var today = Cla.user_date_timezone().toDate();
     var min_chars = 3; 
     var rel_cals = [];
     
@@ -308,11 +306,14 @@
 
     var store_time = new Ext.data.SimpleStore({
         id: 'time',
-        fields: ['time','name', 'type']
+        fields: ['time','name', 'type', 'env_date']
     });
     var tpl_time = new Ext.XTemplate(
         '<tpl for=".">',
-        '<div class="search-item"><span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span></div>',
+        '<div class="search-item">',
+        '<span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span>',
+        '<span style="margin-left:8px; color: #333;font-weight:bold">@{[ Cla.user_date(values.env_date) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
+        '</div>',
         '</tpl>'
     );
     var combo_time  = new Ext.form.ComboBox({

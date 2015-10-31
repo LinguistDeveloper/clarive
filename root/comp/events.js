@@ -155,7 +155,7 @@
         },
         columns:[
             { id:'_id', header: _("ID"), width: 60, sortable: false, dataIndex: '_id' },
-            { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
+            { header: _('Timestamp'), width: 80, dataIndex: 'ts', renderer: Cla.render_date },
             { header: _('Event Key'), width: 160, dataIndex: 'event_key' },
             { header: _('Rule Log ID'), width: 40, hidden: true, dataIndex: 'id_rule_log' },
             { header: _('Event ID'), width: 40, hidden: true, dataIndex: 'id_event' },
