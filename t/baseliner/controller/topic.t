@@ -80,6 +80,29 @@ subtest 'next status for topic by root user' => sub {
     is $data->[1]->{status}, $id_status_to;
 };
 
+subtest 'next status for topics by root user' => sub {
+    _setup_clear();
+    _setup_user();
+    my $base_params = _topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my $id_status_from = $base_params->{status_new};
+    my $id_status_to   = ci->status->new( name=>'Dev', type => 'I' )->save;
+
+    # create a workflow
+    my $workflow = [{ id_role=>'1', id_status_from=> $id_status_from, id_status_to=>$id_status_to, job_type=>undef }];
+    mdb->category->update({ id=>"$base_params->{category}" },{ '$set'=>{ workflow=>$workflow }, '$push'=>{ statuses=>$id_status_to } });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { topics=>["$topic_mid"] } } );
+    $c->{username} = 'root'; # change context to root
+    $controller->next_status_for_topics($c);
+    my $data = $c->stash->{json}{data};
+
+    is $data->[0]->{id_status_from}, $id_status_from;
+    is $data->[0]->{id_status_to}, $id_status_to;
+};
+
 ############ end of tests
 
 sub _build_c {

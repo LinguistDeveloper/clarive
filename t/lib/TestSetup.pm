@@ -119,6 +119,7 @@ sub _topic_setup {
         'category'   => "$cat_id",
         'status_new' => "$status_id",
         'status'     => "$status_id",
+        'category_status' => { id=>"$status_id" },
     };
 
 }

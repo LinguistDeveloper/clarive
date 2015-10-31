@@ -1491,6 +1491,38 @@ sub list_admin_category : Local {
     $c->forward('View::JSON');
 }
 
+sub next_status_for_topics : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my $topic_mids = $p->{topics};
+
+    my %all_status;
+    my @ids;
+    my @uniq;
+    my @topics = mdb->topic->find({ mid=>mdb->in($topic_mids) })->fields({ mid=>1, category=>1, category_status=>1 })->all;
+    for my $topic ( @topics ) {
+        my @statuses = model->Topic->next_status_for_user(
+            username       => $c->username,
+            id_category    => $topic->{category}{id},
+            id_status_from => $topic->{category_status}{id},
+            topic_mid      => $topic->{mid},
+        );
+        for my $st ( @statuses ) {
+            $all_status{ $st->{id_status_to} }= $st;
+        }
+        push @ids, [ map{ $_->{id_status_to} } @statuses ];
+        push @uniq, map{ $_->{id_status_to} } @statuses;
+    }
+    # now intersect all statuses to get common ones
+    for( @ids ) {
+        my %hh = map{ $_=>1 } @uniq;
+        @uniq = grep($hh{$_},@$_);
+    }
+    #$c->stash->{json} = { data=>[ sort { $a->{seq_to} <=> $b->{seq_to} or $a->{status_name} cmp $b->{status_name} } map{ $all_status{$_} } @uniq ]};
+    $c->stash->{json} = { data=>[ sort { $a->{status_name} cmp $b->{status_name} } map{ $all_status{$_} } @uniq ]};
+    $c->forward('View::JSON');
+}
+
 sub upload : Local {
     my ( $self, $c ) = @_;
     my $p      = $c->req->params;
@@ -2050,33 +2082,38 @@ sub change_status : Local {
     my $p = $c->req->params;
     $c->stash->{json} = try {
         my $change_status_before;
+        my @results;
+        my @statuses = _array( $p->{old_status} );
         
-        my $id_cats = ( 
-            mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 }) 
-            // _fail(_loc("Topic #%1 not found. Deleted?", $$p{mid}))  
-        )->{category_status}{id};
-        
-        if ($p->{old_status} eq $id_cats ){
-            $change_status_before = \0;
-            
-            my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
-            
-            if ($isValid){
-                $c->model('Topic')->change_status( 
-                    change => 1, username => $c->username, 
-                    id_status => $p->{new_status}, id_old_status => $p->{old_status}, 
-                    mid => $p->{mid} 
-                );
-                { success => \1, msg => _loc ('Changed status'), change_status_before => $change_status_before };
-            }else{
-                { success => \0, msg => _loc ('Required field %1 is empty', $field_name) };    
+        for my $mid ( _array( $p->{mid} ) ) {
+            my $old_status = shift @statuses;
+            my $id_cats = ( 
+                mdb->topic->find_one({ mid=>"$mid" },{ category_status=>1 }) 
+                        or _fail(_loc("Topic #%1 not found. Deleted?", $mid))  
+            )->{category_status}{id};
+
+            if ($old_status eq $id_cats ){
+                $change_status_before = \0;
+                
+                my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $mid, username => $c->username);
+                
+                if ($isValid){
+                    model->Topic->change_status( 
+                        change => 1, username => $c->username, 
+                        id_status => $p->{new_status}, id_old_status => $old_status, 
+                        mid => $mid, 
+                    );
+                    push @results, { success=>\1, mid=>$mid, msg => _loc ('Changed status'), change_status_before=>$change_status_before };
+                }else{
+                    push @results, { success=>\0, mid=>$mid, msg => _loc ('Required field %1 is empty', $field_name) };    
+                }
+            }
+            else{
+                $change_status_before = \1;
+                push @results, { success=>\1, mid=>$mid, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
             }
         }
-        else{
-            $change_status_before = \1;
-            { success => \1, msg => _loc ('Changed status'), change_status_before => $change_status_before };
-        }
-        
+        @results==1 ? $results[0] : { success=>\1, results=>\@results };
     } catch {
         my $err = shift;
         _error( $err );

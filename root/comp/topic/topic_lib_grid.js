@@ -176,9 +176,63 @@ Cla.topic_grid = function(params){
         if( cd ) custom_form_data = cd;
     });
     
+    var change_status_multi = function(obj){ 
+        var sm = grid_topics.getSelectionModel();
+        if( !sm.hasSelection() ) {
+            Cla.warn(_('Change Status'), _('No selections') );
+            return;
+        }
+        var sels = sm.getSelections().map(function(row){ return row.data.topic_mid });
+        var change_it = function(){
+            var statuses = sm.getSelections().map(function(row){ return row.data.category_status_id });
+            grid_topics.getEl().mask(_('Wait while %1 topic statuses are changed...', sels.length) );
+            Cla.ajax_json( '/topic/change_status',{ mid: sels, new_status: obj.new_status, old_status: statuses }, function(res){
+                Cla.message( _('Change Status'), _('Status changed to %1 for %2 topics', obj.status_name, sels.length) );
+                grid_topics.store.reload();
+                grid_topics.getEl().unmask();
+            },function(){
+                grid_topics.getEl().unmask();
+            });
+        }
+        sels.length == 1 
+           ? change_it() 
+           : Cla.confirm( _('Are you sure you want to change %1 topics status to %2?', sels.length, obj.status_name), change_it );
+    };
+
     var init_buttons = function(action) {
         btn_edit[ action ]();
         btn_delete[ action ]();
+        // change status button:
+        var sm = grid_topics.getSelectionModel();
+        if( action == 'enable' && sm.hasSelection() ) {
+            status_menu.removeAll();
+            var sels = sm.getSelections().map(function(row){ return row.data.topic_mid });
+            Cla.ajax_json('/topic/next_status_for_topics',{ topics:sels },function(res){
+                var items = [];
+                Ext.each( res.data,function(st){
+                    items.push({ 
+                        text: _(st.status_name), 
+                        new_status: st.id_status_to, 
+                        old_status: st.topic_status, 
+                        status_name: st.status_name, 
+                        handler: change_status_multi 
+                    });
+                });
+                Ext.each(items,function(it){
+                    status_menu.addItem(it);
+                });
+                if( items.length > 0 ) { 
+                    btn_change_status.setText( _('Change Status') );
+                    btn_change_status.enable();
+                } else { 
+                    btn_change_status.setText( _('No Common Statuses') );
+                    btn_change_status.disable();
+                }
+            });
+        } else {
+            btn_change_status.setText( _('Change Status') );
+            btn_change_status.disable();
+        }
     }
     
     var button_no_filter = new Ext.Button({
@@ -263,7 +317,9 @@ Cla.topic_grid = function(params){
             );
         }
     }); 
-    
+
+    var status_menu = new Ext.menu.Menu({ items: [] });
+    var btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.gif'), menu: status_menu, disabled: true });
     
     var add_view = function() {
         var win;
@@ -1348,7 +1404,7 @@ Cla.topic_grid = function(params){
     // toolbar
     var tbar=[_('Search')+': ', ' ', search_field ];
     if( !typeApplication ) {
-        tbar = tbar.concat([ ' ',' ', btn_add, btn_edit, btn_custom, btn_delete ]);
+        tbar = tbar.concat([ ' ',' ', btn_add, btn_edit, btn_custom, btn_delete, btn_change_status ]);
     }
     tbar = tbar.concat([ '->', btn_clear_state, btn_reports, btn_kanban, btn_mini ]);
     
