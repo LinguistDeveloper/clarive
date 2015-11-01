@@ -34,8 +34,10 @@ if( ! $meta->{hidden} ) {
                   <% _loc($meta->{name_field}) %>
 % if( @topics && $$meta{datatable} ne 'never' ) {
                    <div style="float:right; cursor:pointer">
-                       <img src="/static/images/icons/topic-grid.png" onclick="javascript:Cla.open_grid_from_field('#<% $iid %>','<% $data->{mid} %>', '<% $data->{category}{name} %>', '<% $meta->{name_field} %>')">
-                       <img src="/static/images/icons/services-16.png" onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
+                       <img src="/static/images/icons/services-16.png" alt="<% _loc('Show/Hide Search Options') %>" 
+                                onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
+                       <img src="/static/images/icons/topic-out-open.png" alt="<% _loc('Open in topic grid') %>" 
+                                onclick="javascript:Cla.open_grid_from_field('#<% $iid %>','<% $data->{mid} %>', '<% $data->{category}{name} %>', '<% $meta->{name_field} %>')">
                    </div>
 % }
             </h5>

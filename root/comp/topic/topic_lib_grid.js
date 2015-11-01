@@ -39,7 +39,7 @@ Cla.open_grid_from_field = function(el,mid,category,field_title){
     var el = $(el);
     var topics = [];
     $(el).find('.topic-row').each(function(){ topics.push($(this).attr('mid')); });
-    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, topic_list: topics, tab_icon: '/static/images/icons/topic.png' });
+    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon:IC('topic_out'), topic_list: topics });
 };
 
 Baseliner.open_monitor_query = function(q){
