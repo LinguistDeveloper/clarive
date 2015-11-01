@@ -1314,6 +1314,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     tabifiable: false,
     minimizable: true,
     maximizable: true,
+    constrain: true,
     initComponent: function(){
         var self = this;
         if( self.tabifiable ) {
