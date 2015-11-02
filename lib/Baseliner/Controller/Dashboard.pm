@@ -1265,7 +1265,7 @@ sub list_topics: Local {
     if( $username && ! $is_root){
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
-_warn "MIDDDDDDDDDDDDD: $topic_mid";
+
     model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
     $main_conditions->{'categories'} = \@user_categories;
 
@@ -1283,7 +1283,6 @@ _warn "MIDDDDDDDDDDDDD: $topic_mid";
         # delete $where->{mid};
     }
 
-_warn "WHEREEEEEEEEEEEEEEE: ". _dump $where;
     ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user($complete_parms); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
 
     my @topic_cis = map {$_->{mid}} @topics;

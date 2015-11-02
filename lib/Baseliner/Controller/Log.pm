@@ -287,7 +287,6 @@ sub jobList : Path('/job/log/jobList') {
         if ( $parent->{key} ne $lastParent->{key} ) {
 
             #_log $rec->{name} ."=". _dump $parent . ".." . _dump $lastParent;
-            _log "EEEEEEEEEEEEEEE"._dump $parent;
             push @jobs,
                 {
                 id       => $lastParent->{text} !~ m{siteok|siteko}i ? $lastParent->{id} : '~' . $lastParent->{id},
