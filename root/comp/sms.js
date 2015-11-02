@@ -123,7 +123,7 @@
             { header: _('Message'), width: 200, dataIndex: 'text', sortable: true, renderer: render_msg  },
             { header: _('More'), width: 200, hidden: true, dataIndex: 'more', sortable: true },
             { header: _('Expires'), width: 80, dataIndex: 'expires', sortable: true, renderer:function(v,m,row){
-                  return row.data.expired ? '<span style="text-decoration: line-through;">'+v+'</span>' : v;
+                  return row.data.expired ? '<span style="text-decoration: line-through;">'+Cla.user_date(v)+'</span>' : Cla.user_date(v);
             }},
             { header: _('Read'), width: 40, dataIndex: 'read', sortable: true, renderer: render_read }
         ],
