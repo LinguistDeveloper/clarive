@@ -172,6 +172,9 @@ my $ci_coerce = sub {
                 'Undef' => sub {
                     $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
                 },
+                'Object' => sub {
+                    $params->{$init_arg} = [ $val ];
+                },
                 'Num|Str' => sub {
                     if( length $val ) {
                         $params->{$init_arg} = [ map { $init->( $_, $weaken ) } split /,/, $val ];
@@ -181,7 +184,7 @@ my $ci_coerce = sub {
                         $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
                     }
                 },
-                'ArrayRef[Num]' => sub {
+                'ArrayRef[Str]' => sub {
                     my $arr = [];
                     my $i = 0;
                     for( @$val ) {
@@ -205,6 +208,9 @@ my $ci_coerce = sub {
                 'Undef' => sub {
                     $params->{$init_arg} = BaselinerX::CI::Empty->new;
                 },
+                'Object' => sub {
+                    $params->{$init_arg} = $val;
+                },
                 'Num|Str' => sub {
                     if( length $val ) {
                         $params->{$init_arg} = $init->( $val, $weaken );
@@ -212,7 +218,7 @@ my $ci_coerce = sub {
                         $params->{$init_arg} = BaselinerX::CI::Empty->new;
                     }
                 },
-                'ArrayRef[Num]' => sub {
+                'ArrayRef[Str]' => sub {
                     if( length $val->[0] ) {
                         $params->{$init_arg} = $init->( $val->[0], $weaken );
                     } else {
