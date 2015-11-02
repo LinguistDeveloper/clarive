@@ -1,5 +1,5 @@
 package Baseliner::Validator::in;
-use Moo;
+use Moose;
 BEGIN { extends 'Baseliner::Validator::Base'; }
 
 has in => ( is => 'ro' );

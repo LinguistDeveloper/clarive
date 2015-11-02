@@ -1,5 +1,5 @@
 package Baseliner::Validator::sort_dir;
-use Moo;
+use Moose;
 BEGIN { extends 'Baseliner::Validator::Base'; }
 
 sub validate {

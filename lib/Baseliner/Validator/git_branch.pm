@@ -1,5 +1,5 @@
 package Baseliner::Validator::git_branch;
-use Moo;
+use Moose;
 BEGIN { extends 'Baseliner::Validator::Base'; }
 
 sub validate {

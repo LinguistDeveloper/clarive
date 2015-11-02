@@ -29,7 +29,7 @@ subtest 'builds not valid result when ci with wrong isa' => sub {
     my $ci = ci->GitRepository->new;
     $ci->save;
 
-    my $rule = _build_rule( isa => 'foobar' );
+    my $rule = _build_rule( isa_check => 'foobar' );
 
     my $vresult = $rule->validate( $ci->mid );
 
@@ -55,7 +55,7 @@ subtest 'builds valid result when known ci and isa' => sub {
     my $ci = ci->GitRepository->new;
     $ci->save;
 
-    my $rule = _build_rule( isa => 'BaselinerX::CI::GitRepository' );
+    my $rule = _build_rule( isa_check => 'BaselinerX::CI::GitRepository' );
 
     my $vresult = $rule->validate( $ci->mid );
 
@@ -68,7 +68,7 @@ subtest 'returns loaded ci' => sub {
     my $ci = ci->GitRepository->new;
     $ci->save;
 
-    my $rule = _build_rule( isa => 'BaselinerX::CI::GitRepository' );
+    my $rule = _build_rule( isa_check => 'BaselinerX::CI::GitRepository' );
 
     my $vresult = $rule->validate( $ci->mid );
 

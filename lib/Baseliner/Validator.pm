@@ -1,5 +1,5 @@
 package Baseliner::Validator;
-use Moo;
+use Moose;
 use Class::Load 'load_class';
 
 has fields => ( is => 'ro', default => sub { {} } );

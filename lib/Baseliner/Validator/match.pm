@@ -1,5 +1,5 @@
 package Baseliner::Validator::match;
-use Moo;
+use Moose;
 BEGIN { extends 'Baseliner::Validator::Base'; }
 
 has re => qw(is ro);

@@ -1,5 +1,5 @@
 package Baseliner::Validator::Base;
-use Moo;
+use Moose;
 
 sub _build_valid {
     my $self = shift;

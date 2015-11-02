@@ -1,5 +1,5 @@
 package Baseliner::Validator::pos_int;
-use Moo;
+use Moose;
 BEGIN { extends 'Baseliner::Validator::Base'; }
 
 sub validate {
