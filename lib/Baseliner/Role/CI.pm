@@ -848,10 +848,10 @@ sub related {
     $rs->limit( $opts{limit} ) if $opts{limit} > 0;
     $rs->sort( $opts{sort} ) if ref $opts{sort};
 
-    my @cis = $rs->all;
+    my @found_cis = $rs->all;
     
     if ( $opts{mids_only} ) {
-        @cis = map { +{ mid => $_->{mid}, ci_rel=>$tree_relations->{$_->{mid}}  } } @cis;
+        @found_cis = map { +{ mid => $_->{mid}, ci_rel=>$tree_relations->{$_->{mid}}  } } @found_cis;
     } elsif ( !$opts{docs_only} ) {
         my $to_ci;
         $to_ci = sub {
@@ -863,12 +863,12 @@ sub related {
             $ci->{ci_rel} = [ map { $to_ci->($_) } _array( $tree_relations->{ $_->{mid} } ) ]; # put ci_rel back in
             $ci
         };
-        @cis = map { $to_ci->($_) } @cis;
-        @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+        @found_cis = map { $to_ci->($_) } @found_cis;
+        @found_cis = $self_or_class->_filter_cis( %opts, _cis=>\@found_cis ) unless $opts{filter_early};
     } else {
-        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
+        @found_cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @found_cis;
      }
-    return @cis;
+    return @found_cis;
 }
 
 sub parents {

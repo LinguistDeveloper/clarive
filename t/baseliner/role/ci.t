@@ -64,7 +64,7 @@ subtest 'returns false when deleting deleted ci' => sub {
 subtest 'children store into parent' => sub {
     _setup();
 
-    my $chi = BaselinerX::CI::TestClass->new(@_);
+    my $chi = BaselinerX::CI::TestClass->new;
     my $chi_mid = $chi->save;
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
@@ -74,10 +74,110 @@ subtest 'children store into parent' => sub {
     is $dad2->kids->[0]->mid, $chi_mid;
 };
 
+subtest 'children retrieved as array but stored as value' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new( kids=>$chi_mid );
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+subtest 'children retrieved as array but stored as value in method' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new;
+    $dad->kids( $chi_mid );
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+subtest 'children retrieved as array but stored as array in method' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new;
+    $dad->kids( $chi_mid );
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+###########################################################################################
+
+subtest 'children obj store into parent' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi]);
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+subtest 'children retrieved as array but obj stored as value' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new( kids=>$chi);
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+subtest 'children retrieved as array but obj stored as value in method' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new;
+    $dad->kids( $chi );
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+subtest 'children retrieved as array but obj stored as array in method' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new;
+    $dad->kids( $chi );
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    is $dad2->kids->[0]->mid, $chi_mid;
+};
+
+
+########################################################################
+
 subtest 'related cis returns docs only' => sub {
     _setup();
 
-    my $chi = BaselinerX::CI::TestClass->new(@_);
+    my $chi = BaselinerX::CI::TestClass->new;
     my $chi_mid = $chi->save;
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
@@ -92,7 +192,7 @@ subtest 'related cis returns docs only' => sub {
 subtest 'related cis returns ci object' => sub {
     _setup();
 
-    my $chi = BaselinerX::CI::TestClass->new(@_);
+    my $chi = BaselinerX::CI::TestClass->new;
     my $chi_mid = $chi->save;
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
@@ -107,7 +207,7 @@ subtest 'related cis returns ci object' => sub {
 subtest 'related cis returns mids only' => sub {
     _setup();
 
-    my $chi = BaselinerX::CI::TestClass->new(@_);
+    my $chi = BaselinerX::CI::TestClass->new;
     my $chi_mid = $chi->save;
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
