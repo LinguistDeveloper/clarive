@@ -142,13 +142,16 @@ sub new {
     my $class = shift;
     my (%params) = @_;
 
-    my $self = {};
+    my $self = {
+        headers=>{}
+    };
     bless $self, $class;
 
     return $self;
 }
 
 sub status { }
+sub headers { shift->{headers} }
 
 package FakeContext;
 
