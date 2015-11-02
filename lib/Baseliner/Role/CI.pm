@@ -826,9 +826,9 @@ sub related {
 
     for my $edge ( @edges ){
         $opts{edge} = $edge;
-        push @old_cis, $self_or_class->related_mids( %opts, mid => $mid );
+        push @cis, $self_or_class->related_mids( %opts, mid => $mid );
     }
-    my %edges = map { $_->{mid} => $_->{_edge} } @old_cis;
+    my %edges = map { $_->{mid} => $_->{_edge} } @cis;
 
 
     my @all_cis = ( @cis, map { _array($_) } values %$tree_relations );  
@@ -856,12 +856,18 @@ sub related {
         my $to_ci;
         $to_ci = sub {
             my $ci = ci->new($_->{mid});
+            $ci->{_edge} = $edges{ $_->{mid} } if $edges{ $_->{mid} };
+            $ci->{collection} = $ci->collection;
+            $ci->{ci_class} = ref $ci;
+            $ci->{ci_icon} = $ci->icon;
             $ci->{ci_rel} = [ map { $to_ci->($_) } _array( $tree_relations->{ $_->{mid} } ) ]; # put ci_rel back in
             $ci
         };
         @cis = map { $to_ci->($_) } @cis;
         @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
-    }
+    } else {
+        @cis = map { my $ci = $_; $ci->{_edge} = $edges{$_->{mid}} if $edges{$_->{mid}}; $ci } @cis;
+     }
     return @cis;
 }
 
