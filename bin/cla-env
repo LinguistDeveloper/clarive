@@ -9,7 +9,7 @@ if [ ! -e $PERL ]; then
     PERL=`which perl`
 fi
 export PATH="$BINDIR:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
-export PERL5LIB="$LOCALDIR/perl/lib/perl5/:$PERL5LIB"
+export PERL5LIB="$LOCALDIR/perl/lib/perl5/:$LOCALDIR/lib/perl5/:$PERL5LIB"
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
 
 if [ "$1" == "exec" ]; then
