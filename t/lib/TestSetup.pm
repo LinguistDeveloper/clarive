@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use base 'Exporter';
+use TestUtils;
 
 our @EXPORT_OK = qw(_setup_user _setup_clear _topic_setup);
 

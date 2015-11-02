@@ -1,6 +1,7 @@
 package BaselinerX::CI::project;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use BaselinerX::CI::variable;
 
 with 'Baseliner::Role::CI::Project';
 with 'Baseliner::Role::CI::VariableStash';
@@ -60,15 +61,18 @@ after save_data => sub {
 };
     
 sub merged_variables {
-    my ($self, $bl)=@_;
+    my ($self, $bl,$include_default)=@_;
     $bl //= '*';
-    my $vars = BaselinerX::CI::variable->default_hash($bl);
-    my $variables = ref $self->variables ? $self->variables->{$bl//'*'} : {};
+    $include_default //= 1;
 
-    for my $key ( keys %$variables ) {
-        $vars->{$key} = $variables->{$key}; 
-    }
-
+    my $default_vars = BaselinerX::CI::variable->default_hash($bl);
+    my $variables = ref $self->variables ? $self->variables : {};
+    my $variables_bl = $variables->{$bl} // {};
+    my $variables_any = $variables->{'*'} // {};
+    my $variables_parent = !$self->parent_project 
+        ? {} 
+        : $self->parent_project->merged_variables($bl,0);
+    my $vars = { %$default_vars, %$variables_parent, %$variables_any, %$variables_bl };
     return $vars;
 }
 
