@@ -65,7 +65,7 @@ sub merged_variables {
     $bl //= '*';
     $include_default //= 1;
 
-    my $default_vars = BaselinerX::CI::variable->default_hash($bl);
+    my $default_vars = $include_default ? BaselinerX::CI::variable->default_hash($bl) : {};
     my $variables = ref $self->variables ? $self->variables : {};
     my $variables_bl = $variables->{$bl} // {};
     my $variables_any = $variables->{'*'} // {};
