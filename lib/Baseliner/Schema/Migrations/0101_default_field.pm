@@ -4,7 +4,7 @@ use Moose;
 sub upgrade {
     for my $cat ( mdb->category->find->all ) {
         mdb->category->update(
-            { id => $cat->{id} },
+            { id => $cat->{id}, default_form=>{ '$exists'=>0 } },
             {
                 '$set'   => { default_form  => $cat->{default_field} },
                 '$unset' => { default_field => 1 }
