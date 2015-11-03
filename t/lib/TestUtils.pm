@@ -118,6 +118,7 @@ sub new {
     return $self;
 }
 
+sub content_type {'text/html'}
 sub user_agent { 'Mozilla/1.0' }
 sub address { '127.0.0.1' }
 sub parameters { &params }
@@ -142,16 +143,20 @@ sub new {
     my $class = shift;
     my (%params) = @_;
 
-    my $self = {
-        headers=>{}
-    };
+    my $self = {};
     bless $self, $class;
 
     return $self;
 }
 
 sub status { }
-sub headers { shift->{headers} }
+sub headers {
+    my $self = shift;
+
+    $self->{headers} ||= FakeHeaders->new;
+
+    return $self->{headers};
+}
 
 package FakeContext;
 
@@ -174,6 +179,9 @@ sub new {
 
     return $self;
 }
+
+sub user_languages { ('en') }
+sub languages {}
 
 sub config { shift->{config} }
 
@@ -222,6 +230,7 @@ sub model {
     return $model_class->new;
 }
 
+sub user         { shift->{user} }
 sub username     { shift->{username} }
 sub authenticate { 
     my $self = shift;
@@ -253,5 +262,25 @@ sub user_ci {
     ci->user->search_ci( name=>( $username ) );
 }
 
+package FakeHeaders;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    $self->{headers} = {%params};
+
+    return $self;
+}
+
+sub header {
+    my $self = shift;
+    my ($key) = @_;
+
+    return $self->{headers}->{$key};
+}
 
 1;

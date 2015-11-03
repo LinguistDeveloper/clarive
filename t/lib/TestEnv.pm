@@ -42,6 +42,7 @@ sub setup {
 
     *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
     *Baseliner::config   = sub { {} };
+    *Baseliner::app      = sub { };
 }
 
 1;
