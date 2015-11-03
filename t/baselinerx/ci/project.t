@@ -72,6 +72,15 @@ subtest 'variable from parent' => sub {
     is $prj->merged_variables('TEST')->{var}, 200;
 };
 
+subtest 'variable from parent without any variables' => sub {
+    _setup_clear();
+    my $var = BaselinerX::CI::variable->new( name=>'var', variables=>{ '*'=>44, 'PROD'=>77 } );
+    $var->save;
+    my $dad = BaselinerX::CI::project->new(name=>'dad', variables=>{ '*'=>{ var=>100 }, 'TEST'=>{ var=>200 } } );
+    my $prj = BaselinerX::CI::project->new(name=>'prj', parent_project=>$dad );
+    is $prj->merged_variables('TEST')->{var}, 200;
+};
+
 subtest 'variable any bl is before parent' => sub {
     _setup_clear();
     my $var = BaselinerX::CI::variable->new( name=>'var', variables=>{ '*'=>44, 'PROD'=>77 } );
