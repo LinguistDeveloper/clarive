@@ -21,6 +21,7 @@ sub cleanup_cis {
     mdb->master->drop;
     mdb->master_doc->drop;
     mdb->master_rel->drop;
+    mdb->collection('seq')->drop;
 }
 
 sub registry {

@@ -16,9 +16,7 @@ use BaselinerX::Type::Fieldlet;
 
 sub _setup_clear {
     Baseliner::Core::Registry->clear();
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
+    TestUtils->cleanup_cis();
     TestUtils->register_ci_events();
 }
 
@@ -31,9 +29,7 @@ sub _setup_user {
 
 sub _topic_setup {
     mdb->topic->drop;
-    mdb->master->drop;
-    mdb->master_doc->drop;
-    mdb->master_rel->drop;
+    TestUtils->cleanup_cis();
     mdb->category->drop;
     mdb->rule->drop;
 
