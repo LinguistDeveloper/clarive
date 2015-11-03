@@ -33,6 +33,10 @@ All root / urls are installed here.
 
 =cut
 
+sub begin : Private {  # placeholder so we don't break people who actually do a forward here
+	my ($self,$c) = @_;
+}
+
 sub response_headers {
     my ( $self, $c ) = @_;
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
