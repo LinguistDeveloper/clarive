@@ -1712,7 +1712,15 @@ _warn $p;
             $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
         }
     }
+    if ($p->{query}){
+        $users_friends = [grep { $_ =~ /$p->{query}/ } _array $users_friends];
+    }
     my $row = ci->user->find({username => mdb->in($users_friends)})->sort({realname => 1});
+    my $start = $p->{start} // 0;
+    my $limit = $p->{limit} // 10;
+    $row->skip($start);
+    $row->limit($limit);
+    my $cnt = $row->count;
     if($row){
         while( my $r = $row->next ) {
             push @rows,
@@ -1723,7 +1731,7 @@ _warn $p;
               };
         }  
     }
-    $c->stash->{json} = { data=>\@rows };
+    $c->stash->{json} = { totalCount => $cnt, data=>\@rows };
     $c->forward('View::JSON');
 }
 

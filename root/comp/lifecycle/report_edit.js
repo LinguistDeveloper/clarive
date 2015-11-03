@@ -130,19 +130,23 @@
                 if (ci_class != undefined && ci_class != '') {
                     field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:false, 'class': ci_class, security: true });
                 }else{
-                    var filter = pn.attributes.filter;
+                    var filter = pn.attributes.filter || 'none';
                     if(meta_type == 'user'){
                         var user_box_store = new Baseliner.Topic.StoreUsers({
                             autoLoad: true,
-                            baseParams: { roles: filter }
+                            baseParams: { roles: filter, start: 0, limit: 9999 }
                         });
-
                         field = new Baseliner.model.Users({
                             fieldLabel: pn.text,
                             name: 'value',
                             store: user_box_store,
                             value: attr.value,
-                            singleMode: false
+                            singleMode: false,
+                            mode: 'local',
+                            pageSize: 0
+                        });
+                        user_box_store.on('load',function(){
+                            field.setValue( attr.value ) ;            
                         });
                     } else {
                         var topic_box_store = new Baseliner.store.Topics({

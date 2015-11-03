@@ -667,90 +667,90 @@ sub get_where {
 
 	map {
 		if (!exists $_->{category} || $_->{category} eq $name_category){
-			my $field=$_;
-			my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
-			my @chi = _array($field->{children});
-			
-			#_log ">>>>>>>>>>>>>>>>>>>>>>>ID_FIELD: " . $_->{id_field};
-			#_log ">>>>>>>>>>>>>>>>>>>>>>>ID XXXXXXX: " . _dump $field;
-			
-			for my $val ( @chi ) {
-				my $id_field_category = $id . "_$name_category";
-				my $cond;
-				#_log ">>>>>>>>>>>>>>>>>>>>>>>CHILDREN: " . _dump $val;
-				if(exists $dynamic_filter{$id_field_category} && $dynamic_filter{$id_field_category}->{category} eq $name_category ) {
-					given ($dynamic_filter{$id_field_category}->{type}) {
-						when ('numeric') {
-							for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
-								if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
-									$cond = $dynamic_filter{$id_field_category}->{value}[$i];
-								}else{
-									$cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];
-								}
-							}
-						};
-						when ('list') {
-							my @parse;
-							for my $value (_array $dynamic_filter{$id_field_category}->{value}){
-								if( $value eq '-1'){
-									push @parse, '';
-									push @parse, undef;
-									push @parse, [];
-								}else{
-									push @parse, $value;	
-								}
-							}
-							if (scalar @parse > 1){
-								$cond = { '$in' => \@parse };	
-							}else{
-								$cond = $parse[0];	
-							}
-						};
-						when ('string') {
-							if( $val->{oper} =~ /^(like|not_like)$/ || $val->{value} eq 'default' ) {
-								#filtros join tratamiento mid string
-								if ($val->{where} eq 'ci'){
-									$cond = $dynamic_filter{$id_field_category}->{value};		
-								}
-								else{
-									$val->{value} = qr/$dynamic_filter{$id_field_category}->{value}/i;
-									if ($val->{oper} eq 'not_like'){
-										$cond = { '$not' => $val->{value} };	
-									}else{
-										$cond = $val->{value};	
-									}	
-								}
-							}else{
-								$val->{value} = $dynamic_filter{$id_field_category}->{value};
-								if ($val->{oper}){
-									$cond = { $val->{oper} => $val->{value}  };
-								}else{
-									$cond = $val->{value};
-								}
-							}
-						};
-						when ('date') {
-							for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
-								if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
-									$cond = $dynamic_filter{$id_field_category}->{value}[$i];	
-								}else{
-									$cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];	
-								}
-							}
-						}
-					}
-					$where->{$id} = $cond;
-				}
-				else{
-					if($val->{value}){
-						given ($val->{field}) {
-							when ('number') {
-								if($val->{value} ne 'default'){
-									if (exists $where->{$id}){
-										$where->{$id}->{$val->{oper}} = $val->{value} + 0;
-									}else{
-										$cond = { $val->{oper} => $val->{value} + 0 };
-										$where->{$id} = $cond;	
+            my $field=$_;
+            my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
+            my @chi = _array($field->{children});
+            
+            # _log ">>>>>>>>>>>>>>>>>>>>>>>ID_FIELD: " . $_->{id_field};
+            # _log ">>>>>>>>>>>>>>>>>>>>>>>ID XXXXXXX: " . _dump $field;
+            
+            for my $val ( @chi ) {
+                my $id_field_category = $id . "_$name_category";
+                my $cond;
+                #_log ">>>>>>>>>>>>>>>>>>>>>>>CHILDREN: " . _dump $val;
+                if(exists $dynamic_filter{$id_field_category} && $dynamic_filter{$id_field_category}->{category} eq $name_category ) {
+                    given ($dynamic_filter{$id_field_category}->{type}) {
+                        when ('numeric') {
+                            for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
+                                if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
+                                    $cond = $dynamic_filter{$id_field_category}->{value}[$i];
+                                }else{
+                                    $cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];
+                                }
+                            }
+                        };
+                        when ('list') {
+                            my @parse;
+                            for my $value (_array $dynamic_filter{$id_field_category}->{value}){
+                                if( $value eq '-1'){
+                                    push @parse, '';
+                                    push @parse, undef;
+                                    push @parse, [];
+                                }else{
+                                    push @parse, $value;    
+                                }
+                            }
+                            if (scalar @parse > 1){
+                                $cond = { '$in' => \@parse };   
+                            }else{
+                                $cond = $parse[0];  
+                            }
+                        };
+                        when ('string') {
+                            if( $val->{oper} =~ /^(like|not_like)$/ || $val->{value} eq 'default' ) {
+                                #filtros join tratamiento mid string
+                                if ($val->{where} eq 'ci'){
+                                    $cond = $dynamic_filter{$id_field_category}->{value};       
+                                }
+                                else{
+                                    $val->{value} = qr/$dynamic_filter{$id_field_category}->{value}/i;
+                                    if ($val->{oper} eq 'not_like'){
+                                        $cond = { '$not' => $val->{value} };    
+                                    }else{
+                                        $cond = $val->{value};  
+                                    }   
+                                }
+                            }else{
+                                $val->{value} = $dynamic_filter{$id_field_category}->{value};
+                                if ($val->{oper}){
+                                    $cond = { $val->{oper} => $val->{value}  };
+                                }else{
+                                    $cond = $val->{value};
+                                }
+                            }
+                        };
+                        when ('date') {
+                            for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
+                                if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
+                                    $cond = $dynamic_filter{$id_field_category}->{value}[$i];   
+                                }else{
+                                    $cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];    
+                                }
+                            }
+                        }
+                    }
+                    $where->{$id} = $cond;
+                }
+                else{
+                    if($val->{value}){
+                        given ($val->{field}) {
+                            when ('number') {
+                                if($val->{value} ne 'default'){
+                                    if (exists $where->{$id}){
+                                        $where->{$id}->{$val->{oper}} = $val->{value} + 0;
+                                    }else{
+                                        $cond = { $val->{oper} => $val->{value} + 0 };
+                                        $where->{$id} = $cond;  
 									}
 								}
 							}
@@ -799,7 +799,21 @@ sub get_where {
 										$where->{$id} = $cond;
 									}
 								}
-							}						
+							}
+                            when ('ci') {
+                                if($val->{value} ne 'default'){
+                                    if ($field->{meta_type} eq 'user'){
+                                        $cond = { $val->{oper} => $val->{options} };
+                                    } else {
+                                        if ($val->{oper}){
+                                            $cond = { $val->{oper} => $val->{value} };
+                                        }else{
+                                            $cond = $val->{value};
+                                        }
+                                    }
+                                $where->{$id} = $cond;
+                                }
+                            }   					
 							default{
 								if($val->{value} ne 'default'){
 									if ($val->{oper}){
@@ -988,7 +1002,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     }
 
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
-
     my $rs = $mdb2->topic->find($where);
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;

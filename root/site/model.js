@@ -138,7 +138,7 @@ Baseliner.model.Users = function(c) {
         triggerAction: 'all',
         resizable: true,
         //store: new Baseliner.store.UserProjects({}),
-        mode: 'local',
+        mode: 'remote',
         fieldLabel: _('Assign to'),
         typeAhead: true,
         name: 'users',
@@ -149,6 +149,9 @@ Baseliner.model.Users = function(c) {
         displayFieldTpl: tpl2,
         value: '/',
         extraItemCls: 'x-tag',
+        totalProperty: 'totalCount',
+        pageSize: 10,
+        minChars: 1,
         listeners: {
             newitem: function(bs,v, f){
                 v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
