@@ -8,8 +8,8 @@ sub upgrade {
     mdb->migra->activity_to_status_changes;
     mdb->migra->closed_date;
     mdb->migra->topic_categories_to_rules;
+    mdb->migra->create_initial_dashboards;
     mdb->cache->drop;
-    
 }
 
 sub downgrade {

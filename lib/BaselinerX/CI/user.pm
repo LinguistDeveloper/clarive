@@ -1,6 +1,7 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner;
 use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
