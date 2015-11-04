@@ -1449,19 +1449,24 @@ sub list_admin_category : Local {
         }
 
     } else {
-        my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ status=>1, name_status=>1, category=>1 }) or _fail _loc 'Topic %1 not found', $topic_mid;
-        my $id_category = $doc->{category}{id};
-        my $id_status   = $doc->{status};
+        my ($id_category,$id_status);
+        if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ category_status=>1, name_status=>1, category=>1 }) ) {
+            $id_category = $doc->{category}{id} ;
+            $id_status   = $doc->{category_status}{id};
+        } else {
+            $id_category  = $p->{categoryId};
+            $id_status    = $p->{statusId};
+        }
 
         my @statuses = model->Topic->next_status_for_user(
             id_category    => $id_category,
             id_status_from => $id_status, 
             username       => $c->username,
-            topic_mid      => $topic_mid
+            topic_mid      => $topic_mid,
         );
 
         my $current_status = ci->status->find_one({ id_status=>"$id_status" }) or _fail( _loc('Status not found: %1', $id_status ) );
-        my $status_name = _loc( $doc->{name_status} || $current_status->{name} );
+        my $status_name = _loc( $current_status->{name} );
         push @rows, { 
             id          => $id_status,
             name        => $status_name,
