@@ -44,6 +44,26 @@ sub list_roles {
     } grep /^Baseliner::Role::CI/, keys %cl;
 }
 
+sub create_initial_dashboards {
+    # Remove old data
+
+    if ( !mdb->rule->count({rule_type=>'dashboard'}) ) {
+        mdb->role->update({},{ '$rename'=>{ dashboards => 'dashboards_old'}},{multiple=>1} );
+        for my $user ( ci->user->search_cis() ) {
+            $user->dashboard('');
+            $user->save;
+        }
+        my $default_dashboards = Util->_load(get_initial_dashboards());# || _fail _loc 'Could not find default dashboard data!';
+        for my $dashboard ( _array($default_dashboards) ) {
+            my $id = mdb->seq('rule');
+            mdb->rule->insert({ %$dashboard, ts=>mdb->ts, rule_seq=>0+$id, id=>"$id", username => "clarive" });
+            if ( $dashboard->{default_dashboard} ) {
+                mdb->role->update({},{ '$set'=>{ dashboards => ["$id"]}},{multiple=>1} );
+            }
+        }
+    }
+}
+
 sub topic_categories_to_rules {
     Util->_fail('System already has form rules. Remove them before migrating.')
             if mdb->rule->find({rule_type=>mdb->in('form','fieldlets') })->count;
@@ -1629,6 +1649,86 @@ package Baseliner::Schema::Migra::MongoMigration::Wrap {
     }
 }
 
+sub get_initial_dashboards {
+    q{---
+- rule_active: '1'
+  rule_compile_mode: none
+  rule_name: Topics
+  rule_tree: '[{"attributes":{"icon":"/static/images/icons/let.gif","palette":false,"disabled":false,"on_drop_js":null,"key":"statement.var.set_expr","who":"root","text":"SET
+    six_months_ago","expanded":true,"id":"rule-ext-gen10859-1431204661737","run_sub":true,"leaf":true,"ts":"2015-05-03T16:58:32","name":"SET
+    EXPR","active":1,"holds_children":false,"data":{"expr":"my $now = Class::Date->now();\n''''.($now
+    - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-19T00:41:12","active":1,"name":"Topics
+    chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_status","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"Open
+    topics by status","expanded":true,"id":"rule-ext-gen4064-1446676193430","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-19T00:41:23","active":1,"name":"Topics
+    chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","group_by":"topics_by_category","type":"donut","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"Open
+    topics by category","expanded":true,"id":"rule-ext-gen4125-1446676206883","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-11-04T23:32:30","active":1,"name":"Topics
+    chart","data":{"rows":"1","columns":"4","autorefresh":"0","type":"donut","group_by":"topics_by_category","group_threshold":"5","categories":"","statuses":"","condition":"{\"category_status.type\":\"I\"}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"Unatended
+    topics by category","expanded":true,"id":"rule-ext-gen4302-1446676303600","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-18T22:56:51","name":"Topics
+    burndown","active":1,"data":{"date_type":"today","autorefresh":"0","date_field":"created_on","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
+    topics burndown","expanded":true,"id":"rule-ext-gen10861-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","isTarget":false,"html":"","text":"Topics
+    burndown - two weeks","key":"dashlet.topic.topics_period_burndown","leaf":true,"id":"rule-ext-gen5637-1446676660439","name":"Topics
+    period burndown","data":{"rows":"1","columns":"6","autorefresh":"0","date_field":"created_on","type":"area","group":"day","days_before":"-7","days_after":"7","categories":""},"ts":"2015-11-04T23:42:16","who":"root","expanded":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-15T09:31:46","name":"Topics
+    by date line chart","active":1,"data":{"days_until":"","days_from":"-365","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"6","type":"stack-area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
+    created monthly - Last year","expanded":true,"id":"rule-ext-gen10863-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-11-04T23:35:24","name":"Topics
+    by date line chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","statuses":"","condition":"","days_from":"-30","days_until":"","date_field":"created_on","group":"day","type":"stack-area"},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
+    created daily - Last month","expanded":true,"id":"rule-ext-gen4853-1446676471109","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-11-04T23:34:16","name":"List
+    topics","active":1,"data":{"rows":"1","columns":"12","autorefresh":60000,"fields":"","limit":"100","categories":"","statuses":"","assigned_to":"","condition":"{\"created_on\":{\"$lte\":\"${six_months_ago}\"},\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","html":"","who":"root","text":"Open
+    topics older than 6 months","expanded":true,"id":"rule-ext-gen10864-1431204661742","leaf":true},"children":[]}]'
+  rule_type: dashboard
+- rule_active: '1'
+  rule_compile_mode: none
+  rule_name: Releases
+  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
+    by date line chart","active":1,"data":{"days_until":"0","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","type":"area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
+    created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","isTarget":false,"html":"","text":"Releases
+    aprobadas","key":"dashlet.topic.number_of_topics","leaf":true,"id":"rule-ext-gen6948-1431424514648","name":"Topics
+    chart","data":{"rows":"1","columns":"4","autorefresh":"0","statuses":"122","categories":["7","44","45"],"condition":"","group_threshold":"5","type":"donut","group_by":"topics_by_category"},"ts":"2015-05-12T11:55:47","who":"root","expanded":false},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:38","name":"Topics
+    burndown","active":1,"data":{"date_type":"yesterday","autorefresh":"0","date_field":"scheduled_start_date","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Yesterday''s
+    topics burndown","expanded":false,"id":"rule-ext-gen12565-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-08T03:59:44","name":"Topics
+    burndown","active":1,"data":{"date_type":"today","autorefresh":"0","date_field":"scheduled_start_date","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
+    topics burndown","expanded":false,"id":"rule-ext-gen12566-1431198379636","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-11T16:01:34","active":1,"name":"Topics
+    chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"6","group_by":"topics_by_status","type":"pie","statuses":"","condition":""},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"Topics
+    chart","expanded":false,"id":"rule-ext-gen5382-1431341288631","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-08T03:56:48","active":1,"name":"List
+    topics","data":{"categories":"","rows":"1","autorefresh":"0","fields":"","columns":"8","assigned_to":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"Open
+    topics","expanded":false,"id":"rule-ext-gen12568-1431198379636","leaf":true},"children":[]}]'
+  rule_type: dashboard
+- default_dashboard: '1'
+  rule_active: '1'
+  rule_name: Main
+  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"ts":"2015-11-04T23:52:20","name":"Topics
+    chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","type":"donut","group_by":"topics_by_status","group_threshold":"5","categories":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"My
+    open topics by status","expanded":true,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"ts":"2015-11-04T23:52:24","name":"Topics
+    chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","type":"donut","group_by":"topics_by_category","group_threshold":"5","categories":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"My
+    open topics by category","expanded":true,"id":"rule-ext-gen4884-1431988740944","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_curve.png","palette":false,"disabled":false,"ts":"2015-11-04T23:52:29","active":1,"name":"Topics
+    time line","data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","statuses":"","condition":"","days_from":"-60","days_until":"","date_field":"created_on","group":"month","type":"stack-area"},"key":"dashlet.topic.topics_by_date_line","who":"root","html":"","text":"Topics
+    open last trimester","expanded":true,"id":"rule-ext-gen8029-1431988988253","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-11-04T23:52:33","active":1,"name":"List
+    topics","data":{"rows":"1","columns":"6","autorefresh":"0","fields":"","limit":"100","categories":"","statuses":"","assigned_to":"Actual","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"My
+    open topics","expanded":true,"id":"rule-ext-gen8196-1431989095468","leaf":true},"children":[]}]'
+  rule_type: dashboard
+- rule_active: '1'
+  rule_name: Operations
+  rule_tree: '[{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-11T02:26:00","active":1,"name":"List
+    jobs","data":{"autorefresh":"0","states":["APPROVAL","PAUSED","TRAPPED","TRAPPED_PAUSED","PENDING","READY","RUNNING","WAITING","IN-EDIT","RESUME"],"columns":"6","limit":"100","bls":[],"rows":"1"},"key":"dashlet.job.list_jobs","who":"root","html":"","text":"Pending
+    jobs","expanded":true,"id":"rule-ext-gen16612-1431299434041","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-11T02:27:28","active":1,"name":"List
+    jobs","data":{"autorefresh":"0","not_in_states":"on","states":["APPROVAL","PAUSED","TRAPPED","TRAPPED_PAUSED","PENDING","READY","RUNNING","WAITING","IN-EDIT","RESUME"],"columns":"6","limit":"100","bls":[],"rows":"1"},"key":"dashlet.job.list_jobs","who":"root","html":"","text":"Last
+    finished jobs","expanded":true,"id":"rule-ext-gen20048-1431304009089","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-14T13:30:01","name":"Job
+    daily day_distribution","active":1,"data":{"autorefresh":"0","period":"1Y","columns":"6","type":"stack-area","bls":[],"rows":"1","joined":"0"},"key":"dashlet.job.day_distribution","html":"","who":"root","text":"Job
+    daily distribution - By BL","expanded":true,"id":"rule-ext-gen9103-1431252639222","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","disabled":false,"ts":"2015-05-14T13:30:13","name":"Job
+    daily day_distribution","active":1,"data":{"autorefresh":"0","period":"1Y","columns":"6","type":"stack-area","bls":[],"rows":"1","joined":"1"},"key":"dashlet.job.day_distribution","html":"","who":"root","text":"Job
+    daily distribution - Total","expanded":true,"id":"rule-ext-gen14674-1431291038500","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-11-04T23:28:47","active":1,"name":"Last
+    jobs by app","data":{"rows":"1","columns":"6","autorefresh":"0","bls":[]},"key":"dashlet.job.last_jobs","who":"root","html":"","text":"Last
+    jobs by app","expanded":true,"id":"rule-ext-gen14889-1431292551790","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-11-04T23:28:50","active":1,"name":"List
+    topics","data":{"rows":"1","columns":"6","autorefresh":"0","fields":"","limit":"100","categories":"","statuses":"","assigned_to":"","condition":"{\"category.is_changeset\":\"1\"}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"List
+    changesets","expanded":true,"id":"rule-ext-gen22244-1431335627966","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    status - Last month","expanded":true,"semaphore_key":"","id":"rule-ext-gen2131-1446675950183","leaf":true,"ts":"2015-05-11T08:57:58","active":1,"name":"Job
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","trap_rollback":true,"data":{"period":"1M","trap_timeout_action":"abort","parallel_mode":"none","error_trap":"none","rows":"1","sub_name":"","needs_rollback_mode":"none","autorefresh":"0","needs_rollback_key":"<always>","timeout":"","data_key":"","trap_timeout":"0","columns":"4","semaphore_key":"","type":"donut"},"error_trap":"none","note":"","needs_rollback_mode":"none","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    status - Last quarter","expanded":true,"semaphore_key":"","id":"rule-ext-gen2191-1446675966142","leaf":true,"ts":"2015-05-15T18:48:42","active":1,"name":"Job
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","trap_rollback":true,"data":{"autorefresh":"0","period":"3M","columns":"4","type":"donut","bls":[],"rows":"1"},"error_trap":"none","note":"","needs_rollback_mode":"none","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"key":"dashlet.job.chart","who":"root","html":"","timeout":"","text":"Job
+    status - Last year","expanded":true,"semaphore_key":"","id":"rule-ext-gen2251-1446675974337","leaf":true,"ts":"2015-05-11T08:57:30","active":1,"name":"Job
+    Status pie","trap_timeout_action":"abort","parallel_mode":"none","trap_rollback":true,"data":{"period":"1Y","trap_timeout_action":"abort","parallel_mode":"none","error_trap":"none","rows":"1","sub_name":"","needs_rollback_mode":"none","autorefresh":60000,"needs_rollback_key":"<always>","timeout":"","data_key":"","trap_timeout":"0","columns":"4","semaphore_key":"","type":"donut"},"error_trap":"none","note":"","needs_rollback_mode":"none","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]}]'
+  rule_type: dashboard
+}
+}
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
@@ -1693,4 +1793,3 @@ __END__
 - bali_topic_status
 - bali_topic_view
 - bali_user
-
