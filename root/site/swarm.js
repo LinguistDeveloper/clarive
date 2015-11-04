@@ -604,8 +604,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                                 self.del(row);
 
-                            }
-                        
+                            }                
 
                     }
                 }
@@ -622,7 +621,6 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                 self.date=row.t;
                 self.cambio_realtime=false;
-
 
             }
             //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);

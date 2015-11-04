@@ -783,7 +783,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     initComponent: function(c){
         var self = this;
         var params = self;
-        
         self.view_is_dirty = false;
         self.form_is_loaded = false;
         self.ii = self.id;  // used by the detail page
@@ -951,6 +950,16 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
             
+        self.btn_life_cicle = new Ext.Toolbar.Button({
+            icon:'/static/images/icons/loop.gif',
+            cls: 'x-btn-icon',
+            enableToggle: true, 
+            tooltip: _('Open life cicle'),
+            handler: function(){ self.show_life_cicle() }
+            //hidden: self.viewKanban==undefined?true:!self.viewKanban,
+            //allowDepress: false, toggleGroup: self.toggle_group
+        });
+
         self.btn_graph = new Ext.Toolbar.Button({
             icon:'/static/images/icons/ci-grey.png',
             cls: 'x-btn-icon',
@@ -1017,7 +1026,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.items = [ self.loading_panel, self.detail ];
         
         Baseliner.TopicMain.superclass.initComponent.call(this);
-
         self.on('afterrender', function(){      
             new Ext.KeyMap( self.el, {
                 key: 's', ctrl: true, scope: self.el,
@@ -1216,8 +1224,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_change_status,
                 self.btn_docgen,
                 self.btn_graph,
-                self.btn_kanban
+                self.btn_kanban,
+                self.btn_life_cicle
             ]
+
         });
         return tb;
     },
@@ -1225,6 +1235,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
         var win = window.open( url, '_blank' );
+    },
+    show_life_cicle: function(){
+        var self = this;
+        Baseliner.ajaxEval('/site/lifeCicle.js', {id_category: self.id_category}, function(res){
+            Cla.use('/static/gojs/go-debug.js', function(){
+                self.w = new Ext.Panel({
+                    layout: 'card',  
+                    activeItem: 0,
+                    items: [res]
+                });
+                
+                //self.on('afterrender', function() {
+                    self.add(self.w);
+                    self.getLayout().setActiveItem( self.w );
+                //}
+            });
+
+        });
+
     },
     show_kanban : function(){
         var self = this;

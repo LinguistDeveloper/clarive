@@ -646,7 +646,6 @@ sub view : Local {
             $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
             my $has_permission_link = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
             $c->stash->{permissionJobsLink} = 1 if exists $categories_jobs{$id_category} && $has_permission_link;
-            
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
         }
@@ -660,12 +659,13 @@ sub view : Local {
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
             $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>$write_action );
-            
             $c->stash->{topic_meta} = $meta;
             $c->stash->{topic_data} = $data;
-            
             $c->stash->{template} = '/comp/topic/topic_msg.html';
         } else {
+            my $topic_temp = ci->new($topic_mid);
+            my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
+            $c->stash->{id_category} = $topic_temp->{id_category};
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {
