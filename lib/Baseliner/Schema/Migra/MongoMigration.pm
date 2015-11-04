@@ -178,6 +178,8 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.ci_grid';
             }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js'){
                 $attributes->{key} = 'fieldlet.system.topics';
+            }elsif(!$fieldlet->{params}->{js} && $fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/origin_issue_pie.html'){
+                $attributes->{key} = 'fieldlet.status_chart_pie';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
@@ -310,8 +312,7 @@ sub map_registors {
             my $unique_key;
            # _log "==>".$reg->{registry_node}->{param}->{html}."===>".$reg->{registry_node}->{param}->{js};
             if($reg->{registry_node}->{param}->{html} and $reg->{registry_node}->{param}->{js}){
-                if($reg->{registry_node}->{param}->{html} eq '/fields/templates/html/status_chart_pie.html' 
-                    and $find_propios->{'/fields/templates/html/status_chart_pie.html'} ){     
+                if($reg->{registry_node}->{param}->{html} eq '/fields/templates/html/status_chart_pie.html' and $find_propios->{'/fields/templates/html/status_chart_pie.html'} ){
                     $unique_key = '/fields/templates/html/status_chart_pie.html';
                 }else{
                     $unique_key = $reg->{registry_node}->{param}->{html} . $reg->{registry_node}->{param}->{js};
