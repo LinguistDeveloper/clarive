@@ -14,24 +14,8 @@ use Baseliner::CI;
 use Clarive::ci;
 use Baseliner::Core::Registry;
 use Baseliner::Role::CI;
-
-package BaselinerX::CI::TestClass {
-    use Moose;
-
-    sub icon {'123'}
-    BEGIN { with 'Baseliner::Role::CI'; }
-}
-
-package BaselinerX::CI::TestParentClass {
-    use Baseliner::Moose;
-    use Baseliner::Utils;
-
-    sub icon {'123'}
-    BEGIN { with 'Baseliner::Role::CI'; }
-
-    has_cis 'kids';
-    sub rel_type { { kids       => [ from_mid => 'parent_kid'], }, }
-}
+use BaselinerX::CI::TestClass;
+use BaselinerX::CI::TestParentClass;
 
 subtest 'returns true when deleting ci' => sub {
     _setup();
@@ -64,7 +48,7 @@ subtest 'returns false when deleting deleted ci' => sub {
 subtest 'children store into parent' => sub {
     _setup();
 
-    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi = _build_ci();
     my $chi_mid = $chi->save;
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
