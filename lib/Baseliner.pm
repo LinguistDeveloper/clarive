@@ -91,6 +91,10 @@ after 'setup_finalize' => sub {
     my $precompile = $app->config->{rule_precompile};
     # Precompile rules?
     $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
+
+    for my $key ( keys %{Baseliner->config}) {
+        Clarive->config->{$key}  = Baseliner->config->{$key};
+    }
 };
 
 # setup the DB package
