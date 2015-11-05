@@ -1,7 +1,6 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
-use Baseliner;
 use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
@@ -15,7 +14,7 @@ has realname            => qw(is rw isa Any);
 has alias               => qw(is rw isa Any);
 has project_security    => qw(is rw isa Any), default => sub { +{} };
 has dashboard           => qw(is rw isa Any);
-has language_pref       => qw(is rw isa Any), default=>Baseliner->config->{default_lang};
+has language_pref       => qw(is rw isa Any), default=>Clarive->config->{default_lang};
 has date_format_pref    => qw(is rw isa Str default format_from_local);
 has time_format_pref    => qw(is rw isa Str default format_from_local);
 has timezone_pref    => qw(is rw isa Str default server_timezone);
@@ -26,7 +25,7 @@ has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
 
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1, 
-    default=>sub{ [ Util->_array(Baseliner->config->{default_lang} // 'en') ] });
+    default=>sub{ [ Util->_array(Clarive->config->{default_lang} // 'en') ] });
 
 sub icon { '/static/images/icons/user.gif' }
 
@@ -41,7 +40,7 @@ sub workspace_create {
     # decode data structures
     $p->{id_workspace} = $id;
     if( $p->{password} ) {
-        my $key = Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key};
+        my $key = Clarive->config->{decrypt_key} // Clarive->config->{dec_key};
         die "Error: missing 'decrypt_key' config parameter" unless length $key;
         my $b = Crypt::Blowfish::Mod->new( $key );
         $p->{password} = $b->encrypt( $p->{password} // '' ); 
@@ -96,15 +95,15 @@ sub prefs_save {
 
 sub encrypt_password {
     my ($self, $username, $password) = @_;
-    if( my $password_rule = Baseliner->config->{password_rule} ) {
-        Util->_fail( Util->_loc('Password does not comply. Rule: %1', Baseliner->config->{password_rule_description} // $password_rule ) )
+    if( my $password_rule = Clarive->config->{password_rule} ) {
+        Util->_fail( Util->_loc('Password does not comply. Rule: %1', Clarive->config->{password_rule_description} // $password_rule ) )
             unless $password =~ qr/$password_rule/;
     }
-    if( my $password_len = Baseliner->config->{password_min_length} ) {
+    if( my $password_len = Clarive->config->{password_min_length} ) {
         Util->_fail( Util->_loc('Password length is less than %1 characters. Rule: %1', $password_len ) )
            if $password_len > 0 && length($password)<$password_len;
     }
-    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} // '' ) .reverse ( $username );
+    my $user_key = ( Clarive->config->{decrypt_key} // Clarive->config->{dec_key} // '' ) .reverse ( $username );
     require Crypt::Blowfish::Mod;
     my $b = Crypt::Blowfish::Mod->new( $user_key );
     return Digest::MD5::md5_hex( $b->encrypt($password) );    
