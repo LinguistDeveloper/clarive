@@ -290,7 +290,8 @@
             width: 70,
             handler: function(){
                 var form = form_user.getForm();
-                var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+
+                var action = form.getValues()['id'] != '-1' ? 'update' : 'add';
                 
                 if (form.isValid()) {
                     var swDo = true;
@@ -321,6 +322,7 @@
                             win.setTitle(_('Edit user'));
                             },
                             failure: function(f,a){
+                                
                             Ext.Msg.show({  
                                 title: _('Information'), 
                                 msg: a.result.msg , 
@@ -797,6 +799,7 @@
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
+alert('hola');
         var sm = grid.getSelectionModel();
             if (sm.hasSelection()) {
                 var sel = sm.getSelected();
