@@ -1,5 +1,8 @@
 package Baseliner::Types;
 
+use Class::Date;
+use Time::Local ();
+use Baseliner::Utils;
 use Moose::Util::TypeConstraints;
 
 subtype BoolCheckbox => as 'Bool';
@@ -11,16 +14,16 @@ subtype BL           => as 'Maybe[Str]';
 
 subtype 'PositiveInt', as 'Int', where { $_ >= 0 };
 
-subtype 'SortDirection', as 'Str', where { $_ eq 'asc' || $_ eq 'desc' };
+subtype 'SortDirection', as 'Str', where { lc($_) eq 'asc' || lc($_) eq 'desc' };
 
 subtype 'DateStr', as 'Str', where {
     return unless /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
 
-    return 1;
+    return eval { Time::Local::timelocal( 0, 0, 0, $3, $2 - 1, $1 ); 1; };
 };
 
 subtype 'TimeStr', as 'Str', where {
-    return unless /^(\d\d):(\d\d)(?::(\d\d))$/;
+    return unless /^(\d\d):(\d\d)(?::(\d\d))?$/;
 
     return unless $1 >= 0 && $1 <= 23 && $2 >= 0 && $2 <= 59;
 
@@ -31,7 +34,7 @@ subtype 'TimeStr', as 'Str', where {
     return 1;
 };
 
-subtype 'ID', as 'Str', where { /^\d+$/ };
+subtype 'ID', as 'Str';
 
 coerce 'Date' =>
   from 'Str' => via { Class::Date->new($_) },

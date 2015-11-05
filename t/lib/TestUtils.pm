@@ -13,6 +13,8 @@ use Class::Load ();
 use Class::Refresh ();
 use Clarive::mdb;
 use Clarive::ci;
+use Time::Local;
+use Time::Piece;
 use Test::MockTime qw(set_absolute_time restore_time);
 
 sub cleanup_cis {
@@ -77,9 +79,18 @@ sub mock_catalyst_c {
 }
 
 sub mock_time {
-    my ($time,$cb) = @_;
-    set_absolute_time($time);
+    my ($time, $cb) = @_;
+
+    my @t = localtime(time);
+    my $gmt_offset_in_seconds = timegm(@t) - timelocal(@t);
+
+    my $epoch = $time =~ m/^\d+$/ ? $time : Time::Piece->strptime($time, '%Y-%m-%dT%TZ')->epoch;
+    $epoch -= $gmt_offset_in_seconds;
+
+    set_absolute_time($epoch);
+
     $cb->();
+
     restore_time();
 }
 
@@ -150,13 +161,42 @@ sub new {
     return $self;
 }
 
-sub status { }
 sub headers {
     my $self = shift;
 
     $self->{headers} ||= FakeHeaders->new;
 
     return $self->{headers};
+}
+
+sub status {
+    my $self = shift;
+
+    return $self->{status} unless @_;
+
+    $self->{status} = $_[0];
+
+    return $self;
+}
+
+sub content_type {
+    my $self = shift;
+
+    return $self->{content_type} unless @_;
+
+    $self->{content_type} = $_[0];
+
+    return $self;
+}
+
+sub body {
+    my $self = shift;
+
+    return $self->{body} unless @_;
+
+    $self->{body} = $_[0];
+
+    return $self;
 }
 
 package FakeContext;
@@ -170,9 +210,11 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $self->{stash}        = $params{stash} || {};
-    $self->{session}      = $params{session} || {};
-    $self->{req}          = $params{req};
+    $self->{stash}   = $params{stash}   || {};
+    $self->{session} = $params{session} || {};
+    $self->{req}     = $params{req};
+    $self->{user}    = $params{user};
+    $self->{user_ci} = $params{user_ci};
     $self->{username}     = $params{username};
     $self->{model}        = $params{model};
     $self->{config}       = $params{config} || {};
@@ -247,17 +289,20 @@ sub authenticate {
 
 sub request { &req }
 sub response{ &res }
-sub req     { shift->{req} || FakeRequest->new }
-sub res     { FakeResponse->new }
+sub req     { shift->{req} ||= FakeRequest->new }
+sub res     { shift->{res} ||= FakeResponse->new }
 sub forward { 'FORWARD' }
 sub log { FakeLogger->new }
 sub logout {}
 sub full_logout {}
 
 sub user_ci {
-    my ($c,$username) = @_;
+    my $self = shift;
+    my ($username) = @_;
 
-    $username //= $c->username;
+    return $self->{user_ci} if $self->{user_ci};
+
+    $username //= $self->username;
     return unless $username;
 
     ci->user->search_ci( name=>( $username ) );
