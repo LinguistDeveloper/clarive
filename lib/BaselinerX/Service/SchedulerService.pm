@@ -1,102 +1,134 @@
 package BaselinerX::Service::SchedulerService;
 use Moose;
+
+use POSIX ":sys_wait_h";
+use Baseliner::Sem;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
-use Path::Class;
-#use Try::Tiny;
+use Baseliner::Model::Scheduler;
+use Baseliner::Utils qw(_log);
+use Clarive::mdb;
 
 with 'Baseliner::Role::Service';
-# guardamos aqui el config que recibimos en el run
-has 'config' => ( is=>'rw', isa=>'Any' );
+
+has 'config' => ( is => 'rw', isa => 'Any' );
 
 register 'config.scheduler' => {
-    
     metadata => [
-       { id=>'frequency', label=>'SQA send_ju Daemon Frequency', default => 60 },
-       { id=>'iterations', label=>'Iteraciones del servicio', default => 1000 }
+        { id => 'frequency',  label => 'SQA send_ju Daemon Frequency', default => 60 },
+        { id => 'iterations', label => 'Iteraciones del servicio',     default => 1000 }
     ]
 };
 
-register 'service.scheduler' => {  config   => 'config.scheduler',  icon => '/static/images/icons/daemon.gif',  handler => \&run, }; 
+register 'service.scheduler' => {
+    config  => 'config.scheduler',
+    icon    => '/static/images/icons/daemon.gif',
+    handler => \&run,
+};
 
-sub run { # bucle de demonio aqui
-    my ($self,$c, $config) = @_;
+register 'service.scheduler.run_once' => {
+    config  => 'config.scheduler',
+    icon    => '/static/images/icons/daemon.gif',
+    handler => \&run_once,
+};
+
+register 'service.scheduler.test' => {
+    config  => 'config.scheduler',
+    icon    => '/static/images/icons/daemon.gif',
+    handler => \&scheduler_test
+};
+
+sub run {
+    my ( $self, $c, $config ) = @_;
+
     _log "Starting service.scheduler";
+
     my $iterations = $config->{iterations};
-    require Baseliner::Sem;
-    for( 1..$iterations ) {  # bucle del servicio, se pira a cada 1000, y el dispatcher lo rearranca de nuevo
-        my $sem = Baseliner::Sem->new( key=>'scheduler_daemon', who=>"scheduler_daemon", internal=>1 );
+
+    for ( 1 .. $iterations ) {
+        my $sem = Baseliner::Sem->new( key => 'scheduler_daemon', who => "scheduler_daemon", internal => 1 );
         $sem->take;
-        $self->run_once($c,$config);
-        $self->road_kill($c,$config);
-        if ( $sem ) {
+
+        $self->run_once( $c, $config );
+        $self->road_kill( $c, $config );
+
+        if ($sem) {
             $sem->release;
         }
+
         sleep $config->{frequency};
     }
+
     _log "Ending service.scheduler";
 }
 
-register 'service.scheduler.run_once' => {  config   => 'config.scheduler', icon => '/static/images/icons/daemon.gif',   handler => \&run_once, };
-
-
 sub run_once {
     my ( $self, $c, $config ) = @_;
-    $self->config( $config );
-    my $pid      = '';
 
-    my $sm = Baseliner->model('Sched');
+    $self->config($config);
 
-    my @tasks = $sm->tasks_list( status => 'IDLE');    # find new schedules
+    my $scheduler = $self->_build_scheduler;
+
+    my @tasks = $scheduler->tasks_list( status => 'IDLE' );
+
     _log "Number of tasks to dispatch: " . @tasks;
-    for my $task ( @tasks ) {
-        
-        # TODO create a job for each one, of type "internal", hide from the public view? (according
-        #   to a user defined option 
 
-        $pid = fork;   
-        
-        if ( $pid ) {
-            # parent
-            mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ last_pid=>$pid } });
-        } else {
-            # child
+    for my $task (@tasks) {
+
+        # TODO create a job for each one, of type "internal", hide from the public view? (according
+        #   to a user defined option
+
+        my $pid = fork;
+
+        # Parent
+        if ($pid) {
+        }
+
+        # Child
+        else {
             mdb->disconnect;    # mongo fork protection, will reconnect later
-            
-            $SIG{HUP} = 'DEFAULT';
+
+            $SIG{HUP}  = 'DEFAULT';
             $SIG{TERM} = 'DEFAULT';
             $SIG{STOP} = 'DEFAULT';
-            _log 'Starting to work...';
-            _log "Task ".$task->{description}." started with PID $$";
-            
-            # Run Task
-            $sm->run_task( taskid => $task->{_id}, pid=>$$ );  
 
-            _log "Task ".$task->{description}." finished";
-            
+            _log 'Starting to work...';
+
+            my $description = $task->{description} || $task->{name} || $task->{id};
+
+            _log "Task '$description' started with PID $$";
+
+            $scheduler->run_task( taskid => $task->{_id}, pid => $$ );
+
+            _log "Task '$description' finished";
+
             exit 0;
         }
     }
-    # get rid of zombies
-    BaselinerX::Service::JobDaemon->reap_children();
+
+    waitpid( -1, WNOHANG );
 }
 
 sub road_kill {
     my ( $self, $c, $config ) = @_;
-    $self->config( $config );
 
-    Baseliner->model('Sched')->road_kill; # find new schedules
+    $self->config($config);
+
+    $self->_build_scheduler->road_kill;
 }
-
-register 'service.scheduler.test' => { config => 'config.scheduler', icon => '/static/images/icons/daemon.gif', handler => \&scheduler_test };
 
 sub scheduler_test {
     my ( $self, $c, $config ) = @_;
-    
+
     _log "Service.scheduler.test is now running";
+
     sleep 60;
     return 0;
+}
 
+sub _build_scheduler {
+    my $self = shift;
+
+    return Baseliner::Model::Scheduler->new;
 }
 
 no Moose;
