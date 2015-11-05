@@ -1,6 +1,7 @@
 package BaselinerX::CI::balix_agent;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
+use BaselinerX::Type::Model::ConfigStore;
 use v5.10;
 
 has chunk_size     => qw(is rw lazy 1), default => sub{ 1024 * 1024 }; # 1M
@@ -8,11 +9,13 @@ has wait_frequency => qw(is rw default 5);
 
 has user   => qw(is rw isa Str);
 has key    => qw(is rw isa Str), default=>sub{
-    return  Baseliner->model('ConfigStore')->get('balix_key', value=>1) 
+    return  BaselinerX::Type::Model::ConfigStore->get('balix_key', value=>1) 
         || 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';  
 };
-has port   => qw(is rw isa Num), default=>sub{
-    return  Baseliner->model('ConfigStore')->get('balix_port', value=>1) 
+has port   => qw(is rw isa Num lazy 1), default=>sub{
+    my $self = shift;
+    my $os_port_key = BaselinerX::Type::Model::ConfigStore->get('balix_port_' . $self->os, value=>1);
+    return  $os_port_key // BaselinerX::Type::Model::ConfigStore->get('balix_port', value=>1) 
         || 11800;
 };
 has _blow   => qw(is rw isa Any lazy 1), default => sub {
