@@ -204,9 +204,11 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 name: 'timezone_pref', 
                 value: res.data.timezone_pref || Prefs.timezone || 'server_timezone',
                 data: [ 
-                    ['server_timezone', _('Server Timezone')], 
-                    ['browser_timezone', _('Browser Timezone')]
-                ].concat( Cla.timezone_list )
+                    ['server_timezone', _('Server Timezone (%1)', Prefs.server_timezone)], 
+                    ['browser_timezone', _('My Browser Timezone (now is %1)', moment(Date().now).format('h:mma') )]
+                ].concat( Cla.timezone_list.map(function(tz){ 
+                    tz[1]=String.format("{0} (now is {1})", tz[0], moment(Date().now).tz(tz[0]).format('h:mma')); 
+                    return tz}) )
             });
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
