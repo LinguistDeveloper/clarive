@@ -90,6 +90,13 @@ sub ext_menu {
         $ret->{icon} = $icon;
         $ret->{cls} = 'x-btn-text-icon';
     } 
+
+    my $class = lc $self->{label};
+    $class =~ s{\s+}{-}g;
+
+    $ret->{cls} .= ' ' if $ret->{cls};
+    $ret->{cls} .= "ui-menu-$class";
+
     return $ret;
 }
 no Moose;
