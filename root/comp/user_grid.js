@@ -799,7 +799,7 @@
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
-alert('hola');
+
         var sm = grid.getSelectionModel();
             if (sm.hasSelection()) {
                 var sel = sm.getSelected();
