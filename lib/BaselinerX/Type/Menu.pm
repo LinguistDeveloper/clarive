@@ -51,7 +51,11 @@ sub ext_menu {
     my $title = $self->{title} || $self->{label};
     my $icon  = $self->{icon};
     
+    my $class = lc $self->{label};
+    $class =~ s{\s+}{-}g;
+
     my $comp_data = $self->comp_data;
+    $comp_data->{tab_cls} = "ui-tab-$class";
 
     if( defined $self->{url} ) {
         $comp_data->{tab_icon} //= $icon;
@@ -90,9 +94,6 @@ sub ext_menu {
         $ret->{icon} = $icon;
         $ret->{cls} = 'x-btn-text-icon';
     } 
-
-    my $class = lc $self->{label};
-    $class =~ s{\s+}{-}g;
 
     $ret->{cls} .= ' ' if $ret->{cls};
     $ret->{cls} .= "ui-menu-$class";
