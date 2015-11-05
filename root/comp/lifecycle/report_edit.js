@@ -618,9 +618,9 @@
                 //console.dir(tree_selected.root);
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
-                var action = report_mid > 0 ? 'update':'add';
+                var action = report_mid != '-1' ? 'update':'add';
                 var data = { action:action, data:dd };
-                if( report_mid > 0 ) data.mid = report_mid;
+                if( report_mid != '-1' ) data.mid = report_mid;
                 Baseliner.ci_call( 'report', 'report_update', data, function(res){
                     if( res.success ) {
                         Baseliner.message(_('Success'), res.msg );
