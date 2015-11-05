@@ -98,6 +98,49 @@ subtest 'validates against the rule with args' => sub {
     is_deeply $vresult, { is_valid => 0, errors => { foo => 'INVALID' }, validated_params => {} };
 };
 
+subtest 'validates against the isa' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Int' );
+
+    my $vresult = $validator->validate( { foo => 'abc' } );
+
+    is_deeply $vresult,
+      { is_valid => 0, errors => { foo => q/Validation failed for 'Int' with value abc/ }, validated_params => {} };
+};
+
+subtest 'validates against the isa subtype' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'TimeStr' );
+
+    my $vresult = $validator->validate( { foo => 'abc' } );
+
+    is_deeply $vresult,
+      { is_valid => 0, errors => { foo => q/Validation failed for 'TimeStr' with value abc/ }, validated_params => {} };
+};
+
+subtest 'validates with coersion' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'BoolCheckbox' );
+
+    my $vresult = $validator->validate( { foo => 'on' } );
+
+    is $vresult->{validated_params}->{foo}, 1;
+};
+
+subtest 'validates with forcing value on error' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Int', default => 5, default_on_error => 1 );
+
+    my $vresult = $validator->validate( { foo => 'on' } );
+
+    is $vresult->{is_valid}, 1;
+    is $vresult->{validated_params}->{foo}, 5;
+};
+
 done_testing;
 
 sub _build_validator {
