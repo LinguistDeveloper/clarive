@@ -4,6 +4,7 @@ use v5.10;
 
 use Try::Tiny;
 require Baseliner::CI;
+use Baseliner::Types;
 use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
 use Data::Compare ();

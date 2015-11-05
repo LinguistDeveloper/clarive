@@ -1,6 +1,10 @@
 package Baseliner::CI;
 use strict;
+use Moose::Util::TypeConstraints;
 use Baseliner::Utils;
+use Baseliner::Types;
+use Baseliner::Role::CI;
+
 use Try::Tiny;
 
 our $_no_record = 1;
@@ -10,39 +14,8 @@ our $scope = {};
 
 our $password_hide_str = 'clarive_hidden_pass: ' . ('*' x 30);
 
-use Moose::Util::TypeConstraints;
-use Baseliner::Role::CI;
-subtype CI    => as 'Baseliner::Role::CI';
-subtype CIs   => as 'ArrayRef[CI]';
-subtype BoolCheckbox   => as 'Bool';
-subtype Date  => as 'Class::Date';
-subtype HashJSON       => as 'HashRef';
-subtype TS    => as 'Str';
-subtype DT    => as 'DateTime';
-subtype BL    => as 'Maybe[Str]';
-    
-coerce 'Date' => 
-    from 'Str' => via { Class::Date->new( $_ ) },
-    from 'Num' => via { Class::Date->new( $_ ) },
-    from 'Undef' => via { Class::Date->now };
-    
-coerce 'BL' => 
-    from 'ArrayRef' => via { join ',', @$_ },
-    from 'Undef' => via { '*' };
-
-coerce 'TS' => 
-    from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
-    from 'Class::Date' => via { $_->string },
-    from 'Num' => via { Class::Date->new( $_ )->string },
-    from 'Undef' => via { Class::Date->now->string },
-    from 'Any' => via { Class::Date->now->string };
-
-coerce 'BoolCheckbox' =>
-  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
-
-coerce 'HashJSON' =>
-  from 'Str' => via { Util->_from_json($_) },
-  from 'Undef' => via { +{} };
+subtype CI  => as 'Baseliner::Role::CI';
+subtype CIs => as 'ArrayRef[CI]';
 
 # deprecated, but kept for future reference
 coerce 'CI' =>
