@@ -1140,7 +1140,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             if( $mt =~ /revision|ci|project|user|file/ ) {
                 $row{ '_' . $k } = $v;
                 $row{$k} = $scope_cis{$v} // do {
-                    my @objs = $mdb2->master_doc->find({ mid => mdb->in( _array($v) ) },{ _id => 0 } )->all;
+                    my @objs = $mdb2->master_doc->find({ '$or' => [{name => mdb->in(_array $v) },{ mid => mdb->in( _array($v) )}]},{ _id => 0 } )->all;
                     my @values;
                     if (@objs) {
                         for my $obj (@objs) {
