@@ -28,7 +28,7 @@ sub gridtree : Local {
     $c->forward('View::JSON');
 }
 
-# list - used by the west navigator
+# list - used by the explorer (west treepanel)
 sub list : Local {
     my ($self, $c) = @_;
     local $Baseliner::CI::get_form = 1;
@@ -36,7 +36,7 @@ sub list : Local {
     $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
 
-    @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
+    @tree = map {
         my $n = {};
         $_->{anode} = $_->{_id};
         $n->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
@@ -134,7 +134,7 @@ sub tree_roles {
     my $cnt  = 1;
     my $user = $p{user};
     my @tree;
-    map {
+    for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
         my $role = $_->{role};
         my $name = $_->{name};
         if ( Baseliner->model( 'Permissions' )
@@ -159,7 +159,7 @@ sub tree_roles {
                 #children => [], #\@chi
             };
         } ## end if ( Baseliner->model(...))
-    } $self->list_roles;
+    } 
     return @tree;
 }
 
@@ -201,7 +201,7 @@ sub tree_classes {
             };
         } 
     } packages_that_do( $role );
-    return @tree; 
+    return sort { lc $a->{text} cmp lc $b->{text} } @tree; 
 }
 
 sub form_for_ci {
@@ -305,7 +305,7 @@ sub tree_objects {
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
-    my @tree = map {
+    my @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : $row;
         my $row_class = $class_coll{ $row->{collection} } // 'ci';
@@ -504,11 +504,10 @@ sub list_roles {
         return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
         $name =~ s{::}{}g if $name;
         $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
-        my $return = $name || 'ci';
-        return lc $return;
+        return $name || 'CI';
     };
     my %cl=Class::MOP::get_all_metaclasses;
-    map {
+    return map {
         my $role = $_;
         +{
             role => $role,

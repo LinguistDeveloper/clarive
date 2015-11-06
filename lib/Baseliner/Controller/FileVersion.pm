@@ -71,7 +71,7 @@ sub gen_tree : Private {
         my @mids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_folder}, rel_type=>'folder_ci' })->all;
         my @cis = mdb->master_doc->find({ mid=>mdb->in(@mids) })->sort(mdb->ixhash(name=>1))->all;
             
-        my %topics = map { $$_{mid} =>$_ } mdb->topic->find({ mid=>mdb->in(map{ $$_{mid} }grep{ defined }@cis) })->all;
+        my %topics = map { $$_{mid} =>$_ } mdb->topic->find({ mid=>mdb->in(map{ $$_{mid} }grep{ defined }@cis) })->fields({ _txt=>0 })->all;
         foreach my $ci ( @cis ){
             if( $ci->{collection} eq 'topic' && $categories{$ci->{id_category}} ) {
                 my $topic = $topics{$ci->{mid}} // _fail _loc 'Topic mid not found: %1', $ci->{mid};

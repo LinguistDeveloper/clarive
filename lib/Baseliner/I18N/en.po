@@ -458,6 +458,135 @@ msgstr "Job out of window. Select Custom window if you want a job out of the all
 msgid "ci:bl"
 msgstr "Environment"
 
+msgid "ci:project"
+msgstr "Project"
+
+msgid "ci:file"
+msgstr "File"
+
+msgid "ci:capture"
+msgstr "Capture"
+
+msgid "ci:ssh_agent"
+msgstr "SSH Agent"
+
+msgid "ci:artifact"
+msgstr "Artifact"
+
+msgid "ci:GitRevision"
+msgstr "Git Revision"
+
+msgid "ci:area"
+msgstr "Area"
+
+msgid "ci:itemset"
+msgstr "Itemset"
+
+msgid "ci:team"
+msgstr "Team"
+
+msgid "ci:GitItem"
+msgstr "Git Item"
+
+msgid "ci:engine"
+msgstr "Engine Parser"
+
+msgid "ci:GitRepository"
+msgstr "Git Repository"
+
+msgid "ci:topic_file"
+msgstr "Topic File"
+
+msgid "ci:dbi_connection"
+msgstr "DBI Connection"
+
+msgid "ci:worker_agent"
+msgstr "Worker Agent"
+
+msgid "ci:asset"
+msgstr "Asset"
+
+msgid "ci:topic"
+msgstr "Topic"
+
+msgid "ci:user"
+msgstr "User"
+
+msgid "ci:generic_server"
+msgstr "Generic Server"
+
+msgid "ci:job"
+msgstr "Job"
+
+msgid "ci:db_loader"
+msgstr "DB Loader"
+
+msgid "ci:nature"
+msgstr "Nature"
+
+msgid "ci:variable"
+msgstr "Variable"
+
+msgid "ci:script"
+msgstr "Script"
+
+msgid "ci:Empty"
+msgstr "Empty"
+
+msgid "ci:web_cluster"
+msgstr "Web Cluster"
+
+msgid "ci:clax_agent"
+msgstr "Clax Agent"
+
+msgid "ci:item"
+msgstr "Item"
+
+msgid "ci:windows_server"
+msgstr "Windows Server"
+
+msgid "ci:status"
+msgstr "Status"
+
+msgid "ci:filesys_repo"
+msgstr "Filesystem Repository"
+
+msgid "ci:balix_agent"
+msgstr "Balix Agent"
+
+msgid "ci:ProjectEnvironment"
+msgstr "Project Environment"
+
+msgid "ci:matcher"
+msgstr "Matcher"
+
+msgid "ci:grammar"
+msgstr "Grammar"
+
+msgid "ci:report"
+msgstr "Report"
+
+msgid "ci:post"
+msgstr "Post"
+
+msgid "ci:group"
+msgstr "Group"
+
+msgid "ci:DBDest"
+msgstr "DB Destination"
+
+msgid "ci:ftp_agent"
+msgstr "FTP Agent"
+
+msgid "ci:web_instance"
+msgstr "Web Instance"
+
+msgid "ci:folder"
+msgstr "Folder"
+
+msgid "ci:file_loader"
+msgstr "File Loader"
+
 msgid "Franja horaria"
 msgstr "Times"
 
