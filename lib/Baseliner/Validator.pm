@@ -1,11 +1,9 @@
 package Baseliner::Validator;
 use Moose;
 use Moose::Util::TypeConstraints qw(find_type_constraint);
-use Class::Load 'load_class';
 use Baseliner::Types;
 
 has fields => ( is => 'ro', default => sub { {} } );
-has rules  => ( is => 'ro', default => sub { {} } );
 
 sub add_field {
     my $self = shift;
@@ -40,32 +38,6 @@ sub validate {
         }
 
         my $has_errors = 0;
-
-        my $rules = $field->{rules} || [];
-        $rules = [$rules] unless ref $rules eq 'ARRAY';
-        foreach my $rule_name (@$rules) {
-            my %params;
-            if ( ref $rule_name eq 'HASH' ) {
-                (%params)    = %{ (values %$rule_name)[0] };
-                ($rule_name) = keys %$rule_name;
-            }
-
-            my $rule = __PACKAGE__ . '::' . $rule_name;
-
-            load_class($rule);
-
-            my $result = $rule->new(%params)->validate($value);
-
-            if ( $result->{is_valid} ) {
-                $value = $result->{value} if exists $result->{value};
-            }
-            else {
-                $errors->{$name} = $result->{error};
-
-                $has_errors = 1;
-                last;
-            }
-        }
 
         if (my $isa = $field->{isa}) {
             my $type_constraint = find_type_constraint($isa) or die "Can't find type $isa";
