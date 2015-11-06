@@ -1,25 +1,25 @@
 package BaselinerX::Type::Model::Services;
 use Moose;
-extends qw/Catalyst::Model/;
+BEGIN { extends 'Catalyst::Model' }
+
 use Try::Tiny;
-use Baseliner::Utils;
 use Carp;
-use namespace::autoclean;
+use Baseliner::Utils;
+use Baseliner::Core::Registry;
 
 sub search_for {
     my ($self, %p) = @_;
-    my $c = Baseliner->app;
-    my @services = $c->model('Registry')->search_for(key=>'service.', %p );
+    my @services = Baseliner::Core::Registry->search_for(key=>'service.', %p );
     return @services;
 }
 
 sub launch {
     my ($self, $service_name, %p ) = @_;
-    my $c = $p{c} || Baseliner->app;
+    my $c = $p{c};
     my $ns = $p{ns} || '/';
     my $bl = $p{bl} || '*';
     my $data = $p{data} || {};
-    my $service = $c->registry->find($service_name) || $c->registry->find("service.$service_name") || die "Could not find service '$service_name'\n";
+    my $service = Baseliner::Core::Registry->find($service_name) || Baseliner::Core::Registry->find("service.$service_name") || die "Could not find service '$service_name'\n";
 
     # load the service's config data
     my $config_name = $service->config;

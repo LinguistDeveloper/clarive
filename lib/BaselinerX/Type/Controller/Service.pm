@@ -59,7 +59,8 @@ sub rest : Local {
                     $p->{service},
                     logger       => $logger,
                     quiet        => 1,
-                    data         => $p
+                    data         => $p,
+                    c            => $c
                 );
             $c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
         } catch {
