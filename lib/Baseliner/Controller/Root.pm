@@ -109,6 +109,10 @@ auto centralizes all auhtentication check and dispatch.
 sub auto : Private {
     my ( $self, $c ) = @_;
 
+    if ($ENV{CLARIVE_TEST} && $c->req->path eq 'test/setup') {
+        return 1;
+    }
+
     $self->response_headers($c);
     $self->process_content_type($c);
     $self->process_run_token($c);
