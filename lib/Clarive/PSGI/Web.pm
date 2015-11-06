@@ -19,15 +19,6 @@ if( $@ ) {
 }
 
 builder {
-    # socketio
-    if( Clarive->opts->{'websockets'} ) {
-        require Clarive::Pocket;
-        mount '/socket.io' => Clarive::Pocket->build;
-    } else {
-        mount '/socket.io' => sub{ 
-            # avoids 401 errors TODO consider sending something that deactivates socketio clients
-        }; 
-    }
     #mount '/' => sub { [ 0, ["Content-Type","text/html"], ["Hello=$PP"] ]; };
     mount '/check_status' => sub {
         my $p = shift;

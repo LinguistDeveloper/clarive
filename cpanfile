@@ -146,7 +146,6 @@ requires 'Path::Class';
 requires 'Perl::Critic';
 requires 'Perl::Tidy';
 requires 'Plack';
-requires 'PocketIO';
 requires 'Pod::Simple::HTML';
 requires 'Proc::Background';
 requires 'Proc::Exists';
