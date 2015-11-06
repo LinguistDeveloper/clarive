@@ -95,7 +95,7 @@
             defaults: { anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('States'),
+                { xtype:'textfield', name:'name', fieldLabel:_('Statuses'),
                   allowBlank:false, emptyText:_('Name of status'),
                   regex: /^[^\.]+$/,
                   regexText: _('Character dot not allowed')             
@@ -240,7 +240,7 @@
     };
     
     var grid_status = new Ext.grid.GridPanel({
-        title : _('States'),
+        title : _('Statuses'),
         sm: check_status_sm,
         height: 400,
         header: true,
@@ -255,7 +255,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             // check_status_sm,
-            { header: _('State'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
+            { header: _('Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
             { header: _('Baseline'), dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
@@ -473,7 +473,7 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
-                { header: _('States'), dataIndex: 'name', width:100, sortable: true },
+                { header: _('Statuses'), dataIndex: 'name', width:100, sortable: true },
                 { header: _('Description'), dataIndex: 'description', sortable: true } 
             ],
             autoSizeColumns: true,
@@ -766,7 +766,7 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                   check_admin_status_sm,
-                { header: _('To State'), dataIndex: 'name', width:50, sortable: false }
+                { header: _('To Status'), dataIndex: 'name', width:50, sortable: false }
             ],
             autoSizeColumns: true,
             deferredRender:true
@@ -786,7 +786,7 @@
             forceSelection: true,
             triggerAction: 'all',
             emptyText: _('select status...'),
-            fieldLabel: _('From State'),
+            fieldLabel: _('From Status'),
             name: 'status_from',
             hiddenName: 'status_from',
             displayField: 'name',
@@ -923,9 +923,9 @@
             loadMask:'true',
             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', hidden: true }, 
-                { header: _('From State'), width: 60, dataIndex: 'status_from', renderer: render_status },
+                { header: _('From Status'), width: 60, dataIndex: 'status_from', renderer: render_status },
                 { width: 16, renderer: render_status_arrow },
-                { header: _('To State'), width: 150, dataIndex: 'statuses_to', renderer: render_status2 }
+                { header: _('To Status'), width: 150, dataIndex: 'statuses_to', renderer: render_status2 }
             ],
             autoSizeColumns: true,
             bbar: [btn_delete_row]
@@ -1486,7 +1486,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_labels_sm,
-            { header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
+            { header: _('Color'), dataIndex: 'color', width: 5, sortable: false, renderer: render_color },
             { header: _('Label'), dataIndex: 'name', sortable: true },
             { hidden: true, dataIndex:'active' }
         ],
