@@ -516,8 +516,6 @@ a {
     background-repeat: no-repeat;
     background-size: 16px;
 }
-<<<<<<< Updated upstream
-=======
 
 .x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
     background-position: 0 center;
@@ -526,4 +524,24 @@ a {
     height: 16px;
     background-size: 16px;
 }
->>>>>>> Stashed changes
+
+.x-tree-node-expanded .x-tree-node-icon {
+    background-image:url('/static/images/icons/folder-expanded.png');
+}
+
+.x-tree-node-collapsed .x-tree-node-icon {
+    background-image:url('/static/images/icons/folder-collapsed.png');
+}
+
+.x-tree-node-leaf .x-tree-node-icon {
+    background-image:url('/static/images/icons/leaf.png');
+}
+
+.x-tree-node-loading .x-tree-node-icon {
+    background-image:url('/static/images/loading-fast.gif') !important;
+}
+
+.x-tree-node .x-tree-node-inline-icon {
+    background-image: none;
+}
+

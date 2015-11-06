@@ -1189,14 +1189,25 @@ sub get_rules_info {
         my @rule_types = sort ('dashboard','form','event','report','pipeline','webservice','independent');
         my $folder_structure = [];
         for my $rule_type (@rule_types){
-            my $temp_structure = {text=>$rule_type, leaf => \0, expandable => \1, expanded => $expanded, allowDrop=>\0, allowDrag=>\0, draggable=>\0, children=> [] };
+            my $text = uc(substr $rule_type,0,1).substr($rule_type,1);
+            my $temp_structure = {
+                text       => $text,
+                rule_type  => $rule_type,
+                leaf       => \0,
+                expandable => \1,
+                expanded   => $expanded,
+                allowDrop  => \0,
+                allowDrag  => \0,
+                draggable  => \0,
+                children   => []
+            };
             map { push $temp_structure->{children}, 
-                { text=>$_->{rule_name}, 
+                { text=>$_->{rule_name},
                   leaf=>\1,
                   draggable=>\1,
                   rule_id=>$_->{id},
                   rule_ts=>$_->{ts},
-                  rule_type=>$_->{rule_type},
+                  rule_type=>$rule_type,
                   rule_active=>$_->{rule_active},
                   rule_when=>$_->{rule_when},
                   rule_event=>$_->{rule_event},
@@ -1207,10 +1218,21 @@ sub get_rules_info {
             } @rules;
             push $folder_structure, $temp_structure;
         }
-        my $custom_folder_node = {text=>'custom folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
+        my $custom_folder_node = {text=>_loc('Custom Folders'), leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
+                is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
         my $rs = mdb->rule_folder->find;
         while( my $rule_folder = $rs->next ) {
-            my $temp_structure = {text=>$rule_folder->{name}, rule_folder_id=>$rule_folder->{id}, is_folder=>\1, leaf => \0, expandable => \1, expanded => $expanded, children=> [], allowDrop=>\1, allowDrag=>\0 };
+            my $temp_structure = {
+                text           => $rule_folder->{name},
+                rule_folder_id => $rule_folder->{id},
+                is_folder      => \1,
+                leaf           => \0,
+                expandable     => \1,
+                expanded       => $expanded,
+                children       => [],
+                allowDrop      => \1,
+                allowDrag      => \0
+            };
             map {
                 push $temp_structure->{children}, 
                 { text=>$_->{rule_name}, 

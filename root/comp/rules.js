@@ -473,12 +473,9 @@
     rules_tree.on('beforechildrenrendered', function(params){
         var root = params;
         root.eachChild(function(node){
-            var type;
-            if(node.parentNode.id == '/'){
-                type = node.text;
-            }else{
+            var type = node.attributes.rule_type;
+            if(node.parentNode.id != '/'){
                 //Children
-                type = node.attributes.rule_type;
                 if(!(node.attributes.is_folder || node.attributes.is_custom_folders_node)){
                     node.on('click', function() { on_click_rule_action(node); });
                 }
@@ -499,9 +496,7 @@
                 }
                 node.setText(rule_text);
             }
-            if(node.attributes.is_folder || node.attributes.is_custom_folders_node){
-                node.setIcon('/static/images/icons/folder.gif');
-            } else {    
+            if(!(node.attributes.is_folder || node.attributes.is_custom_folders_node)){
                 var icon = get_icon_category(type);
                 node.setIcon(icon);
             }
