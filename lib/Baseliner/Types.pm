@@ -4,6 +4,7 @@ use Class::Date;
 use Time::Local ();
 use Baseliner::Utils;
 use Moose::Util::TypeConstraints;
+use Clarive::ci;
 
 subtype BoolCheckbox => as 'Bool';
 subtype Date         => as 'Class::Date';
@@ -36,6 +37,13 @@ subtype 'TimeStr', as 'Str', where {
 
 subtype 'ID', as 'Str';
 
+subtype 'GitBranch', as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
+subtype 'GitTag',    as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
+subtype 'GitCommit', as 'Str', where { m/^[a-h0-9]+$/ };
+subtype 'GitFolder', as 'Str', where { m/^[[:alnum:]\-_\.\/]+$/ };
+
+subtype 'ExistingCI', as 'Object';
+
 coerce 'Date' =>
   from 'Str' => via { Class::Date->new($_) },
   from 'Num'        => via { Class::Date->new($_) },
@@ -57,5 +65,7 @@ coerce 'BoolCheckbox' => from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 coerce 'HashJSON' => from
   'Str'        => via { Util->_from_json($_) },
   from 'Undef' => via { +{} };
+
+coerce 'ExistingCI' => from 'Str', via { eval { ci->new($_) } };
 
 1;

@@ -6,19 +6,21 @@ use Time::Piece;
 use Try::Tiny;
 use Baseliner::Sugar;
 use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape);
-use Baseliner::Validator;
 
 require Git::Wrapper;
 require Girl;
 
+with 'Baseliner::Role::ControllerValidator';
+
 sub branch : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        name     => { rules => 'git_branch' }
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        name     => { isa => 'GitBranch' }
+      );
 
     my $data = [
         {
@@ -64,11 +66,12 @@ sub branch : Local {
 sub branch_commits : Local {
     my ( $self, $c ) = @_;
 
-    my $p = $self->_validate_schema(
+    return
+      unless my $p = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch => { rules => 'git_branch', default => 'HEAD' },
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+      );
 
     my $repo_ci = $p->{repo_mid};
 
@@ -172,11 +175,12 @@ sub branch_commits : Local {
 sub branch_changes : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch => { rules => 'git_branch', default => 'HEAD' },
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -211,12 +215,13 @@ sub branch_changes : Local {
 sub branch_tree : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch => { rules => 'git_branch', default => 'HEAD' },
-        folder => { rules => { match => { re => qr/^[[:alnum:]\-_\.\/]+$/ } }, default => '' }
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+        folder   => { isa => 'GitFolder', default => '' }
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -327,14 +332,15 @@ sub is_binary_file {
 sub view_file : Local {
     my ($self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch   => { rules => 'git_branch', default => 'HEAD' },
-        sha      => { rules => 'git_commit' },
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+        sha      => { isa => 'GitCommit' },
         filename => {},
-        bl => { default => '' },
-    ) || return;
+        bl       => { default => '' },
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -401,14 +407,15 @@ sub view_file : Local {
 sub get_file_revisions : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch   => { rules => 'git_branch', default => 'HEAD' },
-        sha      => { rules => 'git_commit' },
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+        sha      => { isa => 'GitCommit' },
         filename => {},
-        bl => { default => '' },
-    ) || return;
+        bl       => { default => '' },
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -445,13 +452,14 @@ sub get_file_revisions : Local {
 sub get_file_blame : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        sha      => { rules => 'git_commit' },
+        repo_mid => { isa     => 'ExistingCI' },
+        sha      => { isa     => 'GitCommit' },
         filename => {},
-        bl => { default => '' },
-    ) || return;
+        bl       => { default => '' },
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -498,12 +506,13 @@ sub return_sha8 {
 sub view_diff_file : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        sha      => { rules => 'git_commit' },
+        repo_mid => { isa => 'ExistingCI' },
+        sha      => { isa => 'GitCommit' },
         file     => {},
-    ) || return;
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -592,12 +601,13 @@ sub view_diff_file : Local {
 sub get_file_history : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        sha      => { rules => 'git_commit' },
+        repo_mid => { isa => 'ExistingCI' },
+        sha      => { isa => 'GitCommit' },
         filename => {},
-    ) || return;
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -651,10 +661,8 @@ sub get_file_history : Local {
 sub get_tags : Local {
     my ( $self, $c ) = @_;
 
-    my $node =
-      $self->_validate_schema( $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } }, )
-      || return;
+    return
+      unless my $node = $self->validate_params( $c, repo_mid => { isa => 'ExistingCI' } );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -677,12 +685,13 @@ sub get_tags : Local {
 sub view_diff : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        sha      => { rules => 'git_commit' },
-        tag => { rules => 'git_tag', default => '' }
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        sha      => { isa => 'GitCommit' },
+        tag      => { isa => 'GitTag', default => '' }
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -764,15 +773,16 @@ sub view_diff : Local {
 sub get_commits_history : Local {
     my ( $self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch => { rules => 'git_branch', default => 'HEAD' },
-        tag    => { rules => 'git_tag',    default => '' },
-        commit => { rules => 'git_commit', default => '' },
-        start  => { rules => 'pos_int',    default => 0 },
-        limit  => { rules => 'pos_int',    default => 40 },
-    ) || return;
+        repo_mid => { isa => 'ExistingCI' },
+        branch   => { isa => 'GitBranch', default => 'HEAD' },
+        tag      => { isa => 'GitTag', default => '' },
+        commit   => { isa => 'GitCommit', default => '' },
+        start    => { isa => 'PositiveInt', default => 0 },
+        limit    => { isa => 'PositiveInt', default => 40 },
+      );
 
     my $ci = $node->{repo_mid};
 
@@ -870,12 +880,13 @@ sub get_log_history {
 sub get_commits_search : Local {
     my ($self, $c ) = @_;
 
-    my $node = $self->_validate_schema(
+    return
+      unless my $node = $self->validate_params(
         $c,
-        repo_mid => { rules => { 'valid_ci' => { isa => 'BaselinerX::CI::GitRepository' } } },
-        branch => { rules   => 'git_branch', default => 'HEAD' },
-        query  => { default => '' }
-    ) || return;
+        repo_mid => { isa     => 'ExistingCI' },
+        branch   => { isa     => 'GitBranch', default => 'HEAD' },
+        query    => { default => '' }
+      );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -982,36 +993,6 @@ sub commit_search {
     push @commits, $log if $log->{author};
 
     return @commits;
-}
-
-sub _validate_schema {
-    my $self = shift;
-    my ( $c, %schema ) = @_;
-
-    my $schema = $self->_build_schema;
-    foreach my $key ( keys %schema ) {
-        $schema->add_field( $key, %{ $schema{$key} } );
-    }
-
-    my $vresult = $schema->validate($c->req->params);
-
-    if ( $vresult->{is_valid} ) {
-        return $vresult->{validated_params};
-    }
-    else {
-        _debug 'Validation failed';
-
-        $c->stash->{json} =
-          { success => \0, msg => _loc("Validation failed"), errors => $vresult->{errors} };
-        $c->forward('View::JSON');
-        return 0;
-    }
-}
-
-sub _build_schema {
-    my $self = shift;
-
-    return Baseliner::Validator->new;
 }
 
 no Moose;
