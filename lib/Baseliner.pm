@@ -130,7 +130,6 @@ sub config_catalyst {
     __PACKAGE__->config( {
             'View::JSON' => {
                 decode_utf8  => 0,
-                json_driver  => 'JSON::XS',
                 expose_stash => 'json',
                 encoding     => 'utf-8',
             },
