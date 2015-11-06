@@ -20,6 +20,9 @@ sub check_migrations {
         if ( $self->opts->{args}->{migrate} ) {
             $migra->run;
         }
+        elsif ( $self->opts->{args}->{'migrate-yes'} ) {
+            $migra->run(args => {yes => 1});
+        }
         else {
             die "ERROR: Migrations are not up to date. Run with --migrate flag or use migra- commands\n";
         }

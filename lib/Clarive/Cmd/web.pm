@@ -269,4 +269,8 @@ Starts the server. Options:
     --max_servers <num>          max servers allowed (default =workers)
     --backlog <num>              backlog of sockets available, lower numbers fails faster on high load (default 1024)
 
+    --init                       run with initialisation
+    --migrate                    run with migrations
+    --migrate-yes                run with migrations without asking
+
 =cut
