@@ -100,6 +100,7 @@ requires 'Graph';
 requires 'Hash::Diff';
 requires 'HTML::Mason';
 requires 'HTML::Restrict';
+requires 'HTML::Strip';
 requires 'HTTP::Daemon';
 requires 'HTTP::Tiny';
 requires 'Image::Identicon';
