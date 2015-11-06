@@ -121,4 +121,11 @@ sub _topic_setup {
 
 }
 
+sub _setup_label {
+    Baseliner::Core::Registry->add( 'caller', 'event.file.labels', {} );
+    my $id = mdb->seq('label');
+    mdb->label->insert({ color=> '#99CC00', id=>, name=>'label', sw_allprojects=>1 });
+    return $id;
+}
+
 1;

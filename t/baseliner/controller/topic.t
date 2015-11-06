@@ -11,7 +11,7 @@ use Test::MockSleep;
 
 use TestEnv;
 use TestUtils ':catalyst';
-use TestSetup qw(_topic_setup _setup_clear _setup_user);
+use TestSetup;
 
 TestEnv->setup;
 
@@ -26,12 +26,13 @@ use Baseliner::Queue;
 
 use Baseliner::Controller::Topic;
 use Baseliner::Model::Topic;
+use Clarive::mdb;
 use Class::Date;
 
 subtest 'kanban config save' => sub {
-    _setup_clear();
-    _setup_user();
-    my $base_params = _topic_setup();
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
     my $controller = _build_controller();
@@ -45,9 +46,9 @@ subtest 'kanban config save' => sub {
 };
 
 subtest 'kanban no config, default' => sub {
-    _setup_clear();
-    _setup_user();
-    my $base_params = _topic_setup();
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
     my $controller = _build_controller();
@@ -57,9 +58,9 @@ subtest 'kanban no config, default' => sub {
 };
 
 subtest 'next status for topic by root user' => sub {
-    _setup_clear();
-    _setup_user();
-    my $base_params = _topic_setup();
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
     my $id_status_from = $base_params->{status_new};
@@ -81,9 +82,9 @@ subtest 'next status for topic by root user' => sub {
 };
 
 subtest 'next status for topics by root user' => sub {
-    _setup_clear();
-    _setup_user();
-    my $base_params = _topic_setup();
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
     my $id_status_from = $base_params->{status_new};
@@ -104,9 +105,9 @@ subtest 'next status for topics by root user' => sub {
 };
 
 subtest 'list statuses fieldlet for new topics not yet in database' => sub {
-    _setup_clear();
-    _setup_user();
-    my $base_params = _topic_setup();
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
     my $id_status_from = $base_params->{status_new};
     my $id_status_to   = ci->status->new( name=>'Dev', type => 'I' )->save;
@@ -126,7 +127,24 @@ subtest 'list statuses fieldlet for new topics not yet in database' => sub {
     is $data->[1]->{status}, $id_status_to;
 };
 
+subtest 'add label to topic' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my $label_id = TestSetup->_setup_label;
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { topic_mid=>$topic_mid, label_ids=>["$label_id"] } } );
+    $c->{username} = 'root'; # change context to root
+    $controller->update_topic_labels($c);
+    cmp_deeply( $c->stash, { json => { msg => 'Labels assigned', success => \1 } } );
+    is_deeply( mdb->topic->find_one({ mid=>"$topic_mid" })->{labels}, [$label_id] );
+};
+
 ############ end of tests
+
 
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
@@ -137,4 +155,3 @@ sub _build_controller {
 }
 
 done_testing;
-

@@ -1034,13 +1034,13 @@ sub update_topic_labels : Local {
     my @label_ids = _array( $p->{label_ids} );
     
     try{
-        if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"}) ) {
+        if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"},{ labels=>1, category=>1, category_status=>1 }) ) {
             my @current_labels = _array( $doc->{labels} );
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
             
             my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
-            my @users = $c->model('Topic')->get_users_friend(
-                mid         => $topic_mid,
+            my @users = Baseliner::Model::Topic->get_users_friend(
+                mid             => $topic_mid,
                 id_category => $doc->{category}{id},
                 id_status   => $doc->{category_status}{id},
                 projects    => \@projects
@@ -1052,12 +1052,17 @@ sub update_topic_labels : Local {
                 notify_default  => \@users,
                 subject         => $subject
             };          
+        } else {
+            _fail _loc 'Topic not found: %1', $topic_mid;
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ ) 
     }
     catch{
-        $c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
+        my $err = shift;
+        my $msg = _loc('Error assigning Labels: %1', $err);
+        _error( $msg );
+        $c->stash->{json} = { msg=>$msg, success=>\0 }
     };
      
     $c->forward('View::JSON');    
@@ -1572,7 +1577,7 @@ sub file : Local {
                 my @users = $c->model('Topic')->get_users_friend(
                     id_category => $topic->{category}{id},
                     id_status   => $topic->{category_status}{id},
-                    mid         => "$$p{topic_mid}",
+                    mid         => "$topic_mid",
                     projects    => \@projects
                 );
                 
