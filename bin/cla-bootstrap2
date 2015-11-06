@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bin/cla-env exec stew install --base /opt/clarive --repo http://sources.clarive.com git 'perl-modules==master'

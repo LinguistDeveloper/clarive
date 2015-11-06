@@ -17,8 +17,8 @@ BEGIN {
     }
 }
 
-use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
-use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
+#use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
+#use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
 use lib "$ENV{CLARIVE_HOME}/lib";
 
 use Getopt::Mini 0.02 later=>1;

@@ -8,9 +8,13 @@ PERL="$LOCALDIR/bin/perl"
 if [ ! -e $PERL ]; then
     PERL=`which perl`
 fi
-export PATH="$BINDIR:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
-export PERL5LIB="$LOCALDIR/perl/lib/perl5/:$LOCALDIR/lib/perl5/:$PERL5LIB"
+export PATH="$BINDIR:$LOCALDIR/perl/bin:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
+
+export PERL5LIB="$LOCALDIR/perl/lib/perl5:$LOCALDIR/lib/perl5"
+export PERL_LOCAL_LIB_ROOT="$LOCALDIR/perl"
+export PERL_MB_OPT="--install_base "$LOCALDIR/perl""
+export PERL_MM_OPT="INSTALL_BASE=$LOCALDIR/perl"
 
 if [ "$1" == "exec" ]; then
     shift
