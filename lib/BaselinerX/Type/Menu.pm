@@ -50,8 +50,8 @@ sub ext_menu {
 
     my $title = $self->{title} || $self->{label};
     my $icon  = $self->{icon};
-    
-    my $class = lc $self->{label};
+
+    my $class = lc $self->{id};
     $class =~ s{\s+}{-}g;
 
     my $comp_data = $self->comp_data;
