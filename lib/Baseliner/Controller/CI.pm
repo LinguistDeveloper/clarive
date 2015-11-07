@@ -201,7 +201,7 @@ sub tree_classes {
             };
         } 
     } packages_that_do( $role );
-    return sort { lc $a->{text} cmp lc $b->{text} } @tree; 
+    return sort { lc $a->{class} cmp lc $b->{class} } @tree; 
 }
 
 sub form_for_ci {
