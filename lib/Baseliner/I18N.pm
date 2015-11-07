@@ -85,4 +85,43 @@ sub localize {
     return loc(@_);
 }
 
+sub parse_po {
+    my $class = shift;
+    my ($file, $offset) = @_;
+
+    open my $fh, '<:encoding(UTF-8)', $file or return '';
+
+    my $state = 'id';
+
+    my @po;
+    while (<$fh>) {
+        s{\r|\n}{}g;
+
+        next unless length $_;
+        next if /^#/;
+
+        if (/^msgid /) {
+            push @po, {key => '', val => ''};
+
+            $state = 'id';
+        }
+        elsif (/^msgstr /) {
+            $state = 'str';
+        }
+
+        if (@po && /"(.*)"$/) {
+            if ($state eq 'id') {
+                $po[-1]->{key} .= $1;
+            }
+            elsif ($state eq 'str') {
+                $po[-1]->{val} .= $1;
+            }
+        }
+    }
+    close $fh;
+
+    $offset = '' unless $offset;
+    return join(",\n", map {qq/$offset"$_->{key}" : "$_->{val}"/} @po);
+}
+
 1;

@@ -13,7 +13,7 @@
 // Loads the current Catalyst PO from the stash
 
 var i18n = {
-    <% $c->stash->{po} %>
+<% $c->stash->{po} %>
 }
 
 // translates

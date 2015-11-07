@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 use lib 't/lib';
 
 use Test::More;
@@ -7,6 +8,7 @@ use Test::Fatal;
 use TestEnv;
 BEGIN { TestEnv->setup }
 
+use File::Temp qw(tempfile);
 use Baseliner::I18N;
 
 subtest 'install_languages' => sub {
@@ -23,4 +25,57 @@ subtest 'localize' => sub {
     is(Baseliner::I18N->localize('Site Information'), 'Datos de Registro');
 };
 
+subtest 'parse_po: empty file' => sub {
+    my $file = _write_file('');
+
+    my $text = Baseliner::I18N->parse_po($file);
+
+    is $text, '';
+};
+
+subtest 'parse_po: file' => sub {
+    my $file = _write_file(qq{msgid "Hello"\nmsgstr "Hola"\n\nmsgid "Bye"\nmsgstr "Adios"});
+
+    my $text = Baseliner::I18N->parse_po($file);
+
+    is $text, qq{"Hello" : "Hola",\n"Bye" : "Adios"};
+};
+
+subtest 'parse_po: multiline' => sub {
+    my $file = _write_file(<<"EOP");
+"some"
+"random"
+"stuff"
+#comment
+
+msgid ""
+"This "
+"is "
+"a "
+"multiline"
+
+msgstr ""
+"Se "
+"trata "
+"de una línea de múltiples"
+
+#comment
+EOP
+
+    my $text = Baseliner::I18N->parse_po($file);
+
+    is $text, qq{"This is a multiline" : "Se trata de una línea de múltiples"};
+};
+
 done_testing;
+
+sub _write_file {
+    my ($content) = @_;
+
+    my ($fh, $filename) = tempfile();
+    binmode $fh, ':utf8';
+    print $fh $content;
+    seek $fh, 0, 0;
+
+    return $filename;
+}
