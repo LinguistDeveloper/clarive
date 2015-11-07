@@ -20,7 +20,7 @@ BEGIN {
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
-            +CatalystX::Features::Plugin::I18N/;
+            /;
     } else {
         @modules = qw/
             StackTrace
@@ -33,7 +33,6 @@ BEGIN {
             +Baseliner::MongoSession
             Session::State::Cookie
             Singleton           
-            +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
         push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
@@ -43,8 +42,8 @@ BEGIN {
 use Catalyst (@modules);
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
+use Baseliner::I18N;
 use Try::Tiny;
-use FindBin '$Bin';
 
 my $t0 = [ gettimeofday ];
 $DB::deep = 500; # makes the Perl Debugger Happier
@@ -151,16 +150,6 @@ sub config_catalyst {
 
     __PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
         
-    __PACKAGE__->config(
-        'Plugin::I18N' => {
-            maketext_options => {
-                Style => 'gettext',
-                Path => $Bin.'/../lib/Baseliner/I18N',
-                Decode => 0,
-            }
-        }
-    );
-
     ## Authentication
     __PACKAGE__->config(
         'authentication' => {
@@ -184,6 +173,8 @@ sub config_catalyst {
             },
         },
     );
+
+    Baseliner::I18N->setup;
 }
 
 # Start the application
@@ -371,6 +362,10 @@ sub user_languages {
         return( $language ); 
     }
 }
+
+sub language            { Baseliner::I18N->language }
+sub languages           { Baseliner::I18N->languages($_[1]) }
+sub installed_languages { Baseliner::I18N->installed_languages }
 
 sub has_action {
     my ($c,$action) = @_;

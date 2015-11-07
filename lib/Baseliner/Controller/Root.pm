@@ -218,7 +218,6 @@ sub _set_user_lang : Private {
 
     my @languages = $c->user_languages;
     $c->languages([ @languages ]); 
-   
 }
 
 sub serve_file : Private {

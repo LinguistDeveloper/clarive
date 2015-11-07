@@ -116,35 +116,6 @@ common => [qw(
 )],
 ;
 
-# setup I18n
-our $i18n_path;
-our $patterns;
-
-BEGIN {
-    use FindBin '$Bin';
-    my $path = "/lib/Baseliner/I18N";
-    $Bin = "$Bin/script" if $Bin eq $ENV{BASELINER_HOME};
-    $i18n_path = File::Spec->catfile($Bin,'..',$path);
-    $i18n_path = File::Spec->catfile($ENV{BASELINER_HOME},$path) unless -d $i18n_path;
-    #$pattern = File::Spec->catfile($path, '*.[pm]o');
-    eval {
-        my @patterns;
-        for my $dir ( glob "./features/*/lib/Baseliner/I18N" ) {
-            next unless -d "$dir";
-            $pattern = File::Spec->catfile($dir, '*.[pm]o');
-            push @patterns, "Gettext => '$pattern'";
-        } 
-        $patterns = join',', @patterns;
-    };  # may fail when Baseliner is not "use" - ignore then
-    warn $@ if $@;
-}
-
-use Locale::Maketext::Simple (
-            Style => 'gettext',
-            Path => $i18n_path,
-            Decode => 1,
-        );
-
 use strict;
 use utf8;
 use v5.10;
@@ -159,16 +130,11 @@ use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use experimental 'switch';
 use DateTime::TimeZone;
+use Baseliner::I18N;
 
 BEGIN {
     # enable a TO_JSON converter
     sub DateTime::TO_JSON  {  $_[0] . '' };
-    # include all features I18N files
-eval <<"";
-    package Baseliner::Utils::I18N;
-    Locale::Maketext::Lexicon->import({ '*' => [ $patterns ] });
-
-    loc_lang($Baseliner::locale || 'es' );
 }
 
 # split a namespace resource into domain and item
@@ -258,20 +224,9 @@ sub _dump {
 
 sub _loc {
     return unless $_[0];
-    #return loc( @_ );
-    my @args = @_;
-    my $c = try { Baseliner->app };
-    if( $ENV{BALI_CMD} || !ref($c) ) {
-        my $default_lang = try { Baseliner->config->{default_lang} } catch { 'en' } ;
-        loc_lang( $default_lang );
-        return loc( @args );
-    } else {
-        return $c->localize( @args ) if $c->can('localize');  # when testing, no i18n
-        return $args[0] =~ s{\%(\d)}{$args[$1]//''}egr;  # poor man's loc()
-    }
+    return Baseliner::I18N->localize(@_);
 }
 
-sub _loc_raw { return loc( @_ ) }
 sub _loc_decoded { return _utf8( _loc(@_) ) }
 sub _loc_ansi { return _utf8_to_ansi( _loc(@_) ) }
 sub _loc_unaccented { 
