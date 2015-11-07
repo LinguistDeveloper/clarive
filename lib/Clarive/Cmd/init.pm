@@ -5,7 +5,6 @@ BEGIN { extends 'Clarive::Cmd' }
 our $CAPTION = 'Clarive System Initialization';
 
 with 'Clarive::Role::EnvRequired';
-with 'Clarive::Role::Baseliner';
 
 use boolean;
 use Clarive::mdb;
@@ -71,7 +70,7 @@ sub run {
           ->run_init( args => { yes => 1, quiet => 1 } );
 
         $self->_say('Initializing indexes', %opts);
-        mdb->index_all( undef, drop=>0 );
+        mdb->index_all(undef, drop => 0);
     }
     else {
         die 'ERROR: System is already initialized';
