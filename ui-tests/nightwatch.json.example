@@ -1,13 +1,12 @@
 {
-  "src_folders" : ["tests"],
-  "output_folder" : "reports",
-  "custom_commands_path" : "commands",
+  "src_folders" : ["ui-tests/tests"],
+  "output_folder" : "ui-tests/reports",
   "custom_assertions_path" : "",
-  "page_objects_path" : "pages",
+  "page_objects_path" : "ui-tests/pages",
 
   "selenium" : {
     "start_process" : true,
-    "server_path" : "bin/selenium-server-standalone-2.47.1.jar",
+    "server_path" : "/opt/clarive/local/bin/selenium-server-standalone-2.48.2.jar",
     "log_path" : "selenium.log",
     "host" : "127.0.0.1",
     "port" : 4444,
@@ -45,7 +44,7 @@
         "browserName": "phantomjs",
         "javascriptEnabled": true,
         "acceptSslCerts": true,
-        "phantomjs.binary.path" : "node_modules/phantomjs/bin/phantomjs"
+        "phantomjs.binary.path" : "/opt/clarive/local/lib/node_modules/phantomjs/bin/phantomjs"
       }
     }
   }

@@ -16,6 +16,8 @@ export PERL_LOCAL_LIB_ROOT="$LOCALDIR/perl"
 export PERL_MB_OPT="--install_base "$LOCALDIR/perl""
 export PERL_MM_OPT="INSTALL_BASE=$LOCALDIR/perl"
 
+export NODE_MODULES="$LOCALDIR/lib/node_modules"
+
 if [ "$1" == "exec" ]; then
     shift
 
