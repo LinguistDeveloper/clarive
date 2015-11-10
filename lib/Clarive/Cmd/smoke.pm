@@ -22,7 +22,7 @@ sub run {
     print "# UNIT TESTS ", "\n";
     print "#" x 80, "\n\n";
 
-    my $unit_exit = system("prove t");
+    my $unit_exit = _system("prove t");
 
     copy 't/data/acmetest.yml', $smoke_conf;
     replace_inplace(
@@ -36,11 +36,11 @@ sub run {
     print "# STARTING WEB SERVER", "\n";
     print "#" x 80, "\n\n";
 
-    system("cla-env web-stop --env $smoke_env --port $smoke_port");
+    _system("cla-env web-stop --env $smoke_env --port $smoke_port");
 
-    system("cla-env web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
+    _system("cla-env web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
-    sleep 5;
+    sleep 10;
 
     print "\n";
     print "#" x 80, "\n";
@@ -54,14 +54,14 @@ sub run {
         qq{"launchUrl" : "http://localhost:$smoke_port"}
     );
 
-    my $ui_exit = system("$ENV{NODE_MODULES}/nightwatch/bin/nightwatch -c $smoke_nightwatch_conf -e phantomjs");
+    my $ui_exit = _system("$ENV{NODE_MODULES}/nightwatch/bin/nightwatch -c $smoke_nightwatch_conf -e phantomjs");
 
     print "\n";
     print "#" x 80, "\n";
     print "# STOPPING WEB SERVER", "\n";
     print "#" x 80, "\n\n";
 
-    system("cla-env web-stop --env $smoke_env --port $smoke_port");
+    _system("cla-env web-stop --env $smoke_env --port $smoke_port");
 
     print "\n";
 
@@ -77,7 +77,7 @@ sub replace_inplace {
     my $input = slurp($file);
 
     my $output = $input;
-    $output =~ s/$pattern/$replace/;
+    $output =~ s/$pattern/$replace/gsm;
 
     open my $fh, '>', $file or die $!;
     print $fh $output;
@@ -90,6 +90,14 @@ sub slurp {
     local $/;
     open my $fh, '<', $file or die $!;
     return <$fh>;
+}
+
+sub _system {
+    my ($cmd) = @_;
+
+    warn "$cmd\n";
+
+    return system($cmd);
 }
 
 1;
