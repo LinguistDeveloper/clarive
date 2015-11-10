@@ -417,6 +417,7 @@ if( Prefs.routing ) {
         if ( title != 'REPL' ) {
             Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
                 var cmp_tab = Ext.getCmp(tab);
+                cmp_tab.addClass(params.tab_cls);
                 if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
                     // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
                     // if (r == true) {
@@ -438,7 +439,6 @@ if( Prefs.routing ) {
         } else {
             tab = tabpanel.add(comp);
         }
-        tab.setIconClass(params.tab_cls);
         // force change title style if: tabTopic_force value is: 1 on Topic.pm and defined new icon and new title on topic_lib.js
         if( comp && comp.title_force && comp.title_force.length ) title = comp.title_force;
         if( params.tab_icon!=undefined && comp && comp.tab_icon===undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
