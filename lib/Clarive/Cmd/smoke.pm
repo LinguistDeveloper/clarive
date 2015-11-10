@@ -11,57 +11,74 @@ sub run {
     my (%opts) = @_;
 
     my $smoke_env             = 'smoke';
-    my $smoke_port            = 9999;
+    my $smoke_port            =  50000 + (int(rand()*1500) + abs($$)) % 1500;
     my $smoke_conf            = "config/$smoke_env.yml";
     my $smoke_nightwatch_conf = 'ui-tests/smoke.json';
 
+    if (!%{$opts{args}}) {
+        $opts{args}->{unit} = 1;
+        $opts{args}->{ui} = 1;
+    }
+
     print 'Running smoke tests...', "\n";
 
-    print "\n";
-    print "#" x 80, "\n";
-    print "# UNIT TESTS ", "\n";
-    print "#" x 80, "\n\n";
+    my $unit_exit = 0;
 
-    my $unit_exit = _system("prove t");
+    if ($opts{args} && $opts{args}->{unit}) {
+        print "\n";
+        print "#" x 80, "\n";
+        print "# UNIT TESTS ", "\n";
+        print "#" x 80, "\n\n";
 
-    copy 't/data/acmetest.yml', $smoke_conf;
-    replace_inplace(
-        $smoke_conf,
-        qr{dbname: acmetest},
-        qq{dbname: $smoke_env}
-    );
+        $unit_exit = _system("prove t");
+    }
 
-    print "\n";
-    print "#" x 80, "\n";
-    print "# STARTING WEB SERVER", "\n";
-    print "#" x 80, "\n\n";
+    my $ui_exit = 0;
+    if ($opts{args} && $opts{args}->{ui}) {
+        copy 't/data/acmetest.yml', $smoke_conf;
+        replace_inplace(
+            $smoke_conf,
+            qr{dbname: acmetest},
+            qq{dbname: $smoke_env}
+        );
+        replace_inplace(
+            $smoke_conf,
+            qr{port: \d+},
+            qq{port: $smoke_port}
+        );
 
-    _system("cla-env web-stop --env $smoke_env --port $smoke_port");
+        print "\n";
+        print "#" x 80, "\n";
+        print "# STARTING WEB SERVER", "\n";
+        print "#" x 80, "\n\n";
 
-    _system("cla-env web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
+        _system("cla-env web-stop --env $smoke_env --port $smoke_port");
 
-    sleep 10;
+        _system("cla-env web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
-    print "\n";
-    print "#" x 80, "\n";
-    print "# UI TESTS ", "\n";
-    print "#" x 80, "\n\n";
+        sleep 5;
 
-    copy 'ui-tests/nightwatch.json.example', $smoke_nightwatch_conf;
-    replace_inplace(
-        $smoke_nightwatch_conf,
-        qr{"launchUrl"\s*:\s*".*?"},
-        qq{"launchUrl" : "http://localhost:$smoke_port"}
-    );
+        print "\n";
+        print "#" x 80, "\n";
+        print "# UI TESTS ", "\n";
+        print "#" x 80, "\n\n";
 
-    my $ui_exit = _system("$ENV{NODE_MODULES}/nightwatch/bin/nightwatch -c $smoke_nightwatch_conf -e phantomjs");
+        copy 'ui-tests/nightwatch.json.example', $smoke_nightwatch_conf;
+        replace_inplace(
+            $smoke_nightwatch_conf,
+            qr{"launchUrl"\s*:\s*".*?"},
+            qq{"launchUrl" : "http://localhost:$smoke_port"}
+        );
 
-    print "\n";
-    print "#" x 80, "\n";
-    print "# STOPPING WEB SERVER", "\n";
-    print "#" x 80, "\n\n";
+        $ui_exit = _system("$ENV{NODE_MODULES}/nightwatch/bin/nightwatch -c $smoke_nightwatch_conf -e phantomjs");
 
-    _system("cla-env web-stop --env $smoke_env --port $smoke_port");
+        print "\n";
+        print "#" x 80, "\n";
+        print "# STOPPING WEB SERVER", "\n";
+        print "#" x 80, "\n\n";
+
+        _system("cla-env web-stop --env $smoke_env --port $smoke_port");
+    }
 
     print "\n";
 
