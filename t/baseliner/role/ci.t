@@ -203,6 +203,14 @@ subtest 'related cis returns mids only' => sub {
     is ref $rels[0], 'HASH';
 };
 
+subtest 'gen_mid: correctly generated mid' => sub {
+    _setup();
+    
+    my $chi = BaselinerX::CI::TestClass->new;
+    like $chi->gen_mid, qr/^TestClass-\d{6}$/ ;
+
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;

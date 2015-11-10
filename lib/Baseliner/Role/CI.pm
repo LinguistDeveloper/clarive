@@ -125,7 +125,8 @@ sub compare_data{
 sub gen_mid {
     my $self = shift;
     my $coll =  $self->collection;
-    $coll . '-' . mdb->seq( "mid-$coll" );
+
+    return sprintf('%s-%06d',$coll, mdb->seq( "mid-$coll" ));
 }
 
 sub update {
