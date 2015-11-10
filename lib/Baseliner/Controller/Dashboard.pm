@@ -325,7 +325,7 @@ sub last_jobs : Local {
                         $r->{status} = $status;
                     }
                     # last durantion and top mid
-                    if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
+                    if( !defined $r->{top_mid} || $job->{mid} gt $r->{top_mid} ) {  
                         my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
                         $r->{last_duration} = sprintf '%dm %ds', int($secs/60), ($secs % 60);
                         $r->{top_mid} = $job->{mid};
