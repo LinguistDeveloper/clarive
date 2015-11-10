@@ -238,7 +238,7 @@ if( Prefs.routing ) {
         },
         defaultType: 'textfield',	    
         items: [
-        {
+        { 
           fieldLabel: _('Old Password'),
           name: 'oldpass'
         },		
@@ -417,15 +417,20 @@ if( Prefs.routing ) {
         if ( title != 'REPL' ) {
             Ext.each(Object.keys(Baseliner.tabInfo), function(tab) {
                 var cmp_tab = Ext.getCmp(tab);
-                cmp_tab.addClass(params.tab_cls);
-                if ( cmp_tab && Baseliner.tabInfo[tab].json_key == json_key ) {
-                    // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
-                    // if (r == true) {
-                        Ext.getCmp('main-panel').setActiveTab(cmp_tab);
-                        // Baseliner.refreshCurrentTab();
-                        found = true;
-                        return;
-                    // }
+
+                if (cmp_tab) {
+                    if ( Baseliner.tabInfo[tab].json_key == json_key ) {
+                        // var r = confirm(_('Tab is already opened.  Do you want to activate it? (Cancel to open a new one)'));
+                        // if (r == true) {
+                            Ext.getCmp('main-panel').setActiveTab(cmp_tab);
+                            // Baseliner.refreshCurrentTab();
+                            found = true;
+                            return;
+                        // }
+                    }
+                    else {
+                        cmp_tab.addClass(params.tab_cls);
+                    }
                 }
             });
         }
