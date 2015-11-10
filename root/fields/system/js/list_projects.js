@@ -26,9 +26,9 @@ params:
     var firstload = true;
 
     var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
-    
-    if(data && data[meta.id_field] ){
-        var val_projects = data[meta.id_field];
+
+    if(data && data[meta.bd_field] ){
+        var val_projects = data[meta.bd_field];
         for(i=0; i<val_projects.length;i++){
             var p = val_projects[i];
             if( p==undefined || p.mid == undefined ) continue;
@@ -37,9 +37,9 @@ params:
     } else {
         projects = meta.default_value ? [ meta.default_value ] : [];
     }
-
     var ps = meta.page_size || 20;
-    var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
+
+   var project_box_store_user = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
         tree_level: meta.tree_level || '',
         limit: ps, 
         include_root: true, 
@@ -48,7 +48,17 @@ params:
         autoLoad: false,
         roles: meta.roles
     } });
-    
+
+    var project_box_store = new Baseliner.store.AllProjects({ id: 'id', baseParams: {
+        tree_level: meta.tree_level || '',
+        limit: ps, 
+        include_root: true, 
+        level: meta.level, 
+        collection: meta.collection,
+        autoLoad: false,
+        roles: meta.roles
+    } });
+
     var no_items = _('No items found');
     var tpl = new Ext.XTemplate( 
         '<tpl for="."><div class="x-combo-list-item">'
@@ -78,12 +88,33 @@ params:
         if ( projects && firstload ) { 
             firstload = false;
             project_box.setValue( projects );
+            project_box.store = project_box_store_user;
+            project_box_store_user.on('load', function(){
+                var removed_elems = {};
+                project_box_store_user.each(function(elem){
+                    var user_elem = elem;
+                    project_box.items.items.forEach(function(elem){
+                        if(user_elem.json.mid == elem.value){
+                            removed_elems[elem.value] = 1;
+                            project_box_store_user.remove(user_elem);
+                        }
+                    });
+                });
+                project_box.items.items.forEach(function(elem){
+                    if(!removed_elems[elem.value]){
+                        if(project_box.buttonClear.isDisplayed()){ 
+                            project_box.buttonClear.hide(); 
+                        }
+                        elem.disableAllListeners();
+                    }
+                });
+            });
+            project_box_store_user.load();
         }
     });
 
+    project_box_store.load();
 
-    project_box_store.load({});
-   
     if( meta.parent_field ) {
         var form = params.form.getForm();
         var parent_field = form.findField( meta.parent_field );
@@ -160,7 +191,7 @@ params:
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
-             }
+            }
         });
     });
     
