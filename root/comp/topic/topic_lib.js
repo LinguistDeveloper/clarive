@@ -1238,7 +1238,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     show_life_cicle: function(){
         var self = this;
-        Baseliner.ajaxEval('/site/lifeCicle.js', {id_category: self.id_category}, function(res){
+        Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){
             Cla.use('/static/gojs/go-debug.js', function(){
                 self.w = new Ext.Panel({
                     layout: 'card',  

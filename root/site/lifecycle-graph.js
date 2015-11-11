@@ -1,11 +1,11 @@
 (function(params) {
     
-var text= false;
-var source = false;
-var color = false;
-var rolText= false;
-var rolSource = false;
-var rolColor = false;
+var general_text= false;
+var general_source = false;
+var general_color = false;
+var rol_text= false;
+var rol_source = false;
+var rol_color = false;
 
 var isClick = 0;
 id_category = params.id_category;
@@ -17,13 +17,13 @@ var black = "#19191C";
 var blue = "#0066CC";
 
 //Creamos los checkitems del menu desplegable de opciones.
-var gEtiquetas = new Ext.menu.CheckItem({text: 'Con Etiquetas', checked: false, checkHandler: function(){text=this.checked;general(diagram, overview);}});
-var gIconos = new Ext.menu.CheckItem({text: 'Iconos', checked: false, checkHandler: function(){source=this.checked;general(diagram, overview);}});
-var gColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: false, checkHandler: function(){color=this.checked;general(diagram, overview);}});
+var gEtiquetas = new Ext.menu.CheckItem({text: 'Con Etiquetas', checked: false, checkHandler: function(){general_text=this.checked;general(diagram, overview);}});
+var gIconos = new Ext.menu.CheckItem({text: 'Iconos', checked: false, checkHandler: function(){general_source=this.checked;general(diagram, overview);}});
+var gColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: false, checkHandler: function(){general_color=this.checked;general(diagram, overview);}});
 
-var rEtiquetas = new Ext.menu.CheckItem({text: 'Con Etiquetas', checked: false, checkHandler: function(){rolText=this.checked;rol(diagram, overview);}});
-var rIconos = new Ext.menu.CheckItem({text: 'Iconos', checked: false, checkHandler: function(){rolSource=this.checked;rol(diagram, overview);}});
-var rColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: false, checkHandler: function(){rolColor=this.checked;rol(diagram, overview);}});
+var rEtiquetas = new Ext.menu.CheckItem({text: 'Con Etiquetas', checked: false, checkHandler: function(){rol_text=this.checked;rol(diagram, overview);}});
+var rIconos = new Ext.menu.CheckItem({text: 'Iconos', checked: false, checkHandler: function(){rol_source=this.checked;rol(diagram, overview);}});
+var rColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: false, checkHandler: function(){rol_color=this.checked;rol(diagram, overview);}});
 
 var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: false, 
     menu : {
@@ -39,9 +39,9 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                                 gEtiquetas.setChecked(bool);
                                 gIconos.setChecked(bool);
                                 gColorEstados.setChecked(bool);
-                                text=bool;
-                                source=bool;
-                                color=bool;
+                                general_text=bool;
+                                general_source=bool;
+                                general_color=bool;
                             }
                         },{
                         text: 'Unselect All',
@@ -51,9 +51,9 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                                 gEtiquetas.setChecked(bool);
                                 gIconos.setChecked(bool);
                                 gColorEstados.setChecked(bool);
-                                text=bool;
-                                source=bool;
-                                color=bool;
+                                general_text=bool;
+                                general_source=bool;
+                                general_color=bool;
                             }
                         }
                 ]
@@ -69,9 +69,9 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                         rEtiquetas.setChecked(bool);
                         rIconos.setChecked(bool);
                         rColorEstados.setChecked(bool);
-                        rolText=bool;
-                        rolSource=bool;
-                        rolColor=bool;
+                        rol_text=bool;
+                        rol_source=bool;
+                        rol_color=bool;
                         }
                     },
                 {
@@ -82,9 +82,9 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                     rEtiquetas.setChecked(bool);
                     rIconos.setChecked(bool);
                     rColorEstados.setChecked(bool);
-                    rolText=bool;
-                    rolSource=bool;
-                    rolColor=bool;
+                    rol_text=bool;
+                    rol_source=bool;
+                    rol_color=bool;
                     }
                 }
               ]
@@ -145,56 +145,47 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
  
         // the node template describes how each Node should be constructed
         diagram.nodeTemplate = go_api(go.Node, "Auto", 
-                go_api(go.Shape,
-                    new go.Binding("figure","figure"),
-                    new go.Binding("fill", "color")),
-                go_api(go.TextBlock, {
-                        margin: 3
-                    }, 
-                    new go.Binding("text", "key"),
-                    new go.Binding("stroke","textColor"))
-            );
+            go_api(go.Shape,
+                new go.Binding("figure","figure"),
+                new go.Binding("fill", "color")),
+            go_api(go.TextBlock, { margin: 3 }, 
+                new go.Binding("text", "key"),
+                new go.Binding("stroke","textColor"))
+        );
 
         // define the only Link template
         diagram.linkTemplate =
-          go_api(go.Link,  // the whole link panel
+          go_api(go.Link,  
             { reshapable: true, resegmentable: true },
-            { routing: go.Link.Orthogonal },  // optional, but need to keep LinkingTool.temporaryLink in sync, above
-            //{ adjusting: go.Link.Scale },  // optional
-            { curve: go.Link.JumpOver }, //Bezier
+            { routing: go.Link.Orthogonal },  
+            { curve: go.Link.JumpOver },
             { fromPortId: "" },
             new go.Binding("fromPortId", "fromport"),            
-            go_api(go.Shape,  // the link shape
-              { stroke: "#000000", strokeWidth: 1 }),   
-            go_api(go.Shape,
-              { toArrow: "Standard"}),                    
-            go_api(go.TextBlock,  // the "from" label
-              {
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 }),   
+            go_api(go.Shape, { toArrow: "Standard"}),                    
+            go_api(go.TextBlock,{
                 textAlign: "left",
                 font: "bold 8px sans-serif",
                 stroke: "#0066CC",
-                  
-                //segmentIndex: 0,
                 segmentOffset: new go.Point(10, NaN),
                 segmentOrientation: go.Link.OrientUpright
-              },
+            },
               new go.Binding("text", "text")),
-            go_api(go.Picture,
-              { width: 13, height: 35, segmentOffset: new go.Point(NaN, 10) },
+            go_api(go.Picture, { width: 13, height: 35, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
 
-           );         
+        );         
         
           diagram.groupTemplate =
             go_api(go.Group, "Vertical",
               go_api(go.Panel, "Auto",
-                go_api(go.Shape, "RoundedRectangle",  // surrounds the Placeholder
+                go_api(go.Shape, "RoundedRectangle", 
                   { parameter1: 14,
                     fill: "rgba(128,128,128,0.33)" }),
-                go_api(go.Placeholder,    // represents the area of all member parts,
-                  { padding: 5})  // with some extra padding around them
+                go_api(go.Placeholder,
+                  { padding: 5})  
               ),
-              go_api(go.TextBlock,         // group title
+              go_api(go.TextBlock,
                 { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
                 new go.Binding("text", "key"))
             );
@@ -277,11 +268,11 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                   }
               i++;
               }
-            //var objectStatus = [];
+
               var i=0;
               while (i < res.data.length){
 
-                  if(color){
+                  if(general_color){
                     eColor = res.data[i].status_color;
                     tColor = invertir_Color(res.data[i].status_color);
                   }
@@ -318,7 +309,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               while (i < res.data.length){
                   var k = 0;
                   while(k < res.data[i].statuses_to.length){
-                      if(color){
+                      if(general_color){
                         eColor = res.data[i].status_color;
                         tColor = invertir_Color(res.data[i].status_color);
                       }
@@ -360,64 +351,15 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               }
               
         var objectLink = [];  
-        objectLink = insertLinks(res, text, source);              
+        objectLink = insertLinks(res, general_text, general_source);              
 
         // the Model holds only the essential information describing the diagram
         diagram.model = new go.GraphLinksModel(objectNode, objectLink);
 
-        //FUNCION PARA MOSTRAR UN DIAGRAMA U OTRO AL PULSAR CLICK
-        /*diagram.doubleClick = function(e) {
-               
-            if(isClick == 0){
-                          
-                  var objectLink = [];  
-                  var i=0;
-                  text = false;
-                  source = false;
-                  objectLink = insertLinks(res, text, source);
-
-                  diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-       
-                  //diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  // alert(isClick);
-                  diagram.layout = go_api(go.LayeredDigraphLayout, 
-                    { 
-                    direction: 0, 
-                    layerSpacing: 50,      
-                    columnSpacing: 20,
-                    layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                    });
-
-              isClick = 1;
-            }else{
-                  var objectLink = [];  
-                  text = true;
-                  source = true;
-                  objectLink = insertLinks(res, text, source);
-
-                  diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  //diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  //alert(isClick);
-                  diagram.layout = go_api(go.LayeredDigraphLayout, 
-                    { 
-                    direction: 0, 
-                    layerSpacing: 100,      
-                    columnSpacing: 90,
-                    layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                    });
-
-
-              isClick = 0;
-            }
-
-          };*/  
-          //FIN DE LA FUNCION PARA CAMBIAR EL DIAGRAMA CON UN CLICK
-
-
         });
 
         //diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-        if(text == true || source == true){
+        if(general_text == true || general_source == true){
           diagram.layout = go_api(go.LayeredDigraphLayout, 
             { 
             direction: 0, 
@@ -438,10 +380,6 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
         diagram.initialContentAlignment = go.Spot.Center;
         // enable Ctrl-Z to undo and Ctrl-Y to redo
         diagram.undoManager.isEnabled = false;
-
-
-
-
 
     };
 
@@ -513,7 +451,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
-            //ORDENAMOS LOS DATOS POR FECHA DE CREACION
+            //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
                      var date = new Date(res.data[j].status_time);
@@ -593,7 +531,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
             //var objectStatus = [];
               var i=0;
               while (i < res.data.length){
-                  if(rolColor){
+                  if(rol_color){
                     eColor = res.data[i].status_color;
                     tColor = invertir_Color(res.data[i].status_color);
                   }
@@ -630,7 +568,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               while (i < res.data.length){
                   var k = 0;
                   while(k < res.data[i].statuses_to.length){
-                      if(rolColor){
+                      if(rol_color){
                         eColor = res.data[i].status_color;
                         tColor = invertir_Color(res.data[i].status_color);
                       }
@@ -674,15 +612,15 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               var objectLink = []; 
               var texto = "";
               var isource = [];
-              if(rolSource){
-              isource = ["/static/gojs/srojo.png","/static/gojs/sverde.png","/static/gojs/samarillo.png"];
+              if(rol_source){
+                isource = ["/static/gojs/srojo.png","/static/gojs/sverde.png","/static/gojs/samarillo.png"];
               }
               var i=0;
               while (i < res.data.length){
-                    //objectLink.push({ from: res.data[i].role, to: res.data[i].status_from });
+
                     var j=0;
                     while(j < res.data[i].statuses_to.length){
-                      if(rolText){
+                      if(rol_text){
                         texto = res.data[i].role;
                       }
                       if(res.data[i].role_job_type == "static"){
@@ -699,7 +637,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               i++;
               }
 
-              //BORRAMOS LOS LINKS DUPLICADOS
+              //Delete duplicate links
               var i=0;
               var aux = objectLink;
               while (i < objectLink.length){
@@ -710,7 +648,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                       if(count==0){
                         count=1;
                       }else{
-                          if(rolText){
+                          if(rol_text){
                             aux[i].text = aux[i].text + " , " + objectLink[j].text;
                           }else{
                             aux[i].text = "";
@@ -718,16 +656,14 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                           if(!aux[i].source){
                             aux[i].source = objectLink[j].source;
                           }
-                        //aux[i].source = aux[i].source + " , " + objectLink[j].source;
                         objectLink.splice(objectLink.indexOf(objectLink[j]),1);
-                        //aux[i].text = text;
                       }
                     }
                   j++;
                   }             
                 i++;
               }
-              //INSERTAMOS LOS TEXTOS
+              //Insert text in links
               var i=0;
               while (i < objectLink.length){
                 var j = 0;
@@ -740,193 +676,40 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                   }             
                 i++;
               }
-        // the Model holds only the essential information describing the diagram
+
         diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-
-        //FUNCION PARA MOSTRAR UN DIAGRAMA U OTRO AL PULSAR CLICK
-        /*diagram.doubleClick = function(e) {
-               
-            if(isClick == 0){
-                          
-                  var objectLink = [];  
-              var i=0;
-              while (i < res.data.length){
-                    //objectLink.push({ from: res.data[i].role, to: res.data[i].status_from });
-                    var j=0;
-                    while(j < res.data[i].statuses_to.length){
-                      if(res.data[i].role_job_type == "static"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: "", source: ""  });
-                      }else if(res.data[i].role_job_type == "promote"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: "", source: "" });
-                      }else if(res.data[i].role_job_type == "demote"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: "", source: "" });
-                      }else{
-                       objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: "", source: ""});
-                      }
-                    j++;
-                    }
-              i++;
-              }
-
-              //BORRAMOS LOS LINKS DUPLICADOS
-              var i=0;
-              var aux = objectLink;
-              while (i < objectLink.length){
-                var j = 0;
-                var count = 0;
-                  while (j < objectLink.length){
-                    if(aux[i].from == objectLink[j].from && aux[i].to == objectLink[j].to){
-                      if(count==0){
-                        count=1;
-                      }else{
-                        aux[i].text = aux[i].text + " , " + objectLink[j].text;
-                          if(!aux[i].source){
-                            aux[i].source = objectLink[j].source;
-                          }
-                        //aux[i].source = aux[i].source + " , " + objectLink[j].source;
-                        objectLink.splice(objectLink.indexOf(objectLink[j]),1);
-                        //aux[i].text = text;
-                      }
-                    }
-                  j++;
-                  }             
-                i++;
-              }
-              //INSERTAMOS LOS TEXTOS
-              var i=0;
-              while (i < objectLink.length){
-                var j = 0;
-                  while (j < objectLink.length){
-                    if(aux[i].from == objectLink[j].from && aux[i].to == objectLink[j].to){
-                        objectLink[j].text = aux[i].text;
-                        objectLink[j].source = aux[i].source;
-                    }
-                  j++;
-                  }             
-                i++;
-              }
-
-                  diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, 
-                    { 
-                      direction: 0, 
-                      layerSpacing: 50,      
-                      columnSpacing: 20,
-                      layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                    });          
-                  //diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  // alert(isClick);
-              isClick = 1;
-            }else{
-                  var objectLink = [];  
-              var i=0;
-              while (i < res.data.length){
-                    //objectLink.push({ from: res.data[i].role, to: res.data[i].status_from });
-                    var j=0;
-                    while(j < res.data[i].statuses_to.length){
-                      if(res.data[i].role_job_type == "static"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: res.data[i].role, source: "/static/gojs/srojo.png"  });
-                      }else if(res.data[i].role_job_type == "promote"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: res.data[i].role, source: "/static/gojs/sverde.png" });
-                      }else if(res.data[i].role_job_type == "demote"){
-                        objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: res.data[i].role, source: "/static/gojs/samarillo.png" });
-                      }else{
-                       objectLink.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: res.data[i].role, source: ""});
-                      }
-                    j++;
-                    }
-              i++;
-              }
-
-              //BORRAMOS LOS LINKS DUPLICADOS
-              var i=0;
-              var aux = objectLink;
-              while (i < objectLink.length){
-                var j = 0;
-                var count = 0;
-                  while (j < objectLink.length){
-                    if(aux[i].from == objectLink[j].from && aux[i].to == objectLink[j].to){
-                      if(count==0){
-                        count=1;
-                      }else{
-                        aux[i].text = aux[i].text + " , " + objectLink[j].text;
-                          if(!aux[i].source){
-                            aux[i].source = objectLink[j].source;
-                          }
-                        //aux[i].source = aux[i].source + " , " + objectLink[j].source;
-                        objectLink.splice(objectLink.indexOf(objectLink[j]),1);
-                        //aux[i].text = text;
-                      }
-                    }
-                  j++;
-                  }             
-                i++;
-              }
-              //INSERTAMOS LOS TEXTOS
-              var i=0;
-              while (i < objectLink.length){
-                var j = 0;
-                  while (j < objectLink.length){
-                    if(aux[i].from == objectLink[j].from && aux[i].to == objectLink[j].to){
-                        objectLink[j].text = aux[i].text;
-                        objectLink[j].source = aux[i].source;
-                    }
-                  j++;
-                  }             
-                i++;
-              }
-
-
-                  diagram.model = new go.GraphLinksModel(objectNode, objectLink);
-                  diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, 
-                    { 
-                      direction: 0, 
-                      layerSpacing: 10,      
-                      columnSpacing: 10,
-                      layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                    });  
-              isClick = 0;
-            }
-
-          };*/  
-          //FIN DE LA FUNCION PARA CAMBIAR EL DIAGRAMA CON UN CLICK
-
 
         });
 
 
-        diagram.layout = go_api(go.LayeredDigraphLayout, 
-                       { 
-                        direction: 0, 
-                        layerSpacing: 10,      
-                        columnSpacing: 10,
-                        layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                        });
-        diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, 
-                       { 
-                        direction: 0, 
-                        layerSpacing: 50,      
-                        columnSpacing: 20,
-                        layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
-                        });
+        diagram.layout = go_api(go.LayeredDigraphLayout, { 
+            direction: 0, 
+            layerSpacing: 10,      
+            columnSpacing: 10,
+            layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
+        });
+        diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, { 
+            direction: 0, 
+            layerSpacing: 50,      
+            columnSpacing: 20,
+            layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
+        });
 
         diagram.initialContentAlignment = go.Spot.Center;
-        //diagram.initialAutoScale= false; 
-        // enable Ctrl-Z to undo and Ctrl-Y to redo
         diagram.undoManager.isEnabled = false;
 
     }
 
 
-    function insertLinks(res,text, source){
+    function insertLinks(res,general_text, general_source){
       var objectLink = [];
       this.res = res;
-      this.text = text;
-      this.source =  source;
+      this.general_text = general_text;
+      this.general_source =  general_source;
       var texto = "";
       var isource = [];
 
-      if(source){
+      if(general_source){
         isource = ["/static/gojs/srojo.png","/static/gojs/sverde.png","/static/gojs/samarillo.png"];
       }
 
@@ -936,7 +719,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
             //objectLink.push({ from: res.data[i].role, to: res.data[i].status_from });
             var j=0;
             while(j < res.data[i].statuses_to.length){
-              if(text){
+              if(general_text){
                 texto = res.data[i].role;
               }
               if(res.data[i].role_job_type == "static"){
@@ -955,7 +738,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
       i++;
       }
 
-      //BORRAMOS LOS LINKS DUPLICADOS
+      //Delete duplicate links
       var i=0;
       var aux = objectLink;
       while (i < objectLink.length){
@@ -966,7 +749,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               if(count==0){
                 count=1;
               }else{
-                if(text){
+                if(general_text){
                   aux[i].text = aux[i].text + " , " + objectLink[j].text;
                 }else{
                   aux[i].text = "";
@@ -983,7 +766,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
           }             
         i++;
       }
-      //INSERTAMOS LOS TEXTOS
+      //Insert text in links
       var i=0;
       while (i < objectLink.length){
         var j = 0;
@@ -1002,7 +785,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
 
 
 
-    //FUNCION QUE USAMOS PARA CONSEGUIR EL COLOR OPUESTO AL DEL BACKGROUND
+    //Function make the oposite color to the background
     function invertir_Color(hex) {
 
       var color = hex;
@@ -1017,11 +800,11 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
     }
 
 
-     var container = new Ext.Panel({
+    var container = new Ext.Panel({
          width: 800,
          height: 600,
          layout: 'absolute', 
          items:[p,d]
-     });
+    });
     return container;    
 });
