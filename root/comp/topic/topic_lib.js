@@ -957,7 +957,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             tooltip: _('Open life cicle'),
             handler: function(){ self.show_life_cicle() }
             //hidden: self.viewKanban==undefined?true:!self.viewKanban,
-            //allowDepress: false, toggleGroup: self.toggle_group
+            //allowDepress: false, 
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
@@ -1252,7 +1252,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
         var win = window.open( url, '_blank' );
     },
-    show_life_cicle: function(){
+    show_life_cicle : function(){
         var self = this;
 
         Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){
