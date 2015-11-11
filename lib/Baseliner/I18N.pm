@@ -91,13 +91,16 @@ sub parse_po {
 
     open my $fh, '<:encoding(UTF-8)', $file or return '';
 
-    my $state = 'id';
+    my $state = 'meta';
 
     my @po;
     while (<$fh>) {
         s{\r|\n}{}g;
 
-        next unless length $_;
+        unless (length $_) {
+            $state = 'meta';
+            next;
+        }
         next if /^#/;
 
         if (/^msgid /) {

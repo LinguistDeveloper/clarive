@@ -67,6 +67,24 @@ EOP
     is $text, qq{"This is a multiline" : "Se trata de una línea de múltiples"};
 };
 
+subtest 'parse_po: real file' => sub {
+    my $file = _write_file(qq{
+msgid ""
+msgstr ""
+
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=utf-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Site Information"
+msgstr "Datos de Registro"
+    });
+
+    my $text = Baseliner::I18N->parse_po($file);
+
+    is $text, qq{"" : "",\n"Site Information" : "Datos de Registro"};
+};
+
 done_testing;
 
 sub _write_file {
