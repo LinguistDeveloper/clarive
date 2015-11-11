@@ -1,6 +1,5 @@
 msgid ""
 msgstr ""
-
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -57,10 +56,10 @@ msgid "Sunday"
 msgstr "Domingo"
 
 msgid "in 1 day"
-msgstr "en 1 día" 
+msgstr "en 1 día"
 
 msgid "in %1 days"
-msgstr "en %1 días" 
+msgstr "en %1 días"
 
 msgid "just now"
 msgstr "hace un instante"
@@ -119,8 +118,12 @@ msgstr "Hito"
 msgid "Milestones"
 msgstr "Hitos"
 
-msgid "Current topic status '%1' does not match the real status '%2'. Please refresh."
-msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por favor, recargue antes de reintentar."
+msgid ""
+"Current topic status '%1' does not match the real status '%2'. Please "
+"refresh."
+msgstr ""
+"Estado actual del tópico '%1' no coincide con el estado real '%2'. Por "
+"favor, recargue antes de reintentar."
 
 msgid "No items found"
 msgstr "No se han encontrado datos"
@@ -197,8 +200,12 @@ msgstr "Enviando Petición..."
 msgid "This comment does not exist anymore"
 msgstr "El comentario ya no existe"
 
-msgid "The topic category %1 does not have any initial status assigned. Contact your administrator."
-msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al administrador."
+msgid ""
+"The topic category %1 does not have any initial status assigned. Contact "
+"your administrator."
+msgstr ""
+"La categoría %1 no tiene un estado inicial asignado. Contacte al "
+"administrador."
 
 msgid "Progress"
 msgstr "Avance"
@@ -272,8 +279,12 @@ msgstr "Licencias"
 msgid "Copyright Notices"
 msgstr "Notificaciones de Copyright"
 
-msgid "Topic has changed but has not been saved (changed fields: %1). Save topic now?"
-msgstr "El tópico ha cambiado pero no se ha guardado (campos: %1). ¿Desea guardar el tópico?"
+msgid ""
+"Topic has changed but has not been saved (changed fields: %1). Save topic "
+"now?"
+msgstr ""
+"El tópico ha cambiado pero no se ha guardado (campos: %1). ¿Desea guardar el "
+"tópico?"
 
 msgid "Remote"
 msgstr "Remoto"
@@ -548,7 +559,7 @@ msgstr "Estadísticas de JOBS por Entorno"
 msgid "Job List"
 msgstr "Listado de JOBS"
 
-msgid "Weekly Job Stats" 
+msgid "Weekly Job Stats"
 msgstr "Estadísticas de JOBS por Semana"
 
 msgid "Monthly Job Stats"
@@ -563,7 +574,7 @@ msgstr "%Fallidos"
 msgid "#Cancelled"
 msgstr "%Cancelados"
 
-msgid "%Cancelled" 
+msgid "%Cancelled"
 msgstr "%Cancelados"
 
 msgid "#Correct"
@@ -827,7 +838,7 @@ msgstr "Error de Login"
 msgid "Invalid User."
 msgstr "Usuario Inválido."
 
-msgid "User '%1' not found." 
+msgid "User '%1' not found."
 msgstr "Usuario '%1' no encontrado."
 
 msgid "Key"
@@ -933,10 +944,14 @@ msgid "Applications: %1. Requesting approval for job %2"
 msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2"
 
 msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
-msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
+msgstr ""
+"Aplicación: %1. Solicitud de aprobación para el pase %2 al entorno %3."
+"<br>Motivo: %4"
 
 msgid "Applications: %1. Requesting approval for job %2, baseline %3: %4"
-msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
+msgstr ""
+"Aplicaciones: %1. Solicitud de aprobación para el pase %2 al entorno %3."
+"<br>Motivo: %4"
 
 msgid "User does not have permission to perform the operation"
 msgstr "El usuario no tiene permiso para realiza la operación"
@@ -981,7 +996,8 @@ msgid "Are you sure you want to cancel the request '%1' for item '%2'?"
 msgstr "¿Seguro que quiere cancelar la solicitud '%1' para el elemento '%2'?"
 
 msgid "Are you sure you want to request again '%1' for item '%2'?"
-msgstr "¿Seguro que quiere realizar de nuevo la solicitud '%1' para el elemento '%2'?"
+msgstr ""
+"¿Seguro que quiere realizar de nuevo la solicitud '%1' para el elemento '%2'?"
 
 msgid "Pending Approval"
 msgstr "Pendiente de Aprobación"
@@ -1407,7 +1423,8 @@ msgid "Could not rename element %1 to %2: %3"
 msgstr "No se ha podido renombrar el fichero %1 to %2: %3"
 
 msgid "Could not delete file that belongs to another baseline %1: %2"
-msgstr "No se ha podido borrar el fichero por pertenecer a otra linea base %1: %2"
+msgstr ""
+"No se ha podido borrar el fichero por pertenecer a otra linea base %1: %2"
 
 msgid "Renamed elements"
 msgstr "Elementos renombrados"
@@ -1452,10 +1469,10 @@ msgid "Could not rerun the job"
 msgstr "Error al intentar reiniciar el pase"
 
 msgid "Job Manager"
-msgstr "Gestor de Pases" 
+msgstr "Gestor de Pases"
 
 msgid "Job %1 finished with status %2"
-msgstr  "Pase %1 finalizado en estado %2"
+msgstr "Pase %1 finalizado en estado %2"
 
 msgid "Create New Job"
 msgstr "Crear Nuevo Pase"
@@ -1694,8 +1711,12 @@ msgstr "Hora fin"
 msgid "Job Calendar"
 msgstr "Calendario de Pase"
 
-msgid "Killing the job will interrupt current local processing but no remote processes"
-msgstr "Al matarse el proceso se interrumpen procesos locales, pero no procesos remotos"
+msgid ""
+"Killing the job will interrupt current local processing but no remote "
+"processes"
+msgstr ""
+"Al matarse el proceso se interrumpen procesos locales, pero no procesos "
+"remotos"
 
 msgid "New Window"
 msgstr "Nueva Ventana"
@@ -1790,8 +1811,9 @@ msgstr "%1 no está en ninguna release."
 msgid "Cannot add item of type %1 to releases."
 msgstr "No se permite añadir el elemento de tipo %1 a una release."
 
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (178)
 msgid "Error creating job: %1"
-msgstr "Error al crear el pase: %1"
+msgstr "Error creando pase: %1"
 
 msgid "Error creating the release: %1"
 msgstr "Error al crear/alterar la release: %1"
@@ -2003,7 +2025,6 @@ msgstr "Continuando la ejecución del Pase"
 msgid "Job stash stored ok"
 msgstr "Almacenada correctamente la información del Pase"
 
-
 msgid "none"
 msgstr "Ninguno"
 
@@ -2031,7 +2052,6 @@ msgstr "Rollback"
 msgid "rollback"
 msgstr "Rollback"
 
-
 msgid "version"
 msgstr "Versión"
 
@@ -2046,7 +2066,6 @@ msgstr "Nombre del Host"
 
 msgid "Port"
 msgstr "Puerto"
-
 
 msgid "unassigned"
 msgstr "sin asignar"
@@ -2166,7 +2185,8 @@ msgid "Error while running chained service '%1' for step %2: %3"
 msgstr "Error mientras se ejecutaba el servicio '%1' para el paso %2: %3"
 
 msgid "Warning while running chained service '%1' for step %2: %3"
-msgstr "Warning encontrado mientras se ejecutaba el servicio '%1' para el paso %2: %3"
+msgstr ""
+"Warning encontrado mientras se ejecutaba el servicio '%1' para el paso %2: %3"
 
 msgid "Annotation"
 msgstr "Anotación"
@@ -2369,7 +2389,7 @@ msgstr "Salida de la ejecución de pase"
 msgid "Missing output"
 msgstr "Falta la salida"
 
-msgid "Job restarted by user %1, execution %2" 
+msgid "Job restarted by user %1, execution %2"
 msgstr "Pase reiniciado por el usuario %1, ejecución %2"
 
 msgid "Job cancelled by user %1"
@@ -2607,7 +2627,9 @@ msgid "Paused. Reason: %1"
 msgstr "Retenido (pausa). Motivo: %1"
 
 msgid "Field limit exceeded: %1 chars. Use the Data field for large content"
-msgstr "Límite de campo excedido: %1 caracteres. Utilice el campo Datos para contenido extenso"
+msgstr ""
+"Límite de campo excedido: %1 caracteres. Utilice el campo Datos para "
+"contenido extenso"
 
 msgid "Job is not active"
 msgstr "Pase no está activo"
@@ -2659,7 +2681,6 @@ msgstr "Renombrando..."
 
 msgid "Error in Rename"
 msgstr "Error en el Renombrado"
-
 
 msgid "Manual Deploy"
 msgstr "Despliegue Manual"
@@ -2766,8 +2787,6 @@ msgstr "Finished dummy sleep semaphore service"
 msgid "Approve jobs"
 msgstr "Aprobar pases"
 
-
-
 msgid "Notify when job has started"
 msgstr "Notificar cuando haya empezado el pase"
 
@@ -2836,7 +2855,6 @@ msgstr "Seleccione una fila"
 
 msgid "Confirm"
 msgstr "Confirmar"
-
 
 msgid "Actions User"
 msgstr "Acciones de usuario"
@@ -3088,7 +3106,8 @@ msgid "Not demotable"
 msgstr "No se puede devolver"
 
 msgid "Cannot promote/demote revision %1 or missing baseline (job type %2)"
-msgstr "No puedo promover/devolver revision %1 o falta el entorno (tipo de job %2)"
+msgstr ""
+"No puedo promover/devolver revision %1 o falta el entorno (tipo de job %2)"
 
 msgid "Revision baseline '%1' does not match the job baseline '%2'"
 msgstr "El entorno de '%1' no coincide con el entorno de pase '%2'"
@@ -3162,34 +3181,26 @@ msgstr "Error añadiendo categoría: %1"
 msgid "Category modified"
 msgstr "Categoría modificada"
 
-
 msgid "Error modifying Category: %1"
 msgstr "Error modificando categoría: %1"
-
 
 msgid "Category deleted"
 msgstr "Categoría borrada"
 
-
 msgid "Error deleting Category"
 msgstr "Error borrando categoría"
-
 
 msgid "Topic added"
 msgstr "Tópico añadido"
 
-
 msgid "Error adding Topic: %1"
 msgstr "Error añadiendo tópico: %1"
-
 
 msgid "Topic modified"
 msgstr "Tópico modificado"
 
-
 msgid "Error modifying Topic: %1"
 msgstr "Error modificando tópico: %1"
-
 
 msgid "Topic deleted"
 msgstr "Tópico borrado"
@@ -3200,14 +3211,11 @@ msgstr "%1 tópico(s) borrado(s)"
 msgid "Error deleting topic: %1"
 msgstr "Error borrando tópico: %1"
 
-
 msgid "Topic closed"
 msgstr "Tópico cerrado"
 
-
 msgid "Error closing Topic: %1"
 msgstr "Error cerrando tópico: %1"
-
 
 msgid "Are you sure you want to delete the topic(s)"
 msgstr "¿Seguro que quiere borrar el/los tópico(s)"
@@ -3221,14 +3229,11 @@ msgstr " (y %1 más)"
 msgid "Are you sure you want to close the topic"
 msgstr "¿Seguro que quiere cerrar tópico"
 
-
 msgid "Create topic"
 msgstr "Crear tópico"
 
-
 msgid "Category"
 msgstr "Categoría"
-
 
 msgid "Title"
 msgstr "Título"
@@ -3239,17 +3244,14 @@ msgstr "Editar tópico"
 msgid "Create comment"
 msgstr "Crear comentario"
 
-
 msgid "Create category"
 msgstr "Crear categoría"
 
 msgid "A brief description of the category"
 msgstr "Una breve descripción de la categoría"
 
-
 msgid "Edit category"
 msgstr "Editar categoría"
-
 
 msgid "Name of category"
 msgstr "Nombre de categoría"
@@ -3327,7 +3329,9 @@ msgid "Error deleting Categories"
 msgstr "Error borrando categorías"
 
 msgid "Delete all topics first from the selected categories to delete them"
-msgstr "Borre todos los topicos asociados a las categorías seleccionadas antes de borrarlas"
+msgstr ""
+"Borre todos los topicos asociados a las categorías seleccionadas antes de "
+"borrarlas"
 
 msgid "Projects unassigned"
 msgstr "Proyectos desasignados"
@@ -3767,36 +3771,55 @@ msgstr "¿Quiere mover %1 al entorno de %2 (%3)?"
 msgid "Are you sure you want to delete the role %1?"
 msgstr "¿Seguro que quiere borrar el rol %1?"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (21)
 msgid "Update Baselines"
 msgstr "Actualiza Líneas Bases"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (31)
 msgid "Missing parameter revision"
 msgstr "Falta el parámetro revision"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (32)
 msgid "Missing parameter project"
 msgstr "Falta el parámetro project"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (66)
 msgid "Created job %1 of type %2 ok."
 msgstr "Creación de pase %1 de tipo %2 ok."
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (152)
 msgid "Promoted baseline %1 to %2"
 msgstr "Línea Base promocionada de %1 a %2"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/GitServices.pm (163)
 msgid "Demoted baseline %1 to %2"
 msgstr "Línea Base devuelta de %1 a %2"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/root/git/tag.html (52)
 msgid "Changes"
 msgstr "Cambios"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (30)
 msgid "File %1 does not exist"
 msgstr "Fichero %1 no existe"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (175)
 msgid "Job %1 created ok"
 msgstr "Pase %1 creado"
 
-msgid "Error creating job: %1"
-msgstr "Error creando pase: %1"
-
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/root/comp/git/promote.js (14)
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/root/comp/git/deploy.js (18)
 msgid "Error creating job"
 msgstr "Error creando pase"
 
@@ -3947,8 +3970,10 @@ msgstr "Último ID de proceso"
 msgid "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
 msgstr "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
 
-msgid "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
-msgstr "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
+msgid ""
+"<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
+msgstr ""
+"<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
 
 msgid "Log <%$lastjob->{name}%>"
 msgstr "Log <%$lastjob->{name}%>"
@@ -4122,10 +4147,15 @@ msgid "*Pushed deployment* for '%1'"
 msgstr "*Despliegue añadido* para '%1'"
 
 msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
-msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
+msgstr ""
+"No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-msgid "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
-msgstr "'%1' está en un pase activo: %2 (%3) con promoción/devolución a un estado diferente (%4)"
+msgid ""
+"'%1' is in an active job: %2 (%3) with promote/demote to a different state "
+"(%4)"
+msgstr ""
+"'%1' está en un pase activo: %2 (%3) con promoción/devolución a un estado "
+"diferente (%4)"
 
 msgid "'%1' is in an active job to bl %3: %2"
 msgstr "'%1' está en un pase activo al entorno %3: %2"
@@ -4277,8 +4307,11 @@ msgstr "Error creando carpeta: %1"
 msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
-msgid "To upload files, the form needs to be created. Save form before submitting?"
-msgstr "Para poder subir ficheros, el formulario tiene que estar creado. Crear formulario ahora?"
+msgid ""
+"To upload files, the form needs to be created. Save form before submitting?"
+msgstr ""
+"Para poder subir ficheros, el formulario tiene que estar creado. Crear "
+"formulario ahora?"
 
 msgid "status_new"
 msgstr "Estados"
@@ -4564,7 +4597,7 @@ msgstr "Entorno"
 
 msgid "Error adding notification: "
 msgstr "Error añadiendo notificación"
- 
+
 msgid "Related"
 msgstr "Relacionados"
 
@@ -4589,14 +4622,24 @@ msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
 msgid "Can delete topic in this category"
 msgstr "Puede borrar tópicos de la categoría"
 
-msgid "Topic was modified by %1 %2 ago while you're editing. Are you sure you want to overwrite the topic?"
-msgstr "El tópico fue modificado por el usuario %1 hace %2 y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
+msgid ""
+"Topic was modified by %1 %2 ago while you're editing. Are you sure you want "
+"to overwrite the topic?"
+msgstr ""
+"El tópico fue modificado por el usuario %1 hace %2 y se perderán esos "
+"cambios. ¿Seguro que quiere sobreescribir el tópico?"
 
-msgid "Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?"
-msgstr "Las relaciones del tópico han sido modificadas en otra ventana o por otro usuario y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
+msgid ""
+"Topic relationships changed while you're editing. Are you sure you want to "
+"overwrite the topic?"
+msgstr ""
+"Las relaciones del tópico han sido modificadas en otra ventana o por otro "
+"usuario y se perderán esos cambios. ¿Seguro que quiere sobreescribir el "
+"tópico?"
 
 msgid "Topic changed status before. Do you want to refresh the topic?"
-msgstr "El tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?"
+msgstr ""
+"El tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?"
 
 msgid "Checkbox"
 msgstr "Casilla de verificación"
@@ -4727,8 +4770,11 @@ msgstr "Entornos"
 msgid "Apply filter"
 msgstr "Aplicar filtro"
 
-msgid "To upload files to UCM, the topic needs to be created. Save topic first?"
-msgstr "Para subir ficheros a UCM, el tópico tiene que estar creado.  Desea guardarlo primero?"
+msgid ""
+"To upload files to UCM, the topic needs to be created. Save topic first?"
+msgstr ""
+"Para subir ficheros a UCM, el tópico tiene que estar creado.  Desea "
+"guardarlo primero?"
 
 msgid "Job %1 cannot be rescheduled unless its status is '%2' (current: %3)"
 msgstr "El pase %1 sólo puede ser replanificado en estado %2 (actual: %3)"
@@ -4737,7 +4783,9 @@ msgid "Processing.  Please wait"
 msgstr "Procesando.  Espere por favor"
 
 msgid "Problem found opening topic %1. The error message is: %2"
-msgstr "Se ha encontrado un problema abriendo el tópico %1. El mensaje de error es: %2"
+msgstr ""
+"Se ha encontrado un problema abriendo el tópico %1. El mensaje de error es: "
+"%2"
 
 msgid "Artifacts"
 msgstr "Artefactos"
@@ -4949,14 +4997,20 @@ msgstr "Archivo subido %1: %2"
 msgid "Deleted files:"
 msgstr "Ficheros borrados:"
 
-msgid "No natures available to scan. Please, define some nature CIs before continuing."
-msgstr "No hay naturalezas disponibles para escanear. Por favor, define alguna CI de tipo naturaleza antes de continuar."
+msgid ""
+"No natures available to scan. Please, define some nature CIs before "
+"continuing."
+msgstr ""
+"No hay naturalezas disponibles para escanear. Por favor, define alguna CI de "
+"tipo naturaleza antes de continuar."
 
 msgid "No natures included this item path: %1"
 msgstr "Naturalezas no incluidas en la dirección de este elemento: %1"
 
 msgid "Error trying to fatpack perl code. Could not find fatpack code in `%1`"
-msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en `%1`"
+msgstr ""
+"Error al intentar hacer fatpack sobre el código perl. No se ha podido "
+"encontrae el código del fatpack en `%1`"
 
 msgid "Topic #%1 not found. Deleted?"
 msgstr "Tópico #%1 no encontrado. ¿Se ha borrado?"
@@ -5048,8 +5102,11 @@ msgstr "Verificada la revisión %1"
 msgid "Updated baseline %1 to %2"
 msgstr "Actualizado el entorno %1 a %2"
 
-msgid "Error: could not find tag %1 in repository. Repository tags are configured?"
-msgstr "Error: No se puede encontrar la etiqueta %1 en el repositorio. ¿Están configuradas las etiquetas del repositorio?"
+msgid ""
+"Error: could not find tag %1 in repository. Repository tags are configured?"
+msgstr ""
+"Error: No se puede encontrar la etiqueta %1 en el repositorio. ¿Están "
+"configuradas las etiquetas del repositorio?"
 
 msgid "Enter or select the category tags"
 msgstr "Indica o selecciona las etiquetas de categoría"
@@ -5126,8 +5183,12 @@ msgstr "Introduce o selecciona tópicos"
 msgid "Save Changes?"
 msgstr "¿Guardar cambios?"
 
-msgid "Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?"
-msgstr "El tópico fue modificado por %1 mientras tu estabas editando %2. ¿Está seguro de que quiere sobreescribirlo?"
+msgid ""
+"Topic was modified by %1 while you're editing %2 ago. Are you sure you want "
+"to overwrite the topic?"
+msgstr ""
+"El tópico fue modificado por %1 mientras tu estabas editando %2. ¿Está "
+"seguro de que quiere sobreescribirlo?"
 
 msgid "Check balix"
 msgstr "Comprobar balix"
@@ -5207,8 +5268,12 @@ msgstr "Advertencia del navegador"
 msgid "This browser is not supported by %1"
 msgstr "Este navegador no es soportado por %1"
 
-msgid "%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please disable it."
-msgstr "%1 no soporta el <b> modo compatibilidad </b> (Internet Explorer), Por favor, desactivelo."
+msgid ""
+"%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please "
+"disable it."
+msgstr ""
+"%1 no soporta el <b> modo compatibilidad </b> (Internet Explorer), Por "
+"favor, desactivelo."
 
 msgid "Baseliner"
 msgstr "Baseliner"
@@ -5543,9 +5608,6 @@ msgstr "Variables de entorno"
 msgid "Build"
 msgstr "Construir"
 
-msgid "New Search"
-msgstr "Nueva búsqueda"
-
 msgid "Operator"
 msgstr "Operador"
 
@@ -5641,7 +5703,7 @@ msgstr "Sistema"
 
 msgid "Roles/Workflow"
 msgstr "Roles/Flujo de trabajo"
-	
+
 msgid "Field already exists, introduce another field name"
 msgstr "El campo ya existe, introduzca otro nombre de campo"
 
@@ -5772,8 +5834,9 @@ msgid "No existing file detected to backup: `%1`"
 msgstr "No existe el fichero detectado para la copia de seguridad: `%1`"
 
 msgid "Error reading backup file from remote. Ignored: `%1`"
-msgstr "Error leyendo el fichero de copia de seguridad de forma remotaa. Ignorado: `%1`"
-
+msgstr ""
+"Error leyendo el fichero de copia de seguridad de forma remotaa. Ignorado: `"
+"%1`"
 
 msgid "Rollback switch to local file `%1`"
 msgstr "Revertir cambio al fichero local `%1`"
@@ -5782,7 +5845,8 @@ msgid "Sending file `%1` to `%2`"
 msgstr "Enviando fichero `%1` a `%2`"
 
 msgid "Error doing a chown `%1` to file `%2`: %3"
-msgstr "Error haciendo cambiando el usuario propietario `%1` al fichero `%2`: %3"
+msgstr ""
+"Error haciendo cambiando el usuario propietario `%1` al fichero `%2`: %3"
 
 msgid "Tables"
 msgstr "Tablas"
@@ -6061,7 +6125,8 @@ msgid "Created status %1"
 msgstr "Estado %1 creado"
 
 msgid "Status %1 found. Statuses are not updated by this import."
-msgstr "Estado %1 encontrado. Los estados no se han actualizado con este import"
+msgstr ""
+"Estado %1 encontrado. Los estados no se han actualizado con este import"
 
 msgid "Status '%1' included in category"
 msgstr "Estado '%1' included in category"
@@ -6177,8 +6242,12 @@ msgstr "Error añadiendo el proyecto %1: %2"
 msgid "Error deleting project %1: %2"
 msgstr "Error borrando el proyecto %1: %2"
 
-msgid "Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled."
-msgstr "El pase tiene dependencias debido a pases posteriores. EL entorno no puede ser actualizado. Marcha atrás cancelada"
+msgid ""
+"Job has dependencies due to later jobs. Baseline cannot be updated. Rollback "
+"cancelled."
+msgstr ""
+"El pase tiene dependencias debido a pases posteriores. EL entorno no puede "
+"ser actualizado. Marcha atrás cancelada"
 
 msgid "Job rollback requested by %1"
 msgstr "Pase marcha atrás solicitado por %1"
@@ -6239,8 +6308,6 @@ msgstr "interno"
 
 msgid "Error adding Topic %1: %2"
 msgstr "Error añadiendo el tópico %1: %2"
-
-msgid "Toópico no encontrado"
 
 msgid "#%1 %2 updated: %3 changed"
 msgstr "#%1 %2 actualizado: %3 cambiado"
@@ -6351,10 +6418,13 @@ msgid "Could not find local directory to `%1`"
 msgstr "No se puede encontrar directorio local en `%1`"
 
 msgid "balix: can't send file: remote dir is not writeable `%1`"
-msgstr "balix: no se puede enviar el fichero: el directorio remoto no se puede escribir `%1`"
+msgstr ""
+"balix: no se puede enviar el fichero: el directorio remoto no se puede "
+"escribir `%1`"
 
 msgid "balix: can't send file: destination is a directory `%1`"
-msgstr "balix: no se puede enviar el fichero: el destinatario es un directorio `%1`"
+msgstr ""
+"balix: no se puede enviar el fichero: el destinatario es un directorio `%1`"
 
 msgid "Failed CRC check for remote file `%1`"
 msgstr "Fallo en la verificación CRC del fichero remoto `%1`"
@@ -6407,8 +6477,12 @@ msgstr "Fallo del pase: %1"
 msgid "No need to rollback anything."
 msgstr "No es necesario iniciar el rollback"
 
-msgid "Error during rollback. Baselines are inconsistent, manual intervention required."
-msgstr "Error durante la marcha atrás. Los entornos son inconsistentes, se requiere intervención manual"
+msgid ""
+"Error during rollback. Baselines are inconsistent, manual intervention "
+"required."
+msgstr ""
+"Error durante la marcha atrás. Los entornos son inconsistentes, se requiere "
+"intervención manual"
 
 msgid "Job step %1 finished with error"
 msgstr "Paso %1 del pase ha terminado con error"
@@ -6501,7 +6575,8 @@ msgid "Found %1 items for this job"
 msgstr "Encontrados %1 elementos para este pase"
 
 msgid "Checking out baseline %1 for project %2, repository %3: %4"
-msgstr "Haciendo check-out del entorno %1 para el proyecto %2, repositorio %3: %4"
+msgstr ""
+"Haciendo check-out del entorno %1 para el proyecto %2, repositorio %3: %4"
 
 msgid "Project items before for %1"
 msgstr "Elementos del proyecto antes de %1"
@@ -6588,7 +6663,7 @@ msgid "Abort by Dispatcher. Job unknown error caught: %1"
 msgstr "Abortado por el Dispatcher. Capturado error desconocido del pase: %1"
 
 msgid "***** ERROR: Could not fork job '%1'"
-msgstr "***** ERROR: 	No se puede bifurcar el trabajo '%1'"
+msgstr "***** ERROR: \tNo se puede bifurcar el trabajo '%1'"
 
 msgid "Could not start service %1. Service ignored: %2"
 msgstr "No se puede iniciar el servicio %1. Servicio ignorado: %2"
@@ -6672,7 +6747,9 @@ msgid "Exist Mode"
 msgstr "Modo existe"
 
 msgid "Skip, if file already sent by any task in job chain"
-msgstr "Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cadena de pase"
+msgstr ""
+"Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cadena "
+"de pase"
 
 msgid "Reship, even file has already been shipped to node"
 msgstr "Reenviar, incluso si el fichero ha sido ya enviado al nodo"
@@ -6872,9 +6949,6 @@ msgstr "No se puede promocionar/degradar este tipo de entidad"
 msgid "No slots selected"
 msgstr "No se han seleccionado slots"
 
-msgid "<search>"
-msgstr "<search>"
-
 msgid "Rule Export"
 msgstr "Exportar regla"
 
@@ -6936,7 +7010,9 @@ msgid "Service '%1' does not contain edit information"
 msgstr "El servicio '%1' no contiene información editable"
 
 msgid "User %1 has changed rule at %2. Are you sure you want to overwrite it?"
-msgstr "El usuario %1 ha cambiado la regla a %2. ¿Está seguro de que quiere sobreescribirla?"
+msgstr ""
+"El usuario %1 ha cambiado la regla a %2. ¿Está seguro de que quiere "
+"sobreescribirla?"
 
 msgid "DSL validation failed, save it anyway? Error: %1"
 msgstr "Ha fallado la validación, ¿Guardar de todos modos?  Error: %1"
@@ -6948,7 +7024,9 @@ msgid "Toggle"
 msgstr "Interruptor"
 
 msgid "Rule `%1` has changed, but has not been saved. Leave without saving?"
-msgstr "La regla `%1` ha cambiado, pero no ha sido guardada. ¿Desea salir sin guardar?"
+msgstr ""
+"La regla `%1` ha cambiado, pero no ha sido guardada. ¿Desea salir sin "
+"guardar?"
 
 msgid "Stash"
 msgstr "Stash"
@@ -7115,7 +7193,6 @@ msgstr "Error al Impersonarse"
 msgid "Passwords do not match"
 msgstr "Contraseñas no encontradas"
 
-
 msgid "<% $dashboard->{name} %>"
 msgstr "<% $dashboard->{name} %>"
 
@@ -7131,11 +7208,19 @@ msgstr "Repositorio"
 msgid "Checkout"
 msgstr "Checkout"
 
-msgid "Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?"
-msgstr "Las características seleccionadas serán sobreescritas. Puede ser necesario reiniciar el servidor. Si se encuentra algún cambio, se hará un stash con ellos y la versión actual se guardará en la rama de marcha atrás. ¿Está de acuerdo?"
+msgid ""
+"Selected features will be overwritten. A server restart may be necessary. If "
+"any changes are found, they will be stashed and the current version saved to "
+"the __rollback__ branch. Ok?"
+msgstr ""
+"Las características seleccionadas serán sobreescritas. Puede ser necesario "
+"reiniciar el servidor. Si se encuentra algún cambio, se hará un stash con "
+"ellos y la versión actual se guardará en la rama de marcha atrás. ¿Está de "
+"acuerdo?"
 
 msgid "No versions were changed, checking out over anyway?"
-msgstr "No han cambiado las versiones, ¿Desea hacer un checkout de todas formas?"
+msgstr ""
+"No han cambiado las versiones, ¿Desea hacer un checkout de todas formas?"
 
 msgid "Creating patch..."
 msgstr "Creando parche..."
@@ -7309,7 +7394,9 @@ msgid "Rule statements saved ok"
 msgstr "Sentencias de la regla guardadas ok"
 
 msgid "Another user changed rule statements while editing"
-msgstr "¡Otro usuario ha cambiado las sentencias de la regla durante el proceso de edición!"
+msgstr ""
+"¡Otro usuario ha cambiado las sentencias de la regla durante el proceso de "
+"edición!"
 
 msgid "Simulation of modification of rule statements"
 msgstr "Simulación de la modificación de las sentencias de una regla"
@@ -7447,7 +7534,7 @@ msgid "DB ROLLBACK transaction %1"
 msgstr "Transacción de MARCHA ATRÁS a BD %1"
 
 msgid "Cmd. Line Connection"
-msgstr "Cmd. Línea de conexión" 
+msgstr "Cmd. Línea de conexión"
 
 msgid "Error"
 msgstr "Error"
@@ -7567,7 +7654,8 @@ msgid "Master row not found for mid %1"
 msgstr "Fila Master no encontrada para el mid %1"
 
 msgid "Error deserializing CI %1. Missing or invalid YAML ref: %2"
-msgstr "Error deserializando el CI %1. Falta la referencia YALM o no es válida: %2"
+msgstr ""
+"Error deserializando el CI %1. Falta la referencia YALM o no es válida: %2"
 
 msgid "Error deserializing CI %1. Error YAML ref: %2"
 msgstr "Error deserializando el CI %1. Error en la referencia YAML: %2"
@@ -7599,6 +7687,8 @@ msgstr "Especificar la ruta de anclaje"
 msgid "Error trapped"
 msgstr "Error de excepción"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (158)
 msgid "%1"
 msgstr "%1"
 
@@ -7656,12 +7746,6 @@ msgstr "Cabecera SAML: %1"
 msgid "Missing parameter classname"
 msgstr "Falta un parámetro en el nombre de la clase"
 
-msgid "Role with id '%1' not found"
-msgstr "Rol con id '%1' no encontrado"
-
-msgid "Role with id '%1' or name '%2' not found"
-msgstr "Rol con id '%1' o nombre '%2' no encontrado"
-
 msgid "Topic %1 has been assigned to you"
 msgstr "El tópico %1 le ha sido asignado"
 
@@ -7684,13 +7768,18 @@ msgid "Cannot paused job on CHECK or INIT status"
 msgstr "No se puede pausar un pase en los estados CHECK o INIT"
 
 msgid "balix: can't send file: missing remote dir in '%1'"
-msgstr "balix: no se puede enviar el fichero: falta el directorio remoto en '%1'"
+msgstr ""
+"balix: no se puede enviar el fichero: falta el directorio remoto en '%1'"
 
 msgid "balix: cannot send file: destination is a directory `%1`"
 msgstr "balix: no se puede enviar el fichero: el destino es un directorio `%1`"
 
-msgid "async_request: missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"
-msgstr "petición asíncrona: falta la cola de configuración o no es válida: o bien conffigure el web_queue a 'host:port', o bien a web_host y web_port"
+msgid ""
+"async_request: missing or invalid queue configuration: either configure "
+"web_queue to 'host:port', or web_host and web_port"
+msgstr ""
+"petición asíncrona: falta la cola de configuración o no es válida: o bien "
+"conffigure el web_queue a 'host:port', o bien a web_host y web_port"
 
 msgid "Stop Script"
 msgstr "Parar Script"
@@ -7749,19 +7838,17 @@ msgstr "ant"
 msgid "next"
 msgstr "sig"
 
-msgid "Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?"
-msgstr "La versión de la interfaz está desactualizada (%1 != %2). Quieres refrescar ahora?"
+msgid ""
+"Your interface version is not up-to-date (%1 != %2). Do you want to refresh "
+"now?"
+msgstr ""
+"La versión de la interfaz está desactualizada (%1 != %2). Quieres refrescar "
+"ahora?"
 
 msgid "Please, refresh the page as soon as possible"
 msgstr "Por favor, refresque la página cuanto antes"
 
-########### GIT
-
-msgid ""
-msgstr ""
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-
+# ########## GIT
 # features/gitscm/lib/BaselinerX/GitServices.pm (11)
 msgid "Create a Git Revision Job"
 msgstr "Crear un Pase de una Revisión de Git"
@@ -7770,49 +7857,18 @@ msgstr "Crear un Pase de una Revisión de Git"
 msgid "Checkout a Git Revision"
 msgstr "Hacer Checkout de una Revisión de Git"
 
-# features/gitscm/lib/BaselinerX/GitServices.pm (21)
-msgid "Update Baselines"
-msgstr "Actualiza Líneas Bases"
-
-# features/gitscm/lib/BaselinerX/GitServices.pm (31)
-msgid "Missing parameter revision"
-msgstr "Falta el parámetro revision"
-
-# features/gitscm/lib/BaselinerX/GitServices.pm (32)
-msgid "Missing parameter project"
-msgstr "Falta el parámetro project"
-
-# features/gitscm/lib/BaselinerX/GitServices.pm (66)
-msgid "Created job %1 of type %2 ok."
-msgstr "Creación de pase %1 de tipo %2 ok."
-
 # features/gitscm/lib/BaselinerX/GitServices.pm (111)
 msgid "*Git* Job Elements %1"
 msgstr "Elementos de pase *Git* %1"
 
-# features/gitscm/lib/BaselinerX/GitServices.pm (152)
-msgid "Promoted baseline %1 to %2"
-msgstr "Línea Base promocionada de %1 a %2"
-
-# features/gitscm/lib/BaselinerX/GitServices.pm (163)
-msgid "Demoted baseline %1 to %2"
-msgstr "Línea Base devuelta de %1 a %2"
-
+# #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/root/git/branch.html (51)
-msgid "Commit"
-msgstr "Commit"
-
+# #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/root/git/tag.html (51)
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/root/comp/git/tag_commit.js (12)
 msgid "Commit"
 msgstr "Commit"
-
-# features/gitscm/root/git/tag.html (52)
-msgid "Changes"
-msgstr "Cambios"
-
-# features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (30)
-msgid "File %1 does not exist"
-msgstr "Fichero %1 no existe"
 
 # features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (43)
 msgid "Invalid git repository path %1"
@@ -7830,18 +7886,6 @@ msgstr "cambios"
 msgid "commits"
 msgstr "commits"
 
-# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (158)
-msgid "%1"
-msgstr "%1"
-
-# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (175)
-msgid "Job %1 created ok"
-msgstr "Pase %1 creado"
-
-# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (178)
-msgid "Error creating job: %1"
-msgstr "Error creando pase: %1"
-
 # features/gitscm/lib/BaselinerX/Controller/GitTree.pm (192)
 msgid "Tag %1 created ok"
 msgstr "Etiqueta %1 creada"
@@ -7858,25 +7902,16 @@ msgstr "Revisiones de Git"
 msgid "Are you sure you want to promote %1 to baseline %2"
 msgstr "¿Quiere promocionar %1 al entorno %2?"
 
-# features/gitscm/root/comp/git/promote.js (14)
-msgid "Error creating job"
-msgstr "Error creando pase"
-
 # features/gitscm/root/comp/git/deploy.js (13)
 msgid "Are you sure you want to deploy %1 in baseline %2"
 msgstr "¿Quiere desplegar %1 en la línea base %2?"
 
+# #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/root/comp/git/deploy.js (16)
+# #-#-#-#-#  es.po  #-#-#-#-#
+# features/gitscm/root/comp/git/demote.js (12)
 msgid "Git"
 msgstr "Git"
-
-# features/gitscm/root/comp/git/deploy.js (18)
-msgid "Error creating job"
-msgstr "Error creando pase"
-
-# features/gitscm/root/comp/git/tag_commit.js (12)
-msgid "Commit"
-msgstr "Commit"
 
 # features/gitscm/root/comp/git/tag_commit.js (21)
 msgid "Creating Tag..."
@@ -7898,10 +7933,6 @@ msgstr "Nueva Etiqueta"
 msgid "Are you sure you want to demote %1 to baseline %2"
 msgstr "¿Quiere devolver %1 al entorno %2?"
 
-# features/gitscm/root/comp/git/demote.js (12)
-msgid "Git"
-msgstr "Git"
-
 msgid "Create Tag..."
 msgstr "Crear Etiqueta..."
 
@@ -7912,28 +7943,49 @@ msgid "Index"
 msgstr "Índice"
 
 msgid "Wait while retrieving fields list and format for report %1"
-msgstr "Espere mientras se busca la información de columnas y formatos del informe %1"
+msgstr ""
+"Espere mientras se busca la información de columnas y formatos del informe %1"
 
 msgid "Fields retrieved.  Now wait while generating report %1"
 msgstr "Información recuperada. Espere mientras se genera el informe %1"
 
-msgid "The changeset must be created and assigned to at least one project.  Please, save it first"
-msgstr "El tópico debe estar creado y asignado al menos a un proyecto.  Por favor, guárdelo primero"
+msgid ""
+"The changeset must be created and assigned to at least one project.  Please, "
+"save it first"
+msgstr ""
+"El tópico debe estar creado y asignado al menos a un proyecto.  Por favor, "
+"guárdelo primero"
 
-msgid "The revision must belong to %1 branch.  You probably need to merge branches"
-msgstr "La revisión debe pertenecer a la rama %1.  Probablemente necesite combinar ramas"
+msgid ""
+"The revision must belong to %1 branch.  You probably need to merge branches"
+msgstr ""
+"La revisión debe pertenecer a la rama %1.  Probablemente necesite combinar "
+"ramas"
 
-msgid "Cannot %1 commit [%2] to %3 since they don't have common history and doing that may cause regressions.  You probably need to merge branches"
-msgstr "No se puede %1 la revision [%2] a %3 puesto que no tiene historia común con el entorno y puede provocar regresiones.  Probablemente es necesario combinar ramas antes de realizar este pase"
+msgid ""
+"Cannot %1 commit [%2] to %3 since they don't have common history and doing "
+"that may cause regressions.  You probably need to merge branches"
+msgstr ""
+"No se puede %1 la revision [%2] a %3 puesto que no tiene historia común con "
+"el entorno y puede provocar regresiones.  Probablemente es necesario "
+"combinar ramas antes de realizar este pase"
 
 msgid "Revision [%1] is not in the top revision's history"
-msgstr "La revisión [%1] no está en la historia de la revisión que se va a pasar"
+msgstr ""
+"La revisión [%1] no está en la historia de la revisión que se va a pasar"
 
-msgid "Not all commits are in [%1] history.  You probably need to merge branches"
-msgstr "No todas las revisiones están incluidas en la historia de [%1].  Probablemente es necesario combinar ramas antes de realizar este pase"
+msgid ""
+"Not all commits are in [%1] history.  You probably need to merge branches"
+msgstr ""
+"No todas las revisiones están incluidas en la historia de [%1].  "
+"Probablemente es necesario combinar ramas antes de realizar este pase"
 
-msgid "Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status"
-msgstr "El estado del pase %1 ha cambiado a %2 y no puede ser %3.  Refresque el monitor de pases para ver su estado real"
+msgid ""
+"Job %1 status has changed to %2 and it cannot be %3.  Refresh your job "
+"monitor to see it's actual status"
+msgstr ""
+"El estado del pase %1 ha cambiado a %2 y no puede ser %3.  Refresque el "
+"monitor de pases para ver su estado real"
 
 msgid "Scheme"
 msgstr "Esquema"
@@ -7968,8 +8020,12 @@ msgstr "Acrónimo"
 msgid "acronym"
 msgstr "acrónimo"
 
-msgid "Do you want to add all grouped changesets in the same state from all projects?"
-msgstr "¿Quieres añadir todos los cambios agrupados que están en el mismo estado de todos los proyectos?"
+msgid ""
+"Do you want to add all grouped changesets in the same state from all "
+"projects?"
+msgstr ""
+"¿Quieres añadir todos los cambios agrupados que están en el mismo estado de "
+"todos los proyectos?"
 
 msgid "Job By Status (7 days)"
 msgstr "Pases por estado (7 días)"
@@ -7979,9 +8035,6 @@ msgstr "Pases por franja horaria"
 
 msgid "Other"
 msgstr "Otro"
-
-msgid "Activate"
-msgstr "Activar"
 
 msgid "Mandatory field"
 msgstr "Campo obligatorio"
@@ -8038,7 +8091,9 @@ msgid "There are not tasks to do"
 msgstr "No hay tareas para realiar"
 
 msgid "No data for selection dates.  Please select another period"
-msgstr "No hay datos para las fechas seleccionadas.  Por favor, selecciona otro periodo"
+msgstr ""
+"No hay datos para las fechas seleccionadas.  Por favor, selecciona otro "
+"periodo"
 
 msgid "Are you sure you want to delete all rows?"
 msgstr "¿Está seguro de que quiere borrar todas las filas?"
@@ -8083,10 +8138,13 @@ msgid "Advanced JSON/MongoDB condition for filter"
 msgstr "Condición avanzada JSON/MongoDB"
 
 msgid "Shift in days from today to start timeline. 0 or blank means one day"
-msgstr "Desplazamiento en días desde hoy para inicio del periodo. 0 o vacío para 1 día"
+msgstr ""
+"Desplazamiento en días desde hoy para inicio del periodo. 0 o vacío para 1 "
+"día"
 
 msgid "Shift in days from today to end timeline. 0 or blank means today"
-msgstr "Desplazamiento en días desde hoy para fin del periodo. 0 o vacío para HOY"
+msgstr ""
+"Desplazamiento en días desde hoy para fin del periodo. 0 o vacío para HOY"
 
 msgid "Date field in topics to use as X axis"
 msgstr "Campo de fecha en tópicos para el eje X"
@@ -8104,7 +8162,9 @@ msgid "User assigned to topics"
 msgstr "Usuario asignado a los tópicos"
 
 msgid "Shift in days from today to show in chart. 0 or blank means today"
-msgstr "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío para HOY"
+msgstr ""
+"Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío para "
+"HOY"
 
 msgid "Date field with scheduled start date"
 msgstr "Campo de fecha con la fecha de inicio planificada"
@@ -8139,8 +8199,12 @@ msgstr "Alejarse del AMARILLO cuando el valor llegue a"
 msgid "Reverse gauge"
 msgstr "Gauge inverso"
 
-msgid "(* default color = RED instead of GREEN, switch away from yellow color = GREEN instead of RED)"
-msgstr "(* color por defecto = ROJO en vez de VERDE, color al alejarse del amarillo = VERDE en vez de ROJO)"
+msgid ""
+"(* default color = RED instead of GREEN, switch away from yellow color = "
+"GREEN instead of RED)"
+msgstr ""
+"(* color por defecto = ROJO en vez de VERDE, color al alejarse del amarillo "
+"= VERDE en vez de ROJO)"
 
 msgid "START value for gauge. Blank defaults to 0"
 msgstr "Valor de INICIO para el gauge. Vacío para 0"
@@ -8261,5 +8325,3 @@ msgstr "Actividad de tópico (desde Creado hasta Modificación)"
 
 msgid "Open Topics (from Created to Closed Dates)"
 msgstr "Tópicos abiertos (desde Creado hasta Cerrado)"
-
-### EOF - do not write anything bellow this
