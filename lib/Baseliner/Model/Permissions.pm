@@ -6,6 +6,7 @@ use Baseliner::Utils;
 use Data::Dumper;
 use Baseliner::Sugar;
 use Baseliner::Model::Users;
+use Array::Utils qw(intersect);
 use Try::Tiny;
 use experimental 'autoderef', 'smartmatch';
 =head1 NAME
@@ -257,7 +258,7 @@ sub user_actions_by_topic {
 
         for my $i ( 1 .. scalar(keys %all_negative_actions) - 1) {
             my @role_negative_actions = _array($all_negative_actions{$all_keys[$i]});
-            @negative_actions = Array::Utils::intersect(@negative_actions, @role_negative_actions)
+            @negative_actions = intersect(@negative_actions, @role_negative_actions)
         }
         @negative_actions = _unique(@negative_actions);
     }
@@ -491,7 +492,6 @@ sub user_roles_for_topic {
     my ($self,%p)=@_; 
     my $username = $p{username} // _fail "Missing username";
     my $mid = $p{mid} // '';#_fail "Missing mid" ;
-    use Array::Utils;
     my $user_security = $p{user_security} // ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
     my $topic_security = $p{topic_security};
     $topic_security = mdb->topic->find_one( {mid => "$mid"}, { _project_security => 1, _id => 0} )->{_project_security} if !$topic_security && $mid;
@@ -510,11 +510,11 @@ sub user_roles_for_topic {
             # } else {
             #     #say "El role $role puede que sí tenga derechos";
             # }
-            my @common_sec = Array::Utils::intersect(@role_sec, @topic_sec);
+            my @common_sec = intersect(@role_sec, @topic_sec);
             for my $sec ( @common_sec ) {
                 my @sec_for_role = _array($role_sec_all->{$sec});
                 my @sec_for_topic = _array($topic_security->{$sec});
-                if ( !Array::Utils::intersect( @sec_for_role, @sec_for_topic) ) {
+                if ( !intersect( @sec_for_role, @sec_for_topic) ) {
                     #say "El role $role no tiene derechos por $sec";
                     next ROLE;
                 }
