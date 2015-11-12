@@ -25,7 +25,7 @@ var rEtiquetas = new Ext.menu.CheckItem({text: 'Con Etiquetas', checked: false, 
 var rIconos = new Ext.menu.CheckItem({text: 'Iconos', checked: false, checkHandler: function(){rol_source=this.checked;rol(diagram, overview);}});
 var rColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: false, checkHandler: function(){rol_color=this.checked;rol(diagram, overview);}});
 
-var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: false, 
+var menus = new Ext.Button({ text:'Life Cycle', icon: IC('life_cycle'), iconCls: 'x-btn-icon', disabled: false, 
     menu : {
             items: [{
             text: 'General', handler: function(){general(diagram, overview);}, menu:{
@@ -153,6 +153,9 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                 new go.Binding("stroke","textColor"))
         );
 
+            var UnselectedBrush = "";  // item appearance, if not "selected"
+    var SelectedBrush = "green";   // item appearance, if "selected"
+
         // define the only Link template
         diagram.linkTemplate =
           go_api(go.Link,  
@@ -171,11 +174,27 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                 segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
-            go_api(go.Picture, { width: 13, height: 35, segmentOffset: new go.Point(NaN, 10) },
+                        go_api(go.TextBlock,{
+                textAlign: "center",
+                font: "bold 12px sans-serif",
+
+                //stroke: stroke,
+                segmentOffset: new go.Point(30, NaN),
+                segmentOrientation: go.Link.OrientUpright
+            },
+              //new go.Binding("text", "block")),
+                new go.Binding("text", "isSelected", function(b) { return b ? SelectedBrush : UnselectedBrush; }).ofObject()),
+            go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
 
         );         
         
+        console.log(diagram.linkTemplate);
+        if(diagram.linkTemplate.isSelected){
+            console.log("llega aqui");
+            diagram.linkTemplate.fill.background(green);
+
+        }
           diagram.groupTemplate =
             go_api(go.Group, "Vertical",
               go_api(go.Panel, "Auto",
@@ -429,7 +448,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               },
               new go.Binding("text", "text")),
             go_api(go.Picture,
-              { width: 13, height: 35, segmentOffset: new go.Point(NaN, 10) },
+              { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
 
            );         
@@ -613,7 +632,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
               var texto = "";
               var isource = [];
               if(rol_source){
-                isource = ["/static/gojs/srojo.png","/static/gojs/sverde.png","/static/gojs/samarillo.png"];
+                isource = ["/static/gojs/static.png","/static/gojs/promote.png","/static/gojs/demote.png"];
               }
               var i=0;
               while (i < res.data.length){
@@ -710,7 +729,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
       var isource = [];
 
       if(general_source){
-        isource = ["/static/gojs/srojo.png","/static/gojs/sverde.png","/static/gojs/samarillo.png"];
+        isource = ["/static/gojs/static.png","/static/gojs/promote.png","/static/gojs/demote.png"];
       }
 
 
@@ -723,13 +742,13 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('start'), disabled: fal
                 texto = res.data[i].role;
               }
               if(res.data[i].role_job_type == "static"){
-                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0]  });
+                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0], block: "texto"  });
               }else if(res.data[i].role_job_type == "promote"){
-                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1] });
+                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1], block: "texto"  });
               }else if(res.data[i].role_job_type == "demote"){
-                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2] });
+                objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2], block: "texto"  });
               }else{
-               objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: ""});
+               objectLink.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: "", block: "texto" });
               }
 
 

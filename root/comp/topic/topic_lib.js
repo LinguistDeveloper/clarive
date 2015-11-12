@@ -951,7 +951,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
             
         self.btn_life_cicle = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/loop.gif',
+            icon: IC('life_cycle'),
             cls: 'x-btn-icon',
             enableToggle: true, 
             tooltip: _('Open life cicle'),
