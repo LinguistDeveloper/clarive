@@ -201,11 +201,11 @@ sub activity {
     my $activity;
     if ( ( Baseliner->config->{activity_from_event} // 0 ) == 1 ) {
         _debug "listing events";
-        $activity = Baseliner::Model::Events->find_by_mid( $self->mid, min_level => 2 );
+        $activity = Baseliner::Model::Events->find_by_mid( $self->mid, min_level => 2, no_ci => 1 );
     }
     else {
         _debug "listing activities";
-        $activity = Baseliner::Model::Activity->find_by_mid( $self->mid, min_level => 2 );
+        $activity = Baseliner::Model::Activity->find_by_mid( $self->mid, min_level => 2, no_ci => 1 );
     }
 
     # control activity visualiz permissions

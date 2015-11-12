@@ -21,7 +21,13 @@ sub find_by_mid {
 
     my $min_level = $p{min_level} // 0;
 
-    my @acts = mdb->activity->find( { mid => "$mid" } )->sort( { ts => -1 } )->all;
+    my $where = { mid => "$mid" };
+
+    if ( $p{no_ci} ) {
+        $where->{event_key} = { '$not' => qr/event.ci/ };
+    }
+
+    my @acts = mdb->activity->find( $where )->sort( { ts => -1 } )->all;
 
     my @filtered_acts = grep { $_->{ev_level} == 0 || $_->{level} >= $min_level } @acts;
 
