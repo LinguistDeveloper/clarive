@@ -14,7 +14,8 @@
             {  name: 'actions' },
             {  name: 'description' },
             {  name: 'mailbox' }
-        ]
+        ],
+        baseParams: { limit: 1000 }
     }); 
     
     var store_label = new Baseliner.Topic.StoreLabel();
