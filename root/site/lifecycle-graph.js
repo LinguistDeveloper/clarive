@@ -28,7 +28,7 @@ var rColorEstados = new Ext.menu.CheckItem({text: 'Estados con color', checked: 
 var menus = new Ext.Button({ text:'Life Cycle', icon: IC('life_cycle'), iconCls: 'x-btn-icon', disabled: false, 
     menu : {
             items: [{
-            text: 'General', handler: function(){general(diagram, overview);}, menu:{
+            text: 'General', handler: function(){general(diagram, overview);}, icon: IC('life_cycle_general'), menu:{
                 items: [
                     gEtiquetas, gIconos, gColorEstados,
                     '-',{
@@ -58,7 +58,7 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('life_cycle'), iconCls:
                         }
                 ]
             }},{
-            text: 'Rol', handler: function(){rol(diagram, overview);}, menu:{
+            text: 'Rol', handler: function(){rol(diagram, overview);}, icon: IC('life_cycle_rol'), menu:{
               items: [
                 rEtiquetas, rIconos, rColorEstados,
                 '-',{
@@ -153,8 +153,12 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('life_cycle'), iconCls:
                 new go.Binding("stroke","textColor"))
         );
 
-            var UnselectedBrush = "";  // item appearance, if not "selected"
-    var SelectedBrush = "green";   // item appearance, if "selected"
+        var selected_text = "Esto es una prueba";
+        var unselected_text = "";
+        var selected_stroke = "#FFFFFF";
+        var unselected_stroke = "#000000";
+        var selected_background = "#000000";
+        var unselected_background = "#FFFFFF";
 
         // define the only Link template
         diagram.linkTemplate =
@@ -174,16 +178,17 @@ var menus = new Ext.Button({ text:'Life Cycle', icon: IC('life_cycle'), iconCls:
                 segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
-                        go_api(go.TextBlock,{
+            go_api(go.TextBlock,{
                 textAlign: "center",
-                font: "bold 12px sans-serif",
-
+                font: "bold 8px sans-serif",
                 //stroke: stroke,
-                segmentOffset: new go.Point(30, NaN),
-                segmentOrientation: go.Link.OrientUpright
+                segmentOffset: new go.Point(10, NaN)
+                //segmentOrientation: go.Link.OrientUpright
             },
               //new go.Binding("text", "block")),
-                new go.Binding("text", "isSelected", function(b) { return b ? SelectedBrush : UnselectedBrush; }).ofObject()),
+                new go.Binding("text", "isSelected", function(b) { return b ? selected_text : unselected_text; }).ofObject(),
+                new go.Binding("stroke", "isSelected", function(b) { return b ? selected_stroke : unselected_stroke; }).ofObject(),
+                new go.Binding("background", "isSelected", function(b) { return b ? selected_background : unselected_background; }).ofObject()),
             go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
 
