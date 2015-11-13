@@ -14,7 +14,7 @@ var is_click = 0;
 id_category = params.id_category;
 
 //define colours
-var red = "#cc0000";
+var red = "#CC0000";
 var green = "#009933";
 var black = "#19191C";
 var blue = "#0066CC";
@@ -187,6 +187,11 @@ var menu_role = new Ext.Button({
                 new go.Binding("stroke","text_color"))
         );
 
+        var selected_stroke = "#FFFFFF";
+        var unselected_stroke = "transparent";
+        var selected_background = "#1E90FF";
+        var unselected_background = "transparent";
+
         // define the only Link template
         diagram.linkTemplate =
           go_api(go.Link,  
@@ -205,6 +210,17 @@ var menu_role = new Ext.Button({
                 segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
+            go_api(go.TextBlock,{
+                textAlign: "center",
+                font: "bold 10px sans-serif",
+                //stroke: stroke,
+                segmentOffset: new go.Point(10, NaN)
+                //segmentOrientation: go.Link.OrientUpright
+            },
+              //new go.Binding("text", "block")),
+                new go.Binding("text", "selected_text"),
+                new go.Binding("stroke", "isSelected", function(b) { return b ? selected_stroke : unselected_stroke; }).ofObject(),
+                new go.Binding("background", "isSelected", function(b) { return b ? selected_background : unselected_background; }).ofObject()),
             go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
 
@@ -432,6 +448,10 @@ var menu_role = new Ext.Button({
             new go.Binding("stroke","text_color"))
         );
 
+        var selected_stroke = "#FFFFFF";
+        var unselected_stroke = "transparent";
+        var selected_background = "#1E90FF";
+        var unselected_background = "transparent";
         // define the only Link template
         diagram.linkTemplate = go_api(go.Link,
           { reshapable: true, resegmentable: true },
@@ -450,11 +470,22 @@ var menu_role = new Ext.Button({
             },
             new go.Binding("text", "text")
           ),
+          go_api(go.TextBlock,{
+                textAlign: "center",
+                font: "bold 10px sans-serif",
+                //stroke: stroke,
+                segmentOffset: new go.Point(10, NaN)
+                //segmentOrientation: go.Link.OrientUpright
+            },
+              //new go.Binding("text", "block")),
+                new go.Binding("text", "selected_text"),
+                new go.Binding("stroke", "isSelected", function(b) { return b ? selected_stroke : unselected_stroke; }).ofObject(),
+                new go.Binding("background", "isSelected", function(b) { return b ? selected_background : unselected_background; }).ofObject()),
           go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
             new go.Binding("source", "source")
           )
         );         
-      
+
         diagram.groupTemplate = go_api(go.Group, "Vertical",
           go_api(go.Panel, "Auto",
             go_api(go.Shape, "RoundedRectangle",  // surrounds the Placeholder
@@ -548,7 +579,7 @@ var menu_role = new Ext.Button({
                   }
               i++;
               }
-            //var objectStatus = [];
+
               var i=0;
               while (i < res.data.length){
                   if(rol_color){
@@ -644,13 +675,13 @@ var menu_role = new Ext.Button({
                         texto = res.data[i].role;
                       }
                       if(res.data[i].role_job_type == "static"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[0]  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
                       }else if(res.data[i].role_job_type == "promote"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[1]  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
                       }else if(res.data[i].role_job_type == "demote"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[2]  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
                       }else{
-                       object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: ""});
+                       object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
                       }
                     j++;
                     }
@@ -700,7 +731,6 @@ var menu_role = new Ext.Button({
         diagram.model = new go.GraphLinksModel(object_node, object_link);
 
         });
-
       
         diagram.layout = go_api(go.LayeredDigraphLayout, { 
             direction: 0, 
@@ -732,7 +762,6 @@ var menu_role = new Ext.Button({
         isource = ["/static/gojs/static.png","/static/gojs/promote.png","/static/gojs/demote.png"];
       }
 
-
       var i=0;
       while (i < res.data.length){
             //object_link.push({ from: res.data[i].role, to: res.data[i].status_from });
@@ -742,13 +771,13 @@ var menu_role = new Ext.Button({
                 texto = res.data[i].role;
               }
               if(res.data[i].role_job_type == "static"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0]  });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
               }else if(res.data[i].role_job_type == "promote"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1] });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
               }else if(res.data[i].role_job_type == "demote"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2] });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
               }else{
-               object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: ""});
+               object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
               }
 
 
@@ -822,6 +851,6 @@ var menu_role = new Ext.Button({
          layout: 'absolute', 
          items:[pn_diagram,pn_overview]
     });
-    
+
     return container;    
 });
