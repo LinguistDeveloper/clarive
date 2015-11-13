@@ -46,7 +46,7 @@
         ;
     }
 
-        var ps = 100; //page_size
+        var ps = 60; //page_size
 
         // create the grid
         var grid = new Ext.grid.GridPanel({
