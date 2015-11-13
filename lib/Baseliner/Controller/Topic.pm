@@ -483,7 +483,8 @@ sub view : Local {
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
-        $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
+        my $topic_ci = ci->new($topic_mid) if $topic_mid;
+        $c->stash->{permissionGraph} = $topic_mid && $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph') && $topic_ci->related(depth => -1, mids_only => 1);
         $c->stash->{permissionComment} = 0;
         $c->stash->{permissionActivity} = 0;
         $c->stash->{permissionJobs} = 0;
