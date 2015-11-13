@@ -596,7 +596,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
 
         var button_ci = new Ext.Button({
-            cls: 'x-btn-icon',
+            cls: 'x-btn-icon ui-explorer-ci',
             icon: '/static/images/icons/class.gif',
             handler: function(){
                 this.disable();

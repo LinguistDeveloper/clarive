@@ -85,7 +85,7 @@
                 new Ext.Toolbar.Button({
                     text: _('Add'),
                     icon:'/static/images/icons/add.gif',
-                    cls: 'x-btn-text-icon',
+                    cls: 'x-btn-text-icon ui-comp-role-create',
                     handler: function() {
                         role_detail();
                     }

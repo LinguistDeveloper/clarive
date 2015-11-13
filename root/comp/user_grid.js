@@ -147,7 +147,7 @@
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
                 text: _('Assign roles/projects'),
                 icon:'/static/images/icons/key_add.png',
-                cls: 'x-btn-text-icon',
+                cls: 'x-btn-text-icon ui-comp-users-edit-window-assign-roles',
                 disabled: true,
                 handler: function() {
                     var form = form_user.getForm();
@@ -212,7 +212,7 @@
         var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
             icon:'/static/images/icons/key_delete.png',
-            cls: 'x-btn-text-icon',
+            cls: 'x-btn-text-icon ui-comp-users-unassign-roles',
             disabled: true,
             handler: function() {
                 var form = form_user.getForm();
@@ -278,6 +278,7 @@
         var btn_cerrar = new Ext.Toolbar.Button({
             text: _('Close'),
             icon:'/static/images/icons/close.png',
+            cls: 'ui-comp-users-edit-window-close',
             width: 70,
             handler: function() {
                 win.close();
@@ -785,6 +786,7 @@
     //});
     
     var btn_add = new Baseliner.Grid.Buttons.Add({
+        cls: 'ui-comp-users-create',
         handler: function() {
             add_edit();
         }       
@@ -796,7 +798,7 @@
     var btn_edit = new Ext.Toolbar.Button({
         text: _('Edit'),
         icon:'/static/images/icons/edit.gif',
-        cls: 'x-btn-text-icon',
+        cls: 'x-btn-text-icon ui-comp-users-edit',
         disabled: true,
         handler: function() {
 
@@ -813,7 +815,7 @@
     var btn_prefs = new Ext.Toolbar.Button({
         text: _('Preferences'),
         icon:'/static/images/icons/prefs.png',
-        cls: 'x-btn-text-icon',
+        cls: 'x-btn-text-icon ui-comp-users-prefs',
         disabled: true,
         handler: function() {
         var sm = grid.getSelectionModel();
@@ -858,7 +860,7 @@
     var btn_delete = new Ext.Toolbar.Button({
         text: _('Delete'),
         icon:'/static/images/icons/delete_.png',
-        cls: 'x-btn-text-icon',
+        cls: 'x-btn-text-icon ui-comp-users-delete',
         disabled: true,
         handler: function() {
             var sm = grid.getSelectionModel();

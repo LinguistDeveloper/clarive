@@ -370,6 +370,7 @@
         tbar: [
             '->',
             {  text: _('Save'),
+                cls: 'ui-comp-role-edit-save',
                 icon: IC('save'),
                 handler: function(){ 
                     var ff = new_role_form.getForm();
@@ -390,7 +391,7 @@
                     });
                 }
             },
-            {  text: _('Close') , icon: IC('close'), handler: function(){  role_panel.destroy() } }
+            {  text: _('Close') , cls: 'ui-comp-role-edit-close', icon: IC('close'), handler: function(){  role_panel.destroy() } }
         ],
         title: panel_title,
           items : [

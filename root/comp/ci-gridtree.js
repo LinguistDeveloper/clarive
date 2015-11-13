@@ -87,6 +87,7 @@
                 //class: data.class,
                 "class": data["class"],
                 tab_icon: data.icon,
+                tab_cls: 'ui-comp-ci-tab',
                 action: 'add'
         });
     };
@@ -340,14 +341,16 @@
     var btn_create = new Baseliner.Grid.Buttons.Add({
         //disabled: false,
         handler: ci_add,
-        hidden: !can_save
+        hidden: !can_save,
+        cls: 'ui-comp-ci-create'
     })
 
 
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
         handler: ci_delete,
-        hidden: !can_save
+        hidden: !can_save,
+        cls: 'ui-comp-ci-delete'
     })
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({

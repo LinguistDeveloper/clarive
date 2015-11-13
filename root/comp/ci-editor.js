@@ -148,7 +148,7 @@
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
             icon:'/static/images/icons/close.png',
-            cls: 'x-btn-icon-text',
+            cls: 'x-btn-icon-text ui-comp-ci-editor-close',
             type: 'submit',
             handler: function() { cardpanel.destroy() }
         });
@@ -156,7 +156,7 @@
         var btn_form_save = new Ext.Button({
             text: _('Save'),
             icon:'/static/images/icons/save.png',
-            cls: 'x-btn-icon-text',
+            cls: 'x-btn-icon-text ui-comp-ci-editor-save',
             type: 'submit',
             hidden: !can_save,
             handler: function() { 

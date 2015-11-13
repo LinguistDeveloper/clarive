@@ -97,7 +97,7 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: _('Create'), cls: , icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' }

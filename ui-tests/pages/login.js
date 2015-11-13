@@ -1,4 +1,17 @@
 var commands = {
+    login: function() {
+        this.navigate()
+          .waitForElementVisible('@loginInput', 5000);
+
+        this.api
+          .pause(1000);
+
+        this
+          .setValue('@loginInput', 'local/root')
+          .setValue('@loginPassword', 'admin')
+          .click('@loginButton')
+          .waitForElementNotVisible('@loadingMask', 5000);
+    },
     logout: function() {
         this
           .waitForElementVisible('@userMenu', 5000)

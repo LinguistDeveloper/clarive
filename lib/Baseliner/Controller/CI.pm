@@ -42,6 +42,7 @@ sub list : Local {
         $n->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
         my $locstr = "ci:$_->{item}";
         my $tx = _loc($locstr);
+        $n->{cls} = "ui-explorer-ci-$_->{item}";
         $n->{text} = $tx eq $locstr ? $_->{item} : $tx;
         $n->{icon} = $_->{icon};
         #$_->{id} = $_->{_id};
