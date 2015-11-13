@@ -824,7 +824,8 @@ sub related {
     }
 
     my @cis;
-    $opts{tree_relations} = my $tree_relations = {} if $opts{mode} && $opts{mode} eq 'tree';
+    my $tree_relations;
+    $opts{tree_relations} = $tree_relations = {} if $opts{mode} && $opts{mode} eq 'tree';
 
     for my $edge ( @edges ){
         $opts{edge} = $edge;
