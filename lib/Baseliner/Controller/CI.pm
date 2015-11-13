@@ -306,7 +306,7 @@ sub tree_objects {
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
-    my @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
+    my @tree = sort { lc $a->{class} cmp lc $b->{class} } map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : $row;
         my $row_class = $class_coll{ $row->{collection} } // 'ci';
