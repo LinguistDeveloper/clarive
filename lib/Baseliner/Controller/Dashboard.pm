@@ -541,7 +541,7 @@ sub topics_by_field: Local {
         my $name = $topic->{field};
         $name = _loc('Empty') if (!_array($topic->{field}));
 
-        if ( $topic->{total}*100/$total <= $group_threshold ) {
+        if ( $total && $topic->{total}*100/$total <= $group_threshold ) {
             $others += $topic->{total};
             push @other_topics, _array($topic->{topics_list});
         } else {
