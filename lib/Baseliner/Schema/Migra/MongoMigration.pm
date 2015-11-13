@@ -111,20 +111,20 @@ sub topic_categories_to_rules {
             #_log _dump $fieldlet;
             my $icon = Baseliner::Core::Registry->get($registers->{$reg_key})->{icon};
 
-            # always set allowBlank, etc to either 1 or 0
-            $data->{allowBlank} = map { !defined $_ ? 1 : $_ eq 'false' ? 0 : $_ ? 1 : 0 } $fieldlet->{allowBlank};
-            $data->{editable}   = map { !defined $_ ? 1 : $_ eq 'false' ? 0 : $_ ? 1 : 0 } $fieldlet->{editable};
-            $data->{hidden}     = map { !defined $_ ? 0 : $_ eq 'false' ? 0 : $_ ? 1 : 0 } $fieldlet->{hidden};  # watch out, default is 0 
+            $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
+            $data->{editable} = '1' if not $fieldlet->{editable};
+            $data->{hidden} = '0' if not $fieldlet->{hidden};
+            
          
-            $attributes->{active} = 1;
+            $attributes->{active} = '1';
             $attributes->{disabled} = \0;
             $attributes->{expanded} = \0;
             $attributes->{icon} = $icon; #;// '/static/images/icons/lock_small.png';
             if($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
                 if($fieldlet->{params}->{bd_field} eq 'moniker'){
                     $attributes->{key} = 'fieldlet.system.moniker';    
-                    $data->{editable} = 1;
-                    $data->{hidden} = 0;
+                    $data->{editable} = '1';
+                    $data->{hidden} = '0';
                 }else{
                     $attributes->{key} = 'fieldlet.text';    
                 } 
@@ -1793,4 +1793,3 @@ __END__
 - bali_topic_status
 - bali_topic_view
 - bali_user
-
