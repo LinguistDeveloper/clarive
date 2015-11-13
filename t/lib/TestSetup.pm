@@ -23,7 +23,7 @@ sub _setup_clear {
 sub _setup_user {
     my $user = ci->user->new( name=>'root', username=>'root' );
     $user->save;
-    my $user = ci->user->new( name=>'test', username=>'test' );
+    $user = ci->user->new( name=>'test', username=>'test' );
     $user->save;
 }
 
@@ -67,6 +67,16 @@ sub _topic_setup {
         }
     );
 
+    Baseliner::Core::Registry->add(
+        'caller',
+        'fieldlet.system.list_topics' => {
+            get_method  => 'get_topics',
+            set_method  => 'set_topics',
+            meta_type   => 'topic',
+            relation    => 'system',
+        }
+    );
+
     my $status_id = ci->status->new( name=>'New', type => 'I' )->save;
 
     my $id_rule = mdb->seq('id');
@@ -85,6 +95,7 @@ sub _topic_setup {
                                 "name_field"   => "Status",
                                 "fieldletType" => "fieldlet.system.status_new",
                                 "id_field"     => "status_new",
+                                "name_field"   => "Status",
                             },
                             "key" => "fieldlet.system.status_new",
                         }
@@ -95,8 +106,34 @@ sub _topic_setup {
                                 "bd_field"     => "project",
                                 "fieldletType" => "fieldlet.system.projects",
                                 "id_field"     => "project",
+                                "name_field"   => "Project",
                             },
                             "key" => "fieldlet.system.projects",
+                        }
+                    },
+                    {
+                        "attributes" => {
+                            "data" => {
+                                "bd_field"      => "parent",
+                                "fieldletType"  => "fieldlet.system.list_topics",
+                                "parent_field"  => "children",
+                                "id_field"      => "parent",
+                                "name_field"    => "Parent topics",
+                                "editable"      => "1",
+                            },
+                            "key" => "fieldlet.system.list_topics",
+                        }
+                    },
+                    {
+                        "attributes" => {
+                            "data" => {
+                                "bd_field"      => "children",
+                                "fieldletType"  => "fieldlet.system.list_topics",
+                                "id_field"      => "parent",
+                                "name_field"    => "Child topics",
+                                "editable"      => "1",
+                            },
+                            "key" => "fieldlet.system.list_topics",
                         }
                     }
                 ]
@@ -124,7 +161,7 @@ sub _topic_setup {
 sub _setup_label {
     Baseliner::Core::Registry->add( 'caller', 'event.file.labels', {} );
     my $id = mdb->seq('label');
-    mdb->label->insert({ color=> '#99CC00', id=>, name=>'label', sw_allprojects=>1 });
+    mdb->label->insert({ color=> '#99CC00', id=> '', name=>'label', sw_allprojects=>1 });
     return $id;
 }
 

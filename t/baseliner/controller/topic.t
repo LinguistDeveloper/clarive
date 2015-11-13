@@ -212,8 +212,65 @@ subtest 'grid: replaces category_id if different' => sub {
     is $c->stash->{category_id}, '123';
 };
 
-############ end of tests
+subtest 'related: returns 1 (proper topic) for new topic before created' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
 
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+    my $topics = $c->stash->{json}->{data};
+    
+    is scalar @$topics, 0;
+    is $c->stash->{json}->{totalCount}, 0;
+};
+
+subtest 'related: returns self for a newly created topic' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { topic_mid=>$topic_mid } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+
+    my $topics = $c->stash->{json}->{data};
+
+    is scalar @$topics, 1;
+    is $c->stash->{json}->{totalCount}, 1;
+};
+
+subtest 'related: returns 2 (self and related) related topics' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    $base_params->{parent} = [$topic_mid];
+
+    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { topic_mid=>$topic_mid } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+
+    my $topics = $c->stash->{json}->{data};
+
+    is scalar @$topics, 2;
+    is $c->stash->{json}->{totalCount}, 2;
+};
 
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
