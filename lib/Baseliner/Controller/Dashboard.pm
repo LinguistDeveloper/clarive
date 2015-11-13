@@ -10,6 +10,8 @@ use experimental 'switch', 'autoderef';
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+register 'action.dashboards.view' => { name => 'Change dashboards in explorer'};
+
 sub init : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
