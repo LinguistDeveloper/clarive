@@ -111,7 +111,7 @@ sub topic_categories_to_rules {
             #_log _dump $fieldlet;
             my $icon = Baseliner::Core::Registry->get($registers->{$reg_key})->{icon};
 
-            $data->{allowBlank} = '0' if not $fieldlet->{allowBlank};
+            $data->{allowBlank} = exists $fieldlet->{allowBank} && (!$fieldlet->{allowBlank} || $fieldlet->{allowBlank} eq 'false') ? 0 : 1;
             $data->{editable} = '1' if not $fieldlet->{editable};
             $data->{hidden} = '0' if not $fieldlet->{hidden};
             
