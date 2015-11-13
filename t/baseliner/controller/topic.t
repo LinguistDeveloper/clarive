@@ -143,6 +143,75 @@ subtest 'add label to topic' => sub {
     is_deeply( mdb->topic->find_one({ mid=>"$topic_mid" })->{labels}, [$label_id] );
 };
 
+subtest 'grid: sets correct template' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { } } );
+
+    $controller->grid($c);
+
+    is $c->stash->{template}, '/comp/topic/topic_grid.js';
+};
+
+subtest 'grid: prepares stash' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { } } );
+
+    $controller->grid($c);
+
+    cmp_deeply(
+        $c->stash,
+        {
+            'typeApplication' => undef,
+            'template'        => ignore(),
+            'query_id'        => undef,
+            'project'         => undef,
+            'id_project'      => undef
+        }
+    );
+};
+
+subtest 'grid: overrides stash with params' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => {query => '123', project => '456', id_project => '789' } } );
+
+    $controller->grid($c);
+
+    cmp_deeply(
+        $c->stash,
+        {
+            'typeApplication' => undef,
+            'template'        => ignore(),
+            'query_id'        => '123',
+            'project'         => '456',
+            'id_project'      => '789',
+        }
+    );
+};
+
+subtest 'grid: set category_id' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => {category_id => '123'} } );
+
+    $controller->grid($c);
+
+    is $c->stash->{category_id}, '123';
+};
+
+subtest 'grid: replaces category_id if different' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => {category_id => '123'} } );
+
+    $c->stash->{category_id} = 321;
+    $controller->grid($c);
+
+    is $c->stash->{category_id}, '123';
+};
+
 ############ end of tests
 
 

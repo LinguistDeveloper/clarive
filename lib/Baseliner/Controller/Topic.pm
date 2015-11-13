@@ -112,24 +112,19 @@ register 'registor.menu.topics' => {
 
 sub grid : Local {
     my ($self, $c, $typeApplication) = @_;
+
     my $p = $c->req->params;
-    
-    #Parametro para casos especiales como la aplicacion GDI
+
+    # Special parameter for Cetelem (maybe not needed in > 6.0)
     $c->stash->{typeApplication} = $typeApplication;
+
     $c->stash->{id_project} = $p->{id_project};
-    $c->stash->{project} = $p->{project}; 
-    $c->stash->{query_id} = $p->{query};
-    if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
+    $c->stash->{project}    = $p->{project};
+    $c->stash->{query_id}   = $p->{query};
+    if ( $p->{category_id} ) {
         $c->stash->{category_id} = $p->{category_id};
-        # wip rgo: get report fields
-        # my $cat = mdb->category->find_one({ id=>''.$p->{category_id} }) // _fail _loc 'Category with id %1 not found', $p->{category_id};
-        # if( my $id_report = $cat->{default_grid} ) {
-        #     my $rep = ci->new( $id_report );
-        #     my $fields = $rep->selected_fields({ username=>$c->username });
-        #     _debug( $fields );
-        #     $c->stash->{default_grid} = $id_report;
-        # }
     }
+
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
