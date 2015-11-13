@@ -207,7 +207,7 @@ var menu_role = new Ext.Button({
                 font: "bold 8px sans-serif",
                 stroke: "#0066CC",
                 segmentOffset: new go.Point(10, NaN),
-                segmentOrientation: go.Link.OrientUpright
+                //segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
             go_api(go.TextBlock,{
@@ -466,7 +466,7 @@ var menu_role = new Ext.Button({
               font: "bold 8px sans-serif",
               stroke: "#0066CC",
               segmentOffset: new go.Point(10, NaN),
-              segmentOrientation: go.Link.OrientUpright
+              //segmentOrientation: go.Link.OrientUpright
             },
             new go.Binding("text", "text")
           ),
