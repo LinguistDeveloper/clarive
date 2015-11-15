@@ -156,6 +156,12 @@ sub auto : Private {
         return 1 if $saml_username;
     }
     
+    # saml?
+    if( exists $c->config->{cas_auth} && $c->config->{cas_auth}->{active} ) {
+        my $cas_username= $c->forward('/auth/cas_check');
+        return 1 if $cas_username;
+    }
+    
     # api_key ?
     $c->stash->{api_key_authentication} ||= Clarive->config->{api_key_authentication}; 
 
