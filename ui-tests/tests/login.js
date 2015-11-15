@@ -9,7 +9,11 @@ module.exports = new (function() {
     login.navigate()
       .waitForElementVisible('@loginInput', 1000)
       .setValue('@loginInput', 'local/root')
-      .setValue('@loginPassword', 'admin')
+      .setValue('@loginPassword', 'admin');
+
+    browser.pause(500);
+
+    login
       .click('@loginButton')
       .waitForElementNotVisible('@loadingMask', 5000)
       .logout();
@@ -23,7 +27,11 @@ module.exports = new (function() {
     login.navigate()
       .waitForElementVisible('@loginInput', 1000)
       .setValue('@loginInput', '')
-      .setValue('@loginPassword', '')
+      .setValue('@loginPassword', '');
+
+    browser.pause(500);
+
+    login
       .click('@loginButton')
       .waitForElementVisible('@loginInputInvalid', 5000);
 
@@ -36,7 +44,11 @@ module.exports = new (function() {
     login.navigate()
       .waitForElementVisible('@loginInput', 1000)
       .setValue('@loginInput', 'unknown')
-      .setValue('@loginPassword', '')
+      .setValue('@loginPassword', '');
+
+    browser.pause(500);
+
+    login
       .click('@loginButton')
       .waitForElementVisible('@loginInputInvalid', 5000);
 
@@ -49,7 +61,11 @@ module.exports = new (function() {
     login.navigate()
       .waitForElementVisible('@loginInput', 1000)
       .setValue('@loginInput', 'local/root')
-      .setValue('@loginPassword', 'wrong password')
+      .setValue('@loginPassword', 'wrong password');
+
+    browser.pause(500);
+
+    login
       .click('@loginButton')
       .waitForElementVisible('@loginInputInvalid', 5000);
 

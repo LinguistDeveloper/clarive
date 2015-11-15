@@ -1,14 +1,14 @@
 var commands = {
     login: function() {
         this.navigate()
-          .waitForElementVisible('@loginInput', 5000);
+          .waitForElementVisible('@loginInput', 5000)
+          .setValue('@loginInput', 'local/root')
+          .setValue('@loginPassword', 'admin');
 
         this.api
-          .pause(1000);
+          .pause(500);
 
         this
-          .setValue('@loginInput', 'local/root')
-          .setValue('@loginPassword', 'admin')
           .click('@loginButton')
           .waitForElementNotVisible('@loadingMask', 5000);
     },

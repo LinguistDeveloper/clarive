@@ -8,12 +8,7 @@ module.exports = new (function() {
     var menu = browser.page.menu();
     var scheduler = browser.page.scheduler();
 
-    login.navigate()
-      .waitForElementVisible('@loginInput', 1000)
-      .setValue('@loginInput', 'local/root')
-      .setValue('@loginPassword', 'admin')
-      .click('@loginButton')
-      .waitForElementNotVisible('@loadingMask', 5000);
+    login.login();
 
     menu
       .click('@adminMenu')

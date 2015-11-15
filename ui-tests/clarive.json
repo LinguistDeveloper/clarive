@@ -2,6 +2,7 @@
   "src_folders" : ["ui-tests/tests"],
   "output_folder" : "ui-tests/reports",
   "page_objects_path" : "ui-tests/pages",
+  "custom_commands_path" : "ui-tests/commands",
 
   "selenium" : {
     "start_process" : true,
