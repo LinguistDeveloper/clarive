@@ -195,9 +195,6 @@ sub authenticate : Private {
                 $c->log->error( "**** LOGIN ERROR: " . shift() );
             }; # realm may not exist
         }
-    } elsif ($realm eq 'cas') {
-        # default realm authentication:
-        $auth = $c->authenticate({ id=>$login, password=> $password }, $realm );
      } else {
         # default realm authentication:
         $auth = $c->authenticate({ id=>$login, password=> $password });
