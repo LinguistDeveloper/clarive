@@ -70,7 +70,7 @@ sub run {
             qq{"launchUrl" : "http://localhost:$smoke_port"}
         );
 
-        $ui_exit = _system("$ENV{NODE_MODULES}/nightwatch/bin/nightwatch -c $smoke_nightwatch_conf -e phantomjs");
+        $ui_exit = _system("cla-env proveui -c $smoke_nightwatch_conf");
 
         print "\n";
         print "#" x 80, "\n";

@@ -1,0 +1,50 @@
+{
+  "src_folders" : ["ui-tests/tests"],
+  "output_folder" : "ui-tests/reports",
+  "page_objects_path" : "ui-tests/pages",
+
+  "selenium" : {
+    "start_process" : true,
+    "server_path" : "/opt/clarive/local/bin/selenium-server-standalone-2.48.2.jar",
+    "log_path" : "selenium.log",
+    "host" : "127.0.0.1",
+    "port" : 4444,
+    "cli_args" : {
+      "webdriver.chrome.driver" : "",
+      "webdriver.ie.driver" : "",
+      "webdriver.phantomjs.driver" : ""
+    }
+  },
+
+  "test_settings" : {
+    "default" : {
+      "launchUrl" : "http://localhost:3000",
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true
+      }
+    },
+
+    "chrome" : {
+      "desiredCapabilities": {
+        "browserName": "chrome",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true
+      }
+    },
+
+    "phantomjs" : {
+      "screenshots" : {
+        "enabled" : true,
+        "path" : "screenshots"
+      },
+      "desiredCapabilities": {
+        "browserName": "phantomjs",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "phantomjs.binary.path" : "/opt/clarive/local/lib/node_modules/phantomjs/bin/phantomjs"
+      }
+    }
+  }
+}
