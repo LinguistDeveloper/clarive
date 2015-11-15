@@ -3,6 +3,7 @@ use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
 use File::Copy qw(copy);
+use Capture::Tiny qw(tee_merged);
 
 our $CAPTION = 'Smoke';
 
@@ -70,7 +71,11 @@ sub run {
             qq{"launchUrl" : "http://localhost:$smoke_port"}
         );
 
-        $ui_exit = _system("cla-env proveui -c $smoke_nightwatch_conf");
+        my ($stdout) = tee_merged {
+            $ui_exit = _system("cla-env proveui -c $smoke_nightwatch_conf");
+        };
+
+        $ui_exit = 255 if $stdout =~ m/TEST FAILURE/;
 
         print "\n";
         print "#" x 80, "\n";
