@@ -105,6 +105,12 @@ baseliner:
     header_init:
         show_lifecycle: 1
     # toolbar_height: 45
+# CAS authentication
+    # cas_auth: 
+    #   active: 1
+    #   service: http://localhost3000
+    #   uri: https://192.168.59.103:49163/cas
+    #   verify_key: 0
     
     # allows setting 2 or more feature directories
     'CatalystX::Features':

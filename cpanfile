@@ -11,6 +11,7 @@ requires 'Archive::Tar';
 requires 'Archive::Zip';
 requires 'Array::Utils';
 requires 'Authen::SASL::Perl::NTLM';
+requires 'Authen::CAS::Client';
 requires 'Cache::FastMmap';
 requires 'Calendar::Slots';
 requires 'Capture::Tiny';
