@@ -4,7 +4,7 @@ use Try::Tiny;
 use Baseliner::Utils;
 use experimental 'autoderef';
 
-has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
+has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/^(?!meta)/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
 
 =head2 search
