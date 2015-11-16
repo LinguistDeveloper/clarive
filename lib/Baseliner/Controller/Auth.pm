@@ -392,7 +392,7 @@ sub saml_check : Private {
         $username or die 'SAML username not found';
         $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
-        $c->session->{user} = $c->user_ci;
+        $c->session->{user} = ci->user->search_ci( name => $username );
         $c->session->{username} = $username;
         event_new 'event.auth.saml_ok'=>{ username=>$username };
         return $username;
@@ -408,6 +408,7 @@ sub cas_check : Private {
     my $username;
 
     my $p = $c->request->params;
+    _log _loc('Current user: %1', $c->username );
 
     return try {
         _log _loc('Current ticket: %1', $p->{ticket} );
@@ -428,7 +429,7 @@ sub cas_check : Private {
             $username or die 'CAS username not found';
             $username = $username->{content} if ref $username eq 'HASH';
             _log _loc('CAS starting session for username: %1', $username);
-            $c->session->{user} = $c->user_ci;
+            $c->session->{user} = ci->user->search_ci( name => $username );
             $c->session->{username} = $username;
             event_new 'event.auth.cas_ok'=>{ username=>$username };
             return $username;
