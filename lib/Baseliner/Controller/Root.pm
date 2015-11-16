@@ -4,6 +4,7 @@ use Baseliner::Core::Registry ':dsl';
 BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Auth::CAS;
 
 register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
