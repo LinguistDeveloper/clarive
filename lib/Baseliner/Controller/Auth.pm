@@ -403,44 +403,6 @@ sub saml_check : Private {
     };
 }
 
-sub cas_check : Private {
-    my ( $self, $c ) = @_;
-    my $username;
-
-    my $p = $c->request->params;
-    _log _loc('Current user: %1', $c->username );
-
-    return try {
-        _log _loc('Current ticket: %1', $p->{ticket} );
-
-        $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = Clarive->config->{cas_auth}->{verify_key};
-        my $service = Clarive->config->{cas_auth}->{service};
-        my $ticket = $p->{ticket};
-        my $cas = Authen::CAS::Client->new( Clarive->config->{cas_auth}->{uri}, fatal => 0 );
-        # generate an HTTP redirect to the CAS login URL
-        my $r = HTTP::Response->new( 302 );
-        $r->header( Location => $cas->login_url );
-
-        $r = $cas->service_validate( $service, $ticket );
-
-        if( $r->is_success ) {
-            print "User authenticated as: ", $r->user, "\n";
-            $username = $r->user;
-            $username or die 'CAS username not found';
-            $username = $username->{content} if ref $username eq 'HASH';
-            _log _loc('CAS starting session for username: %1', $username);
-            $c->session->{user} = ci->user->search_ci( name => $username );
-            $c->session->{username} = $username;
-            event_new 'event.auth.cas_ok'=>{ username=>$username };
-            return $username;
-        }
-    } catch {
-        _error _loc('CAS Failed auth: %1', shift);
-        event_new 'event.auth.cas_failed'=>{ username=>$username };
-        return 0;
-    }
-}
-
 sub login_from_session : Local {
     my ( $self, $c ) = @_;
     # the Root controller creates the session for this

@@ -155,13 +155,12 @@ sub auto : Private {
         my $saml_username= $c->forward('/auth/saml_check');
         return 1 if $saml_username;
     }
-    
-    # saml?
+
     if( exists $c->config->{cas_auth} && $c->config->{cas_auth}->{active} ) {
-        my $cas_username= $c->forward('/auth/cas_check');
+        my $cas_username = $self->_cas_check($c);
         return 1 if $cas_username;
     }
-    
+
     # api_key ?
     $c->stash->{api_key_authentication} ||= Clarive->config->{api_key_authentication}; 
 
@@ -557,6 +556,45 @@ sub end : ActionClass('RenderView') {
     $c->stash->{$_} //= $c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }
+
+sub _cas_check {
+    my ( $self, $c ) = @_;
+
+    _log _loc( 'Current user: %1', $c->username );
+
+    my $p = $c->request->params;
+
+    return unless my $ticket = $p->{ticket};
+
+    my $auth = Baseliner::Auth::CAS->new( config => Clarive->config->{cas_auth} );
+    my $cas_username = $auth->authenticate( $ticket );
+
+    if ($cas_username) {
+        my $local_user = ci->user->search_ci( name => $cas_username );
+
+        if ($local_user) {
+            _log _loc( 'CAS starting session for username: %1', $cas_username );
+
+            $c->session->{user}       = $local_user;
+            $c->session->{username}   = $cas_username;
+
+            event_new 'event.auth.cas_ok' => { username => $cas_username };
+
+            return $cas_username;
+        }
+        else {
+            _error _loc('CAS Failed auth: no local user found');
+        }
+    }
+    else {
+        _error _loc('CAS Failed auth: unknown ticket');
+    }
+
+    event_new 'event.auth.cas_failed' => { username => $cas_username };
+
+    return;
+}
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
