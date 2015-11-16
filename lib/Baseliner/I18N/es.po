@@ -8328,3 +8328,9 @@ msgstr "Actividad de tópico (desde Creado hasta Modificación)"
 
 msgid "Open Topics (from Created to Closed Dates)"
 msgstr "Tópicos abiertos (desde Creado hasta Cerrado)"
+
+msgid "More than one field detected. Select target field from list:"
+msgstr "Ha sido detectado más de un campo. Seleccione el campo objetivo de la lista:"
+
+msgid "Available Fields"
+msgstr "Campos disponibles"

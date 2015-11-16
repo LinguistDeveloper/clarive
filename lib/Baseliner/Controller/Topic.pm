@@ -2292,7 +2292,7 @@ sub topic_drop : Local {
                 META: for my $fm (@$meta) {
                     my $dt = $fm->{drop_target};
                     next META unless !length($dt) || $dt;# if not defined, it's a drop target; if defined then it depends
-                    next META if $$fm{meta_type} !~ /(topic|release)/;
+                    next META if $$fm{meta_type} !~ /(release)/;
                     $kmatches++;
                     next META if !$$fm{editable};
                     # if filter, test if filter matches and avoid later errors
