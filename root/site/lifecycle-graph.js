@@ -1,5 +1,7 @@
 (function(params) {
-    
+
+
+
 var checked_general= false;
 var checked_rol= false;    
 
@@ -44,6 +46,16 @@ var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pre
     rol(diagram, overview);
     menu_general.hide();
     menu_role.show();
+}});
+
+//Zoom +
+var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
+    diagram.commandHandler.increaseZoom();
+}});
+
+//Zoom -
+var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
+    diagram.commandHandler.decreaseZoom();
 }});
 
 // Option menu to General Button
@@ -131,7 +143,7 @@ var menu_role = new Ext.Button({
     var pn_diagram = new Ext.Panel({
         html: 'Diagram',
         anchor: '100% 100%',
-        tbar:[ btn_general, btn_role, '-', menu_general,menu_role] 
+        tbar:[ btn_general, btn_role, '-', menu_general, menu_role, btn_decreaseZoom, btn_increaseZoom] 
     });
 
     //OVERVIEW PANEL 
@@ -156,6 +168,7 @@ var menu_role = new Ext.Button({
 
         var go_api;
         var diagram;
+
         var overview;
         go_api = go.GraphObject.make;
         diagram = go_api(go.Diagram, pn_diagram.body.id, {
@@ -175,11 +188,18 @@ var menu_role = new Ext.Button({
         this.diagram = diagram;
         this.overview = overview;
 
+        // when the user clicks on the background of the Diagram, remove all highlighting
+        diagram.click = function(e) {
+          diagram.startTransaction("no highlighteds");
+          diagram.clearHighlighteds();
+          diagram.commitTransaction("no highlighteds");
+        };
         go_api = go.GraphObject.make;
  
         // the node template describes how each Node should be constructed
-        diagram.nodeTemplate = go_api(go.Node, "Auto", 
+        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
             go_api(go.Shape,
+                new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),
                 new go.Binding("figure","figure"),
                 new go.Binding("fill", "color")),
             go_api(go.TextBlock, { margin: 3 }, 
@@ -195,13 +215,13 @@ var menu_role = new Ext.Button({
         // define the only Link template
         diagram.linkTemplate =
           go_api(go.Link,  
-            { reshapable: true, resegmentable: true },
+            { reshapable: true, resegmentable: false },
             { routing: go.Link.Orthogonal },  
             { curve: go.Link.JumpOver },
             { fromPortId: "" },
             new go.Binding("fromPortId", "fromport"),            
-            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 }),   
-            go_api(go.Shape, { toArrow: "Standard"}),                    
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1, },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),   
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),                    
             go_api(go.TextBlock,{
                 textAlign: "left",
                 font: "bold 8px sans-serif",
@@ -213,6 +233,7 @@ var menu_role = new Ext.Button({
             go_api(go.TextBlock,{
                 textAlign: "center",
                 font: "bold 10px sans-serif",
+                margin: 2,
                 //stroke: stroke,
                 segmentOffset: new go.Point(10, NaN)
                 //segmentOrientation: go.Link.OrientUpright
@@ -438,9 +459,17 @@ var menu_role = new Ext.Button({
       this.diagram = diagram;
       this.overview = overview;
 
+      // when the user clicks on the background of the Diagram, remove all highlighting
+      diagram.click = function(e) {
+        diagram.startTransaction("no highlighteds");
+        diagram.clearHighlighteds();
+        diagram.commitTransaction("no highlighteds");
+      };
+
         // the node template describes how each Node should be constructed
-        diagram.nodeTemplate = go_api(go.Node, "Auto", 
+        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
           go_api(go.Shape,
+            new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),
             new go.Binding("figure","figure"),
             new go.Binding("fill", "color")),
           go_api(go.TextBlock, { margin: 3 }, 
@@ -452,15 +481,16 @@ var menu_role = new Ext.Button({
         var unselected_stroke = "transparent";
         var selected_background = "#1E90FF";
         var unselected_background = "transparent";
+
         // define the only Link template
         diagram.linkTemplate = go_api(go.Link,
-          { reshapable: true, resegmentable: true },
+          { reshapable: true, resegmentable: false },
           { routing: go.Link.Orthogonal },  
           { curve: go.Link.JumpOver }, //Bezier
           { fromPortId: "" },
           new go.Binding("fromPortId", "fromport"),            
-          go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 }),   
-          go_api(go.Shape, { toArrow: "Standard"}),                    
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1, },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),   
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),                
           go_api(go.TextBlock, {
               textAlign: "left",
               font: "bold 8px sans-serif",
@@ -473,6 +503,7 @@ var menu_role = new Ext.Button({
           go_api(go.TextBlock,{
                 textAlign: "center",
                 font: "bold 10px sans-serif",
+                margin: 2,
                 //stroke: stroke,
                 segmentOffset: new go.Point(10, NaN)
                 //segmentOrientation: go.Link.OrientUpright
@@ -830,6 +861,24 @@ var menu_role = new Ext.Button({
 
       return object_link;
     };
+
+
+  // highlight all Links and Nodes coming out of a given Node
+  var showConnections = function(node) {
+    var diagram = node.diagram;
+    diagram.startTransaction("highlight");
+    // remove any previous highlighting
+    diagram.clearHighlighteds();
+    // for each Link coming out of the Node, set Link.isHighlighted
+    node.findLinksOutOf().each(function(l) { l.isHighlighted = true; });
+    // for each Node destination for the Node, set Node.isHighlighted
+    node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
+    diagram.commitTransaction("highlight");
+  };
+
+
+
+
 
     //Function make the oposite color to the background
     var change_color = function(hex) {
