@@ -3,7 +3,7 @@ use Moose;
 
 use Try::Tiny;
 use Authen::CAS::Client;
-use Baseliner::Util qw(_error);
+use Baseliner::Utils qw(_error);
 
 has config => qw(is ro isa HashRef required 1);
 has cas => is => 'ro', isa => 'Object', builder => '_build_cas', lazy => 1;
