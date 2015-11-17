@@ -88,7 +88,7 @@ sub run_once {
 
     if( !$config_purge->{no_job_purge} && (ref $config_runner && $config_runner->{root}) ) {
         #_log "Config root: ". $config_runner->{root};
-        my $jobs = ci->job->find({})->sort({ _id=>1 });
+        my $jobs = ci->job->find({ purged => { '$ne' => '1'}})->sort({ _id=>1 });
         while (my $job= $jobs->next){
             my $job_name = $job->{name};
             my $endtime = $job->{endtime};
@@ -123,7 +123,7 @@ sub run_once {
                     while( my $actual = $deleted_job_logs->next ) {
                         my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
                         my $data;
-                        mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} eq 'debug';
+                        mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} && $actual->{level} eq 'debug';
                         if(ref $query){
                             _log "\tDeleting field data of ".$job->{mid}."....";
                             $data = $query->{data};
