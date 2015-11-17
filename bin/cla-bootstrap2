@@ -3,6 +3,7 @@
 echo 'Installing dependencies...'
 
 bin/cla-env exec stew install --base /opt/clarive --repo http://sources.clarive.com git 'perl-modules==master'
+bin/cla-env exec cpanm --mirror http://cpan.clarive.com --mirror-only --installdeps .
 
 while getopts "t" arg; do
   case $arg in
