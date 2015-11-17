@@ -39,25 +39,40 @@ params:
     }
     var ps = meta.page_size || 20;
 
-   var project_box_store_user = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
-        tree_level: meta.tree_level || '',
-        limit: ps, 
-        include_root: true, 
-        level: meta.level, 
-        collection: meta.collection,
-        autoLoad: false,
-        roles: meta.roles
-    } });
+    var project_box_store;
+    var project_box_store_user;
 
-    var project_box_store = new Baseliner.store.AllProjects({ id: 'id', baseParams: {
-        tree_level: meta.tree_level || '',
-        limit: ps, 
-        include_root: true, 
-        level: meta.level, 
-        collection: meta.collection,
-        autoLoad: false,
-        roles: meta.roles
-    } });
+    if (meta.collection == 'project'){
+       project_box_store_user = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
+            tree_level: meta.tree_level || '',
+            limit: ps, 
+            include_root: true, 
+            level: meta.level, 
+            collection: meta.collection,
+            autoLoad: false,
+            roles: meta.roles
+        } });
+
+        project_box_store = new Baseliner.store.AllProjects({ id: 'id', baseParams: {
+            tree_level: meta.tree_level || '',
+            limit: ps, 
+            include_root: true, 
+            level: meta.level, 
+            collection: meta.collection,
+            autoLoad: false,
+            roles: meta.roles
+        } });
+    } else {
+        project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
+            tree_level: meta.tree_level || '',
+            limit: ps, 
+            include_root: true, 
+            level: meta.level, 
+            collection: meta.collection,
+            autoLoad: false,
+            roles: meta.roles
+        } });
+    }
 
     var no_items = _('No items found');
     var tpl = new Ext.XTemplate( 
@@ -88,28 +103,30 @@ params:
         if ( projects && firstload ) { 
             firstload = false;
             project_box.setValue( projects );
-            project_box.store = project_box_store_user;
-            project_box_store_user.on('load', function(){
-                var removed_elems = {};
-                project_box_store_user.each(function(elem){
-                    var user_elem = elem;
+            if (meta.collection == 'project'){
+                project_box.store = project_box_store_user;
+                project_box_store_user.on('load', function(){
+                    var removed_elems = {};
+                    project_box_store_user.each(function(elem){
+                        var user_elem = elem;
+                        project_box.items.items.forEach(function(elem){
+                            if(user_elem.json.mid == elem.value){
+                                removed_elems[elem.value] = 1;
+                                project_box_store_user.remove(user_elem);
+                            }
+                        });
+                    });
                     project_box.items.items.forEach(function(elem){
-                        if(user_elem.json.mid == elem.value){
-                            removed_elems[elem.value] = 1;
-                            project_box_store_user.remove(user_elem);
+                        if(!removed_elems[elem.value]){
+                            if(project_box.buttonClear.isDisplayed()){ 
+                                project_box.buttonClear.hide(); 
+                            }
+                            elem.disableAllListeners();
                         }
                     });
                 });
-                project_box.items.items.forEach(function(elem){
-                    if(!removed_elems[elem.value]){
-                        if(project_box.buttonClear.isDisplayed()){ 
-                            project_box.buttonClear.hide(); 
-                        }
-                        elem.disableAllListeners();
-                    }
-                });
-            });
-            project_box_store_user.load();
+                project_box_store_user.load();
+            }
         }
     });
 
