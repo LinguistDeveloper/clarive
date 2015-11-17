@@ -4,6 +4,7 @@ use warnings;
 use lib 't/lib';
 
 use Test::More;
+use Test::Deep;
 use TestEnv;
 
 use Baseliner::Validator;
@@ -75,8 +76,12 @@ subtest 'validates against the isa' => sub {
 
     my $vresult = $validator->validate( { foo => 'abc' } );
 
-    is_deeply $vresult,
-      { is_valid => 0, errors => { foo => q/Validation failed for 'Int' with value "abc"/ }, validated_params => {} };
+    cmp_deeply $vresult,
+      {
+        is_valid         => 0,
+        errors           => { foo => re(qr/Validation failed for 'Int' with value "?abc"?/) },
+        validated_params => {}
+      };
 };
 
 subtest 'validates against the isa subtype' => sub {
@@ -86,8 +91,12 @@ subtest 'validates against the isa subtype' => sub {
 
     my $vresult = $validator->validate( { foo => 'abc' } );
 
-    is_deeply $vresult,
-      { is_valid => 0, errors => { foo => q/Validation failed for 'TimeStr' with value "abc"/ }, validated_params => {} };
+    cmp_deeply $vresult,
+      {
+        is_valid         => 0,
+        errors           => { foo => re(qr/Validation failed for 'TimeStr' with value "?abc"?/) },
+        validated_params => {}
+      };
 };
 
 subtest 'validates with coersion' => sub {
