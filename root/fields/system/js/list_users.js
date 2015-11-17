@@ -37,7 +37,8 @@ params:
         autoLoad: true,
         baseParams: {projects:[],
 					 roles: meta.filter,
-                     topic_mid: data.topic_mid
+                     topic_mid: data.topic_mid,
+                     limit: 999999,
                     }
     });
     
@@ -52,7 +53,7 @@ params:
     });
     
     user_box_store.on('load',function(){
-        user_box.setValue( users ) ;            
+        user_box.setValue( users ) ;
     });
 	
 	return [

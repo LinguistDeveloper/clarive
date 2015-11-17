@@ -138,7 +138,7 @@ Baseliner.model.Users = function(c) {
         triggerAction: 'all',
         resizable: true,
         //store: new Baseliner.store.UserProjects({}),
-        mode: 'remote',
+        mode: 'local',
         fieldLabel: _('Assign to'),
         typeAhead: true,
         name: 'users',
@@ -150,7 +150,6 @@ Baseliner.model.Users = function(c) {
         value: '/',
         extraItemCls: 'x-tag',
         totalProperty: 'totalCount',
-        pageSize: 10,
         minChars: 1,
         listeners: {
             newitem: function(bs,v, f){
