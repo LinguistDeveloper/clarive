@@ -1161,7 +1161,7 @@ sub get_rules_info {
     my $where = {};
     my $sort = $p->{sort} || 'ts';
     $sort = 'name_insensitive' if $sort eq 'rule_name';
-    my $dir = $p->{dir} eq 'ASC' ? 1 : -1;
+    my $dir = $p->{dir} && $p->{dir} eq 'ASC' ? 1 : -1;
     if( $p->{query} ) {
         mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode username)] ); 
     }
