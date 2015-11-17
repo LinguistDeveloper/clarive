@@ -45,6 +45,7 @@
                value: params.rec.rule_type || 'event',
                displayField: 'rule_type_name',
                typeAhead: false, minChars: 1, mode: 'local', 
+               cls: 'ui-comp-rule-new-type',
                store: [
                   [ 'event', _('Event') ],
                   [ 'pipeline', _('Job Pipeline') ],

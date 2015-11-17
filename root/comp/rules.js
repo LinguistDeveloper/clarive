@@ -55,6 +55,7 @@
     };
 
     var search_field = new Baseliner.SearchSimple({ 
+        name: 'rule_search',
         width: 140,
         handler: function(){
             do_search();
@@ -423,6 +424,7 @@
 
 
     var rules_tree = new Ext.tree.TreePanel({
+        cls: 'ui-comp-rules-tree',
         useArrows: true,
         expanded: true,
         animate : true, 
@@ -527,6 +529,7 @@
         },
         header: false,
         store: rules_store,
+        cls: 'ui-comp-rules-grid',
         columns:[
             { header: _('Rule'), width: 160, dataIndex: 'rule_name', sortable: true, renderer: render_rule },
             { header: _('Type'), hidden: true, width: 40, dataIndex: 'rule_type' },
@@ -975,6 +978,7 @@
                     var is_ok = true;
                     var name_field = prompt(_('Name'));
                     if (!name_field) { return false };
+
                     var id_field = Baseliner.name_to_id( name_field );
                     n2.eachChild(function(node){
                         var data = node.attributes.data;
@@ -1169,7 +1173,7 @@
             });
             stmts_menu.showAt(event.xy);
         };
-        var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
+        var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ tooltip: _('Refresh'), icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.gif', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
@@ -1278,6 +1282,7 @@
             ],
             root: { 
                 text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
+                cls: 'ui-comp-rules-tree-start',
                 name: _('Start: %1', event_name || short_name),
                 draggable: false, 
                 id: 'root', 
@@ -1582,6 +1587,7 @@
         items: []
     });
     var search_palette = new Baseliner.SearchSimple({ 
+        name: 'palette_search',
         width: 220,
         handler: function(){
             var lo = palette.getLoader();
@@ -1591,6 +1597,7 @@
     });
     var palette = new Ext.tree.TreePanel({
         region: 'east',
+        cls: 'ui-comp-palette',
         title: _('Palette'),
         width: 250,
         autoScroll: true,

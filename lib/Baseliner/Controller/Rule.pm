@@ -540,6 +540,10 @@ sub palette : Local {
             map {
                 my $n = $_;
                 my $service_key = $n->{key};
+
+                my $name = $service_key;
+                $name =~ s{\.}{-}g;
+
                 +{
                     isTarget => $n->{holds_children}? \1: \0,
                     leaf=> \1,
@@ -548,6 +552,8 @@ sub palette : Local {
                     icon => $n->{icon} // $default_icon,
                     palette => \1,
                     text => _loc($n->{name}) // $service_key,
+                    cls => "ui-comp-palette-$name",
+                    id => "ui-comp-palette-$name",
                 }
             } 
             grep { $_->{show_in_palette} }

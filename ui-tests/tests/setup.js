@@ -188,15 +188,46 @@ function createRule(browser, options) {
     ruleEdit
       .waitForElementVisible('input[name=rule_name]', 5000)
       .setValue('input[name=rule_name]', options['name'])
-      .setValue('input[name=rule_type]', options['type'])
-      .jqueryClick("button:contains('Next')")
-      .jqueryClick("button:contains('Done')");
+      .click('.ui-comp-rule-new-type')
+      .jqueryClick(".x-combo-list-item:contains('" + options['type'] + "')")
+      .waitForJqueryElement("button:contains('Done')")
+      .jqueryClick("button:contains('Done')")
+      ;
 
-    browser.pause(1000);
+    rules
+      .setValue('input[name=rule_search]', options['name'])
+      ;
 
-    //roleEdit
-      //.click('@close');
-      //;
+    browser
+      .keys(['\uE006'])
+      ;
+
+    rules
+      .jqueryClick('.ui-comp-rules-grid b:contains("Issue")')
+      .setValue('input[name=palette_search]', 'textfield')
+      ;
+
+    browser
+      .keys(['\uE006'])
+      ;
+
+    browser
+      .waitForElementVisible('.ui-comp-palette-fieldlet-text img.x-tree-node-icon', 5000)
+      .jqueryElementId('.ui-comp-palette-fieldlet-text img.x-tree-node-icon', function(from) {
+          this.jqueryElementId('.ui-comp-rules-tree-start', function(to) {
+            this
+              .moveToElement('#' + from, 0, 0)
+              .mouseButtonDown(0)
+              .moveToElement('#' + to,  100,  0)
+              .mouseButtonUp(0)
+              .pause(1000)
+              .keys('Field')
+              //.setValue('input[type=text]', 'Field')
+              //.pause(1000)
+              .acceptAlert()
+              .pause(5000);
+          });
+      });
 
     tabBar
       .click('@activeTabClose');
@@ -208,7 +239,10 @@ module.exports = new (function() {
   tests['Create'] = function (browser) {
     browser.maximizeWindow();
 
+    var reset = browser.page.reset();
     var login = browser.page.login();
+
+    reset.navigate();
 
     login.login();
 
@@ -232,9 +266,9 @@ module.exports = new (function() {
     createStatus(browser, { name: 'In Progress', bls: ['Common'] });
     createStatus(browser, { name: 'Closed', bls: ['Common'], type: 'F' });
 
-    //createRule(browser, { name: 'Issue', type: 'form' });
-
     createRole(browser, { name: 'Developer' });
+
+    createRule(browser, { name: 'Issue', type: 'Form' });
 
     browser.end();
   };
