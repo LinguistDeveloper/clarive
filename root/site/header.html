@@ -5,6 +5,7 @@
 <%perl>
     my $lang = $c->language;
     my $to_bool = sub{ 
+        return $_[0] unless defined $_[0];
         ref $_[0] and return $_[0]; $_[0] eq '1' ? \1 : $_[0] eq '0' ? \0 : $_[0] 
     };
     
