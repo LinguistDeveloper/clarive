@@ -301,12 +301,19 @@
                 });
             } else {
                 Baseliner.ci_call( opts.mid, 'ci_form', { collection: opts.collection }, function(res){
-                    var forms = res.data;
-                    if(forms.constructor === Array) 
-                        form.pending_fields = form.pending_fields+forms.length; else form.pending_fields++;
-                    Ext.each( forms, function(form_url){
-                        add_ci_form( form_url, opts );
-                    });
+                    if (res.data != null && res.data.length) {
+                        var forms = res.data;
+
+                        if (forms.constructor === Array) {
+                            form.pending_fields = form.pending_fields + forms.length;
+                        } else {
+                            form.pending_fields++;
+                        }
+
+                        Ext.each( forms, function(form_url){
+                            add_ci_form( form_url, opts );
+                        });
+                    }
                 }, function(res){
                     // No ci form ignore
                 });
