@@ -23,11 +23,10 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-	var obj = [];
     var form = params.form.getForm();
-    var filter_field = form.findField( meta.filter_field );
+
     var topics = new Array();
-    var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
+    var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
     var id_required = Ext.id()
     //var lbl_required = 'lbl_' + meta.id_field + '_' + id
     
@@ -132,36 +131,62 @@ params:
             });
         }
     }
-//	if (meta.list_type == 'grid') {
+    var obj = [];
+//  if (meta.list_type == 'grid') {
 //        var allow;
 //        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
 //        // alert(meta.name_field + " " + allow);
-//		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
-//	}
-	obj.push(topic_box);
-
-    if ( filter_field ) {
-        filter_field.on('change',function (argument) {
-            var meta_filter = meta.filter;
-            var txt_filter
-            if ( meta.filter != 'none' && meta_filter.length>0 ) {
-               meta_filter = "," + meta_filter.replace("{","");
-            } else {
-              meta_filter = "}";
-            }
-            if (meta.filter_data) { 
-                txt_filter = '{ "'+ meta.filter_data +'":["' + filter_field.getValue() + '"]' + meta_filter;
-            } else {
-                txt_filter = '{ "'+ filter_field.name +'":["' + filter_field.getValue() + '"]' + meta_filter;
+//      obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))    ;
+//  }
+    obj.push(topic_box);
+    
+    params.form.on('afterrender', function(){
+        var filter_field = form.findField( meta.filter_field );
+        if ( filter_field ) {
+            function generate_txt (mids){
+                var meta_filter = meta.filter;
+                var txt_filter;
+                if ( meta.filter != 'none' && meta_filter.length>0 ) {
+                   meta_filter = "," + meta_filter.replace("{","");
+                } else {
+                  meta_filter = "}";
+                }
+                if (meta.filter_data) { 
+                    txt_filter = '{ "'+ meta.filter_data +'":["' + mids + '"]' + meta_filter;
+                } else {
+                    txt_filter = '{ "'+ filter_field.name +'":["' + mids + '"]' + meta_filter;
+                };
+                topic_box_store.baseParams['filter'] = txt_filter;
+                if( meta.list_type == 'grid' ) {
+                    topic_box.removeAll();
+                }
             };
 
-            topic_box_store.baseParams['filter'] = txt_filter;
-            topic_box.setValue(undefined);
-            try { 
-                topic_box.killItems()
-            } catch(e) {};
-            topic_box_store.load();
-        });
-    }
-	return obj
+            function extract_mids (field){
+                var mids = "";
+                var value = filter_field.items.items;
+                value.forEach(function(val){
+                    mids += val.value + ",";
+                });
+                mids = mids.substr(0, mids.length-1);
+                return mids;
+            };
+
+            filter_field.store.on('load',function(res, records, options){
+                var mids = extract_mids(res);
+                generate_txt(mids);
+            });
+            filter_field.on('change',function (res) {
+                var mids = extract_mids(res);
+                generate_txt(mids);
+                topic_box_store.load();
+            });
+            filter_field.on('removeItem',function (res) {
+                var mids = extract_mids(res);
+                generate_txt(mids);
+                topic_box_store.load();
+            });
+        }
+    });
+    return obj
 })
