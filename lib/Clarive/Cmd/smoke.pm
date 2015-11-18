@@ -55,6 +55,7 @@ sub run {
 
         _system("cla web-stop --env $smoke_env --port $smoke_port");
 
+        local $ENV{CLARIVE_TEST} = 1;
         _system("cla web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
         sleep 5;

@@ -242,7 +242,7 @@ module.exports = new (function() {
     var reset = browser.page.reset();
     var login = browser.page.login();
 
-    reset.navigate();
+    reset.reset();
 
     login.login();
 
