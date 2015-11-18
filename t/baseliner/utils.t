@@ -1,17 +1,14 @@
 use strict;
 use warnings;
-
 use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use TestEnv;
 
-BEGIN {
-    TestEnv->setup;
-}
+BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep);
+use Baseliner::Utils qw(_pointer query_grep _unique);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -96,6 +93,17 @@ subtest 'query_grep finds none' => sub {
     is scalar query_grep( query=>'hank', fields=>['name','id'], rows=>\@rows ), 0;
     is scalar query_grep( query=>'"bart"', fields=>['name'], rows=>\@rows ), 0;
     is scalar query_grep( query=>'-k -m -l -b', fields=>['name'], rows=>\@rows ), 0;
+};
+
+subtest '_unique: returns unique fields' => sub {
+    is_deeply [_unique()], [()];
+    is_deeply [_unique('')], [('')];
+    is_deeply [_unique('', undef)], [('', undef)];
+    is_deeply [_unique(undef, undef)], [(undef)];
+
+    is_deeply [_unique('foo', undef, 'foo')], [('foo', undef)];
+    is_deeply [_unique('foo', 'foo')], [('foo')];
+    is_deeply [_unique('foo', 'bar', 'foo')], [('foo', 'bar')];
 };
 
 done_testing;

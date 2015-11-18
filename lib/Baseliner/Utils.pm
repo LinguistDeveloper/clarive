@@ -156,11 +156,7 @@ sub ns_split {
     }
 }
 
-sub _unique {
-    return () unless @_ > 0;
-    my %dup;    
-    grep { $dup{$_} // (($dup{$_}=0)+1) } @_;
-}
+sub _unique { uniq(@_) }
 
 # detect regex auto, use this instead of qr//
 sub _regex {
