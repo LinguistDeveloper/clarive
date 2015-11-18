@@ -51,3 +51,5 @@ root/static/sch*
 root/static/images/glyph*
 nohup.out
 baseliner_jazztel.conf
+config/*.yml
+!config/clarive.yml
