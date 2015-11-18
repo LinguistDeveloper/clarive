@@ -1,10 +1,13 @@
 module.exports = new (function() {
   var tests = this;
 
+  tests['before'] = function(browser) {
+    browser.resizeWindow(1024, 768);
+    browser.maximizeWindow();
+  };
+
   tests['Successful login'] = function (browser) {
     var login = browser.page.login();
-
-    browser.maximizeWindow();
 
     login.navigate()
       .waitForElementVisible('@loginInput', 1000)
@@ -15,7 +18,7 @@ module.exports = new (function() {
 
     login
       .click('@loginButton')
-      .waitForElementNotVisible('@loadingMask', 5000)
+      .waitForElementVisible('@userMenu', 5000)
       .logout();
 
     browser.end();

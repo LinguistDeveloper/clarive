@@ -12,6 +12,7 @@ sub run {
     my (%opts) = @_;
 
     my $smoke_env             = 'smoke';
+    my $smoke_db              = 'test_smoke';
     my $smoke_port            =  50000 + (int(rand()*1500) + abs($$)) % 1500;
     my $smoke_conf            = "config/$smoke_env.yml";
     my $smoke_nightwatch_conf = 'ui-tests/smoke.json';
@@ -31,7 +32,7 @@ sub run {
         print "# UNIT TESTS ", "\n";
         print "#" x 80, "\n\n";
 
-        $unit_exit = _system("prove t");
+        $unit_exit = _system("cla prove");
     }
 
     my $ui_exit = 0;
@@ -40,7 +41,7 @@ sub run {
         replace_inplace(
             $smoke_conf,
             qr{dbname: acmetest},
-            qq{dbname: $smoke_env}
+            qq{dbname: $smoke_db}
         );
         replace_inplace(
             $smoke_conf,
@@ -56,6 +57,8 @@ sub run {
         _system("cla web-stop --env $smoke_env --port $smoke_port");
 
         local $ENV{CLARIVE_TEST} = 1;
+        local $ENV{CLARIVE_ENV}  = $smoke_env;
+
         _system("cla web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
         sleep 5;
@@ -73,7 +76,7 @@ sub run {
         );
 
         my ($stdout) = tee_merged {
-            $ui_exit = _system("cla proveui -c $smoke_nightwatch_conf");
+            $ui_exit = _system("cla proveui -c $smoke_nightwatch_conf -e default");
         };
 
         $ui_exit = 255 if $stdout =~ m/TEST FAILURE/;

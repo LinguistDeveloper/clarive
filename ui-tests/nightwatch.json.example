@@ -1,8 +1,8 @@
 {
   "src_folders" : ["ui-tests/tests"],
   "output_folder" : "ui-tests/reports",
-  "custom_assertions_path" : "",
   "page_objects_path" : "ui-tests/pages",
+  "custom_commands_path" : "ui-tests/commands",
 
   "selenium" : {
     "start_process" : true,
@@ -37,7 +37,7 @@
 
     "phantomjs" : {
       "screenshots" : {
-        "enabled" : true,
+        "enabled" : false,
         "path" : "screenshots"
       },
       "desiredCapabilities": {

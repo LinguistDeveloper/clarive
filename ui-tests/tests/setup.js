@@ -225,7 +225,6 @@ function createRule(browser, options) {
               //.setValue('input[type=text]', 'Field')
               //.pause(1000)
               .acceptAlert()
-              .pause(5000);
           });
       });
 

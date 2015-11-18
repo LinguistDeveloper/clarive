@@ -10,7 +10,7 @@ var commands = {
 
         this
           .click('@loginButton')
-          .waitForElementNotVisible('@loadingMask', 5000);
+          .waitForElementVisible('@userMenu', 5000);
     },
     logout: function() {
         this
@@ -29,8 +29,6 @@ module.exports = {
         loginInput: 'input[name=login]',
         loginInputInvalid: 'input[name=login].x-form-invalid',
         loginPassword: 'input[name=password]',
-        loadingMask: '#bali-loading-img',
-        logo: 'img[src*="logo.png"]',
         userMenu: '.ui-user-menu button',
         userMenuLogout: 'a.ui-user-menu-logout',
         alertBox: '.x-window',

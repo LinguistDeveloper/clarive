@@ -6,7 +6,7 @@ foo: baz
 baseliner:
     name: test
     app_name: test
-    default_theme: test
+    default_theme: clarive
     default_lang: en
     create_user_session: 1
     activity_from_event: 0
