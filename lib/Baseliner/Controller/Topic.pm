@@ -1717,7 +1717,7 @@ _warn $p;
     }
     my $row = ci->user->find({username => mdb->in($users_friends)})->sort({realname => 1});
     my $start = $p->{start} // 0;
-    my $limit = $p->{limit} // 10;
+    my $limit = $p->{limit} // 9999;
     $row->skip($start);
     $row->limit($limit);
     my $cnt = $row->count;
