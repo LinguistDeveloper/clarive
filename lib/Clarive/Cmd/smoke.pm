@@ -53,9 +53,9 @@ sub run {
         print "# STARTING WEB SERVER", "\n";
         print "#" x 80, "\n\n";
 
-        _system("cla-env web-stop --env $smoke_env --port $smoke_port");
+        _system("cla web-stop --env $smoke_env --port $smoke_port");
 
-        _system("cla-env web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
+        _system("cla web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
         sleep 5;
 
@@ -72,7 +72,7 @@ sub run {
         );
 
         my ($stdout) = tee_merged {
-            $ui_exit = _system("cla-env proveui -c $smoke_nightwatch_conf");
+            $ui_exit = _system("cla proveui -c $smoke_nightwatch_conf");
         };
 
         $ui_exit = 255 if $stdout =~ m/TEST FAILURE/;
@@ -82,7 +82,7 @@ sub run {
         print "# STOPPING WEB SERVER", "\n";
         print "#" x 80, "\n\n";
 
-        _system("cla-env web-stop --env $smoke_env --port $smoke_port");
+        _system("cla web-stop --env $smoke_env --port $smoke_port");
     }
 
     print "\n";
