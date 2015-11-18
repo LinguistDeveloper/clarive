@@ -224,7 +224,7 @@
         fieldLabel: '',
         boxLabel: _("Create a job outside of the available time slots."),
         hidden: !show_no_cal,
-        disabled: has_no_cal,
+        disabled: !has_no_cal,
         handler: function (chk,val){
             if(val){
                 store_time.removeAll();
