@@ -2,14 +2,14 @@
 
 echo 'Installing dependencies...'
 
-bin/cla-env exec stew install --base /opt/clarive --repo http://sources.clarive.com git 'perl-modules-master'
+bin/cla exec stew install --base /opt/clarive --repo http://sources.clarive.com git 'perl-modules-master'
 
 while getopts "t" arg; do
   case $arg in
     t)
       echo "Installing smoke tests"
 
-      bin/cla-env exec stew install --base /opt/clarive --repo http://sources.clarive.com nightwatch
+      bin/cla exec stew install --base /opt/clarive --repo http://sources.clarive.com nightwatch
       ;;
   esac
 done

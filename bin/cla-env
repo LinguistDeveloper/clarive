@@ -27,5 +27,5 @@ if [ "$1" == "exec" ]; then
 
     "$@"
 else
-    $PERL $BINDIR/cla "$@"
+    $PERL $BINDIR/cla-cmd "$@"
 fi

@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use FindBin qw($Bin);
+BEGIN {
+    if( ! $ENV{CLARIVE_HOME} ) {
+        our $clarive_home = $Bin . '/..';
+        chdir $clarive_home;
+        require Cwd;
+        $clarive_home = Cwd::realpath( $clarive_home );  # clean up the clarive_home path 
+        $ENV{CLARIVE_HOME} //= $clarive_home;
+    }
+    if( ! $ENV{CLARIVE_BASE} ) {
+        require Cwd;
+        $ENV{CLARIVE_BASE} = Cwd::realpath( $ENV{CLARIVE_HOME} . '/..' );
+    }
+}
+
+#use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
+#use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
+use lib "$ENV{CLARIVE_HOME}/lib";
+
+use Getopt::Mini 0.02 later=>1;
+
+select(STDERR); $|=1;
+select(STDOUT); $|=1;
+
+my ($cmd, @pre_opts );
+
+# capture cla options from before the command
+while( @ARGV ) {
+    my $arg = shift @ARGV;
+    if( $arg =~ /^-/ ) {
+        push @pre_opts, $arg;
+    } else {
+        $cmd = $arg;
+        last;
+    }
+}
+
+my %cla_opts;
+if( @pre_opts ) {
+    local @ARGV = @pre_opts;
+    %cla_opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
+}
+
+# get command options
+my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
+%opts = process_dot_opts( %opts );
+%opts = process_not_opts( %opts );
+%opts = process_json_opts( %opts );
+my $argv = delete $opts{_argv};
+
+if( !$cmd ) {
+    if( exists $cla_opts{version} ) {
+        $cmd = 'version';
+    }
+    elsif( exists $cla_opts{h} ) {
+        $cmd = 'help';
+    }
+    else { $cmd='help' }
+}
+
+# create app 
+require Clarive::App;
+my $app = Clarive::App->new( %opts );
+
+# run command
+$app->do_cmd( cmd=>$cmd );
+
+exit 0;
+
+# process all --key.k2.etc XX type keys, translated JSON style
+sub process_dot_opts {
+    my %opt = @_;
+    my %dots;
+    for my $k ( keys %opt ) {
+        if( $k=~/\./ )  {
+            my @pars = split /\./, $k;
+            my $ev = join '', map { "{$_}" } @pars;
+            eval "\$dots$ev = \$opt{\$k}";
+            die "ERROR: invalid dot option syntax: $k\n" if $@;
+        }
+    }
+    return ( %opt, %dots );
+}
+
+# process all --no-key options, treated as --key 0
+sub process_not_opts {
+    my %opt = @_;
+    for my $k ( keys %opt ) {
+        if( $k=~/^no-(.+)$/ )  {
+            my $k2 = $1;
+            $opt{$k2} = 0;
+        }
+    }
+    return %opt;
+}
+
+# process --json '{ }' structures
+sub process_json_opts {
+    my %opt = @_;
+    if( my $json = delete $opt{json} ) {
+        require JSON::XS;
+        my $d = JSON::XS->new->decode($json);  # TODO allow_barekey would be nice, but JSON::XS does not allow it
+        my $type = ref $d;
+        die "Invalid --json: has to he an Object (hash), not $type\n" unless $type eq 'HASH';
+        %opt = ( %opt, %$d ); 
+    }
+    return %opt;
+}
