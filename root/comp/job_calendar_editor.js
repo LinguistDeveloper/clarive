@@ -66,7 +66,7 @@
                     Baseliner.ci_box({ 
                         name:'ns', 
                         role:['Infrastructure','Project'], 
-                        width: 180, 
+                        width: 400, 
                         fieldLabel:_('Scope'), 
                         value: cal_ns != '/' ? cal_ns : '/' , 
                         emptyText: _('Global'), 
