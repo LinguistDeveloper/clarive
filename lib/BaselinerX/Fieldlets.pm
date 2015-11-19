@@ -508,7 +508,8 @@ register 'fieldlet.required.created_by' => {
     bd_field    => 'created_by',
     editable    => 0,
     field_order => 1,
-    origin      => 'default'
+    origin      => 'default',
+    meta_type   => 'user',
 };
 
 register 'fieldlet.required.created_on' => {
@@ -527,7 +528,8 @@ register 'fieldlet.required.modified_by' => {
     editable    => 0,
     field_order => 1,
     id_field    => 'modified_by',
-    bd_field    => 'modified_by'
+    bd_field    => 'modified_by',
+    meta_type   => 'user',
 };
 
 register 'fieldlet.required.modified_on' => {

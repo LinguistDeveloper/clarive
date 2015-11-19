@@ -147,6 +147,8 @@ Baseliner.model.Users = function(c) {
         valueField: 'id',
         tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>',
         displayFieldTpl: tpl2,
+        totalProperty: 'totalCount',
+        minChars: 1,
         value: '/',
         extraItemCls: 'x-tag',
         totalProperty: 'totalCount',
