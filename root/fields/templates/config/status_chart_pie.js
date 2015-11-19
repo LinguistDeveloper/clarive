@@ -1,12 +1,12 @@
 (function(params){
     var data = params.data || {};
-
+    var ret = Baseliner.generic_fields(data);
     var selected_category = new Ext.form.Field({
         name: 'category',
         xtype: "textfield",
-        value: ''
+        value: '',
+        hidden: true,
     });
-    selected_category.hide();
 
     var store_category = new Ext.data.SimpleStore({
         fields: ['category', 'category_name' ],
@@ -25,7 +25,7 @@
         value: data ? data.category : '',
         mode: 'local',
         forceSelection: true,
-        emptyText: 'select a category',
+        emptyText: _('select a category'),
         triggerAction: 'all',
         fieldLabel: _('Category'),
         name: 'category_combo',
@@ -33,7 +33,7 @@
         hiddenName: 'category_name',
         displayField: 'category_name',
         store: store_category,
-        allowBlank: false,
+        allowBlank: true,
         listeners:{
             'select': function(cmd, rec, idx){
             	selected_category.setValue(rec.data.category_name);   
@@ -41,10 +41,12 @@
         }
     });
 
-    return [
+    ret.push([ 
         combo_category,
-    	{ xtype:'textfield',fieldLabel: _('Filter'), name: 'filter', value: data.filter },
-    	{ xtype:'numberfield',fieldLabel: _('Depth'), name: 'depth', value: data.depth },
-    	selected_category
-    ]
-})
+        { xtype:'textfield',fieldLabel: _('Filter'), name: 'filter', value: data.filter },
+        { xtype:'numberfield',fieldLabel: _('Depth'), name: 'depth', value: data.depth },
+        selected_category
+    ]);
+
+    return ret;
+});

@@ -5,7 +5,7 @@
 <%perl>
     use Baseliner::Utils;
     my $graph_id = "graph1". _nowstamp;
-    my $filter_category = $meta->{filter_category} || '';
+    my $filter_category = $meta->{category} || '';
 
     if ( $filter_category ) {
         if ( !is_number($filter_category) ) {
