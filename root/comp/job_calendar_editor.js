@@ -63,8 +63,16 @@
                                displayField:'name', 
                                allowBlank: false
                     },
-                    Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'], width: 180, fieldLabel:_('Scope'), value: cal_ns != 'Global' ? cal_ns : undefined , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
-                    ],
+                    Baseliner.ci_box({ 
+                        name:'ns', 
+                        role:['Infrastructure','Project'], 
+                        width: 180, 
+                        fieldLabel:_('Scope'), 
+                        value: cal_ns != '/' ? cal_ns : '/' , 
+                        emptyText: _('Global'), 
+                        force_set_value: cal_ns && cal_ns != '/' ? true: false  
+                    }),
+                ],
                 buttons: [                  
                     /*{  text: _('Ayuda'),
                         handler: function(){ 
