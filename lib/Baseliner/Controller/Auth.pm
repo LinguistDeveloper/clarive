@@ -23,6 +23,15 @@ register 'config.login' => {
         ]
     };
 
+register 'config.maintenance' => {
+    name => 'Maintenance mode',
+    metadata => [
+        { id => 'enabled', name => 'Enabled', default => 0 },
+        { id => 'message', name => 'Message', default => 'Maintenance mode. Please try again later' },
+    ]
+};
+
+
 =head2 logout 
 
 Hardcore, url based logout. Always redirects otherwise 
@@ -153,7 +162,14 @@ sub authenticate : Private {
     $realm //= '';
     my $auth; 
     _debug "AUTH START login=$login, username=$username, realm=$realm";
-    
+
+    my $maintenance = $c->model('ConfigStore')->get('config.maintenance');
+    if ($maintenance->{enabled} && $realm ne 'local') {
+        $c->logout;
+        $c->stash->{auth_message} = $maintenance->{message};
+        return 0;
+    }
+
     # auth by rule?
     my $auth_stash = { login=>$login, realm=>$realm, username=>$username, password=>$password, login_data=>{ login_ok=>undef } };
     if ( ci->user->find_one({name=>"$username"}) || $username eq 'local/root' ){
@@ -260,8 +276,8 @@ sub login : Global {
     $c->log->info( "LOGIN: " . $login );
     #_log "PW   : " . $password; #XXX only for testing!
     my $msg;
-    my $attempts_login = $config_login->{delay_attempts};
-    my $attempts_duration = $config_login->{delay_duration};
+    my $attempts_login = $config_login->{delay_attempts} // 0;
+    my $attempts_duration = $config_login->{delay_duration} // 5;
     my $id_login = $c->req->address;
     my $id_browser = $c->req->user_agent;
     my $block_datetime = mdb->ts;
@@ -303,7 +319,7 @@ sub login : Global {
                         { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
                         { upsert => 1 }
                     );
-                    if($attempts_query->{block_datetime} != 0) { 
+                    if($attempts_query->{block_datetime} && $attempts_query->{block_datetime} != 0) { 
                             my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
                             $time_user_block = $time_user_block + "$attempts_duration s";
                             if($time_user_block < mdb->ts) {

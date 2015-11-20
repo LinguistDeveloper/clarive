@@ -1,17 +1,13 @@
 use strict;
 use warnings;
-
 use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
-
-BEGIN {
-    TestEnv->setup;
-}
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -191,6 +187,47 @@ subtest 'login: logges in after block is expired' => sub {
       };
 };
 
+subtest 'login: denies logins when in maintenance mode' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        req => { params => { login => 'remote/users', password => 'password' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode'} ) }
+    );
+
+    $controller->login($c);
+
+    is ${ $c->stash->{json}->{success} }, 0;
+    is $c->stash->{json}->{msg}, 'Maintenance mode';
+};
+
+subtest 'login: allows local logins when in maintenance mode' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username => 'root' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => 'root', realm => 'local' },
+        req => { params => { login => 'local/root', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode'} ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }
@@ -198,6 +235,8 @@ sub _build_c {
 sub _setup {
     TestUtils->cleanup_cis;
     mdb->user_login_attempts->drop;
+
+    mdb->config->drop;
 
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Auth' );
 
