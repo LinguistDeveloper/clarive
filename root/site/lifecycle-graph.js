@@ -18,8 +18,6 @@ var red = "#CC0000";
 var green = "#009933";
 var black = "#19191C";
 var blue = "#0066CC";
-var mi_object_link = [];
-var mi_object_node = [];
 
 //Create the checkitems to the option menu.
 var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;general(diagram, overview);}}});
@@ -206,11 +204,6 @@ var menu_role = new Ext.Button({
                 new go.Binding("stroke","text_color"))
         );
 
-       /*var selected_stroke = "#FFFFFF";
-        var unselected_stroke = "transparent";
-        var selected_background = "#1E90FF";
-        var unselected_background = "transparent";*/
-
         // define the only Link template
         diagram.linkTemplate =
           go_api(go.Link,// {click: function(e, link) { showLinks(link); }},   
@@ -227,7 +220,6 @@ var menu_role = new Ext.Button({
                 font: "bold 8px sans-serif",
                 stroke: "#0066CC",
                 segmentOffset: new go.Point(10, NaN),
-                //segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
 
@@ -236,9 +228,7 @@ var menu_role = new Ext.Button({
                 textAlign: "center",
                 font: "bold 10px sans-serif",
                 margin: 2,
-                //stroke: stroke,
                 segmentOffset: new go.Point(20, NaN)
-                //segmentOrientation: go.Link.OrientUpright
             },
                 new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                 new go.Binding("text", "selected_text"),
@@ -262,7 +252,6 @@ var menu_role = new Ext.Button({
               { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
               new go.Binding("text", "key"))
           );
-
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
@@ -317,31 +306,6 @@ var menu_role = new Ext.Button({
             var object_node = [];
             var node_background_color = "#FFFFFF";
             var node_text_color = "#000000";
-
-              //Only for group of roles
-              /*var i=0;
-              while (i < res.data.length){
-
-                  if (object_node.length==0){
-                    //object_node.push({ "key" : res.data[i].role, "color"  : bluegrad, "figure"  : "RoundedRectangle", isGroup: true });
-                  }else{
-                    var j=0;
-                    var equal = 1;
-                    while(j < object_node.length){
-
-                      if(object_node[j].key == res.data[i].role){
-                        j= object_node.length;
-                        equal = 0;
-                      }
-                     j++;
-                    }
-                    if(equal!=0){
-                      //object_node.push({ "key" : res.data[i].role, "color"  : bluegrad, "figure"  : "RoundedRectangle", isGroup: true });
-                    }
-
-                  }
-              i++;
-              }*/
 
               var i=0;
               while (i < res.data.length){
@@ -426,11 +390,7 @@ var menu_role = new Ext.Button({
               
         var object_link = [];  
         object_link = insert_links(res, general_text, general_source);      
-       
-        mi_object_link = object_link;
-        mi_object_node = object_node;
 
-        //object_link = mi_object_link;
         // the Model holds only the essential information describing the diagram
         diagram.model = new go.GraphLinksModel(object_node, object_link);
 
@@ -482,11 +442,6 @@ var menu_role = new Ext.Button({
             new go.Binding("stroke","text_color"))
         );
 
-        //var selected_stroke = "#FFFFFF";
-        //var unselected_stroke = "transparent";
-        //var selected_background = "#1E90FF";
-        //var unselected_background = "transparent";
-
         // define the only Link template
         diagram.linkTemplate = go_api(go.Link,
           { reshapable: true, resegmentable: false },
@@ -502,7 +457,6 @@ var menu_role = new Ext.Button({
               font: "bold 8px sans-serif",
               stroke: "#0066CC",
               segmentOffset: new go.Point(10, NaN),
-              //segmentOrientation: go.Link.OrientUpright
             },
             new go.Binding("text", "text")
           ),
@@ -511,11 +465,8 @@ var menu_role = new Ext.Button({
                 textAlign: "center",
                 font: "bold 10px sans-serif",
                 margin: 2,
-                //stroke: stroke,
                 segmentOffset: new go.Point(20, NaN)
-                //segmentOrientation: go.Link.OrientUpright
             },
-              //new go.Binding("text", "block")),
                 new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                 new go.Binding("text", "selected_text"),
                 new go.Binding("stroke", "isSelected", function(b) { return b ? "#FFFFFF" : "transparent"; }).ofObject(),
@@ -714,13 +665,13 @@ var menu_role = new Ext.Button({
                         texto = res.data[i].role;
                       }
                       if(res.data[i].role_job_type == "static"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
                       }else if(res.data[i].role_job_type == "promote"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
                       }else if(res.data[i].role_job_type == "demote"){
-                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                        object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
                       }else{
-                       object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                       object_link.push({ from: res.data[i].role+res.data[i].status_from, to: res.data[i].role+res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
                       }
                     j++;
                     }
@@ -810,13 +761,13 @@ var menu_role = new Ext.Button({
                 texto = res.data[i].role;
               }
               if(res.data[i].role_job_type == "static"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[0], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
               }else if(res.data[i].role_job_type == "promote"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[1], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
               }else if(res.data[i].role_job_type == "demote"){
-                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+                object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: isource[2], selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
               }else{
-               object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Time: "+ res.data[i].status_time +"\n"  });
+               object_link.push({ from: res.data[i].status_from, to: res.data[i].statuses_to[j], text: texto, source: "", selected_text: ""+"\nRol: "+res.data[i].role+"\nFrom: "+res.data[i].status_from+" To: "+res.data[i].statuses_to[j]+"\n Name: "+"\n"  });
               }
 
 
@@ -844,9 +795,7 @@ var menu_role = new Ext.Button({
                   if(!aux[i].source){
                     aux[i].source = object_link[j].source;
                   }
-                //aux[i].source = aux[i].source + " , " + object_link[j].source;
                 object_link.splice(object_link.indexOf(object_link[j]),1);
-                //aux[i].text = text;
               }
             }
           j++;
@@ -882,62 +831,6 @@ var menu_role = new Ext.Button({
       node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
       diagram.commitTransaction("highlight");
     };
-
-    /*var showLinks = function(link){
-      //var diagram = link.diagram;
-      //console.log(link);
-      var diagram = link.diagram;
-      var obj = {};
-      diagram.startTransaction("select");
-
-      mi_object_link.forEach(function(element){
-        //console.log(element.__gohashid +' <==> '+ link.Eh.__gohashid);
-        if(element.__gohashid == link.Eh.__gohashid){
-          obj = element;
-        }
-      });
-      diagram.model.removeLinkData(obj);
-      //console.log(mi_object_link);
-      diagram.commitTransaction("select");
-      alert("fae");
-            //diagram.startTransaction("select2");
-      diagram.model.addLinkData(obj);
-
-      //console.log(mi_object_link);
-      //link.fireEvent('ChangedSelection');
-      //diagram.commitTransaction("select2");
-            diagram.linkTemplate.isSelected = true;
-      //diagram.model = new go.GraphLinksModel(mi_object_node, mi_object_link);
-      //alert("lios");
-    }*/
-
-    /*var showLinks = function(link){
-      //var diagram = link.diagram;
-      var diagram = link.diagram;
-      //diagram.startTransaction("select");
-      var obj = {};
-      mi_object_link.forEach(function(element){
-        //console.log(element.__gohashid +' <==> '+ link.Eh.__gohashid);
-        if(element.__gohashid == link.Eh.__gohashid){
-          obj = element;
-        }
-      });
-      //mi_object_link.push(obj);
-      //diagram.model.removeLinkData(obj);
-      mi_object_link.splice(mi_object_link.indexOf(obj),1);
-      console.log(diagram);
-      diagram.model.linkDataArray = mi_object_link;
-      //diagram.model.addLinkDataCollection(mi_object_link);
-      diagram.model.addLinkData(obj);
-      console.log(diagram.model);
-      //diagram.commitTransaction("select");
-      //diagram.model = new go.GraphLinksModel(mi_object_node, mi_object_link);
-    }*/
-
-
-
-
-
 
     //Function make the oposite color to the background
     var change_color = function(hex) {
