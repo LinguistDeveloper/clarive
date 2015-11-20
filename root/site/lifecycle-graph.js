@@ -1,7 +1,5 @@
 (function(params) {
 
-
-
 var checked_general= false;
 var checked_rol= false;    
 
@@ -20,7 +18,8 @@ var red = "#CC0000";
 var green = "#009933";
 var black = "#19191C";
 var blue = "#0066CC";
-
+var mi_object_link = [];
+var mi_object_node = [];
 
 //Create the checkitems to the option menu.
 var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;general(diagram, overview);}}});
@@ -207,21 +206,22 @@ var menu_role = new Ext.Button({
                 new go.Binding("stroke","text_color"))
         );
 
-        var selected_stroke = "#FFFFFF";
+       /*var selected_stroke = "#FFFFFF";
         var unselected_stroke = "transparent";
         var selected_background = "#1E90FF";
-        var unselected_background = "transparent";
+        var unselected_background = "transparent";*/
 
         // define the only Link template
         diagram.linkTemplate =
-          go_api(go.Link,  
-            { reshapable: true, resegmentable: false },
+          go_api(go.Link,// {click: function(e, link) { showLinks(link); }},   
+            { reshapable: true, resegmentable: false},
             { routing: go.Link.Orthogonal },  
             { curve: go.Link.JumpOver },
             { fromPortId: "" },
-            new go.Binding("fromPortId", "fromport"),            
-            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1, },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),   
-            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),                    
+            new go.Binding("fromPortId", "fromport"), 
+            new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),           
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),   
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),                    
             go_api(go.TextBlock,{
                 textAlign: "left",
                 font: "bold 8px sans-serif",
@@ -230,23 +230,24 @@ var menu_role = new Ext.Button({
                 //segmentOrientation: go.Link.OrientUpright
             },
               new go.Binding("text", "text")),
+
             go_api(go.TextBlock,{
+                visible: false,
                 textAlign: "center",
                 font: "bold 10px sans-serif",
                 margin: 2,
                 //stroke: stroke,
-                segmentOffset: new go.Point(10, NaN)
+                segmentOffset: new go.Point(20, NaN)
                 //segmentOrientation: go.Link.OrientUpright
             },
-              //new go.Binding("text", "block")),
+                new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                 new go.Binding("text", "selected_text"),
-                new go.Binding("stroke", "isSelected", function(b) { return b ? selected_stroke : unselected_stroke; }).ofObject(),
-                new go.Binding("background", "isSelected", function(b) { return b ? selected_background : unselected_background; }).ofObject()),
+                new go.Binding("stroke", "isSelected", function(b) { return b ? "#FFFFFF" : "transparent"; }).ofObject(),
+                new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject()),
             go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
-
         );         
-        
+
         // define the diagram of groupTemplate
         diagram.groupTemplate =
           go_api(go.Group, "Vertical",
@@ -261,7 +262,7 @@ var menu_role = new Ext.Button({
               { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
               new go.Binding("text", "key"))
           );
-          
+
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
@@ -424,8 +425,12 @@ var menu_role = new Ext.Button({
               }
               
         var object_link = [];  
-        object_link = insert_links(res, general_text, general_source);              
+        object_link = insert_links(res, general_text, general_source);      
+       
+        mi_object_link = object_link;
+        mi_object_node = object_node;
 
+        //object_link = mi_object_link;
         // the Model holds only the essential information describing the diagram
         diagram.model = new go.GraphLinksModel(object_node, object_link);
 
@@ -477,10 +482,10 @@ var menu_role = new Ext.Button({
             new go.Binding("stroke","text_color"))
         );
 
-        var selected_stroke = "#FFFFFF";
-        var unselected_stroke = "transparent";
-        var selected_background = "#1E90FF";
-        var unselected_background = "transparent";
+        //var selected_stroke = "#FFFFFF";
+        //var unselected_stroke = "transparent";
+        //var selected_background = "#1E90FF";
+        //var unselected_background = "transparent";
 
         // define the only Link template
         diagram.linkTemplate = go_api(go.Link,
@@ -488,9 +493,10 @@ var menu_role = new Ext.Button({
           { routing: go.Link.Orthogonal },  
           { curve: go.Link.JumpOver }, //Bezier
           { fromPortId: "" },
-          new go.Binding("fromPortId", "fromport"),            
-            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1, },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),   
-            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject()),                
+          new go.Binding("fromPortId", "fromport"), 
+          new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),           
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),   
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),                                 
           go_api(go.TextBlock, {
               textAlign: "left",
               font: "bold 8px sans-serif",
@@ -501,21 +507,24 @@ var menu_role = new Ext.Button({
             new go.Binding("text", "text")
           ),
           go_api(go.TextBlock,{
+                visible: false,
                 textAlign: "center",
                 font: "bold 10px sans-serif",
                 margin: 2,
                 //stroke: stroke,
-                segmentOffset: new go.Point(10, NaN)
+                segmentOffset: new go.Point(20, NaN)
                 //segmentOrientation: go.Link.OrientUpright
             },
               //new go.Binding("text", "block")),
+                new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                 new go.Binding("text", "selected_text"),
-                new go.Binding("stroke", "isSelected", function(b) { return b ? selected_stroke : unselected_stroke; }).ofObject(),
-                new go.Binding("background", "isSelected", function(b) { return b ? selected_background : unselected_background; }).ofObject()),
+                new go.Binding("stroke", "isSelected", function(b) { return b ? "#FFFFFF" : "transparent"; }).ofObject(),
+                new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject()),
+
           go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
             new go.Binding("source", "source")
           )
-        );         
+        );        
 
         diagram.groupTemplate = go_api(go.Group, "Vertical",
           go_api(go.Panel, "Auto",
@@ -528,8 +537,7 @@ var menu_role = new Ext.Button({
           go_api(go.TextBlock,         // group title
             { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
             new go.Binding("text", "key"))
-        );
-          
+        );          
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
@@ -862,19 +870,70 @@ var menu_role = new Ext.Button({
       return object_link;
     };
 
+    // highlight all Links and Nodes coming out of a given Node
+    var showConnections = function(node) {
+      var diagram = node.diagram;
+      diagram.startTransaction("highlight");
+      // remove any previous highlighting
+      diagram.clearHighlighteds();
+      // for each Link coming out of the Node, set Link.isHighlighted
+      node.findLinksOutOf().each(function(l) { l.isHighlighted = true; });
+      // for each Node destination for the Node, set Node.isHighlighted
+      node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
+      diagram.commitTransaction("highlight");
+    };
 
-  // highlight all Links and Nodes coming out of a given Node
-  var showConnections = function(node) {
-    var diagram = node.diagram;
-    diagram.startTransaction("highlight");
-    // remove any previous highlighting
-    diagram.clearHighlighteds();
-    // for each Link coming out of the Node, set Link.isHighlighted
-    node.findLinksOutOf().each(function(l) { l.isHighlighted = true; });
-    // for each Node destination for the Node, set Node.isHighlighted
-    node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
-    diagram.commitTransaction("highlight");
-  };
+    /*var showLinks = function(link){
+      //var diagram = link.diagram;
+      //console.log(link);
+      var diagram = link.diagram;
+      var obj = {};
+      diagram.startTransaction("select");
+
+      mi_object_link.forEach(function(element){
+        //console.log(element.__gohashid +' <==> '+ link.Eh.__gohashid);
+        if(element.__gohashid == link.Eh.__gohashid){
+          obj = element;
+        }
+      });
+      diagram.model.removeLinkData(obj);
+      //console.log(mi_object_link);
+      diagram.commitTransaction("select");
+      alert("fae");
+            //diagram.startTransaction("select2");
+      diagram.model.addLinkData(obj);
+
+      //console.log(mi_object_link);
+      //link.fireEvent('ChangedSelection');
+      //diagram.commitTransaction("select2");
+            diagram.linkTemplate.isSelected = true;
+      //diagram.model = new go.GraphLinksModel(mi_object_node, mi_object_link);
+      //alert("lios");
+    }*/
+
+    /*var showLinks = function(link){
+      //var diagram = link.diagram;
+      var diagram = link.diagram;
+      //diagram.startTransaction("select");
+      var obj = {};
+      mi_object_link.forEach(function(element){
+        //console.log(element.__gohashid +' <==> '+ link.Eh.__gohashid);
+        if(element.__gohashid == link.Eh.__gohashid){
+          obj = element;
+        }
+      });
+      //mi_object_link.push(obj);
+      //diagram.model.removeLinkData(obj);
+      mi_object_link.splice(mi_object_link.indexOf(obj),1);
+      console.log(diagram);
+      diagram.model.linkDataArray = mi_object_link;
+      //diagram.model.addLinkDataCollection(mi_object_link);
+      diagram.model.addLinkData(obj);
+      console.log(diagram.model);
+      //diagram.commitTransaction("select");
+      //diagram.model = new go.GraphLinksModel(mi_object_node, mi_object_link);
+    }*/
+
 
 
 
