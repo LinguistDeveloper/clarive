@@ -83,7 +83,7 @@ sub run_once {
     my $config_purge = Baseliner->model('ConfigStore')->get( 'config.purge');
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     $job_home = $job_home."/";
-    my $logs_home = $ENV{CLARIVE_BASE}.'/logs/';
+    my $logs_home = $ENV{BASELINER_LOGHOME};
     $config_runner->{root} = $job_home;
 
     if( !$config_purge->{no_job_purge} && (ref $config_runner && $config_runner->{root}) ) {
