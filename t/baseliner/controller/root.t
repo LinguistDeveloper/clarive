@@ -1,17 +1,13 @@
 use strict;
 use warnings;
-
 use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
+BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
-
-BEGIN {
-    TestEnv->setup;
-}
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -53,6 +49,48 @@ subtest 'authentication with api_key when option is not enabled' => sub {
     ok ! $controller->auto($c);
 };
 
+subtest 'denies session when in maintenance mode' => sub {
+    _setup();
+
+    _register_auth_fail_events();
+
+    my $user = {};
+    my $session = {user => 1};
+
+    my $controller = Baseliner::Controller::Root->new( application => '' );
+    my $c = _build_c(
+        req     => { params => {} },
+        user    => $user,
+        session => $session,
+        model   => {
+            ConfigStore =>
+              FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode' } )
+        }
+    );
+    ok !$controller->auto($c);
+};
+
+subtest 'allow session when in maintenance mode when local realm' => sub {
+    _setup();
+
+    _register_auth_fail_events();
+
+    my $user = {auth_realm => 'local'};
+    my $session = {user => 1};
+
+    my $controller = Baseliner::Controller::Root->new( application => '' );
+    my $c = _build_c(
+        req     => { params => {} },
+        user    => $user,
+        session => $session,
+        model   => {
+            ConfigStore =>
+              FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode' } )
+        }
+    );
+    ok $controller->auto($c);
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear();
     TestUtils->register_ci_events();
@@ -60,12 +98,20 @@ sub _setup {
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
+    mdb->config->drop;
+
     my $user = ci->user->new( name => 'test', api_key=>$api_key );
     $user->save;
 }
 
 sub _build_c {
-    mock_catalyst_c( username => 'test', @_ );
+    mock_catalyst_c(
+        username => 'test',
+        model    => {
+            ConfigStore => FakeConfigStore->new( 'config.maintenance' => {} )
+        },
+        @_
+    );
 }
 
 sub _register_auth_fail_events {
@@ -75,3 +121,24 @@ sub _register_auth_fail_events {
 }
 
 done_testing;
+
+package FakeConfigStore;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    $self->{params} = \%params;
+
+    return $self;
+}
+
+sub get {
+    my $self = shift;
+    my ($key) = @_;
+
+    return $self->{params}->{$key};
+}

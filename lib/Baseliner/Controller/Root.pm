@@ -121,17 +121,12 @@ sub auto : Private {
     Baseliner->app( $c );
     $self->theme($c);
 
-    my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     my $path = $c->request->{path} || $c->request->path;
 
     return 1 if $c->stash->{auth_skip};
     return 1 if $path eq 'i18n/js';
     return 1 if $path eq 'cla-worker';
-    return 1 if try { $c->session->{user} // 0 } catch { 0 };
-    
-    # auth check skip
-    return 1 if try { $c->user_exists } catch { 0 };
     return 1 if $path eq 'logout';
     return 1 if $path eq 'logoff';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
@@ -139,10 +134,67 @@ sub auto : Private {
     return 1 if $path =~ /^shared\//;
     return 1 if $path =~ /^user\/avatar\//;
 
+    my $ok = $self->_authenticate($c);
+
+    if ($ok) {
+        my $maintenance = $c->model('ConfigStore')->get('config.maintenance');
+        if ($maintenance->{enabled}) {
+            my $realm = $c->user->{auth_realm} // '';
+
+            return 1 if $realm eq 'local';
+        }
+        else {
+            return 1;
+        }
+    }
+
+    # reject request
+    if( $notify_valid_session ) {
+        $c->stash->{auto_stop_processing} = 1;
+        $c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
+        $c->response->status( 401 );
+        $c->forward('View::JSON');
+    } elsif( $c->request->params->{fail_on_auth} ) {
+        $c->response->status( 401 );
+        $c->response->body("Unauthorized");
+    } elsif( $c->stash->{auth_basic} ) {
+        my $ret = $c->forward('/auth/login_basic');
+        return $ret; 
+    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
+        $c->res->body(_loc('Error: Authentication required') );
+        $c->res->status(401);
+        return 0;
+    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'json' && $c->stash->{auth_logon_type} ) {   # used by Rule WS
+        $c->stash->{json}{success} = \0;
+        $c->stash->{json}{msg} = $c->stash->{last_msg} // _loc('Error: Authentication required');
+        $c->res->status(401);
+        $c->forward('View::JSON');
+        return 0;
+    } else {
+        #$c->forward('/auth/logoff');
+        $c->stash->{after_login} = '/' . $path;
+        my $qp = $c->req->query_parameters // {};
+        $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
+        $c->response->status( 401 );
+        $c->forward('/auth/logon');
+    }
+
+    return 0;
+}
+
+sub _authenticate {
+    my $self = shift;
+    my ($c) = @_;
+
+    return 1 if try { $c->session->{user} // 0 } catch { 0 };
+
+    # auth check skip
+    return 1 if try { $c->user_exists } catch { 0 };
+
     # sessionid param?
     my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
     return 1 if $sid && do {
-        $last_msg = _loc( 'invalid sessionid' );
+        $c->stash->{last_msg} = _loc( 'invalid sessionid' );
         #$c->delete_session('switching to session: ' . $sid);
         $c->_sessionid($sid);
         $c->reset_session_expires;
@@ -182,38 +234,6 @@ sub auto : Private {
             $c->stash->{auth_logon_type} = 'json';
             $c->stash->{last_msg} = _loc('api-key authentication is not enabled for this url');
         }
-    }
-    
-    # reject request
-    if( $notify_valid_session ) {
-        $c->stash->{auto_stop_processing} = 1;
-        $c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
-        $c->response->status( 401 );
-        $c->forward('View::JSON');
-    } elsif( $c->request->params->{fail_on_auth} ) {
-        $c->response->status( 401 );
-        $c->response->body("Unauthorized");
-    } elsif( $c->stash->{auth_basic} ) {
-        my $ret = $c->forward('/auth/login_basic');
-        return $ret; 
-    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
-        $c->res->body(_loc('Error: Authentication required') );
-        $c->res->status(401);
-        return 0;
-    } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'json' && $c->stash->{auth_logon_type} ) {   # used by Rule WS
-        $c->stash->{json}{success} = \0;
-        $c->stash->{json}{msg} = $c->stash->{last_msg} // _loc('Error: Authentication required');
-        $c->res->status(401);
-        $c->forward('View::JSON');
-        return 0;
-    } else {
-        #$c->forward('/auth/logoff');
-        $c->stash->{after_login} = '/' . $path;
-        my $qp = $c->req->query_parameters // {};
-        $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
-        $c->response->status( 401 );
-        $c->stash->{last_msg} //= $last_msg;
-        $c->forward('/auth/logon');
     }
 
     return 0;
