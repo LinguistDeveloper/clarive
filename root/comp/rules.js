@@ -670,25 +670,10 @@
             var copy = clipboard.mode=='copy' ? clone_node( clipboard.node ) : clipboard.node;
             var field_name_is_ok = true;
             if (/fieldlet./.test(copy.attributes.key) && clipboard.mode=='copy'){
-                // var is_ok = true;
-                var name_field = prompt(_('Name'));
-                if (!name_field) { 
-                    Ext.Msg.alert(_('Error'), _('empty'));
-                    field_name_is_ok = false;
-                } else {
-                    var id_field = Baseliner.name_to_id( name_field );
-                    node.eachChild(function(child){
-                        var data = child.attributes.data;
-                        if(data.id_field == id_field) { 
-                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
-                            field_name_is_ok = false;
-                        };
-                    });
-                    copy.attributes.data.id_field = id_field;
-                    copy.attributes.data.bd_field = id_field;
-                    copy.attributes.data.name_field = name_field;
-                    copy.setText( name_field );  // keep original node text name
-                }
+                var root = node.getOwnerTree().getRootNode();
+                configureTextField(root, copy, {
+                    name_field: copy.attributes.data.name_field
+                });
             }
             if( field_name_is_ok == true ) {
                 if( clipboard.mode=='copy' ) {
@@ -960,6 +945,127 @@
         });
     }; 
 
+    function configureTextField(root, node, defaults) {
+        if (!defaults) {
+            defaults = {};
+        }
+
+        var submitted = false;
+        var name_field_form;
+        name_field_form = new Baseliner.FormPanel({
+            frame: true,
+            buttons: [
+                {
+                    text: _('OK'),
+                    handler: function() {
+                        var form = name_field_form.getForm();
+
+                        var ok = true;
+                        form.items.each(function() {
+                            var valid = this.validate();
+
+                            if (ok && !valid) {
+                                ok = false;
+                            }
+                        });
+
+                        if (ok) {
+                            var name_field = form.findField('name_field').getValue();
+                            var id_field = form.findField('id_field').getValue();
+
+                            if (!id_field) {
+                                id_field = Baseliner.name_to_id( name_field );
+                            }
+
+                            node.attributes.data = {
+                                "id_field": id_field,
+                                "bd_field": id_field,
+                                "fieldletType":node.attributes.key,
+                                "editable":"1",
+                                "hidden":"0"
+                            };
+                            node.setText(name_field);
+
+                            submitted = true;
+                            win.close();
+                        }
+                    }
+                },
+                {
+                    text: _('Cancel'),
+                    handler: function() {
+                        node.remove(true);
+                        win.close();
+                    }
+                }
+            ],
+            defaults: {
+                msgTarget: 'under'
+            },
+            items: [
+                { xtype: 'textfield',
+                    allowBlank: false,
+                    fieldLabel: _('Name'),
+                    name: 'name_field',
+                    value: defaults.name_field,
+                    anchor: '95%',
+                    listeners: {
+                       change: function(field, newVal, oldVal) {
+                            var id = Baseliner.name_to_id(newVal);
+
+                            var id_field = name_field_form.getForm().findField('id_field');
+                            id_field.setValue(id);
+                       }
+                    },
+                },
+                { xtype: 'textfield',
+                    allowBlank: false,
+                    fieldLabel: _('ID'),
+                    name: 'id_field',
+                    anchor: '95%',
+                    validator: function(val) {
+                        var rv = Baseliner.validate_id(val);
+                        if (!rv) {
+                            return "Invalid value. Use only 'a-z' and '_'"
+                        }
+
+                        var exists = false;
+                        root.eachChild(function(node){
+                            var data = node.attributes.data;
+                            if (data.id_field == val) {
+                                exists = true;
+                            };
+                        });
+
+                        if (!exists) {
+                            return true;
+                        }
+
+                        return 'Field with this id already exists';
+                    }
+                },
+            ]
+        });
+
+        var win = new Ext.Window({
+            title: _("Name assignment"),
+            width: 350,
+            modal: true,
+            maximizable: false,
+            resizable: false,
+            colapsible: false,
+            minimizable: false,
+            items: [name_field_form]
+        });
+
+        win.on('close', function() {
+            if (!submitted) {
+                node.remove(true);
+            }
+        });
+        win.show();
+    }
+
     var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type, old_ts, icon ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
@@ -975,21 +1081,8 @@
                 copy.attributes.id = Cla.id('rule');
                 copy.attributes.palette = false;
                 if (/fieldlet./.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
-                    var is_ok = true;
-                    var name_field = prompt(_('Name'));
-                    if (!name_field) { return false };
-
-                    var id_field = Baseliner.name_to_id( name_field );
-                    n2.eachChild(function(node){
-                        var data = node.attributes.data;
-                        if(data.id_field == id_field) { 
-                            Ext.Msg.alert(_('Error'), _('Field already in the form: ') + id_field); 
-                            is_ok = false;
-                        };
-                    });
-                    copy.attributes.data = { "id_field": id_field, "bd_field": id_field, "fieldletType":copy.attributes.key, "editable":"1","hidden":"0" };
-                    copy.setText( name_field );  // keep original node text name
-                    if (is_ok == false ) { return false };
+                    var root = n2.getOwnerTree().getRootNode();
+                    configureTextField(root, copy);
                 } else if (/dashlet.swarm/.test(n1.attributes.key) && n1.attributes.loader.dataUrl == '/rule/palette'){
                     copy.attributes.data = { 'autorefresh':"0", 'background_color':'#FFFFFF', 'columns':"6",'rows':"1",'start_mode':'auto',limit:'' };
                     copy.setText( copy.attributes.name );  // keep original node text name

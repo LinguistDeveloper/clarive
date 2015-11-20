@@ -16,3 +16,11 @@ Baseliner.name_to_id = function( s ) {
     s = s.replace( /^_/g, '' );
     return s;
 };
+
+Baseliner.validate_id = function( id ) {
+    var regexp = /^[a-z0-9_]+$/;
+
+    var rv = regexp.test(id);
+
+    return rv ? true : false;
+};
