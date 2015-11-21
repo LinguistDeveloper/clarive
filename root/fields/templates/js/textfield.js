@@ -12,8 +12,10 @@ params:
 
 (function(params){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
+
     var meta = params.topic_meta;
     var data = params.topic_data;
+    var allowBlank = meta.allowBlank == 'false' || meta.allowBlank == '0' || meta.allowBlank == 0 ? false: true;
     var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
@@ -28,7 +30,7 @@ params:
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: meta.allowBlank,
+            allowBlank: allowBlank,
             readOnly: meta ? meta.readonly : true,
             maxLength: meta ? meta.maxLength : undefined,
             preventMark: true,
