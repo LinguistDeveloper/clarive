@@ -28,7 +28,7 @@ params:
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: allowBlank,
+            allowBlank: meta.allowBlank,
             readOnly: meta ? meta.readonly : true,
             maxLength: meta ? meta.maxLength : undefined,
             preventMark: true,
