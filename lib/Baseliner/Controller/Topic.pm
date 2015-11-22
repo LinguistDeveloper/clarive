@@ -920,7 +920,8 @@ sub comment : Local {
 
 sub category_list : Local { #this is for ComboCategories
     my ($self, $c) = @_;
-    my @cats = mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+    my @cats = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view');
+    # my @cats = mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
 
     my $return = {
         data => [
