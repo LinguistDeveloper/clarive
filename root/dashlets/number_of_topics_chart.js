@@ -20,7 +20,7 @@
                     type : graph_type,
                     colors: res.colors,
                     onclick: function (d, i) { 
-                       Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id , { topic_list: res.topics_list[d.id] });
+                       Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id , { topic_list: res.topics_list[d.id], clear_filter: 1 });
                     },
                 },
                 axis: {

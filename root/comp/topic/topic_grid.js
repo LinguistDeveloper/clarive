@@ -9,7 +9,7 @@
     params.query_id = '<% $c->stash->{query_id} %>';
     params.id_project = '<% $c->stash->{id_project} %>';
     params.category_id = [ <% join',',_unique _array($c->stash->{category_id}) %> ];
-    params.clear_filter = '1';
+    // params.clear_filter = '1';
     params.status_id = params.status_id ? params.status_id.split(',') 
         : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
     return Cla.topic_grid(params);
