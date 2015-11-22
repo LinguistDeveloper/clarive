@@ -1254,7 +1254,7 @@ sub list_topics: Local {
     $main_conditions->{'categories'} = \@user_categories;
 
     my $cnt = 0;
-    my $complete_parms = { limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username };
+    my $complete_parms = { limit => $limit, where => $where, %$main_conditions, username=>$username };
     
     if ( $topic_mid ) {
         my $ci = ci->new($topic_mid);
