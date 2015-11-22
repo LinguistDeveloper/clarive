@@ -23,29 +23,39 @@ my $iid = Util->_md5;
        var all_columns = column_list.split(';');
        Ext.each( all_columns, function(column) {
           var col_tokens = column.split(',');
+          var column = {};
+
           var col_name = col_tokens[0];
+          column['name'] = col_name;
+
           if ( col_tokens[1] ) {
               names[col_name] = col_tokens[1];
           }
-          var col_type = '';
           if ( col_tokens[2] ) {
-              col_type = col_tokens[2];
+              column['type'] = col_tokens[2];
           }
-          if ( col_type ) {
-            columns.push({name:col_name, type:col_type});
-          } else {
-            columns.push({name:col_name});
+          if ( col_tokens[3] ) {
+              column['width'] = col_tokens[3];
           }
+
+          columns.push(column);
        })
     }
 
     Cla.ajax_json('/dashboard/list_topics', { topic_mid: topic_mid, project_id: project_id, limit:limit, assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
+
         html = html + '<table class="table display stripe order-column compact" style="font-size: 85%;width: 100%" id="<% $iid %>"><thead><tr>';
+
         Ext.each( columns, function(col) {
-          html = html + '<th style="white-space:nowrap;">'+ _(names[col.name] || col.name) +'</th>';
+          if ( col.width ) {
+            html = html + '<th style="white-space:nowrap;width:' + col.width + 'px;">'+ _(names[col.name] || col.name) +'</th>';
+          } else {
+            html = html + '<th style="white-space:nowrap;">'+ _(names[col.name] || col.name) +'</th>';
+          }
         });
+
         html = html + '</tr></thead>';
         html = html + '<tbody>';
         Ext.each( res.data, function(topic) {
