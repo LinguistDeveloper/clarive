@@ -515,19 +515,37 @@ sub topics_by_field: Local {
 
     model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
-    @topics_by_category = _array(mdb->topic->aggregate( [
-        { '$match' => $where },
-        { '$group' => { 
-            _id => '$'.$group_by, 
-            'field' => {'$max' => '$'.$group_by},
-            'category_color' => {'$max' => '$category.color'}, 
-            'status_color' => {'$max' => '$category_status.color'}, 
-            'total' => { '$sum' => 1 },
-            'topics_list' => { '$push' => '$mid'}
-          } 
-        },
-        { '$sort' => { total => -1}}
-    ]));
+    try {
+        @topics_by_category = _array(mdb->topic->aggregate( [
+            { '$match' => $where },
+            { '$unwind' =>  '$'.$group_by },
+            { '$group' => { 
+                _id => '$'.$group_by, 
+                'field' => {'$max' => '$'.$group_by},
+                'category_color' => {'$max' => '$category.color'}, 
+                'status_color' => {'$max' => '$category_status.color'}, 
+                'total' => { '$sum' => 1 },
+                'topics_list' => { '$push' => '$mid'}
+              } 
+            },
+            { '$sort' => { total => -1}}
+        ]));
+    } catch {
+        @topics_by_category = _array(mdb->topic->aggregate( [
+            { '$match' => $where },
+            { '$group' => { 
+                _id => '$'.$group_by, 
+                'field' => {'$max' => '$'.$group_by},
+                'category_color' => {'$max' => '$category.color'}, 
+                'status_color' => {'$max' => '$category_status.color'}, 
+                'total' => { '$sum' => 1 },
+                'topics_list' => { '$push' => '$mid'}
+              } 
+            },
+            { '$sort' => { total => -1}}
+        ]));
+
+    };
     
     my $total = 0;
     my $topics_list;
