@@ -3313,7 +3313,7 @@ sub get_short_name {
     my $acronyms = _decode_json($self->getCategoryAcronyms());
     
     if ( $acronyms->{$name} ) {
-        $name = $acronyms->{name};
+        $name = $acronyms->{$name};
     }
     return $name; 
 }

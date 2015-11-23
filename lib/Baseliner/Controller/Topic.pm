@@ -293,63 +293,60 @@ sub related : Local {
     my @topics = ();
     my $cnt = 0;
     
-    if ( $p->{topic_mid} ) {
-        my $where = {};
-        if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
-            $where->{mid} = [ delete $p->{query} ];
-        }
-        $where->{query} = $p->{query} if length $p->{query};
-
-        my %filter;
-
-
-        my $start = $p->{start} // 0;
-        my $limit = $p->{limit} // 20;
-
-        if ( $p->{mids} ){
-            $filter{mid} = $p->{mids};
-        }
-
-        $filter{category_type} = 'release' if ($p->{show_release});
-
-        if ($p->{filter} && $p->{filter} ne 'none'){
-            delete $filter{category_type}; 
-            my $filter_js = _decode_json($p->{filter});
-
-            $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
-            $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
-            $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
-            $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
-
-            delete $filter_js->{categories};
-            delete $filter_js->{statuses};
-            delete $filter_js->{priorities};
-            delete $filter_js->{labels};
-            delete $filter_js->{limit};
-            delete $filter_js->{start};
-            delete $filter_js->{typeApplication};
-
-            for my $other_filter ( keys %$filter_js ) {
-                $filter{$other_filter} = $filter_js->{$other_filter};
-            }
-        }
-
-        $where = Baseliner::Model::Topic->new->apply_filter( $where, %filter );
-        # _debug $where;
-
-        my @result_topics = ();
-
-        ($cnt, @result_topics) = Baseliner::Model::Topic->new->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
-                fields=>{ _txt=>0 });
-                # fields=>{ category=>1, mid=>1, title=>1, });
-        @topics = map {
-            $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
-            $_->{color} = $_->{category}{color};
-            $_->{short_name} = Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid} if $_->{mid};
-           $_
-        }  @result_topics;
-        
+    my $where = {};
+    if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
+        $where->{mid} = [ delete $p->{query} ];
     }
+    $where->{query} = $p->{query} if length $p->{query};
+
+    my %filter;
+
+
+    my $start = $p->{start} // 0;
+    my $limit = $p->{limit} // 20;
+
+    if ( $p->{mids} ){
+        $filter{mid} = $p->{mids};
+    }
+
+    $filter{category_type} = 'release' if ($p->{show_release});
+
+    if ($p->{filter} && $p->{filter} ne 'none'){
+        delete $filter{category_type}; 
+        my $filter_js = _decode_json($p->{filter});
+
+        $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
+        $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
+        $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
+        $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
+
+        delete $filter_js->{categories};
+        delete $filter_js->{statuses};
+        delete $filter_js->{priorities};
+        delete $filter_js->{labels};
+        delete $filter_js->{limit};
+        delete $filter_js->{start};
+        delete $filter_js->{typeApplication};
+
+        for my $other_filter ( keys %$filter_js ) {
+            $filter{$other_filter} = $filter_js->{$other_filter};
+        }
+    }
+
+    $where = Baseliner::Model::Topic->new->apply_filter( $where, %filter );
+    # _debug $where;
+
+    my @result_topics = ();
+
+    ($cnt, @result_topics) = Baseliner::Model::Topic->new->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
+            fields=>{ _txt=>0 });
+            # fields=>{ category=>1, mid=>1, title=>1, });
+    @topics = map {
+        $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
+        $_->{color} = $_->{category}{color};
+        $_->{short_name} = Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid} if $_->{mid};
+       $_
+    }  @result_topics;
 
     $c->stash->{json} = { totalCount => $cnt, data => \@topics };
     $c->forward('View::JSON');
