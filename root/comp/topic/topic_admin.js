@@ -352,6 +352,7 @@
         });
         var combo_form =new Baseliner.SuperBox({ 
             name: 'default_form',
+            cls: 'ui-comp-topic-admin-window-form',
             id: 'default_form',
             hiddenName: 'default_form',
             fieldLabel: _("Form"), 
@@ -538,6 +539,7 @@
             activeTab: 0, items: [ form_category, add_workflow(rec) ]
         });
         win = new Baseliner.Window({
+            cls: 'ui-comp-topic-admin-window',
             title: _(title),
             width: 800,
             height: 600,
@@ -608,6 +610,7 @@
     var btn_add_category = new Baseliner.Grid.Buttons.Add({    
         //text: null,
         text: _('Create'),
+        cls: 'ui-comp-topic-admin-create',
         handler: function() {
             add_edit_category();
         }

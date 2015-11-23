@@ -13,5 +13,6 @@ module.exports = {
         usersMenu: '.ui-menu-users span',
         rolesMenu: '.ui-menu-role span',
         rulesMenu: '.ui-menu-rule span',
+        topics: '.ui-menu-topic span',
     }
 };

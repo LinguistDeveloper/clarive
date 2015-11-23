@@ -11,6 +11,18 @@ function selectFromCIBox(browser, name, text)
       .jqueryClick(".ui-ci_box-" + name + ":contains('" + text + "')")
 }
 
+function selectFromSuperBox(browser, class_name, name, text)
+{
+    browser
+      .execute(function(name, text) {
+        var $select = $('input[name=' + name + ']').parents('.x-form-item');
+        $select.find('.x-superboxselect-btn-expand').click();
+      }, [name, text]);
+
+    browser
+      .jqueryClick('div.x-combo-list-item:contains("' + text + '")');
+}
+
 function createEnvironment(browser, options)
 {
     var explorer = browser.page.explorer();
@@ -203,7 +215,7 @@ function createRule(browser, options) {
       ;
 
     rules
-      .jqueryClick('.ui-comp-rules-grid b:contains("Issue")')
+      .jqueryClick('.ui-comp-rules-grid b:contains("' + options['name'] + ')
       .setValue('input[name=palette_search]', 'textfield')
       ;
 
@@ -220,16 +232,39 @@ function createRule(browser, options) {
               .mouseButtonDown(0)
               .moveToElement('#' + to,  100,  0)
               .mouseButtonUp(0)
-              .pause(1000)
-              .keys('Field')
-              //.setValue('input[type=text]', 'Field')
-              //.pause(1000)
-              .acceptAlert()
+              .setValue('input[name=name_field]', 'Field')
+              .setValue('input[name=id_field]', 'field')
+              .jqueryClick("button:contains('OK')")
           });
-      });
+      })
+      .click('.ui-comp-rule-view-save button')
+      ;
 
     tabBar
       .click('@activeTabClose');
+}
+
+function createTopicCategory(browser, options) {
+    var menu = browser.page.menu();
+
+    menu
+      .click('@adminMenu')
+      .click('@topics')
+      ;
+
+    browser
+      .waitForElementVisible('.ui-comp-topic-admin-create button', 5000)
+      .click('.ui-comp-topic-admin-create button')
+      .waitForElementVisible('.ui-comp-topic-admin-window', 5000)
+      .setValue('.ui-comp-topic-admin-window input[name=name]', options.name)
+      ;
+
+    selectFromSuperBox(browser, '.ui-comp-topic-admin-window-form', 'default_form', options.form);
+
+    browser
+      .jqueryClick('.ui-comp-topic-admin-window button:contains("Save")')
+      .pause(500)
+      .jqueryClick('.ui-comp-topic-admin-window button:contains("Close")')
 }
 
 module.exports = new (function() {
@@ -268,6 +303,10 @@ module.exports = new (function() {
     createRole(browser, { name: 'Developer' });
 
     createRule(browser, { name: 'Issue', type: 'Form' });
+
+    createTopicCategory(browser, { name: 'Issues', form: 'Issue' });
+
+    browser.pause(3000);
 
     browser.end();
   };
