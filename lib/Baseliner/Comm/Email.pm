@@ -1,10 +1,14 @@
 package Baseliner::Comm::Email;
 use Moose;
+
+use MIME::Lite;
+use Net::SMTP;
+use Try::Tiny;
+use MIME::Base64 qw(encode_base64);
+use Compress::Zlib;
+use Encode ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
-use MIME::Lite;
-use Try::Tiny;
-use Encode qw( encode decode_utf8 encode_utf8 is_utf8 );
 
 with 'Baseliner::Role::Service';
 
@@ -193,23 +197,25 @@ sub resolve_address {
 sub send {
     my ( $self, %p ) = @_;
 
-    my $from = $p{from};
-    my $subject = $p{subject};
-    my @to = _array $p{to} ;
-    my @cc = _array $p{cc} ;
-    my $body = $p{body};
+    my $server       = $p{server} || "localhost";
+    my $from         = $p{from};
+    my $subject      = $p{subject};
+    my @to           = _array $p{to};
+    my @cc           = _array $p{cc};
+    my $body         = $p{body};
     my $content_type = $p{content_type};
-    my @attach = _array $p{attach};
+    my @attach       = _array $p{attach};
 
     # take out accents
     #use Text::Unaccent::PurePerl qw/unac_string/;
     #$subject = unac_string( $subject );
     # $subject = '=?ISO-8859-1?Q?' . MIME::Lite::encode_qp($subject,''); # Building fa=?ISO-8859-1?Q?=E7ade?=
     # $subject = substr( $subject, 0, length( $subject ) ) . '?=';
-    
-    my $server=$p{server} || "localhost";
-    
-    require Net::SMTP;
+
+    if ( !@to && !@cc ) {
+        _throw _loc("Could not send email '$subject'. No recipients in TO or CC.\n");
+    }
+
     Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";
 
     if ( $p{auth} ) {
@@ -218,37 +224,30 @@ sub send {
         MIME::Lite->send('smtp', $server, Timeout=>60);  ## a veces hay que comentar esta línea
     }
 
-    if( !(@to>0 or @cc>0) ) { ### nadie va a recibir este correo
-        _throw "No he podido enviar el correo '$subject'. No hay recipientes en la lista TO o CC.\n";
-    }
-
     _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
     my $msg = MIME::Lite->new(
         To        => "@to",
         Cc        => "@cc",
         From      => $from,
-        Subject   => $subject,
+        Subject   => '=?utf-8?B?' . encode_base64( Encode::encode( 'UTF-8', $subject ), '' ) . '?=',
         Datestamp => 0,
         Type      => 'multipart/mixed'
     );
-    
+
     $msg->attach(
-        Data     => $body,
-        Type     => 'text/html',
-        Encoding => 'base64'
+        Data     => Encode::encode('UTF-8', $body),
+        Type     => 'text/html; charset=utf-8',
+        Encoding => 'base64',
     );
 
     $msg->attach(
         Type     => 'image/png',
-        Path     => ''.Baseliner->path_to('root', 'static/images/about.png'),
+        Path     => $self->_path_to_about_icon,
         Filename => 'about.png',
         Id      => '<about.png>',
     );
 
-    $msg->attr('Content-Type.charset' => 'utf8');
-
-    require Compress::Zlib;
     foreach my $attach (@attach) {
         _throw "Error: attachment is not a hash but a $attach" unless ref $attach eq 'HASH';
         next unless $attach->{data} && length($attach->{data}) > 0;
@@ -263,10 +262,9 @@ sub send {
             Encoding => 'base64'
         );
     }
-    
-    eval{$msg->send('smtp');};
-    _throw "send failed: $@\n" if $@; 
-}	
+
+    $self->_send($msg);
+}
 
 sub filter_queue {
     my ($self, @queue) = @_;
@@ -294,8 +292,22 @@ sub filter_queue {
     return @q;
 }
 
+sub _path_to_about_icon {
+    my $self = shift;
+
+    # TODO: Baseliner should be removed from here
+    return '' . Baseliner->path_to( 'root', 'static/images/about.png' );
+}
+
+sub _send {
+    my $self = shift;
+    my ($msg) = @_;
+
+    eval { $msg->send('smtp'); };
+    _throw "send failed: $@\n" if $@;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
