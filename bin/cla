@@ -1,1 +1,31 @@
-cla-env
+#!/bin/bash
+
+#set -x
+
+BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+LOCALDIR="$BINDIR/../../local"
+PERL="$LOCALDIR/bin/perl"
+if [ ! -e $PERL ]; then
+    PERL=`which perl`
+fi
+export PATH="$BINDIR:$LOCALDIR/perl/bin:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
+export LD_LIBRARY_PATH="$LOCALDIR/lib"
+
+export PERL5LIB="$LOCALDIR/perl/lib/perl5:$LOCALDIR/lib/perl5"
+export PERL_LOCAL_LIB_ROOT="$LOCALDIR/perl"
+export PERL_MB_OPT="--install_base "$LOCALDIR/perl""
+export PERL_MM_OPT="INSTALL_BASE=$LOCALDIR/perl"
+
+export NODE_MODULES="$LOCALDIR/lib/node_modules"
+
+if [ "$1" == "exec" ]; then
+    shift
+
+    if [ "$1" == "nginx" ]; then
+        cd $LOCALDIR/sbin
+    fi
+
+    "$@"
+else
+    $PERL $BINDIR/cla-cmd "$@"
+fi
