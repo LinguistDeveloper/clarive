@@ -3308,14 +3308,17 @@ sub check_fields_required {
 }
 
 sub get_short_name {
-    my ($self, %p) = @_;
+    my ( $self, %p ) = @_;
+
     my $name = $p{name} or _throw 'Missing parameter name';
-    my $acronyms = _decode_json($self->getCategoryAcronyms());
-    
+
+    my $acronyms = _decode_json( $self->getCategoryAcronyms() );
+
     if ( $acronyms->{$name} ) {
         $name = $acronyms->{$name};
     }
-    return $name; 
+
+    return $name;
 }
 
 sub user_can_search {

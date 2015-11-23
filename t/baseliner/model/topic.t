@@ -1,11 +1,11 @@
 use strict;
 use warnings;
+use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
-
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestSetup qw(_topic_setup _setup_clear _setup_user);
 use TestUtils;
 
@@ -13,10 +13,8 @@ use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
 use BaselinerX::Type::Statement;
-
-TestEnv->setup;
-
 use BaselinerX::Type::Event;
+
 use_ok 'Baseliner::Model::Events';
 use_ok 'Baseliner::Model::Topic';
 
@@ -45,7 +43,48 @@ subtest 'get next status for user' => sub {
     is $transition->{id_status_to}, $id_status_to;
 };
 
-###################################################
-#
+subtest 'get_short_name: returns same name when no category exists' => sub {
+    my $topic = _build_model();
+
+    is $topic->get_short_name(name => 'foo'), 'foo';
+};
+
+subtest 'get_short_name: returns acronym' => sub {
+    _setup();
+
+    mdb->category->insert( { id => 1, name => 'Category', acronym => 'cat'} );
+
+    my $topic = _build_model();
+
+    is $topic->get_short_name(name => 'Category'), 'cat';
+};
+
+subtest 'get_short_name: returns auto acronym when does not exist' => sub {
+    _setup();
+
+    mdb->category->insert( { id => 1, name => 'Category'} );
+
+    my $topic = _build_model();
+
+    is $topic->get_short_name(name => 'Category'), 'C';
+};
+
+subtest 'get_short_name: returns auto acronym when does not exist removing special characters' => sub {
+    _setup();
+
+    mdb->category->insert( { id => 1, name => 'C123A##TegoRY'} );
+
+    my $topic = _build_model();
+
+    is $topic->get_short_name(name => 'C123A##TegoRY'), 'CATRY';
+};
 
 done_testing();
+
+sub _setup {
+    mdb->category->drop;
+}
+
+sub _build_model {
+    return Baseliner::Model::Topic->new;
+}
