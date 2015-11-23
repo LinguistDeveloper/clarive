@@ -215,7 +215,8 @@ function createRule(browser, options) {
       ;
 
     rules
-      .jqueryClick('.ui-comp-rules-grid b:contains("' + options['name'] + ')
+      .waitForJqueryElement('.ui-comp-rules-grid b:contains("' + options['name'] + '")')
+      .jqueryClick('.ui-comp-rules-grid b:contains("' + options['name'] + '")')
       .setValue('input[name=palette_search]', 'textfield')
       ;
 
@@ -265,6 +266,9 @@ function createTopicCategory(browser, options) {
       .jqueryClick('.ui-comp-topic-admin-window button:contains("Save")')
       .pause(500)
       .jqueryClick('.ui-comp-topic-admin-window button:contains("Close")')
+
+    tabBar
+      .click('@activeTabClose');
 }
 
 module.exports = new (function() {
