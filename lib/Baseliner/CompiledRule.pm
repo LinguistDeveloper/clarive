@@ -2,7 +2,6 @@ package Baseliner::CompiledRule;
 use Moose;
 use Baseliner::Utils qw(:logging);
 use Baseliner::Model::Rules;
-use Baseliner::RuleFuncs ();
 use Try::Tiny;
 use Module::Loaded qw();
 
@@ -143,6 +142,8 @@ sub compile {
                 use Baseliner::Sugar;
                 use Try::Tiny;
                 $warnings_str
+                our \$DATA = {};
+                sub data { \$DATA }
                 sub ts { '$ts' }
                 sub run { 
                     my (\$self,\$stash)=\@_;
@@ -179,10 +180,12 @@ sub run {
     local $SIG{ALRM} = sub { die "Timeout running rule\n" };
     alarm 0;
     my $err = '';
+
+    my $pkg;
     
     my $t0=[Time::HiRes::gettimeofday];
     my $ret = try { 
-        my $pkg = $self->package;
+        $pkg = $self->package;
         $pkg->run($stash);
     } catch {
         $err = shift;
@@ -192,9 +195,14 @@ sub run {
     $self->return_value( $ret );
     $self->runtime_error( $err );
 
-    # wait for children to finish
-    Baseliner::RuleFuncs::wait_for_children( $stash );
-    
+    # Let's wait for any not captured forks just in case
+    if ($pkg) {
+        my $chi_pids = $pkg->data->{_forked_pids};
+        for my $pid ( keys %$chi_pids ) {
+            waitpid $pid, 0;
+        }
+    }
+
     # reset log reporting to "Core"
     if( my $job = $stash->{job} ) {
         $job->back_to_core;

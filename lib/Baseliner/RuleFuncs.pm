@@ -28,6 +28,8 @@ use Exporter::Tidy default => [
       )
 ];
 
+our $DATA;
+
 sub parallel_run {
     my ( $name, $mode, $stash, $code ) = @_;
 
@@ -59,8 +61,10 @@ sub parallel_run {
         if ( $mode eq 'fork' ) {
 
             # fork and wait..
-            $stash->{_forked_pids}{$chi_pid} = $name;
+            $DATA->{_forked_pids}{$chi_pid} = $name;
         }
+
+        return $chi_pid;
     }
 
     # Child
@@ -98,7 +102,7 @@ sub wait_for_children {
     my $stash_keys = $config->{parallel_stash_keys} || [];
     my $results    = [];
 
-    my $chi_pids = $stash->{_forked_pids};
+    my $chi_pids = $DATA->{_forked_pids};
     if( my @pids = keys %$chi_pids ) {
         _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
         my @failed;

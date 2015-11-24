@@ -305,14 +305,11 @@ subtest 'parralel_run: runs task in background' => sub {
 
     my $stash = {};
 
-    parallel_run( 'task', 'fork', $stash, sub { 'return from fork' } );
+    my $pid = parallel_run( 'task', 'fork', $stash, sub { 'return from fork' } );
 
-    my $data;
-    for my $pid ( keys %{ $stash->{_forked_pids} || {} } ) {
-        waitpid $pid, 0;
+    waitpid $pid, 0;
 
-        $data = queue->pop( msg => "rule:child:results:$pid" );
-    }
+    my $data = queue->pop( msg => "rule:child:results:$pid" );
 
     is_deeply $data, { ret => 'return from fork', err => undef, stash => {} };
 };
@@ -322,14 +319,11 @@ subtest 'parralel_run: catches errors' => sub {
 
     my $stash = {};
 
-    parallel_run( 'task', 'fork', $stash, sub { die 'error from fork' } );
+    my $pid = parallel_run( 'task', 'fork', $stash, sub { die 'error from fork' } );
 
-    my $data;
-    for my $pid ( keys %{ $stash->{_forked_pids} || {} } ) {
-        waitpid $pid, 0;
+    waitpid $pid, 0;
 
-        $data = queue->pop( msg => "rule:child:results:$pid" );
-    }
+    my $data = queue->pop( msg => "rule:child:results:$pid" );
 
     cmp_deeply $data, { ret => undef, err => re(qr/error from fork/), stash => {} };
 };
@@ -339,11 +333,11 @@ subtest 'wait_for_children: waits for forked children' => sub {
 
     my $stash = {};
 
-    parallel_run( 'task', 'fork', $stash, sub { } );
+    my $pid = parallel_run( 'task', 'fork', $stash, sub { } );
 
     wait_for_children($stash);
 
-    is_deeply $stash->{_forked_pids}, {};
+    is kill(0, $pid), 0;
 };
 
 subtest 'wait_for_children: gathers values from forks' => sub {
