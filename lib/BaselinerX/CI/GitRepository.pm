@@ -298,53 +298,62 @@ sub list_elements {
 method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) {
     my $git = $self->git;
 
-    my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
-    
-    # if( $type eq 'static' ) {
-    #     _log( _loc "*Git* repository baselines not updated. Static job." );
-    #     return;
-    # }
+    my %tags = ();
+    my @projects = ('');
 
-    $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
-    my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
-    my $previous = BaselinerX::CI::GitRevision->new( sha=>$tag_sha, name=>$tag );
-    my $out='';
+    @projects = map {$_->{name} } _array($job->{projects}) if $job;
 
-    # no need to update if it's already there
-    if( $top_rev eq $tag_sha ) {
-        return {
+    for my $project ( @projects ) {
+        $tag = sprintf('%s-%s',$project, $tag);
+        my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
+        
+        # if( $type eq 'static' ) {
+        #     _log( _loc "*Git* repository baselines not updated. Static job." );
+        #     return;
+        # }
+
+        $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
+        my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
+        my $previous = BaselinerX::CI::GitRevision->new( sha=>$tag_sha, name=>$tag );
+        my $out='';
+
+        # no need to update if it's already there
+        if( $top_rev eq $tag_sha ) {
+            $tags{$project} = {
+                current  => $top_rev,
+                previous => $previous,  
+                output   => $out
+            };
+            next;
+        } 
+        
+        # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
+        #    to a undefined deployment situation
+        
+        if( $type eq 'promote' ) {
+            _debug( _loc "Promote baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+            _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
+        }
+        elsif( $type eq 'demote' ) {
+            $top_rev = $top_rev . '~1';  # one less 
+            _debug( _loc "Demote baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+            _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;
+        }
+        elsif( $type eq 'static' ) {
+            _debug( _loc "Updating baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+            _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
+        }
+        
+        $tags{$project} = {
             current  => $top_rev,
             previous => $previous,  
-            no_change => 1,
             output   => $out
         };
-    } 
-    
-    # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
-    #    to a undefined deployment situation
-    
-    if( $type eq 'promote' ) {
-        _debug( _loc "Promote baseline $tag to $top_rev: tag -f $tag $top_rev" );
-        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-        _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
     }
-    elsif( $type eq 'demote' ) {
-        $top_rev = $top_rev . '~1';  # one less 
-        _debug( _loc "Demote baseline $tag to $top_rev: tag -f $tag $top_rev" );
-        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-        _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;
-    }
-    elsif( $type eq 'static' ) {
-        _debug( _loc "Updating baseline $tag to $top_rev: tag -f $tag $top_rev" );
-        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-        _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
-    }
-    
-    return {
-        current  => $top_rev,
-        previous => $previous,  
-        output   => $out
-    };
+    return \%tags;
 }
 
 sub get_last_commit {
