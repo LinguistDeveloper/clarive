@@ -185,9 +185,10 @@ sub topic_categories_to_rules {
             }
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
                 if ($data->{ci_class}){
-                    $data->{ci_role} = 'Baseliner::Role::CI';
                     my @ar = split (',', $data->{ci_class});
                     $data->{ci_class_box} = \@ar;
+                    $data->{ci_class} =  'BaselinerX::CI::' . $data->{ci_class};
+                    $data->{var_ci_role} = 'CI';
                 }
                 if($data->{ci_role}){
                     my @elems = split ',', $data->{ci_role};
