@@ -365,7 +365,7 @@ sub job_items {
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
             $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
-            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
+            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl, project=>$project->name );
             push @items, map {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
@@ -429,7 +429,7 @@ sub checkout_bl {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project->name );
             my @ls = _array( $co_info->{ls} );
             $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }
@@ -454,7 +454,7 @@ sub checkout_bl_all_repos {
         for my $repo ( @repos ) {
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project->name );
             my @ls = _array( $co_info->{ls} );
             $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }

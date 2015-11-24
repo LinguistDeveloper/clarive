@@ -92,6 +92,9 @@ sub group_items_for_revisions {
         @items = values %items_uniq;
     } else {
         my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
+
+        $tag = sprintf( '%s-%s', $p{project}, $tag) if $self->tags_mode eq 'project';
+
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$p{type}, tag=>$tag );
         if( !$top_rev ) {
             _fail _loc 'Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag
@@ -206,7 +209,10 @@ sub checkout {
     my ( $self, %p ) = @_;
     
     my $dir  = $p{dir} // _fail 'Missing parameter dir'; 
-    my $tag  = $p{tag} // _fail 'Missing parameter tag'; 
+    my $tag  = $p{tag} // _fail 'Missing parameter tag';
+
+    $tag = sprintf( '%s-%s', $p{project}, $tag) if $self->tags_mode eq 'project';
+
     #my $path = $self->path;
     my $git = $self->git;
 
@@ -408,6 +414,7 @@ sub list_branches {
     my $repo_name = $self->{name};
     my $repo_dir  = $self->{repo_dir};
     my $project = $p{project};
+    my $id_project = $p{id_project};
 
     my @changes;
 
@@ -430,13 +437,14 @@ sub list_branches {
 
         BaselinerX::GitBranch->new(
             {
-                head      => $_,
-                repo_dir  => $repo_dir,
-                name      => $_->name,
-                repo_name => $repo_name,
-                project   => $project,
-                repo_mid  => $self->mid,
-                username  => $p{username}
+                head         => $_,
+                repo_dir     => $repo_dir,
+                name         => $_->name,
+                repo_name    => $repo_name,
+                project      => $project,
+                id_project   => $id_project,
+                repo_mid     => $self->mid,
+                username     => $p{username}
             }
         );
     } @heads;
@@ -458,9 +466,12 @@ sub close_branch {
     }
 }
 
-method commits_for_branch( :$tag=undef, :$branch ) {
+method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     my $git = $self->git;
     $tag //= [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
+
+    $tag = sprintf( '%s-%s', $project, $tag) if $self->tags_mode eq 'project';
+
     # check if tag exists
     my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
     Util->_fail( Util->_loc('Error: could not find tag %1 in repository. Repository tags are configured?', $tag) ) unless $bl_exists;

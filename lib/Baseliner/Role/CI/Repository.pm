@@ -2,7 +2,8 @@ package Baseliner::Role::CI::Repository;
 use Moose::Role;
 with 'Baseliner::Role::CI';
 
-has rel_path => qw(is rw isa Str);   # checkout path prefix
+has rel_path  => qw(is rw isa Str);   # checkout path prefix
+has tags_mode => qw(is rw isa Str default bl);   # mode for tags
 
 requires 'list_elements';
 requires 'checkout';

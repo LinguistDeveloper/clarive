@@ -108,7 +108,7 @@ subtest 'branch_commits: returns validation errors' => sub {
     $controller->branch_commits($c);
 
     is_deeply $c->stash,
-      { json => { success => \0, msg => 'Validation failed', errors => { repo_mid => 'REQUIRED' } } };
+      { json => { success => \0, msg => 'Validation failed', errors => { project => 'REQUIRED', repo_mid => 'REQUIRED' } } };
 };
 
 subtest 'branch_commits: returns commits' => sub {
@@ -121,7 +121,7 @@ subtest 'branch_commits: returns commits' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, branch => 'master' };
+    my $params = { repo_mid => $repo_ci->mid, branch => 'master', project => 'test_project' };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
