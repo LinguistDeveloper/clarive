@@ -149,10 +149,8 @@ sub _upgrade {
 
             mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
 
-            print "ERROR: $error\n. Exiting";
+            die "ERROR: $error\n. Exiting";
         };
-
-        last if $error;
     }
 }
 
@@ -205,10 +203,8 @@ sub _downgrade {
 
             mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => { 'migration.error' => $error } } );
 
-            print "ERROR: $error\n. Exiting";
+            die "ERROR: $error\n. Exiting";
         };
-
-        last if $error;
     }
 }
 

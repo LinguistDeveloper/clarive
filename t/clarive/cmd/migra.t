@@ -175,7 +175,7 @@ subtest 'run: sets error when patch does not have code' => sub {
     );
 
     my $cmd = _build_cmd();
-    $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } );
+    eval { $cmd->run( args => { path => 't/data/migrations/all_ok', yes => 1 } ) };
 
     $clarive = mdb->clarive->find_one();
 
@@ -304,7 +304,7 @@ subtest 'run: stops on first syntax error' => sub {
     _setup();
 
     my $cmd = _build_cmd();
-    $cmd->run( args => { path => 't/data/migrations/syntax_errors', yes => 1 } );
+    eval { $cmd->run( args => { path => 't/data/migrations/syntax_errors', yes => 1 } ) };
 
     my $clarive = mdb->clarive->find_one();
 
@@ -315,7 +315,7 @@ subtest 'run: stops on first runtime error' => sub {
     _setup();
 
     my $cmd = _build_cmd();
-    $cmd->run( args => { path => 't/data/migrations/runtime_errors', yes => 1 } );
+    eval { $cmd->run( args => { path => 't/data/migrations/runtime_errors', yes => 1 } ) };
 
     my $clarive = mdb->clarive->find_one();
 
