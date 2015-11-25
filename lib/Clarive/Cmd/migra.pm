@@ -132,9 +132,7 @@ sub _upgrade {
         try {
             my ( $package, $code ) = $self->_compile_migration_from_file($file);
 
-            capture {
-                $package->new->upgrade;
-            };
+            $package->new->upgrade;
 
             mdb->clarive->update(
                 { _id => $clarive->{_id} },
@@ -183,9 +181,7 @@ sub _downgrade {
 
             my $package = $self->_compile_migration($code);
 
-            capture {
-                $package->new->downgrade;
-            };
+            $package->new->downgrade;
 
             my $prev_version =
               $i + 1 < @downgrade_migrations ? $downgrade_migrations[ $i + 1 ] : $newest_local_migration->{version};
