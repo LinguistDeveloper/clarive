@@ -5,7 +5,6 @@
     $category_id => undef
     $swEdit
     $permissionEdit
-    $id_category
     $permissionDelete
     $permissionGraph
     $category_meta
@@ -18,7 +17,6 @@
 
 (function(params){
     var topic_mid = '<% $topic_mid %>';
-    var id_category = '<% $id_category %>';
     var category_name = '<% $category_name %>';
     var category_color = '<% $category_color %>';
     var category_id = '<% $category_id %>';
@@ -47,7 +45,7 @@
         html_buttons: html_buttons,
         status_items_menu: status_items_menu,
         menu_deploy: menu_deploy,
-        id_category: id_category
+        id_category: category_id
     });
 
     

@@ -272,6 +272,39 @@ subtest 'related: returns 2 (self and related) related topics' => sub {
     is $c->stash->{json}->{totalCount}, 2;
 };
 
+subtest 'create a topic' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { 
+            new_category_id=> $base_params->{category}, new_category_name=> 'Changeset', swEdit=> '1', tab_cls=> 'ui-tab-changeset', tab_icon=> '' 
+            } } 
+    );
+    $c->{username} = 'root'; # change context to root
+    $controller->view($c);
+    my $stash = $c->stash;
+
+    ok !exists $stash->{json}{success}; # this only shows up in case of failure 
+};
+
+subtest 'new topics have category_id in stash' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { 
+            new_category_id=> $base_params->{category}, new_category_name=> 'Changeset', swEdit=> '1', tab_cls=> 'ui-tab-changeset', tab_icon=> '' 
+            } } 
+    );
+    $c->{username} = 'root'; # change context to root
+    $controller->view($c);
+    my $stash = $c->stash;
+    is $stash->{category_id}, $base_params->{category};
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }

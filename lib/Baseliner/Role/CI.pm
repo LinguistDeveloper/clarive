@@ -389,7 +389,7 @@ sub save_fields {
 sub load {
     my ( $self, $mid, $row, $data, $yaml, $rel_data ) = @_;
     $mid ||= $self->mid if $self->can('mid');
-    _fail _loc( "Missing mid %1", $mid ) unless length $mid;
+    _throw _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;

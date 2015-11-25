@@ -3,6 +3,8 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Topic;
 use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
@@ -476,13 +478,13 @@ sub view : Local {
     try {
         my $topic_doc;
 
-        $c->stash->{user_security} = ci->user->find_one({ name => $c->username })->{project_security};
+        $c->stash->{user_security} = $c->user_ci->{project_security};
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
         my $topic_ci = ci->new($topic_mid) if $topic_mid;
-        $c->stash->{permissionGraph} = $topic_mid && $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph') && $topic_ci->related(depth => -1, mids_only => 1);
+        $c->stash->{permissionGraph} = $topic_mid && Baseliner::Model::Permissions->user_has_action( username => $c->username, action => 'action.topics.view_graph') && $topic_ci->related(depth => -1, mids_only => 1);
         $c->stash->{permissionComment} = 0;
         $c->stash->{permissionActivity} = 0;
         $c->stash->{permissionJobs} = 0;
@@ -492,8 +494,8 @@ sub view : Local {
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
-                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
-                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
+                my $is_root = Baseliner::Model::Permissions->is_root($c->username);
+                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
                 $topic_doc = $topic_ci->get_doc;
 
             } catch {
@@ -511,15 +513,15 @@ sub view : Local {
             $c->stash->{HTMLbuttons} = 0;
         }
         else{
-            $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
+            $c->stash->{HTMLbuttons} = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
         }
         
-        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
-        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
-        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
-        my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
-        my %categories_activity = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
-        my %categories_jobs = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
+        my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
+        my %categories_delete = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
+        my %categories_view = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
+        my %categories_comment = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
+        my %categories_activity = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
+        my %categories_jobs = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -552,7 +554,7 @@ sub view : Local {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
-            if ( !$c->model('Permissions')->user_can_topic_by_project( username => $c->username, mid => $topic_mid ) ) {
+            if ( !Baseliner::Model::Permissions->user_can_topic_by_project( username => $c->username, mid => $topic_mid ) ) {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
@@ -562,7 +564,7 @@ sub view : Local {
             my @statuses = 
                 sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
                 grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
-                $c->model('Topic')->next_status_for_user(
+                Baseliner::Model::Topic->next_status_for_user(
                     id_category    => $category->{id},
                     id_status_from => $topic_doc->{category_status}{id},
                     username       => $c->username,
@@ -588,7 +590,7 @@ sub view : Local {
             }
             if (exists ($categories_comment{ $category->{id} })){
                 $c->stash->{permissionComment} = 1;
-                $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
+                $c->stash->{has_comments} = Baseliner::Model::Topic->list_posts( mid=>$topic_mid, count_only=>1 );
             } else {
                 $c->stash->{permissionComment} = 0;
                 $c->stash->{has_comments} = 0;
@@ -601,7 +603,7 @@ sub view : Local {
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
                 my $has_permission;
-                my $has_permission_link = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+                my $has_permission_link = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.job.monitor' );
                 if (exists ($categories_jobs{ $category->{id} })){
                     $c->stash->{permissionJobs} = 1;
                     $c->stash->{permissionJobsLink} = 1 if $has_permission_link;
@@ -630,7 +632,7 @@ sub view : Local {
             my @statuses =
                 sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
                 grep { $_->{id_status} ne $first_status->{id_status} } 
-                $c->model('Topic')->next_status_for_user(
+                Baseliner::Model::Topic->next_status_for_user(
                     id_category    => $id_category,
                     id_status_from => $first_status->{id_status},
                     username       => $c->username,
@@ -644,28 +646,26 @@ sub view : Local {
             $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
             $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
             $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
-            my $has_permission_link = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+            my $has_permission_link = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.job.monitor' );
             $c->stash->{permissionJobsLink} = 1 if exists $categories_jobs{$id_category} && $has_permission_link;
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
         }
         
         if( $p->{html} ) {
-            my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-            my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
+            my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
+            my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
             $meta = $self->get_field_bodies( $meta );
             $meta = model->Topic->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data );
 
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
-            $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>$write_action );
+            $data->{admin_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>$write_action );
             $c->stash->{topic_meta} = $meta;
             $c->stash->{topic_data} = $data;
             $c->stash->{template} = '/comp/topic/topic_msg.html';
         } else {
-            my $topic_temp = ci->new($topic_mid);
-            my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-            $c->stash->{id_category} = $topic_temp->{id_category};
+            $c->stash->{category_id} //= $id_category;
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {

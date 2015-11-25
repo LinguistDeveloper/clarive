@@ -220,6 +220,7 @@ sub new {
     $self->{model}        = $params{model};
     $self->{config}       = $params{config} || {};
     $self->{authenticate} = $params{authenticate};
+    $self->{is_root} = 0;
 
     return $self;
 }
@@ -308,6 +309,8 @@ sub user_ci {
 
     ci->user->search_ci( name=>( $username ) );
 }
+
+sub is_root { shift->{is_root} }
 
 package FakeHeaders;
 
