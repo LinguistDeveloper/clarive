@@ -11,6 +11,8 @@ TestEnv->setup;
 
 use Baseliner::Role::CI;
 use BaselinerX::Type::Statement;
+use BaselinerX::Type::Service;
+use JSON ();
 
 use_ok 'Baseliner::Model::Rules';
 
@@ -147,6 +149,93 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
     my $args = $code->();
 
     is_deeply $args, {output => '123'};
+};
+
+subtest 'meta key with attributes sent to service op' => sub {
+    TestUtils->cleanup_cis();
+    mdb->rule->drop;
+
+    Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
+    Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
+    { package DummyPKG; sub new { } };
+    Baseliner::Core::Registry->add(
+        'DummyPKG',
+        'service.test.op' => {
+            name => 'Test Op',
+            icon => '',
+            form => '/forms/tar_local.js',
+            job_service => 1,
+            handler => sub {
+                my ($self, $c, $config ) = @_;
+                my $stash = $c->stash;
+                $stash->{is_ok} = exists $config->{meta};
+            }
+        }
+    );
+
+    my $id_rule = mdb->seq('id');
+    mdb->rule->insert(
+        {
+            id        => "$id_rule",
+            ts        => '2015-08-06 09:44:30',
+            rule_type => "independent",
+            rule_seq  => $id_rule,
+            rule_tree => JSON::encode_json(
+                [
+                    {
+                        "attributes" => {
+                            'icon'                => '/static/images/icons/script-local.png',
+                            'palette'             => 0,
+                            'disabled'            => 0,
+                            'who'                 => 'root',
+                            'timeout'             => '',
+                            'text'                => 'Find *.c',
+                            'expanded'            => 1,
+                            'semaphore_key'       => '',
+                            'id'                  => 'xnode-2995',
+                            'ts'                  => '2014-12-06T11:49:36',
+                            'trap_timeout_action' => 'abort',
+                            'parallel_mode'       => 'none',
+                            'name'                => 'Run a local script',
+                            'active'              => 1,
+                            'trap_rollback'       => 1,
+                            'error_trap'          => 'none',
+                            'needs_rollback_mode' => 'none',
+                            'note'                => '',
+                            'run_rollback'        => 1,
+                            'data_key'            => 'find_c_files',
+                            'trap_timeout'        => 0,
+                            'run_forward'         => 1,
+                            "data" => {
+                                'stdin'          => '',
+                                'output_capture' => [],
+                                'errors'         => 'fail',
+                                'rc_warn'        => '',
+                                'args'           => [],
+                                'path'           => 'ls',
+                                'output_error'   => [],
+                                'output_ok'      => [],
+                                'environment'  => {},
+                                'rc_ok'        => '',
+                                'rc_error'     => '',
+                                'output_files' => [],
+                                'output_warn'  => [],
+                                'home'         => '',
+                            },
+                            "key" => "service.test.op",
+                        }
+                    }
+                ]
+            )
+        }
+    );
+    my $rules = _build_model();
+    $rules->compile_rules();
+    my $cr = Baseliner::CompiledRule->new( id_rule => $id_rule, @_ );
+    $cr->compile();
+    my $stash = { abc=>11 };
+    $cr->run(stash => $stash);
+    ok $stash->{is_ok};
 };
 
 sub _setup {

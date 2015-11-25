@@ -50,8 +50,8 @@ sub run_local {
     
     # rollback basics
     my $task  = $stash->{current_task_name};
-    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'none'; 
-    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
     my $environment = $config->{environment} // {};
@@ -135,8 +135,8 @@ sub run_remote {
         
     # rollback basics
     my $task  = $stash->{current_task_name};
-    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'none'; 
-    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
     
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {

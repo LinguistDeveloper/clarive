@@ -388,8 +388,8 @@ sub run_ship {
     my $create_dir  = $config->{create_dir} // 'create'; 
     my $backup_mode = $config->{backup_mode} // 'backup'; 
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
-    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
-    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'nb_after'; 
+    my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
     my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
     my $recursive = $config->{recursive} // 0;
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';

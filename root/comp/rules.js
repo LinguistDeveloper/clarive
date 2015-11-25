@@ -865,7 +865,7 @@
             node.getOwnerTree().node_decorate( node );  // change the node's look
             // data save
             if( !node.attributes.data ) node.attributes.data={};
-            Ext.apply(node.attributes.data, opts.getValues() );
+            Ext.apply(node.attributes.data, opts.getValues() ); // TODO this is not needed and gets overwritten everytime config is saved
             win.close(); 
         }});
         var tbar = [ '->', 

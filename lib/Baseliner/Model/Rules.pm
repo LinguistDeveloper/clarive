@@ -173,6 +173,11 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $name_id = Util->_name_to_id( $name );
         my $data = $attr->{data} || {};
+        # put the properties (metadata) into the data so that we see it in $config in services
+        $data->{meta}{$_}= blessed($attr->{$_}) 
+            ? "$attr->{$_}" 
+            : $attr->{$_} 
+            for grep !/^data$/, keys %$attr;
         
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
@@ -180,8 +185,8 @@ sub dsl_build {
         my $trap_timeout = $attr->{trap_timeout} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_rollback = $attr->{trap_rollback} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
-        my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
-        my $needs_rollback_key  = $data->{needs_rollback_key} // '';
+        my $needs_rollback_mode = $attr->{needs_rollback_mode} // 'none'; 
+        my $needs_rollback_key  = $attr->{needs_rollback_key} // '';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         my $debug_mode = length $attr->{debug_mode} && $attr->{debug_mode} ne 'none' ? $attr->{debug_mode} : '';
         push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
