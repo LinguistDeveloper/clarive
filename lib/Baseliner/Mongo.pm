@@ -347,6 +347,10 @@ sub index_all {
             [{ 'event_status'=>1 }],
             [{ 'event_status'=>1, '_id'=>1 }],
         ],
+        rule_status => [
+            [{ id=>1 }],
+            [{ id=>1, ts=>1 }],
+        ],
         event_log =>[
             [{ 'id_event'=>1 }],
         ],

@@ -295,7 +295,12 @@ sub current_task {
     $stash->{current_task_name} = $name;
 
     if( my $job = $stash->{job} ) {
-        $job->start_task( $name );
+        my $rule_status = mdb->rule_status->find_and_modify({ query=>{ id=>$job->{jobid}, status=>"CANCEL_REQUESTED" }, update=>{ '$set'=>{status=>"CANCELLED"} } });
+        if ($rule_status){
+            _fail _loc('Job cancelled by user %1',$rule_status->{username});
+        } else {
+            $job->start_task( $name );
+        }
     }
 
     $code->() if $code;
