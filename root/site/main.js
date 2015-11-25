@@ -111,12 +111,14 @@ Ext.onReady(function(){
         win.show();
         
     };
-    Baseliner.toggleCalendar = function(){
+    Baseliner.toggleCalendar = function(btn){
         var bc = Baseliner.calpanel;
         //if( bc.collapsed ) bc.toggleCollapse()
         if( bc.isVisible() ) {
+            btn.toggle(false);
             bc.hide();
         } else {
+            btn.toggle(true);
             bc.show();
             //bc.expand();
         }
@@ -157,8 +159,16 @@ Ext.onReady(function(){
     tbar_items.push( '<img src="/static/images/icons/favorite.png" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
 
     Prefs.site.show_calendar = true;
-    if( Prefs.site.show_calendar ) 
-        tbar_items.push( '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />' );
+    if( Prefs.site.show_calendar ) {
+        var south_panel = new Ext.Button({
+            icon: "/static/images/icons/calendar.png",
+            enableToggle: true,
+            pressed: false, handler: function(){
+                Baseliner.toggleCalendar( south_panel );
+            }
+        });
+        tbar_items.push( south_panel ); 
+    }
             
     tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="{0}" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />', _('Open in a new page and share link') ) );
     tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
