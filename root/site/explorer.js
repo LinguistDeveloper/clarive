@@ -663,7 +663,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 var that = this;
                 show_dashboards(function(){that.enable();});
             },
-            tooltip: _('dashboards'),
+            tooltip: _('Dashboards'),
             toggleGroup: 'explorer-card',
             pressed: false,
             allowDepress: false,

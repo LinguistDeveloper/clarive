@@ -8332,5 +8332,15 @@ msgstr "Tópicos abiertos (desde Creado hasta Cerrado)"
 msgid "More than one field detected. Select target field from list:"
 msgstr "Ha sido detectado más de un campo. Seleccione el campo objetivo de la lista:"
 
-msgid "Available Fields"
+msgid "Available fields"
 msgstr "Campos disponibles"
+
+msgid "Share"
+msgstr "Compartir"
+
+msgid "JS reload"
+msgstr "Recargar JS"
+
+
+msgid "Clarive Help"
+msgstr "Ayuda Clarive"

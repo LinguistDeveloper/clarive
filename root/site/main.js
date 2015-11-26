@@ -20,6 +20,7 @@ Ext.onReady(function(){
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.png',
        cls: 'x-btn-icon',
+       tooltip: _('Clarive Help'),
        hidden: false,
        menu: Baseliner.help_menu
     });
@@ -154,7 +155,7 @@ Ext.onReady(function(){
     
     tbar_items.push( Baseliner.help_button );
 
-    tbar_items.push( '<img src="/static/images/icons/favorite.png" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
+    tbar_items.push( '<img src="/static/images/icons/favorite.png" title="' + _("Add to Favorites...") + '" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
 
     Prefs.site.show_calendar = true;
     if( Prefs.site.show_calendar ) {
@@ -167,13 +168,13 @@ Ext.onReady(function(){
         });
         tbar_items.push( south_panel ); 
     }
-            
-    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="{0}" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />', _('Open in a new page and share link') ) );
-    tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
+
+    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="' + _("Share") + '" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />' ) );
+    tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" title="' + _("Print") + '" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
     if( Prefs.stash.show_js_reload && Baseliner.DEBUG )
-        tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
-    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="{0}" style="border:0px;" onclick="Baseliner.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
-    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+        tbar_items.push( '<img src="/static/images/icons/js-reload.png" title="' + _("JS reload") + '" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
+    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Baseliner.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
+    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" title="' + _("Refresh") + '" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '-');
 
     if( Prefs.is_logged_in ) { 
