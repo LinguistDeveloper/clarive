@@ -20,8 +20,8 @@ Ext.onReady(function(){
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.png',
        cls: 'x-btn-icon',
-       tooltip: _('Clarive Help'),
        hidden: false,
+       tooltip: _('Clarive Help'),
        menu: Baseliner.help_menu
     });
     Baseliner.help_button.on('click', function(ev,hp){
