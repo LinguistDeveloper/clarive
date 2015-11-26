@@ -91,15 +91,16 @@ sub group_items_for_revisions {
         # TODO --- in demote, blob is empty for deleted items status=D, which in demote are changed to status=A
         @items = values %items_uniq;
     } else {
+        my $bl = $p{tag};
         my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
 
         $tag = sprintf( '%s-%s', $p{project}, $tag) if $self->tags_mode eq 'project';
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$p{type}, tag=>$tag );
         if( !$top_rev ) {
-            _fail _loc 'Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag
+            _fail(_loc('Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag))
         }
-        @items = $top_rev->items( tag=>$tag, type=>$type );
+        @items = $top_rev->items( bl=>$bl, tag=>$tag, type=>$type, project=>$p{project} );
     }
     # prepend path prefix for repo
     #  my $rel_path = $self->rel_path;
@@ -454,8 +455,6 @@ sub list_branches {
 
 sub close_branch {
     my ( $self, $p ) = @_;
-
-    _warn $p;
 
     my $branch = $p->{branch};
 

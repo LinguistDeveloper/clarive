@@ -44,7 +44,7 @@
             name: 'tags_mode',
             fieldLabel: _('Tags Mode'),
             anchor: '40%',
-            data: [ ['bl',_('Only bl')], ['project',_('Project + bl')] ],  // patch?
+            data: [ ['bl',_('Only environment')], ['project',_('Project + environment')] ],  // patch?
             value: params.tags_mode || 'bl'
         }),
         tabs

@@ -79,10 +79,11 @@ sub pipelines : Local {
 
 sub rollback : Local {
     my ( $self, $c ) = @_;
+    local $Baseliner::_no_cache = 1;
     my $p = $c->req->params;
     try {
-        my $job = ci->new( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
-        _fail _loc 'Job %1 is currently running', $job->name if $job->is_running;
+        my $job = ci->new( $p->{mid} ) // _fail(_loc('Job %1 not found', $p->{name}));
+        _fail(_loc('Job %1 is currently running', $job->name)) if $job->is_running;
         if( my @deps = $job->find_rollback_deps ) {
             $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'), deps=>\@deps };
         } else {
@@ -102,11 +103,14 @@ sub rollback : Local {
                 $job->save;
                 $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
                 $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
+            } else {
+                $c->stash->{json} = { success => \0, msg=>_loc('Job %1 does not need rollback', $job->name ) };
             }
         }
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };
     };
+_warn $c->stash->{json};
     $c->forward('View::JSON');
 }
 
@@ -310,7 +314,7 @@ sub refresh_now : Local {
             my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor($filter);
             my $max_id = $rows[0]->{mid} if @rows;
             _debug "Comparing max_id=$max_id and top_id=$p->{top}";
-            if( $max_id != $p->{top} ) {
+            if( $max_id ne $p->{top} ) {
                 $need_refresh = \1;
             }
         }

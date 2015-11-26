@@ -70,7 +70,6 @@ sub branch : Local {
 sub branch_commits : Local {
     my ( $self, $c ) = @_;
 
-_warn $c->req->params;
     return
       unless my $p = $self->validate_params(
         $c,

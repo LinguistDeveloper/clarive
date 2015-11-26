@@ -57,6 +57,8 @@ sub items {
 
     my $type = $p{type} // 'promote';
     my $tag = $p{tag} // _fail _loc 'Missing parameter tag';
+    my $bl = $p{bl} // _fail _loc 'Missing parameter bl';
+    my $project = $p{project};
 
     # TODO Comprobar si tengo last_commit
     my $repo = $self->repo;
@@ -64,6 +66,7 @@ sub items {
     
     my $rev_sha  = $self->sha_long; 
     my $tag_sha  = $repo->git->exec( qw/rev-parse/, $tag );
+
     
     my $diff_shas;
         
@@ -86,11 +89,17 @@ sub items {
                 if ( scalar(@topics) eq 0 ) {
                     _fail _loc("No changesets for this sha");
                 } elsif ( scalar(@topics) gt 1 ) {
-                    _fail _("This sha is contained in more than one sha");
+                    _fail _("This sha is contained in more than one changeset");
                 }
                 my $cs = $topics[0];
 
-                my (@last_jobs) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
+                my (@last_jobs) = map {
+                    $_->{mid}
+                } sort { 
+                    $b->{endtime} cmp $a->{endtime} 
+                } grep { 
+                    $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl 
+                } ci->new($cs)->jobs;
 
                 if ( @last_jobs ) {
                     my $last_job;
@@ -101,15 +110,15 @@ sub items {
                     for $last_job ( @last_jobs ) {
                         $job = ci->new($last_job);
                         $st = $job->stash;
-                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
-                            $found = 1;
+                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{$project}->{current} ne $rev_sha) {
+                            $found = $project;
                             last;
                         }
                     }
 
                     if ( $found ) {                    
-                        $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
-                        _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
+                        $tag_sha = $st->{bl_original}->{$repo->mid}->{$found}->{current};
+                        _warn _loc("Tag %3 sha set to %1 as it was in previous job %2", $tag_sha, $job->{name}, $tag);
                         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
                         $diff_shas = [ $tag_sha, $rev_sha ];
                     } else {
