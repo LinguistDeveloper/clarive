@@ -374,7 +374,7 @@ sub submit : Local {
             }
             elsif( $job_ci->status =~ /RUNNING/ ) {
                 event_new 'event.job.cancel_running' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {
-                    mdb->rule_status->insert({ id => $job_ci->jobid, status=>"CANCEL_REQUESTED", username=> $c->username, ts=>_now });
+                    mdb->rule_status->insert({ id => $job_ci->jobid, type=>'job', status=>"CANCEL_REQUESTED", username=> $c->username, ts=>_now });
                     $job_ci->status( 'CANCELLED' );
                     $job_ci->save;
                     $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
