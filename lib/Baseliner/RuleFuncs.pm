@@ -283,23 +283,39 @@ sub project_changes {
 }
 
 sub current_task {
-    my ($stash,$id_rule, $rule_name, $name, $code)=@_;
+    my ( $stash, $id_rule, $rule_name, $name, $code ) = @_;
 
-    $name = parse_vars( $name, $stash );  # so we can have vars in task names
+    $name = parse_vars( $name, $stash );   # so we can have vars in task names
 
-    $Baseliner::_rule_current_id = $id_rule;
+    $Baseliner::_rule_current_id   = $id_rule;
     $Baseliner::_rule_current_name = $rule_name;
 
-    $stash->{current_rule_id} = $id_rule;
+    $stash->{current_rule_id}   = $id_rule;
     $stash->{current_rule_name} = $rule_name;
     $stash->{current_task_name} = $name;
 
-    if( my $job = $stash->{job} ) {
-        $job->start_task( $name );
+    if ( my $job = $stash->{job} ) {
+        my $is_job_canceled = mdb->rule_status->find_and_modify(
+            {   query => {
+                    id     => $job->jobid,
+                    type   => 'job',
+                    status => "CANCEL_REQUESTED"
+                },
+                update => { '$set' => { status => "CANCELLED" } }
+            }
+        );
+        if ($is_job_canceled) {
+            _fail _loc( 'Job cancelled by user %1',
+                $is_job_canceled->{username} );
+        }
+        else {
+            $job->start_task($name);
+        }
     }
 
     $code->() if $code;
 }
+
 
 sub cut_nature_items {
     my ($stash,$tail)=@_;

@@ -67,17 +67,40 @@ subtest 'current_task' => sub {
     is $stash->{current_task_name}, 'some task with surprise';
 };
 
-subtest 'current_task starts task' => sub {
+subtest 'current_task: starts task' => sub {
     _setup();
 
     my $job = Test::MonkeyMock->new;
     $job->mock( start_task => sub { } );
+    $job->mock( jobid      => sub {1} );
 
     my $stash = { job => $job };
 
     current_task( $stash, 1, 'some rule', 'some task with ${var}' );
 
     ok $job->mocked_called('start_task');
+};
+
+subtest 'current_task: cancel job in steps check or init' => sub {
+    _setup();
+
+    mdb->rule_status->drop;
+
+    my $job = Test::MonkeyMock->new;
+    $job->mock( jobid => sub {1} );
+
+    my $stash = { job => $job };
+
+    mdb->rule_status->insert(
+        {   id       => 1,
+            type     => 'job',
+            status   => "CANCEL_REQUESTED",
+            username => 'test'
+        }
+    );
+    like exception {
+        current_task( $stash, 9, 'some rule', 'some task with ${var}' );
+    }, qr/Job cancelled by user test/;
 };
 
 subtest 'launch' => sub {
