@@ -953,12 +953,20 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_diagram = new Ext.Toolbar.Button({
             icon: IC('diagram'),
             cls: 'x-btn-icon',
-            enableToggle: false, 
-            tooltip: _('Open life cicle'),
-            handler: function(){ self.show_diagram() },
+            enableToggle: true, 
+            tooltip: _('Open life cycle'),
+            handler: function(){ self.show_life_cicle() },
             //hidden: self.viewKanban==undefined?true:!self.viewKanban,
-            //allowDepress: false, 
-            toggleGroup: self.toggle_group
+            allowDepress: false, toggleGroup: self.toggle_group
+        });
+
+        self.btn_timeline = new Ext.Toolbar.Button({
+            icon: IC('timeline'),
+            cls: 'x-btn-icon',
+            enableToggle: true, 
+            tooltip: _('Open timeline'),
+            handler: function(){ self.show_timeline() },
+            allowDepress: false, toggleGroup: self.toggle_group
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
@@ -1209,7 +1217,26 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     create_toolbar : function(){
         var self = this;
-        var tb;
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            items: [
+                self.btn_detail,
+                self.btn_edit,
+                //'-',
+                ' ',
+                self.btn_delete_form,
+                self.btn_comment,
+                self.btn_save_form,
+                '->',
+                self.btn_deploy,
+               // '-',
+                self.btn_change_status,
+                self.btn_docgen,
+                self.btn_graph,
+                self.btn_kanban,
+                self.btn_life_cicle,
+                self.btn_timeline
+            ]
 
         if ( self.topic_mid ) {
             tb = new Ext.Toolbar({
@@ -1261,6 +1288,26 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.w = new Ext.Panel({
                     layout: 'card',  
                     background: "#000000",
+                    activeItem: 0,
+                    items: [res]
+                });
+                
+                //self.on('afterrender', function() {
+                    self.add(self.w);
+                    self.getLayout().setActiveItem( self.w );
+                //}
+            });
+
+        });
+
+    },
+    show_timeline: function(){
+        var self = this;
+        console.log(self.title);
+        Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title}, function(res){
+            Cla.use('/static/gojs/go-debug.js', function(){
+                self.w = new Ext.Panel({
+                    layout: 'card',  
                     activeItem: 0,
                     items: [res]
                 });

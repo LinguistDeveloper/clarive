@@ -3201,10 +3201,17 @@ sub change_status {
 
 # fieldlet status_changes
 sub status_changes {
-    my ($self, $data) = @_;
+    my ($self, $data, $limit) = @_;
     my @status_changes;
     my $cont = 0;
-    for my $ev ( mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(100)->all ) {
+    
+    my $mid = ref $data ? $data->{topic_mid} : $data;
+
+    my $rs = mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$mid })->sort({ ts=>-1 });
+
+    $rs->limit>(100) if !$limit;
+
+    for my $ev ( $rs->all ) {
         try {
             my $ed = $ev->{vars};
             push @status_changes, {
@@ -3216,6 +3223,29 @@ sub status_changes {
         } catch {};
     }
     return @status_changes;
+}
+
+sub list_status_changes {
+
+    my ($self, $data) = @_;
+    my @status_changes;
+    my $cont = 0;
+    #_log _dump "estos son los datos";
+    #_log _dump $data;
+    for my $ev ( mdb->activity->find({ mid => $data, event_key => 'event.topic.change_status'})->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes, {
+                old_status => $ed->{old_status},
+                status     => $ed->{status},
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+            };
+        } catch {};
+    }
+
+    #_log _dump @status_changes;
+    return @status_changes
 }
 
 sub get_users_friend {
