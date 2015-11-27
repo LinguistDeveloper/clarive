@@ -604,7 +604,6 @@
 
                 sum_duration = sum_duration + duration[i];
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length), "text": text});
-
               }
               i++;
 
@@ -615,8 +614,6 @@
             duration.splice(duration.indexOf(duration[0]),1);
             text.push("");
             text.splice(text.indexOf(text[0]),1);
-
-
             var i=0;
             var j=0;
             while (i < object_node.length){
