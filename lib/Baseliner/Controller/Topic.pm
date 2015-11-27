@@ -525,6 +525,7 @@ sub view : Local {
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
+            $c->stash->{category_id} = $topic_doc->{category}{id};
             # user seen
             for my $mid ( _array( $topic_mid ) ) {
                 mdb->master_seen->update({ username=>$c->username, mid=>$mid },{ username=>$c->username, mid=>$mid, type=>'topic', last_seen=>mdb->ts },{ upsert=>1 });
@@ -620,6 +621,7 @@ sub view : Local {
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
         } else {
             $id_category = $p->{new_category_id} // $p->{category_id};
+            $c->stash->{category_id} //= $id_category;
             
             my $category = mdb->category->find_one({ id=>"$id_category" });
             $c->stash->{category_meta} = $category->{forms};
@@ -639,7 +641,6 @@ sub view : Local {
                     topic_mid      => $topic_mid
                 );
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
-            $c->stash->{category_meta} = $category->{forms};
             
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
@@ -665,7 +666,6 @@ sub view : Local {
             $c->stash->{topic_data} = $data;
             $c->stash->{template} = '/comp/topic/topic_msg.html';
         } else {
-            $c->stash->{category_id} //= $id_category;
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {

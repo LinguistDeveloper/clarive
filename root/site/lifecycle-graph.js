@@ -11,6 +11,7 @@ var rol_source = false;
 var rol_color = false;
 
 var is_click = 0;
+
 id_category = params.id_category;
 
 //define colours

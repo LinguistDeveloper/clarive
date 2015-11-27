@@ -365,7 +365,10 @@ sub list_workflow : Local {
     my %roles = mdb->role->find_hash_one( id=>{},{role=>1,_id=>0});
     my %statuses = ci->status->statuses;
     my %stat_to;
-    my @cat_wkf = _array( mdb->category->find_one({ id=> "$p->{categoryId}" })->{workflow} );
+    my $doc_category = mdb->category->find_one({ id=> "$p->{categoryId}" });
+    _fail(_loc("Category %1 not found", $p->{categoryId})) if !$doc_category;
+    
+    my @cat_wkf = _array( $doc_category->{workflow} );
     push @{ $stat_to{$$_{id_role}}{$$_{id_status_from}} }, $_ for @cat_wkf;
     my %wkf_unique;
     $wkf_unique{ join(',',@{ $_ }{qw(id_role id_status_from)}) } = $_ for @cat_wkf;
