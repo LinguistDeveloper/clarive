@@ -227,8 +227,10 @@
                      .style("font-size", "10px")
                      .style("pointer-events", "none");
 
-                 var result = parseFloat(res.data[result_type]).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
-                 var maxLabel = parseFloat(maxValue).toLocaleString({},{style:'decimal'}) + ' ' + _(res.units);
+                 var units = res.units ? _(res.units) : '';
+                 var result = parseFloat(res.data[result_type]).toLocaleString({},{style:'decimal'}) + ' ' + units;
+
+                 var maxLabel = parseFloat(maxValue).toLocaleString({},{style:'decimal'}) + ' ' + units;
 
                  if ( show_pct == 'on') {
                     result = ( res.data[result_type] / maxValue * 100 ).toFixed(2).toLocaleString({},{style:'decimal'}) + '%';
