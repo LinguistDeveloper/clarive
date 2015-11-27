@@ -323,19 +323,26 @@ sub list_elements {
 method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) {
     my $git = $self->git;
 
-    my %tags = ();
-    my @projects = ('');
+    my @tags = ($tag);
 
-    @projects = map {$_->{name} } _array($job->{projects}) if $job;
+    if ( $self->tags_mode eq 'project' ) {
+        my @project_names = ();
+        if ($job) {
+            foreach my $project ( _array( $job->{projects} ) ) {
+                next
+                  unless $project->{repositories}
+                  && grep { $self->mid eq $_ } @{ $project->{repositories} };
 
-    for my $project ( @projects ) {
-        $tag = sprintf('%s-%s',$project, $tag);
+                push @project_names, $project->{name};
+            }
+        }
+        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+          unless @project_names;
+        @tags = map { sprintf '%s-%s', $_, $tag } @project_names;
+    }
+
+    for my $tag ( @tags ) {
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
-        
-        # if( $type eq 'static' ) {
-        #     _log( _loc "*Git* repository baselines not updated. Static job." );
-        #     return;
-        # }
 
         $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
         my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
@@ -344,11 +351,6 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
 
         # no need to update if it's already there
         if( $top_rev eq $tag_sha ) {
-            $tags{$project} = {
-                current  => $top_rev,
-                previous => $previous,  
-                output   => $out
-            };
             next;
         } 
         
@@ -371,14 +373,9 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
         }
-        
-        $tags{$project} = {
-            current  => $top_rev,
-            previous => $previous,  
-            output   => $out
-        };
     }
-    return \%tags;
+
+    return $self;
 }
 
 sub get_last_commit {

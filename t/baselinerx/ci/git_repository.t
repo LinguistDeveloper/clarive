@@ -105,8 +105,7 @@ subtest 'create_tags_service_handler: creates tags for the first commit' => sub 
 
     _git_tags("$repo_dir/.git");
 
-    my $ref = `cd $repo_dir; git rev-parse TEST`;
-    chomp $ref;
+    my $ref = _git_sha_from_tag($repo_dir, 'TEST');
 
     is $ref, $refs[-1];
 };
@@ -118,8 +117,9 @@ subtest 'create_tags_service_handler: creates tags for specific ref' => sub {
 
     my $repo_dir = _create_repo();
 
-    system("cd $repo_dir; echo second > README; git commit -a -m 'second'");
-    my (@refs) = map { chomp; $_ } `cd $repo_dir; git rev-list HEAD`;
+    _git_commit($repo_dir);
+
+    my @refs = _git_commits($repo_dir);
 
     my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
 
@@ -127,8 +127,7 @@ subtest 'create_tags_service_handler: creates tags for specific ref' => sub {
 
     _git_tags("$repo_dir/.git");
 
-    my $ref = `cd $repo_dir; git rev-parse TEST`;
-    chomp $ref;
+    my $ref = _git_sha_from_tag($repo_dir, 'TEST');
 
     is $ref, $refs[0];
 };
@@ -140,19 +139,19 @@ subtest 'create_tags_service_handler: detects existing tags by default' => sub {
 
     my $repo_dir = _create_repo();
 
-    system("cd $repo_dir; echo second > README; git commit -a -m 'second'");
-    my (@refs) = map { chomp; $_ } `cd $repo_dir; git rev-list HEAD`;
+    _git_commit($repo_dir);
+
+    my @refs = _git_commits($repo_dir);
 
     my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
 
-    system("cd $repo_dir; git tag TEST");
+    _git_tag($repo_dir, 'TEST');
 
     $ci->create_tags_handler( undef, {} );
 
     _git_tags("$repo_dir/.git");
 
-    my $ref = `cd $repo_dir; git rev-parse TEST`;
-    chomp $ref;
+    my $ref = _git_sha_from_tag($repo_dir, 'TEST');
 
     is $ref, $refs[0];
 };
@@ -164,19 +163,19 @@ subtest 'create_tags_service_handler: overwrites existing tags when specified' =
 
     my $repo_dir = _create_repo();
 
-    system("cd $repo_dir; echo second > README; git commit -a -m 'second'");
-    my (@refs) = map { chomp; $_ } `cd $repo_dir; git rev-list HEAD`;
+    _git_commit($repo_dir);
+
+    my @refs = _git_commits($repo_dir);
 
     my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
 
-    system("cd $repo_dir; git tag TEST");
+    _git_tag($repo_dir, 'TEST');
 
     $ci->create_tags_handler( undef, { existing => 'no-detect' } );
 
     _git_tags("$repo_dir/.git");
 
-    my $ref = `cd $repo_dir; git rev-parse TEST`;
-    chomp $ref;
+    my $ref = _git_sha_from_tag($repo_dir, 'TEST');
 
     is $ref, $refs[-1];
 };
@@ -215,6 +214,174 @@ subtest 'create_tags_service_handler: filters by tags when projects' => sub {
     my @tags = _git_tags("$repo_dir/.git");
 
     is_deeply [ sort @tags ], [qw/project-TEST/];
+};
+
+subtest 'update_baselines: moves baselines up in promote' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    my $sha = _git_commit($repo_dir);
+
+    $ci->update_baselines(tag => 'TEST', type => 'promote', revisions => [{sha => $sha}]);
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
+
+    is $tag_sha, $sha;
+};
+
+subtest 'update_baselines: moves baselines down in demote' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    my $old_sha = _git_commit($repo_dir);
+
+    my $sha = _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    $ci->update_baselines(tag => 'TEST', type => 'demote', revisions => [{sha => $sha}]);
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
+
+    is $tag_sha, $old_sha;
+};
+
+subtest 'update_baselines: moves baselines up in static' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    my $sha = _git_commit($repo_dir);
+
+    $ci->update_baselines(tag => 'TEST', type => 'static', revisions => [{sha => $sha}]);
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
+
+    is $tag_sha, $sha;
+};
+
+subtest 'update_baselines: moves baselines to specific ref' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    my $sha = _git_commit($repo_dir);
+
+    $ci->update_baselines(tag => 'TEST', type => 'static', revisions => [], ref => $sha);
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
+
+    is $tag_sha, $sha;
+};
+
+subtest 'update_baselines: does nothing when already there' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    my $sha = _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    $ci->update_baselines(tag => 'TEST', type => 'static', revisions => [], ref => $sha);
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
+
+    is $tag_sha, $sha;
+};
+
+subtest 'update_baselines: throws when tags_mode is project but no projects' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+
+    my $sha = _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    like exception { $ci->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+      qr/Projects are required/;
+};
+
+subtest 'update_baselines: updates tags for every project' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+
+    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
+
+    my $sha = _git_commit($repo_dir);
+    _git_tag($repo_dir, 'project-TEST');
+
+    my $new_sha = _git_commit($repo_dir);
+
+    $ci->update_baselines(
+        job       => { projects => [ { name => 'project', repositories => [ $ci->mid ] } ] },
+        tag       => 'TEST',
+        type      => 'static',
+        revisions => [],
+        ref       => $sha
+    );
+
+    my $tag_sha = _git_sha_from_tag($repo_dir, 'project-TEST');
+
+    is $tag_sha, $new_sha;
+};
+
+subtest 'update_baselines: updates tags only for project related to the repository' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+
+    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
+    _create_project_ci( name => 'other', repositories => [ ] );
+
+    my $sha = _git_commit($repo_dir);
+    _git_tag($repo_dir, 'project-TEST');
+
+    _git_commit($repo_dir);
+
+    $ci->update_baselines(
+        job       => { projects => [ { name => 'project', repositories => [ $ci->mid ] }, { name => 'other' } ] },
+        tag       => 'TEST',
+        type      => 'static',
+        revisions => [],
+        ref       => $sha
+    );
+
+    like capture_merged { _git_sha_from_tag( $repo_dir, 'other-TEST' ) }, qr/unknown revision/;
 };
 
 done_testing;
