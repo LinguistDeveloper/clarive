@@ -376,6 +376,7 @@ subtest 'commits_for_branch: throws when no tags present' => sub {
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
 
     like exception { $repo->commits_for_branch( branch => 'master' ) }, qr/could not find tag/;
+
 };
 
 done_testing;

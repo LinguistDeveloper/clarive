@@ -43,25 +43,36 @@ sub create_tags_handler {
         ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
     }
     my @out;
+    my @projects = ('');
+
+    @projects = map { $_->{name} } $self->related( where => { collection => 'project' }, docs_only => 1 ) if $self->tags_mode eq 'project';
+
     for my $blci ( BaselinerX::CI::bl->search_cis ) {
-        my $bl = $blci->bl;
-        next if $tag_filter && $bl !~ /^($tag_filter)$/;
-        next if $bl eq '*';
-        if( $existing eq 'detect' ) {
-            next if try { 
-                my ($bl_ref) = $git->exec( 'rev-parse', $bl ); 
-                _log "Tag $bl already exists ($bl_ref). Skipped";
-                1;
-            } catch {
-                _log "Tag $bl not found. Replacing...";
-                0;
-            };
+        my $orig_bl = $blci->bl;
+        for my $project ( @projects ) {
+            next if $orig_bl eq '*';
+
+            my $bl = $orig_bl;
+
+            $bl = sprintf('%s-%s', $project, $orig_bl) if $project;
+            
+            next if $tag_filter && $bl !~ /^($tag_filter)$/;
+            if( $existing eq 'detect' ) {
+                next if try { 
+                    my ($bl_ref) = $git->exec( 'rev-parse', $bl ); 
+                    _log "Tag $bl already exists ($bl_ref). Skipped";
+                    1;
+                } catch {
+                    _log "Tag $bl not found. Replacing...";
+                    0;
+                };
+            }
+            _log "Creating tag $bl for ref $ref"; 
+            push @out, $git->exec( 'tag', '-f', $bl, $ref );
         }
-        _log "Creating tag $bl for ref $ref"; 
-        push @out, $git->exec( 'tag', '-f', $bl, $ref );
     }
     join "\n", @out;
-}
+};
 
 sub repository {
     my ( $self, %p ) = @_;

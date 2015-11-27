@@ -79,7 +79,7 @@ sub pipelines : Local {
 
 sub rollback : Local {
     my ( $self, $c ) = @_;
-    local $Baseliner::_no_cache = 1;
+    # local $Baseliner::_no_cache = 1;
     my $p = $c->req->params;
     try {
         my $job = ci->new( $p->{mid} ) // _fail(_loc('Job %1 not found', $p->{name}));
