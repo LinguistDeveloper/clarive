@@ -375,7 +375,7 @@
                                 minSize: new go.Size(ActivityWidth, computeActivityHeight(0.50))
                             },
                             new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)),
-                      go_api(go.TextBlock, { angle: 90 }, 
+                      go_api(go.TextBlock, { angle: 90, font: "bold 10px sans-serif", stroke: getLuxColor(color,0.2) }, 
                           new go.Binding("text", "text"),
                           new go.Binding("stroke","black")
                       )
@@ -479,6 +479,7 @@
             var i=0;
             var start = [];
             var duration = [];
+            var text = [];
             var sum_duration = 0;
             //var date_ini = new Date(res.data[0].when);
             //var date_end = new Date(res.data[res.data.length-1].when);
@@ -491,13 +492,14 @@
               if(i==0){
                 start[i]=1;
                 duration[i]=1;
+                text[i]= "start";
                 sum_duration = sum_duration + duration[i];
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length)});
               }else{
                 start[i] = start[i-1] + duration[i-1];
                 var date = new Date(res.data[i].when);
                 var date2 = new Date(res.data[i-1].when);
-                duration[i]=i+1;
+                
                 /*var sum_dates = date-date2;
                 var compose_date = ((date.getTime()-date2.getTime())*10/range)*100;
                 alert(compose_date);
@@ -511,17 +513,44 @@
                 // CALCULATE THE VALUE OF DURATION TO NODES.
                 /////////////////////////////////////////////////////////////////////////
 
-                // YEAR OR MORE          DURATION 10
-                // 6 MONTH OR MORE       DURATION 9
-                // 3 MONTH OR MORE       DURATION 8
-                // 1 MONTH OR MORE       DURATION 7     
-                // 15 DAYS OR MORE       DURATION 6 
-                // 7 DAYS OR MORE        DURATION 5     
-                // 3 DAYS OR MORE        DURATION 4     
-                // 2 DAYS OR MORE        DURATION 3      
-                // HOURS OR 1 DAY        DURATION 2 
+                // YEAR         DURATION 15.6 -        
+                // MONTH        DURATION 14.4 - 15.6     
+                // DAYS         DURATION 8.2 - 14.4      
+                // HOURS        DURATION 1 - 8.2 
 
-               /*var sum_date = date.getFullYear() - date2.getFullYear();
+               var sum_date = date.getFullYear() - date2.getFullYear();
+
+                if (sum_date > 0){
+                  duration[i]=sum_date+15.6;
+                  text[i] = sum_date+" "+_('Year');
+                }else{
+                  sum_date = (date.getMonth()+1) - (date2.getMonth()+1); 
+
+                  if(sum_date > 0){
+                    duration[i]=(sum_date*0.1)+14.4;
+                    text[i] = sum_date+" "+_('Month');
+                  }else { 
+                    sum_date = date.getDate() - date2.getDate();
+
+                    if (sum_date > 0){
+                          duration[i]=(sum_date*0.2)+8.2;
+                          text[i] = sum_date+" "+_('Days');
+                          }else{
+                            sum_date = (date.getHours()+1) - (date2.getHours()+1);
+
+                            if(sum_date > 0){
+                              duration[i]= (sum_date*0.3)+1;
+                              text[i] = sum_date+" H ";
+                            }else{
+                              duration[i] = 1;
+                              text[i] = " Min ";
+                            }
+                    }
+                  }        
+
+                }
+                /////////////////////////////////////////////////////////////////////////
+                /*var sum_date = date.getFullYear() - date2.getFullYear();
 
                 if (sum_date > 0){
                   duration[i]=10;
@@ -551,9 +580,8 @@
                         }        
 
                 }*/
-                /////////////////////////////////////////////////////////////////////////
                 sum_duration = sum_duration + duration[i];
-                object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length)});
+                object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length), "text": text});
               }
               i++;
 
@@ -563,6 +591,8 @@
             //Modify the duration in the nodes.
             duration.push(1);
             duration.splice(duration.indexOf(duration[0]),1);
+            text.push("");
+            text.splice(text.indexOf(text[0]),1);
 
             var i=0;
             var j=0;
@@ -574,10 +604,12 @@
                 if(j==0){
                   start[j]= 1;
                   object_node[i].duration = duration[j];
+                  object_node[i].text = text[j];
                   object_node[i].start = start[j];
                 }else{
                   start[j]= start[j-1]+duration[j-1];
                   object_node[i].duration = duration[j];
+                  object_node[i].text = text[j];             
                   object_node[i].start = start[j];
                 }
                 j++;
