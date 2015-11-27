@@ -365,7 +365,10 @@ sub list_workflow : Local {
     my %roles = mdb->role->find_hash_one( id=>{},{role=>1,_id=>0});
     my %statuses = ci->status->statuses;
     my %stat_to;
-    my @cat_wkf = _array( mdb->category->find_one({ id=> "$p->{categoryId}" })->{workflow} );
+    my $doc_category = mdb->category->find_one({ id=> "$p->{categoryId}" });
+    _fail(_loc("Category %1 not found", $p->{categoryId})) if !$doc_category;
+    
+    my @cat_wkf = _array( $doc_category->{workflow} );
     push @{ $stat_to{$$_{id_role}}{$$_{id_status_from}} }, $_ for @cat_wkf;
     my %wkf_unique;
     $wkf_unique{ join(',',@{ $_ }{qw(id_role id_status_from)}) } = $_ for @cat_wkf;
@@ -383,30 +386,40 @@ sub list_workflow : Local {
             
         # Grid for workflow configuration: right side field
         my @statuses_to;
+        my @statuses_to_type;
         for my $status_to ( @sts ) {
             my $name = $statuses{ $status_to->{id_status_to} }{name};
+            my $type = $statuses{ $status_to->{id_status_to} }{type};
             # show 
             my $job_type = $status_to->{job_type};
             if( $job_type && $job_type ne 'none' ) {
                 $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
+                $type = sprintf '%s [%s]', $type, lc( _loc($job_type) );
             }
             push @statuses_to,  $name;
+            push @statuses_to_type, $type
         }
-    
+
         my $role = $roles{ $$rec{id_role} } // next;
         my $status = $statuses{ $$rec{id_status_from} } // next;
-        
+         
         push @rows, {
              role           => $$role{role},
+             role_job_type  => $$rec{job_type},
              status_from    => $$status{name},
+             status_type    => $$status{type},
+             status_time    => $$status{ts},
+             status_color   => $$status{color},
              id_category    => $p->{categoryId},
              id_role        => $$rec{id_role},
              id_status_from => $$rec{id_status_from},                         
-             statuses_to    => \@statuses_to
+             statuses_to    => \@statuses_to,
+             statuses_to_type => \@statuses_to_type
+
         };
     }
     $cnt = @rows;
-    
+
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }

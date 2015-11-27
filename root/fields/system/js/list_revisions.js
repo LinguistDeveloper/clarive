@@ -128,13 +128,10 @@ params:
                                 'class': ci['class'], 
                                 ns: ci.ns, 
                                 ci_json: Ext.util.JSON.encode( ci.data ), 
-                                repo: node_data.click.repo_mid, 
+                                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid, 
                                 topic_mid: topic_data.topic_mid, 
                                 branch: meta.branch,
-                                folder_or_file: node_data.ci.folder_or_file,
                                 repo_dir: node_data.repo_dir,
-                                rev: node_data.ci.rev,
-                                sha: node_data.ci.sha
                             }, function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;

@@ -10,6 +10,7 @@ our @EXPORT_OK = qw(_setup_user _setup_clear _topic_setup);
 
 use Carp;
 use JSON ();
+use Baseliner::CI;
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Fieldlet;
@@ -29,7 +30,6 @@ sub _setup_user {
 
 sub _topic_setup {
     mdb->topic->drop;
-    TestUtils->cleanup_cis();
     mdb->category->drop;
     mdb->rule->drop;
 

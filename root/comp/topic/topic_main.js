@@ -2,6 +2,7 @@
     $topic_mid
     $category_name => undef
     $category_color => undef
+    $category_id => undef
     $swEdit
     $permissionEdit
     $permissionDelete
@@ -18,6 +19,7 @@
     var topic_mid = '<% $topic_mid %>';
     var category_name = '<% $category_name %>';
     var category_color = '<% $category_color %>';
+    var category_id = '<% $category_id %>';
     var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
@@ -27,7 +29,6 @@
     var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     var status_items_menu = '<% $status_items_menu %>';
     var menu_deploy = '<% $menu_deploy %>';
-    
     var category_meta = "<% $category_meta %>";
     var topic_main_class_name;
     if( category_meta ) {
@@ -43,7 +44,8 @@
         viewKanban: viewKanban,
         html_buttons: html_buttons,
         status_items_menu: status_items_menu,
-        menu_deploy: menu_deploy
+        menu_deploy: menu_deploy,
+        id_category: category_id
     });
 
     
