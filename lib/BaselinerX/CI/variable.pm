@@ -2,6 +2,7 @@ package BaselinerX::CI::variable;
 use Baseliner::Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Types;
 
 has var_type             => qw(is rw isa Str);
 has var_ci_class         => qw(is rw isa Maybe[Str]);
