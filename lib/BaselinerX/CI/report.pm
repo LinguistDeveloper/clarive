@@ -401,7 +401,7 @@ sub report_update {
         when ('update') {
             try{
                 my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
-                if( @cis && $cis[0]->mid != $self->mid ) {
+                if( @cis && $cis[0]->mid ne $self->mid ) {
                     _fail _loc('Search name already exists, introduce another search name');
                 }
                 else {

@@ -350,7 +350,7 @@
             }
             if(parent.attributes.data){
                 var length = query[parent.attributes.data.id_category].relation.length;
-                for (var i = 1; i<length; i++) {
+                for (var i = 0; i<length; i++) {
                     if (query[parent.attributes.data.id_category].relation[i].id_category == attr.data.id_category){
                         query[parent.attributes.data.id_category].relation[i] = {id_category : [node.attributes.data.id_category], name_category: [node.attributes.data.name_category], relation: [node.attributes.data.relation]};
                     }
