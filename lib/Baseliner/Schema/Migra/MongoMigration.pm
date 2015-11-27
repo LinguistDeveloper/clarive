@@ -180,9 +180,20 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.system.topics';
             }elsif(!$fieldlet->{params}->{js} && $fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/origin_issue_pie.html'){
                 $attributes->{key} = 'fieldlet.status_chart_pie';
+            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js} &&  $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+                $attributes->{key} = 'fieldlet.html_editor';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
+                $attributes->{key} = 'fieldlet.ci_grid';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics_selector.js'){
+              $attributes->{key} = 'fieldlet.system.list_topics';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
+                $attributes->{key} = 'fieldlet.ci_grid';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'){
+                $attributes->{key} = 'fieldlet.milestones';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
+
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
                 if ($data->{ci_class}){
                     my @ar = split (',', $data->{ci_class});
@@ -205,7 +216,11 @@ sub topic_categories_to_rules {
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
             
-            if ($data->{fieldletType} eq '1') { _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} "; _log $data }
+            if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
+                _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
+                _log $data;
+                next;
+            }
             
             $attributes->{data} = $data;
             
