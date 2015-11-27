@@ -909,14 +909,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my $categories_queries;
 	
 	my @All_Categories;
-
+    my @ids_category;
     _fail( _loc("Missing 'Categories' in search configuration") ) unless keys %{ $rel_query || {} };	
 	foreach my $key (sort { $b <=> $a} keys $rel_query) {
         my $wh = {};
-		my @ids_category = _array $rel_query->{$key}->{id_category};
+		push @ids_category, _array $rel_query->{$key}->{id_category};
         my @names_category = _array $rel_query->{$key}->{name_category};
 		my @relation = _array $rel_query->{$key}->{relation};
-        my $length = scalar @ids_category;
 		map{
             $where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
             $where->{id_category} = {'$in' => \@ids_category };
