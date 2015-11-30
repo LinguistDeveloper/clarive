@@ -517,20 +517,23 @@
                 // HOURS        DURATION 1 - 8.2 
 
                var sum_date = date.getFullYear() - date2.getFullYear();
+               var date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
 
-                if (sum_date > 0){
+                if (sum_date > 1){
                   duration[i]=sum_date+15.6;
                   text[i] = sum_date+" "+_('Year');
                 }else{
                   sum_date = (date.getMonth()+1) - (date2.getMonth()+1); 
-
-                  if(sum_date > 0){
+                  date_compare = date.getDate() - date2.getDate();
+                  alert(sum_date);
+                  if(sum_date > 1){
                     duration[i]=(sum_date*0.1)+14.4;
                     text[i] = sum_date+" "+_('Month');
                   }else { 
                     sum_date = date.getDate() - date2.getDate();
+                    date_compare = (date.getHours()+1) - (date2.getHours()+1);
 
-                    if (sum_date > 0){
+                    if (sum_date > 1){
                           duration[i]=(sum_date*0.2)+8.2;
                           text[i] = sum_date+" "+_('Days');
                           }else{
