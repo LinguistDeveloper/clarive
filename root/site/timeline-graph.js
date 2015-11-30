@@ -468,7 +468,6 @@
 
                   duration[i]=number_text+20.6;
                   text[i] = number_text+" "+_('Year');
-
                 }else{
                   //year
                   if(sum_date >= year){
@@ -544,7 +543,6 @@
                             var minutes = number_text.getMinutes();
                             if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
                             text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
-
                           }else{
                             //Days
                             if(sum_date >= day){
