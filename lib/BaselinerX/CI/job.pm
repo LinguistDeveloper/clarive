@@ -1051,9 +1051,9 @@ sub run {
         $self->has_warnings( $self->has_warnings + 1 ) if $lev eq 'warn';
         my $text = $msgs[0];
         if( ref $text ) {    # _log { ... }
-            $self->logger->common_log( [$lev,3], _loc('Data dump'), @msgs ); 
+            $self->logger->common_log( [$lev,$cl,$fi,$li], _loc('Data dump'), @msgs ); 
         } else {
-            $self->logger->common_log( [$lev,3], @msgs ); 
+            $self->logger->common_log( [$lev,$cl,$fi,$li], @msgs ); 
         }
         return 0;
     };

@@ -56,12 +56,19 @@ All data is compressed.
 =cut
 sub common_log {
     my ( $self, $lev, $text )= ( shift, shift, shift );
-    my $caller_lev = 1;
+    my ($package, $filename, $line);
     if( ref $lev eq 'ARRAY' ) {
-        $caller_lev = $lev->[1];
-        $lev = $lev->[0];
+        if( @$lev == 4 ) {
+            my @calling;
+            ($lev,@calling) = @$lev;
+            ($package, $filename, $line) = @calling;
+        } else {
+            ($package, $filename, $line) = caller $lev->[1];
+            $lev = $lev->[0];
+        }
+    } else {
+        ($package, $filename, $line) = caller 1;
     }
-    my ($package, $filename, $line) = caller $caller_lev;
     my $module = "$package - $filename ($line)";
     my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...  
     $p{data}||='';
