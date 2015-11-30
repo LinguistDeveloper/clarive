@@ -287,8 +287,6 @@ var menu_role = new Ext.Button({
                  }
             }
 
-            console.log(res);
-
             //In the statuses_to delete the text after to []                 
             var i=0;
             while (i < res.data.length){
@@ -511,7 +509,7 @@ var menu_role = new Ext.Button({
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
             //Order data for creation date.
-            for(i=0;i<res.data.length-1;i++){
+            for(var i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
                      var date = new Date(res.data[j].status_time);
                      var date2 = new Date(res.data[j+1].status_time);
@@ -525,8 +523,8 @@ var menu_role = new Ext.Button({
                       }         
                  }
             }
-            
-            for(i=0;i<res.data.length-1;i++){
+
+            for(var i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
                      var initial_type = res.data[j].status_type;
                      var initial_type2 = res.data[j+1].status_type;
@@ -541,6 +539,24 @@ var menu_role = new Ext.Button({
                  }
             }
 
+            for(var i=0;i<res.data.length-1;i++){
+            	var k = 0;
+            	while (k < res.data[i].statuses_to.length){
+	                 for(j=0;j<res.data.length-1;j++){
+	                     var final_type = res.data[i].statuses_to_type[k];
+	                     var final_type2 = res.data[j+1].status_type;
+	                      if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
+	                            //save the max number in aux
+	                           aux=res.data[j];
+	                            //save the min number in the correct position
+	                            res.data[j]=res.data[j+1];
+	                            //save the aux in the min position (change max with min)
+	                            res.data[j+1]=aux;         
+	                      }         
+	                 }
+	            k++;     
+                }
+            }
 
             //In the statuses_to delete the text after to []                 
             var i=0;
