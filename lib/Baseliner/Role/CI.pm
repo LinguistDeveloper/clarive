@@ -185,7 +185,7 @@ sub save {
         if( $master_row ) {
             my $username = 'clarive';
             try { $username = $self->modified_by };
-            event_new 'event.ci.update' => { username => $username, mid => $mid, new_ci => $self} => sub {
+            event_new 'event.ci.update' => { username => $username, mid => $mid, ci=>$self, ci_data=>\%$self } => sub {
                 my $old_ci = Util->_clone($self);
                 $master_old = +{ %$master_row };
                 $master_row->{bl} = join ',', Util->_array( $bl );
@@ -203,7 +203,7 @@ sub save {
     } else {
 
 
-        event_new 'event.ci.create' => { username => $self->created_by, ci => $self} => sub {
+        event_new 'event.ci.create' => { username => $self->created_by, ci=>$self, ci_data=>\%$self } => sub {
 
             ######## NEW CI
             $master_row = {

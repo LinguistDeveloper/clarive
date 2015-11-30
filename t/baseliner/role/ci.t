@@ -16,6 +16,7 @@ use Baseliner::Core::Registry;
 use Baseliner::Role::CI;
 use BaselinerX::CI::TestClass;
 use BaselinerX::CI::TestParentClass;
+use Clarive::cache;
 
 subtest 'returns true when deleting ci' => sub {
     _setup();
@@ -209,6 +210,44 @@ subtest 'gen_mid: correctly generated mid' => sub {
     my $chi = BaselinerX::CI::TestClass->new;
     like $chi->gen_mid, qr/^TestClass-\d{6}$/ ;
 
+};
+
+subtest 'ci save is in cache' => sub {
+    _setup();
+
+    cache->setup('mongo');  # otherwise cache is fake
+    my $ci = BaselinerX::CI::TestClass->new( something=>333 );
+    my $mid = $ci->save;
+    $ci = ci->new( $mid );
+    my $ci_cache = cache->get({ d=>'ci', mid=>$mid });
+    is( $ci_cache->{something}, $ci->something );
+};
+
+subtest 'ci save results in no ci in cache' => sub {
+    _setup();
+    
+    cache->setup('mongo');  # otherwise cache is fake
+    my $ci = BaselinerX::CI::TestClass->new( something=>333 );
+    my $mid = $ci->save;
+    $ci = ci->new( $mid );
+    $ci->something( 444 );
+    $ci->save;
+    my $ci_cache = cache->get({ d=>'ci', mid=>$mid });
+    is $ci_cache->{something}, undef;
+};
+
+subtest 'ci save: cache is synchronized with latest data' => sub {
+    _setup();
+    
+    cache->setup('mongo');  # otherwise cache is fake
+    my $ci = BaselinerX::CI::TestClass->new( something=>333 );
+    my $mid = $ci->save;
+    $ci = ci->new( $mid );
+    $ci->something( 444 );
+    $ci->save;
+    $ci = ci->new( $mid );
+    my $ci_cache = cache->get({ d=>'ci', mid=>$mid });
+    is $ci_cache->{something}, $ci->something; 
 };
 
 sub _setup {

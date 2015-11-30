@@ -257,8 +257,8 @@ sub _new_event {
 
     try {
         if ( length $data->{mid} ) {
-            my $ci      = ci->new( $data->{mid} );
-            my $ci_data = $ci->load;
+            my $ci = $data->{ci} // ci->new( $data->{mid} );
+            my $ci_data = $data->{ci_data} // $ci->load;
             $data = { %$ci_data, ci => $ci, %$data };
         }
         else {

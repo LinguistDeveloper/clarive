@@ -1,19 +1,21 @@
 package cache;
 use strict;
+use Try::Tiny;
 
 our $ccache;
 
 sub setup {
+    my ($self,$cache_type) = @_;
+    $cache_type //= Clarive->config->{cache};
     # CHI cache setup
     require Baseliner::Utils;
     my $setup_fake_cache = sub {
        { package Nop; sub AUTOLOAD{ } };
        $ccache = bless {} => 'Nop';
     };
-    if( !Clarive->config->{cache} ) {
+    if( !$cache_type ) {
         $setup_fake_cache->();
     } else {
-        my $cache_type = Clarive->config->{cache};
         my $cache_defaults = {
                 fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/clarive-cache', cache_size => '256m' ],
                 memory    => [ driver => 'Memory' ],
@@ -60,13 +62,13 @@ sub get {
     my ($self,$key)=@_;
     return if !$ccache;
     return if $Clarive::_no_cache || $Baseliner::_no_cache;
-    return if !$ccache;
     Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{CLARIVE_CACHE_TRACE}; 
     $ccache->get( $key ) 
 }
 sub remove { 
     my ($self,$key)=@_;
     return if !$ccache;
+    Util->_debug(-1, "--- CACHE REMOVE: " . ( ref $key ? ( ref $key eq 'Regexp' ? Util->_dump($key) : Util->_to_json($key) ) : $key ) ) if $ENV{CLARIVE_CACHE_TRACE}; 
     ref $key eq 'Regexp' ?  $self->remove_like($key) : $ccache->remove( $key ) ;
 }
 sub keys { $ccache->get_keys( @_ ) }
@@ -75,6 +77,6 @@ sub clear { $ccache->clear }
 sub remove_like { my $re=$_[1]; cache->remove($_) for cache->keys_like($re); } 
 sub keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => cache->keys; }
 
-setup();
+__PACKAGE__->setup();
 
 1;
