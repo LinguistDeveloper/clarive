@@ -272,6 +272,23 @@ var menu_role = new Ext.Button({
                  }
             }
 
+            for(i=0;i<res.data.length-1;i++){
+                 for(j=0;j<res.data.length-1;j++){
+                     var initial_type = res.data[j].status_type;
+                     var initial_type2 = res.data[j+1].status_type;
+                      if(initial_type!= 'I' && initial_type2=='I'){
+                            //save the max number in aux
+                           aux=res.data[j];
+                            //save the min number in the correct position
+                            res.data[j]=res.data[j+1];
+                            //save the aux in the min position (change max with min)
+                            res.data[j+1]=aux;         
+                      }         
+                 }
+            }
+
+            console.log(res);
+
             //In the statuses_to delete the text after to []                 
             var i=0;
             while (i < res.data.length){
@@ -508,6 +525,22 @@ var menu_role = new Ext.Button({
                       }         
                  }
             }
+            
+            for(i=0;i<res.data.length-1;i++){
+                 for(j=0;j<res.data.length-1;j++){
+                     var initial_type = res.data[j].status_type;
+                     var initial_type2 = res.data[j+1].status_type;
+                      if(initial_type!= 'I' && initial_type2=='I'){
+                            //save the max number in aux
+                           aux=res.data[j];
+                            //save the min number in the correct position
+                            res.data[j]=res.data[j+1];
+                            //save the aux in the min position (change max with min)
+                            res.data[j+1]=aux;         
+                      }         
+                 }
+            }
+
 
             //In the statuses_to delete the text after to []                 
             var i=0;
