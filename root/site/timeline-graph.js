@@ -648,7 +648,6 @@
               i++;
 
             }
-
         diagram.model  = new go.GraphLinksModel(object_node,object_link);
 
     });            
