@@ -485,8 +485,6 @@
             //var date_end = new Date(res.data[res.data.length-1].when);
             //var range =  date_end.getTime() - date_ini.getTime();
 
-
-
             while (i < res.data.length){
 
               if(i==0){
@@ -628,8 +626,6 @@
               i++;
 
             }
-
-
         
         /*diagram.model  = new go.GraphLinksModel([ 
             {"key":res.data[0].username, "text":res.data[0].username, "isGroup":true, "loc":"0 0", "duration":res.data.length}
@@ -668,7 +664,6 @@
     });    
         
     };   
-
     
     var container = new Ext.Panel({
         width: 800,
