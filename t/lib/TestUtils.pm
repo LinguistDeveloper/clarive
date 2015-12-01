@@ -16,6 +16,7 @@ use Clarive::ci;
 use Time::Local;
 use Time::Piece;
 use Test::MockTime qw(set_absolute_time restore_time);
+use File::Temp qw(tempdir);
 
 sub cleanup_cis {
     my $class = shift;
@@ -46,6 +47,43 @@ sub reload_module {
     my ($module) = @_;
 
     Class::Refresh->refresh_module($module);
+}
+
+sub create_ci {
+    my $class = shift;
+    my $name = shift;
+
+    my $ci_class = 'BaselinerX::CI::' . $name;
+    Class::Load::load_class($ci_class);
+
+    my $ci = $ci_class->new(@_);
+    $ci->save;
+
+    return $ci;
+}
+
+sub create_ci_project {
+    my $class = shift;
+
+    return $class->create_ci('project', name => 'Project', @_);
+}
+
+sub create_ci_topic {
+    my $class = shift;
+
+    return $class->create_ci('topic', @_);
+}
+
+sub create_ci_GitRepository {
+    my $class = shift;
+
+    my $dir = tempdir( CLEANUP => 1 );
+
+    system("cd $dir; git init; touch README; git add .; git commit -m 'initial'");
+    system("cd $dir; echo 'second' > README; git commit -am 'second'");
+    system("cd $dir; echo 'third' > README; git commit -am 'third'");
+
+    return $class->create_ci('GitRepository', repo_dir => "$dir/.git", @_);
 }
 
 sub clear_registry {

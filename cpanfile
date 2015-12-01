@@ -214,7 +214,7 @@ requires 'IO::CaptureOutput';
 # Tests
 requires 'Test::More';
 requires 'Test::Fatal';
-requires 'Test::MonkeyMock';
+requires 'Test::MonkeyMock', '>=0.09';
 requires 'Test::MockSleep';
 requires 'Test::MockTime';
 requires 'Test::Deep';

@@ -314,7 +314,7 @@ sub job_items {
         }
         _debug("Changeset $cs->{mid} detected for job");
     }
-    
+
     for my $project_group ( values %projects ) {
         my ($project,$changesets,$revisions,$repos) = @{ $project_group }{ qw/project changesets revisions repos/ };
         my $pc = { project => $project };
@@ -443,7 +443,7 @@ sub checkout_bl_all_repos {
     $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
     for my $pc ( @project_changes ) {
         my ($project) = @{ $pc }{ qw/project/ };
-        my @repos = grep { $_->{bl} =~ /(\*|$bl)/} _array(ci->new($project->{mid})->{repositories});
+        my @repos = grep { $_->bl =~ /(\*|$bl)/} _array $project->repositories;
         for my $repo ( @repos ) {
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );

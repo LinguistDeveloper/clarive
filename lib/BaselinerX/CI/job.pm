@@ -2,6 +2,7 @@ package BaselinerX::CI::job;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
+use BaselinerX::Type::Model::ConfigStore;
 use Try::Tiny;
 use v5.10;
 use utf8;
@@ -203,7 +204,7 @@ sub _create {
 
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
-    my $config = model->ConfigStore->get( 'config.job', bl=>$self->bl );
+    my $config = BaselinerX::Type::Model::ConfigStore->get( 'config.job', bl=>$self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
 
@@ -589,7 +590,7 @@ sub expiry_time {
     $p{bl} ||= ref $self ? $self->bl : '*';
     my $window_type = $self->window_type || 'N';
 
-    my $exp = Baseliner->model('ConfigStore')->get( 'config.job', bl=>$p{bl} )->{expiry_time};
+    my $exp = BaselinerX::Type::Model::ConfigStore->get( 'config.job', bl=>$p{bl} )->{expiry_time};
     my $ret = ref $exp eq 'HASH' ? $exp->{ $window_type } : $exp;
     return $ret || "1D";
 }
