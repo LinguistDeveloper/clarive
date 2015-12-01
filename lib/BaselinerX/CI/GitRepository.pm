@@ -46,36 +46,41 @@ sub create_tags_handler {
         ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
     }
 
-    my @out;
-    my @projects = ('');
+    my @tags;
+    my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
 
-    @projects = map { $_->{name} } $self->related( where => { collection => 'project' }, docs_only => 1 )
-      if $self->tags_mode eq 'project';
+    if ( $self->tags_mode eq 'project' ) {
+        my @projects_names = map { $_->{name} } $self->related( where => { collection => 'project' }, docs_only => 1 );
 
-    for my $blci ( BaselinerX::CI::bl->search_cis ) {
-        my $bl = $blci->bl;
-        for my $project (@projects) {
-            next if $bl eq '*';
+        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+          unless @projects_names;
 
-            $bl = sprintf( '%s-%s', $project, $bl ) if $project;
-
-            next if $tag_filter && $bl !~ /^($tag_filter)$/;
-
-            if ( $existing eq 'detect' ) {
-                next if try {
-                    my ($bl_ref) = $git->exec( 'rev-parse', $bl );
-                    _log "Tag $bl already exists ($bl_ref). Skipped";
-                    1;
-                }
-                catch {
-                    _log "Tag $bl not found. Replacing...";
-                    0;
-                };
-            }
-
-            _log "Creating tag $bl for ref $ref";
-            push @out, $git->exec( 'tag', '-f', $bl, $ref );
+        foreach my $bl (@bls) {
+            push @tags, map { sprintf '%s-%s', $_, $bl } @projects_names;
         }
+    }
+    else {
+        @tags = @bls;
+    }
+
+    @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
+
+    my @out;
+    foreach my $tag (@tags) {
+        if ( $existing eq 'detect' ) {
+            next if try {
+                my ($tag_ref) = $git->exec( 'rev-parse', $tag );
+                _log "Tag $tag already exists ($tag_ref). Skipped";
+                1;
+            }
+            catch {
+                _log "Tag $tag not found. Replacing...";
+                0;
+            };
+        }
+
+        _log "Creating tag $tag for ref $ref";
+        push @out, $git->exec( 'tag', '-f', $tag, $ref );
     }
 
     return join "\n", @out;
