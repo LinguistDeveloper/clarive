@@ -41,8 +41,6 @@ In summary, here's a sample of supported search syntax:
     /term regex.*/  - regular expression
 
 
----
-
 ### Field searching
 
 Clarive supports also a limited set of 
