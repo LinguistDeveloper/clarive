@@ -4,6 +4,7 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
+use Test::Deep;
 
 use TestEnv;
 BEGIN { TestEnv->setup; }
@@ -234,6 +235,31 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
     my $tag_sha = _git_sha_from_tag($repo_dir, 'TEST');
 
     is $tag_sha, $sha;
+};
+
+subtest 'update_baselines: returns refs' => sub {
+    _setup();
+
+    _create_bl_ci( bl => 'TEST' );
+
+    my $repo_dir = _create_repo();
+    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+
+    _git_commit($repo_dir);
+    _git_tag($repo_dir, 'TEST');
+
+    my $sha = _git_commit($repo_dir);
+
+    my $retval = $ci->update_baselines(tag => 'TEST', type => 'promote', revisions => [{sha => $sha}]);
+
+    cmp_deeply $retval,
+      {
+        '' => {
+            'previous' => ignore(),
+            'current'  => $sha,
+            'output'   => ''
+        }
+      };
 };
 
 subtest 'update_baselines: moves baselines down in demote' => sub {

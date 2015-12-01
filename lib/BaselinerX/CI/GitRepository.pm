@@ -346,8 +346,11 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
         @tags = map { sprintf '%s-%s', $_, $tag } @project_names;
     }
 
+    my %retval;
     for my $tag ( @tags ) {
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
+
+        my ($project) = $self->tags_mode eq 'project' ? $tag =~ m/^(.*?)-/ : '';
 
         $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
         my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
@@ -355,9 +358,15 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
         my $out='';
 
         # no need to update if it's already there
-        if( $top_rev eq $tag_sha ) {
+        if ( $top_rev eq $tag_sha ) {
+            $retval{$project} = {
+                current  => $top_rev,
+                previous => $previous,
+                output   => $out
+            };
+
             next;
-        } 
+        }
         
         # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
         #    to a undefined deployment situation
@@ -378,9 +387,15 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
         }
+
+        $retval{$project} = {
+            current  => $top_rev,
+            previous => $previous,
+            output   => $out
+        };
     }
 
-    return $self;
+    return \%retval;
 }
 
 sub get_last_commit {

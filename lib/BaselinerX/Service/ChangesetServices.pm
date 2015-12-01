@@ -231,7 +231,7 @@ sub update_baselines {
                 my @projects = ('');
 
                 if( my $previous = $stash->{bl_original}{$repo->mid} ) {
-                    @projects = map {$_->{name} } _array($job->{projects}) if $job;
+                    @projects = map {$_->{name} } _array($job->{projects}) if $job && $job->{projects};
                     for my $project ( @projects ) {
                         if ( $previous->{$project} ) {
                             $out = $repo->update_baselines( job => $job, ref=>$previous->{$project}->{previous}, revisions=>[], tag=>$bl, type=>$type );

@@ -227,7 +227,8 @@ subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
 
     $service->update_baselines( $c, {} );
 
-    is_deeply $stash->{bl_original}, { 1 => 'PREVIOUS' };
+    is_deeply $stash->{bl_original},
+      { 1 => { 'project' => { previous => 'PREVIOUS', current => 'CURRENT', output => '' } } };
 };
 
 subtest 'update_baselines: calls repo update_baselines with correct params in rollback mode' => sub {
@@ -241,7 +242,13 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
     my $c = _mock_c(
         stash => {
             bl_original => {
-                1 => $prev_rev
+                1 => {
+                    '' => {
+                        previous => $prev_rev,
+                        current  => 'current',
+                        output   => '',
+                    }
+                }
             },
             job             => $job,
             project_changes => [
@@ -339,11 +346,12 @@ subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     $service->checkout_bl( $c, {} );
 
     my (%args) = $repo->mocked_call_args('checkout');
-    cmp_deeply \%args, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/project/path/to/repo.git'
-
-    };
+    cmp_deeply \%args,
+      {
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/project/path/to/repo.git',
+        'project' => 'project'
+      };
 };
 
 subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub {
@@ -384,15 +392,17 @@ subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub 
 
     my (%args1) = $repo1->mocked_call_args('checkout');
     cmp_deeply \%args1, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/Project/path/to/repo1.git'
+        'project' => 'Project',
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo1.git'
 
     };
 
     my (%args2) = $repo2->mocked_call_args('checkout');
     cmp_deeply \%args2, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/Project/path/to/repo2.git'
+        'project' => 'Project',
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo2.git'
 
     };
 
@@ -565,7 +575,13 @@ sub _mock_repo {
     $repo->mock( checkout => sub { } );
     $repo->mock(
         update_baselines => sub {
-            { previous => 'PREVIOUS' };
+            {
+                'project' => {
+                    previous => 'PREVIOUS',
+                    current  => 'CURRENT',
+                    output   => ''
+                }
+            };
         }
     );
 
