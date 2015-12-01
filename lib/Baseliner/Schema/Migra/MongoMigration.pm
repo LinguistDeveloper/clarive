@@ -105,11 +105,11 @@ sub topic_categories_to_rules {
             }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
                 $reg_key = $fieldlet->{params}->{js};
             }else{
-                  _log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ; 
-                  next;
+                  #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ; 
+                  #next;
             }
             #_log _dump $fieldlet;
-            my $icon = Baseliner::Core::Registry->get($registers->{$reg_key})->{icon};
+            my $icon = $registers->{$reg_key} ? Baseliner::Core::Registry->get($registers->{$reg_key})->{icon} : '';
 
             $data->{allowBlank} = exists $fieldlet->{allowBank} && (!$fieldlet->{allowBlank} || $fieldlet->{allowBlank} eq 'false') ? 0 : 1;
             $data->{editable} = '1' if not $fieldlet->{editable};
@@ -192,6 +192,22 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.milestones';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
+            }
+
+            if ( !$fieldlet->{params}->{html} && !$fieldlet->{params}->{js} ) {
+                if (   $fieldlet->{params}->{type} eq 'listbox'
+                    && $fieldlet->{params}->{get_method} eq 'get_topics'
+                    && $fieldlet->{params}->{set_method} eq 'set_topics' )
+                {
+                    $attributes->{icon}   = '/static/images/icons/listbox.png';
+                    $attributes->{key}    = 'fieldlet.system.list_topics';
+                    $data->{hidden} = 1;
+                }
+                elsif ( $fieldlet->{params}->{type} eq 'textfield' ) {
+                    $attributes->{icon}   = '/static/images/icons/field.png';
+                    $attributes->{key}    = 'fieldlet.text';
+                    $data->{hidden} = 1;
+                }
             }
 
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
