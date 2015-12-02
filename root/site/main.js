@@ -8,13 +8,7 @@ Ext.onReady(function(){
 
     Baseliner.help_menu = new Ext.menu.Menu({
         fresh_menu: true,
-        items: [
-            { text:_('Clarive Help'), handler:function(){
-                                Cla.help_show();
-                            }
-            },
-            '-',
-        ]
+        items: [ Cla.help_base_items[0] ]
     });
     Baseliner.help_menu.on('beforeadd', function(ev,hp){
         if( hp.fresh_menu ) {
@@ -28,6 +22,10 @@ Ext.onReady(function(){
        cls: 'x-btn-icon',
        hidden: false,
        menu: Baseliner.help_menu
+    });
+    Baseliner.help_button.on('click', function(ev,hp){
+        // when the user sees the menu, switch the bulb off
+        Cla.help_button.setIcon(IC('lightbulb_off.png'));
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });

@@ -79,6 +79,10 @@ Cla.help_show = function(params) {
             doc_reader.update( '<div id="boot">' + html + '</div>' );
             doc_reader.is_loaded = true;
         }
+        else if( params && params.path!=undefined ) {
+            goto_doc(params.path);
+            params.path = undefined;
+        }
         else {
             do_intro_doc();
         }
@@ -236,20 +240,48 @@ Cla.help_handler = function(params) {
     } else {
         Ext.Msg.alert( _('Help'), _('Help not available for this item.') );
     }
-};
-Cla.help_push = function(params) {
-    try {  // Ext 2.x does not have a find
-        var items = Cla.help_menu.find( 'text', params.title );
-        //alert( JSON.stringify( items ));
-        if( items!=undefined && items.length > 0 ) return;
-    } catch(e) { }
+}
+
+Cla.help_button_flash = function(params) {
     Cla.help_button.show();
-    Cla.help_menu.addMenuItem({
-        text: params.title,
-        handler: function() { Cla.help_handler(params) },
-        icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
-    });
     Cla.help_on();
+    // there's new content, show the bulb on
+    Cla.help_button.setIcon(IC('loading-fast.gif'));
+    setTimeout(function(){
+        Cla.help_button.setIcon(IC('lightbulb.png'));
+    },400);
+}
+
+Cla.help_base_items = [
+    { text:_('Clarive Help'), icon: IC('help'), handler:function(){ Cla.help_show() } },
+    '-'
+];
+Cla.help_items = [];
+
+Cla.help_push = function(params) {
+    var items = Cla.help_menu.find( 'help_path', params.path );
+    var item = {
+        text: params.title,
+        help_path: params.path,
+        handler: function() { 
+            Cla.help_show({ path: params.path+'.markdown' });
+        },
+        icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
+    };
+    Cla.help_items = Cla.help_items.splice(0,9); 
+    Cla.help_items.unshift( item );
+    Cla.help_menu.removeAll();
+    var added={};
+    Ext.each( Cla.help_base_items.concat(Cla.help_items), function(it){
+        if( it == '-' ) {
+            Cla.help_menu.addSeparator()
+        } else {
+            if( added[it.help_path] ) return;
+            Cla.help_menu.addMenuItem(it);
+        }
+        added[it.help_path] = true;
+    });
+    if( items==undefined || !items.length ) {
+        Cla.help_button_flash();
+    }
 };
-
-

@@ -1,6 +1,7 @@
 (function(params){
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
+    Cla.help_push({ title:_('Include Into'), path:'palette/fieldlets/include_into' });
     ret.push([ 
         new Baseliner.ComboDouble({
             fieldLabel: _('What Topics to Show'), name:'include_options', value: data.include_options || 'all_parent',
