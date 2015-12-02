@@ -320,7 +320,7 @@ sub refresh_now : Local {
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my @rows = ci->job->find({ mid=>mdb->in($p->{ids}) })->fields({ _id=>-1, status=>1, exec=>1, step=>1, last_log_message=>1 })->sort({ mid=>-1 })->all;
+            my @rows = ci->job->find({ mid=>mdb->in($p->{ids}) })->fields({ _id=>-1, status=>1, exec=>1, step=>1, last_log_message=>1 })->sort({ _seq=>-1 })->all;
             my $data ='';
             map { $data.= join(',', sort(%$_) ) } @rows;  # TODO should use step and exec also
             $magic = Util->_md5( $data );

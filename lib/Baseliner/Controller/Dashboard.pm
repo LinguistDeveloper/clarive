@@ -327,17 +327,17 @@ sub last_jobs : Local {
                         $r->{status} = $status;
                     }
                     # last durantion and top mid
-                    if( !defined $r->{top_mid} || $job->{mid} gt $r->{top_mid} ) {  
+                    if( !defined $r->{top_seq} || $job->{_seq} > $r->{top_seq} ) {  
                         my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
                         $r->{last_duration} = sprintf '%dm %ds', int($secs/60), ($secs % 60);
-                        $r->{top_mid} = $job->{mid};
+                        $r->{top_seq} = $job->{_seq};
                     }
                 }
             }
             
             # now create something we can send to the template
             @datas = sort {
-                $b->{top_mid} <=> $a->{top_mid}
+                $b->{top_seq} <=> $a->{top_seq}
             } map {
                 my $prj = $_;
                 my $bls = $rep{$prj};
@@ -2008,17 +2008,17 @@ sub list_status_changed: Local{
 
     my @status_changes;
     my @mid_topics;
-    my @topics = mdb->activity->find($query)->sort({ ts=>-1 })->all;
+    my @topics = mdb->activity->find($query)->sort({ '$natural'=>-1 })->all;
 
-    map {
+    for( @topics ) {
         my $ed = $_->{vars} ;
         if ( (exists $my_topics{$_->{mid}} || Baseliner->model("Permissions")->is_root( $c->username ) ) && $ed->{old_status} ne $ed->{status}){
             push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $_->{mid} };
             push @mid_topics, $_->{mid};
         }
-    } @topics;
+    }
     
-    @status_changes = sort { $a->{mid} <=> $b->{mid} } @status_changes;
+    @status_changes = reverse @status_changes;
     @mid_topics = _unique @mid_topics ;
     
     my %topics_categories;

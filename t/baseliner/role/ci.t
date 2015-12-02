@@ -204,11 +204,11 @@ subtest 'related cis returns mids only' => sub {
     is ref $rels[0], 'HASH';
 };
 
-subtest 'gen_mid: correctly generated mid' => sub {
+subtest 'gen_mid: correctly generated mid format' => sub {
     _setup();
     
     my $chi = BaselinerX::CI::TestClass->new;
-    like $chi->gen_mid, qr/^TestClass-\d{6}$/ ;
+    like $chi->gen_mid, qr/^TestClass-\d+$/ ;
 
 };
 
@@ -248,6 +248,36 @@ subtest 'ci save: cache is synchronized with latest data' => sub {
     $ci = ci->new( $mid );
     my $ci_cache = cache->get({ d=>'ci', mid=>$mid });
     is $ci_cache->{something}, $ci->something; 
+};
+
+subtest 'ci sequencing saved in new CI' => sub {
+    _setup();
+    
+    my $prev_seq = mdb->seq('ci-seq');
+    my $ci = BaselinerX::CI::TestClass->new();
+    my $mid = $ci->save;
+    $ci = ci->new( $mid );
+    is $ci->_seq, $prev_seq + 1;
+};
+
+subtest 'ci sequencing available immediatly after save' => sub {
+    _setup();
+    
+    my $ci = BaselinerX::CI::TestClass->new();
+    my $mid = $ci->save;
+    ok length $ci->_seq;
+};
+
+subtest 'ci sorting by sequence is correct' => sub {
+    _setup();
+    
+    for my $ii ( 1..11 ) {
+        my $ci = BaselinerX::CI::TestClass->new(something=>$ii);
+        my $mid = $ci->save;
+    }
+    my @cis = ci->TestClass->find->sort({ _seq=>-1 })->all;
+    is $cis[0]->{something}, 11;
+    is $cis[$#cis]->{something}, 1;
 };
 
 sub _setup {

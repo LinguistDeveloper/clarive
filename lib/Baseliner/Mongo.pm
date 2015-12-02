@@ -369,6 +369,7 @@ sub index_all {
         ],
         master => [
             [{ mid=>1 },{ unique=>1 }],
+            [{ _seq=>1 },{ unique=>1 }],
             [{ collection=>1 }],
             [{ name=>1 }],
             [{ moniker=>1 }],
@@ -387,6 +388,7 @@ sub index_all {
         ],
         master_doc => [
             [{ mid=>1 },{ unique=>1 }],
+            [{ _seq=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
             [{ projects=>1 }],

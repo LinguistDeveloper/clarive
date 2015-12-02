@@ -26,6 +26,7 @@ has versionid   => qw(is rw isa Maybe[Str] default 1);
 has moniker     => qw(is rw isa Maybe[Str]);    # lazy 1);#,
 has created_by  => qw(is rw isa Maybe[Str]);
 has modified_by => qw(is rw isa Maybe[Str]);
+has _seq        => qw(is ro isa Num);
     # default=>sub{   
     #     my $self = shift; 
     #     if( ref $self ) {
@@ -125,8 +126,7 @@ sub compare_data{
 sub gen_mid {
     my $self = shift;
     my $coll =  $self->collection;
-
-    return sprintf('%s-%06d',$coll, mdb->seq( "mid-$coll" ));
+    return $coll . '-' . mdb->seq( "mid-$coll" );
 }
 
 sub update {
@@ -206,11 +206,13 @@ sub save {
         event_new 'event.ci.create' => { username => $self->created_by, ci=>$self, ci_data=>\%$self } => sub {
 
             ######## NEW CI
+            my $_seq = 0+mdb->seq('ci-seq');
             $master_row = {
                     collection => $collection,
                     name       => $self->name,
                     ns         => $self->ns,
                     ts         => mdb->ts,
+                    _seq       => $_seq,
                     moniker    => $self->moniker, 
                     bl         => join( ',', Util->_array( $bl ) ),
                     active     => $self->active // 1,
@@ -219,6 +221,7 @@ sub save {
             # update mid into CI
             $mid = length($mid) ? $mid : $self->gen_mid; 
             $self->mid( $mid );
+            $self->{_seq} = $_seq;  # ro attribute
             $$master_row{mid} = $mid;
             # put a default name
             if( !length $self->name ) {

@@ -369,7 +369,7 @@ sub tree_object_depend {
         $dir = 'from_mid';
     }
     my @rels = mdb->master_rel->find_values( $dir => $where);
-    my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _id=>1 });
+    my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _seq=>1 });
     my $total = $rs->count;
     my $cnt = $p{parent} * 10;
     my @tree = map {
