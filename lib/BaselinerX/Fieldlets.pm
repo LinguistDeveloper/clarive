@@ -6,6 +6,15 @@ use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
 
+register 'fieldlet.include_into' => {
+    name        => _loc('Included Into'),
+    html        => '/fields/system/html/field_include_into.html',
+    form        => '/fields/system/config/include_into.js',
+    origin      => 'default',
+    editable    => 0,
+    section_allowed => ['details'],
+};
+
 register 'fieldlet.attach_file' => {
     name        => _loc('Attach Files'),
     html        => '/fields/templates/html/upload_files.html',
@@ -540,16 +549,6 @@ register 'fieldlet.required.modified_on' => {
     editable    => 0,
     field_order => 1,
     meta_type   => 'date',
-};
-
-register 'fieldlet.required.include_into' => {
-    name_field  => _loc('Include into'),
-    html        => '/fields/system/html/field_include_into.html',
-    origin      => 'default',
-    editable    => 0,
-    field_order => 1,
-    id_field    => 'include_into',
-    bd_field    => 'include_into'
 };
 
 # register 'fieldlet.required.progress' => {

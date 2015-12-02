@@ -4,13 +4,12 @@
 </%args>
 
 <%perl>
-    my ($is_release, @parent_topics) = $c->model('Topic')->field_parent_topics($data);
+    my ($is_release, @parent_topics) = $c->model('Topic')->field_parent_topics($meta,$data);
 </%perl>
-
 %  if( @parent_topics ) {
       <ul class="nav nav-list">
         <li class="nav-header">
-            <% $is_release ? _loc("Content") : _loc("Included in") %>
+            <% _loc($meta->{name_field}) %>
         </li>
       </ul>
       <ul class="" style="margin-left: 20px">

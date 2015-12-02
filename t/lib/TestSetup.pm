@@ -86,58 +86,7 @@ sub _topic_setup {
             ts        => '2015-08-06 09:44:30',
             rule_type => "form",
             rule_seq  => $id_rule,
-            rule_tree => JSON::encode_json(
-                [
-                    {
-                        "attributes" => {
-                            "data" => {
-                                "bd_field"     => "id_category_status",
-                                "name_field"   => "Status",
-                                "fieldletType" => "fieldlet.system.status_new",
-                                "id_field"     => "status_new",
-                                "name_field"   => "Status",
-                            },
-                            "key" => "fieldlet.system.status_new",
-                        }
-                    },
-                    {
-                        "attributes" => {
-                            "data" => {
-                                "bd_field"     => "project",
-                                "fieldletType" => "fieldlet.system.projects",
-                                "id_field"     => "project",
-                                "name_field"   => "Project",
-                            },
-                            "key" => "fieldlet.system.projects",
-                        }
-                    },
-                    {
-                        "attributes" => {
-                            "data" => {
-                                "bd_field"      => "parent",
-                                "fieldletType"  => "fieldlet.system.list_topics",
-                                "parent_field"  => "children",
-                                "id_field"      => "parent",
-                                "name_field"    => "Parent topics",
-                                "editable"      => "1",
-                            },
-                            "key" => "fieldlet.system.list_topics",
-                        }
-                    },
-                    {
-                        "attributes" => {
-                            "data" => {
-                                "bd_field"      => "children",
-                                "fieldletType"  => "fieldlet.system.list_topics",
-                                "id_field"      => "parent",
-                                "name_field"    => "Child topics",
-                                "editable"      => "1",
-                            },
-                            "key" => "fieldlet.system.list_topics",
-                        }
-                    }
-                ]
-            )
+            rule_tree => JSON::encode_json(_fieldlets())
         }
     );
 
@@ -153,9 +102,71 @@ sub _topic_setup {
         'category'   => "$cat_id",
         'status_new' => "$status_id",
         'status'     => "$status_id",
+        id_rule      => "$id_rule",
         'category_status' => { id=>"$status_id" },
     };
+}
 
+sub _topic_release_category {
+    my $self = shift;
+    my ($base_params) = @_;
+    my $cat_id = mdb->seq('id');
+    mdb->category->insert(
+        { id => "$cat_id", name => 'Release', is_release=>"1", statuses => [$base_params->{status}], default_form => "$base_params->{id_rule}" } );
+    return $cat_id;
+}
+
+sub _fieldlets {
+    return [
+        {
+            "attributes" => {
+                "data" => {
+                    "bd_field"     => "id_category_status",
+                    "name_field"   => "Status",
+                    "fieldletType" => "fieldlet.system.status_new",
+                    "id_field"     => "status_new",
+                    "name_field"   => "Status",
+                },
+                "key" => "fieldlet.system.status_new",
+            }
+        },
+        {
+            "attributes" => {
+                "data" => {
+                    "bd_field"     => "project",
+                    "fieldletType" => "fieldlet.system.projects",
+                    "id_field"     => "project",
+                    "name_field"   => "Project",
+                },
+                "key" => "fieldlet.system.projects",
+            }
+        },
+        {
+            "attributes" => {
+                "data" => {
+                    "bd_field"      => "parent",
+                    "fieldletType"  => "fieldlet.system.list_topics",
+                    "parent_field"  => "children",
+                    "id_field"      => "parent",
+                    "name_field"    => "Parent topics",
+                    "editable"      => "1",
+                },
+                "key" => "fieldlet.system.list_topics",
+            }
+        },
+        {
+            "attributes" => {
+                "data" => {
+                    "bd_field"      => "children",
+                    "fieldletType"  => "fieldlet.system.list_topics",
+                    "id_field"      => "parent",
+                    "name_field"    => "Child topics",
+                    "editable"      => "1",
+                },
+                "key" => "fieldlet.system.list_topics",
+            }
+        }
+    ];
 }
 
 sub _setup_label {

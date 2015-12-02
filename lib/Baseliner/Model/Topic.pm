@@ -890,23 +890,23 @@ sub append_category {
 
 # used by field_include_into.html fieldlet
 sub field_parent_topics {
-    my ($self,$data)=@_;
+    my ($self,$meta,$data)=@_;
     my $is_release = 0;
     my @parent_topics;
 
     my $category = $data->{category};
     my $release = $category->{is_release};
+    my $include_options = $meta->{include_options} || 'all_parents';
     my $id_category = $category->{id};
-    my $cat_doc = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
-
+    my @all_fieldlets = $self->get_fieldlet_nodes($id_category);
     my @fieldlets =
         map {
             $_->{id_field}
         }
         grep {
             my $params = $_->{params};
-            $params->{origin} ne "system"
-        } _array( $cat_doc->{fieldlets} );
+            !defined $params->{origin} || $params->{origin} ne "system"
+        } @all_fieldlets;
 
     push @fieldlets, map {
             my $params = $_->{params};
@@ -915,7 +915,13 @@ sub field_parent_topics {
         grep {
             my $params = $_->{params};
             $params->{parent_field};
-        } _array( $cat_doc->{fieldlets} );
+        } @all_fieldlets;
+
+    my $includes = $include_options eq 'none' ? { '$and' => [{ is_release => {'$ne'=>'1'} }, { is_changeset => {'$ne'=>'1'} }] }
+                     : $include_options eq 'no_changesets' ? { is_changeset => {'$ne'=>'1'} }
+                     : $include_options eq 'no_releases' ? { is_release => {'$ne'=>'1'} }
+                     : $include_options eq 'changesets_and_releases' ? { '$or' => [{ is_changeset => '1' }, { is_release => '1' }] }
+                     : $include_options eq 'all_parents' ? {} : {};
 
     if ($release) {
         $is_release     = 1;
@@ -925,10 +931,9 @@ sub field_parent_topics {
                 from_mid => $data->{topic_mid},
                 '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
-            to_mid => mid => topic => { '$or' => [ { is_changeset => '1' }, { is_release => '1' } ] }
+            to_mid => mid => topic => $includes
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
         @parent_topics = $self->append_category(@parent_topics);
-
     } else {
         @parent_topics = mdb->joins(
             master_rel => {
@@ -937,7 +942,7 @@ sub field_parent_topics {
                 '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ],
                 #'$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
-            from_mid => mid => topic => { '$or' => [ { is_release => { '$ne' => '1' } } ] }
+            from_mid => mid => topic => $includes
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
         @parent_topics = $self->append_category(@parent_topics);
     }

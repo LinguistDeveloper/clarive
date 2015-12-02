@@ -79,6 +79,53 @@ subtest 'get_short_name: returns auto acronym when does not exist removing speci
     is $topic->get_short_name(name => 'C123A##TegoRY'), 'CATRY';
 };
 
+subtest 'get meta returns meta fields' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my $meta = Baseliner::Model::Topic->new->get_meta( $topic_mid );
+
+    is ref $meta, 'ARRAY';
+
+    my $fieldlets = TestSetup->_fieldlets();
+    my @fields = map { $$_{attributes}{data}{id_field} } @$fieldlets;
+    my @fields_from_meta = map { $$_{id_field} } @$meta;
+    is_deeply \@fields_from_meta, ['category',@fields];
+};
+
+subtest 'include into fieldlet gets its topic list' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid2 ) = Baseliner::Model::Topic->new->update({ %$base_params, parent=>$topic_mid, action=>'add' });
+    my $field_meta = { include_options=>'all_parents' }; 
+    my $data = { category=>{ is_release=>0, id=>$base_params->{category} }, topic_mid=>$topic_mid2 }; 
+    my ($is_release, @parent_topics) = Baseliner::Model::Topic->field_parent_topics($field_meta,$data);
+
+    ok scalar @parent_topics == 1;
+    is $parent_topics[0]->{mid}, $topic_mid;
+};
+
+subtest 'include into fieldlet filters out releases' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my $rel_cat = TestSetup->_topic_release_category($base_params);
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, category=>$rel_cat, action=>'add' });
+    my ( undef, $topic_mid2 ) = Baseliner::Model::Topic->new->update({ %$base_params, parent=>$topic_mid, action=>'add' });
+
+    my $field_meta = { include_options=>'none' }; 
+    my $data = { category=>{ is_release=>0, id=>$base_params->{category} }, topic_mid=>$topic_mid2 }; 
+    my ($is_release, @parent_topics) = Baseliner::Model::Topic->field_parent_topics($field_meta,$data);
+
+    ok scalar @parent_topics == 0;
+};
+
 done_testing();
 
 sub _setup {
