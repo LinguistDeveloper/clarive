@@ -6,19 +6,22 @@ index: 30
 Before you can log in to Clarive, your Clarive Administrator must add you as a User of Clarive. 
 Your Clarive Administrator will then notify you of your login information consisting of:
 
-- Username – The Username is in email address format, and is not case-sensitive.
-- Password – The Password is case-sensitive.
+- **Username** – The Username is in email address format, and is not case-sensitive.
+- **Password** – The Password is case-sensitive.
 
 You can easily change your password from your user preferences page.
 
 **Note**: typically, Administrators will disable your password changing priviledges 
 when single signon or LDAP/SAML authentication is enabled. 
 
+<br />
+
 ## External Login 
 
 If you wish to log into Clarive directly from your company portal, 
 or from another web page that is external to Clarive, you may use this 
 HTML code as a template to create your login form:
+
 
 <textarea style="height: 250px; width: 100%">
     &lt;form action="https://clariveserver:port/login" method="POST"&gt;<br />

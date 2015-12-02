@@ -3,6 +3,7 @@ title: Search Syntax
 index: 2000
 ---
 
+
 Most of Clarive's lists and reports have search boxes. Terms
 introduced in the search boxes are case insentive and represent an OR search.
 For example a search for the following terms:
@@ -40,8 +41,10 @@ In summary, here's a sample of supported search syntax:
     +term1 -term2  - must have term1 but not term2
     /term regex.*/  - regular expression
 
+<br />
 
-### Field searching
+
+## Field searching
 
 Clarive supports also a limited set of 
 field searches. Field searches search only specified fields.
@@ -50,3 +53,9 @@ field searches. Field searches search only specified fields.
 
 Searches only the "QA Done" status.
 
+
+The tool also allows the use of hash for a directly access to a specific topic.
+
+    #123456
+
+Goes directly to the specific topic.

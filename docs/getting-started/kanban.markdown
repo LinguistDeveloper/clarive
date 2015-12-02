@@ -13,6 +13,7 @@ generator utility that is available from 2 places:
 The kanban board can be opened by clicking on the following icon: 
 <img src="/static/images/icons/kanban.png" />
 
+<br />
 ## How does it work?
 
 Clarive Kanban boards always start from either a list of topics (from the grid)
@@ -27,6 +28,7 @@ To change the status of a topic, just drag and drop the status. Only allowed sta
 are displayed. When a topic is dropped into another status column, that becomes 
 the topic new status. 
 
+<br />
 ## Promote / Demote to Environments
 
 Statuses that are tied to environments have the environment name(s) on top. 
@@ -36,6 +38,7 @@ popup. Schedule the job accordingly. When the job runs, the pipeline will take
 care of deploying the changeset contents and promoting the topics into (or demoting
 them out of) the destination evnironment and corresponding status. 
 
+<br />
 ## Customizing the Kanban Board
 
 Kanban boards can be customized by adding or removing status columns. 
