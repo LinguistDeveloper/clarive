@@ -879,7 +879,7 @@ sub export : Local {
     $c->forward('View::JSON');  
 }
 
-sub import : Local {
+sub import_category : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
