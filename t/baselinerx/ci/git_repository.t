@@ -379,7 +379,7 @@ subtest 'update_baselines: updates tags for every project' => sub {
     my $new_sha = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
     $ci->update_baselines(
-        job       => { projects => [ { name => 'project', repositories => [ $ci->mid ] } ] },
+        job       => { projects => [ { name => 'project', repositories => [ {mid => $ci->mid} ] } ] },
         tag       => 'TEST',
         type      => 'promote',
         revisions => [],
@@ -408,7 +408,7 @@ subtest 'update_baselines: updates tags only for project related to the reposito
     _git_commit($repo_dir);
 
     $ci->update_baselines(
-        job       => { projects => [ { name => 'project', repositories => [ $ci->mid ] }, { name => 'other' } ] },
+        job       => { projects => [ { name => 'project', repositories => [ {mid => $ci->mid} ] }, { name => 'other' } ] },
         tag       => 'TEST',
         type      => 'static',
         revisions => [],

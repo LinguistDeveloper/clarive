@@ -349,7 +349,7 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
             foreach my $project ( _array( $job->{projects} ) ) {
                 next
                   unless $project->{repositories}
-                  && grep { $self->mid eq $_ } @{ $project->{repositories} };
+                  && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
 
                 push @project_names, $project->{name};
             }
