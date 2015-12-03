@@ -2266,7 +2266,7 @@ sub stat_mode {
 sub hide_passwords {
     my ($string) = @_;
 
-    my @patterns = split "\n", Baseliner->model('ConfigStore')->get('config.global')->{password_patterns};
+    my @patterns = split "\n", BaselinerX::Type::Model::ConfigStore->get('config.global')->{password_patterns};
     for my $line ( @patterns ) {
         my ($pattern,$replace) = split /\|\|/,$line;
         $replace //= '';
