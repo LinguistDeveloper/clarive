@@ -251,7 +251,10 @@ sub checkout {
     my $dir  = $p{dir} // _fail 'Missing parameter dir'; 
     my $tag  = $p{tag} // _fail 'Missing parameter tag';
 
-    $tag = sprintf( '%s-%s', $p{project}, $tag) if $self->tags_mode eq 'project';
+    if ($self->tags_mode eq 'project') {
+        my $project = $p{project} or _fail 'project required';
+        $tag = sprintf( '%s-%s', $project, $tag) ;
+    }
 
     #my $path = $self->path;
     my $git = $self->git;

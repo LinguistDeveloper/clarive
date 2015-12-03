@@ -379,7 +379,7 @@ subtest 'update_baselines: updates tags for every project' => sub {
     my $new_sha = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
     $ci->update_baselines(
-        job       => { projects => [ { name => 'project', repositories => [ {mid => $ci->mid} ] } ] },
+        job       => { projects => [ { name => 'project', repositories => [ { mid => $ci->mid } ] } ] },
         tag       => 'TEST',
         type      => 'promote',
         revisions => [],
@@ -408,9 +408,9 @@ subtest 'update_baselines: updates tags only for project related to the reposito
     _git_commit($repo_dir);
 
     $ci->update_baselines(
-        job       => { projects => [ { name => 'project', repositories => [ {mid => $ci->mid} ] }, { name => 'other' } ] },
-        tag       => 'TEST',
-        type      => 'static',
+        job  => { projects => [ { name => 'project', repositories => [ { mid => $ci->mid } ] }, { name => 'other' } ] },
+        tag  => 'TEST',
+        type => 'static',
         revisions => [],
         ref       => $sha
     );
@@ -605,39 +605,39 @@ subtest 'group_items_for_revisions: returns top revision items' => sub {
     my $repo_dir = _create_repo();
     my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
     _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
-    $sha = TestUtils->create_ci( 'GitRevision', sha => $sha, repo => $repo );
+    $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
     $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
 
     my $ci = TestUtils->create_ci('topic');
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions(revisions => [$sha, $sha2], tag => 'TEST');
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
     is $item->status, 'M';
-    is $item->path, '/README';
+    is $item->path,   '/README';
 };
 
 subtest 'group_items_for_revisions: throws when no project in project tags_mode' => sub {
     _setup();
 
     my $repo_dir = _create_repo();
-    my $repo = _create_git_repository_ci(
+    my $repo     = _create_git_repository_ci(
         repo_dir      => "$repo_dir/.git",
         name          => 'repo',
         revision_mode => 'diff',
         tags_mode     => 'project'
     );
 
-    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
     _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
     like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
       qr/project is required/;
@@ -654,11 +654,11 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
         tags_mode     => 'project',
     );
 
-    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
     _git_tag( $repo_dir, 'Project-TEST' );
-    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
-    $sha = TestUtils->create_ci( 'GitRevision', sha => $sha, repo => $repo );
+    $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
     $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
 
     my $ci = TestUtils->create_ci('topic');
@@ -670,7 +670,186 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
 
     my $item = $items[0];
     is $item->status, 'M';
-    is $item->path, '/README';
+    is $item->path,   '/README';
+};
+
+subtest 'checkout: checkouts items into directory' => sub {
+    _setup();
+
+    my $dir = tempdir();
+
+    my $repo_dir = _create_repo();
+    my $repo     = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+    );
+
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
+    _git_tag( $repo_dir, 'TEST' );
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+
+    $repo->checkout( dir => $dir, tag => 'TEST' );
+
+    opendir( my $dh, $dir ) || die "can't opendir $dir $!";
+    my @files = grep { !/^\./ } readdir($dh);
+    closedir $dh;
+
+    is_deeply \@files, ['README'];
+};
+
+subtest 'checkout: returns checked out items' => sub {
+    _setup();
+
+    my $dir = tempdir();
+
+    my $repo_dir = _create_repo();
+    my $repo     = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+    );
+
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
+    _git_tag( $repo_dir, 'TEST' );
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+
+    my $retval = $repo->checkout( dir => $dir, tag => 'TEST' );
+
+    cmp_deeply $retval,
+      {
+        'ls'     => [ re(qr/100644 blob f599e28\s+3\s+README/) ],
+        'output' => undef
+      };
+};
+
+subtest 'checkout: throws when no project passed in project tags_mode' => sub {
+    _setup();
+
+    my $dir = tempdir();
+
+    my $repo_dir = _create_repo();
+    my $repo     = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+        tags_mode     => 'project'
+    );
+
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
+    _git_tag( $repo_dir, 'Project-TEST' );
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+
+    like exception { $repo->checkout( dir => $dir, tag => 'Project-TEST' ) }, qr/project required/;
+};
+
+subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
+    _setup();
+
+    my $dir = tempdir();
+
+    my $repo_dir = _create_repo();
+    my $repo     = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+        tag_mode      => 'project'
+    );
+
+    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
+    _git_tag( $repo_dir, 'Project-TEST' );
+    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+
+    $repo->checkout( dir => $dir, tag => 'Project-TEST', project => 'Project' );
+
+    opendir( my $dh, $dir ) || die "can't opendir $dir $!";
+    my @files = grep { !/^\./ } readdir($dh);
+    closedir $dh;
+
+    is_deeply \@files, ['README'];
+};
+
+subtest 'list_branches: returns branches' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my @branches = $repo->list_branches( project => 'Project' );
+
+    is scalar @branches, 1;
+
+    is $branches[0]->name, 'master';
+    is $branches[0]->head->commit->message, 'third';
+};
+
+subtest 'list_branches: excludes branch names' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => 'new' );
+    system( sprintf "cd %s; cd ..; git checkout -b new 2> /dev/null", $repo->repo_dir );
+
+    my @branches = $repo->list_branches( project => 'Project' );
+
+    is scalar @branches, 1;
+
+    is $branches[0]->name, 'master';
+};
+
+subtest 'list_branches: includes branch names' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+
+    system( sprintf "cd %s; cd ..; git checkout -b new 2> /dev/null",  $repo->repo_dir );
+    system( sprintf "cd %s; cd ..; git checkout -b new2 2> /dev/null", $repo->repo_dir );
+
+    my @branches = $repo->list_branches( project => 'Project' );
+
+    is scalar @branches, 1;
+
+    is $branches[0]->name, 'new2';
+};
+
+subtest 'commits_for_branch: returns commits by tag' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+    system( sprintf "cd %s; cd ..; git co HEAD^ 2> /dev/null; git tag TEST 2> /dev/null", $repo->repo_dir );
+
+    my @commits = $repo->commits_for_branch( tag => 'TEST', branch => 'master' );
+    is scalar @commits, 2;
+    like $commits[0], qr/^[a-z0-9]{40} third$/;
+    like $commits[1], qr/^[a-z0-9]{40} second$/;
+};
+
+subtest 'commits_for_branch: get tag from bl when not present' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+    system( sprintf "cd %s; cd ..; git co HEAD^ 2> /dev/null; git tag TEST 2> /dev/null", $repo->repo_dir );
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my @commits = $repo->commits_for_branch( branch => 'master' );
+    is scalar @commits, 2;
+    like $commits[0], qr/^[a-z0-9]{40} third$/;
+    like $commits[1], qr/^[a-z0-9]{40} second$/;
+};
+
+subtest 'commits_for_branch: throws when no tag present' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+
+    like exception { $repo->commits_for_branch( tag => 'UNKNOWN', branch => 'master' ) }, qr/could not find tag/;
+};
+
+subtest 'commits_for_branch: throws when no tags present' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+
+    like exception { $repo->commits_for_branch( branch => 'master' ) }, qr/could not find tag/;
 };
 
 done_testing;
