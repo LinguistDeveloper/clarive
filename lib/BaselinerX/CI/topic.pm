@@ -7,7 +7,6 @@ with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
 has id_category => qw(is rw isa Any);
-has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
 has name_category    => qw(is rw isa Any);
 has id_category_status => qw(is rw isa Any);
@@ -29,6 +28,11 @@ sub rel_type {
 
 
 sub icon { '/static/images/icons/topic.png' }
+
+before save => sub {
+    my ($self, $master_row, $data ) = @_;
+    $self->name( $self->title );
+};
 
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
