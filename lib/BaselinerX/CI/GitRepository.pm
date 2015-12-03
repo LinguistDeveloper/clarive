@@ -117,9 +117,12 @@ sub group_items_for_revisions {
         my $bl = $p{tag};
         my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
 
-        $tag = sprintf( '%s-%s', $p{project}, $tag) if $self->tags_mode eq 'project';
+        if ($self->tags_mode eq 'project') {
+            my $project = $p{project} or _fail 'project is required';
+            $tag = sprintf( '%s-%s', $project, $tag);
+        }
 
-        my $top_rev = $self->top_revision( revisions=>$revisions, type=>$p{type}, tag=>$tag );
+        my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {
             _fail(_loc('Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag))
         }

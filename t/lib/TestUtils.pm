@@ -16,7 +16,7 @@ use Clarive::ci;
 use Time::Local;
 use Time::Piece;
 use Test::MockTime qw(set_absolute_time restore_time);
-use File::Temp qw(tempdir);
+use Test::TempDir::Tiny;
 
 sub cleanup_cis {
     my $class = shift;
@@ -77,7 +77,7 @@ sub create_ci_topic {
 sub create_ci_GitRepository {
     my $class = shift;
 
-    my $dir = tempdir( CLEANUP => 1 );
+    my $dir = tempdir();
 
     system("cd $dir; git init; touch README; git add .; git commit -m 'initial'");
     system("cd $dir; echo 'second' > README; git commit -am 'second'");

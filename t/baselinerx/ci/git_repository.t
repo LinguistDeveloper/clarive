@@ -599,6 +599,80 @@ subtest 'top_revision: throws when unknown tag' => sub {
       qr/Error: tag `UNKNOWN` not found in repository repo/;
 };
 
+subtest 'group_items_for_revisions: returns top revision items' => sub {
+    _setup();
+
+    my $repo_dir = _create_repo();
+    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+
+    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    _git_tag( $repo_dir, 'TEST' );
+    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+
+    $sha = TestUtils->create_ci( 'GitRevision', sha => $sha, repo => $repo );
+    $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
+
+    my $ci = TestUtils->create_ci('topic');
+    mdb->master_rel->insert(
+        { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my @items = $repo->group_items_for_revisions(revisions => [$sha, $sha2], tag => 'TEST');
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'M';
+    is $item->path, '/README';
+};
+
+subtest 'group_items_for_revisions: throws when no project in project tags_mode' => sub {
+    _setup();
+
+    my $repo_dir = _create_repo();
+    my $repo = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+        tags_mode     => 'project'
+    );
+
+    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    _git_tag( $repo_dir, 'TEST' );
+    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+
+    like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
+      qr/project is required/;
+};
+
+subtest 'group_items_for_revisions: returns top revision items in project mode' => sub {
+    _setup();
+
+    my $repo_dir = _create_repo();
+    my $repo     = _create_git_repository_ci(
+        repo_dir      => "$repo_dir/.git",
+        name          => 'repo',
+        revision_mode => 'diff',
+        tags_mode     => 'project',
+    );
+
+    my $sha = _git_commit($repo_dir, '2015-01-01 00:00:00');
+    _git_tag( $repo_dir, 'Project-TEST' );
+    my $sha2 = _git_commit($repo_dir, '2015-01-01 00:00:01');
+
+    $sha = TestUtils->create_ci( 'GitRevision', sha => $sha, repo => $repo );
+    $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
+
+    my $ci = TestUtils->create_ci('topic');
+    mdb->master_rel->insert(
+        { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST', project => 'Project' );
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'M';
+    is $item->path, '/README';
+};
+
 done_testing;
 
 sub _git_tags {
