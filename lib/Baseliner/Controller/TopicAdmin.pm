@@ -161,8 +161,15 @@ sub list_status : Local {
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
     $dir = $dir && $dir =~ /desc/i ? -1 : 1;
     $sort ||= 'seq';
-    my @query = split '\s',$p->{query} if($p->{query});
-    my $query = $p->{query} ? { '$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }] } : {};
+
+    my @query = map{$_->{statuses}} mdb->category->find_one({name=>$p->{category}},{statuses=>1, _id=>0}) if($p->{category});
+    my $query = $p->{category} ? { '$and' => [{ id_status => mdb->in(@query)} ] } : {};
+    if($p->{query}){
+        @query = split '\s',$p->{query} if($p->{query});
+        $query = %$query ?
+             { '$and' => $query->{'$and'}, '$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }] }
+            :{'$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }]};
+    }
     my $row;
     my @rows;
     $row = ci->status->find( $query );

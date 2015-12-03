@@ -119,7 +119,7 @@
                     hiddenName: 'value',
                     value: attr.value, 
                     singleMode: false, 
-                    store: new Baseliner.Topic.StoreStatus() 
+                    store: new Baseliner.Topic.StoreStatus({ baseParams: { sort : 'name', category: pn.attributes.category } })
                 });
                 //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
                 oper_by_type = oper_in;
