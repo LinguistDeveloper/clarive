@@ -384,6 +384,8 @@ sub _setup {
     TestUtils->cleanup_cis;
 
     mdb->rule->drop;
+    mdb->topic->drop;
+    mdb->category->drop;
 
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'Baseliner::Model::Jobs' );
 }
