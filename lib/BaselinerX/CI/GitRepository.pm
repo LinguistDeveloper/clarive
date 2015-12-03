@@ -148,10 +148,10 @@ method verify_revisions( :$revisions, :$tag, :$type='promote' ) {
 
 method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     my $git = $self->git;
-    
-    my @revisions = _array( $revisions );
+
+    my @revisions = _array($revisions) or _fail 'Error: No revisions passed';
     my $top_rev;
-    
+
     my %shas = map { 
         # make sure every sha is there, for better error messaging
         my $sha = $_->{sha};
@@ -160,26 +160,36 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         $long => $_;
     } @revisions; 
     _debug "looking for top revision among shas: " . join ',', keys %shas;
+
     # get the tag sha
-    my $tag_sha = $git->exec( 'rev-parse', $tag );
+    my $tag_sha = try {
+        $git->exec( 'rev-parse', $tag );
+    }
+    catch {
+        _fail _loc("Error: tag `%1` not found in repository %2", $tag, $self->name)
+    };
+
     # get an ordered list, with the tag in the middle
     my @sorted = $git->exec( 'rev-list', '--no-walk=sorted', keys %shas, $tag_sha );
     _fail _loc "None of the given revisions are in the repository: %1", join(', ', keys %shas)
          unless @sorted;
+
     # index
     my $k=1;
     my %by_sha = map { $_ => $k++ } @sorted;
     $k=1;
     my %by_pos = map { $k++ => $_ } @sorted;
-    
+
     if( !exists $by_sha{ $tag_sha} ) {
         _fail _loc "Could not find tag %1 (sha %2) in repository", $tag, $tag_sha;
     }
-    
+
     if( $type eq 'promote' ) {
         my $first_sha = $by_pos{1};
         _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha if $first_sha eq $tag_sha;
-        $top_rev = $shas{ $first_sha } // $first_sha;
+        $top_rev = $shas{ $first_sha } // do {
+                BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
+        }
     }
     elsif( $type eq 'static' ) {
         my $first_sha = $by_pos{1};
@@ -187,24 +197,27 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     }
     elsif( $type eq 'demote' ) {
         my $last_sha = $by_pos{ scalar @sorted };
-        if( my $before_last = $git->exec( 'rev-parse', $last_sha . '~1' ) ) {
-            _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha if $before_last eq $tag_sha;
-            $top_rev = $shas{ $last_sha } // do {
-                BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>ci->new($self) );
-            };
-        } else {
-            _warn _loc "Trying to demote all revisions in a repository, can't set tag %1 before %2", $tag, substr($last_sha,0,7);
-            $top_rev = undef;
-        }
+
+        my $before_last = try {
+            $git->exec( 'rev-parse', $last_sha . '~1' );
+        } catch {
+            _fail _loc "Trying to demote all revisions in a repository, can't set tag %1 before %2", $tag,
+              substr( $last_sha, 0, 7 );
+        };
+
+        _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha if $before_last eq $tag_sha;
+        $top_rev = $shas{ $last_sha } // do {
+            BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>ci->new($self) );
+        };
     }
-    
+
     if ( $top_rev &&  $check_history ) {
         my ($orig, $dest) = $type eq 'demote'
            ? ($top_rev->{sha}, $tag_sha)
            : ($tag_sha, $top_rev->{sha});
 
         _debug _loc("Looking for common history between %1 and %2", $orig, $dest);
-        
+
         try {
             $git->exec( 'merge-base', '--is-ancestor', $orig, $dest);
         } catch {

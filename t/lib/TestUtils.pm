@@ -99,6 +99,20 @@ sub setup_registry {
     $class->reload_module($_) for @modules;
 }
 
+sub random_string {
+    my $class = shift;
+    my ($len) = @_;
+
+    $len ||= 10;
+
+    my @alpha = ('0' .. '9', 'a' .. 'z');
+
+    my $text = '';
+    $text .= $alpha[int(rand(@alpha))] for 1 .. $len;
+
+    return $len;
+}
+
 sub mock_catalyst_req {
     FakeRequest->new(@_);
 }
