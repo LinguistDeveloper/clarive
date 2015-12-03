@@ -1258,6 +1258,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             Cla.use('/static/gojs/go-debug.js', function(){
                 self.w = new Ext.Panel({
                     layout: 'card',  
+                    background: "#000000",
                     activeItem: 0,
                     items: [res]
                 });

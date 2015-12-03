@@ -10,7 +10,8 @@ var rol_text= false;
 var rol_source = false;
 var rol_color = false;
 
-var is_click = 0;
+//var diagram;
+//var overview;
 
 id_category = params.id_category;
 
@@ -41,7 +42,7 @@ var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_genera
 
 //Role Button
 var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, toggleGroup: 'process-'+iid, handler: function(){
-    rol(diagram, overview);
+	rol(diagram, overview);
     menu_general.hide();
     menu_role.show();
 }});
@@ -54,6 +55,7 @@ var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
 //Zoom -
 var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
     diagram.commandHandler.decreaseZoom();
+
 }});
 
 // Option menu to General Button
@@ -141,6 +143,7 @@ var menu_role = new Ext.Button({
     var pn_diagram = new Ext.Panel({
         html: 'Diagram',
         anchor: '100% 100%',
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
         tbar:[ btn_general, btn_role, '-', menu_general, menu_role, btn_decreaseZoom, btn_increaseZoom] 
     });
 
@@ -148,7 +151,8 @@ var menu_role = new Ext.Button({
     var pn_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
-        bodyStyle:{"z-index":10},
+        bodyStyle:"z-index:10", 
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
         floating: true,
         height: 250,
         width: 250,        
@@ -165,16 +169,16 @@ var menu_role = new Ext.Button({
     var init_overview = function(){
 
         var go_api;
-        var diagram;
-
-        var overview;
+        //var diagram;
+    		//console.log("mas cuertpos "+pn_diagram.body.id);
+        //var overview;
         go_api = go.GraphObject.make;
-        diagram = go_api(go.Diagram, pn_diagram.body.id, {
+        var diagram = go_api(go.Diagram, pn_diagram.body.id, {
           initialContentAlignment: go.Spot.Center, 
           allowDelete: false
         });
 
-        overview = go_api(go.Overview, pn_overview.body.id, { 
+        var overview = go_api(go.Overview, pn_overview.body.id, { 
           observed: diagram, contentAlignment: go.Spot.Center 
         });   
 
@@ -871,15 +875,15 @@ var menu_role = new Ext.Button({
 
     // highlight all Links and Nodes coming out of a given Node
     var showConnections = function(node) {
-      var diagram = node.diagram;
-      diagram.startTransaction("highlight");
+      var diagram_node = node.diagram;
+      diagram_node.startTransaction("highlight");
       // remove any previous highlighting
-      diagram.clearHighlighteds();
+      diagram_node.clearHighlighteds();
       // for each Link coming out of the Node, set Link.isHighlighted
       node.findLinksOutOf().each(function(l) { l.isHighlighted = true; });
       // for each Node destination for the Node, set Node.isHighlighted
       node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
-      diagram.commitTransaction("highlight");
+      diagram_node.commitTransaction("highlight");
     };
 
     //Function make the oposite color to the background
