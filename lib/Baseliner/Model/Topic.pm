@@ -337,7 +337,7 @@ sub build_sort {
     return $order_by;
 }
 
-sub run_query_builder_return_where {
+sub build_where_clause_with_reg_exp {
     my ($self,$query,$username) = @_;
     my $where = {};
     $self->run_query_builder($query,$where,$username);

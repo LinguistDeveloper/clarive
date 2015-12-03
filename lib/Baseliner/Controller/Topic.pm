@@ -2177,7 +2177,7 @@ sub grid_count : Local {
     my $p = $c->req->params;
     if( my $lq = $p->{lq} ) {
         if($lq->{'$and'}){  
-            my $where = Baseliner->model('Topic')->run_query_builder_return_where($p->{query}, $p->{username});
+            my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username});
             $lq->{'$and'} = $where->{'$and'};
         }
         my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
