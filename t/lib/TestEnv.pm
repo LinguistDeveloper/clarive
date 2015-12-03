@@ -34,8 +34,10 @@ BEGIN {
 }
 
 sub setup {
+    my $class = shift;
+    my %opts = @_;
     require Clarive::App;
-    $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml" );
+    $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
     require Clarive::mdb;
     require Clarive::model;
     require Clarive::cache;
