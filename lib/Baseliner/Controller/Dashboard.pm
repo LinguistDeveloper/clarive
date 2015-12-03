@@ -234,7 +234,7 @@ sub list_jobs: Local {
         }
 
         if ( $topic_mid ) {
-            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
             $where->{changesets} = mdb->in(@related_topics);
         }
 
@@ -294,7 +294,7 @@ sub last_jobs : Local {
         }
         
         if ( $topic_mid ) {
-            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
             $where->{changesets} = mdb->in(@related_topics);
         }
         
@@ -1276,7 +1276,7 @@ sub list_topics: Local {
     
     if ( $topic_mid ) {
         my $ci = ci->new($topic_mid);
-        my @related_topics = map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1, depth => 5) if $ci;
+        my @related_topics = map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1, depth => 0) if $ci;
         if ( @related_topics ) {
             $complete_parms->{topic_list} = \@related_topics;
         } else {
@@ -1602,7 +1602,7 @@ sub list_baseline : Local {
             'endtime'    => { '$gte' => '' . $date_str }
         };
 
-        my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+        my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
         if ( $topic_mid ) {
             $where->{changesets} = mdb->in(@related_topics);
         }
