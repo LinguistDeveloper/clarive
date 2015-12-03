@@ -33,7 +33,7 @@ sub unquote {
         return $seq;
     }
 
-    if ( $str =~ m/^"(.*)"$/ ) {
+    if ( $str && $str =~ m/^"(.*)"$/ ) {
 
         # needs unquoting
         $str = $1;
