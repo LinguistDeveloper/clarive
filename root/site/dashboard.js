@@ -16,7 +16,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         self.dashlets = {};
         var id_class = 'dashboard-' + self.body.id;
         var dashlet_tpl=function(){/*            
-            <td id="[%= id_div %]_td" rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;'>
+            <td id="[%= id_div %]_td" rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;text-align:top;vertical-align:top;'>
               <div style='width: 100%;background-color: #FFF;border-radius: 25px;'>
                 <div id="boot" style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
                     <table width='100%'>
@@ -36,7 +36,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 </div>
                 <div id="[%= no_boot=="1" ? 'no-' : '' %]boot">
                     <div id="[%= id_div %]" 
-                        style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;text-align:center;vertical-align:middle;" 
+                        style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;" 
                         onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
                     </div>
                 </div>
