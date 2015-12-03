@@ -337,6 +337,13 @@ sub build_sort {
     return $order_by;
 }
 
+sub run_query_builder_return_where {
+    my ($self,$query,$username) = @_;
+    my $where = {};
+    $self->run_query_builder($query,$where,$username);
+    return $where;
+}
+
 sub run_query_builder {
     my ($self,$query,$where,$username, %opts) = @_;
     my @mids_in;
@@ -605,7 +612,7 @@ sub topics_for_user {
             }
         };
     }
-    return { count=>$cnt, last_query=>$where, sort=>$order_by }, @rows ;
+    return { count=>$cnt, last_query=>$where, sort=>$order_by, query=>$query }, @rows ;
 }
 
 
