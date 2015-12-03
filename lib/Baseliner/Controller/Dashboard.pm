@@ -1602,8 +1602,9 @@ sub list_baseline : Local {
             'endtime'    => { '$gte' => '' . $date_str }
         };
 
-        my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
+        my @related_topics = ();
         if ( $topic_mid ) {
+            @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
             $where->{changesets} = mdb->in(@related_topics);
         }
         
