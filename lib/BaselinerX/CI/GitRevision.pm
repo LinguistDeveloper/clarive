@@ -1,6 +1,7 @@
 package BaselinerX::CI::GitRevision;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _array);
+use BaselinerX::CI::GitItem;
 require Girl;
 use Baseliner::Utils;
 with 'Baseliner::Role::CI::Revision';
@@ -89,7 +90,7 @@ sub items {
                 if ( scalar(@topics) eq 0 ) {
                     _fail _loc("No changesets for this sha");
                 } elsif ( scalar(@topics) gt 1 ) {
-                    _fail _("This sha is contained in more than one changeset");
+                    _fail _loc("This sha is contained in more than one changeset");
                 }
                 my $cs = $topics[0];
 
@@ -122,16 +123,18 @@ sub items {
                         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
                         $diff_shas = [ $tag_sha, $rev_sha ];
                     } else {
-                        _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
-                        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-                        @items = map { my $item = 'M   ' . $_; } @items;
-                        $diff_shas = [ $tag_sha ];
+                        # FIXME: not sure if we should die here (also remove comments)
+                        _fail _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                        #@items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                        #@items = map { my $item = 'M   ' . $_; } @items;
+                        #$diff_shas = [ $tag_sha ];
                     }
                 } else {
-                    _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
-                    @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-                    @items = map { my $item = 'M   ' . $_; } @items;
-                    $diff_shas = [ $tag_sha ];
+                    # FIXME: see previous FIXME
+                    _fail _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
+                    #@items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+                    #@items = map { my $item = 'M   ' . $_; } @items;
+                    #$diff_shas = [ $tag_sha ];
                 }
             } else {
                 @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
