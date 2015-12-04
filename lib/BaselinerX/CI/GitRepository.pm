@@ -344,32 +344,35 @@ sub list_elements {
     return @elems;
 } ## end sub list_elements
 
-method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) {
+method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
     my $git = $self->git;
 
-    my @tags = ($tag);
+    my @projects;
 
     if ( $self->tags_mode eq 'project' ) {
-        my @project_names = ();
         if ($job) {
             foreach my $project ( _array( $job->{projects} ) ) {
                 next
                   unless $project->{repositories}
                   && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
 
-                push @project_names, $project->{name};
+                push @projects, $project;
             }
         }
         _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
-          unless @project_names;
-        @tags = map { sprintf '%s-%s', $_, $tag } @project_names;
+          unless @projects;
+    }
+    else {
+        @projects = ('*');
     }
 
     my %retval;
-    for my $tag ( @tags ) {
-        my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
+    for my $project ( @projects ) {
+        my $retval_key = $project eq '*' ? '*' : $project->mid;
 
-        my ($project) = $self->tags_mode eq 'project' ? $tag =~ m/^(.*)-/ : '*';
+        my $tag = $self->tags_mode eq 'project' ? sprintf '%s-%s', $project->name, $bl : $bl;
+
+        my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
         $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
         my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
@@ -378,7 +381,7 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
 
         # no need to update if it's already there
         if ( $top_rev eq $tag_sha ) {
-            $retval{$project} = {
+            $retval{$retval_key} = {
                 current  => $top_rev,
                 previous => $previous,
                 output   => $out
@@ -407,7 +410,7 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
             _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
         }
 
-        $retval{$project} = {
+        $retval{$retval_key} = {
             current  => $top_rev,
             previous => $previous,
             output   => $out

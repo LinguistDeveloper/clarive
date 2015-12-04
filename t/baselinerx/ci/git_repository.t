@@ -212,7 +212,7 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    $repo->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -231,7 +231,7 @@ subtest 'update_baselines: returns refs' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    my $retval = $repo->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    my $retval = $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
 
     cmp_deeply $retval,
       {
@@ -256,7 +256,7 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( tag => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 }, { sha => $sha } ] );
+    $repo->update_baselines( bl => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 }, { sha => $sha } ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -275,7 +275,7 @@ subtest 'update_baselines: moves baselines up in static' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -294,7 +294,7 @@ subtest 'update_baselines: moves baselines to specific ref' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -311,7 +311,7 @@ subtest 'update_baselines: does nothing when already there' => sub {
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -328,7 +328,7 @@ subtest 'update_baselines: throws when tags_mode is project but no projects' => 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    like exception { $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+    like exception { $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
       qr/Projects are required/;
 };
 
@@ -347,8 +347,8 @@ subtest 'update_baselines: updates tags for every project' => sub {
     my $new_sha = TestGit->commit($repo);
 
     $repo->update_baselines(
-        job       => { projects => [ { name => 'project-with-dashes', repositories => [ { mid => $repo->mid } ] } ] },
-        tag       => 'TEST',
+        job       => { projects => [ $project ] },
+        bl        => 'TEST',
         type      => 'promote',
         revisions => [],
         ref       => $new_sha
@@ -359,6 +359,38 @@ subtest 'update_baselines: updates tags for every project' => sub {
     is $tag_sha, $new_sha;
 };
 
+subtest 'update_baselines: returns correct results' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
+
+    my $project = TestUtils->create_ci( 'project', name => 'project-with-dashes', repositories => [ $repo->mid ] );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'project-with-dashes-TEST' );
+
+    my $new_sha = TestGit->commit($repo);
+
+    my $retval = $repo->update_baselines(
+        job       => { projects => [ $project ] },
+        bl        => 'TEST',
+        type      => 'promote',
+        revisions => [],
+        ref       => $new_sha
+    );
+
+    cmp_deeply $retval,
+      {
+        $project->mid => {
+            previous => ignore(),
+            current  => $new_sha,
+            output   => re(qr/Updated tag 'project-with-dashes-TEST'/)
+        }
+      };
+};
+
 subtest 'update_baselines: updates tags only for project related to the repository' => sub {
     _setup();
 
@@ -367,7 +399,7 @@ subtest 'update_baselines: updates tags only for project related to the reposito
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
     my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
-    TestUtils->create_ci( 'project', name => 'other', repositories => [] );
+    my $other_project = TestUtils->create_ci( 'project', name => 'other', repositories => [] );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'project-TEST' );
@@ -376,8 +408,8 @@ subtest 'update_baselines: updates tags only for project related to the reposito
 
     $repo->update_baselines(
         job =>
-          { projects => [ { name => 'project', repositories => [ { mid => $repo->mid } ] }, { name => 'other' } ] },
-        tag       => 'TEST',
+          { projects => [ $project, $other_project ] },
+        bl        => 'TEST',
         type      => 'static',
         revisions => [],
         ref       => $sha

@@ -238,7 +238,7 @@ sub update_baselines {
                             job       => $job,
                             ref       => $ref,
                             revisions => [],
-                            tag       => $bl,
+                            bl        => $bl,
                             type      => $type
                         );
                     }
@@ -246,7 +246,7 @@ sub update_baselines {
                     _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
                 }
             } else {
-                $out = $repo->update_baselines( job => $job, revisions => $revisions, tag=>$bl, type=>$type );
+                $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
             }
             # save previous revision by repo mid
             $stash->{bl_original}{$repo->mid} = $out; 
