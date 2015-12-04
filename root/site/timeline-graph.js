@@ -6,6 +6,9 @@
     color = color.substring(position+17);
     color = color.substring(0,7);
 
+    var diagram;
+    var overview;
+
     var getLuxColor = function(hex,lum) {
 
         if ( !hex || hex == null || hex == 'null') return;
@@ -23,8 +26,6 @@
             c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
             rgb += ("00"+c).substr(c.length);
         }
-
-    //alert(hex+" esto es un color "+rgb);
     return rgb;
     };
     //mdb->activity->find({ mid => '26777', event_key => 'event.topic.change_status'})->all
@@ -287,7 +288,7 @@
                    }
                   );
         
-        var overview =
+        overview =
             go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
                    {
                        
@@ -440,9 +441,20 @@
                       }         
                  }
             }
-                               
-            //console.log(res);
+
+            //delete the duplicate steps in the same statuses
+            for(i=0;i<res.data.length-1;i++){
+              var datas = res.data[i];
+              var datas2 = res.data[i+1];
+              if(datas.old_status == datas2.old_status && datas.status == datas2.status && datas.username == datas2.username){
+
+                console.log(datas.when);
+                console.log(i);
+              }
+
+            }
             
+            console.log(res);
             var object_node = [];          
 
             //Create group of nodes for status
@@ -500,7 +512,6 @@
                 
                 /*var sum_dates = date-date2;
                 var compose_date = ((date.getTime()-date2.getTime())*10/range)*100;
-                alert(compose_date);
                 duration[i] = compose_date; 
                 */
                 //var date = new Date('2014-11-03 17:30:46');
@@ -525,7 +536,6 @@
                 }else{
                   sum_date = (date.getMonth()+1) - (date2.getMonth()+1); 
                   date_compare = date.getDate() - date2.getDate();
-                  alert(sum_date);
                   if(sum_date > 1){
                     duration[i]=(sum_date*0.1)+14.4;
                     text[i] = sum_date+" "+_('Month');
@@ -534,18 +544,18 @@
                     date_compare = (date.getHours()+1) - (date2.getHours()+1);
 
                     if (sum_date > 1){
-                          duration[i]=(sum_date*0.2)+8.2;
-                          text[i] = sum_date+" "+_('Days');
-                          }else{
-                            sum_date = (date.getHours()+1) - (date2.getHours()+1);
+                      duration[i]=(sum_date*0.2)+8.2;
+                      text[i] = sum_date+" "+_('Days');
+                    }else{
+                        sum_date = (date.getHours()+1) - (date2.getHours()+1);
 
-                            if(sum_date > 0){
-                              duration[i]= (sum_date*0.3)+1;
-                              text[i] = sum_date+" H ";
-                            }else{
-                              duration[i] = 1;
-                              text[i] = " Min ";
-                            }
+                        if(sum_date > 0){
+                          duration[i]= (sum_date*0.3)+1;
+                          text[i] = sum_date+" H ";
+                        }else{
+                          duration[i] = 1;
+                          text[i] = " Min ";
+                        }
                     }
                   }        
 
@@ -587,7 +597,6 @@
               i++;
 
             }
-            console.log(duration);
 
             //Modify the duration in the nodes.
             duration.push(1);
