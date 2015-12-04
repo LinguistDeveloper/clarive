@@ -447,14 +447,15 @@
               var datas = res.data[i];
               var datas2 = res.data[i+1];
               if(datas.old_status == datas2.old_status && datas.status == datas2.status && datas.username == datas2.username){
-
-                console.log(datas.when);
-                console.log(i);
+                var date = new Date(res.data[i].when);
+                var date2 = new Date(res.data[i+1].when);
+                if (date.getFullYear() == date2.getFullYear() && date.getMonth() == date2.getMonth() && date.getDate() == date2.getDate() && date.getHours() == date2.getHours()){
+                  res.data.splice(res.data.indexOf(res.data[i]),1);
+                }
               }
 
             }
             
-            console.log(res);
             var object_node = [];          
 
             //Create group of nodes for status
@@ -529,6 +530,10 @@
 
                var sum_date = date.getFullYear() - date2.getFullYear();
                var date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
+
+               var sum_date2 = date - date2;
+               //console.log("esto es");
+               //console.log(sum_date2);
 
                 if (sum_date > 1){
                   duration[i]=sum_date+15.6;
