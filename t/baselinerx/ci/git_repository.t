@@ -371,22 +371,22 @@ subtest 'update_baselines: updates tags for every project' => sub {
     my $repo_dir = _create_repo();
     my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
 
-    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
+    my $project = _create_project_ci( name => 'project-with-dashes', repositories => [ $ci->mid ] );
 
     my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'project-TEST' );
+    _git_tag( $repo_dir, 'project-with-dashes-TEST' );
 
     my $new_sha = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
 
     $ci->update_baselines(
-        job       => { projects => [ { name => 'project', repositories => [ { mid => $ci->mid } ] } ] },
+        job       => { projects => [ { name => 'project-with-dashes', repositories => [ { mid => $ci->mid } ] } ] },
         tag       => 'TEST',
         type      => 'promote',
         revisions => [],
         ref       => $new_sha
     );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'project-TEST' );
+    my $tag_sha = _git_sha_from_tag( $repo_dir, 'project-with-dashes-TEST' );
 
     is $tag_sha, $new_sha;
 };

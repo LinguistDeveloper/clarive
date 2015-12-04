@@ -106,22 +106,25 @@ sub items {
                     my $last_job;
                     my $job;
                     my $st;
-                    my $found = 0;
+                    my $found_tag_sha;
 
                     for $last_job ( @last_jobs ) {
                         $job = ci->new($last_job);
                         $st = $job->stash;
-                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{$project}->{current} ne $rev_sha) {
-                            $found = $project;
-                            last;
+                        if ( $st->{bl_original}) {
+                            my $tag_sha = $st->{bl_original}->{$repo->mid}->{$project}->{current};
+
+                            if ($tag_sha ne $rev_sha) {
+                                $found_tag_sha = $tag_sha;
+                                last;
+                            }
                         }
                     }
 
-                    if ( $found ) {                    
-                        $tag_sha = $st->{bl_original}->{$repo->mid}->{$found}->{current};
-                        _warn _loc("Tag %3 sha set to %1 as it was in previous job %2", $tag_sha, $job->{name}, $tag);
-                        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
-                        $diff_shas = [ $tag_sha, $rev_sha ];
+                    if ( $found_tag_sha ) {
+                        _warn _loc("Tag %3 sha set to %1 as it was in previous job %2", $found_tag_sha, $job->{name}, $tag);
+                        @items = $git->exec( qw/diff --name-status/, $found_tag_sha, $rev_sha );
+                        $diff_shas = [ $found_tag_sha, $rev_sha ];
                     } else {
                         # FIXME: not sure if we should die here (also remove comments)
                         _fail _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);

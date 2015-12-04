@@ -282,6 +282,49 @@ subtest 'items: cannot redeploy when last job detected but without bl_original' 
     like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => 'Project' ) }, qr/No last job detected/;
 };
 
+subtest 'items: cannot redeploy when last job detected but with invalid bl_original' => sub {
+    _setup();
+
+    my $repo_dir = _create_repo();
+    my $repo =
+      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+
+    my $sha = _git_commit($repo_dir);
+    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
+    my $sha2 = _git_last_commit($repo_dir);
+
+    _git_tag( $repo_dir, 'TEST' );
+
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $topic = TestUtils->create_ci( 'topic', is_changeset => 1, _doc => {} );
+    mdb->master_rel->insert(
+        { from_mid => $topic->mid, to_mid => $rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$topic],
+            bl           => 'TEST',
+            stash_init   => {
+                bl_original => {
+                    $repo->mid => {
+                        'SomeThingElese' => {
+                            current => 'Yeah'
+                        }
+                    }
+                }
+            }
+        );
+    };
+
+    like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => 'Project' ) }, qr/No last job detected/;
+};
+
 subtest 'items: redeploy' => sub {
     _setup();
 
