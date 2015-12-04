@@ -235,7 +235,7 @@ subtest 'update_baselines: returns refs' => sub {
 
     cmp_deeply $retval,
       {
-        '' => {
+        '*' => {
             'previous' => ignore(),
             'current'  => $sha,
             'output'   => re(qr/Updated tag 'TEST'/)

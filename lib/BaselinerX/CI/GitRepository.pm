@@ -369,7 +369,7 @@ method update_baselines( :$job=undef, :$revisions, :$tag, :$type, :$ref=undef ) 
     for my $tag ( @tags ) {
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
-        my ($project) = $self->tags_mode eq 'project' ? $tag =~ m/^(.*)-/ : '';
+        my ($project) = $self->tags_mode eq 'project' ? $tag =~ m/^(.*)-/ : '*';
 
         $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
         my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag

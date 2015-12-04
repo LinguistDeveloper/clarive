@@ -34,7 +34,6 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -90,7 +89,6 @@ subtest 'update_baselines: groups revisions' => sub {
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo1,
@@ -247,7 +245,6 @@ subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
         job             => $job,
         project_changes => [
             {
-                project              => '',
                 repo_revisions_items => [
                     {
                         repo      => $repo,
@@ -296,7 +293,6 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -342,7 +338,6 @@ subtest 'update_baselines: does nothing in rollback when no original bl found' =
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
