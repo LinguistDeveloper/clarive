@@ -12,6 +12,7 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 
 use TestUtils;
+use TestGit;
 
 use BaselinerX::CI::project;
 
@@ -20,15 +21,12 @@ use_ok 'BaselinerX::CI::GitRevision';
 subtest 'items: returns added items' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha2 = TestGit->commit( $repo, file => 'NEW_FILE' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -48,13 +46,11 @@ subtest 'items: returns added items' => sub {
 subtest 'items: returns modified items' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -74,15 +70,12 @@ subtest 'items: returns modified items' => sub {
 subtest 'items: returns deleted items' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    system("cd $repo_dir; git rm README; git commit -a -m 'new'");
-    my $sha2 = ( _git_commits($repo_dir) )[0];
+    my $sha2 = TestGit->commit( $repo, action => 'git rm README' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -102,14 +95,11 @@ subtest 'items: returns deleted items' => sub {
 subtest 'items: returns added items when demoting' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; git rm README; git commit -a -m 'new'");
-    my $sha2 = ( _git_commits($repo_dir) )[0];
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    my $sha2 = TestGit->commit( $repo, action => 'git rm README' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -129,13 +119,11 @@ subtest 'items: returns added items when demoting' => sub {
 subtest 'items: returns modified items when demoting' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha  = _git_commit($repo_dir);
-    my $sha2 = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -155,14 +143,11 @@ subtest 'items: returns modified items when demoting' => sub {
 subtest 'items: returns deleted items when demoting' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    my $sha2 = TestGit->commit( $repo, file => 'NEW_FILE' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
@@ -182,15 +167,12 @@ subtest 'items: returns deleted items when demoting' => sub {
 subtest 'items: throws when redeploying without changesets' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -201,15 +183,12 @@ subtest 'items: throws when redeploying without changesets' => sub {
 subtest 'items: throws when redeploying when sha is in several changesets' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -228,15 +207,12 @@ subtest 'items: throws when redeploying when sha is in several changesets' => su
 subtest 'items: cannot redeploy when no last job detected' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -251,15 +227,12 @@ subtest 'items: cannot redeploy when no last job detected' => sub {
 subtest 'items: cannot redeploy when last job detected but without bl_original' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -285,15 +258,12 @@ subtest 'items: cannot redeploy when last job detected but without bl_original' 
 subtest 'items: cannot redeploy when last job detected but with invalid bl_original' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -328,15 +298,12 @@ subtest 'items: cannot redeploy when last job detected but with invalid bl_origi
 subtest 'items: redeploy' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo =
-      TestUtils->create_ci( 'GitRepository', repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
-    my $sha = _git_commit($repo_dir);
-    system("cd $repo_dir; echo 'foobar' >> NEW_FILE; git add .; git commit -a -m 'new'");
-    my $sha2 = _git_last_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
+    my $sha2 = TestGit->commit( $repo, file => 'NEW_FILE' );
 
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
@@ -377,51 +344,6 @@ subtest 'items: redeploy' => sub {
 };
 
 done_testing;
-
-sub _create_repo {
-    my $dir = tempdir();
-
-    system("cd $dir; git init");
-
-    return $dir;
-}
-
-sub _set_timestamp {
-    my ($timestamp) = @_;
-
-    $ENV{GIT_AUTHOR_DATE}    = $timestamp;
-    $ENV{GIT_COMMITTER_DATE} = $timestamp;
-}
-
-sub _git_commit {
-    my ( $repo_dir, $timestamp ) = @_;
-
-    _set_timestamp($timestamp) if $timestamp;
-
-    my $text = TestUtils->random_string;
-
-    system("cd $repo_dir; echo '$text' >> README; git add .; git commit -a -m 'new'");
-
-    return ( _git_commits($repo_dir) )[0];
-}
-
-sub _git_last_commit {
-    my ($repo_dir) = @_;
-
-    return ( _git_commits($repo_dir) )[0];
-}
-
-sub _git_commits {
-    my ($repo_dir) = @_;
-
-    return map { chomp; $_ } `cd $repo_dir; git rev-list HEAD`;
-}
-
-sub _git_tag {
-    my ( $repo_dir, $tag ) = @_;
-
-    system("cd $repo_dir; git tag $tag");
-}
 
 sub _setup {
     TestUtils->cleanup_cis;

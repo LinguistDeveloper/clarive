@@ -114,7 +114,7 @@ sub items {
                         if ( $st->{bl_original}) {
                             my $tag_sha = $st->{bl_original}->{$repo->mid}->{$project}->{current};
 
-                            if ($tag_sha ne $rev_sha) {
+                            if ($tag_sha && $tag_sha ne $rev_sha) {
                                 $found_tag_sha = $tag_sha;
                                 last;
                             }

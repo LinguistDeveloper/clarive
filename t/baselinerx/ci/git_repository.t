@@ -11,6 +11,7 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 
 use TestUtils;
+use TestGit;
 
 use Capture::Tiny qw(capture_merged);
 use BaselinerX::CI::project;
@@ -20,13 +21,12 @@ use_ok 'BaselinerX::CI::GitRepository';
 subtest 'create_tags_service_handler: does nothing when no bls' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    $ci->create_tags_handler( undef, {} );
+    $repo->create_tags_handler( undef, {} );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply \@tags, [];
 };
@@ -34,15 +34,14 @@ subtest 'create_tags_service_handler: does nothing when no bls' => sub {
 subtest 'create_tags_service_handler: skips common bl' => sub {
     _setup();
 
-    _create_bl_ci( bl => '*' );
+    TestUtils->create_ci( 'bl', bl => '*' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    $ci->create_tags_handler( undef, {} );
+    $repo->create_tags_handler( undef, {} );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply \@tags, [];
 };
@@ -50,16 +49,15 @@ subtest 'create_tags_service_handler: skips common bl' => sub {
 subtest 'create_tags_service_handler: creates tags for every bl' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
-    _create_bl_ci( bl => 'PROD' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    $ci->create_tags_handler( undef, {} );
+    $repo->create_tags_handler( undef, {} );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply [ sort @tags ], [qw/PROD TEST/];
 };
@@ -67,29 +65,27 @@ subtest 'create_tags_service_handler: creates tags for every bl' => sub {
 subtest 'create_tags_service_handler: returns command output' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
-    _create_bl_ci( bl => 'PROD' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    is $ci->create_tags_handler( undef, {} ), '';
+    is $repo->create_tags_handler( undef, {} ), '';
 };
 
 subtest 'create_tags_service_handler: creates tags for matching bls' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
-    _create_bl_ci( bl => 'PROD' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    $ci->create_tags_handler( undef, { tag_filter => 'TEST' } );
+    $repo->create_tags_handler( undef, { tag_filter => 'TEST' } );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply [ sort @tags ], [qw/TEST/];
 };
@@ -97,21 +93,16 @@ subtest 'create_tags_service_handler: creates tags for matching bls' => sub {
 subtest 'create_tags_service_handler: creates tags for the first commit' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    _git_commit($repo_dir);
+    my @refs = TestGit->commits($repo);
 
-    my @refs = _git_commits($repo_dir);
+    $repo->create_tags_handler( undef, {} );
 
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
-
-    $ci->create_tags_handler( undef, {} );
-
-    _git_tags("$repo_dir/.git");
-
-    my $ref = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $ref = TestGit->rev_parse( $repo, 'TEST' );
 
     is $ref, $refs[-1];
 };
@@ -119,21 +110,16 @@ subtest 'create_tags_service_handler: creates tags for the first commit' => sub 
 subtest 'create_tags_service_handler: creates tags for specific ref' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
 
-    _git_commit($repo_dir);
+    my @refs = TestGit->commits($repo);
 
-    my @refs = _git_commits($repo_dir);
+    $repo->create_tags_handler( undef, { ref => $refs[0] } );
 
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
-
-    $ci->create_tags_handler( undef, { ref => $refs[0] } );
-
-    _git_tags("$repo_dir/.git");
-
-    my $ref = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $ref = TestGit->rev_parse( $repo, 'TEST' );
 
     is $ref, $refs[0];
 };
@@ -141,23 +127,19 @@ subtest 'create_tags_service_handler: creates tags for specific ref' => sub {
 subtest 'create_tags_service_handler: detects existing tags by default' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
+    TestGit->commit($repo);
 
-    my @refs = _git_commits($repo_dir);
+    my @refs = TestGit->commits($repo);
 
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    _git_tag( $repo_dir, 'TEST' );
+    $repo->create_tags_handler( undef, {} );
 
-    $ci->create_tags_handler( undef, {} );
-
-    _git_tags("$repo_dir/.git");
-
-    my $ref = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $ref = TestGit->rev_parse( $repo, 'TEST' );
 
     is $ref, $refs[0];
 };
@@ -165,23 +147,19 @@ subtest 'create_tags_service_handler: detects existing tags by default' => sub {
 subtest 'create_tags_service_handler: overwrites existing tags when specified' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
+    TestGit->commit($repo);
 
-    my @refs = _git_commits($repo_dir);
+    my @refs = TestGit->commits($repo);
 
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    _git_tag( $repo_dir, 'TEST' );
+    $repo->create_tags_handler( undef, { existing => 'no-detect' } );
 
-    $ci->create_tags_handler( undef, { existing => 'no-detect' } );
-
-    _git_tags("$repo_dir/.git");
-
-    my $ref = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $ref = TestGit->rev_parse( $repo, 'TEST' );
 
     is $ref, $refs[-1];
 };
@@ -189,18 +167,17 @@ subtest 'create_tags_service_handler: overwrites existing tags when specified' =
 subtest 'create_tags_service_handler: creates project tags' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
-    _create_bl_ci( bl => 'PROD' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
+    TestGit->commit($repo);
 
-    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
+    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
 
-    $ci->create_tags_handler( undef, {} );
+    $repo->create_tags_handler( undef, {} );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply [ sort @tags ], [qw/project-PROD project-TEST/];
 };
@@ -208,18 +185,17 @@ subtest 'create_tags_service_handler: creates project tags' => sub {
 subtest 'create_tags_service_handler: filters by tags when projects' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
-    _create_bl_ci( bl => 'PROD' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
 
-    my $repo_dir = _create_repo();
-    _git_commit($repo_dir);
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
+    TestGit->commit($repo);
 
-    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
+    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
 
-    $ci->create_tags_handler( undef, { tag_filter => 'project-TEST' } );
+    $repo->create_tags_handler( undef, { tag_filter => 'project-TEST' } );
 
-    my @tags = _git_tags("$repo_dir/.git");
+    my @tags = TestGit->tags($repo);
 
     is_deeply [ sort @tags ], [qw/project-TEST/];
 };
@@ -227,19 +203,18 @@ subtest 'create_tags_service_handler: filters by tags when projects' => sub {
 subtest 'update_baselines: moves baselines up in promote' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
 
-    $ci->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
     is $tag_sha, $sha;
 };
@@ -247,17 +222,16 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
 subtest 'update_baselines: returns refs' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
 
-    my $retval = $ci->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    my $retval = $repo->update_baselines( tag => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
 
     cmp_deeply $retval,
       {
@@ -272,20 +246,19 @@ subtest 'update_baselines: returns refs' => sub {
 subtest 'update_baselines: moves baselines down in demote' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    my $old_sha  = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    my $old_sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $old_sha  = TestGit->commit($repo);
+    my $old_sha2 = TestGit->commit($repo);
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    $ci->update_baselines( tag => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 }, { sha => $sha } ] );
+    $repo->update_baselines( tag => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 }, { sha => $sha } ] );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
     is $tag_sha, $old_sha;
 };
@@ -293,19 +266,18 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
 subtest 'update_baselines: moves baselines up in static' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
 
-    $ci->update_baselines( tag => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
     is $tag_sha, $sha;
 };
@@ -313,19 +285,18 @@ subtest 'update_baselines: moves baselines up in static' => sub {
 subtest 'update_baselines: moves baselines to specific ref' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
 
-    $ci->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
     is $tag_sha, $sha;
 };
@@ -333,17 +304,16 @@ subtest 'update_baselines: moves baselines to specific ref' => sub {
 subtest 'update_baselines: does nothing when already there' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo' );
+    my $repo = TestUtils->create_ci_GitRepository();
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    $ci->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
     is $tag_sha, $sha;
 };
@@ -351,42 +321,40 @@ subtest 'update_baselines: does nothing when already there' => sub {
 subtest 'update_baselines: throws when tags_mode is project but no projects' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    like exception { $ci->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+    like exception { $repo->update_baselines( tag => 'TEST', type => 'static', revisions => [], ref => $sha ) },
       qr/Projects are required/;
 };
 
 subtest 'update_baselines: updates tags for every project' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = _create_project_ci( name => 'project-with-dashes', repositories => [ $ci->mid ] );
+    my $project = TestUtils->create_ci( 'project', name => 'project-with-dashes', repositories => [ $repo->mid ] );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'project-with-dashes-TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'project-with-dashes-TEST' );
 
-    my $new_sha = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $new_sha = TestGit->commit($repo);
 
-    $ci->update_baselines(
-        job       => { projects => [ { name => 'project-with-dashes', repositories => [ { mid => $ci->mid } ] } ] },
+    $repo->update_baselines(
+        job       => { projects => [ { name => 'project-with-dashes', repositories => [ { mid => $repo->mid } ] } ] },
         tag       => 'TEST',
         type      => 'promote',
         revisions => [],
         ref       => $new_sha
     );
 
-    my $tag_sha = _git_sha_from_tag( $repo_dir, 'project-with-dashes-TEST' );
+    my $tag_sha = TestGit->rev_parse( $repo, 'project-with-dashes-TEST' );
 
     is $tag_sha, $new_sha;
 };
@@ -394,44 +362,43 @@ subtest 'update_baselines: updates tags for every project' => sub {
 subtest 'update_baselines: updates tags only for project related to the repository' => sub {
     _setup();
 
-    _create_bl_ci( bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my $repo_dir = _create_repo();
-    my $ci = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', tags_mode => 'project' );
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = _create_project_ci( name => 'project', repositories => [ $ci->mid ] );
-    _create_project_ci( name => 'other', repositories => [] );
+    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
+    TestUtils->create_ci( 'project', name => 'other', repositories => [] );
 
-    my $sha = _git_commit($repo_dir);
-    _git_tag( $repo_dir, 'project-TEST' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'project-TEST' );
 
-    _git_commit($repo_dir);
+    TestGit->commit($repo);
 
-    $ci->update_baselines(
-        job  => { projects => [ { name => 'project', repositories => [ { mid => $ci->mid } ] }, { name => 'other' } ] },
-        tag  => 'TEST',
-        type => 'static',
+    $repo->update_baselines(
+        job =>
+          { projects => [ { name => 'project', repositories => [ { mid => $repo->mid } ] }, { name => 'other' } ] },
+        tag       => 'TEST',
+        type      => 'static',
         revisions => [],
         ref       => $sha
     );
 
-    like capture_merged { _git_sha_from_tag( $repo_dir, 'other-TEST' ) }, qr/unknown revision/;
+    like capture_merged { TestGit->rev_parse( $repo, 'other-TEST' ) }, qr/unknown revision/;
 };
 
 subtest 'top_revision: returns top revision from random commits' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha3 = _git_commit( $repo_dir, '2015-01-02 00:00:03' );
-    my $sha4 = _git_commit( $repo_dir, '2015-01-02 00:00:04' );
-    my $sha5 = _git_commit( $repo_dir, '2015-01-02 00:00:05' );
+    my $sha3 = TestGit->commit($repo);
+    my $sha4 = TestGit->commit($repo);
+    my $sha5 = TestGit->commit($repo);
 
     my $rev = $repo->top_revision(
         revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => $sha5 } ],
@@ -444,13 +411,12 @@ subtest 'top_revision: returns top revision from random commits' => sub {
 subtest 'top_revision: returns same top revision when already on top' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = $repo->top_revision(
         revisions => [ { sha => $sha1 }, { sha => $sha2 } ],
@@ -463,13 +429,12 @@ subtest 'top_revision: returns same top revision when already on top' => sub {
 subtest 'top_revision: returns tag sha when nowhere to move' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = $repo->top_revision(
         revisions => [ { sha => $sha1 } ],
@@ -482,20 +447,26 @@ subtest 'top_revision: returns tag sha when nowhere to move' => sub {
 subtest 'top_revision: throws when tag has not same history' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
 
-    _git_branch( $repo_dir, 'another' );
-    my $tag_sha = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    TestGit->create_branch( $repo, branch => 'another' );
+    my $sha3 = TestGit->commit($repo);
+
+    TestGit->switch_branch( $repo, 'master' );
+    my $sha4 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    TestGit->commit($repo);
+
+    TestGit->switch_branch( $repo, 'another' );
+    my $sha5 = TestGit->commit($repo);
 
     like exception {
         $repo->top_revision(
-            revisions => [ { sha => $sha1 }, { sha => $sha2 } ],
+            revisions => [ { sha => $sha5 } ],
             tag       => 'TEST'
           )
     }, qr/Cannot promote .* common history/;
@@ -504,13 +475,12 @@ subtest 'top_revision: throws when tag has not same history' => sub {
 subtest 'top_revision: returns bottom revision when in demote' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = $repo->top_revision(
         revisions => [ { sha => $sha1 }, { sha => $sha2 } ],
@@ -524,13 +494,12 @@ subtest 'top_revision: returns bottom revision when in demote' => sub {
 subtest 'top_revision: throws when demoting everything' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    _git_tag( $repo_dir, 'TEST' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
 
     like exception {
         $repo->top_revision(
@@ -544,21 +513,20 @@ subtest 'top_revision: throws when demoting everything' => sub {
 subtest 'top_revision: throws when one of the commits has not same history' => sub {
     _setup();
 
-    my $repo_dir = _create_repo('2015-01-01 00:00:00');
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = _git_commit( $repo_dir, '2015-01-02 00:00:00' );
-    my $sha1 = _git_commit( $repo_dir, '2015-01-02 00:00:01' );
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
 
-    _git_branch( $repo_dir, 'another' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-02 00:00:02' );
-    my $sha3 = _git_commit( $repo_dir, '2015-01-02 00:00:03' );
+    TestGit->create_branch( $repo, branch => 'another' );
+    my $sha2 = TestGit->commit($repo);
+    my $sha3 = TestGit->commit($repo);
 
-    _git_branch( $repo_dir, 'master' );
-    my $sha4 = _git_commit( $repo_dir, '2015-01-02 00:00:04' );
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha5 = _git_commit( $repo_dir, '2015-01-02 00:00:05' );
-    my $sha6 = _git_commit( $repo_dir, '2015-01-02 00:00:06' );
+    TestGit->switch_branch( $repo, 'master' );
+    my $sha4 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha5 = TestGit->commit($repo);
+    my $sha6 = TestGit->commit($repo);
 
     like exception {
         $repo->top_revision(
@@ -571,8 +539,7 @@ subtest 'top_revision: throws when one of the commits has not same history' => s
 subtest 'top_revision: throws when no revisions passed' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
     like exception { $repo->top_revision( revisions => [], tag => 'TEST' ) }, qr/Error: No revisions passed/;
 };
@@ -580,8 +547,7 @@ subtest 'top_revision: throws when no revisions passed' => sub {
 subtest 'top_revision: throws when unknown sha' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', name => 'repo' );
 
     like exception { $repo->top_revision( revisions => [ { sha => 'unknown' } ], tag => 'TEST' ) },
       qr/Error: revision `unknown` not found in repository repo/;
@@ -590,10 +556,9 @@ subtest 'top_revision: throws when unknown sha' => sub {
 subtest 'top_revision: throws when unknown tag' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', name => 'repo' );
 
-    my $sha = _git_commit($repo_dir);
+    my $sha = TestGit->commit($repo);
 
     like exception { $repo->top_revision( revisions => [ { sha => $sha } ], tag => 'UNKNOWN' ) },
       qr/Error: tag `UNKNOWN` not found in repository repo/;
@@ -602,12 +567,11 @@ subtest 'top_revision: throws when unknown tag' => sub {
 subtest 'group_items_for_revisions: returns top revision items' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo = _create_git_repository_ci( repo_dir => "$repo_dir/.git", name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
     $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
@@ -627,17 +591,11 @@ subtest 'group_items_for_revisions: returns top revision items' => sub {
 subtest 'group_items_for_revisions: throws when no project in project tags_mode' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-        tags_mode     => 'project'
-    );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
       qr/project is required/;
@@ -646,17 +604,11 @@ subtest 'group_items_for_revisions: throws when no project in project tags_mode'
 subtest 'group_items_for_revisions: returns top revision items in project mode' => sub {
     _setup();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-        tags_mode     => 'project',
-    );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'Project-TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'Project-TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
     $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
@@ -678,16 +630,11 @@ subtest 'checkout: checkouts items into directory' => sub {
 
     my $dir = tempdir();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-    );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     $repo->checkout( dir => $dir, tag => 'TEST' );
 
@@ -703,16 +650,11 @@ subtest 'checkout: returns checked out items' => sub {
 
     my $dir = tempdir();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-    );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     my $retval = $repo->checkout( dir => $dir, tag => 'TEST' );
 
@@ -728,17 +670,11 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
 
     my $dir = tempdir();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-        tags_mode     => 'project'
-    );
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'Project-TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'Project-TEST' );
+    my $sha2 = TestGit->commit($repo);
 
     like exception { $repo->checkout( dir => $dir, tag => 'Project-TEST' ) }, qr/project required/;
 };
@@ -746,21 +682,15 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
     _setup();
 
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'Project-TEST' );
+    my $sha2 = TestGit->commit($repo);
+
     my $dir = tempdir();
 
-    my $repo_dir = _create_repo();
-    my $repo     = _create_git_repository_ci(
-        repo_dir      => "$repo_dir/.git",
-        name          => 'repo',
-        revision_mode => 'diff',
-        tag_mode      => 'project'
-    );
-
-    my $sha = _git_commit( $repo_dir, '2015-01-01 00:00:00' );
-    _git_tag( $repo_dir, 'Project-TEST' );
-    my $sha2 = _git_commit( $repo_dir, '2015-01-01 00:00:01' );
-
-    $repo->checkout( dir => $dir, tag => 'Project-TEST', project => 'Project' );
+    $repo->checkout( dir => $dir, tag => 'TEST', project => 'Project' );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -773,20 +703,23 @@ subtest 'list_branches: returns branches' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit( $repo, message => 'my change' );
 
     my @branches = $repo->list_branches( project => 'Project' );
 
     is scalar @branches, 1;
 
     is $branches[0]->name, 'master';
-    is $branches[0]->head->commit->message, 'third';
+    like $branches[0]->head->commit->message, qr/my change/;
 };
 
 subtest 'list_branches: excludes branch names' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => 'new' );
-    system( sprintf "cd %s; cd ..; git checkout -b new 2> /dev/null", $repo->repo_dir );
+    TestGit->commit( $repo, message => 'my change' );
+
+    TestGit->create_branch( $repo, branch => 'new' );
 
     my @branches = $repo->list_branches( project => 'Project' );
 
@@ -799,9 +732,10 @@ subtest 'list_branches: includes branch names' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
+    TestGit->commit( $repo, message => 'my change' );
 
-    system( sprintf "cd %s; cd ..; git checkout -b new 2> /dev/null",  $repo->repo_dir );
-    system( sprintf "cd %s; cd ..; git checkout -b new2 2> /dev/null", $repo->repo_dir );
+    TestGit->create_branch( $repo, branch => 'new' );
+    TestGit->create_branch( $repo, branch => 'new2' );
 
     my @branches = $repo->list_branches( project => 'Project' );
 
@@ -813,27 +747,39 @@ subtest 'list_branches: includes branch names' => sub {
 subtest 'commits_for_branch: returns commits by tag' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-    system( sprintf "cd %s; cd ..; git co HEAD^ 2> /dev/null; git tag TEST 2> /dev/null", $repo->repo_dir );
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit( $repo, message => 'initial' );
+    TestGit->commit( $repo, message => 'first' );
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    TestGit->commit( $repo, message => 'second' );
+    TestGit->commit( $repo, message => 'third' );
 
     my @commits = $repo->commits_for_branch( tag => 'TEST', branch => 'master' );
-    is scalar @commits, 2;
+    is scalar @commits, 3;
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
+    like $commits[2], qr/^[a-z0-9]{40} first$/;
 };
 
 subtest 'commits_for_branch: get tag from bl when not present' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-    system( sprintf "cd %s; cd ..; git co HEAD^ 2> /dev/null; git tag TEST 2> /dev/null", $repo->repo_dir );
+    TestGit->commit( $repo, message => 'initial' );
+    TestGit->commit( $repo, message => 'first' );
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    TestGit->commit( $repo, message => 'second' );
+    TestGit->commit( $repo, message => 'third' );
 
     TestUtils->create_ci( 'bl', bl => 'TEST' );
 
     my @commits = $repo->commits_for_branch( branch => 'master' );
-    is scalar @commits, 2;
+    is scalar @commits, 3;
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
+    like $commits[2], qr/^[a-z0-9]{40} first$/;
 };
 
 subtest 'commits_for_branch: throws when no tag present' => sub {
@@ -853,87 +799,6 @@ subtest 'commits_for_branch: throws when no tags present' => sub {
 };
 
 done_testing;
-
-sub _git_tags {
-    my ($repo_dir) = @_;
-    return map { chomp; $_ } `cd $repo_dir; git tag -l`;
-}
-
-sub _git_commits {
-    my ($repo_dir) = @_;
-
-    return map { chomp; $_ } `cd $repo_dir; git rev-list HEAD`;
-}
-
-sub _git_tag {
-    my ( $repo_dir, $tag ) = @_;
-
-    system("cd $repo_dir; git tag $tag");
-}
-
-sub _git_sha_from_tag {
-    my ( $repo_dir, $tag ) = @_;
-
-    my $ref = `cd $repo_dir; git rev-parse $tag`;
-    chomp $ref;
-    return $ref;
-}
-
-sub _set_timestamp {
-    my ($timestamp) = @_;
-
-    $ENV{GIT_AUTHOR_DATE}    = $timestamp;
-    $ENV{GIT_COMMITTER_DATE} = $timestamp;
-}
-
-sub _git_branch {
-    my ( $repo_dir, $branch ) = @_;
-
-    if ( $branch eq 'master' ) {
-        system("cd $repo_dir; git checkout $branch 2> /dev/null");
-    }
-    else {
-        system("cd $repo_dir; git checkout -b $branch 2> /dev/null");
-    }
-}
-
-sub _git_commit {
-    my ( $repo_dir, $timestamp ) = @_;
-
-    _set_timestamp($timestamp) if $timestamp;
-
-    my $text = TestUtils->random_string;
-
-    system("cd $repo_dir; echo '$text' >> README; git add .; git commit -a -m 'new'");
-
-    return ( _git_commits($repo_dir) )[0];
-}
-
-sub _create_repo {
-    my $dir = tempdir();
-
-    system("cd $dir; git init");
-
-    return $dir;
-}
-
-sub _create_project_ci {
-    my $ci = BaselinerX::CI::project->new(@_);
-    $ci->save;
-    return $ci;
-}
-
-sub _create_bl_ci {
-    my $ci = BaselinerX::CI::bl->new(@_);
-    $ci->save;
-    return $ci;
-}
-
-sub _create_git_repository_ci {
-    my $ci = BaselinerX::CI::GitRepository->new(@_);
-    $ci->save;
-    return $ci;
-}
 
 sub _setup {
     TestUtils->cleanup_cis;

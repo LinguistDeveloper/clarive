@@ -17,6 +17,7 @@ use Time::Local;
 use Time::Piece;
 use Test::MockTime qw(set_absolute_time restore_time);
 use Test::TempDir::Tiny;
+use TestGit;
 
 sub cleanup_cis {
     my $class = shift;
@@ -77,11 +78,7 @@ sub create_ci_topic {
 sub create_ci_GitRepository {
     my $class = shift;
 
-    my $dir = tempdir();
-
-    system("cd $dir; git init; touch README; git add .; git commit -m 'initial'");
-    system("cd $dir; echo 'second' > README; git commit -am 'second'");
-    system("cd $dir; echo 'third' > README; git commit -am 'third'");
+    my $dir = TestGit->create_repo;
 
     return $class->create_ci('GitRepository', repo_dir => "$dir/.git", @_);
 }
