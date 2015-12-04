@@ -59,16 +59,15 @@ sub items {
     my $type = $p{type} // 'promote';
     my $tag = $p{tag} // _fail _loc 'Missing parameter tag';
     my $bl = $p{bl} // _fail _loc 'Missing parameter bl';
-    my $project = $p{project};
+    my $project_name = $p{project};
 
     # TODO Comprobar si tengo last_commit
     my $repo = $self->repo;
     my $git = $repo->git;
-    
+
     my $rev_sha  = $self->sha_long; 
     my $tag_sha  = $repo->git->exec( qw/rev-parse/, $tag );
 
-    
     my $diff_shas;
         
     my @items;
@@ -111,11 +110,14 @@ sub items {
                     for $last_job ( @last_jobs ) {
                         $job = ci->new($last_job);
                         $st = $job->stash;
-                        if ( $st->{bl_original}) {
-                            my $tag_sha = $st->{bl_original}->{$repo->mid}->{$project}->{current};
+                        if ( my $bl_original = $st->{bl_original}) {
+                            my $project_doc = ci->project->find_one({name => $project_name}, {mid => 1});
+                            next unless $project_doc;
 
-                            if ($tag_sha && $tag_sha ne $rev_sha) {
-                                $found_tag_sha = $tag_sha;
+                            my $tag_sha = $bl_original->{$repo->mid}->{$project_doc->{mid}}->{previous};
+
+                            if ($tag_sha && $tag_sha->sha ne $rev_sha) {
+                                $found_tag_sha = $tag_sha->sha;
                                 last;
                             }
                         }

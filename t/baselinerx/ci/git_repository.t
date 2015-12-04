@@ -226,21 +226,26 @@ subtest 'update_baselines: returns refs' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository();
 
-    TestGit->commit($repo);
+    my $prev_sha = TestGit->commit($repo);
+    my $prev_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $prev_sha);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha = TestGit->commit($repo);
+    my $top_sha = TestGit->commit($repo);
+    my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
 
-    my $retval = $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    my $retval = $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $top_sha } ] );
 
     cmp_deeply $retval,
       {
         '*' => {
             'previous' => ignore(),
-            'current'  => $sha,
+            'current'  => ignore(),
             'output'   => re(qr/Updated tag 'TEST'/)
         }
       };
+
+    is $retval->{'*'}->{previous}->sha, $prev_rev->sha;
+    is $retval->{'*'}->{current}->sha, $top_rev->sha;
 };
 
 subtest 'update_baselines: moves baselines down in demote' => sub {
@@ -369,26 +374,30 @@ subtest 'update_baselines: returns correct results' => sub {
     my $project = TestUtils->create_ci( 'project', name => 'project-with-dashes', repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
+    my $rev = TestUtils->create_ci('GitRevision', sha => $sha, repo => $repo);
     TestGit->tag( $repo, tag => 'project-with-dashes-TEST' );
-
-    my $new_sha = TestGit->commit($repo);
+    my $top_sha = TestGit->commit($repo);
+    my $top_rev = TestUtils->create_ci('GitRevision', sha => $top_sha, repo => $repo);
 
     my $retval = $repo->update_baselines(
         job       => { projects => [ $project ] },
         bl        => 'TEST',
         type      => 'promote',
         revisions => [],
-        ref       => $new_sha
+        ref       => $top_sha
     );
 
     cmp_deeply $retval,
       {
         $project->mid => {
             previous => ignore(),
-            current  => $new_sha,
+            current  => ignore(),
             output   => re(qr/Updated tag 'project-with-dashes-TEST'/)
         }
       };
+
+    is $retval->{$project->mid}->{previous}->sha, $rev->sha;
+    is $retval->{$project->mid}->{current}->sha, $top_rev->sha;
 };
 
 subtest 'update_baselines: updates tags only for project related to the repository' => sub {

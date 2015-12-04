@@ -301,16 +301,20 @@ subtest 'items: redeploy' => sub {
     my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
     my $sha = TestGit->commit($repo);
-    my $sha2 = TestGit->commit( $repo, file => 'NEW_FILE' );
+    my $rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+
+    my $top_sha = TestGit->commit( $repo, file => 'NEW_FILE' );
+    my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
 
     TestGit->tag( $repo, tag => 'TEST' );
 
-    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
 
     my $topic = TestUtils->create_ci( 'topic', is_changeset => 1, _doc => {} );
     mdb->master_rel->insert(
-        { from_mid => $topic->mid, to_mid => $rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+        { from_mid => $topic->mid, to_mid => $top_rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
 
@@ -323,8 +327,9 @@ subtest 'items: redeploy' => sub {
             stash_init   => {
                 bl_original => {
                     $repo->mid => {
-                        'Project' => {
-                            current => $sha
+                        $project->mid => {
+                            current => $top_rev,
+                            previous => $rev
                         }
                     }
                 }
@@ -332,14 +337,85 @@ subtest 'items: redeploy' => sub {
         );
     };
 
-    my @items = $rev->items( bl => 'TEST', tag => 'TEST', project => 'Project' );
+    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project->name );
     is scalar @items, 1;
 
     my $item = $items[0];
     is $item->status, 'A';
     is $item->mask,   '644';
     is $item->repo,   $repo;
-    is $item->sha,    $sha2;
+    is $item->sha,    $top_rev->sha;
+    is $item->path,   '/NEW_FILE';
+};
+
+subtest 'items: redeploy after redeploy' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+
+    my $sha = TestGit->commit($repo);
+    my $rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+
+    my $top_sha = TestGit->commit( $repo, file => 'NEW_FILE' );
+    my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
+
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $topic = TestUtils->create_ci( 'topic', is_changeset => 1, _doc => {} );
+    mdb->master_rel->insert(
+        { from_mid => $topic->mid, to_mid => $top_rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$topic],
+            bl           => 'TEST',
+            endtime      => '2015-01-01 00:00:00',
+            stash_init   => {
+                bl_original => {
+                    $repo->mid => {
+                        $project->mid => {
+                            current  => $top_rev,
+                            previous => $rev
+                        }
+                    }
+                }
+            }
+        );
+        TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$topic],
+            bl           => 'TEST',
+            endtime      => '2015-01-01 00:00:01',
+            stash_init   => {
+                bl_original => {
+                    $repo->mid => {
+                        $project->mid => {
+                            current  => $top_rev,
+                            previous => $top_rev
+                        }
+                    }
+                }
+            }
+        );
+    };
+
+    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project->name );
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'A';
+    is $item->mask,   '644';
+    is $item->repo,   $repo;
+    is $item->sha,    $top_rev->sha;
     is $item->path,   '/NEW_FILE';
 };
 

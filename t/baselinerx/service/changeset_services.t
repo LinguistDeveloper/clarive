@@ -55,7 +55,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
       {
         'revisions' => [$rev],
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
@@ -126,7 +126,7 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 
@@ -136,7 +136,7 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
@@ -213,7 +213,7 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 
@@ -223,22 +223,34 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
 
-subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
+subtest 'update_baselines: saves to stash retval' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository();
 
     my $sha = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'TEST' );
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    my $top_sha = TestGit->commit($repo);
+    my $top_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $top_sha );
 
     $repo = Test::MonkeyMock->new($repo);
-    $repo->mock( update_baselines => sub { 'UPDATE BASELINES' } );
+    $repo->mock(
+        update_baselines => sub {
+            {
+                'some-key' => {
+                    current  => $top_rev,
+                    previous => $rev
+                }
+            };
+        }
+    );
 
     my $job   = _mock_job();
     my $stash = {
@@ -248,7 +260,7 @@ subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
                 repo_revisions_items => [
                     {
                         repo      => $repo,
-                        revisions => [$rev],
+                        revisions => [$top_rev],
                         items     => ''
                     }
                 ]
@@ -261,7 +273,15 @@ subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
 
     $service->update_baselines( $c, {} );
 
-    is_deeply $stash->{bl_original}, { $repo->mid => 'UPDATE BASELINES' };
+    cmp_deeply $stash->{bl_original},
+      {
+        $repo->mid => {
+            'some-key' => {
+                current  => $top_rev,
+                previous => $rev
+            }
+        }
+      };
 };
 
 subtest 'update_baselines: calls repo update_baselines with correct params in rollback mode' => sub {
@@ -276,7 +296,16 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
     my $rev      = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
 
     $repo = Test::MonkeyMock->new($repo);
-    $repo->mock( update_baselines => sub { 'UPDATE BASELINES' } );
+    $repo->mock(
+        update_baselines => sub {
+            {
+                'some-key' => {
+                    current  => $rev,
+                    previous => $prev_rev,
+                }
+            };
+        }
+    );
 
     my $job = _mock_job( rollback => sub { 1 } );
     my $c = _mock_c(
@@ -285,7 +314,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
                 $repo->mid => {
                     'some-key' => {
                         previous => $prev_rev,
-                        current  => 'current',
+                        current  => $rev,
                         output   => '',
                     }
                 }
@@ -314,7 +343,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
       {
         'revisions' => [],
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job,
         'ref'       => $prev_rev
       };

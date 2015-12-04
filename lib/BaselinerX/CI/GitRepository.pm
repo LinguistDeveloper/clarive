@@ -382,7 +382,7 @@ method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
         # no need to update if it's already there
         if ( $top_rev eq $tag_sha ) {
             $retval{$retval_key} = {
-                current  => $top_rev,
+                current  => BaselinerX::CI::GitRevision->new(sha => $top_rev, name => $tag),
                 previous => $previous,
                 output   => $out
             };
@@ -411,7 +411,7 @@ method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
         }
 
         $retval{$retval_key} = {
-            current  => $top_rev,
+            current  => BaselinerX::CI::GitRevision->new(sha => $top_rev, name => $tag),
             previous => $previous,
             output   => $out
         };
