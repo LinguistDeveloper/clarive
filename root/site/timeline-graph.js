@@ -386,7 +386,6 @@
 
             }
             
-            console.log(res);
             var object_node = [];          
 
             //Create group of nodes for status
