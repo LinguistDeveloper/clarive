@@ -321,6 +321,7 @@
                 [ 'trac', _('Trac') ],
                 [ 'redmine', _('Redmine') ],
                 [ 'remedy', _('BMC Remedy') ],
+                [ 'servicenow', _('Servicenow') ],
                 [ 'jira', _('Jira') ],
                 [ 'hp_ppm', _('HP PPM') ],
                 [ 'clarity', _('Clarity') ]
