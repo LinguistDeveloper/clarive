@@ -280,6 +280,13 @@ subtest 'ci sorting by sequence is correct' => sub {
     is $cis[$#cis]->{something}, 1;
 };
 
+subtest 'save: control mid characters' => sub{
+    _setup();
+    
+    my $ci = BaselinerX::CI::TestClass->new(mid=>'bad#mid');
+    like exception { $ci->save }, qr/cannot contain.*#/;
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;

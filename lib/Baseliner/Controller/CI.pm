@@ -1238,13 +1238,13 @@ sub json_tree : Local {
     my %root_node_data = %$d if ref $d eq 'HASH';
     my $depth = length $p->{depth} ? $p->{depth} : 2;
     $p->{limit} //= 50;  
-    my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '-' : '';
+    my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '__#__' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $k=0;
     $c->stash->{json} = try {
         my @all;
         for my $mid ( _array( $mids ) ) { 
-            $mid =~ s{^.+-(.+)$}{$1}; 
+            $mid =~ s{^.+__#__(.+)$}{$1}; 
             my $ci = ci->new( $mid );
             my @rels = $ci->$direction( depth=>$depth, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;

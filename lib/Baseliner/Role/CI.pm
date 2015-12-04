@@ -220,6 +220,9 @@ sub save {
             };
             # update mid into CI
             $mid = length($mid) ? $mid : $self->gen_mid; 
+            if( $mid =~ /([#\.\?])/ ) {
+                _fail _loc( 'MIDs cannot contain the character `%1`', "$1" );
+            }
             $self->mid( $mid );
             $self->{_seq} = $_seq;  # ro attribute
             $$master_row{mid} = $mid;
