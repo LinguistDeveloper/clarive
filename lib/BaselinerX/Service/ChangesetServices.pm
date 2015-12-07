@@ -228,26 +228,31 @@ sub update_baselines {
             my $out;
             $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
             if( $job->rollback ) {
+                my $ref;
                 my $bl_original = $stash->{bl_original};
-                if( my $repo_stash = $bl_original->{$repo->mid} ) {
-                    foreach my $key (keys %$repo_stash) {
-                        next unless my $previous = $repo_stash->{$key};
-                        next unless my $ref = $previous->{previous};
 
-                        $out = $repo->update_baselines(
-                            job       => $job,
-                            ref       => $ref,
-                            revisions => [],
-                            bl        => $bl,
-                            type      => $type
-                        );
+                if ( my $repo_stash = $bl_original->{ $repo->mid } ) {
+                    foreach my $key ( keys %$repo_stash ) {
+                        next unless my $previous = $repo_stash->{$key};
+                        last if $ref = $previous->{previous};
                     }
+                }
+
+                if ($ref) {
+                    $out = $repo->update_baselines(
+                        job       => $job,
+                        ref       => $ref,
+                        revisions => [],
+                        bl        => $bl,
+                        type      => $type
+                    );
                 } else {
                     _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
                 }
             } else {
                 $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
             }
+
             # save previous revision by repo mid
             $stash->{bl_original}{$repo->mid} = $out; 
             $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );

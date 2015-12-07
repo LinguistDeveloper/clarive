@@ -727,13 +727,15 @@ subtest 'checkout: checkouts items into directory with project tag_mode' => sub 
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
+    my $project = TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', repositories => [ $repo->mid ] );
+
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'Project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
     my $dir = tempdir();
 
-    $repo->checkout( dir => $dir, tag => 'TEST', project => 'Project' );
+    $repo->checkout( dir => $dir, tag => 'TEST', project => $project );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -825,7 +827,7 @@ subtest 'commits_for_branch: get tag from bl when not present' => sub {
     like $commits[2], qr/^[a-z0-9]{40} first$/;
 };
 
-subtest 'commits_for_branch: throws when no tag present' => sub {
+subtest 'commits_for_branch: throws when unknown tag' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );

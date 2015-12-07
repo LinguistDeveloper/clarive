@@ -229,6 +229,9 @@ subtest 'items: cannot redeploy when last job detected but without bl_original' 
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
 
+    my $project =
+      TestUtils->create_ci( 'project', name => 'project', moniker => 'project', repositories => [ $repo->mid ] );
+
     my $sha  = TestGit->commit($repo);
     my $sha2 = TestGit->commit($repo);
 
@@ -252,13 +255,16 @@ subtest 'items: cannot redeploy when last job detected but without bl_original' 
         );
     };
 
-    like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => 'Project' ) }, qr/No last job detected/;
+    like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => $project ) }, qr/No last job detected/;
 };
 
 subtest 'items: cannot redeploy when last job detected but with invalid bl_original' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+
+    my $project =
+      TestUtils->create_ci( 'project', name => 'project', moniker => 'project', repositories => [ $repo->mid ] );
 
     my $sha  = TestGit->commit($repo);
     my $sha2 = TestGit->commit($repo);
@@ -292,7 +298,7 @@ subtest 'items: cannot redeploy when last job detected but with invalid bl_origi
         );
     };
 
-    like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => 'Project' ) }, qr/No last job detected/;
+    like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => $project ) }, qr/No last job detected/;
 };
 
 subtest 'items: redeploy' => sub {
@@ -337,7 +343,7 @@ subtest 'items: redeploy' => sub {
         );
     };
 
-    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project->name );
+    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -408,7 +414,7 @@ subtest 'items: redeploy after redeploy' => sub {
         );
     };
 
-    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project->name );
+    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project );
     is scalar @items, 1;
 
     my $item = $items[0];

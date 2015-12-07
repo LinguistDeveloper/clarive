@@ -535,8 +535,10 @@ method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     return @rev_list;
 }
 
-method bl_to_tag(Str $bl, Any $project = undef) {
+method bl_to_tag(Maybe[Str] $bl = undef, Any $project = undef) {
     my ($bl, $project) = @_;
+
+    return unless $bl;
 
     return $bl unless $self->tags_mode eq 'project';
 
