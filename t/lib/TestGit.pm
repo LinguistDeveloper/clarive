@@ -14,7 +14,7 @@ sub create_repo {
 
     my $dir = tempdir();
 
-    system("cd $dir; rm -rf *; git init");
+    system(qq{cd $dir; rm -rf *; git init; git config user.email "clarive\@localhost"; git config  user.name "clarive"});
 
     return $dir;
 }
