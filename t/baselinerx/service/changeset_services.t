@@ -8,18 +8,25 @@ use Test::MonkeyMock;
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
-
-use_ok 'BaselinerX::Service::ChangesetServices';
+use TestGit;
 
 use BaselinerX::CI::GitItem;
 use BaselinerX::CI::GitRepository;
 use BaselinerX::CI::GitRevision;
 
+use_ok 'BaselinerX::Service::ChangesetServices';
+
 subtest 'update_baselines: calls repo update_baselines with correct params' => sub {
     _setup();
 
-    my $repo = _mock_repo();
-    my $rev = _mock_rev( repo => $repo );
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock('update_baselines');
 
     my $job = _mock_job();
     my $c   = _mock_c(
@@ -27,7 +34,6 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -49,7 +55,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
       {
         'revisions' => [$rev],
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
@@ -57,13 +63,25 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
 subtest 'update_baselines: groups revisions' => sub {
     _setup();
 
-    my $repo1 = _mock_repo( mid => 1 );
-    my $rev11 = _mock_rev( mid => 11, repo => $repo1 );
-    my $rev12 = _mock_rev( mid => 12, repo => $repo1 );
+    my $repo1 = TestUtils->create_ci_GitRepository();
+    my $sha11 = TestGit->commit($repo1);
+    my $sha12 = TestGit->commit($repo1);
+    TestGit->tag( $repo1, tag => 'TEST' );
+    my $rev11 = TestUtils->create_ci( 'GitRevision', repo => $repo1, sha => $sha11 );
+    my $rev12 = TestUtils->create_ci( 'GitRevision', repo => $repo1, sha => $sha12 );
 
-    my $repo2 = _mock_repo( mid => 2 );
-    my $rev21 = _mock_rev( mid => 21, repo => $repo2 );
-    my $rev22 = _mock_rev( mid => 22, repo => $repo2 );
+    $repo1 = Test::MonkeyMock->new($repo1);
+    $repo1->mock('update_baselines');
+
+    my $repo2 = TestUtils->create_ci_GitRepository();
+    my $sha21 = TestGit->commit($repo2);
+    my $sha22 = TestGit->commit($repo2);
+    TestGit->tag( $repo2, tag => 'TEST' );
+    my $rev21 = TestUtils->create_ci( 'GitRevision', repo => $repo2, sha => $sha21 );
+    my $rev22 = TestUtils->create_ci( 'GitRevision', repo => $repo2, sha => $sha22 );
+
+    $repo2 = Test::MonkeyMock->new($repo2);
+    $repo2->mock('update_baselines');
 
     my $job = _mock_job();
     my $c   = _mock_c(
@@ -71,7 +89,6 @@ subtest 'update_baselines: groups revisions' => sub {
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo1,
@@ -109,7 +126,7 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 
@@ -119,7 +136,7 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
@@ -127,13 +144,25 @@ subtest 'update_baselines: groups revisions' => sub {
 subtest 'update_baselines: groups revisions with different projects' => sub {
     _setup();
 
-    my $repo1 = _mock_repo( mid => 1 );
-    my $rev11 = _mock_rev( mid => 11, repo => $repo1 );
-    my $rev12 = _mock_rev( mid => 12, repo => $repo1 );
+    my $repo1 = TestUtils->create_ci_GitRepository();
+    my $sha11 = TestGit->commit($repo1);
+    my $sha12 = TestGit->commit($repo1);
+    TestGit->tag( $repo1, tag => 'TEST' );
+    my $rev11 = TestUtils->create_ci( 'GitRevision', repo => $repo1, sha => $sha11 );
+    my $rev12 = TestUtils->create_ci( 'GitRevision', repo => $repo1, sha => $sha12 );
 
-    my $repo2 = _mock_repo( mid => 2 );
-    my $rev21 = _mock_rev( mid => 21, repo => $repo2 );
-    my $rev22 = _mock_rev( mid => 22, repo => $repo2 );
+    $repo1 = Test::MonkeyMock->new($repo1);
+    $repo1->mock('update_baselines');
+
+    my $repo2 = TestUtils->create_ci_GitRepository();
+    my $sha21 = TestGit->commit($repo2);
+    my $sha22 = TestGit->commit($repo2);
+    TestGit->tag( $repo2, tag => 'TEST' );
+    my $rev21 = TestUtils->create_ci( 'GitRevision', repo => $repo2, sha => $sha21 );
+    my $rev22 = TestUtils->create_ci( 'GitRevision', repo => $repo2, sha => $sha22 );
+
+    $repo2 = Test::MonkeyMock->new($repo2);
+    $repo2->mock('update_baselines');
 
     my $job = _mock_job();
     my $c   = _mock_c(
@@ -184,7 +213,7 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 
@@ -194,27 +223,44 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job
       };
 };
 
-subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
+subtest 'update_baselines: saves to stash retval' => sub {
     _setup();
 
-    my $repo = _mock_repo();
-    my $rev = _mock_rev( repo => $repo );
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit($repo);
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    my $top_sha = TestGit->commit($repo);
+    my $top_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $top_sha );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock(
+        update_baselines => sub {
+            {
+                'some-key' => {
+                    current  => $top_rev,
+                    previous => $rev
+                }
+            };
+        }
+    );
 
     my $job   = _mock_job();
     my $stash = {
         job             => $job,
         project_changes => [
             {
-                project              => '',
                 repo_revisions_items => [
                     {
                         repo      => $repo,
-                        revisions => [$rev],
+                        revisions => [$top_rev],
                         items     => ''
                     }
                 ]
@@ -227,26 +273,55 @@ subtest 'update_baselines: saves to stash previous rev for rollback' => sub {
 
     $service->update_baselines( $c, {} );
 
-    is_deeply $stash->{bl_original}, { 1 => 'PREVIOUS' };
+    cmp_deeply $stash->{bl_original},
+      {
+        $repo->mid => {
+            'some-key' => {
+                current  => $top_rev,
+                previous => $rev
+            }
+        }
+      };
 };
 
 subtest 'update_baselines: calls repo update_baselines with correct params in rollback mode' => sub {
     _setup();
 
-    my $repo     = _mock_repo();
-    my $prev_rev = _mock_rev( mid => 1234, repo => $repo );
-    my $rev      = _mock_rev( repo => $repo );
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha      = TestGit->commit($repo);
+    my $prev_sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $prev_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $prev_sha );
+    my $rev      = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock(
+        update_baselines => sub {
+            {
+                'some-key' => {
+                    current  => $rev,
+                    previous => $prev_rev,
+                }
+            };
+        }
+    );
 
     my $job = _mock_job( rollback => sub { 1 } );
     my $c = _mock_c(
         stash => {
             bl_original => {
-                1 => $prev_rev
+                $repo->mid => {
+                    'some-key' => {
+                        previous => $prev_rev,
+                        current  => $rev,
+                        output   => '',
+                    }
+                }
             },
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -268,7 +343,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
       {
         'revisions' => [],
         'type'      => 'promote',
-        'tag'       => 'TEST',
+        'bl'        => 'TEST',
         'job'       => $job,
         'ref'       => $prev_rev
       };
@@ -277,9 +352,14 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
 subtest 'update_baselines: does nothing in rollback when no original bl found' => sub {
     _setup();
 
-    my $repo     = _mock_repo();
-    my $prev_rev = _mock_rev( mid => 1234, repo => $repo );
-    my $rev      = _mock_rev( repo => $repo );
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock( update_baselines => sub { 'UPDATE BASELINES' } );
 
     my $job = _mock_job( rollback => sub { 1 } );
     my $c = _mock_c(
@@ -287,7 +367,6 @@ subtest 'update_baselines: does nothing in rollback when no original bl found' =
             job             => $job,
             project_changes => [
                 {
-                    project              => '',
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -310,9 +389,17 @@ subtest 'update_baselines: does nothing in rollback when no original bl found' =
 subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     _setup();
 
-    my $project = _mock_project();
-    my $repo    = _mock_repo();
-    my $rev     = _mock_rev( repo => $repo );
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $repo = TestUtils->create_ci_GitRepository( rel_path => '/path/to/rel' );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock( update_baselines => sub { 'UPDATE BASELINES' } );
+    $repo->mock( checkout         => sub { } );
 
     my $job = _mock_job();
     my $c   = _mock_c(
@@ -339,11 +426,12 @@ subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     $service->checkout_bl( $c, {} );
 
     my (%args) = $repo->mocked_call_args('checkout');
-    cmp_deeply \%args, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/project/path/to/repo.git'
-
-    };
+    cmp_deeply \%args,
+      {
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/rel',
+        'project' => $project
+      };
 };
 
 subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub {
@@ -384,15 +472,17 @@ subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub 
 
     my (%args1) = $repo1->mocked_call_args('checkout');
     cmp_deeply \%args1, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/Project/path/to/repo1.git'
+        'project' => $project,
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo1.git'
 
     };
 
     my (%args2) = $repo2->mocked_call_args('checkout');
     cmp_deeply \%args2, {
-        'tag' => 'TEST',
-        'dir' => '/job/dir/Project/path/to/repo2.git'
+        'project' => $project,
+        'tag'     => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo2.git'
 
     };
 
@@ -403,7 +493,6 @@ subtest 'job_items: loads items into job' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( rel_path => 'path/to/repo.git' );
-    $repo = Test::MonkeyMock->new($repo);
 
     my $item = BaselinerX::CI::GitItem->new(
         repo      => $repo,
@@ -412,9 +501,9 @@ subtest 'job_items: loads items into job' => sub {
         versionid => 1,
     );
 
-    $repo->mock( group_items_for_revisions => sub { ($item) } );
-
-    my $rev = _mock_rev( repo => $repo );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
 
     my $project = TestUtils->create_ci_project();
     $project = Test::MonkeyMock->new($project);
@@ -424,6 +513,9 @@ subtest 'job_items: loads items into job' => sub {
     $changeset = Test::MonkeyMock->new($changeset);
     $changeset->mock( projects  => sub { ($project) } );
     $changeset->mock( revisions => sub { ($rev) } );
+
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock( group_items_for_revisions => sub { ($item) } );
 
     my $job   = _mock_job();
     my $stash = {
@@ -460,7 +552,6 @@ subtest 'job_items: returns project count' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( rel_path => 'path/to/repo.git' );
-    $repo = Test::MonkeyMock->new($repo);
 
     my $item = BaselinerX::CI::GitItem->new(
         repo      => $repo,
@@ -469,9 +560,12 @@ subtest 'job_items: returns project count' => sub {
         versionid => 1,
     );
 
-    $repo->mock( group_items_for_revisions => sub { ($item) } );
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
 
-    my $rev = _mock_rev( repo => $repo );
+    $repo = Test::MonkeyMock->new($repo);
+    $repo->mock( group_items_for_revisions => sub { ($item) } );
 
     my $project = TestUtils->create_ci_project();
     $project = Test::MonkeyMock->new($project);
@@ -546,48 +640,8 @@ sub _mock_c {
     return $c;
 }
 
-sub _mock_project {
-    my (%params) = @_;
-
-    my $project = Test::MonkeyMock->new;
-    $project->mock( name => sub { $params{name} || 'project' } );
-
-    return $project;
-}
-
-sub _mock_repo {
-    my (%params) = @_;
-
-    my $repo = Test::MonkeyMock->new;
-    $repo->mock( name     => sub { 'name' } );
-    $repo->mock( rel_path => sub { 'path/to/repo.git' } );
-    $repo->mock( mid      => sub { $params{mid} || 1 } );
-    $repo->mock( checkout => sub { } );
-    $repo->mock(
-        update_baselines => sub {
-            { previous => 'PREVIOUS' };
-        }
-    );
-
-    return $repo;
-}
-
-sub _mock_rev {
-    my (%params) = @_;
-
-    my $rev = Test::MonkeyMock->new;
-    $rev->mock( mid => sub { $params{mid} || 123 } );
-    $rev->mock( sha => sub { '123' } );
-    $rev->mock( repo => sub { $params{repo} } );
-
-    return $rev;
-}
-
 sub _build_service {
     my (%params) = @_;
 
-    my $service = BaselinerX::Service::ChangesetServices->new(@_);
-    $service = Test::MonkeyMock->new($service);
-
-    return $service;
+    return BaselinerX::Service::ChangesetServices->new(@_);
 }

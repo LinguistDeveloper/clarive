@@ -40,6 +40,13 @@
             data: [ ['diff',_('Diff with Environment')], ['show',_('Individual Commits')] ],  // patch?
             value: params.revision_mode || 'diff'
         }),
+        new Baseliner.ComboDouble({
+            name: 'tags_mode',
+            fieldLabel: _('Tags Mode'),
+            anchor: '40%',
+            data: [ ['bl',_('Only environment')], ['project',_('Project + environment')] ],  // patch?
+            value: params.tags_mode || 'bl'
+        }),
         tabs
     ]
 })

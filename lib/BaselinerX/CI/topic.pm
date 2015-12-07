@@ -187,7 +187,7 @@ sub items {
     my @items;
     for my $repo_group ( values %repos ) {
         my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
-        my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, path_prefix=>$p{path_prefix} );
+        my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, path_prefix=>$p{path_prefix}, project => $project);
     }
     return @items;
 }

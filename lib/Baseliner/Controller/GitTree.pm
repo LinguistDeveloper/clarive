@@ -5,7 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Time::Piece;
 use Try::Tiny;
 use Baseliner::Sugar;
-use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape);
+use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape _warn);
 
 require Git::Wrapper;
 require Girl;
@@ -18,8 +18,9 @@ sub branch : Local {
     return
       unless my $node = $self->validate_params(
         $c,
-        repo_mid => { isa => 'ExistingCI' },
-        name     => { isa => 'GitBranch' }
+        repo_mid   => { isa => 'ExistingCI' },
+        project    => { isa => 'Str' },
+        name       => { isa => 'GitBranch' }
       );
 
     my $data = [
@@ -28,6 +29,7 @@ sub branch : Local {
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
+                project => $node->{project}
             },
             text       => _loc('tree'),
             icon       => '/static/images/icons/lc/tree.gif',
@@ -39,6 +41,7 @@ sub branch : Local {
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
+                project => $node->{project}
             },
             text       => _loc('changes'),
             icon       => '/static/images/icons/lc/changes.gif',
@@ -52,6 +55,7 @@ sub branch : Local {
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
+                project => $node->{project}
             },
             leaf       => \0,
             expandable => \1
@@ -70,6 +74,7 @@ sub branch_commits : Local {
       unless my $p = $self->validate_params(
         $c,
         repo_mid => { isa => 'ExistingCI' },
+        project    => { isa => 'Str' },
         branch   => { isa => 'GitBranch', default => 'HEAD' },
       );
 
@@ -77,7 +82,8 @@ sub branch_commits : Local {
 
     my $err;
     my @rev_list = try {
-        $repo_ci->commits_for_branch( branch => $p->{branch} );
+        my $project = ci->project->search_ci(name => $p->{project});
+        $repo_ci->commits_for_branch( branch => $p->{branch}, project => $project );
     }
     catch {
         $err = shift;

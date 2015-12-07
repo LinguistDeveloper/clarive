@@ -25,6 +25,12 @@ sub rel_type {
     },
 }
 
+sub unique_keys {
+    [
+        ['moniker']
+    ]
+}
+
 service 'scan' => 'Run Scanner' => sub {
     return 'Project scanner disabled';   
 };

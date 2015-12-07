@@ -1,6 +1,7 @@
 package BaselinerX::CI::GitRevision;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _array);
+use BaselinerX::CI::GitItem;
 require Girl;
 use Baseliner::Utils;
 with 'Baseliner::Role::CI::Revision';
@@ -57,14 +58,16 @@ sub items {
 
     my $type = $p{type} // 'promote';
     my $tag = $p{tag} // _fail _loc 'Missing parameter tag';
+    my $bl = $p{bl} // _fail _loc 'Missing parameter bl';
+    my $project = $p{project};
 
     # TODO Comprobar si tengo last_commit
     my $repo = $self->repo;
     my $git = $repo->git;
-    
+
     my $rev_sha  = $self->sha_long; 
     my $tag_sha  = $repo->git->exec( qw/rev-parse/, $tag );
-    
+
     my $diff_shas;
         
     my @items;
@@ -80,49 +83,14 @@ sub items {
             Util->_debug( "BL and REV equal" );
 
             if ( $type eq 'promote' ) {
-                my $sha = ci->GitRevision->search_ci( sha => $rev_sha );
-                my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
+                my ($job, $found_tag_sha) = $self->_find_sha_from_previous_jobs($project, $repo, $rev_sha, $bl);
 
-                if ( scalar(@topics) eq 0 ) {
-                    _fail _loc("No changesets for this sha");
-                } elsif ( scalar(@topics) gt 1 ) {
-                    _fail _("This sha is contained in more than one sha");
-                }
-                my $cs = $topics[0];
-
-                my (@last_jobs) = map {$_->{mid}} sort { $b->{endtime} cmp $a->{endtime} } grep { $_->{final_status} eq 'FINISHED' && $_->{bl} eq $p{tag} } ci->new($cs)->jobs;
-
-                if ( @last_jobs ) {
-                    my $last_job;
-                    my $job;
-                    my $st;
-                    my $found = 0;
-
-                    for $last_job ( @last_jobs ) {
-                        $job = ci->new($last_job);
-                        $st = $job->stash;
-                        if ( $st->{bl_original} && $st->{bl_original}->{$repo->mid}->{sha} ne $rev_sha ) {
-                            $found = 1;
-                            last;
-                        }
-                    }
-
-                    if ( $found ) {                    
-                        $tag_sha = $st->{bl_original}->{$repo->mid}->{sha};
-                        _warn _loc("Tag sha set to %1 as it was in previous job %2", $tag_sha, $job->{name});
-                        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
-                        $diff_shas = [ $tag_sha, $rev_sha ];
-                    } else {
-                        _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
-                        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-                        @items = map { my $item = 'M   ' . $_; } @items;
-                        $diff_shas = [ $tag_sha ];
-                    }
+                if ($found_tag_sha) {
+                    _warn _loc("Tag %3 sha set to %1 as it was in previous job %2", $found_tag_sha, $job->{name}, $tag);
+                    @items = $git->exec( qw/diff --name-status/, $found_tag_sha, $rev_sha );
+                    $diff_shas = [ $found_tag_sha, $rev_sha ];
                 } else {
-                    _warn _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
-                    @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-                    @items = map { my $item = 'M   ' . $_; } @items;
-                    $diff_shas = [ $tag_sha ];
+                    _fail _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
                 }
             } else {
                 @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
@@ -150,6 +118,48 @@ sub items {
     return @items;
 }
 
+sub _find_sha_from_previous_jobs {
+    my $self = shift;
+    my ($project, $repo, $rev_sha, $bl) = @_;
+
+    my $sha = ci->GitRevision->search_ci( sha => $rev_sha );
+    my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
+
+    if ( scalar(@topics) eq 0 ) {
+        _fail _loc("No changesets for this sha");
+    } elsif ( scalar(@topics) gt 1 ) {
+        _fail _loc("This sha is contained in more than one changeset");
+    }
+    my $cs = $topics[0];
+
+    my (@last_jobs) = map {
+        $_->{mid}
+    } sort { 
+        $b->{endtime} cmp $a->{endtime} 
+    } grep { 
+        $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl 
+    } ci->new($cs)->jobs;
+
+    return unless @last_jobs;
+
+    my $last_job;
+    my $job;
+    my $st;
+
+    for $last_job ( @last_jobs ) {
+        $job = ci->new($last_job);
+        $st = $job->stash;
+        if ( my $bl_original = $st->{bl_original}) {
+            my $tag_sha = $bl_original->{$repo->mid}->{$project->mid}->{previous};
+
+            if ($tag_sha && $tag_sha->sha ne $rev_sha) {
+                return ($job, $tag_sha->sha);
+            }
+        }
+    }
+
+    return;
+}
 
 sub sha_long {
     my $self = shift;

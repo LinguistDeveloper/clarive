@@ -228,16 +228,33 @@ sub update_baselines {
             my $out;
             $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
             if( $job->rollback ) {
-                if( my $previous = $stash->{bl_original}{$repo->mid} ) {
-                    $out = $repo->update_baselines( job => $job, ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
+                my $ref;
+                my $bl_original = $stash->{bl_original};
+
+                if ( my $repo_stash = $bl_original->{ $repo->mid } ) {
+                    foreach my $key ( keys %$repo_stash ) {
+                        next unless my $previous = $repo_stash->{$key};
+                        last if $ref = $previous->{previous};
+                    }
+                }
+
+                if ($ref) {
+                    $out = $repo->update_baselines(
+                        job       => $job,
+                        ref       => $ref,
+                        revisions => [],
+                        bl        => $bl,
+                        type      => $type
+                    );
                 } else {
                     _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
                 }
             } else {
-                $out = $repo->update_baselines( job => $job, revisions => $revisions, tag=>$bl, type=>$type );
+                $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
             }
+
             # save previous revision by repo mid
-            $stash->{bl_original}{$repo->mid} = $out->{previous}; 
+            $stash->{bl_original}{$repo->mid} = $out; 
             $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
         }
     }
@@ -358,7 +375,7 @@ sub job_items {
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
             $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
-            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
+            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl, project=>$project );
             push @items, map {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
@@ -422,7 +439,7 @@ sub checkout_bl {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project );
             my @ls = _array( $co_info->{ls} );
             $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }
@@ -447,7 +464,7 @@ sub checkout_bl_all_repos {
         for my $repo ( @repos ) {
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project);
             my @ls = _array( $co_info->{ls} );
             $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }

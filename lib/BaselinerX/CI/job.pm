@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
+use BaselinerX::CI::job_log;
 use Try::Tiny;
 use v5.10;
 use utf8;
@@ -706,7 +707,7 @@ sub gen_job_key {
 sub build_job_contents {
     my ($self, $save_this) =@_;
     my $jc = {};
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
+    my $config = BaselinerX::Type::Model::ConfigStore->get( 'config.job' );
 
     $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
     $jc->{list_changeset_cis} //= $self->changesets;
@@ -1089,7 +1090,7 @@ sub run {
         if ( $self->last_finish_status eq 'REJECTED' ) {
             _fail(_loc("Job rejected.  Treated as failed"));
         }
-        my $ret = Baseliner->model('Rules')->run_single_rule( 
+        my $ret = Baseliner::Model::Rules->run_single_rule( 
             id_rule => $self->id_rule, 
             logging => 1,
             stash   => $stash,

@@ -499,6 +499,9 @@ sub branches : Local {
                 # get node menu
                 my $data = $cs->node_data;
                 $data->{repo_mid} = $id_repo;
+                $data->{id_project} = $id_project;
+                $data->{project} = $project;
+
                 push @$menu, _array $cs->node_menu if ref $cs->node_menu;
                 push @tree, {
                     url        => $cs->node_url,
@@ -524,7 +527,7 @@ sub branches : Local {
             };
         };
     }
-_log "TREE=====>"._dump @tree;
+_debug "TREE=====>"._dump @tree;
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }

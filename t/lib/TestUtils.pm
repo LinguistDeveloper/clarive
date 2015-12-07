@@ -16,7 +16,8 @@ use Clarive::ci;
 use Time::Local;
 use Time::Piece;
 use Test::MockTime qw(set_absolute_time restore_time);
-use File::Temp qw(tempdir);
+use Test::TempDir::Tiny;
+use TestGit;
 
 sub cleanup_cis {
     my $class = shift;
@@ -77,11 +78,7 @@ sub create_ci_topic {
 sub create_ci_GitRepository {
     my $class = shift;
 
-    my $dir = tempdir( CLEANUP => 1 );
-
-    system("cd $dir; git init; touch README; git add .; git commit -m 'initial'");
-    system("cd $dir; echo 'second' > README; git commit -am 'second'");
-    system("cd $dir; echo 'third' > README; git commit -am 'third'");
+    my $dir = TestGit->create_repo;
 
     return $class->create_ci('GitRepository', repo_dir => "$dir/.git", @_);
 }
@@ -97,6 +94,20 @@ sub setup_registry {
     $class->clear_registry;
     Class::Load::load_class($_) for @modules;
     $class->reload_module($_) for @modules;
+}
+
+sub random_string {
+    my $class = shift;
+    my ($len) = @_;
+
+    $len ||= 10;
+
+    my @alpha = ('0' .. '9', 'a' .. 'z');
+
+    my $text = '';
+    $text .= $alpha[int(rand(@alpha))] for 1 .. $len;
+
+    return $len;
 }
 
 sub mock_catalyst_req {

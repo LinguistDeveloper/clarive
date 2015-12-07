@@ -392,7 +392,7 @@ sub run_ship {
     my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
     my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
     my $recursive = $config->{recursive} // 0;
-    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
+    $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     
     _fail _loc "Server not configured" unless length $config->{server};

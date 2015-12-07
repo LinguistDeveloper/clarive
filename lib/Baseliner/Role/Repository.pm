@@ -4,6 +4,8 @@ use Moose::Role;
 requires 'name';
 requires 'config_component';
 
+has tags_mode => qw(is rw isa Str);
+
 sub provider_info {
     my $self = shift;
     return +{
