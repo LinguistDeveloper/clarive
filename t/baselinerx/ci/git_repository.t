@@ -173,7 +173,7 @@ subtest 'create_tags_service_handler: creates project tags' => sub {
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
     TestGit->commit($repo);
 
-    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
 
     $repo->create_tags_handler( undef, {} );
 
@@ -191,7 +191,7 @@ subtest 'create_tags_service_handler: filters by tags when projects' => sub {
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
     TestGit->commit($repo);
 
-    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
 
     $repo->create_tags_handler( undef, { tag_filter => 'project-TEST' } );
 
@@ -344,7 +344,7 @@ subtest 'update_baselines: updates tags for every project' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'project-with-dashes', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( moniker => 'project-with-dashes', repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'project-with-dashes-TEST' );
@@ -371,7 +371,7 @@ subtest 'update_baselines: returns correct results' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'project-with-dashes', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( moniker => 'project-with-dashes', repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
     my $rev = TestUtils->create_ci('GitRevision', sha => $sha, repo => $repo);
@@ -407,8 +407,8 @@ subtest 'update_baselines: updates tags only for project related to the reposito
 
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'project', moniker => 'project', repositories => [ $repo->mid ] );
-    my $other_project = TestUtils->create_ci( 'project', name => 'other', moniker => 'other', repositories => [] );
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $other_project = _create_ci_project( moniker => 'other' );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'project-TEST' );
@@ -647,10 +647,10 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'Project-TEST' );
+    TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
     $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
@@ -716,10 +716,10 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
     my $sha = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'Project-TEST' );
+    TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->checkout( dir => $dir, tag => 'Project-TEST' ) }, qr/project is required/;
+    like exception { $repo->checkout( dir => $dir, tag => 'project-TEST' ) }, qr/project is required/;
 };
 
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
@@ -727,10 +727,10 @@ subtest 'checkout: checkouts items into directory with project tag_mode' => sub 
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', repositories => [ $repo->mid ] );
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'Project-TEST' );
+    TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
     my $dir = tempdir();
@@ -844,6 +844,10 @@ subtest 'commits_for_branch: throws when no tags present' => sub {
 };
 
 done_testing;
+
+sub _create_ci_project {
+    return TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', @_ );
+}
 
 sub _setup {
     TestUtils->cleanup_cis;

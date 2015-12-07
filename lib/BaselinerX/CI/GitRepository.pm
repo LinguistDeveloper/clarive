@@ -543,8 +543,9 @@ method bl_to_tag(Maybe[Str] $bl = undef, Any $project = undef) {
     return $bl unless $self->tags_mode eq 'project';
 
     _fail 'project is required' unless $project;
+    _fail 'project has to have moniker' unless my $moniker = $project->moniker;
 
-    return sprintf( '%s-%s', $project->name, $bl);
+    return sprintf( '%s-%s', $moniker, $bl);
 }
 
 1;
