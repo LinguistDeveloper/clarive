@@ -218,7 +218,7 @@ requires 'Test::MonkeyMock', '>=0.09';
 requires 'Test::MockSleep';
 requires 'Test::MockTime';
 requires 'Test::Deep';
-requries 'Test::TempDir::Tiny';
+requires 'Test::TempDir::Tiny';
 
 # Utils
 requires 'App::Ack';
