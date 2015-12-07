@@ -10,6 +10,8 @@ sub icon { '/static/images/icons/server.png' }
 
 
 has os          => qw(default unix lazy 1 required 1 is rw isa), enum [qw(unix win mvs)];
+has osver       => qw(is rw isa Str);
+has arch        => qw(default x86_64 is rw isa), enum [qw(x86_64 x86)];
 has hostname    => qw(is rw isa Any required 1);
 has remote_temp => qw(is rw isa Any lazy 1), default => sub {
     my $self = shift;

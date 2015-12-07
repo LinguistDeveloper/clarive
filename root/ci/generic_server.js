@@ -2,6 +2,8 @@
     return [
         { xtype: 'textfield', fieldLabel: _('Hostname or IP'), name:'hostname', anchor:'100%', allowBlank: false },
         new Baseliner.ComboSingle({ name:'os', data:['unix', 'win', 'mvs'], fieldLabel:_('OS') }),
+        { xtype: 'textfield', fieldLabel: _('OS Version'), name:'osver', anchor:'100%', allowBlank: true },
+        new Baseliner.ComboSingle({ name:'arch', data:['x86_64', 'x86'], fieldLabel:_('Architecture') }),
         new Baseliner.CBox({ fieldLabel: _('Connect by Worker'), name: 'connect_worker', checked: params.rec.connect_worker, default_value: true }),
         new Baseliner.CBox({ fieldLabel: _('Connect by Balix'), name: 'connect_balix', checked: params.rec.connect_balix, default_value: true }),
         new Baseliner.CBox({ fieldLabel: _('Connect by SSH'), name: 'connect_ssh', checked: params.rec.connect_ssh, default_value: true }),
