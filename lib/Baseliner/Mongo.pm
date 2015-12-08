@@ -382,6 +382,9 @@ sub index_all {
             [{ to_mid  =>1 }],
             [{ from_mid  =>1 }],
             [{ from_mid=>1, to_mid=>1 }],
+            [{ from_cl=>1 }],
+            [{ to_cl=>1 }],
+            [{ from_cl=>1, to_cl=>1 }],
         ],
         master_seen => [
             [{ mid=>1, username=>1 }],

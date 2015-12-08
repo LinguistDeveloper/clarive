@@ -346,16 +346,25 @@ sub save_data {
     my %relations;
     for my $rel ( @master_rel ) {
         # delete previous relationships
-        my $my_rel = $rel->{rel_type}->[0];
-        my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
+        my ($my_rel,$my_rel_cl) = $rel->{rel_type}->[0] eq 'from_mid' ? qw(from_mid from_cl) : qw(to_mid to_cl);
+        my ($other_rel,$other_rel_cl) = $my_rel eq 'from_mid' ? qw(to_mid to_cl) : qw(from_mid from_cl);
         my $rel_type_name = $rel->{rel_type}->[1];
         # delete all records related 
         my $mr_where ={ $my_rel=>''.$master_row->{mid}, rel_type=>$rel_type_name };
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
-            $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
+            my $other_ref = ref( $other_mid ) ;
+            my $other_cl  = $other_ref =~ /^BaselinerX::CI::/ ? $other_mid->collection : undef;
+            $other_mid = $other_mid->mid if $other_ref =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            my $rdoc = { $my_rel => $master_row->{mid}, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
+            my $rdoc = {
+                $my_rel       => $master_row->{mid},
+                $other_rel    => $other_mid,
+                rel_type      => $rel_type_name,
+                rel_field     => $rel->{field},
+                $my_rel_cl    => $self->collection,
+                $other_rel_cl => $other_cl
+            };
             mdb->master_rel->find_or_create($rdoc);
             $attr_cons{ $rel->{field} } eq 'CI'
                 ? $relations{ $rel->{field} } = $other_mid

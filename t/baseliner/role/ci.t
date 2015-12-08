@@ -15,7 +15,9 @@ use Clarive::ci;
 use Baseliner::Core::Registry;
 use Baseliner::Role::CI;
 use BaselinerX::CI::TestClass;
+use BaselinerX::CI::TestAnother;
 use BaselinerX::CI::TestParentClass;
+use BaselinerX::CI::TestGrandParent;
 use Clarive::cache;
 
 subtest 'returns true when deleting ci' => sub {
@@ -375,6 +377,34 @@ subtest 'save: all related are saved in 2 steps' => sub {
     my @rels = $dad2->related;
     is @rels, 2;
     is_deeply( [map{ $_->{mid} } @rels], [$chi1_mid,$chi2_mid] );
+};
+
+subtest 'save: relations are saved with from and to collections' => sub {
+    _setup();
+
+    my $chi1 = BaselinerX::CI::TestClass->new;
+    my $chi1_mid = $chi1->save;
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi1]);
+    my $dad_mid = $dad->save;
+
+    my @rels = mdb->master_rel->find({ from_mid=>$dad_mid })->all;
+    is @rels, 1;
+    is $rels[0]->{from_cl}, 'TestParentClass';
+    is $rels[0]->{to_cl}, 'TestClass';
+};
+
+subtest 'save: reverse relations are saved with from and to collections' => sub {
+    _setup();
+
+    my $gran = BaselinerX::CI::TestGrandParent->new;
+    $gran->save;
+    my $dad = BaselinerX::CI::TestParentClass->new( grandad=>$gran );
+    my $dad_mid = $dad->save;
+
+    my @rels = mdb->master_rel->find({ to_mid=>$dad_mid })->all;
+    is @rels, 1;
+    is $rels[0]->{from_cl}, 'TestGrandParent';
+    is $rels[0]->{to_cl}, 'TestParentClass';
 };
 
 sub _setup {
