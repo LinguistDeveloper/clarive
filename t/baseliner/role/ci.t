@@ -407,6 +407,53 @@ subtest 'save: reverse relations are saved with from and to collections' => sub 
     is $rels[0]->{to_cl}, 'TestParentClass';
 };
 
+subtest 'children: include by include_cl' => sub {
+    _setup();
+
+    my $chi1 = BaselinerX::CI::TestClass->new;
+    my $chi1_mid = $chi1->save;
+    my $chi2 = BaselinerX::CI::TestAnother->new;
+    my $chi2_mid = $chi2->save;
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi1,$chi2]);
+    my $dad_mid = $dad->save;
+    my $dad2 = ci->new( $dad_mid );
+
+    my @rels = $dad2->related( include_cl => 'TestAnother' );
+    is @rels, 1;
+    is $rels[0]->{mid}, $chi2_mid;
+};
+
+subtest 'children: exclude by exclude_cl' => sub {
+    _setup();
+
+    my $chi1 = BaselinerX::CI::TestClass->new;
+    my $chi1_mid = $chi1->save;
+    my $chi2 = BaselinerX::CI::TestAnother->new;
+    my $chi2_mid = $chi2->save;
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi1,$chi2]);
+    my $dad_mid = $dad->save;
+    my $dad2 = ci->new( $dad_mid );
+
+    my @rels = $dad2->related( exclude_cl => 'TestAnother' );
+    is @rels, 1;
+    is $rels[0]->{mid}, $chi1_mid;
+};
+
+subtest 'children: exclude many with array' => sub {
+    _setup();
+
+    my $chi1 = BaselinerX::CI::TestClass->new;
+    my $chi1_mid = $chi1->save;
+    my $chi2 = BaselinerX::CI::TestAnother->new;
+    my $chi2_mid = $chi2->save;
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi1,$chi2]);
+    my $dad_mid = $dad->save;
+    my $dad2 = ci->new( $dad_mid );
+
+    my @rels = $dad2->related( exclude_cl => ['TestClass', 'TestAnother'] );
+    is @rels, 0;
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;

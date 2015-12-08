@@ -356,7 +356,7 @@ sub save_data {
             my $other_ref = ref( $other_mid ) ;
             my $other_cl  = $other_ref =~ /^BaselinerX::CI::/ ? $other_mid->collection : undef;
             $other_mid = $other_mid->mid if $other_ref =~ /^BaselinerX::CI::/;
-            next unless $other_mid;
+            next unless $other_mid;  # here we catch children that have not been instanciated (not saved related CIs?) 
             my $rdoc = {
                 $my_rel       => $master_row->{mid},
                 $other_rel    => $other_mid,
@@ -720,6 +720,12 @@ sub related_cis {
         $where->{$dir_reverse} = $where_mid;
     } else {
         push @ands, { '$or'=> [ {from_mid=>$where_mid}, {to_mid=>$where_mid} ] };
+    }
+    if( $opts{include_cl} ) {
+        push @ands, { to_cl=>mdb->in($opts{include_cl})};
+    }
+    if( $opts{exclude_cl} ) {
+        push @ands, { '$and'=> [ {from_cl=>mdb->nin($opts{exclude_cl})}, {to_cl=>mdb->nin($opts{exclude_cl})} ] };
     }
 
     $where->{rel_type} = mdb->in($opts{rel_type}) if defined $opts{rel_type};

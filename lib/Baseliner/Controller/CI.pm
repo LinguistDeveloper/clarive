@@ -491,7 +491,7 @@ sub list_classes {
     map {
         my $pkg = $_;
         ( my $name = $pkg ) =~ s/^BaselinerX::CI:://g;
-        +{ classname=>$pkg, name=>$name };
+        +{ classname=>$pkg, name=>$name, icon=>$pkg->icon };
     } @ret;
 }
 
@@ -539,8 +539,11 @@ sub class_methods : Local {
 
 sub classes : Local : Does('Ajax') {
     my ($self, $c) = @_;
-    my $role = $c->req->params->{role};
-    my @classes = sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes($role);
+    my $p = $c->req->params;
+    my $role = $p->{role};
+    my $query = $p->{query};
+    my @classes = map { $$_{name_loc}=_loc('ci:'.$$_{name}); $_ } sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes($role);
+    @classes = Util->query_grep( query=>$query, fields=>[qw(name classname name_loc)], rows=>\@classes ) if length $query;
     $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
     $c->forward('View::JSON');
 }
@@ -1237,6 +1240,9 @@ sub json_tree : Local {
     my %node_data = %$d if ref $d eq 'HASH';
     my %root_node_data = %$d if ref $d eq 'HASH';
     my $depth = length $p->{depth} ? $p->{depth} : 2;
+    my $include_cl = $p->{include_cl};
+    my $exclude_cl = $p->{exclude_cl};
+
     $p->{limit} //= 50;  
     my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '__#__' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;

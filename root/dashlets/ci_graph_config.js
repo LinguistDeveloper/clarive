@@ -13,10 +13,19 @@
         ]
     });
 
+    var include_cl = new Baseliner.CIClassCombo({ fieldLabel:_('Include Classes'), name:'include_cl', value: data.include_cl });
+    var exclude_cl = new Baseliner.CIClassCombo({ fieldLabel:_('Exclude Classes'), name:'exclude_cl', value: data.exclude_cl });
+
     var graph_type = new Baseliner.ComboDouble({ 
         anchor: '100%', fieldLabel:_('Graph Type'), name:'graph_type', 
         value: data.graph_type==undefined ? 'st' : data.graph_type,
         data: [ ['st',_('Space Tree')], ['rg',_('Radial Graph')], ['d3g',_('D3 Force-Directed Graph')] ]
+    });
+
+    var toolbar_mode = new Baseliner.ComboDouble({ 
+        anchor: '100%', fieldLabel:_('Show Toolbar?'), name:'toolbar_mode', 
+        value: data.toolbar_mode==undefined ? 'hide' : data.toolbar_mode,
+        data: [ ['hide',_('Hide Toolbar')], ['top',_('Show Toolbar on Top')], ['bottom',_('Show Toolbar on Bottom')] ]
     });
 
     var starting_mid = Baseliner.ci_box({ 
@@ -28,7 +37,9 @@
     return common.concat([ 
         graph_type, 
         context_override,
-        starting_mid
+        starting_mid,
+        toolbar_mode,
+        include_cl, exclude_cl
     ])
 })
 

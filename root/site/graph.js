@@ -23,7 +23,8 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     },
     redraw: function(){
         var self = this;
-        Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth:self.depth, mode:self.mode, unique:self.unique }, function(res){
+        Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth: self.depth, 
+                        mode:self.mode, unique:self.unique, include_cl: self.include_cl, exclude_cl: self.exclude_cl }, function(res){
             self.links = [];
             
             var link = function(source){
@@ -681,6 +682,30 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             self.direction = self.field_direction.getValue();
             self.reload_current();
         });
+        self.include_cl_combo = new Baseliner.CIClassCombo({ fieldLabel:_('Include Classes'), value: self.include_cl });
+        self.exclude_cl_combo = new Baseliner.CIClassCombo({ fieldLabel:_('Exclude Classes'), value: self.exclude_cl });
+        self.filter_win = new Cla.Window({ 
+            height: 300, width: 600, layout:'form', autoScroll: true,
+            modal: true, closeAction: 'hide', 
+            tbar: [ 
+                '->',
+                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl_combo.clearValue(); self.exclude_cl_combo.clearValue() } }),
+                new Ext.Button({ text:_('Filter'), icon:IC('search-small'), handler: function(){ self.filter_win.hide(); } })
+            ],
+            items: [ self.include_cl_combo, self.exclude_cl_combo ]
+        });
+        self.filter_win.on('hide',function(){
+            var inc = self.include_cl_combo.get_save_data().length;
+            var exc = self.exclude_cl_combo.get_save_data().length;
+            self.show_filter.setText( _('Filter: <b>+%1 / -%2</b>', inc, exc) );
+            self.reload_current();
+        });
+        self.show_filter = new Ext.Button({
+            text: _('Filter (None)'), icon: IC('search-small'), handler: function(){
+                self.filter_win.show();
+            }
+        });
+
         // recenter on last mid
         self.btn_recenter = new Ext.Button({
             icon: '/static/images/icons/startlast.png',
@@ -688,17 +713,18 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         self.lab_depth = new Ext.Container({ hidden: true, html:_('dph')+':' });
         if( self.toolbar ) {
-            self.tbar = [
+            var tbar_bbar = self.toolbar == 'bottom' ? 'bbar' : 'tbar';
+            self[tbar_bbar] = [
                 self.btn_st, self.btn_rg, self.btn_d3g,
-                '-',
-                btn_redraw, self.btn_recenter, 
                 '-', 
                 //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
                 self.lab_depth, self.field_depth, 
                 _('lim')+':', field_limit,
                 _('dir')+':', self.field_direction, '-',
+                self.show_filter,
                 '->', 
-                self.btn_to_img
+                self.btn_to_img,
+                self.btn_recenter, btn_redraw 
             ];
         }
         self.title = _('%1: %2', self.title, self.mid );
@@ -750,6 +776,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }', 
                 direction: self.direction, 
+                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
                 depth: 1, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { 
@@ -778,6 +805,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             var mid = id || self.mid;
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, direction: self.direction, root_node_data:'{ "$type":"none" }',
+                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
                 depth: 2, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
@@ -802,6 +830,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, 
                 add_prefix: 0,
                 direction: self.direction,
+                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
                 depth: self.depth, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count > self.limit ) {
@@ -828,10 +857,16 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         }
         var w = 960, h = 500;
         Baseliner.loadFile('/static/d3/d3.css', 'css' );
-        self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction });
+        self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction,
+                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data()
+        });
         self.add( self.d3g );
         self.d3g.which = 'd3g';
         self.setActive( self.d3g );
+    },
+    filtering : function(){
+        var self = this;
+        return self.include_cl_combo.get_save_data().length || self.exclude_cl_combo.get_save_data().length;
     },
     to_img : function(){
         var self = this;

@@ -19,9 +19,11 @@
             mid: mid, 
             direction:'children', 
             depth: 3, 
+            toolbar: data.toolbar_mode == 'hide' ? false : data.toolbar_mode,
+            include_cl: data.include_cl,
+            exclude_cl: data.exclude_cl,
             which: data.graph_type||'st', 
-            height: $(div).height(), 
-            toolbar: false 
+            height: $(div).height()
         });
         graph.render( id );
     } else {

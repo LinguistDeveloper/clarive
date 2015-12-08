@@ -856,15 +856,103 @@ Baseliner.ci_box = function(c) {
     return ci_box;
 };
 
-Baseliner.CIClassCombo = Ext.extend(Baseliner.ComboSingleRemote, {
+Baseliner.variable_box = function(c) {
+    var bl = c.bl || '*';
+    var mid_project = c.mid_project || '';
+    var name_variable = c.name_variable;
+    var data_wizard = c.data_wizard || '';
+
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        baseParams: { 'bl': bl, 'mid_project' : mid_project, 'name_variable' : name_variable, 'data_wizard': data_wizard}, 
+        totalProperty:"totalCount", 
+        id: 'ns', 
+        url: '/variable/json',
+        fields: ['value'] 
+    });
+
+    var variable_box = new Baseliner.SuperBox({ 
+        anchor: '100%',
+        id: Ext.id(),
+        name: 'variable',
+        allowBlank: true,
+        displayField: 'value',
+        hiddenName: 'variable',
+        valueField: 'value',
+        store: store
+    });
+
+    return variable_box;
+};
+
+
+Baseliner.CIClassComboSimple = Ext.extend(Baseliner.ComboSingleRemote, {
     fieldLabel: _('CI Class'),
     allowBlank: true,
     field: 'name',
-    fields: [ 'classname', 'name' ],
+    fields: [ 'classname', 'name', 'icon' ],
+    itemSelector: 'div.search-item',
+    tpl: new Ext.XTemplate( 
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span></div>'
+       +'</tpl>'  
+    ),
     url: '/ci/classes'
 });
     
-
+Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
+    fieldLabel: _('CI Class'),
+    store: new Baseliner.JsonStore({
+        url: '/ci/classes',
+        fields: [ 'classname', 'name', 'name_loc', 'icon' ],
+        root: 'data', 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty: 'totalCount', 
+        baseParams: {  start: 0, limit: this.ps || 99999999 },
+        id: 'id'
+    }),
+    itemSelector: 'div.search-item',
+    tpl: new Ext.XTemplate( 
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span></div>'
+       +'</tpl>'  
+    ),
+    displayFieldTpl: new Ext.XTemplate( 
+        '<tpl for=".">'
+       +  '<span id="boot" class="ui-ci-class" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span>'
+       +'</tpl>'  
+    ),
+    allowBlank: true,
+    resizable: true,
+    allowAddNewData: true,
+    addNewDataOnBlur: true, 
+    singleMode: false,
+    typeAhead: true,
+    forceSelection: false,
+    resizable: true,
+    msgTarget: 'under',
+    paging: false,
+    pageSize: 0,
+    loadingText: _('Searching...'),
+    emptyText: _('Select CI Classes'),
+    triggerAction: 'all',
+    mode: 'remote',
+    name: 'classname',
+    displayField: 'name',
+    hiddenName: 'name',
+    valueField: 'name',
+    extraItemCls: 'x-tag'
+});
+    
 /* 
      Baseliner.form components
 */
