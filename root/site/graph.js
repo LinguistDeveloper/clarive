@@ -752,7 +752,12 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
                 direction: self.direction, 
                 depth: 1, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-                    if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
+                    if( res.count < 1 ) { 
+                        Baseliner.warning( _('Empty'), self.filtering 
+                            ? _('No nodes available for current filter') : _('No nodes available') ); 
+                        onComplete.onComplete(id, res.data); 
+                        return;
+                    }
                     onComplete.onComplete(id, res.data);    
                 });
         }});
