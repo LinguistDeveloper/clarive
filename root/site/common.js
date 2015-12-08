@@ -173,7 +173,7 @@ Baseliner.message = function(title, msg, config){
 };
 
 Baseliner.warning = function(title, msg ){
-    Baseliner.message( title, msg, { image: '/static/images/warnmsg.png', time: 12000 } );
+    Baseliner.message( title, msg, { image: '/static/images/warnmsg.png', time: 3000 } );
 };
 
 Baseliner.message_gray = function(title, format){
