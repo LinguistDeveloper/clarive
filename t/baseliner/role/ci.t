@@ -287,6 +287,96 @@ subtest 'save: control mid characters' => sub{
     like exception { $ci->save }, qr/cannot contain.*#/;
 };
 
+subtest 'save: related single ci stored in master_doc as one mid, not array' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new(the_kid=>[$chi_mid]);
+    my $dad_mid = $dad->save;
+
+    my $doc = ci->TestParentClass->find_one({ mid=>"$dad_mid" });
+    is ref $doc, 'HASH';
+    is $doc->{the_kid}, $chi_mid;
+};
+
+subtest 'save: related cis stored in master_doc as array of mids' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
+    my $dad_mid = $dad->save;
+
+    my $doc = ci->TestParentClass->find_one({ mid=>"$dad_mid" });
+    is ref $doc, 'HASH';
+    is $doc->{kids}->[0], $chi_mid;
+};
+
+subtest 'save: related cis get deleted when removed' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
+    my $dad_mid = $dad->save;
+    
+    my $dad2 = ci->new( $dad_mid );
+    $dad2->kids([]);
+    $dad2->save;
+
+    my $doc = ci->TestParentClass->find_one({ mid=>"$dad_mid" });
+    is ref $doc, 'HASH';
+    ok exists $doc->{kids};
+    is_deeply $doc->{kids}, [];
+};
+
+subtest 'save: related single ci gets deleted when removed' => sub {
+    _setup();
+
+    my $chi = BaselinerX::CI::TestClass->new;
+    my $chi_mid = $chi->save;
+
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
+    my $dad_mid = $dad->save;
+    
+    my $dad2 = ci->new( $dad_mid );
+    $dad2->kids([]);
+    $dad2->save;
+
+    my $doc = ci->TestParentClass->find_one({ mid=>"$dad_mid" });
+    is ref $doc, 'HASH';
+    ok exists $doc->{kids};
+    is_deeply $doc->{kids}, [];
+};
+
+subtest 'save: all related are saved in 2 steps' => sub {
+    _setup();
+
+    my $chi1 = BaselinerX::CI::TestClass->new;
+    my $chi1_mid = $chi1->save;
+    my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi1]);
+    my $dad_mid = $dad->save;
+
+    my $dad2 = ci->new( $dad_mid );
+    my $chi2 = BaselinerX::CI::TestClass->new;
+    my $chi2_mid = $chi2->save;
+    $dad2->kids([ @{ $dad2->kids },$chi2]);
+    $dad2->save;
+
+    my $doc = ci->TestParentClass->find_one({ mid=>"$dad_mid" });
+    is ref $doc, 'HASH';
+    ok exists $doc->{kids};
+    is_deeply $doc->{kids}, [$chi1_mid,$chi2_mid];
+
+    my @rels = $dad2->related;
+    is @rels, 2;
+    is_deeply( [map{ $_->{mid} } @rels], [$chi1_mid,$chi2_mid] );
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;

@@ -324,12 +324,22 @@ sub save_data {
         }
     }
     # attribute specific conversions
+    my %attr_cons;
     for my $attr ( $meta->get_all_attributes ) {
         my $type_cons = $attr->type_constraint or next;
-        if( $type_cons->name eq 'BoolCheckbox' ) {
-            my $attr_name = $attr->name;
+        my $cons_name = $type_cons->name;
+        my $attr_name = $attr->name;
+        if( $cons_name eq 'BoolCheckbox' ) {
             # fix the on versus nothing on form submit
             $master_doc->{ $attr_name } = 0 unless exists $master_doc->{ $attr_name };
+        }
+        elsif( $cons_name eq 'CIs' ) {
+            $master_doc->{ $attr_name } = [] unless exists $master_doc->{ $attr_name };
+            $attr_cons{ $attr_name } = $cons_name;
+        }
+        elsif( $cons_name eq 'CI' ) {
+            $master_doc->{ $attr_name } = undef unless exists $master_doc->{ $attr_name };
+            $attr_cons{ $attr_name } = $cons_name;
         }
     }
     # master_rel relationships, if any
@@ -347,7 +357,9 @@ sub save_data {
             next unless $other_mid;
             my $rdoc = { $my_rel => $master_row->{mid}, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
             mdb->master_rel->find_or_create($rdoc);
-            push @{$relations{ $rel->{field} }}, $other_mid;
+            $attr_cons{ $rel->{field} } eq 'CI'
+                ? $relations{ $rel->{field} } = $other_mid
+                : push @{$relations{$rel->{field}}}, $other_mid;
             cache->remove({ mid=>$other_mid });
         }
     }
