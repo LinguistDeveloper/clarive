@@ -1335,11 +1335,10 @@ sub tree_favorites : Local {
     my $provider;
     my $user_mid = $c->user_ci->{mid};
     $self->check_user_favorites($user_mid);
-    my $user = ci->find($user_mid);
+    my $user = ci->user->find_one($user_mid);
     my $root = length $p->{id_folder} 
-        ? $user->favorites->{ $p->{id_folder} }{contents}
-        : $user->favorites;
-   
+        ? $user->{favorites}->{ $p->{id_folder} }{contents}
+        : $user->{favorites};
     $root //= {};
     my $favs = [ map { $root->{$_} } sort { $a cmp $b }
         keys %$root ];
@@ -1395,6 +1394,7 @@ sub favorite_add : Local {
         my $user = $c->user_ci; 
         $user->favorites->{$id} = $p; 
         $user->save;
+        cache->remove({ d=>"ci", mid=>$user->{mid} });
         { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
     } catch {
         { success=>\0, msg=>shift() }
