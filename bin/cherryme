@@ -14,6 +14,12 @@ die "usage: cherryme <from_branch> <to_branch> <options> -- <filters>\noptions:\
     -n                  no cherry-pick
     --max <num|500>     max number of commits to compare
     --log <file>        save commits to file too
+
+    filters example:
+
+            +joe  (include commits that by joe only)
+            -bob -mary (exclude commits that by bob and mary)
+
 " unless @ARGV >= 2;
 
 my $orig = shift @ARGV;
@@ -34,7 +40,8 @@ my %opts = do {
 # read options starting after --
 my @filters = grep { state $gg=0; /^--$/ ? ($gg=1,0) : $gg } @ARGV;
 
-my $filters_re = @filters ? join( '|',map { "($_ )" } @filters ) : 'bde ';
+my $filters_in = @filters ? join( '|',map { s/^\+//g; "($_)" } grep /^[^-]/, @filters ) : '';
+my $filters_out = @filters ? join( '|',map { s/^-//g; "($_)" } grep /^-/, @filters ) : '';
 
 my $max = $opts{'--max'} || 500;
 my $cmd = qq{git log --pretty=oneline -$max "%s"};
@@ -71,7 +78,7 @@ ORIG: for my $msg ( @origs ) {
 
     my $ask_maybe = sub{
         my ($status,$force) = @_; 
-        my $default = { '+++'=>'y', '---'=>'y', '==='=>'n' }->{ $status };
+        my $default = { '+++'=>'y', '---'=>'n', '==='=>'n' }->{ $status };
         my $s = $color_status{$status} . "$status $msg_pretty" . RESET;
         $opts{'-y'} && !$force 
             ? say $s
@@ -91,8 +98,10 @@ ORIG: for my $msg ( @origs ) {
     if( length $opts{'--until'} && $sha =~ /^$opts{'--until'}/ ) {
         $until = $sha;
     }
-    if( $msg =~ /^$filters_re/i ) {
+    if( $filters_out && $msg_pretty =~ /$filters_out/i ) {
         $ask_maybe->( '---' );
+        next;
+    } elsif( $filters_in && $msg_pretty !~ /$filters_in/i ) {
         next;
     } elsif( $dmap->{$msg} ) {
         $ask_maybe->( '===', 1 );
