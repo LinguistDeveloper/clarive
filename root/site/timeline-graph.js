@@ -581,7 +581,6 @@
                                 number_text = sum_date / min;
                                 number_text = Math.round(number_text);
                                 if(number_text == 0){ number_text = 1;}
-
                                 duration[i] = 3;
                                 number_text = new Date(sum_date);    
                                 var minutes = number_text.getMinutes();
