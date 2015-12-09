@@ -180,7 +180,7 @@ register 'fieldlet.html_editor' => {
 };
 
 register 'fieldlet.pagedown' => {
-    name        => _loc('pagedown editor'),
+    name        => _loc('Pagedown Editor'),
     html        => '/fields/templates/html/markdown.html',
     js          => '/fields/templates/js/pagedown.js',
     form        => '/fields/templates/config/pagedown.js',
@@ -191,7 +191,7 @@ register 'fieldlet.pagedown' => {
 };
 
 register 'fieldlet.pills' => {
-    name        => _loc('pills'),
+    name        => _loc('Pills'),
     html        => '/fields/templates/html/pills.html',
     js          => '/fields/templates/js/pills.js',
     form        => '/fields/templates/config/pills.js',
@@ -200,7 +200,7 @@ register 'fieldlet.pills' => {
 };
 
 register 'fieldlet.status_chart_pie' => {
-    name        => _loc('status chart pie'),
+    name        => _loc('Status Pie Chart'),
     html        => '/fields/templates/html/status_chart_pie.html',
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart_pie.png',
@@ -209,7 +209,7 @@ register 'fieldlet.status_chart_pie' => {
 };
 
 register 'fieldlet.status_changes' => {
-    name        => _loc('status changes'),
+    name        => _loc('Status Changes'),
     html        => '/fields/templates/html/status_changes.html',
     js          => '/fields/templates/js/status_changes.js',
     form        => '/fields/templates/config/status_changes.js',
@@ -221,7 +221,7 @@ register 'fieldlet.status_changes' => {
 };
 
 register 'fieldlet.topic_grid' => {
-    name        => _loc('topic grid'),
+    name        => _loc('Topic Grid'),
     html        => '/fields/templates/html/topic_grid.html',
     js          => '/fields/templates/js/topic_grid.js',
     form        => '/fields/templates/config/topic_grid.js',
@@ -282,7 +282,7 @@ register 'fieldlet.number' => {
 ########################
 
 register 'fieldlet.system.status_new' => {
-    name        => _loc('State'),
+    name        => _loc('Status'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/system/js/field_status.js',
     form        => '/fields/templates/config/status_new.js',
@@ -298,7 +298,7 @@ register 'fieldlet.system.status_new' => {
 
 register 'fieldlet.system.moniker' => {
     name        => _loc('Moniker'),
-    name_field  => _loc('moniker'),
+    name_field  => _loc('Moniker'),
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/moniker.js',
     icon        => '/static/images/icons/lock_small.png',
@@ -309,7 +309,7 @@ register 'fieldlet.system.moniker' => {
 };
 
 register 'fieldlet.system.title' => {
-    name        => _loc('title'),
+    name        => _loc('Title'),
     name_field  => _loc('Title'),
     id_field    => 'title',
     bd_field    => 'title',
@@ -409,7 +409,7 @@ register 'fieldlet.system.users' => {
 
 
 register 'fieldlet.system.topics' => {
-    name        => _loc('topics'),
+    name        => _loc('Topics'),
     icon        => '/static/images/icons/listbox.png',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
@@ -552,7 +552,7 @@ register 'fieldlet.required.modified_on' => {
 };
 
 # register 'fieldlet.required.progress' => {
-#     name        => _loc('progress'),
+#     name        => _loc('Progress'),
 #     name_field  => _loc('Progress'),
 #     html        => '/fields/templates/html/progress_bar.html',
 #     js          => '/fields/templates/js/progress_bar.js',
