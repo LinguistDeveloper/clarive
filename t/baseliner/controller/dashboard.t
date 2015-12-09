@@ -86,6 +86,9 @@ subtest 'roadmap: build a daily scaled calendar' => sub {
     _setup();
     my $controller = _build_controller();
 
+    # This is the original offset, so we don't go back in time on the systems where epoch cannot be < 0
+    my $dt_offset = 3600 * 24 * 30;
+
     # generate a bunch of dates for a wide week range
     for my $unit_shift ( 1..2 ) {
         for my $dt ( 0..11 ) {   # test a year
@@ -93,7 +96,7 @@ subtest 'roadmap: build a daily scaled calendar' => sub {
             for my $first_day ( 0..6 ) {  # 
                 my $c = _build_c( req => { params => { username => 'root', scale=>'daily', first_weekday=>$first_day, units_from=>$unit_shift, units_until=>$unit_shift } } );
                 my $stash, my $data;
-                mock_time 1+$dt => sub {
+                mock_time $dt_offset + 1 + $dt => sub {
                     $controller->roadmap($c);
                     my $tday = Class::Date->now;
                     $stash = $c->stash;
