@@ -510,7 +510,7 @@
                 start[i] = start[i-1] + duration[i-1];
                 var date = new Date(res.data[i].when);
                 var date2 = new Date(res.data[i-1].when);
-                
+
                 /*var sum_dates = date-date2;
                 var compose_date = ((date.getTime()-date2.getTime())*10/range)*100;
                 duration[i] = compose_date; 
@@ -520,18 +520,13 @@
                 //var sum_date = date.getDate() - date2.getDate();
 
 
-                // CALCULATE THE VALUE OF DURATION TO NODES.
-                /////////////////////////////////////////////////////////////////////////
 
-                // YEAR         DURATION 15.6 -        
-                // MONTH        DURATION 14.4 - 15.6     
-                // DAYS         DURATION 8.2 - 14.4      
-                // HOURS        DURATION 1 - 8.2 
 
-               var sum_date = date.getFullYear() - date2.getFullYear();
+               /*var sum_date = date.getFullYear() - date2.getFullYear();
                var date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
 
                var sum_date2 = date - date2;
+               var number_text = 0;
                //console.log("esto es");
                //console.log(sum_date2);
 
@@ -564,7 +559,151 @@
                     }
                   }        
 
+                }*/
+
+
+                // CALCULATE THE VALUE OF DURATION TO NODES.
+                /////////////////////////////////////////////////////////////////////////
+
+                // YEAR         DURATION 16.6 -        
+                // MONTH        DURATION 15.4 - 16.6     
+                // DAYS         DURATION 9.2 - 15.4      
+                // HOURS        DURATION 2 - 9.2 
+                var sum_date = date.getTime() - date2.getTime();
+                var date_compare = date.getFullYear() - date2.getFullYear();
+                var leap_calculate = date_compare % 4; 
+                var number_text = 0;
+                var leap_year = 31622400000;
+                var year = 31536000000;
+                var leap_month = 2505600000;
+                var february_month = 2419200000;
+                var thirty_month = 2592000000;
+                var month = 2678400000;
+                var day = 86400000;
+                var hours = 3600000; 
+                var min = 60000;
+
+                //leap-year
+                if (leap_calculate == 0 && sum_date >= leap_year){
+
+                  number_text = sum_date / leap_year;
+                  number_text = Math.round(number_text);
+                  if(number_text == 0){ number_text = 1;}
+
+                  duration[i]=number_text+15.6;
+                  text[i] = number_text+" "+_('Year');
+
+                }else{
+                  //year
+                  if(sum_date >= year){
+
+                    number_text = sum_date / year;
+                    number_text = Math.round(number_text);
+                    if(number_text == 0){ number_text = 1;}
+
+                    duration[i]=number_text+16.6;
+                    text[i] = number_text+" "+_('Year');
+
+                  }else{
+                    //Month with 31 days
+                    date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
+                    if((date_compare == 1 || date_compare == 3 || date_compare == 5 || date_compare == 7 || date_compare == 8 || date_compare == 10 || date_compare == 12) && sum_date >= month){
+                      
+                      number_text = sum_date / month;
+                      number_text = Math.round(number_text);
+                      if(number_text == 0){ number_text = 1;}  
+
+                      duration[i]=(number_text*0.1)+15.4;
+                      number_text = new Date(sum_date);  
+                      text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+                    }else {
+                      //Month with 30 days
+                      if((date_compare == 4 || date_compare == 6 || date_compare == 9 || date_compare == 11) && sum_date >= thirty_month){
+
+                        number_text = sum_date / thirty_month;
+                        number_text = Math.round(number_text);
+                        if(number_text == 0){ number_text = 1;}   
+                                             
+                        duration[i]=(number_text*0.1)+15.4;
+                        number_text = new Date(sum_date);  
+                        text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+                      }else{
+                        //Leap-Month
+                        if(leap_calculate == 0 && date_compare == 2 && sum_date >= leap_month ){
+
+                          number_text = sum_date / leap_month;
+                          number_text = Math.round(number_text);
+                          if(number_text == 0){ number_text = 1;}      
+
+                          duration[i]=(number_text*0.1)+15.4;
+                          number_text = new Date(sum_date);  
+                          text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+                        }else{
+                          //February Month
+                          if(date_compare == 2 && sum_date >= february_month){
+
+                            number_text = sum_date / february_month;
+                            number_text = Math.round(number_text);
+                            if(number_text == 0){ number_text = 1;}
+
+                            duration[i]=(number_text*0.1)+15.4;
+                            number_text = new Date(sum_date);  
+                            text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+
+                          }else{
+                            //Days
+                            if(sum_date >= day){
+
+                              number_text = sum_date / day;
+                              number_text = Math.round(number_text);
+                              if(number_text == 0){ number_text = 1;}
+
+                              duration[i]=(number_text*0.2)+9.2;
+                              number_text = new Date(sum_date);  
+                              text[i] = (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+                            }else{
+                              //Hours
+                              if(sum_date >= hours){
+
+                                number_text = sum_date / hours;
+                                number_text = Math.round(number_text);
+                                if(number_text == 0){ number_text = 1;}
+
+                                duration[i]= (number_text*0.3)+2;
+                                number_text = new Date(sum_date);  
+                                text[i] = (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+
+                              //Minutes
+                              }else{
+
+                                number_text = sum_date / min;
+                                number_text = Math.round(number_text);
+                                if(number_text == 0){ number_text = 1;}
+
+                                duration[i] = 2;
+                                number_text = new Date(sum_date);                                
+                                text[i] = number_text.getMinutes()+":"+number_text.getSeconds()+" Min ";
+
+                              }
+
+                            }
+                          }
+
+                        }
+
+                      }
+                    }
+
+                  }
+
                 }
+
+
                 /////////////////////////////////////////////////////////////////////////
                 /*var sum_date = date.getFullYear() - date2.getFullYear();
 
