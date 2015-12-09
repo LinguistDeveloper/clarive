@@ -113,9 +113,9 @@
         // vertical starting point in document for all Messages and Activations
         var LineSuffix = 30;
         // vertical length beyond the last message time
-        var MessageSpacing = 20;
+        var MessageSpacing = 25;
         // vertical distance between Messages at different steps
-        var ActivityWidth = 10;
+        var ActivityWidth = 15;
         // width of each vertical activity bar
         var ActivityStart = 5;
         // height before start message time
@@ -319,7 +319,7 @@
                                 ),
                           go_api(go.TextBlock,
                                  {
-                                     margin: 5, stroke: "white" }
+                                     margin: 10, stroke: "white" }
                                  ,
                                  new go.Binding("text", "text"))
                          ),
@@ -376,7 +376,7 @@
                                 minSize: new go.Size(ActivityWidth, computeActivityHeight(0.50))
                             },
                             new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)),
-                      go_api(go.TextBlock, { angle: 90, font: "bold 10px sans-serif", stroke: getLuxColor(color,0.2) }, 
+                      go_api(go.TextBlock, { angle: 90, font: "bold 11px sans-serif", stroke: getLuxColor(color,0.2)  },
                           new go.Binding("text", "text"),
                           new go.Binding("stroke","black")
                       )
@@ -615,7 +615,11 @@
 
                       duration[i]=(number_text*0.1)+15.4;
                       number_text = new Date(sum_date);  
-                      text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+                      var hour = (number_text.getHours()-1);      
+                      if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                      var minutes = number_text.getMinutes();
+                      if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                      text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                     }else {
                       //Month with 30 days
@@ -627,7 +631,11 @@
                                              
                         duration[i]=(number_text*0.1)+15.4;
                         number_text = new Date(sum_date);  
-                        text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+                        var hour = (number_text.getHours()-1);      
+                        if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                        var minutes = number_text.getMinutes();
+                        if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                        text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                       }else{
                         //Leap-Month
@@ -639,7 +647,11 @@
 
                           duration[i]=(number_text*0.1)+15.4;
                           number_text = new Date(sum_date);  
-                          text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+                          var hour = (number_text.getHours()-1);      
+                          if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                          var minutes = number_text.getMinutes();
+                          if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                          text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                         }else{
                           //February Month
@@ -651,8 +663,11 @@
 
                             duration[i]=(number_text*0.1)+15.4;
                             number_text = new Date(sum_date);  
-                            text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
-
+                            var hour = (number_text.getHours()-1);      
+                            if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                            var minutes = number_text.getMinutes();
+                            if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                            text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                           }else{
                             //Days
@@ -664,7 +679,11 @@
 
                               duration[i]=(number_text*0.2)+9.2;
                               number_text = new Date(sum_date);  
-                              text[i] = (number_text.getDate()-1) +" "+_('Days')+" " + (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+							  var hour = (number_text.getHours()-1);      
+							  if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+							  var minutes = number_text.getMinutes();
+							  if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                              text[i] = (number_text.getDate()-1) +" "+_('Days')+" " + hour+":"+minutes+" H ";
 
                             }else{
                               //Hours
@@ -676,7 +695,11 @@
 
                                 duration[i]= (number_text*0.3)+2;
                                 number_text = new Date(sum_date);  
-                                text[i] = (number_text.getHours()-1)+":"+number_text.getMinutes()+" H ";
+                                var hour = (number_text.getHours()-1);      
+                                if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                                var minutes = number_text.getMinutes();
+                                if (minutes < 10){ minutes = "0"+number_text.getMinutes()}     
+                                text[i] = hour+":"+minutes+" H ";
 
                               //Minutes
                               }else{
@@ -686,21 +709,20 @@
                                 if(number_text == 0){ number_text = 1;}
 
                                 duration[i] = 2;
-                                number_text = new Date(sum_date);                                
-                                text[i] = number_text.getMinutes()+":"+number_text.getSeconds()+" Min ";
+                                number_text = new Date(sum_date);    
+                                var minutes = number_text.getMinutes();
+                                if (minutes < 10){ minutes = "0"+number_text.getMinutes()}
+                                var seconds = number_text.getSeconds();      
+                                if (seconds < 10){ seconds = "0"+number_text.getSeconds()}                
+                                text[i] = minutes+":"+ seconds +" Min ";
 
                               }
-
                             }
                           }
-
                         }
-
                       }
                     }
-
                   }
-
                 }
 
 
