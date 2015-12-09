@@ -150,7 +150,8 @@ sub _find_sha_from_previous_jobs {
         $job = ci->new($last_job);
         $st = $job->stash;
         if ( my $bl_original = $st->{bl_original}) {
-            my $tag_sha = $bl_original->{$repo->mid}->{$project->mid}->{previous};
+            my $key = $repo->tags_mode eq 'project' ? $project->mid : '*';
+            my $tag_sha = $bl_original->{$repo->mid}->{$key}->{previous};
 
             if ($tag_sha && $tag_sha->sha ne $rev_sha) {
                 return ($job, $tag_sha->sha);

@@ -261,7 +261,7 @@ subtest 'items: cannot redeploy when last job detected but without bl_original' 
 subtest 'items: cannot redeploy when last job detected but with invalid bl_original' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', tags_mode => 'project', revision_mode => 'diff' );
 
     my $project =
       TestUtils->create_ci( 'project', name => 'project', moniker => 'project', repositories => [ $repo->mid ] );
@@ -301,10 +301,10 @@ subtest 'items: cannot redeploy when last job detected but with invalid bl_origi
     like exception { $rev->items( bl => 'TEST', tag => 'TEST', project => $project ) }, qr/No last job detected/;
 };
 
-subtest 'items: redeploy' => sub {
+subtest 'items: redeploy with tags_mode project' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', tags_mode => 'project', revision_mode => 'diff' );
 
     my $sha = TestGit->commit($repo);
     my $rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
@@ -354,10 +354,63 @@ subtest 'items: redeploy' => sub {
     is $item->path,   '/NEW_FILE';
 };
 
-subtest 'items: redeploy after redeploy' => sub {
+subtest 'items: redeploy' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+
+    my $sha = TestGit->commit($repo);
+    my $rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+
+    my $top_sha = TestGit->commit( $repo, file => 'NEW_FILE' );
+    my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
+
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $topic = TestUtils->create_ci( 'topic', is_changeset => 1, _doc => {} );
+    mdb->master_rel->insert(
+        { from_mid => $topic->mid, to_mid => $top_rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$topic],
+            bl           => 'TEST',
+            stash_init   => {
+                bl_original => {
+                    $repo->mid => {
+                        '*' => {
+                            current => $top_rev,
+                            previous => $rev
+                        }
+                    }
+                }
+            }
+        );
+    };
+
+    my @items = $top_rev->items( bl => 'TEST', tag => 'TEST', project => $project );
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'A';
+    is $item->mask,   '644';
+    is $item->repo,   $repo;
+    is $item->sha,    $top_rev->sha;
+    is $item->path,   '/NEW_FILE';
+};
+
+subtest 'items: redeploy after redeploy' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', tags_mode => 'project', revision_mode => 'diff' );
 
     my $sha = TestGit->commit($repo);
     my $rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
