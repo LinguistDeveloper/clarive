@@ -8,21 +8,94 @@ use Test::Fatal;
 use TestEnv;
 BEGIN { TestEnv->setup }
 
+use Test::TempDir::Tiny;
 use File::Temp qw(tempfile);
 use Baseliner::I18N;
 
-subtest 'install_languages' => sub {
-    is(Baseliner::I18N->installed_languages->{en}, 'English');
+subtest 'installed_languages' => sub {
+    my $po_dir = tempdir();
+
+    _write_file(<<"EOP", "$po_dir/en.po");
+msgid ""
+msgstr ""
+
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=utf-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Site Information"
+msgstr ""
+EOP
+
+    _write_file(<<"EOP", "$po_dir/es.po");
+msgid ""
+msgstr ""
+
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=utf-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Site Information"
+msgstr "Datos de Registro"
+EOP
+
+
+    Baseliner::I18N->setup( paths => $po_dir );
+
+    is_deeply(
+        Baseliner::I18N->installed_languages,
+        {
+            en  => 'English',
+            es  => 'Spanish',
+            cat => undef
+        }
+    );
 };
 
 subtest 'localize' => sub {
+    my $po_dir = tempdir();
+
+    _write_file(<<"EOP", "$po_dir/en.po");
+msgid ""
+msgstr ""
+
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=utf-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Site Information"
+msgstr ""
+
+msgid "Hello %1"
+msgstr ""
+EOP
+
+    _write_file(<<"EOP", "$po_dir/es.po");
+msgid ""
+msgstr ""
+
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=utf-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Site Information"
+msgstr "Datos de Registro"
+
+msgid "Hello %1"
+msgstr "Hola %1"
+EOP
+
+    Baseliner::I18N->setup( paths => $po_dir );
+
     Baseliner::I18N->languages(['en']);
     is(Baseliner::I18N->language, 'en');
     is(Baseliner::I18N->localize('Site Information'), 'Site Information');
+    is(Baseliner::I18N->localize('Hello %1', 'Bill'), 'Hello Bill');
 
     Baseliner::I18N->languages(['es']);
     is(Baseliner::I18N->language, 'es');
     is(Baseliner::I18N->localize('Site Information'), 'Datos de Registro');
+    is(Baseliner::I18N->localize('Hello %1', 'Pedro'), 'Hola Pedro');
 };
 
 subtest 'parse_po: empty file' => sub {
@@ -88,9 +161,16 @@ msgstr "Datos de Registro"
 done_testing;
 
 sub _write_file {
-    my ($content) = @_;
+    my ($content, $filename) = @_;
 
-    my ($fh, $filename) = tempfile();
+    my $fh;
+    if ($filename) {
+        open $fh, '>', $filename or die $!;
+    }
+    else {
+        ($fh, $filename) = tempfile();
+    }
+
     binmode $fh, ':utf8';
     print $fh $content;
     seek $fh, 0, 0;

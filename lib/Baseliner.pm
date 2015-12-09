@@ -173,7 +173,7 @@ sub config_catalyst {
         },
     );
 
-    Baseliner::I18N->setup;
+    Baseliner::I18N->setup(features => Clarive->features);
 }
 
 # Start the application

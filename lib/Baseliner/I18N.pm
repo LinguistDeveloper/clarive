@@ -1,47 +1,69 @@
 package Baseliner::I18N;
 use strict;
 use warnings;
+use base 'Locale::Maketext';
 
+use Carp qw(croak);
 use I18N::LangTags::List;
 
-our ($PATH)                = __FILE__ =~ m/^(.*)\.pm$/;
+require Locale::Maketext::Lexicon;
+
+our $INIT;
 our $INSTALLED_LANGUAGES = {};
 our $LANGUAGES           = ['en'];
-our $CLASS;
 
 sub setup {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
 
-    require Locale::Maketext::Simple;
-    Locale::Maketext::Simple->import(
-        Style    => 'gettext',
-        Path     => $PATH,
-        Decode   => 1,
-        Class    => $class,
-        Subclass => 'Auto',
-        %options
+    my $paths = $options{paths};
+    $paths = [$paths] unless ref $paths eq 'ARRAY';
+    $paths = [ grep { defined && $_ } @$paths ];
+
+    if ( !@$paths ) {
+        if (my $features = $options{features}) {
+            my @feature_paths =
+              grep { -d }
+              map  { $_->path . '/lib/Baseliner/I18N' } $features->list;
+            push @$paths, @feature_paths;
+        }
+
+        my ($path) = __FILE__ =~ m/^(.*)\.pm$/;
+        push @$paths, $path;
+    }
+
+    foreach my $path (@$paths) {
+        $path = "$path/*.po" unless $path =~ m/\.(?:po|mo)$/;
+    }
+
+    Locale::Maketext::Lexicon->import(
+        {
+            '*'      => [ map { ( Gettext => $_ ) } @$paths ],
+            _auto    => 1,
+            _decode  => 1,
+            _preload => 1,
+            _style   => 'gettext'
+        }
     );
 
-    $CLASS = "$class\::Auto";
+    $INIT++;
 }
 
 sub installed_languages {
     my $class = shift;
 
-    $class->setup unless $CLASS;
-
     return $INSTALLED_LANGUAGES if %$INSTALLED_LANGUAGES;
 
+    my ($path) = __FILE__ =~ m/^(.*)\.pm$/;
+
     my $languages_list = {};
-    if (opendir my $langdir, $PATH) {
-        foreach my $entry (readdir $langdir) {
+    if ( opendir my $langdir, $path ) {
+        foreach my $entry ( readdir $langdir ) {
             next unless $entry =~ m/\A (\w+)\.(?:pm|po|mo) \z/xms;
             my $langtag = $1;
             next if $langtag eq "i_default";
             my $language_tag = $langtag;
             $language_tag =~ s/_/-/g;
-            $languages_list->{$langtag} =
-              I18N::LangTags::List::name($language_tag);
+            $languages_list->{$langtag} = I18N::LangTags::List::name($language_tag);
         }
         closedir $langdir;
     }
@@ -53,11 +75,8 @@ sub languages {
     my $class = shift;
     my ($languages) = @_;
 
-    $class->setup unless $CLASS;
-
     if ($languages) {
         $LANGUAGES = $languages;
-        loc_lang(@$languages);
 
         return $class;
     }
@@ -68,26 +87,20 @@ sub languages {
 sub language {
     my $class = shift;
 
-    $class->setup unless $CLASS;
-
-    my $lang = $CLASS->get_handle(@{$class->languages});
-    $lang =~ s/.*:://;
-    $lang =~ s/=.*//;
-
-    return $lang;
+    return $LANGUAGES->[0];
 }
 
 sub localize {
     my $class = shift;
 
-    $class->setup unless $CLASS;
+    my $handle = $class->_get_handle();
 
-    return loc(@_);
+    return $handle->maketext(@_);
 }
 
 sub parse_po {
     my $class = shift;
-    my ($file, $offset) = @_;
+    my ( $file, $offset ) = @_;
 
     open my $fh, '<:encoding(UTF-8)', $file or return '';
 
@@ -97,14 +110,14 @@ sub parse_po {
     while (<$fh>) {
         s{\r|\n}{}g;
 
-        unless (length $_) {
+        unless ( length $_ ) {
             $state = 'meta';
             next;
         }
         next if /^#/;
 
         if (/^msgid /) {
-            push @po, {key => '', val => ''};
+            push @po, { key => '', val => '' };
 
             $state = 'id';
         }
@@ -112,11 +125,11 @@ sub parse_po {
             $state = 'str';
         }
 
-        if (@po && /"(.*)"$/) {
-            if ($state eq 'id') {
+        if ( @po && /"(.*)"$/ ) {
+            if ( $state eq 'id' ) {
                 $po[-1]->{key} .= $1;
             }
-            elsif ($state eq 'str') {
+            elsif ( $state eq 'str' ) {
                 $po[-1]->{val} .= $1;
             }
         }
@@ -124,7 +137,20 @@ sub parse_po {
     close $fh;
 
     $offset = '' unless $offset;
-    return join(",\n", map {qq/$offset"$_->{key}" : "$_->{val}"/} @po);
+    return join( ",\n", map { qq/$offset"$_->{key}" : "$_->{val}"/ } @po );
+}
+
+sub _get_handle {
+    my $class = shift;
+
+    $class->setup unless $INIT;
+
+    my @langtags = @{ $class->languages };
+    my $handle   = $class->get_handle(@langtags);
+
+    croak "Can't get language handle for @langtags" unless $handle;
+
+    return $handle;
 }
 
 1;
