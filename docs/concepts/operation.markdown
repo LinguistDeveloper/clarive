@@ -2,13 +2,15 @@
 title: Operation
 ---
 
-Operations (or "ops") are the different steps or tasks to 
+<img src="/static/images/icons/page.png" /> Operations (or "ops") are the different steps or tasks to 
 be executed by a rule.
 
-Types of operations include:
+<br />
 
-- control statements, such as IF or FOR
-- services
-- fieldlets
-- dashlets
-- calling or including other rules
+* Types of operations include:<br />
+
+&nbsp; &nbsp;• Control statements, such as IF or FOR <br />
+&nbsp; &nbsp;• Services <br />
+&nbsp; &nbsp;• Fieldlets <br />
+&nbsp; &nbsp;• Dashlets <br />
+&nbsp; &nbsp;• Calling or including other rules 

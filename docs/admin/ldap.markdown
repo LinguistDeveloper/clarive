@@ -4,12 +4,12 @@ title: LDAP Authentication
 
 ## Setup
 
-To setup the LDAP authentication mechanism access to Clarive environment
+* To setup the LDAP authentication mechanism access to Clarive environment
 configuration files is necessary. 
 
-Under the key `baseliner: authentication: ldap:` we configure the LDAP binding credentials and server information:
-
-    baseliner:
+* Under the key `baseliner: authentication: ldap:` we configure the LDAP binding credentials and server information:
+            
+        baseliner:
         authentication:
             ldap:
                 credential:
@@ -28,11 +28,14 @@ Under the key `baseliner: authentication: ldap:` we configure the LDAP binding c
                   user_field: uid
                   user_filter: (&(objectclass=person)(uid=%s))
 
-Some of the fields that are required:
 
-- `binddn` - cointains the userid and its domain namespace. 
-- `bindpw` - the password
-- `ldap-server` - the IP of the LDAP server
-- `user_basedn` - the domain namespace where the user names are found.
-- `user_field` - the LDAP field that cointains the user
-- `user_filter` - used to parse the uid from the LDAP information
+<br />
+
+* Some of the fields that are required: <br />
+
+&nbsp; &nbsp;• `binddn` - Cointains the userid and its domain namespace.  <br />
+&nbsp; &nbsp;• `bindpw` - The password <br />
+&nbsp; &nbsp;• `ldap-server` - The IP of the LDAP server <br />
+&nbsp; &nbsp;• `user_basedn` - The domain namespace where the user names are found. <br />
+&nbsp; &nbsp;• `user_field` - The LDAP field that cointains the user <br />
+&nbsp; &nbsp;• `user_filter` - Used to parse the uid from the LDAP information

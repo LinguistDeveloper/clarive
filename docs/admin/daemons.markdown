@@ -2,52 +2,48 @@
 title: Daemon Administration
 ---
 
-A daemon is a computer program that runs as a background process, rather than being under the direct control of an interactive user. 
+* A daemon is a computer program that runs as a background process, rather than being under the direct control of an interactive user. 
 
-In Clarive, daemons are special, independent background processes started by the [Dispatcher](admin/dispatcher). 
+* In Clarive, daemons are special, independent background processes started by the [Dispatcher](admin/dispatcher). 
 
-Daemons are critical to the correct operation of Clarive, including:
+* Daemons are critical to the correct operation of Clarive, including: <br />
 
-- Job execution
-- Event processing
-- [Notifications](admin/notifications)
-- [Scheduled](admin/scheduler) executions
-- Semaphore control
+&nbsp; &nbsp;• Job execution <br />
+&nbsp; &nbsp;• Event processing <br />
+&nbsp; &nbsp;• [Notifications](admin/notifications) <br />
+&nbsp; &nbsp;• [Scheduled](admin/scheduler) Executions <br />
+&nbsp; &nbsp;• Semaphore control
 
-Accessing the Daemon administration in the Admin Menu: <img class="bali-topic-editor-image"  src="/static/images/daemon.gif" />Daemons
+* Accessing the Daemon administration in the Admin Menu: <img class="bali-topic-editor-image"  src="/static/images/daemon.gif" /> Daemons
 
-In the daemon screen, we can see what daemons are started at a given point in time. 
+* In the daemon screen, we can see what daemons are started at a given point in time. 
 
-These are the standard, out-of-the box daemons that should be 
-running in any typical Clarive installation.
+* These are the standard, out-of-the box daemons that should be running in any typical Clarive installation. <br />
 
-* `service.daemon.email` daemon responsible for sending notifications.
+&nbsp; &nbsp;• `service.daemon.email` - Daemon responsible for sending notifications. <br />
+&nbsp; &nbsp;• `service.event.daemon` - Daemon responsible for the management of events. <br />
+&nbsp; &nbsp;• `service.job.daemon` - Daemon responsible for the execution of passes. <br />
+&nbsp; &nbsp;• `service.purge.daemon` - Daemon responsible for the purge. <br />
+&nbsp; &nbsp;• `service.schedule daemon` - Responsible for planning. <br />
+&nbsp; &nbsp;• `service.sem.daemon` - Daemon responsible for controlling traffic lights.
 
-* `service.event.daemon` daemon responsible for the management of events.
 
-* `service.job.daemon` daemon responsible for the execution of passes.
-  `
-* `service.purge.daemon` daemon responsible for the purge.
+<br />
+### Start / Stop
 
-* `service.schedule daemon responsible for planning.
+* If at any time we're not interested that a particular service is run, for example purge the demon, we can disable it from this screen.
 
-* `service.sem.daemon` demon responsible for controlling traffic lights.
+* Actions associated with the buttons on the toolbar: 
 
-#### Start / Stop
+<img class="bali-topic-editor-image" src="/static/images/start.gif" /> **Start**: Run a daemon that has been stopped 
 
-If at any time we're not interested that a particular service is run, for example purge the demon, we can disable it from this screen.
+<img src="/static/images/stop.gif" /> **Stop**: Stop a running daemon
 
-Actions associated with the buttons on the toolbar: 
+<img src="/static/images/icons/add.gif" /> **Create**: Create new daemon attached to the Dispatcher
 
-<img class="bali-topic-editor-image" src="/static/images/start.gif" />Start: run a daemon that has been stopped 
+<img src="/static/images/icons/edit.gif" /> **Edit**: Modify the configuration for existing daemons
 
-<img src="/static/images/stop.gif" />Stop: Stop a running daemon
-
-<img src="/static/images/icons/add.gif" />Create: Create new daemon attached to the Dispatcher
-
-<img src="/static/images/icons/edit.gif" />Edit: Modify the configuration for existing daemons
-
-<img src="/static/images/icons/delete.gif" />Delete: Delete an existing daemon.
+<img src="/static/images/icons/delete.gif" /> **Delete**: Delete an existing daemon.
 
 
 

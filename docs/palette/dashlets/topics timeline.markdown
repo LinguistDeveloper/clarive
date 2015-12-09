@@ -10,43 +10,44 @@ index: 400
 
 
 <br />
-There are a list of elements can be configured in the dashlet:
 
+* There are a list of elements can be configured in the dashlet:
 
+<br />
 ### Dimensions of the dashlet
-Can personalize the size of the dashlet modifying the number of columns and rows.
+* Can personalize the size of the dashlet modifying the number of columns and rows.
 
 <br />
 ### Autorefresh
-Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
+* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
 
 <br />
 ### Select topics in categories
-Select one o more categories to show in the swarm.
+* Select one o more categories to show in the swarm.
 
 <br />
 ### Select topics in statuses
-Select one o more status to configure the table.
+* Select one o more status to configure the table.
 
 <br />
 ### Advanced JSON/MongoDB condition for filter
-Allows to use a JSON format o MongoDB query to add a condition. 
+* Allows to use a JSON format o MongoDB query to add a condition. 
 
 <br />
 ### Date field in topics to use as X axis
-Select the date field to use in X axis the graphic timeline.
+* Select the date field to use in X axis the graphic timeline.
 
 <br />
 ### Chart will be shown as...
-Indicate what type of chart will be shown.
+* Indicate what type of chart will be shown. <br />
 
-- **Area**
-- **Area step**
-- **Line**
-- **Bar**
-- **Scatter**
+&nbsp; &nbsp;• **Area** <br />
+&nbsp; &nbsp;• **Area step** <br />
+&nbsp; &nbsp;• **Line** <br />
+&nbsp; &nbsp;• **Bar** <br />
+&nbsp; &nbsp;• **Scatter**
 
 <br />
 ### Data grouped by
-Select the criteria for grouping data.
+* Select the criteria for grouping data.

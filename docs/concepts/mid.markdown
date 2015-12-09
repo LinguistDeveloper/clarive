@@ -2,13 +2,16 @@
 title: MID
 ---
 
-The MID is short for Master ID.
+<img src="/static/images/icons/page.png" /> The MID is short for Master ID.
 
-It's an internal counter used to uniquely identify 
+* It's an internal counter used to uniquely identify 
 configuration items (CIs) in Clarive, including Topics, Servers, 
 Users, Statuses, etc. 
 
-As said, MIDs are unique per installation and usually show up 
+* As said, MIDs are unique per installation and usually show up 
 in the Clarive UI prepended by a hash sign:
+            
+            #3422
 
-    #3422
+
+    
