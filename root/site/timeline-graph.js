@@ -599,7 +599,6 @@
                   }
                 }
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 sum_duration = sum_duration + duration[i];
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length), "text": text});
               }
