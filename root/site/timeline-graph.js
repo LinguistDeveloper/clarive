@@ -53,8 +53,7 @@
     var pn_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
-        bodyStyle:{"z-index":10}
-        ,
+        bodyStyle:{"z-index":10},
         floating: true,
         height: 250,
         width: 250,        
@@ -68,8 +67,7 @@
         var left = pn_diagram.container.getWidth() - 250;
         pn_overview.setPosition(left,0);
     }
-    );
-    
+    );    
 
     var init_overview = function(){   
 
@@ -123,163 +121,161 @@
         // height beyond end message time
         
         function computeLifelineHeight(duration) {
-            return LinePrefix + duration * MessageSpacing + LineSuffix;
+          return LinePrefix + duration * MessageSpacing + LineSuffix;
         }
         
         function computeActivityLocation(act) {
-            var groupdata = diagram.model.findNodeDataForKey(act.group);
-            if (groupdata === null) return new go.Point();
-            // get location of Lifeline's starting point
-            var grouploc = go.Point.parse(groupdata.loc);
-            return new go.Point(grouploc.x, convertTimeToY(act.start) - ActivityStart);
+          var groupdata = diagram.model.findNodeDataForKey(act.group);
+          if (groupdata === null) return new go.Point();
+          // get location of Lifeline's starting point
+          var grouploc = go.Point.parse(groupdata.loc);
+          return new go.Point(grouploc.x, convertTimeToY(act.start) - ActivityStart);
         }
+
         function backComputeActivityLocation(loc, act) {
-            diagram.model.setDataProperty(act, "start", convertYToTime(loc.y + ActivityStart));
+          diagram.model.setDataProperty(act, "start", convertYToTime(loc.y + ActivityStart));
         }
         
         function computeActivityHeight(duration) {
-            return ActivityStart + duration * MessageSpacing + ActivityEnd;
+          return ActivityStart + duration * MessageSpacing + ActivityEnd;
         }
+
         function backComputeActivityHeight(height) {
-            return (height - ActivityStart - ActivityEnd) / MessageSpacing;
+          return (height - ActivityStart - ActivityEnd) / MessageSpacing;
         }
         
         // time is just an abstract small non-negative integer
         // here we map between an abstract time and a vertical position
         function convertTimeToY(t) {
-            return t * MessageSpacing + LinePrefix;
+          return t * MessageSpacing + LinePrefix;
         }
+
         function convertYToTime(y) {
-            return (y - LinePrefix) / MessageSpacing;
+          return (y - LinePrefix) / MessageSpacing;
         }
-        
-        
-        
+                
         /** @override */
         MessageLink.prototype.getLinkPoint = function(node, port, spot, from, ortho, othernode, otherport) {
-            var p = port.getDocumentPoint(go.Spot.Center);
-            var r = new go.Rect(port.getDocumentPoint(go.Spot.TopLeft),
-                                port.getDocumentPoint(go.Spot.BottomRight));
-            var op = otherport.getDocumentPoint(go.Spot.Center);
-            
-            var data = this.data;
-            var time = data !== null ? data.time : this.time;
-            // if not bound, assume this has its own "time" property
-            
-            var aw = this.findActivityWidth(node, time);
-            var x = (op.x > p.x ? p.x + aw / 2 : p.x - aw / 2);
-            var y = convertTimeToY(time);
-            return new go.Point(x, y);
+          var p = port.getDocumentPoint(go.Spot.Center);
+          var r = new go.Rect(port.getDocumentPoint(go.Spot.TopLeft),
+                              port.getDocumentPoint(go.Spot.BottomRight));
+          var op = otherport.getDocumentPoint(go.Spot.Center);
+          
+          var data = this.data;
+          var time = data !== null ? data.time : this.time;
+          // if not bound, assume this has its own "time" property
+          
+          var aw = this.findActivityWidth(node, time);
+          var x = (op.x > p.x ? p.x + aw / 2 : p.x - aw / 2);
+          var y = convertTimeToY(time);
+          return new go.Point(x, y);
         };
         
         MessageLink.prototype.findActivityWidth = function(node, time) {
-            var aw = ActivityWidth;
-            if (node instanceof go.Group) {
-                // see if there is an Activity Node at this point -- if not, connect the link directly with the Group's lifeline
-                if (!node.memberParts.any(function(mem) {
-                    var act = mem.data;
-                    return (act !== null && act.start <= time && time <= act.start + act.duration);
-                }
-                                         )) {
-                    aw = 0;
-                }
-            }
-            return aw;
+          var aw = ActivityWidth;
+          if (node instanceof go.Group) {
+              // see if there is an Activity Node at this point -- if not, connect the link directly with the Group's lifeline
+              if (!node.memberParts.any(function(mem) {
+                  var act = mem.data;
+                  return (act !== null && act.start <= time && time <= act.start + act.duration);
+              })) {
+                  aw = 0;
+              }
+          }
+          return aw;
         };
         
         /** @override */
         MessageLink.prototype.getLinkDirection = function(node, port, linkpoint, spot, from, ortho, othernode, otherport) {
-            var p = port.getDocumentPoint(go.Spot.Center);
-            var op = otherport.getDocumentPoint(go.Spot.Center);
-            var right = op.x > p.x;
-            return right ? 0 : 180;
+          var p = port.getDocumentPoint(go.Spot.Center);
+          var op = otherport.getDocumentPoint(go.Spot.Center);
+          var right = op.x > p.x;
+          return right ? 0 : 180;
         };
         
         /** @override */
         MessageLink.prototype.computePoints = function() {
-            if (this.fromNode === this.toNode) {
-                // also handle a reflexive link as a simple orthogonal loop
-                var data = this.data;
-                var time = data !== null ? data.time : this.time;
-                // if not bound, assume this has its own "time" property
-                var p = this.fromNode.port.getDocumentPoint(go.Spot.Center);
-                var aw = this.findActivityWidth(this.fromNode, time);
-                
-                var x = p.x + aw / 2;
-                var y = convertTimeToY(time);
-                this.clearPoints();
-                this.addPoint(new go.Point(x, y));
-                this.addPoint(new go.Point(x + 50, y));
-                this.addPoint(new go.Point(x + 50, y + 5));
-                this.addPoint(new go.Point(x, y + 5));
-                return true;
-            }
-            else {
-                return go.Link.prototype.computePoints.call(this);
-            }
+          if (this.fromNode === this.toNode) {
+              // also handle a reflexive link as a simple orthogonal loop
+              var data = this.data;
+              var time = data !== null ? data.time : this.time;
+              // if not bound, assume this has its own "time" property
+              var p = this.fromNode.port.getDocumentPoint(go.Spot.Center);
+              var aw = this.findActivityWidth(this.fromNode, time);
+              
+              var x = p.x + aw / 2;
+              var y = convertTimeToY(time);
+              this.clearPoints();
+              this.addPoint(new go.Point(x, y));
+              this.addPoint(new go.Point(x + 50, y));
+              this.addPoint(new go.Point(x + 50, y + 5));
+              this.addPoint(new go.Point(x, y + 5));
+              return true;
+          }
+          else {
+              return go.Link.prototype.computePoints.call(this);
+          }
         }
         
         // end MessageLink        
-        
+        /*
         // a custom LinkingTool that fixes the "time" (i.e. the Y coordinate)
         // for both the temporaryLink and the actual newly created Link
         function MessagingTool() {
-            go.LinkingTool.call(this);
-            var go_api = go.GraphObject.make;
-            this.temporaryLink =
-                go_api(MessageLink,
-                       go_api(go.Shape, "Rectangle",
-                              {
-                                  stroke: "magenta", strokeWidth: 2 }
-                             ),
-                       go_api(go.Shape,
-                              {
-                                  toArrow: "OpenTriangle", stroke: "magenta" }
-                             ));
+          go.LinkingTool.call(this);
+          var go_api = go.GraphObject.make;
+          this.temporaryLink =
+              go_api(MessageLink,
+                     go_api(go.Shape, "Rectangle",
+                            {
+                                stroke: "magenta", strokeWidth: 2 }
+                           ),
+                     go_api(go.Shape,
+                            {
+                                toArrow: "OpenTriangle", stroke: "magenta" }
+                           ));
         };
         go.Diagram.inherit(MessagingTool, go.LinkingTool);
         
-        /** @override */
         MessagingTool.prototype.doActivate = function() {
-            go.LinkingTool.prototype.doActivate.call(this);
-            var time = convertYToTime(this.diagram.firstInput.documentPoint.y);
-            this.temporaryLink.time = Math.ceil(time);
-            // round up to an integer value
+          go.LinkingTool.prototype.doActivate.call(this);
+          var time = convertYToTime(this.diagram.firstInput.documentPoint.y);
+          this.temporaryLink.time = Math.ceil(time);
+          // round up to an integer value
         };
         
-        /** @override */
         MessagingTool.prototype.insertLink = function(fromnode, fromport, tonode, toport) {
-            var newlink = go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
-            if (newlink !== null) {
-                var model = this.diagram.model;
-                // specify the time of the message
-                var start = this.temporaryLink.time;
-                var duration = 1;
-                newlink.data.time = start;
-                model.setDataProperty(newlink.data, "text", "msg");
-                // and create a new Activity node data in the "to" group data
-                var newact = {
-                    group: newlink.data.to,
-                    start: start,
-                    duration: duration
-                };
-                model.addNodeData(newact);
-                // now make sure all Lifelines are long enough
-                ensureLifelineHeights();
-            }
-            return newlink;
+          var newlink = go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
+          if (newlink !== null) {
+              var model = this.diagram.model;
+              // specify the time of the message
+              var start = this.temporaryLink.time;
+              var duration = 1;
+              newlink.data.time = start;
+              model.setDataProperty(newlink.data, "text", "msg");
+              // and create a new Activity node data in the "to" group data
+              var newact = {
+                  group: newlink.data.to,
+                  start: start,
+                  duration: duration
+              };
+              model.addNodeData(newact);
+              // now make sure all Lifelines are long enough
+              ensureLifelineHeights();
+          }
+          return newlink;
         };
         // end MessagingTool
- 
-        diagram =
-            go_api(go.Diagram, pn_diagram.body.id, // must be the ID or reference to an HTML DIV
+        */
+
+        diagram = go_api(go.Diagram, pn_diagram.body.id, // must be the ID or reference to an HTML DIV
                    {
                        initialContentAlignment: go.Spot.Center,
                        allowCopy: false,
                        allowDelete: false,
-                       linkingTool: go_api(MessagingTool),  // defined below
+                       //linkingTool: go_api(MessagingTool),  // defined below
                        "resizingTool.isGridSnapEnabled": true,
-                       "draggingTool.gridSnapCellSize": new go.Size(1, MessageSpacing/4),
+                       //"draggingTool.gridSnapCellSize": new go.Size(1, MessageSpacing/4),
                        "draggingTool.isGridSnapEnabled": false,
                        // automatically extend Lifelines as Activities are moved or resized
                        "SelectionMoved": ensureLifelineHeights,
@@ -288,14 +284,12 @@
                    }
                   );
         
-        overview =
-            go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
+        overview = go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
                    {
                        
                        observed: diagram, contentAlignment: go.Spot.Center 
                    }
                   );
-        // tell it which Diagram to show and pan
         
         // define the Lifeline Node template.
         diagram.groupTemplate =
@@ -352,16 +346,6 @@
                        maxLocation: new go.Point(NaN, 19999),
                        selectionObjectName: "SHAPE",
                        resizable: false,
-                       //resizeObjectName: "SHAPE",
-                       /*resizeAdornmentTemplate:
-                       go_api(go.Adornment, "Spot",
-                              go_api(go.Placeholder),
-                              go_api(go.Shape,  // only a bottom resize handle
-                                     {
-                                         alignment: go.Spot.Bottom, cursor: "col-resize",
-                                         desiredSize: new go.Size(6, 6), fill: "yellow" }
-                                    )
-                             )*/
                    }
                    ,
                    new go.Binding("location", "", computeActivityLocation).makeTwoWay(backComputeActivityLocation),
@@ -385,7 +369,7 @@
         
         // define the Message Link template.
         diagram.linkTemplate =
-            go_api(MessageLink,  // defined below
+            go_api(MessageLink,  
                    {
                        selectionAdorned: true, 
                        curviness: 0 
@@ -422,8 +406,7 @@
                           new go.Binding("source", "source"))
                   );
         
-        // create the graph by reading the JSON data saved in "mySavedModel" textarea element        
-        
+        // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
         Baseliner.ajaxEval( '/topic/list_status_changes', {mid: mid}, function(res) {
 
             //Order data for creation date.
@@ -494,9 +477,6 @@
             var duration = [];
             var text = [];
             var sum_duration = 0;
-            //var date_ini = new Date(res.data[0].when);
-            //var date_end = new Date(res.data[res.data.length-1].when);
-            //var range =  date_end.getTime() - date_ini.getTime();
 
             while (i < res.data.length){
 
@@ -511,59 +491,8 @@
                 var date = new Date(res.data[i].when);
                 var date2 = new Date(res.data[i-1].when);
 
-                /*var sum_dates = date-date2;
-                var compose_date = ((date.getTime()-date2.getTime())*10/range)*100;
-                duration[i] = compose_date; 
-                */
-                //var date = new Date('2014-11-03 17:30:46');
-                //var date2 = new Date('2014-12-04 17:30:46');
-                //var sum_date = date.getDate() - date2.getDate();
-
-
-
-
-               /*var sum_date = date.getFullYear() - date2.getFullYear();
-               var date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
-
-               var sum_date2 = date - date2;
-               var number_text = 0;
-               //console.log("esto es");
-               //console.log(sum_date2);
-
-                if (sum_date > 1){
-                  duration[i]=sum_date+15.6;
-                  text[i] = sum_date+" "+_('Year');
-                }else{
-                  sum_date = (date.getMonth()+1) - (date2.getMonth()+1); 
-                  date_compare = date.getDate() - date2.getDate();
-                  if(sum_date > 1){
-                    duration[i]=(sum_date*0.1)+14.4;
-                    text[i] = sum_date+" "+_('Month');
-                  }else { 
-                    sum_date = date.getDate() - date2.getDate();
-                    date_compare = (date.getHours()+1) - (date2.getHours()+1);
-
-                    if (sum_date > 1){
-                      duration[i]=(sum_date*0.2)+8.2;
-                      text[i] = sum_date+" "+_('Days');
-                    }else{
-                        sum_date = (date.getHours()+1) - (date2.getHours()+1);
-
-                        if(sum_date > 0){
-                          duration[i]= (sum_date*0.3)+1;
-                          text[i] = sum_date+" H ";
-                        }else{
-                          duration[i] = 1;
-                          text[i] = " Min ";
-                        }
-                    }
-                  }        
-
-                }*/
-
-
                 // CALCULATE THE VALUE OF DURATION TO NODES.
-                /////////////////////////////////////////////////////////////////////////
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // YEAR         DURATION 16.6 -        
                 // MONTH        DURATION 15.4 - 16.6     
@@ -679,10 +608,10 @@
 
                               duration[i]=(number_text*0.2)+9.2;
                               number_text = new Date(sum_date);  
-							  var hour = (number_text.getHours()-1);      
-							  if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-							  var minutes = number_text.getMinutes();
-							  if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                              var hour = (number_text.getHours()-1);      
+                              if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
+                              var minutes = number_text.getMinutes();
+                              if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
                               text[i] = (number_text.getDate()-1) +" "+_('Days')+" " + hour+":"+minutes+" H ";
 
                             }else{
@@ -724,39 +653,8 @@
                     }
                   }
                 }
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-                /////////////////////////////////////////////////////////////////////////
-                /*var sum_date = date.getFullYear() - date2.getFullYear();
-
-                if (sum_date > 0){
-                  duration[i]=10;
-                }else{
-                  sum_date = (date.getMonth()+1) - (date2.getMonth()+1); 
-
-                  if(sum_date > 5){
-                    duration[i]=9;
-                    }else if (sum_date > 2){
-                      duration[i]=8;
-                      }else if (sum_date > 0){ 
-                        duration[i]=7;
-                        }else { 
-                          sum_date = date.getDate() - date2.getDate();
-
-                          if (sum_date > 14){
-                          duration[i]=6;
-                          }else if (sum_date > 6){
-                            duration[i]=5;
-                            }else if (sum_date > 2){
-                              duration[i]=4;
-                              }else if (sum_date > 1){
-                                duration[i]=3;
-                                }else{
-                                  duration[i]=2;
-                                }
-                        }        
-
-                }*/
                 sum_duration = sum_duration + duration[i];
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length), "text": text});
               }
@@ -804,40 +702,8 @@
               i++;
 
             }
-        
-        /*diagram.model  = new go.GraphLinksModel([ 
-            {"key":res.data[0].username, "text":res.data[0].username, "isGroup":true, "loc":"0 0", "duration":res.data.length}
-            ,
-            {"key":"Bob", "text":"Bob: Waiter", "isGroup":true, "loc":"100 0", "duration":res.data.length}
-            ,
-            {"key":"Hank", "text":"Hank: Cook", "isGroup":true, "loc":"200 0", "duration":res.data.length}
-            ,
-            {"key":"Renee", "text":"Renee: Cashier", "isGroup":true, "loc":"300 0", "duration":res.data.length}
-            ,
-            {"group":"Bob", "start":1, "duration":2, "text": "status"}
-            ,
-            {"group":"Hank", "start":2, "duration":3}
-            ,
-            {"group":"Bob", "start":5, "duration":1}
-            ,
-            {"group":"Bob", "start":6, "duration":2, "key":-9}
-            ,
-            {"group":"Renee", "start":8, "duration":1, "key":-10}
-        ],[ 
-            {"from":"Username", "to":"Bob", "text":"name", "time":1}
-            ,
-            {"from":"Bob", "to":"Hank", "text":"order food", "time":2}
-            ,
-            {"from":"Bob", "to":"Bob", "text":"serve drinks", "time":3}
-            ,
-            {"from":"Hank", "to":"Bob", "text":"finish cooking", "time":5}
-            ,
-            {"from":"Bob", "to":"Username", "text":"serve food", "time":6}
-            ,
-            {"from":"Username", "to":"Renee", "text":"pay", "time":8}
-        ]);*/
-        diagram.model  = new go.GraphLinksModel(object_node,object_link);
 
+        diagram.model  = new go.GraphLinksModel(object_node,object_link);
 
     });    
         
