@@ -144,6 +144,15 @@ sub mock_time {
     restore_time();
 }
 
+sub write_file {
+    my $class = shift;
+    my ($content, $filename) = @_;
+
+    open my $fh, '>', $filename or die $!;
+    print $fh $content;
+    close $fh;
+}
+
 package FakeLogger;
 sub new {
     my $class = shift;
