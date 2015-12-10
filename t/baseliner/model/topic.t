@@ -126,6 +126,60 @@ subtest 'include into fieldlet filters out releases' => sub {
     ok scalar @parent_topics == 0;
 };
 
+subtest 'upload: related field NOT exists for upload file' => sub {
+    _setup_clear();
+    _setup_user();
+
+    my $base_params = _topic_setup();
+    my $topic       = _build_model();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'not_exists_this_id', qqfile => 'testFile.fake', topic_mid => "$topic_mid" };
+
+    my $file = Util->_file( Util->_tmp_dir . '/fakefile.txt' );
+    my %res = $topic->upload( f => $file, p => $params, username => 'root' );
+
+    like $res{msg}, qr/related field does not exist for the topic/;
+};
+
+subtest 'upload: file not exists for upload file' => sub {
+    _setup_clear();
+    _setup_user();
+
+    my $base_params = _topic_setup();
+    my $topic       = _build_model();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params    = { filter => 'test_file', qqfile => 'testFile.fake', topic_mid => "$topic_mid" };
+    my $temp_file = Util->_tmp_dir . '/fakefile.txt';
+    my $file      = Util->_file($temp_file);
+
+    my %res = $topic->upload( f => $file, p => $params, username => 'root' );
+    $file->remove();
+    like $res{msg}, qr/file $temp_file does not exis/;
+};
+
+subtest 'upload: upload file complete' => sub {
+    _setup_clear();
+    _setup_user();
+
+    my $base_params = _topic_setup();
+    my $topic       = _build_model();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'testFile.fake', topic_mid => "$topic_mid" };
+
+    my $file = Util->_file( Util->_tmp_dir . '/fakefile.txt' );
+    open my $f, '>', $file or _throw _loc( "Could not open file %1: %2", $file, $! );
+    $f->print("Fake test file");
+    $f->close();
+
+    my %res = $topic->upload( f => $file, p => $params, username => 'root' );
+    $file->remove();
+
+    is $res{success}, 'true';
+};
+
 done_testing();
 
 sub _setup {
