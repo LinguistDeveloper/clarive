@@ -181,8 +181,7 @@
           var op = otherport.getDocumentPoint(go.Spot.Center);
           
           var data = this.data;
-          var time = data !== null ? data.time : this.time;
-          
+          var time = data !== null ? data.time : this.time;          
           var aw = this.findActivityWidth(node, time);
           var x = (op.x > p.x ? p.x + aw / 2 : p.x - aw / 2);
           var y = convertTimeToY(time);
@@ -213,7 +212,6 @@
           if (this.fromNode === this.toNode) {
               var data = this.data;
               var time = data !== null ? data.time : this.time;
-
               var p = this.fromNode.port.getDocumentPoint(go.Spot.Center);
               var aw = this.findActivityWidth(this.fromNode, time);
               
@@ -236,7 +234,6 @@
             }        
           }
         }
-        
         // define the Lifeline Node template.
         diagram.groupTemplate =
             go_api(go.Group, "Vertical",
@@ -293,6 +290,7 @@
                        selectionObjectName: "SHAPE",
                        resizable: false,
                        movable: false
+
                    }
                    ,
                    new go.Binding("location", "", computeActivityLocation).makeTwoWay(backComputeActivityLocation),
