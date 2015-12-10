@@ -1386,6 +1386,7 @@ sub favorite_add : Local {
         # if its a folder
         if( length $p->{id_folder} ) {
            $p->{id_folder} = $id; #_name_to_id delete $p->{id_folder};
+           $p->{icon} = '/static/images/icons/folder-collapsed.png';
            $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
         }
         # decode data structures
@@ -1415,6 +1416,7 @@ sub favorite_del : Local {
             delete $favs->{$_}{contents}{$id} for keys %$favs;  
         }
         $user->save;
+        cache->remove({ d=>"ci", mid=>$user->{mid} });
         { success=>\1, msg=>_loc("Favorite removed ok") }
     } catch {
         { success=>\0, msg=>shift() }
@@ -1443,22 +1445,28 @@ sub favorite_rename : Local {
 sub favorite_add_to_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
+    my $user_mid = $c->user_ci->{mid}; 
+    cache->remove({ d=>"ci", mid=>$user_mid });
     $c->stash->{json} = try {
+        my $favorite_folder= $p->{favorite_folder};
+        my $id_favorite= $p->{id_favorite};
+        my $id_folder= $p->{id_folder};
         # get data
-        my $user = $c->user_ci; 
-        my $d = $user->favorites->{ $p->{id_folder} }; 
-        _fail _loc "Not found: %1", $p->{id_folder} unless defined $d; 
+        my $user = ci->new($user_mid);
+        my $d = $user->{favorites}->{ $id_folder }; 
+        _fail _loc "Not found: %1", $id_folder unless defined $d; 
         $d->{contents} //= {};
         # delete old
-        my $fav = delete $user->favorites->{ $p->{id_favorite} }; 
+        my $fav = delete $user->{favorites}->{ $id_favorite}; 
         # set new 
-        $d->{favorite_folder} = $p->{id_folder};
-        $d->{contents}{ $p->{id_favorite} } = $fav; 
+        $d->{favorite_folder} = $id_folder;
+        $d->{contents}{ $id_favorite} = $fav; 
         $user->save;
         { success=>\1, msg=>_loc("Favorite moved ok") }
     } catch {
         { success=>\0, msg=>shift() }
     };
+    cache->remove({ d=>"ci", mid=>$user_mid });
     $c->forward( 'View::JSON' );
 }
 

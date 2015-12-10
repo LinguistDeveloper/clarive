@@ -1,18 +1,12 @@
 (function(d) {
-    var n1 = d.node1;
-    var n2 = d.node2;
-    var tree = d.tree;
     Baseliner.ajaxEval('/lifecycle/favorite_add_to_folder',
         {
-            id_favorite: n1.attributes.id_favorite,
-            favorite_folder: n1.attributes.favorite_folder,
-            id_folder: n2.attributes.id_folder
+            id_favorite: d.id_favorite,
+            favorite_folder: d.favorite_folder,
+            id_folder: d.id_folder
         }, function(res){
             Baseliner.message( _('Add to folder'), res.msg );
-            var is = n2.isExpanded();
-            tree.getLoader().load( n2 );
-            if( is ) n2.expand();
-            n1.parentNode.removeChild( n1 );
     });
 })
+
 
