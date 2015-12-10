@@ -3,8 +3,7 @@
     var ret = Baseliner.generic_fields(data);
     
     ret.push([ 
-    	{ xtype:'textfield', name:'branch', fieldLabel: _('Branch'), value: data.branch },
-    	{ xtype:'numberfield', name:'height', fieldLabel: _('Height'), value: data.height }
+    	{ xtype:'textfield', name:'branch', fieldLabel: _('Branch'), value: data.branch }
     ]);
     return ret;
 })
