@@ -382,8 +382,10 @@ sub _load_collection {
 
     unless ( $params{error_ok} ) {
         die 'ERROR: It seems that the last migration did not succeed. '
-          . 'Fix the issue and run migra-fix. Error is: `'
-          . $clarive->{migration}->{error} . '`'
+          . "The current version '$clarive->{migration}->{version}' was left intact. "
+          . "Fix the issue and run migra-fix. Error was: \n\n"
+          . $clarive->{migration}->{error}
+          . "\n"
               if $clarive->{migration}->{error};
     }
 
