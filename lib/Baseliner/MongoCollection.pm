@@ -2,9 +2,10 @@ package Baseliner::MongoCollection;
 use Moose;
 use Try::Tiny;
 use Baseliner::Utils;
+use MongoDB::Collection;
 use experimental 'autoderef';
 
-has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/^(?!meta)/ );
+has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/^(?!meta|clone)/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
 
 =head2 search
