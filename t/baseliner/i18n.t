@@ -47,7 +47,6 @@ EOP
         {
             en  => 'English',
             es  => 'Spanish',
-            cat => undef
         }
     );
 };
