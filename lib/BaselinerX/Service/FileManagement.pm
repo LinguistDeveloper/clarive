@@ -424,7 +424,7 @@ sub run_ship {
             $local_path = $server->parse_vars( "$local_path" );
             $is_wildcard = $local_path =~ /\*/;
             if ( !$recursive ) {
-                @locals = grep { -f } glob $local_path;
+                @locals = grep { -f } glob qq{'$local_path'};
             } else {
                 use File::Find qw(finddepth);
                 my @files;

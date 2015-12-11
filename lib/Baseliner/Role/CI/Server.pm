@@ -1,6 +1,7 @@
 package Baseliner::Role::CI::Server;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
+use BaselinerX::Type::Model::ConfigStore;
 with 'Baseliner::Role::CI';
 with 'Baseliner::Role::CI::Infrastructure';
 with 'Baseliner::Role::HasAgent';
@@ -26,7 +27,7 @@ has connect_timeout => qw(is rw isa Num), default => sub{
 
 sub parse_vars {
     my ($self,$str, %parameters) = @_;
-    my $wl_config = Baseliner->model('ConfigStore')->get('config.weblogic');
+    my $wl_config = BaselinerX::Type::Model::ConfigStore->get('config.weblogic');
     my $instance_parameters = $self->can('parameters') ? ( $self->parameters // {} ) : {};
     my %vars = ( %$wl_config, %{ +{%$self} }, %$instance_parameters, %parameters );
     return Util->parse_vars(\%vars,\%vars) unless length $str;
