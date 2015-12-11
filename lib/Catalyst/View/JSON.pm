@@ -9,7 +9,7 @@ use Encode ();
 use MRO::Compat;
 use Catalyst::Exception;
 
-__PACKAGE__->mk_accessors(qw( allow_callback callback_param expose_stash encoding json_dumper no_x_json_header json_encoder_args ));
+__PACKAGE__->mk_accessors(qw( allow_callback callback_param expose_stash encoding json_dumper no_x_json_header json_encoder_args use_force_bom));
 
 sub new {
     my($class, $c, $arguments) = @_;
@@ -97,10 +97,10 @@ sub process {
 
     my $output;
 
-    ## add UTF-8 BOM if the client is Safari
-    if ($encoding eq 'utf-8') {
+    ## add UTF-8 BOM if the client meets a test and the application wants it.
+    if ($self->use_force_bom && $encoding eq 'utf-8') {
         my $user_agent = $c->req->user_agent || '';
-        if ($user_agent =~ m/\bSafari\b/ and $user_agent !~ m/\bChrome\b/) {
+        if ($self->user_agent_bom_test($user_agent)) {
             $output = "\xEF\xBB\xBF";
         }
     }
@@ -111,6 +111,11 @@ sub process {
 
     $output = Encode::encode('UTF-8', $output);
     $c->res->output($output);
+}
+
+sub user_agent_bom_test {
+    my ($self, $user_agent) = @_;
+    return(($user_agent =~ m/\bSafari\b/) and ($user_agent !~ m/\bChrome\b/));
 }
 
 sub validate_callback_param {
