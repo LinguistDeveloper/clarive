@@ -16,8 +16,8 @@ sub upgrade {
 
        warn "Migration: Applying sequence to mid=$ci->{mid} ==> seq=$_seq\n";
 
-       mdb->master->update({ mid=>$ci->{mid} },{ '$set'=>{_seq=>$_seq} });
-       mdb->master_doc->update({ mid=>$ci->{mid} },{ '$set'=>{_seq=>$_seq} });
+       mdb->master->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
+       mdb->master_doc->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
 
        $master_mids{$ci->{mid}}++;
     }
@@ -27,7 +27,7 @@ sub upgrade {
         if (!exists $master_mids{$ci->{mid}}) {
             warn "Migration: Removing master_doc=$ci->{mid} because no related entry in master was found\n";
 
-            mdb->master_doc->remove({mid => $ci->{mid}});
+            mdb->master_doc->remove({mid => "$ci->{mid}"});
         }
     }
 
