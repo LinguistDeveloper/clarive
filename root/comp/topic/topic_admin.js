@@ -1703,7 +1703,7 @@
                 { text:_('Import'), 
                     icon: '/static/images/icons/import.png',
                     handler: function(){
-                        Baseliner.ajaxEval('/topicadmin/import', { yaml: data_paste.getValue() }, function(res){
+                        Baseliner.ajaxEval('/topicadmin/import_category', { yaml: data_paste.getValue() }, function(res){
                             if( !res.success ) {
                                 Baseliner.error( _('Import'), res.msg );
                                 if( ! Ext.isArray( res.log ) ) res.log=[];
