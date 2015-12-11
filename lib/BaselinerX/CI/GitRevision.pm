@@ -122,7 +122,18 @@ sub _find_sha_from_previous_jobs {
     my $self = shift;
     my ($project, $repo, $rev_sha, $bl) = @_;
 
-    my $sha = ci->GitRevision->search_ci( sha => $rev_sha );
+    my $git = $repo->git;
+
+    my @refs;
+    foreach my $ref ($git->exec(qw/show-ref/)) {
+        my ($name) = $ref =~ m#^$rev_sha refs/heads/(.*)$#;
+
+        push @refs, $name if $name;
+    }
+
+    my $sha = ci->GitRevision->search_ci( sha => mdb->in($rev_sha, @refs) );
+    return unless $sha;
+
     my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
 
     if ( scalar(@topics) eq 0 ) {
