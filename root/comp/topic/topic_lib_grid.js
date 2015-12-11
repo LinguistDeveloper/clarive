@@ -1636,9 +1636,12 @@ Cla.topic_grid = function(params){
     });
     
     grid_topics.on( 'render', function(){
-        var gt_view = grid_topics.getView() || return;
-        var dom = gt_view.el.dom || return;
-        var el = dom.childNodes[0].childNodes[1] || return;
+        var gt_view = grid_topics.getView();
+        if( !gt_view ) return;
+        var dom = gt_view.el.dom;
+        if( !dom ) return;
+        var el = dom.childNodes[0].childNodes[1];
+        if( !el ) return;
         var grid_topics_dt = new Baseliner.DropTarget(el, {
             comp: grid_topics,
             ddGroup: 'explorer_dd',
