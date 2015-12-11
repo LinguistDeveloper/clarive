@@ -89,6 +89,7 @@ sub _click {
 
 sub node_data { 
     my $self = shift;
+    my $branch = $self->name;
     +{  repo_dir   => $self->repo_dir,
         name       => $self->name,
         controller => 'gittree',
@@ -105,6 +106,27 @@ sub node_data {
         click      => $self->_click,
         tab_icon => $self->icon,
         repo_mid => $self->repo_mid,
+            ci => {
+                name  => "$branch",
+                class => 'GitRevision',
+                role  => 'Revision',
+                ns    => "git.revision/$branch",
+                data  => {
+                    ci_pre => [
+                        {
+                            class => 'GitRepository',
+                            ns    => "git.repository/" . $self->repo_dir,
+                            name  => $self->repo_dir,
+                            mid   => $self->repo_mid,
+                            data  => { repo_dir => $self->repo_dir },
+                        }
+                    ],
+                    repo    => 'ci_pre:0',
+                    branch  => $branch,
+                    rev_num => $branch,
+                    sha     => $branch,
+                }
+            },
     }
 }
 
