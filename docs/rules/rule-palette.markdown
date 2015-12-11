@@ -151,7 +151,7 @@ rules for automation. They all have a context menu with the following fields:
 
 * Displays a window with title DSL: `<rule name>`. An action tab and three different areas are showed in DSL window, the action tab is composed of:<br />
 
-&nbsp; &nbsp;• **Run**: button to run dsl code from dsl area. Areas are: <br /> 
+&nbsp; &nbsp;• **Run**: button to run DSL code from DSL area. Areas are: <br /> 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• *Stash area*: Textarea with stash variables in yaml format, variables can be set by the user, it the rule to run is of type job chain, three stash variables are showed by default:
 
@@ -159,13 +159,13 @@ rules for automation. They all have a context menu with the following fields:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• elements: [] <br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• job_step: CHECK <br />
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• *Dsl area*: Textarea with dsl code from op and its configuration, this code can be changed and executed.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• *DSL area*: Textarea with DSL code from op and its configuration, this code can be changed and executed.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• *Output area*: Textarea with two tab <br /><br />
 
-&nbsp;&nbsp;• **Ouput** - Result of dsl code execution.
+&nbsp;&nbsp;• **Ouput** - Result of DSL code execution.
 
-&nbsp;&nbsp;• **Stash** - Stash values from dsl code execution.
+&nbsp;&nbsp;• **Stash** - Stash values from DSL code execution.
 
 &nbsp;&nbsp;• **Toggle** - Switch op state from enable to disable and viceversa. If op is not active a line through op is displayed.
 
