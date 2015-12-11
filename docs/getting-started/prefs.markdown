@@ -14,21 +14,25 @@ the option `Preferences`
 
 To view or change your preferences information:
 
-
+<br />
 ## General
 
-- *Interface Language* - select your language from the drop-down menu
-- *Date Format* - select your favorite date format
-- *Default Dashboard* - select your default dashboard from the list. Dashboards are assigned usually 
-to roles in your organization. Make sure your administrator has enabled access to your roles.
+- **Interface Language** - Select your language from the drop-down menu.
+- **Timezone** - Select your timezone.
+- **Date Format** - Select your favorite date format.
+- **Time format** - Set your favorite time format.
+- **Default Dashboard** - Select your default dashboard from the list. Dashboards are assigned usually to roles in your organization. Make sure your administrator has enabled access to your roles.
 
+<br />
 ## Avatar
 
 Here you can select the avatar for your user profile. 
 
-- *Change Avatar* - randomly creates another fractal avatar.
-- *Upload File* - upload your own image.
+- **Change Avatar** - Randomly creates another fractal avatar.
+- **Upload File** - Upload your own image.
 
+
+<br />
 ## API
 
 Users with API access permissions can get an api key from here.
