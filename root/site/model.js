@@ -947,8 +947,8 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
     triggerAction: 'all',
     mode: 'remote',
     name: 'classname',
+    hiddenName: 'classname',
     displayField: 'name',
-    hiddenName: 'name',
     valueField: 'name',
     extraItemCls: 'x-tag'
 });
