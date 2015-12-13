@@ -3,44 +3,44 @@ Ext.onReady(function(){
     Ext.QuickTips.init();
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
 
-    Baseliner.VERSION = '<% $Baseliner::VERSION %>';
+    Cla.VERSION = '<% $Baseliner::VERSION %>';
 
 
-    Baseliner.help_menu = new Ext.menu.Menu({
+    Cla.help_menu = new Ext.menu.Menu({
         fresh_menu: true,
         items: [ Cla.help_base_items[0] ]
     });
-    Baseliner.help_menu.on('beforeadd', function(ev,hp){
+    Cla.help_menu.on('beforeadd', function(ev,hp){
         if( hp.fresh_menu ) {
-            Baseliner.help_menu.removeAll();
+            Cla.help_menu.removeAll();
         }
         hp.fresh_menu = false;
     });
 
-    Baseliner.help_button = new Ext.Button({
+    Cla.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.png',
        cls: 'x-btn-icon',
        hidden: false,
        tooltip: _('Clarive Help'),
-       menu: Baseliner.help_menu
+       menu: Cla.help_menu
     });
-    Baseliner.help_button.on('click', function(ev,hp){
+    Cla.help_button.on('click', function(ev,hp){
         // when the user sees the menu, switch the bulb off
         Cla.help_button.setIcon(IC('lightbulb_off.png'));
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
     search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
-    Baseliner.search_box_go = function(q,opts) {
-        if( !q ) q=Baseliner.search_box.getValue();
+    Cla.search_box_go = function(q,opts) {
+        if( !q ) q=Cla.search_box.getValue();
         if( q==undefined || q.length== 0 ) return;
         var res = /^#(\S+)$/.exec(q);
         if( res && res.length > 1 ) { // [0] is the full match
-            Baseliner.ajaxEval( '/topic/title_row',{ mid: res[1] },function(result){
-                Baseliner.add_tabcomp( "/topic/view", null, { topic_mid: res[1], topic_name: result.row.title, category_color: result.row.category_color, category_name: result.row.category_name  } );
+            Cla.ajaxEval( '/topic/title_row',{ mid: res[1] },function(result){
+                Cla.add_tabcomp( "/topic/view", null, { topic_mid: res[1], topic_name: result.row.title, category_color: result.row.category_color, category_name: result.row.category_name  } );
                 });
         } else {
-            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+            Cla.add_tabcomp('/comp/search_results.js', undefined,
                 { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search-green.png' });
         }
     };
@@ -48,16 +48,16 @@ Ext.onReady(function(){
         if(e.getKey() == e.ENTER){
             var opts = {};
             if( e.ctrlKey || e.altKey || e.shiftKey ) opts.force_new_tab = true;
-            Baseliner.search_box_go(null,opts);
+            Cla.search_box_go(null,opts);
             search_box.setSize( 120 );
         }
     });
-    Baseliner.search_box = search_box;
-    Baseliner.favorite_this = function(){
-        var tabpanel = Baseliner.tabpanel();
+    Cla.search_box = search_box;
+    Cla.favorite_this = function(){
+        var tabpanel = Cla.tabpanel();
         var tab = tabpanel.getActiveTab();
         var tab_id = tab.getId();
-        var info = Baseliner.tabInfo[tab_id];
+        var info = Cla.tabInfo[tab_id];
         //console.log( info );
         // current_state from within tab
         var current_state = tab.get_current_state ? tab.get_current_state() : {};
@@ -93,7 +93,7 @@ Ext.onReady(function(){
                 },
                 function(res) {
                     if( Cla.explorer && Cla.explorer.$tree_favorites ) Cla.explorer.$tree_favorites.refresh();
-                    Baseliner.message( _('Favorite'), res.msg );
+                    Cla.message( _('Favorite'), res.msg );
                 }
             );
         };
@@ -110,8 +110,8 @@ Ext.onReady(function(){
         win.show();
         
     };
-    Baseliner.toggleCalendar = function(btn){
-        var bc = Baseliner.calpanel;
+    Cla.toggleCalendar = function(btn){
+        var bc = Cla.calpanel;
         //if( bc.collapsed ) bc.toggleCollapse()
         if( bc.isVisible() ) {
             btn.toggle(false);
@@ -121,11 +121,11 @@ Ext.onReady(function(){
             bc.show();
             //bc.expand();
         }
-        Baseliner.viewport.doLayout();
+        Cla.viewport.doLayout();
     };
-    Baseliner.tabCalendar = function(){
-        var tabpanel = Baseliner.tabpanel();
-        var cal = new Baseliner.Calendar({
+    Cla.tabCalendar = function(){
+        var tabpanel = Cla.tabpanel();
+        var cal = new Cla.Calendar({
             fullCalendarConfig: { timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' } }
         });
         var tab = tabpanel.add( cal );
@@ -133,7 +133,7 @@ Ext.onReady(function(){
         tabpanel.changeTabIcon( tab, '/static/images/icons/calendar.png' );
         tab.setTitle( '&nbsp;' );
     };
-    Baseliner.help_button.on('click', Baseliner.help_off );
+    Cla.help_button.on('click', Cla.help_off );
     
 
     var tbar_items = [
@@ -159,7 +159,7 @@ Ext.onReady(function(){
     if( Prefs.site.show_search ) 
         tbar_items.push( search_box );
     
-    tbar_items.push( Baseliner.help_button );
+    tbar_items.push( Cla.help_button );
 
     tbar_items.push( '<img src="/static/images/icons/favorite.png" title="' + _("Add to Favorites...") + '" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
 
@@ -169,59 +169,59 @@ Ext.onReady(function(){
             icon: "/static/images/icons/calendar.png",
             enableToggle: true,
             pressed: false, handler: function(){
-                Baseliner.toggleCalendar( south_panel );
+                Cla.toggleCalendar( south_panel );
             }
         });
         tbar_items.push( south_panel ); 
     }
 
-    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="' + _("Share") + '" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />' ) );
-    tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" title="' + _("Print") + '" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
-    if( Prefs.stash.show_js_reload && Baseliner.DEBUG )
-        tbar_items.push( '<img src="/static/images/icons/js-reload.png" title="' + _("JS reload") + '" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
-    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Baseliner.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
-    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" title="' + _("Refresh") + '" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="' + _("Share") + '" style="border:0px;" onclick="Cla.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />' ) );
+    tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" title="' + _("Print") + '" onclick="Cla.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    if( Prefs.stash.show_js_reload && Cla.DEBUG )
+        tbar_items.push( '<img src="/static/images/icons/js-reload.png" title="' + _("JS reload") + '" style="border:0px;" onclick="Cla.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
+    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Cla.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
+    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" title="' + _("Refresh") + '" onclick="Cla.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '-');
 
     if( Prefs.is_logged_in ) { 
         var user_menu = [
              { text: _('Inbox'),
-                 handler: function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.png" } ); },
+                 handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.png" } ); },
                  icon : '/static/images/icons/envelope.png' 
              },
-             { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
+             { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
         if( Prefs.stash.can_change_password ) {
-            user_menu.push({ text: _('Change password'), handler: function(){ Baseliner.change_password(); }, icon:'/static/images/icons/password.png' });
+            user_menu.push({ text: _('Change password'), handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.png' });
         }
         if( Prefs.stash.can_surrogate ) {
-            user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.png' });
+            user_menu.push({ text: _('Surrogate...'), handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.png' });
         }
         
-        user_menu.push({ text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 999, icon: '/static/images/icons/logout.png', cls: 'ui-user-menu-logout' });
+        user_menu.push({ text: _('Logout') , handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.png', cls: 'ui-user-menu-logout' });
         tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
     } else {
-        tbar_items.push({ text: _('Login'), handler: function(){ Baseliner.login(); } });
+        tbar_items.push({ text: _('Login'), handler: function(){ Cla.login(); } });
     }
     
-    Baseliner.main_toolbar = new Ext.Toolbar({
+    Cla.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
         height: Prefs.toolbar_height,
         items: tbar_items 
     });
-    Baseliner.main_toolbar.on('afterlayout',function(){
-        if( Baseliner.hamburguer_installed) return;
-        Baseliner.hamburguer_installed = true;
+    Cla.main_toolbar.on('afterlayout',function(){
+        if( Cla.hamburguer_installed) return;
+        Cla.hamburguer_installed = true;
         $('.hamburger').click(function(){
-            if( Baseliner.explorer.collapsed ) {
+            if( Cla.explorer.collapsed ) {
                 this.classList.remove('active');
-                Baseliner.explorer.expand(true);
+                Cla.explorer.expand(true);
             } else {
                 this.classList.add('active');
-                Baseliner.explorer.collapse(true);
+                Cla.explorer.collapse(true);
             }
         });
     });
@@ -229,16 +229,16 @@ Ext.onReady(function(){
     var icon_home = '/static/images/icons/home.gif';
 
     if( Prefs.site.show_calendar ) {
-        Baseliner.calpanel = new Baseliner.Calendar({
+        Cla.calpanel = new Cla.Calendar({
             region: 'south',
             split: true,
             //collapsible: true,
             //collapsed: true,
             hidden: true,
             height: 300,
-            tbar_end : [ '->', { xtype:'button', icon: IC('tab.png'), handler:function(){ Baseliner.tabCalendar() } } ],
+            tbar_end : [ '->', { xtype:'button', icon: IC('tab.png'), handler:function(){ Cla.tabCalendar() } } ],
             fullCalendarConfig: {
-                events: Baseliner.calendar_events,
+                events: Cla.calendar_events,
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
             }
         });
@@ -248,7 +248,7 @@ Ext.onReady(function(){
     if( Prefs.site.show_main ) {
         tabs.push({title:_('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' });
     } else if( Prefs.site.show_portal ) {
-        tabs.push({ xtype: 'panel', title:_('Portal'), layout: 'border', closable: false, items: Baseliner.portal });
+        tabs.push({ xtype: 'panel', title:_('Portal'), layout: 'border', closable: false, items: Cla.portal });
     } 
 
     var menuTab = new Ext.ux.TabCloseMenu({
@@ -274,13 +274,13 @@ Ext.onReady(function(){
     if( Prefs.site.show_dashboard ) {
         tab_panel.on('afterrender', function(){
             var dash = new Cla.Dashboard({ closable: false});
-            Baseliner.tabInfo[dash.id] = { };
+            Cla.tabInfo[dash.id] = { };
             Cla.addNewTabItem(dash);
         });
     }
 
     if( Prefs.site.show_lifecycle && Prefs.stash.can_lifecycle ) 
-        Baseliner.explorer = new Baseliner.Explorer({ fixed: 1 });
+        Cla.explorer = new Cla.Explorer({ fixed: 1 });
 
     var mains = [];
     if( !Prefs.site.show_tabs ) {
@@ -298,17 +298,17 @@ Ext.onReady(function(){
             })
         );
     } else {
-        mains.push( Baseliner.main_toolbar );
-        if( Prefs.site.show_lifecycle && Baseliner.explorer ) {
-            mains.push( Baseliner.explorer );
+        mains.push( Cla.main_toolbar );
+        if( Prefs.site.show_lifecycle && Cla.explorer ) {
+            mains.push( Cla.explorer );
         } 
         if( Prefs.site.show_calendar ) {
-            mains.push( Baseliner.calpanel );
+            mains.push( Cla.calpanel );
         } 
         mains.push( tab_panel );
     }
     
-    Baseliner.main = new Ext.Panel({
+    Cla.main = new Ext.Panel({
         layout: 'border', items: mains
     });
 
@@ -320,8 +320,8 @@ Ext.onReady(function(){
             bodyStyle: 'z-index: 10000; position: absolute; background: transparent;', 
             bodyCfg: { height: '1000px' },
             autoLoad:{ url: banner.url, scripts: true } });
-        var banner_bottom = Ext.apply( Baseliner.main.initialConfig, { region: 'center', style: { top: height } } );
-        Baseliner.main = new Ext.Panel({
+        var banner_bottom = Ext.apply( Cla.main.initialConfig, { region: 'center', style: { top: height } } );
+        Cla.main = new Ext.Panel({
             layout: 'border',
             items: [ banner_panel, new Ext.Panel(banner_bottom) ]
         });
@@ -331,12 +331,12 @@ Ext.onReady(function(){
         //});
     } 
 
-    Baseliner.viewport = new Ext.Viewport({
+    Cla.viewport = new Ext.Viewport({
         layout: 'card',
         activeItem: 0,
         id: 'main-view',
         renderTo: 'main-div',
-        items: [ Baseliner.main ]
+        items: [ Cla.main ]
     });
 
     var tabpanel = Ext.getCmp('main-panel');
@@ -360,16 +360,16 @@ Ext.onReady(function(){
         Ext.each( Prefs.stash.portlets, function(portlet) {
             if( !portlet ) return;
             if( portlet.url_comp ) {
-                Baseliner.portalAddCompUrl({ title: _( portlet.title ),
+                Cla.portalAddCompUrl({ title: _( portlet.title ),
                     portlet_key: portlet.key, url_portlet: portlet.url_comp, url_max: portlet.url_max });
             } else {
-                Baseliner.portalAddUrl({ title: _(portlet.title), 
+                Cla.portalAddUrl({ title: _(portlet.title), 
                     portlet_key: portlet.key, url_portlet: portlet.url, url_max: portlet.url_max });
             }
         });
     }
     // Start background tasks 
-    //  ----- disabled for now ---- Baseliner.startRunner();
+    //  ----- disabled for now ---- Cla.startRunner();
 
     // Check open tab
     var getParams = document.URL.split("?");
@@ -381,9 +381,9 @@ Ext.onReady(function(){
     // This is used by /tab and /raw in raw_mode
     Ext.each( Prefs.stash.tab_list, function(tab) {
         if( tab.type == 'page' ) {
-            Baseliner.addNewTab( tab.url, undefined, tab_params );
+            Cla.addNewTab( tab.url, undefined, tab_params );
         } else {
-            Baseliner.addNewTabComp( tab.url, undefined,  tab_params );
+            Cla.addNewTabComp( tab.url, undefined,  tab_params );
         }
     });
 
@@ -401,39 +401,39 @@ Ext.onReady(function(){
 
     // VERSION checker
     //
-    Baseliner.version = -1;
-    Baseliner.version_refresh = 180000;
-    Baseliner.version_check = function(repeat){
+    Cla.version = -1;
+    Cla.version_refresh = 180000;
+    Cla.version_check = function(repeat){
         $.ajax({ url:'/static/version.json', type: 'GET',
             success: function(res){
                 if(!res) return;
                 if( !Ext.isObject(res) ) try { res = Ext.decode(res) } catch(ee){};
                 if( !Ext.isObject(res) ) return;
-                if( Baseliner.version == -1 ) {
-                    Baseliner.version = res.version;
-                    if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh);
-                } else if( Baseliner.version != res.version ) {
-                    Baseliner.confirm(_('Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?', 
-                        Baseliner.version, res.version), function(){
+                if( Cla.version == -1 ) {
+                    Cla.version = res.version;
+                    if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh);
+                } else if( Cla.version != res.version ) {
+                    Cla.confirm(_('Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?', 
+                        Cla.version, res.version), function(){
                             window.location.href = window.location.href; 
-                        if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+                        if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
-                        Baseliner.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/warnmsg.png' } );
-                        if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/warnmsg.png' } );
+                        if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     });
                 } else {
-                    if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh );
+                    if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh );
                 }
             },
             error: function(res){
-                if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+                if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
             }    
         });
     };
     
-    if( Baseliner.version_started == undefined ) {
-        setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh );
-        Baseliner.version_started = true;
+    if( Cla.version_started == undefined ) {
+        setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh );
+        Cla.version_started = true;
     }
 
     // create the global moment object
@@ -448,7 +448,7 @@ Ext.onReady(function(){
         if( evt ) {
             try {
                 var k = evt.keyCode;
-                return Baseliner.eventKey( k );
+                return Cla.eventKey( k );
             } catch(e){}
         }
     };  
@@ -457,6 +457,6 @@ Ext.onReady(function(){
 });
         
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
-    window.onbeforeunload=  function(){ if( Baseliner.is_in_edit() ) return '' };
+    window.onbeforeunload=  function(){ if( Cla.is_in_edit() ) return '' };
 }
 
