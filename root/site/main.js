@@ -177,9 +177,9 @@ Ext.onReady(function(){
 
     tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="' + _("Share") + '" style="border:0px;" onclick="Cla.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />' ) );
     tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" title="' + _("Print") + '" onclick="Cla.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Cla.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
     if( Prefs.stash.show_js_reload && Cla.DEBUG )
         tbar_items.push( '<img src="/static/images/icons/js-reload.png" title="' + _("JS reload") + '" style="border:0px;" onclick="Cla.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
-    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Cla.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
     tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" title="' + _("Refresh") + '" onclick="Cla.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '-');
 
