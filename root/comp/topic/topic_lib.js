@@ -830,12 +830,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         };
     
         self._cis = [];
-        var rg;
+        var ci_graph;
         var show_graph = function(){
-            if( rg ) { rg.destroy(); rg=null }
-            rg = new Baseliner.CIGraph({ mid: params.topic_mid, direction:'children', depth: 2, which:'rg' });
-            self.add( rg );
-            self.getLayout().setActiveItem( rg );
+            if( ci_graph ) { ci_graph.destroy(); ci_graph=null }
+            ci_graph = new Baseliner.CIGraph({ mid: params.topic_mid, direction:'children', depth: 2, which:'st' });
+            self.add( ci_graph );
+            self.getLayout().setActiveItem( ci_graph );
         };
     
     
@@ -944,26 +944,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon:'/static/images/icons/kanban.png',
             cls: 'x-btn-icon',
             enableToggle: true, 
-            tooltip: _('Open Kanban'),
+            tooltip: _('Show Kanban'),
             handler: function(){ self.show_kanban() }, 
             hidden: self.viewKanban==undefined?true:!self.viewKanban,
             allowDepress: false, toggleGroup: self.toggle_group
         });
             
-        self.btn_life_cicle = new Ext.Toolbar.Button({
-            icon: IC('life_cycle'),
+        self.btn_diagram = new Ext.Toolbar.Button({
+            icon: IC('diagram'),
             cls: 'x-btn-icon',
             enableToggle: false, 
-            tooltip: _('Open life cicle'),
-            handler: function(){ self.show_life_cicle() }
-            //hidden: self.viewKanban==undefined?true:!self.viewKanban,
-            //allowDepress: false, 
+            tooltip: _('Show Workflow Diagrams'),
+            handler: function(){ self.show_diagram() },
+            allowDepress: false, toggleGroup: self.toggle_group
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
             icon:'/static/images/icons/ci-grey.png',
             cls: 'x-btn-icon',
-            tooltip: _('Open CI Graph'),
+            tooltip: _('Show CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,
             enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: self.toggle_group
         });
@@ -1228,7 +1227,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_docgen,
                     self.btn_graph,
                     self.btn_kanban,
-                    self.btn_life_cicle
+                    self.btn_diagram
                 ]
             });
         } else {
@@ -1252,7 +1251,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
         var win = window.open( url, '_blank' );
     },
-    show_life_cicle : function(){
+    show_diagram : function(){
         var self = this;
 
         Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){
