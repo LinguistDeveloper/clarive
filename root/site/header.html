@@ -198,7 +198,7 @@
             logo_file: '<% $c->config->{logo_file} %>',
             logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
             site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,
-            toolbar_height: <% $c->config->{toolbar_height} // 28 %>,
+            toolbar_height: <% $c->config->{toolbar_height} // 40 %>,
             menus: [ <% join ',', _array $c->stash->{menus} %> ],
             stash: <% _to_json({
                         map { $_ => $to_bool->( $c->stash->{$_} ) }

@@ -91,7 +91,7 @@ baseliner:
     default_theme: clarive
     default_lang: en
     logo_filename: logo.png
-    toolbar_height: 36
+    toolbar_height: 40
     #favicon: /static/themes/clarive/favicon.ico
     #login_page: /clarive/login.html
     decrypt_key: 1234567

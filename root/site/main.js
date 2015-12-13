@@ -41,7 +41,7 @@ Ext.onReady(function(){
                 });
         } else {
             Baseliner.add_tabcomp('/comp/search_results.js', undefined,
-                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search.png' });
+                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search-green.png' });
         }
     };
     search_box.on('specialkey', function(f, e){
@@ -136,7 +136,13 @@ Ext.onReady(function(){
     Baseliner.help_button.on('click', Baseliner.help_off );
     
 
-    var tbar_items = [];
+    var tbar_items = [
+        function(){/*
+          <button class="hamburger hamburger-vertical">
+            <span class="icon"></span>
+          </button>
+        */}.heredoc()
+    ];
     if( Prefs.logo_file ) { 
             tbar_items.push( '<img src="'+Prefs.logo_file+'" style="border:0px;"/>' );
     } else {
@@ -205,6 +211,19 @@ Ext.onReady(function(){
         region: 'north',
         height: Prefs.toolbar_height,
         items: tbar_items 
+    });
+    Baseliner.main_toolbar.on('afterlayout',function(){
+        if( Baseliner.hamburguer_installed) return;
+        Baseliner.hamburguer_installed = true;
+        $('.hamburger').click(function(){
+            if( Baseliner.explorer.collapsed ) {
+                this.classList.remove('active');
+                Baseliner.explorer.expand(true);
+            } else {
+                this.classList.add('active');
+                Baseliner.explorer.collapse(true);
+            }
+        });
     });
 
     var icon_home = '/static/images/icons/home.gif';

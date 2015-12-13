@@ -438,10 +438,6 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
     header: false,
     title: _("Explorer"),  // not shown by default
     width: 250,
-    constructor: function(c){
-        // collapsible not working in default attributes
-        Baseliner.Explorer.superclass.constructor.call(this,Ext.apply({ collapsible: true }, c ));
-    },
     initComponent: function(){
         var self = this;
 
@@ -524,18 +520,6 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         };
         
 
-        var toggle_stick = function( button, e) {
-            if ( button_stick.enableToggle ) {
-                if( self.fixed == 0 ) {
-                    self.fixed = 1;
-                    button_collapse.hide();
-                } else {
-                    self.fixed = 0;
-                    button_collapse.show();
-                }
-            }
-        };
-        
         var button_projects = new Ext.Button({
             cls: 'x-btn-icon',
             icon: '/static/images/icons/project.png',
@@ -757,16 +741,6 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
         });
 
-        var button_stick = new Ext.Button({
-            cls: 'x-btn-icon',
-            icon: '/static/images/icons/pin-grey.png',
-            handler: toggle_stick,
-            tooltip: _('Fix explorer'),
-            pressed: true,
-            allowDepress: true,
-            enableToggle: true
-        });
-
         var button_refresh = new Ext.Button({
             cls: 'x-btn-text-icon',
             tooltip: _('Refresh All Nodes'),
@@ -792,8 +766,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_menu,
                 button_collapseall,        
                 button_collapse,
-                ' ',
-                button_stick
+                ' '
             ],
             id: 'tool_bar',
             
@@ -819,8 +792,6 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         Baseliner.Explorer.superclass.initComponent.call(this);
         self.on('afterrender', function(){ show_favorites(function() { button_favorites.enable(); },true); button_collapse.hide(); });
-        self.on('beforeexpand', function() { button_stick.show();})
-        self.on('beforecollapse', function() { button_stick.hide();})
     },
     current_tree : function(){
         return this.getLayout().activeItem;
