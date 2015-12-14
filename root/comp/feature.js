@@ -206,6 +206,7 @@
                     var data_str = String.format('sha: {0}, feature: {1}, branch: {2}', data.sha, data.feature, data.branch ) 
                     pb.log( data_str );
                     // request file
+                    $.support.cors = true;
                     $.ajax({
                         type: 'GET',
                         url: 'http://patch.vasslabs.com',
