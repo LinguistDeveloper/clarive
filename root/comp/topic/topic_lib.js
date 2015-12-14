@@ -954,9 +954,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon: IC('diagram'),
             cls: 'x-btn-icon',
             enableToggle: false, 
-            tooltip: _('Show Workflow Diagrams'),
-            handler: function(){ self.show_diagram() },
-            allowDepress: false, toggleGroup: self.toggle_group
+            tooltip: _('Open life cicle'),
+            handler: function(){ self.show_life_cicle() },
+            //hidden: self.viewKanban==undefined?true:!self.viewKanban,
+            //allowDepress: false, 
+            toggleGroup: self.toggle_group
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
@@ -1258,6 +1260,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             Cla.use('/static/gojs/go-debug.js', function(){
                 self.w = new Ext.Panel({
                     layout: 'card',  
+                    background: "#000000",
                     activeItem: 0,
                     items: [res]
                 });

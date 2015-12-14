@@ -1,5 +1,4 @@
 (function(params) {
-
 var checked_general= false;
 var checked_rol= false;    
 
@@ -10,8 +9,6 @@ var rol_text= false;
 var rol_source = false;
 var rol_color = false;
 
-var is_click = 0;
-
 id_category = params.id_category;
 
 //define colours
@@ -21,39 +18,42 @@ var black = "#19191C";
 var blue = "#0066CC";
 
 //Create the checkitems to the option menu.
-var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;general(diagram, overview);}}});
-var general_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_general){general_source=this.checked;general(diagram, overview);}}});
-var general_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;general(diagram, overview);}}});
+var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
+var general_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_general){general_source=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
+var general_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
 
-var rol_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_rol){rol_text=this.checked;rol(diagram, overview);}}});
-var rol_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_rol){rol_source=this.checked;rol(diagram, overview);}}});
-var rol_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;rol(diagram, overview);}}});
+var rol_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_rol){rol_text=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
+var rol_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_rol){rol_source=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
+var rol_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
 
 //Create menus
 var iid = Ext.id();
 
 //General Button
 var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, toggleGroup: 'process-'+iid, handler: function(){
-    general(diagram, overview);
     menu_general.show();
     menu_role.hide();
+    cardpanel.getLayout().setActiveItem(general_container);
 }});
 
 //Role Button
 var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, toggleGroup: 'process-'+iid, handler: function(){
-    rol(diagram, overview);
     menu_general.hide();
     menu_role.show();
+    cardpanel.getLayout().setActiveItem(role_container);
 }});
 
 //Zoom +
 var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
-    diagram.commandHandler.increaseZoom();
+    var panel = cardpanel.getLayout().activeItem;
+    panel.diagram.commandHandler.increaseZoom();
 }});
 
 //Zoom -
 var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
-    diagram.commandHandler.decreaseZoom();
+    var panel = cardpanel.getLayout().activeItem;
+    panel.diagram.commandHandler.decreaseZoom();
+
 }});
 
 // Option menu to General Button
@@ -73,7 +73,8 @@ var menu_general = new Ext.Button({
                         general_text=bool;
                         general_source=bool;
                         general_color=bool;
-                        general(diagram, overview);
+                        var panel = cardpanel.getLayout().activeItem;
+                        general(panel.diagram,panel.overview);
                         checked_general=false;
                     }
                 },{
@@ -88,7 +89,8 @@ var menu_general = new Ext.Button({
                         general_text=bool;
                         general_source=bool;
                         general_color=bool;
-                        general(diagram, overview);
+                        var panel = cardpanel.getLayout().activeItem;
+                        general(panel.diagram,panel.overview);
                         checked_general=false;
                     }
                 }
@@ -113,7 +115,8 @@ var menu_role = new Ext.Button({
                 rol_text=bool;
                 rol_source=bool;
                 rol_color=bool;
-                rol(diagram, overview);
+                var panel = cardpanel.getLayout().activeItem;
+                rol(panel.diagram,panel.overview);
                 checked_rol=false;
                 }
             },
@@ -129,7 +132,8 @@ var menu_role = new Ext.Button({
             rol_text=bool;
             rol_source=bool;
             rol_color=bool;
-            rol(diagram, overview);
+            var panel = cardpanel.getLayout().activeItem;
+            rol(panel.diagram,panel.overview);
             checked_rol=false;
             }
         }
@@ -138,17 +142,34 @@ var menu_role = new Ext.Button({
 });
 
     //PRINCIPAL PANEL
-    var pn_diagram = new Ext.Panel({
+    var pn_general_diagram = new Ext.Panel({
         html: 'Diagram',
         anchor: '100% 100%',
-        tbar:[ btn_general, btn_role, '-', menu_general, menu_role, btn_decreaseZoom, btn_increaseZoom] 
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)"
+    });
+    var pn_rol_diagram = new Ext.Panel({
+        html: 'Diagram',
+        anchor: '100% 100%',
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)"
     });
 
     //OVERVIEW PANEL 
-    var pn_overview = new Ext.Panel({
+    var pn_general_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
-        bodyStyle:{"z-index":10},
+        bodyStyle:"z-index:10", 
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
+        floating: true,
+        height: 250,
+        width: 250,        
+        animCollapse: true,
+        collapsible: true,
+    });    
+    var pn_rol_overview = new Ext.Panel({
+        title: _('Overview'),
+        html: 'overview',
+        bodyStyle:"z-index:10", 
+        //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
         floating: true,
         height: 250,
         width: 250,        
@@ -156,44 +177,68 @@ var menu_role = new Ext.Button({
         collapsible: true,
     });
 
-    pn_overview.on('afterrender', function() {
-        init_overview();
-        var left = pn_diagram.container.getWidth() - 250;
-        pn_overview.setPosition(left,0);
+    pn_general_overview.on('afterrender', function() {
+        init_general_overview();
+        var left = pn_general_diagram.container.getWidth() - 250;
+        pn_general_overview.setPosition(left,0);
+    });
+    pn_rol_overview.on('afterrender', function() {
+        init_role_overview();
+        var left = pn_rol_diagram.container.getWidth() - 250;
+        pn_rol_overview.setPosition(left,0);
     });
 
-    var init_overview = function(){
+    var init_general_overview = function(){
 
-        var go_api;
-        var diagram;
+        var go_api = go.GraphObject.make;
+ 
+        var diagram =  go_api(go.Diagram, pn_general_diagram.body.id, {
+          initialContentAlignment: go.Spot.Center, 
+          allowDelete: false
+        });
+        general_container.diagram = diagram;
 
-        var overview;
-        go_api = go.GraphObject.make;
-        diagram = go_api(go.Diagram, pn_diagram.body.id, {
+        var overview = go_api(go.Overview, pn_general_overview.body.id, { 
+          observed: diagram, contentAlignment: go.Spot.Center 
+        });   
+        general_container.overview = overview;
+
+
+        general(diagram,overview);
+    };
+
+    var init_role_overview = function(){
+
+        var go_api = go.GraphObject.make;
+ 
+        var diagram =  go_api(go.Diagram, pn_rol_diagram.body.id, {
           initialContentAlignment: go.Spot.Center, 
           allowDelete: false
         });
 
-        overview = go_api(go.Overview, pn_overview.body.id, { 
+        role_container.diagram = diagram;
+
+        var overview = go_api(go.Overview, pn_rol_overview.body.id, { 
           observed: diagram, contentAlignment: go.Spot.Center 
         });   
 
-        general(diagram, overview);
+        role_container.overview = overview;
+
+
+        rol(diagram,overview);
     };
 
-    var general = function(diagram, overview){
 
-        this.diagram = diagram;
-        this.overview = overview;
+    var general = function(diagram,overview){
 
-        // when the user clicks on the background of the Diagram, remove all highlighting
+        var go_api = go.GraphObject.make;
+
         diagram.click = function(e) {
           diagram.startTransaction("no highlighteds");
           diagram.clearHighlighteds();
           diagram.commitTransaction("no highlighteds");
         };
-        go_api = go.GraphObject.make;
- 
+
         // the node template describes how each Node should be constructed
         diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
             go_api(go.Shape,
@@ -434,11 +479,11 @@ var menu_role = new Ext.Button({
         diagram.undoManager.isEnabled = false;
 
     };
+//===============================================================================================================================================
+    var rol = function(diagram,overview){
 
-    var rol = function(diagram, overview){
+      var go_api = go.GraphObject.make;
 
-      this.diagram = diagram;
-      this.overview = overview;
 
       // when the user clicks on the background of the Diagram, remove all highlighting
       diagram.click = function(e) {
@@ -446,6 +491,7 @@ var menu_role = new Ext.Button({
         diagram.clearHighlighteds();
         diagram.commitTransaction("no highlighteds");
       };
+
 
         // the node template describes how each Node should be constructed
         diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
@@ -540,21 +586,21 @@ var menu_role = new Ext.Button({
             }
 
             for(var i=0;i<res.data.length-1;i++){
-            	var k = 0;
-            	while (k < res.data[i].statuses_to.length){
-	                 for(j=0;j<res.data.length-1;j++){
-	                     var final_type = res.data[i].statuses_to_type[k];
-	                     var final_type2 = res.data[j+1].status_type;
-	                      if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
-	                            //save the max number in aux
-	                           aux=res.data[j];
-	                            //save the min number in the correct position
-	                            res.data[j]=res.data[j+1];
-	                            //save the aux in the min position (change max with min)
-	                            res.data[j+1]=aux;         
-	                      }         
-	                 }
-	            k++;     
+              var k = 0;
+              while (k < res.data[i].statuses_to.length){
+                   for(j=0;j<res.data.length-1;j++){
+                       var final_type = res.data[i].statuses_to_type[k];
+                       var final_type2 = res.data[j+1].status_type;
+                        if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
+                              //save the max number in aux
+                             aux=res.data[j];
+                              //save the min number in the correct position
+                              res.data[j]=res.data[j+1];
+                              //save the aux in the min position (change max with min)
+                              res.data[j+1]=aux;         
+                        }         
+                   }
+              k++;     
                 }
             }
 
@@ -871,15 +917,15 @@ var menu_role = new Ext.Button({
 
     // highlight all Links and Nodes coming out of a given Node
     var showConnections = function(node) {
-      var diagram = node.diagram;
-      diagram.startTransaction("highlight");
+      var diagram_node = node.diagram;
+      diagram_node.startTransaction("highlight");
       // remove any previous highlighting
-      diagram.clearHighlighteds();
+      diagram_node.clearHighlighteds();
       // for each Link coming out of the Node, set Link.isHighlighted
       node.findLinksOutOf().each(function(l) { l.isHighlighted = true; });
       // for each Node destination for the Node, set Node.isHighlighted
       node.findNodesOutOf().each(function(n) { n.isHighlighted = true; });
-      diagram.commitTransaction("highlight");
+      diagram_node.commitTransaction("highlight");
     };
 
     //Function make the oposite color to the background
@@ -896,12 +942,24 @@ var menu_role = new Ext.Button({
       return color;
     };
 
-    var container = new Ext.Panel({
+    var role_container = new Ext.Panel({
          width: 800,
          height: 600,
          layout: 'absolute', 
-         items:[pn_diagram,pn_overview]
+         items:[pn_rol_diagram,pn_rol_overview]
     });
 
-    return container;    
+  var general_container = new Ext.Panel({
+         width: 800,
+         height: 600,
+         layout: 'absolute', 
+         items:[pn_general_diagram,pn_general_overview]
+    });
+    var cardpanel = new Ext.Panel({
+      activeItem: 0,
+      layout:'card',
+      tbar:[ btn_general, btn_role, '-', menu_general, menu_role, btn_decreaseZoom, btn_increaseZoom] ,
+      items:[general_container,role_container]
+    })
+    return cardpanel;    
 });
