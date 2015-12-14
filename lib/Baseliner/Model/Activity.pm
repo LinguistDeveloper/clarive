@@ -24,7 +24,7 @@ sub find_by_mid {
     my $where = { mid => "$mid" };
 
     if ( $p{no_ci} ) {
-        $where->{event_key} = { '$not' => qr/event.ci/ };
+        $where->{event_key} = { '$not' => qr/(^event.ci|^event.topic.modify$)/ };
     }
 
     my @acts = mdb->activity->find( $where )->sort( { ts => -1 } )->all;
