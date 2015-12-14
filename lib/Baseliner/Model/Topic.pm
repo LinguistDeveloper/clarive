@@ -3540,7 +3540,7 @@ sub get_status_history_topics{
 
 sub upload {
     my ($self, %c) = @_;
-    
+
     my $f = $c{f};
     my $p = $c{p};
     my $username = $c{username};
@@ -3558,7 +3558,7 @@ sub upload {
             my $file_field = $$p{filter};
             #Comprobamos que el campo introducido es correcto
             my $found = 0;
-            my $meta = model->topic->get_meta($topic_mid);
+            my $meta = $self->get_meta($topic_mid);
             for my $field ( _array $meta ) {
                 if (( $field->{id_field} eq $file_field ) and ( $field->{type} eq 'upload_files' )) {
                     $found = 1;
@@ -3580,7 +3580,7 @@ sub upload {
 
             #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
 
-            my @users = Baseliner->model("Topic")->get_users_friend(
+            my @users = $self->get_users_friend(
                 mid         => $p->{topic_mid}, 
                 id_category => $topic->{category}{id}, 
                 id_status   => $topic->{category_status}{id},

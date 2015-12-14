@@ -37,6 +37,7 @@ sub _topic_setup {
     Baseliner::Core::Registry->add_class( undef, 'fieldlet' => 'BaselinerX::Type::Fieldlet' );
 
     Baseliner::Core::Registry->add( 'caller', 'event.topic.create', {} );
+    Baseliner::Core::Registry->add( 'caller', 'event.file.create', {} );
 
     Baseliner::Core::Registry->add(
         'caller',
@@ -74,6 +75,14 @@ sub _topic_setup {
             set_method  => 'set_topics',
             meta_type   => 'topic',
             relation    => 'system',
+        }
+    );
+
+    Baseliner::Core::Registry->add(
+        'caller',
+        'fieldlet.attach_file' => {
+            get_method  => 'get_files',
+            type        => 'upload_files',
         }
     );
 
@@ -165,6 +174,18 @@ sub _fieldlets {
                 },
                 "key" => "fieldlet.system.list_topics",
             }
+        },
+        {
+           "attributes" => {
+               "data" => {
+                   "bd_field"      => "test_file",
+                   "fieldletType"  => "fieldlet.attach_file",
+                   "id_field"      => "test_file",
+                   "name_field"    => "Files",
+                   "editable"      => "1",
+               },
+               "key" => "fieldlet.attach_file",
+           }
         }
     ];
 }

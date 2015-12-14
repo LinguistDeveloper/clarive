@@ -3681,8 +3681,8 @@ msgstr "Formularios"
 msgid "File already attached to topic"
 msgstr "Fichero ya esta adjunto"
 
-msgid "Error uploading file: "
-msgstr "Error subiendo fichero: "
+msgid "Error uploading file: %1"
+msgstr "Error subiendo fichero: %1"
 
 msgid "Uploaded file %1"
 msgstr "Fichero subido %1"
@@ -8343,3 +8343,6 @@ msgstr "Recargar JS"
 
 msgid "Clarive Help"
 msgstr "Ayuda Clarive"
+
+msgid "File is already the latest version"
+msgstr "El fichero ya está en su última versión"

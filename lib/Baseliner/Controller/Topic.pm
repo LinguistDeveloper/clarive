@@ -1547,16 +1547,15 @@ sub upload : Local {
     }else{
         $f =  _file( ''. $c->req->body );
     }
-    my %response = Baseliner->model("Topic")->upload(
-                f           => $f, 
-                p           => $p, 
-                username    => $c->username,
-            );
+    my %response = Baseliner->model("Topic")->upload( f => $f, p => $p, username => $c->username );
+    my $body;
     if ($response{status} ne '200') {
-        $c->res->status($response{status});
+        $c->stash->{ json } = { success => \0, msg => _loc($response{msg}) };
+    } else {
+        $c->stash->{ json } = { success => \1, msg => _loc($response{msg}) };
+        $c->res->body($body);
     }
-    my $body = '{"success": "' . $response{success}. '", "msg": "' . $response{msg} .'"}';
-    $c->res->body($body);
+    $c->forward( 'View::JSON' );
 }
 
 sub file : Local {
