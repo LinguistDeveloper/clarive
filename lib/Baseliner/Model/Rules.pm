@@ -160,6 +160,8 @@ sub dsl_build {
     my $level = 0;
     local $Data::Dumper::Terse = 1;
     local $Data::Dumper::Deparse = 1;
+    local $Data::Dumper::Deepcopy = 1;
+    
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
         my $children = $s->{children} || {};
