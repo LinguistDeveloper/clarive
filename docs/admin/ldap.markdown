@@ -1,5 +1,6 @@
 ---
 title: LDAP Authentication
+icon: users
 ---
 
 ## Setup
@@ -34,8 +35,13 @@ configuration files is necessary.
 * Some of the fields that are required: <br />
 
 &nbsp; &nbsp;• `binddn` - Cointains the userid and its domain namespace.  <br />
+
 &nbsp; &nbsp;• `bindpw` - The password <br />
+
 &nbsp; &nbsp;• `ldap-server` - The IP of the LDAP server <br />
+
 &nbsp; &nbsp;• `user_basedn` - The domain namespace where the user names are found. <br />
+
 &nbsp; &nbsp;• `user_field` - The LDAP field that cointains the user <br />
+
 &nbsp; &nbsp;• `user_filter` - Used to parse the uid from the LDAP information

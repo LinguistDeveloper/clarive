@@ -1,5 +1,6 @@
 ---
 title: Email Notifications
+icon: email
 ---
 
 * This document describes the procedure for the administration of 
@@ -30,8 +31,11 @@ notifications in Clarive.
 ### Areas
 
 * Three subcategories with whom you can relate the field (see "<img src ="/static/images/icons/edit.gif "/> Edit"). <br />
+    
     &nbsp; &nbsp;• *Project*: Project defined.<br />
+    
     &nbsp; &nbsp;• *Category*: Category topics. <br />
+    
     &nbsp; &nbsp;• *Category/Status*: Range defined states.
 
 <br />
@@ -42,7 +46,6 @@ notifications in Clarive.
 ### Enabled
 
 * All notifications can be enabled or not created. This column shows the state through a <img class = "bali-topic-editor-image" src = "/static/images/drop-yes.gif" /> or <img class = "bali-topic-editor -image "src ="/static/images/close-small.gif "/>.
-
 
 * All column headers have the same functionality as in the rest of the panels Clarive. By clicking the button we can arrange additional information and select the columns you want to see on the panel.
 
@@ -55,10 +58,18 @@ notifications in Clarive.
 
 * To create a new notification click on create button. A window appears, Create Notification. The fields to be filled are: <br />
 
+<br />
+### Action bar
+* In the top bar of the main panel the search bar to filter the grid, and buttons for managing notifications are provided.
+
 &nbsp; &nbsp;• *Event.* <br />
+
 &nbsp; &nbsp;• *Radio "Send/Exclude".* <br />
+
 &nbsp; &nbsp;• *Template.* <br />
+
 &nbsp; &nbsp;• *Subject.* <br />
+
 &nbsp; &nbsp;• *Recipients.* <br />
 
 <br />
@@ -101,8 +112,11 @@ notifications in Clarive.
 The rest of the templates are created for more concrete elements: <br />
 
 &nbsp; &nbsp;• *generic_assigned.html*: Specific to `event.topic.modify_field` notification. <br />
+
 &nbsp; &nbsp;• *generic_post.html*: Notifications about comments. <br />
+
 &nbsp; &nbsp;• *generic_rule.html*: Notifications of rules. <br />
+
 &nbsp; &nbsp;• *generic_topic.html*: Notifications on topics. 
 
 <br />
@@ -110,7 +124,9 @@ The rest of the templates are created for more concrete elements: <br />
 
 * You can create a default subject (leaving check marked "Default") or edit the field. The issue may be: <br />
 
+
 &nbsp; &nbsp;• *A simple string.* <br />
+
 &nbsp; &nbsp;• *A dynamic subject, referencing stash variables (for example $ {username}).*
 
 <br />
@@ -120,28 +136,42 @@ The rest of the templates are created for more concrete elements: <br />
 
 &nbsp; &nbsp;• First combo: <br />
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• To <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• CC <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• BCC <br />
 
 &nbsp; &nbsp;• Second combo: <br />
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Users <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Roles <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Actions <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Fields <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Owner <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Email <br />
 
 &nbsp; &nbsp;• In some cases notifications need additional information about the scope of the event, ie, the conditions to be met by the deployment event. <br />
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Job. Additional field: Project. <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Post. Additional fields: Project/Category/State. <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Topic. Additional fields: Project/Category/State.
 
 * Each system event has a different scope:
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• When left blank when defining the notification, the notification will only be launched if the event also has the empty field. <br />
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• When we mark the checkbox "All", to the right of the fields, the condition is satisfied for any value of the data in the event.
 
 <br />

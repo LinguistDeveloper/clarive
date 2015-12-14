@@ -1,5 +1,6 @@
 ---
 title: User Administration
+icon: user.gif
 ---
 
 

@@ -1,6 +1,7 @@
 ---
 title: API Keys
 index: 5000
+icon: lock_small
 ---
 
 * The API Keys preference page allows you to create keys that can be used 

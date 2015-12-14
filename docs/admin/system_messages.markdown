@@ -1,5 +1,6 @@
 ---
 title: System Messages
+icon: sms
 ---
 
 * System messages are system-wide notifications
