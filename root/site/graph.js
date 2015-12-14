@@ -634,6 +634,9 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         var ii = Ext.id();
+        self.include_cl_orig = self.include_cl;
+        self.not_in_class_orig = self.not_in_class;
+
         var btn_redraw = new Ext.Button({
             tooltip: _('Redraw'),
             icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
@@ -683,23 +686,32 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             self.reload_current();
         });
         self.include_cl_combo = new Baseliner.CIClassCombo({ fieldLabel:_('Include Classes'), value: self.include_cl });
-        self.exclude_cl_combo = new Baseliner.CIClassCombo({ fieldLabel:_('Exclude Classes'), value: self.exclude_cl });
+        self.not_in_class_check = new Baseliner.CBox({
+            fieldLabel: _('Exclude selected classes?'), 
+            checked: self.not_in_class, 
+            default_value: false
+        });
+
         self.filter_win = new Cla.Window({ 
             height: 300, width: 600, layout:'form', autoScroll: true,
             modal: true, closeAction: 'hide', 
             tbar: [ 
                 '->',
-                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl_combo.clearValue(); self.exclude_cl_combo.clearValue() } }),
+                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig } }),
                 new Ext.Button({ text:_('Filter'), icon:IC('search-small'), handler: function(){ self.filter_win.hide(); } })
             ],
-            items: [ self.include_cl_combo, self.exclude_cl_combo ]
+            items: [ self.include_cl_combo, self.not_in_class_check ]
         });
         self.filter_win.on('hide',function(){
             var inc = self.include_cl_combo.get_save_data().length;
-            var exc = self.exclude_cl_combo.get_save_data().length;
-            self.show_filter.setText( _('Filter: <b>+%1 / -%2</b>', inc, exc) );
+            if ( self.not_in_class_check.checked ) inc = inc * -1 ;
+            self.show_filter.setText( _('Filter: <b>%1</b>', inc) );
+
+            self.include_cl = self.include_cl_combo.get_save_data();
+            self.not_in_class = self.not_in_class_check.checked;
             self.reload_current();
         });
+
         self.show_filter = new Ext.Button({
             text: _('Filter (None)'), icon: IC('search-small'), handler: function(){
                 self.filter_win.show();
@@ -771,12 +783,14 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             self.setActive( self.st );
             return;
         }
+
         self.st = new Baseliner.ST({ request: function(id,lev,onComplete){
             var mid = id || self.mid;
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }', 
                 direction: self.direction, 
-                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
+                include_cl: self.include_cl, 
+                not_in_class: self.not_in_class, 
                 depth: 1, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { 
@@ -805,7 +819,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             var mid = id || self.mid;
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, direction: self.direction, root_node_data:'{ "$type":"none" }',
-                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
+                include_cl: self.include_cl, 
+                not_in_class: self.not_in_class, 
                 depth: 2, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
@@ -830,7 +845,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, 
                 add_prefix: 0,
                 direction: self.direction,
-                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data(), 
+                include_cl: self.include_cl, 
+                not_in_class: self.not_in_class, 
                 depth: self.depth, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count > self.limit ) {
@@ -858,7 +874,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         var w = 960, h = 500;
         Baseliner.loadFile('/static/d3/d3.css', 'css' );
         self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction,
-                include_cl: self.include_cl_combo.get_save_data(), exclude_cl: self.exclude_cl_combo.get_save_data()
+                include_cl: self.include_cl, 
+                not_in_class: self.not_in_class
         });
         self.add( self.d3g );
         self.d3g.which = 'd3g';
@@ -866,7 +883,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     },
     filtering : function(){
         var self = this;
-        return self.include_cl_combo.get_save_data().length || self.exclude_cl_combo.get_save_data().length;
+        return self.include_cl.length;
     },
     to_img : function(){
         var self = this;

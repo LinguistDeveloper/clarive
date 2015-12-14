@@ -13,6 +13,7 @@
 
     var div = document.getElementById(id);
     div.style.clear = "left";
+
     if( mid ) {
         div.innerHTML = '';
         var graph = new Baseliner.CIGraph({
@@ -21,7 +22,7 @@
             depth: 3, 
             toolbar: data.toolbar_mode == 'hide' ? false : data.toolbar_mode,
             include_cl: data.include_cl,
-            exclude_cl: data.exclude_cl,
+            not_in_class: data.not_in_class,
             which: data.graph_type||'st', 
             height: $(div).height()
         });

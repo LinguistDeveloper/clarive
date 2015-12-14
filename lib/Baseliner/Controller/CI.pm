@@ -899,6 +899,7 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+_warn $p;
     my $form_data = $p->{form_data};
     _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
     # cleanup
@@ -1241,7 +1242,12 @@ sub json_tree : Local {
     my %root_node_data = %$d if ref $d eq 'HASH';
     my $depth = length $p->{depth} ? $p->{depth} : 2;
     my $include_cl = $p->{include_cl};
-    my $exclude_cl = $p->{exclude_cl};
+    my $not_in_class = !$p->{not_in_class} || ($p->{not_in_class} && $p->{not_in_class} eq 'false') ? 0: 1;
+
+    if (  $not_in_class && _array($p->{include_cl}) ) {
+        delete($p->{include_cl});
+        $p->{exclude_cl} = $include_cl;
+    };
 
     $p->{limit} //= 50;  
     my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '__#__' : '';

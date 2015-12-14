@@ -14,7 +14,14 @@
     });
 
     var include_cl = new Baseliner.CIClassCombo({ fieldLabel:_('Include Classes'), name:'include_cl', value: data.include_cl });
-    var exclude_cl = new Baseliner.CIClassCombo({ fieldLabel:_('Exclude Classes'), name:'exclude_cl', value: data.exclude_cl });
+    // var exclude_cl = new Baseliner.CIClassCombo({ fieldLabel:_('Exclude Classes'), name:'exclude_cl', value: data.exclude_cl });
+
+    var not_in_class = new Baseliner.CBox({
+        fieldLabel: _('Exclude selected classes?'), 
+        name: 'not_in_class',
+        checked: data.not_in_class, 
+        default_value: false
+    });
 
     var graph_type = new Baseliner.ComboDouble({ 
         anchor: '100%', fieldLabel:_('Graph Type'), name:'graph_type', 
@@ -39,7 +46,8 @@
         context_override,
         starting_mid,
         toolbar_mode,
-        include_cl, exclude_cl
+        include_cl,
+        not_in_class
     ])
 })
 
