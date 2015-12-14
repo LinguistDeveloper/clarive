@@ -1,24 +1,29 @@
 ---
 title: Invoke CI methods
+icon: ci
 ---
 
-Invoke the selected ci method with the given arguments from the form. Form to configure has the following fields:     
+<img src="/static/images/icons/ci.png" /> Invoke the selected ci method with the given arguments from the form. 
 
-* **CI class**: Combo box with all clarive CIs.    
+* Form to configure has the following fields: <br />
 
-* **CI method**: Method from the CI to invoke.    
+&nbsp; &nbsp; • **CI class**: Combo box with all clarive CIs. <br />
 
-* **MID**: CI mid.    
+&nbsp; &nbsp; • **CI method**: Method from the CI to invoke. <br />
 
-* **Arguments**: Arguments to pass to the CI method. They are:    
+&nbsp; &nbsp; • **MID**: CI mid. <br />
 
-      &nbsp; &nbsp; • Named:     
+&nbsp; &nbsp; • **Arguments**: Arguments to pass to the CI method. They are: <br />
 
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - Key: parameter name to be passed to ci method.    
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - Value: key value to be passed to ci method.   
- 
-      &nbsp; &nbsp; • Positional:     
+&nbsp; &nbsp;&nbsp; &nbsp; • Named <br />
 
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - Name: variable name.    
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - Value: variable value to be passed to ci method.    
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Key: Parameter name to be passed to ci method. <br />
+
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Value: Key value to be passed to ci method. <br />
+
+&nbsp; &nbsp;&nbsp; &nbsp; • Positional <br />
+
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Name: Variable name. <br />
+
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Value: Variable value to be passed to ci method.
 

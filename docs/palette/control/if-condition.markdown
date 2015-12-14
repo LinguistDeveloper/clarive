@@ -1,9 +1,12 @@
 ---
-title: IF condition THEN    
+title: IF condition THEN
+icon: if.gif
 ---
 
-Checks the condition and if true process nested ops. Data editor has the following key:
+<img src="/static/images/icons/if.gif" /> Checks the condition and if true process nested ops. 
 
-* **condition**: condition key, value column has to be filled with the condition to check, its default value is 1.
+* Data editor has the following key: <br />
+
+&nbsp; &nbsp;• **Condition**: Condition key, value column has to be filled with the condition to check, its default value is 1.
 
 

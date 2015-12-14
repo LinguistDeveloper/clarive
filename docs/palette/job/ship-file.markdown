@@ -1,31 +1,36 @@
 ---
 title: Ship File Remotely
+icon: file.gif
 ---
 
-Get files from a remote site according to user options from the configuration window. Form to configure has the following fields:     
+<img src="/static/images/icons/file.gif" />  Get files from a remote site according to user options from the configuration window. 
 
-* **server**: server that holds the remote file, server to connect to.     
+* Form to configure has the following fields: <br />
 
-* **user**: user allowed to connect to remote server.     
+&nbsp; &nbsp;• **Server**: Server that holds the remote file, server to connect to. <br />
 
-* **recursive**: get files in a recursive way through directories behind base path.    
+&nbsp; &nbsp;• **User**: User allowed to connect to remote server. <br />
 
-* **local mode**: specifies what files are part of the list to get from remote server. They can be:    
+&nbsp; &nbsp;• **Recursive**: Get files in a recursive way through directories behind base path.<br />
 
-      &nbsp; &nbsp; • local files: All files found.     
+&nbsp; &nbsp;• **Local mode**: Specifies what files are part of the list to get from remote server. They can be: <br />
 
-      &nbsp; &nbsp; • nature items: Files involved in current nature.    
+&nbsp; &nbsp;&nbsp; &nbsp;• Local files: All files found. <br />
 
-* **rel mode**: relative path to place files in local server. Options are:     
+&nbsp; &nbsp;&nbsp; &nbsp;• Nature items: Files involved in current nature. <br />
+
+
+
+&nbsp; &nbsp;• **Rel mode**: Relative path to place files in local server. Options are: <br />
     
-      &nbsp; &nbsp; • file only: To take only file names.    
+&nbsp; &nbsp;&nbsp; &nbsp;• File only: To take only file names. <br />
 
-      &nbsp; &nbsp; • rel path job: Files path relative to job dir.     
+&nbsp; &nbsp;&nbsp; &nbsp;• Rel path job: Files path relative to job dir. <br />
 
-      &nbsp; &nbsp; • rel path anchor: Files path relative to a path configured by the user.     
+&nbsp; &nbsp;&nbsp; &nbsp;• Rel path anchor: Files path relative to a path configured by the user. <br />
 
-* **anchor path**: path to anchor files relative path.    
+    
 
-* **remote path**: path in remote server to get files to ship to the local server.    
- 
+&nbsp; &nbsp;• **Anchor path**: Path to anchor files relative path.<br />
 
+&nbsp; &nbsp;• **Remote path**: Path in remote server to get files to ship to the local server.

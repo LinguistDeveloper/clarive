@@ -1,9 +1,12 @@
 ---
-title: Load Nature Items    
+title: Load Nature Items
+icon: changesets
 ---
 
-Checks for each project item the nature it belongs to. If checkbox commit items from configuration windows is 
-selected, the item will be save. Form to configure has the following fields:    
+<img src="/static/images/icons/changesets.png" /> Checks for each project item the nature it belongs to. 
 
-* **commit items**: checkbox to save project items.    
+* If checkbox commit items from configuration windows is selected, the item will be save. 
 
+* Form to configure has the following fields: <br />
+
+&nbsp; &nbsp;• **Commit items**: Checkbox to save project items.

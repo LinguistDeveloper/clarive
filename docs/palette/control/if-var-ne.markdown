@@ -1,11 +1,14 @@
 ---
-title: IF var ne value THEN    
+title: IF var ne value THEN
+icon: if.gif
 ---
 
-Checks if the value of specific stash variable is different from a defined value and if so, executes nested tasks. Form to configure has the following fields:    
+<img src="/static/images/icons/if.gif" /> Checks if the value of specific stash variable is different from a defined value and if so, executes nested tasks.
 
-* **Variable**: stash variable to check.    
+* Form to configure has the following fields: <br />
 
-* **Value**: value to compare with stash variable, value is of type string.     
+&nbsp; &nbsp;• **Variable**: Stash variable to check. <br />
+
+&nbsp; &nbsp;• **Value**: Value to compare with stash variable, value is of type string.
   
 

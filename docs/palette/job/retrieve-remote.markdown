@@ -1,14 +1,19 @@
 ---
-title: Retrieve a remote file   
+title: Retrieve a remote file
+icon: file.gif
 ---
 
-Get a remote file from a server according to a user configured parameters. Associate server agent will perform the remote get.  Form to configure has the following fields:    
+<img src="/static/images/icons/file.gif" /> Get a remote file from a server according to a user configured parameters. 
 
-* **server**: server that holds the remote file, server to connect to.    
+* Associate server agent will perform the remote get. 
 
-* **user**: user allowed to connect to remote server.    
+* Form to configure has the following fields: <br />
 
-* **remote path**: remote path where file to get resides.     
+&nbsp; &nbsp;• **Server**: Server that holds the remote file, server to connect to. <br />
 
-* **local path**: local path that will hold remote file.     
+&nbsp; &nbsp;• **User**: User allowed to connect to remote server. <br />
+
+&nbsp; &nbsp;• **Remote path**: Remote path where file to get resides. <br />
+
+&nbsp; &nbsp;• **Local path**: Local path that will hold remote file.
 

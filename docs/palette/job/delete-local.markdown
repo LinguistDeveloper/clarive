@@ -1,8 +1,11 @@
 ---
-title: Delete Local Directory      
+title: Delete Local Directory
+icon: file.gif
 ---
 
-Removes given directory recursively. Data editor has the following key:
+<img src="/static/images/icons/file.gif" /> Removes given directory recursively. 
 
-* **dir**: dir key, value column has to be filled with the desired dir to delete.
+* Data editor has the following key: <br />
+
+&nbsp; &nbsp; • **Dir**: Dir key, value column has to be filled with the desired dir to delete.
 
