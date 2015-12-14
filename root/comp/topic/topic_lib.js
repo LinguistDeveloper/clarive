@@ -955,7 +955,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: false, 
             tooltip: _('Open life cicle'),
-            handler: function(){ self.show_lifecycle() },
+            handler: function(){ self.show_diagram() },
             //hidden: self.viewKanban==undefined?true:!self.viewKanban,
             //allowDepress: false, 
             toggleGroup: self.toggle_group
