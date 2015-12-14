@@ -906,16 +906,27 @@ Baseliner.CIClassComboSimple = Ext.extend(Baseliner.ComboSingleRemote, {
     
 Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
     fieldLabel: _('CI Class'),
-    store: new Baseliner.JsonStore({
-        url: '/ci/classes',
-        fields: [ 'classname', 'name', 'name_loc', 'icon' ],
-        root: 'data', 
-        remoteSort: true,
-        autoLoad: true,
-        totalProperty: 'totalCount', 
-        baseParams: {  start: 0, limit: this.ps || 99999999 },
-        id: 'id'
-    }),
+    firstload: true,
+    initComponent: function(){
+        var self = this;
+        self.store = new Baseliner.JsonStore({
+            url: '/ci/classes',
+            fields: [ 'classname', 'name', 'name_loc', 'icon' ],
+            root: 'data', 
+            remoteSort: true,
+            autoLoad: false,
+            totalProperty: 'totalCount', 
+            baseParams: {  start: 0, limit: self.ps || 99999999 },
+            id: 'id'
+        });
+        self.store.on('load', function(){
+            if( self.firstload ) { // For default value purpose
+                self.firstload = false;
+                self.setValue( self.value );
+            } 
+        });
+        Baseliner.CIClassCombo.superclass.initComponent.call(this);
+    },
     itemSelector: 'div.search-item',
     tpl: new Ext.XTemplate( 
         '<tpl for=".">'

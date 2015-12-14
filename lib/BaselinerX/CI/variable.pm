@@ -5,7 +5,7 @@ use Baseliner::Sugar;
 use Baseliner::Types;
 
 has var_type             => qw(is rw isa Str);
-has var_ci_class         => qw(is rw isa Maybe[Str]);
+has var_ci_class         => qw(is rw isa ArrayRef);
 has var_ci_role          => qw(is rw isa Maybe[Str]);
 has var_ci_mandatory     => qw(is rw isa BoolCheckbox coerce 1);
 has var_ci_multiple      => qw(is rw isa BoolCheckbox coerce 1);
