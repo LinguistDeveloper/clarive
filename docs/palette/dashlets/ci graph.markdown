@@ -1,6 +1,7 @@
 ---
 title: CI Graph
 index: 400
+icon: ci-grey
 ---
 
     
@@ -24,9 +25,13 @@ index: 400
 ### Graph type
 * Indicate what type of graph can be used. The options are: <br />
 
+
 &nbsp; &nbsp;• **Space tree** <br />
+
 &nbsp; &nbsp;• **Radial Graph** <br />
+
 &nbsp; &nbsp;• **D3 Force-Directed graph** <br />
+
 &nbsp; &nbsp;• **Own Fields**
 
 <br />

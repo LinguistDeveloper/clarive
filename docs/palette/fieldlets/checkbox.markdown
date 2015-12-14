@@ -1,6 +1,7 @@
 ---
 title: Checkbox
 index: 400
+icon: admin_request
 ---
 
     

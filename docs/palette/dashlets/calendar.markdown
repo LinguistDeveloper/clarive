@@ -1,6 +1,7 @@
 ---
 title: Calendar
 index: 400
+icon: calendar
 ---
 
     
@@ -23,19 +24,28 @@ index: 400
 ### Calendar query
 * Indicate what activity or issue will show in the calendar. The options are: <br />
 
+
 &nbsp; &nbsp;• **Topic Activity** <br />
+
 &nbsp; &nbsp;• **Open topics** <br />
+
 &nbsp; &nbsp;• **Calendar planner** *(eg: Milestones or Environment planner)* <br />
-&nbsp; &nbsp;• **Own Fields**  
+
+&nbsp; &nbsp;• **Own Fields** 
 
 <br />
 ### Default View
 * Establish the default view of the calendar: <br />
 
+
 &nbsp; &nbsp;• **Month** <br />
+
 &nbsp; &nbsp;• **Basic week** <br />
+
 &nbsp; &nbsp;• **Schedule week** <br />
+
 &nbsp; &nbsp;• **Basic day** <br />
+
 &nbsp; &nbsp;• **Schedule day** 
 
 <br />

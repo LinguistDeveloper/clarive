@@ -1,6 +1,7 @@
 ---
 title: Topics timeline
 index: 400
+icon: chart_curve
 ---
 
     
@@ -42,10 +43,15 @@ index: 400
 ### Chart will be shown as...
 * Indicate what type of chart will be shown. <br />
 
+
 &nbsp; &nbsp;• **Area** <br />
+
 &nbsp; &nbsp;• **Area step** <br />
+
 &nbsp; &nbsp;• **Line** <br />
+
 &nbsp; &nbsp;• **Bar** <br />
+
 &nbsp; &nbsp;• **Scatter**
 
 <br />

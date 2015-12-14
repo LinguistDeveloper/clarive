@@ -1,6 +1,7 @@
 ---
 title: Schedule
 index: 400
+icon: clock
 ---
 
     

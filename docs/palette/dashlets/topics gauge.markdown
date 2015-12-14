@@ -1,6 +1,7 @@
 ---
 title: Topic gauge
 index: 400
+icon: gauge
 ---
 
     

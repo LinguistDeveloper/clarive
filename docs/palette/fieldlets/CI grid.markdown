@@ -1,6 +1,7 @@
 ---
 title: CI Grid
 index: 400
+icon: grid
 ---
 
     

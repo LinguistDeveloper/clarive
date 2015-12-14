@@ -1,6 +1,7 @@
 ---
 title: Number field
 index: 400
+icon: number
 ---
 
     

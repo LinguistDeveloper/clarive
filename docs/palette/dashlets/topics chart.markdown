@@ -1,6 +1,7 @@
 ---
 title: Topic charts
 index: 400
+icon: chart_pie
 ---
 
     
@@ -25,8 +26,11 @@ index: 400
 ### Chart will be shown as...
 * Can show a different views of the chart <br />
 
+
 &nbsp; &nbsp;• **Pie** <br />
+
 &nbsp; &nbsp;• **Donut** <br />
+
 &nbsp; &nbsp;• **Bar**
 
 <br />

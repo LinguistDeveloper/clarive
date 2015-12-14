@@ -1,6 +1,7 @@
 ---
 title: List jobs
 index: 400
+icon: report_default
 ---
 
     

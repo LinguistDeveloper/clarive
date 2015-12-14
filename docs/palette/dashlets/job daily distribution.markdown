@@ -1,6 +1,7 @@
 ---
 title: Job daily distribution
 index: 400
+icon: chart_line
 ---
 
     
@@ -26,11 +27,17 @@ index: 400
 ### Charts will be shown as...
 * Show the different views of the chart <br />
 
+
 &nbsp; &nbsp;• **Area** <br />
+
 &nbsp; &nbsp;• **Stacked area** <br />
+
 &nbsp; &nbsp;• **Area step** <br />
+
 &nbsp; &nbsp;• **Line** <br />
+
 &nbsp; &nbsp;• **Bar** <br />
+
 &nbsp; &nbsp;• **Stacked bar** 
 
 <br />

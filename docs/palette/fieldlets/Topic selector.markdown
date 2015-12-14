@@ -1,6 +1,7 @@
 ---
 title: Topic selector
 index: 400
+icon: combo_box
 ---
 
     

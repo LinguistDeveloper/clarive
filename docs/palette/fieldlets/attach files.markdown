@@ -1,6 +1,7 @@
 ---
 title: Attach files
 index: 400
+icon: file.gif
 ---
 
     

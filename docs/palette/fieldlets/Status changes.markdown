@@ -1,6 +1,7 @@
 ---
 title: Status changes
 index: 400
+icon: chart_pie
 ---
 
     

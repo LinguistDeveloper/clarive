@@ -1,6 +1,7 @@
 ---
 title: Fieldlet.system.labels
 index: 400
+icon: detail
 ---
 
     

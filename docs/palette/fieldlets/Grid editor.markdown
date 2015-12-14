@@ -1,6 +1,7 @@
 ---
 title: Grid editor
 index: 400
+icon: grid
 ---
 
     

@@ -1,6 +1,7 @@
 ---
 title: User combo
 index: 400
+icon: combo_box
 ---
 
     

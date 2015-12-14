@@ -1,6 +1,7 @@
 ---
 title: Pills
 index: 400
+icon: pills
 ---
 
     

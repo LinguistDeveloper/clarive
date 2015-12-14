@@ -1,6 +1,7 @@
 ---
 title: Environment planner
 index: 400
+icon: milestone
 ---
 
     

@@ -1,6 +1,7 @@
 ---
 title: Calculated numberfield
 index: 400
+icon: number.png
 ---
 
     

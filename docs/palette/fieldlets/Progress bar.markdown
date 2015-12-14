@@ -1,6 +1,7 @@
 ---
 title: Progress bar
 index: 400
+icon: progressbar
 ---
 
     

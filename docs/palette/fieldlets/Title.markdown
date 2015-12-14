@@ -1,6 +1,7 @@
 ---
 title: Title
 index: 400
+icon: lock_small
 ---
 
     

@@ -1,6 +1,7 @@
 ---
 title: Release combo
 index: 400
+icon: combo_box
 ---
 
     

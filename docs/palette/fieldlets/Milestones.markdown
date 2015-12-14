@@ -1,6 +1,7 @@
 ---
 title: Milestones
 index: 400
+icon: milestone
 ---
 
     

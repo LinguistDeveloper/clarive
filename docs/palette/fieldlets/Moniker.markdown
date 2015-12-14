@@ -1,6 +1,7 @@
 ---
 title: Moniker
 index: 400
+icon: lock_small
 ---
 
     

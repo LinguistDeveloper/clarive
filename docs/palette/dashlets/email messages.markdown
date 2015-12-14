@@ -1,6 +1,7 @@
 ---
 title: Email messages
 index: 400
+icon: envelope
 ---
 
     

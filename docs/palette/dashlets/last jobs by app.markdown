@@ -1,6 +1,7 @@
 ---
 title: Last jobs by app
 index: 400
+icon: report_default
 ---
 
     

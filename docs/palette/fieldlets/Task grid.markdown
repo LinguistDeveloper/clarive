@@ -1,6 +1,7 @@
 ---
 title: Task grid
 index: 400
+icon: grid
 ---
 
     
