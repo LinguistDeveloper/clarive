@@ -636,7 +636,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         var ii = Ext.id();
         self.include_cl_orig = self.include_cl;
         self.not_in_class_orig = self.not_in_class;
-alert(self.condition);
+
         var btn_redraw = new Ext.Button({
             tooltip: _('Redraw'),
             icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
