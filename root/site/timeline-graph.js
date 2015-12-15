@@ -290,7 +290,6 @@
                        selectionObjectName: "SHAPE",
                        resizable: false,
                        movable: false
-
                    }
                    ,
                    new go.Binding("location", "", computeActivityLocation).makeTwoWay(backComputeActivityLocation),
@@ -329,6 +328,7 @@
                          ),
                    go_api(go.TextBlock,
                           {
+
                               segmentIndex: 0,
                               segmentOffset: new go.Point(110, 20),
                               stroke: "black",
