@@ -180,6 +180,29 @@ subtest 'upload: upload file complete' => sub {
     is $res{success}, 'true';
 };
 
+subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid2 ) = Baseliner::Model::Topic->new->update({ %$base_params, parent=>$topic_mid, action=>'add' });
+    my $doc = mdb->master_rel->find_one({ from_mid=>"$topic_mid", to_mid=>"$topic_mid2" });
+    is $doc->{from_cl}, 'topic';
+    is $doc->{to_cl}, 'topic';
+};
+
+subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my $doc = mdb->master_rel->find_one({ from_mid=>"$topic_mid" });
+    is $doc->{from_cl}, 'topic';
+    is $doc->{to_cl}, 'project';
+};
+
 done_testing();
 
 sub _setup {
