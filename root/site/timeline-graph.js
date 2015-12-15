@@ -28,7 +28,6 @@
         }
     return rgb;
     };
-    //mdb->activity->find({ mid => '26777', event_key => 'event.topic.change_status'})->all
 
     //Zoom +
     var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
@@ -39,7 +38,6 @@
     var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
         diagram.commandHandler.decreaseZoom();
     }});
-
 
     //PRINCIPAL PANEL
     var pn_diagram = new Ext.Panel({
@@ -63,16 +61,46 @@
     );
     
     pn_overview.on('afterrender', function() {
-        init_overview();
+        start();
         var left = pn_diagram.container.getWidth() - 250;
         pn_overview.setPosition(left,0);
     }
     );    
 
-    var init_overview = function(){   
+    var start = function(){
 
-        //if (window.goSamples) goSamples();
-        // init for these samples -- you don't need to call this
+      var go_api = go.GraphObject.make;
+
+
+      diagram = go_api(go.Diagram, pn_diagram.body.id, // must be the ID or reference to an HTML DIV
+                 {
+                     initialContentAlignment: go.Spot.Center,
+                     allowCopy: false,
+                     allowDelete: false,
+                     //linkingTool: go_api(MessagingTool),  // defined below
+                     "resizingTool.isGridSnapEnabled": true,
+                     //"draggingTool.gridSnapCellSize": new go.Size(1, MessageSpacing/4),
+                     "draggingTool.isGridSnapEnabled": false,
+                     // automatically extend Lifelines as Activities are moved or resized
+                     //"SelectionMoved": ensureLifelineHeights,
+                     //"PartResized": ensureLifelineHeights,
+                     "undoManager.isEnabled": false
+                 }
+                );
+      
+      overview = go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
+                 {                       
+                     observed: diagram, contentAlignment: go.Spot.Center 
+                 }
+                );
+      init_overview(diagram,overview);
+
+    };
+
+    var init_overview = function(diagram,overview){   
+        this.diagram = diagram;
+        this.overview = overview;
+
         var go_api = go.GraphObject.make;
 
         // a custom routed Link
@@ -157,8 +185,7 @@
         /** @override */
         MessageLink.prototype.getLinkPoint = function(node, port, spot, from, ortho, othernode, otherport) {
           var p = port.getDocumentPoint(go.Spot.Center);
-          var r = new go.Rect(port.getDocumentPoint(go.Spot.TopLeft),
-                              port.getDocumentPoint(go.Spot.BottomRight));
+          var r = new go.Rect(port.getDocumentPoint(go.Spot.TopLeft), port.getDocumentPoint(go.Spot.BottomRight));
           var op = otherport.getDocumentPoint(go.Spot.Center);
           
           var data = this.data;
@@ -213,83 +240,15 @@
               return true;
           }
           else {
+            try {
               return go.Link.prototype.computePoints.call(this);
+            }
+            catch(err) {
+              console.log("aqui salta un error");
+              //init_overview(panel.diagram, panel.overview);
+            }        
           }
         }
-        
-        // end MessageLink        
-        /*
-        // a custom LinkingTool that fixes the "time" (i.e. the Y coordinate)
-        // for both the temporaryLink and the actual newly created Link
-        function MessagingTool() {
-          go.LinkingTool.call(this);
-          var go_api = go.GraphObject.make;
-          this.temporaryLink =
-              go_api(MessageLink,
-                     go_api(go.Shape, "Rectangle",
-                            {
-                                stroke: "magenta", strokeWidth: 2 }
-                           ),
-                     go_api(go.Shape,
-                            {
-                                toArrow: "OpenTriangle", stroke: "magenta" }
-                           ));
-        };
-        go.Diagram.inherit(MessagingTool, go.LinkingTool);
-        
-        MessagingTool.prototype.doActivate = function() {
-          go.LinkingTool.prototype.doActivate.call(this);
-          var time = convertYToTime(this.diagram.firstInput.documentPoint.y);
-          this.temporaryLink.time = Math.ceil(time);
-          // round up to an integer value
-        };
-        
-        MessagingTool.prototype.insertLink = function(fromnode, fromport, tonode, toport) {
-          var newlink = go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
-          if (newlink !== null) {
-              var model = this.diagram.model;
-              // specify the time of the message
-              var start = this.temporaryLink.time;
-              var duration = 1;
-              newlink.data.time = start;
-              model.setDataProperty(newlink.data, "text", "msg");
-              // and create a new Activity node data in the "to" group data
-              var newact = {
-                  group: newlink.data.to,
-                  start: start,
-                  duration: duration
-              };
-              model.addNodeData(newact);
-              // now make sure all Lifelines are long enough
-              ensureLifelineHeights();
-          }
-          return newlink;
-        };
-        // end MessagingTool
-        */
-
-        diagram = go_api(go.Diagram, pn_diagram.body.id, // must be the ID or reference to an HTML DIV
-                   {
-                       initialContentAlignment: go.Spot.Center,
-                       allowCopy: false,
-                       allowDelete: false,
-                       //linkingTool: go_api(MessagingTool),  // defined below
-                       "resizingTool.isGridSnapEnabled": true,
-                       //"draggingTool.gridSnapCellSize": new go.Size(1, MessageSpacing/4),
-                       "draggingTool.isGridSnapEnabled": false,
-                       // automatically extend Lifelines as Activities are moved or resized
-                       "SelectionMoved": ensureLifelineHeights,
-                       "PartResized": ensureLifelineHeights,
-                       "undoManager.isEnabled": false
-                   }
-                  );
-        
-        overview = go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
-                   {
-                       
-                       observed: diagram, contentAlignment: go.Spot.Center 
-                   }
-                  );
         
         // define the Lifeline Node template.
         diagram.groupTemplate =
@@ -299,7 +258,8 @@
                        locationObjectName: "HEADER",
                        minLocation: new go.Point(0, 0),
                        maxLocation: new go.Point(9999, 0),
-                       selectionObjectName: "HEADER"
+                       selectionObjectName: "HEADER",
+                       movable: false
                    }
                    ,
                    new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
@@ -341,11 +301,11 @@
             go_api(go.Node,
                    {
                        locationSpot: go.Spot.Top,
-                       //locationObjectName: "SHAPE",
                        minLocation: new go.Point(NaN, LinePrefix-ActivityStart),
                        maxLocation: new go.Point(NaN, 19999),
                        selectionObjectName: "SHAPE",
                        resizable: false,
+                       movable: false
                    }
                    ,
                    new go.Binding("location", "", computeActivityLocation).makeTwoWay(backComputeActivityLocation),
@@ -360,7 +320,7 @@
                                 minSize: new go.Size(ActivityWidth, computeActivityHeight(0.50))
                             },
                             new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)),
-                      go_api(go.TextBlock, { angle: 90, font: "bold 11px sans-serif", stroke: getLuxColor(color,0.2)  },
+                      go_api(go.TextBlock, { angle: 90, font: "bold 11px sans-serif", stroke: "black"  },
                           new go.Binding("text", "text"),
                           new go.Binding("stroke","black")
                       )
@@ -384,26 +344,28 @@
                          ),
                    go_api(go.TextBlock,
                           {
+
                               segmentIndex: 0,
-                              segmentOffset: new go.Point(110, NaN),
+                              segmentOffset: new go.Point(110, 20),
                               stroke: "black",
                               isMultiline: true,
                               editable: false
                           },
                           new go.Binding("text", "text").makeTwoWay()),
+
+                   go_api(go.Picture, { width: 28, height: 28, segmentIndex: 0, segmentOffset: new go.Point(NaN, 20) },
+                          new go.Binding("source", "source")),
                    go_api(go.TextBlock,{
                           visible: false,
                           textAlign: "center",
                           font: "bold 10px sans-serif",
                           margin: 2,
-                          segmentOffset: new go.Point(20, NaN)
+                          segmentOffset: new go.Point(25, 25)
                           },
                           new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                           new go.Binding("text", "selected_text"),
                           new go.Binding("stroke", "isSelected", function(b) { return b ? "#FFFFFF" : "transparent"; }).ofObject(),
-                          new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject()),
-                   go_api(go.Picture, { width: 28, height: 28, segmentIndex: 0, segmentOffset: new go.Point(NaN, NaN) },
-                          new go.Binding("source", "source"))
+                          new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject())
                   );
         
         // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
@@ -498,6 +460,7 @@
                 // MONTH        DURATION 15.4 - 16.6     
                 // DAYS         DURATION 9.2 - 15.4      
                 // HOURS        DURATION 2 - 9.2 
+
                 var sum_date = date.getTime() - date2.getTime();
                 var date_compare = date.getFullYear() - date2.getFullYear();
                 var leap_calculate = date_compare % 4; 
@@ -717,7 +680,6 @@
     }
     );
     
-    return container;
-    
+    return container;    
 }
 );

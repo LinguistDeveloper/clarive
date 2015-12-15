@@ -1303,11 +1303,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     show_timeline: function(){
         var self = this;
-        console.log(self.title);
-        Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title}, function(res){
-            Cla.use('/static/gojs/go-debug.js', function(){
+
+        Cla.use(['/static/gojs/go-debug.js'], function(){
+            Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title}, function(res){
                 self.w = new Ext.Panel({
-                    layout: 'card',  
+                    layout: 'card',
                     activeItem: 0,
                     items: [res]
                 });
@@ -1317,7 +1317,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.getLayout().setActiveItem( self.w );
                 //}
             });
-
         });
 
     },
