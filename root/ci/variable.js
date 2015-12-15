@@ -55,7 +55,7 @@
         load_on_type( var_type.getValue() );
     });
     
-    var ci_class =  new Baseliner.CIClassCombo({
+    var ci_class =  new Baseliner.CIClassComboSimple({
         name: 'var_ci_class',
         hidden: true,
         disabled: true,
