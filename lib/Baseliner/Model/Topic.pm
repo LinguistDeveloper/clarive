@@ -1869,7 +1869,9 @@ sub save_data {
         if ( my $cis = $data->{_cis} ) {
             for my $ci ( _array $cis ) {
                 if ( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
-                    my $rdoc = {rel_type => 'ci_request', from_mid => ''.$ci->{ci_mid}, to_mid => ''.$topic->mid};
+                    my $ci = ci->new( $ci->{ci_mid} );
+                    my $from_cl = $ci->collection;
+                    my $rdoc = {rel_type => 'ci_request', from_mid => ''.$ci->{ci_mid}, to_mid => ''.$topic->mid, from_cl=>$from_cl, to_cl=>'topic' };
                     mdb->master_rel->update_or_create($rdoc);
                 }
             } 
@@ -2388,7 +2390,7 @@ sub set_topics {
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            my $rdoc = { $topic_direction => ''.$mid, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field };
+            my $rdoc = { $topic_direction => ''.$mid, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field, from_cl=>'topic', to_cl=>'topic' };
             mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>0+($rel_seq++) },{ upsert=>1 });
         }
 
@@ -2531,12 +2533,13 @@ sub set_revisions {
     if ( array_diff(@new_revisions, @old_revisions) ) {
         if( @new_revisions ) {
             @new_revisions  = split /,/, $new_revisions[0] if $new_revisions[0] =~ /,/ ;
-            my @rs_revs = mdb->master->find({mid=>mdb->in(@new_revisions) })->all;
+            my @rs_revs = mdb->master_doc->find({mid=>mdb->in(@new_revisions) })->fields({ mid=>1, collection=>1 })->all;
             # first remove all revisions
             mdb->master_rel->remove({ from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field });
             # now add
             for my $rev ( @rs_revs ) {
-                my $rdoc = { to_mid=>"$$rev{mid}", from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field };
+                my $to_cl = $rev->{collection};
+                my $rdoc = { to_mid=>"$$rev{mid}", from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field, from_cl=>'topic', to_cl=>$to_cl };
                 mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
             
@@ -2623,8 +2626,8 @@ sub set_release {
         }
         # release
         if( $new_release ) {
-            my $row_release = mdb->topic->find_one({ mid=>$new_release },{ _id=>0, _txt=>0 });
-            my $rdoc = { from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$release_field };
+            my $row_release = mdb->topic->find_one({ mid=>$new_release },{ mid=>1, title=>1 });
+            my $rdoc = { from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$release_field, from_cl=>'topic', to_cl=>'topic' };
             mdb->master_rel->update($rdoc, { %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
     
             if ($cancelEvent != 1){
@@ -2692,8 +2695,9 @@ sub set_projects {
             my @name_projects;
             my $rs_projects = mdb->master_doc->find({mid =>mdb->in(@new_projects) });
             while( my $project = $rs_projects->next){
+                my $to_cl = $project->{collection};
                 push @name_projects,  $project->{name};
-                my $rdoc = { to_mid=>''.$project->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field };
+                my $rdoc = { to_mid=>''.$project->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field, from_cl=>'topic', to_cl=>$to_cl };
                 mdb->master_rel->update($rdoc, { %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
             
@@ -2764,7 +2768,8 @@ sub set_users{
             my $rs_users = ci->user->find({mid => mdb->in(@new_users)});
             while(my $user = $rs_users->next){
                 push @name_users,  $user->{username};
-                my $rdoc = { to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field };
+                my $to_cl = $user->{collection};
+                my $rdoc = { to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field, from_cl=>'topic', to_cl=>$to_cl };
                 mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
 
@@ -3157,7 +3162,7 @@ sub change_bls {
             for my $bl_id ( @cs_bls ) {
                 mdb->master_rel->update(
                     {from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},
-                    {'$set'=>{ from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'} },
+                    {'$set'=>{ from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls', from_cl=>'topic', to_cl=>'bl' } },
                     {upsert=>1}
                 );
             }
@@ -3633,7 +3638,7 @@ sub upload {
                 };
                 
                 # tie file to topic
-                my $doc = { from_mid=>$topic_mid, to_mid=>$new_asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
+                my $doc = { from_mid=>$topic_mid, to_mid=>$new_asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter}, from_cl=>'topic', to_cl=>'asset' };
                 mdb->master_rel->update($doc,$doc,{ upsert=>1 });
             }
             cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );

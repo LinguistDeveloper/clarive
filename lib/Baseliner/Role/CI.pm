@@ -1127,10 +1127,14 @@ sub search_cis {
     my $search_one = delete $p{_ci_search_one};
     my $sort = $p{sort} // "_id";
     delete $p{sort};
+    my $where = { %p };
     $class = $p{class} // $class;
-    $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
-    my $coll = $class->collection;
-    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ $sort=>1 });
+    if( $class ne 'Baseliner::Role::CI' ) {   # ci->search_cis is for all CIs
+        $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
+        my $coll = $class->collection;
+        $where->{collection} = $coll;
+    }
+    my $rs = mdb->master_doc->find($where)->fields({ mid=>1 })->sort({ $sort=>1 });
     if( $search_one ) {
         my $doc = $rs->next; 
         return undef if !$doc;
