@@ -636,7 +636,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         var ii = Ext.id();
         self.include_cl_orig = self.include_cl;
         self.not_in_class_orig = self.not_in_class;
-
+alert(self.condition);
         var btn_redraw = new Ext.Button({
             tooltip: _('Redraw'),
             icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
@@ -790,7 +790,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }', 
                 direction: self.direction, 
                 include_cl: self.include_cl, 
-                not_in_class: self.not_in_class, 
+                not_in_class: self.not_in_class,
+                condition: self.condition,
                 depth: 1, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { 
@@ -820,7 +821,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, direction: self.direction, root_node_data:'{ "$type":"none" }',
                 include_cl: self.include_cl, 
-                not_in_class: self.not_in_class, 
+                not_in_class: self.not_in_class,
+                condition: self.condition, 
                 depth: 2, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
@@ -846,7 +848,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
                 add_prefix: 0,
                 direction: self.direction,
                 include_cl: self.include_cl, 
-                not_in_class: self.not_in_class, 
+                not_in_class: self.not_in_class,
+                condition: self.condition, 
                 depth: self.depth, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                     if( res.count > self.limit ) {

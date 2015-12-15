@@ -23,6 +23,7 @@
             toolbar: data.toolbar_mode == 'hide' ? false : data.toolbar_mode,
             include_cl: data.include_cl,
             not_in_class: data.not_in_class,
+            condition: data.condition,
             which: data.graph_type||'st', 
             height: $(div).height()
         });

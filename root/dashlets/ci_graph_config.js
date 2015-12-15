@@ -47,7 +47,8 @@
         starting_mid,
         toolbar_mode,
         include_cl,
-        not_in_class
+        not_in_class,
+        { xtype:'textfield', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
     ])
 })
 

@@ -1243,7 +1243,13 @@ sub json_tree : Local {
     my $depth = length $p->{depth} ? $p->{depth} : 2;
     my $include_cl = $p->{include_cl};
     my $not_in_class = !$p->{not_in_class} || ($p->{not_in_class} && $p->{not_in_class} eq 'false') ? 0: 1;
+    my $condition = $p->{condition};
 
+    if ( $condition ) {
+        delete $p->{condition};
+        $p->{where} = _decode_json($condition);
+    }
+_warn $p;
     if (  $not_in_class && _array($p->{include_cl}) ) {
         delete($p->{include_cl});
         $p->{exclude_cl} = $include_cl;
