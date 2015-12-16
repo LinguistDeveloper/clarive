@@ -8,7 +8,13 @@ has_ci 'the_kid';
 has_ci 'grandad';
 has_cis 'kids';
 
+has test_attr => qw(is rw isa Str);
+
 sub icon {'parent_class_icon'}
+
+sub unique_keys {
+    [ ['test_attr'] ]
+}
 
 sub rel_type {
     {

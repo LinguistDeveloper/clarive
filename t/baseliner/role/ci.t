@@ -454,6 +454,34 @@ subtest 'children: exclude many with array' => sub {
     is @rels, 0;
 };
 
+subtest 'save: check unique_keys gives error on duplicate' => sub {
+    _setup();
+
+    eval {
+        my $ci1 = BaselinerX::CI::TestParentClass->new( name=>'ci1', test_attr=>'aa' );
+        my $ci1_mid = $ci1->save;
+
+        my $ci2 = BaselinerX::CI::TestParentClass->new( name=>'ci2', test_attr=>'aa' );
+        my $ci2_mid = $ci2->save;
+    };
+
+    ok length $@, "verify fails on test_attr";
+};
+
+subtest 'save: check unique_keys are ok with empty' => sub {
+    _setup();
+
+    eval {
+        my $ci1 = BaselinerX::CI::TestParentClass->new( name=>'ci1', test_attr=>'' );
+        my $ci1_mid = $ci1->save;
+
+        my $ci2 = BaselinerX::CI::TestParentClass->new( name=>'ci2', test_attr=>'' );
+        my $ci2_mid = $ci2->save;
+    };
+
+    ok ! length $@, "verify fails on moniker";
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;
