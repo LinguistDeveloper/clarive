@@ -46,9 +46,10 @@ before save_data => sub {
     my $class = ref $self;
     if ( _array($self->unique_keys) ) {
         for my $key ( _array($self->unique_keys) ) {
-            my %where = map { $_ => $self->$_ } _array($key);
-            my @cis = $class->find({ mid => { '$ne' => $self->mid}, %where })->all;
-            if ( @cis ) {
+            my %where = map { $_ => $self->$_ } grep { length $self->$_ } _array($key);
+            next unless keys %where;
+            my $cnt = $class->find({ mid => { '$ne' => $self->mid}, %where })->count;
+            if ( $cnt ) {
                 _fail _loc("Trying to duplicate key: %1", "['".join("','", _array($key))."']");
             }
         }
