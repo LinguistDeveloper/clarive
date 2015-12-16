@@ -2,6 +2,7 @@
     $meta
     $data
 </%args>
+% if ( !$meta->{hidden} ) {
     <tr>
         <td style="vertical-align: middle">
             <span class="label" style="background: <% $data->{color_category} %>"><% _loc($data->{name_category}) %> #<% $data->{topic_mid} %></span>
@@ -56,3 +57,4 @@
         );
     });
     </script>
+%}
