@@ -159,7 +159,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         my $sha = $_->{sha};
         my $long = try { $git->exec('rev-parse', $sha ) }
         catch { _fail _loc "Error: revision `%1` not found in repository %2", $sha, $self->name };
-        $long => $_;
+        $long => 1;
     } @revisions; 
     _debug "looking for top revision among shas: " . join ',', keys %shas;
 
@@ -189,13 +189,11 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     if( $type eq 'promote' ) {
         my $first_sha = $by_pos{1};
         _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha if $first_sha eq $tag_sha;
-        $top_rev = $shas{ $first_sha } // do {
-                BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
-        }
+        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
     }
     elsif( $type eq 'static' ) {
         my $first_sha = $by_pos{1};
-        $top_rev = $shas{ $first_sha } // $first_sha;
+        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
     }
     elsif( $type eq 'demote' ) {
         my $last_sha = $by_pos{ scalar @sorted };
@@ -208,9 +206,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         };
 
         _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha if $before_last eq $tag_sha;
-        $top_rev = $shas{ $last_sha } // do {
-            BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>ci->new($self) );
-        };
+        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>$self );
     }
 
     if ( $top_rev &&  $check_history ) {
@@ -397,7 +393,6 @@ method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
             _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
         }
         elsif( $type eq 'demote' ) {
-            $top_rev = $top_rev . '~1';  # one less 
             _debug( _loc "Demote baseline $tag to $top_rev: tag -f $tag $top_rev" );
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;

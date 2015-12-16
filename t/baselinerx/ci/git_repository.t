@@ -261,7 +261,7 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( bl => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 }, { sha => $sha } ] );
+    $repo->update_baselines( bl => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 } ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -446,7 +446,7 @@ subtest 'top_revision: returns top revision from random commits' => sub {
         tag       => 'TEST'
     );
 
-    is_deeply $rev, { sha => $sha5 };
+    is $rev->sha, $sha5;
 };
 
 subtest 'top_revision: returns same top revision when already on top' => sub {
@@ -464,7 +464,7 @@ subtest 'top_revision: returns same top revision when already on top' => sub {
         tag       => 'TEST'
     );
 
-    is_deeply $rev, { sha => $sha2 };
+    is $rev->sha, $sha2;
 };
 
 subtest 'top_revision: returns tag sha when nowhere to move' => sub {
@@ -529,7 +529,7 @@ subtest 'top_revision: returns bottom revision when in demote' => sub {
         tag       => 'TEST'
     );
 
-    is_deeply $rev, { sha => $sha1 };
+    is $rev->sha, $sha;
 };
 
 subtest 'top_revision: throws when demoting everything' => sub {
@@ -603,6 +603,29 @@ subtest 'top_revision: throws when unknown tag' => sub {
 
     like exception { $repo->top_revision( revisions => [ { sha => $sha } ], tag => 'UNKNOWN' ) },
       qr/Error: tag `UNKNOWN` not found in repository repo/;
+};
+
+subtest 'top_revision: returns resolved sha when passing a ref' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
+
+    my $sha  = TestGit->commit($repo);
+    my $sha1 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    my $sha3 = TestGit->commit($repo);
+    my $sha4 = TestGit->commit($repo);
+    my $sha5 = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'top' );
+
+    my $rev = $repo->top_revision(
+        revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => 'top' } ],
+        tag       => 'TEST'
+    );
+
+    is $rev->sha, $sha5;
 };
 
 subtest 'group_items_for_revisions: returns top revision items' => sub {
