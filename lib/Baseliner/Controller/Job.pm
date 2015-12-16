@@ -20,6 +20,7 @@ register 'action.job.restart' => { name=>'Restart Jobs' };
 register 'action.job.chain_change' => { name=>'Change default pipeline in job_new window' };
 register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web Server' };
 register 'action.job.no_cal' => { name=>'Create a job outside of the available time slots' };
+register 'action.job.advanced_menu' => { name=>'Can access the advanced menu in job detailed log' };
 
 register 'config.job.states' => {
   metadata => [
