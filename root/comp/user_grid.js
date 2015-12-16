@@ -240,7 +240,7 @@
                 });
 
                 ////////////////////////////////////////////////////////////////////
-                    if (form.getValues()['id'] > 0) {
+                    if (form.getValues()['id'] != '0') {
                            form.submit({
                            params: { action: action,
                                  type: 'roles_projects',

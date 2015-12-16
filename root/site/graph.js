@@ -878,7 +878,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         Baseliner.loadFile('/static/d3/d3.css', 'css' );
         self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction,
                 include_cl: self.include_cl, 
-                not_in_class: self.not_in_class
+                not_in_class: self.not_in_class,
+                condition: self.condition
         });
         self.add( self.d3g );
         self.d3g.which = 'd3g';
