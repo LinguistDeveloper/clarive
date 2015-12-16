@@ -360,7 +360,7 @@
                           textAlign: "center",
                           font: "bold 10px sans-serif",
                           margin: 2,
-                          segmentOffset: new go.Point(25, 25)
+                          segmentOffset: new go.Point(25, -25)
                           },
                           new go.Binding("visible", "isSelected", function(b) { return b ? true : false; }).ofObject(),
                           new go.Binding("text", "selected_text"),
