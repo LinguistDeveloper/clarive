@@ -630,7 +630,7 @@ sub local_stmts_save {
         return $err if $ignore_dsl_errors;
         _fail _loc "Error testing DSL build: %1", $err;
     };
-    $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts}, 
+    $returned_ts = Baseliner->model('Rules')->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts}, 
         detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
         ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
     return ($detected_errors,$returned_ts,$error_checking_dsl);
@@ -672,39 +672,6 @@ sub rule_test : Local{
     }
     $c->forward( 'View::JSON' );
 }
-#################################################################################
-# saves and versions a rule
-sub save_rule {
-    my ($self,%p)=@_;
-    my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
-    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
-
-    my $ts_modified = 0;
-    my $old_timestamp = ''.$p{old_ts};
-    my $rule = mdb->rule->find_one({ id => ''.$p{id_rule}});
-    my $actual_timestamp = $p{ts} || $rule->{ts};
-    my %other_options;
-    defined $p{$_} and $other_options{$_}=$p{$_} for qw(detected_errors ignore_dsl_errors);
-    my $previous_user = $rule->{username};
-    if (!$actual_timestamp and !$previous_user){
-        $actual_timestamp = $old_timestamp;
-        $previous_user = $p{username};
-        mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } ); 
-    }
-    $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
-
-    $old_timestamp = $p{ts} // mdb->ts;
-    mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
-    # now, version
-    # check if collection exists
-    # if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-    #     mdb->create_capped( 'rule_version' );
-    # }
-
-    delete $doc->{_id};
-    mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
-    { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
-}
 
 sub rollback_version : Local {
     my ($self,$c)=@_;
@@ -713,7 +680,7 @@ sub rollback_version : Local {
     my $ver = mdb->rule_version->find_one({ _id=>mdb->oid($version_id) });
     _fail _loc 'Version not found: %1', $version_id unless $ver;
     try {
-        $self->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
+        Baseliner->model('Rules')->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
         $c->stash->{json} = { success=>\1, msg => _loc('Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
     } catch {
         my $err = shift;
