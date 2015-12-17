@@ -630,7 +630,7 @@ sub local_stmts_save {
         return $err if $ignore_dsl_errors;
         _fail _loc "Error testing DSL build: %1", $err;
     };
-    $returned_ts = Baseliner->model('Rules')->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts}, 
+    $returned_ts = Baseliner::Model::Rules->new->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts},
         detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
         ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
     return ($detected_errors,$returned_ts,$error_checking_dsl);
