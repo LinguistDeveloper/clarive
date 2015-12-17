@@ -96,6 +96,7 @@ use Exporter::Tidy default => [
     _clone
     _stash_dump
     _stash_load
+    _slurp
 )],
 other => [qw(
     _load_yaml_from_comment

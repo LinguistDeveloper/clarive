@@ -3,9 +3,11 @@ use warnings;
 
 use Test::More;
 use Test::Fatal;
+use Test::TempDir::Tiny;
 use TestEnv;
 BEGIN { TestEnv->setup }
 
+use Baseliner::Utils qw(_slurp);
 use_ok 'Baseliner::Code::JS';
 
 subtest 'evals js' => sub {
@@ -228,6 +230,147 @@ EOF
     my $doc = mdb->test_collection->find_one( { foo => 'bar' } );
 
     ok !$doc;
+};
+
+subtest 'dispatches to fs: open/write/close' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    var fh = Cla.FS.openFile("$tempdir/foo", "w");
+    fh.write("foobar");
+    fh.close();
+EOF
+
+    my $data = _slurp "$tempdir/foo";
+
+    is $data, 'foobar';
+};
+
+subtest 'dispatches to fs: open/read/close' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $code = _build_code( lang => 'js' );
+
+    open my $fh, '>', "$tempdir/foo";
+    print $fh 'foobar';
+    close $fh;
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    var fh = Cla.FS.openFile("$tempdir/foo");
+    var data = fh.readLine("foobar");
+    fh.close();
+
+    data;
+EOF
+
+    is $ret, 'foobar';
+};
+
+subtest 'dispatches to fs: slurp' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $code = _build_code( lang => 'js' );
+
+    open my $fh, '>', "$tempdir/foo";
+    print $fh 'foobar', "\n", 'newline';
+    close $fh;
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    Cla.FS.slurp("$tempdir/foo");
+EOF
+
+    is $ret, "foobar\nnewline";
+};
+
+subtest 'dispatches to fs: createDir' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    Cla.FS.createDir("$tempdir/foo");
+EOF
+
+    ok -d "$tempdir/foo";
+};
+
+subtest 'dispatches to fs: walk directory' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    var dirs = [];
+    var files = [];
+
+    Cla.FS.createDir("$tempdir/dir1");
+    Cla.FS.createDir("$tempdir/dir2");
+    Cla.FS.createFile("$tempdir/file1");
+    Cla.FS.createFile("$tempdir/file2");
+
+    var dir = Cla.FS.openDir("$tempdir");
+    while (file = dir.readDir()) {
+        if (file.indexOf(".") == 0) {
+            continue;
+        }
+
+        if (Cla.FS.isDir(Cla.Path.join(dir.path, file))) {
+            dirs.push(file)
+        }
+        else if (Cla.FS.isFile(Cla.Path.join(dir.path, file))) {
+            files.push(file)
+        }
+    }
+    dir.close();
+
+    [dirs, files]
+EOF
+
+    is_deeply $ret, [ [qw/dir2 dir1/], [qw/file2 file1/] ];
+};
+
+subtest 'dispatches to fs: delete dir and file' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    mkdir "$tempdir/dir";
+    system("touch $tempdir/file");
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<"EOF", {} );
+    Cla.FS.deleteDir("$tempdir/dir");
+    Cla.FS.deleteFile("$tempdir/file");
+EOF
+
+    ok !-d "$tempdir/dir";
+    ok !-f "$tempdir/file";
+};
+
+subtest 'dispatches to path' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    is $code->eval_code(q{Cla.Path.basename('/foo/bar.baz')}),    'bar.baz';
+    is $code->eval_code(q{Cla.Path.dirname('/foo/bar.baz')}),     '/foo';
+    is $code->eval_code(q{Cla.Path.extname('/foo/bar.baz')}),     '.baz';
+    is $code->eval_code(q{Cla.Path.extname('/foo/bar.daz.baz')}), '.baz';
+    is $code->eval_code(q{Cla.Path.extname('.foo')}),             '';
+    is $code->eval_code(q{Cla.Path.join('foo', 'bar', 'baz')}),   'foo/bar/baz';
 };
 
 done_testing;

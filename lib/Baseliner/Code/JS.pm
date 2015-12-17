@@ -4,6 +4,7 @@ use Moose;
 use JavaScript::Duktape;
 use JSON ();
 use Try::Tiny;
+use File::Basename ();
 use Baseliner::Mongo;
 use Baseliner::Utils qw(parse_vars _fail);
 
@@ -81,8 +82,94 @@ sub eval_code {
                         };
                     }
                 };
+            },
+            FS => {
+                slurp => sub {
+                    my $sh = shift;
+                    my ($file) = @_;
+
+                    local $/;
+                    my $data;
+                    open my $fh, '<', $file or _fail "Cannot open file $file: $!";
+                    $data = <$fh>;
+                    close $fh or _fail "Cannot close $file: $!";
+
+                    return $data;
+                },
+                openFile => sub {
+                    my $js = shift;
+                    my ( $file, $mode ) = @_;
+
+                    _fail 'file required' unless $file;
+
+                    $mode = 'r' unless $mode && $mode =~ m/^r|w$/;
+                    my $perl_mode = $mode eq 'r' ? '<' : '>';
+
+                    open my $fh, $perl_mode, $file or _fail "Cannot open file $file: $!";
+
+                    return {
+                        write => sub {
+                            my $js = shift;
+                            my ($data) = @_;
+
+                            print $fh $data;
+                        },
+                        readLine => sub {
+                            <$fh>;
+                        },
+                        close => sub {
+                            close $fh or _fail "Cannot close $file: $!";
+                        }
+                    };
+                },
+                openDir => sub {
+                    my $js = shift;
+                    my ($dir) = @_;
+
+                    opendir my $dh, $dir or _fail "Cannot open dir $dir: $!";
+
+                    return {
+                        path    => $dir,
+                        readDir => sub {
+                            my $js = shift;
+
+                            return readdir $dh;
+                        },
+                        close => sub {
+                            closedir $dh;
+                        }
+                    };
+                },
+                isDir  => sub { shift; !!-d $_[0] },
+                isFile => sub { shift; !!-f $_[0] },
+                createFile => sub {
+                    my $js = shift;
+                    my ( $file, $content ) = @_;
+
+                    open my $fh, '>', $file or die "Cannot create file $file: $!";
+                    print $fh $content if defined $content;
+                    close $fh;
+                },
+                deleteFile => sub {
+                    unlink $_[1];
+                },
+                deleteDir => sub {
+                    rmdir $_[1];
+                },
+                createDir => sub {
+                    my $js = shift;
+                    my ($dir) = @_;
+
+                    mkdir $dir;
+                },
+            },
+            Path => {
+                basename => sub { File::Basename::basename( $_[1] ) },
+                dirname  => sub { File::Basename::dirname( $_[1] ) },
+                extname  => sub { ( File::Basename::fileparse( $_[1], qr/(?<=.)\.[^.]*/ ) )[2] },
+                join     => sub { shift; File::Spec->catfile(@_) },
             }
-        }
+        },
     );
 
     return try {
