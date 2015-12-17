@@ -103,17 +103,14 @@
 
         var go_api = go.GraphObject.make;
 
-        // a custom routed Link
         function MessageLink() {
             go.Link.call(this);
             this.time = 0;
-            // use this "time" value when this is the temporaryLink
         }
             
         go.Diagram.inherit(MessageLink, go.Link);
         
         function ensureLifelineHeights(e) {
-            // iterate over all Activities (ignore Groups)
             var arr = diagram.model.nodeDataArray;
             var max = -1;
             for (var i = 0; i < arr.length; i++) {
@@ -122,12 +119,10 @@
                 max = Math.max(max, act.start + act.duration);
             }
             if (max > 0) {
-                // now iterate over only Groups
                 for (var i = 0; i < arr.length; i++) {
                     var gr = arr[i];
                     if (!gr.isGroup) continue;
                     if (max > gr.duration) {
-                        // this only extends, never shrinks
                         diagram.model.setDataProperty(gr, "duration", max);
                     }
                 }
@@ -155,7 +150,6 @@
         function computeActivityLocation(act) {
           var groupdata = diagram.model.findNodeDataForKey(act.group);
           if (groupdata === null) return new go.Point();
-          // get location of Lifeline's starting point
           var grouploc = go.Point.parse(groupdata.loc);
           return new go.Point(grouploc.x, convertTimeToY(act.start) - ActivityStart);
         }
@@ -172,8 +166,6 @@
           return (height - ActivityStart - ActivityEnd) / MessageSpacing;
         }
         
-        // time is just an abstract small non-negative integer
-        // here we map between an abstract time and a vertical position
         function convertTimeToY(t) {
           return t * MessageSpacing + LinePrefix;
         }
@@ -190,7 +182,6 @@
           
           var data = this.data;
           var time = data !== null ? data.time : this.time;
-          // if not bound, assume this has its own "time" property
           
           var aw = this.findActivityWidth(node, time);
           var x = (op.x > p.x ? p.x + aw / 2 : p.x - aw / 2);
@@ -201,7 +192,6 @@
         MessageLink.prototype.findActivityWidth = function(node, time) {
           var aw = ActivityWidth;
           if (node instanceof go.Group) {
-              // see if there is an Activity Node at this point -- if not, connect the link directly with the Group's lifeline
               if (!node.memberParts.any(function(mem) {
                   var act = mem.data;
                   return (act !== null && act.start <= time && time <= act.start + act.duration);
@@ -211,22 +201,19 @@
           }
           return aw;
         };
-        
-        /** @override */
+
         MessageLink.prototype.getLinkDirection = function(node, port, linkpoint, spot, from, ortho, othernode, otherport) {
           var p = port.getDocumentPoint(go.Spot.Center);
           var op = otherport.getDocumentPoint(go.Spot.Center);
           var right = op.x > p.x;
           return right ? 0 : 180;
         };
-        
-        /** @override */
+
         MessageLink.prototype.computePoints = function() {
           if (this.fromNode === this.toNode) {
-              // also handle a reflexive link as a simple orthogonal loop
               var data = this.data;
               var time = data !== null ? data.time : this.time;
-              // if not bound, assume this has its own "time" property
+
               var p = this.fromNode.port.getDocumentPoint(go.Spot.Center);
               var aw = this.findActivityWidth(this.fromNode, time);
               
@@ -455,7 +442,6 @@
 
                 // CALCULATE THE VALUE OF DURATION TO NODES.
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                 // YEAR         DURATION 16.6 -        
                 // MONTH        DURATION 15.4 - 16.6     
                 // DAYS         DURATION 9.2 - 15.4      
@@ -482,7 +468,7 @@
                   number_text = Math.round(number_text);
                   if(number_text == 0){ number_text = 1;}
 
-                  duration[i]=number_text+15.6;
+                  duration[i]=number_text+20.6;
                   text[i] = number_text+" "+_('Year');
 
                 }else{
@@ -493,7 +479,7 @@
                     number_text = Math.round(number_text);
                     if(number_text == 0){ number_text = 1;}
 
-                    duration[i]=number_text+16.6;
+                    duration[i]=number_text+20.6;
                     text[i] = number_text+" "+_('Year');
 
                   }else{
@@ -505,7 +491,7 @@
                       number_text = Math.round(number_text);
                       if(number_text == 0){ number_text = 1;}  
 
-                      duration[i]=(number_text*0.1)+15.4;
+                      duration[i]=(number_text*0.1)+18.4;
                       number_text = new Date(sum_date);  
                       var hour = (number_text.getHours()-1);      
                       if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -521,7 +507,7 @@
                         number_text = Math.round(number_text);
                         if(number_text == 0){ number_text = 1;}   
                                              
-                        duration[i]=(number_text*0.1)+15.4;
+                        duration[i]=(number_text*0.1)+18.4;
                         number_text = new Date(sum_date);  
                         var hour = (number_text.getHours()-1);      
                         if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -537,7 +523,7 @@
                           number_text = Math.round(number_text);
                           if(number_text == 0){ number_text = 1;}      
 
-                          duration[i]=(number_text*0.1)+15.4;
+                          duration[i]=(number_text*0.1)+18.4;
                           number_text = new Date(sum_date);  
                           var hour = (number_text.getHours()-1);      
                           if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -553,7 +539,7 @@
                             number_text = Math.round(number_text);
                             if(number_text == 0){ number_text = 1;}
 
-                            duration[i]=(number_text*0.1)+15.4;
+                            duration[i]=(number_text*0.1)+18.4;
                             number_text = new Date(sum_date);  
                             var hour = (number_text.getHours()-1);      
                             if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -569,7 +555,7 @@
                               number_text = Math.round(number_text);
                               if(number_text == 0){ number_text = 1;}
 
-                              duration[i]=(number_text*0.2)+9.2;
+                              duration[i]=(number_text*0.2)+12.2;
                               number_text = new Date(sum_date);  
                               var hour = (number_text.getHours()-1);      
                               if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -585,7 +571,7 @@
                                 number_text = Math.round(number_text);
                                 if(number_text == 0){ number_text = 1;}
 
-                                duration[i]= (number_text*0.3)+2;
+                                duration[i]= (number_text*0.3)+4;
                                 number_text = new Date(sum_date);  
                                 var hour = (number_text.getHours()-1);      
                                 if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
@@ -600,7 +586,7 @@
                                 number_text = Math.round(number_text);
                                 if(number_text == 0){ number_text = 1;}
 
-                                duration[i] = 2;
+                                duration[i] = 3;
                                 number_text = new Date(sum_date);    
                                 var minutes = number_text.getMinutes();
                                 if (minutes < 10){ minutes = "0"+number_text.getMinutes()}
@@ -668,8 +654,7 @@
 
         diagram.model  = new go.GraphLinksModel(object_node,object_link);
 
-    });    
-        
+    });            
     };   
     
     var container = new Ext.Panel({

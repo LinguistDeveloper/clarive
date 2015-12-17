@@ -950,7 +950,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
             
-        self.btn_diagram = new Ext.Toolbar.Button({
+        self.btn_life_cicle = new Ext.Toolbar.Button({
             icon: IC('diagram'),
             cls: 'x-btn-icon',
             enableToggle: true, 
@@ -1256,7 +1256,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_docgen,
                     self.btn_graph,
                     self.btn_kanban,
-                    self.btn_diagram
+                    self.btn_life_cicle
                 ]
             });
         } else {
