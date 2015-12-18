@@ -101,6 +101,7 @@ Baseliner.js_reload = function(msg) {
         '/site/calendar.js', 
         '/site/explorer.js',  
         '/site/dashboard.js',  
+        '/site/aceeditor.js',  
         '/site/editors.js',  
         '/site/graph.js', 
         '/site/portal/Portal.js', 
