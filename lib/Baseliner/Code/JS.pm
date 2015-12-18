@@ -292,8 +292,19 @@ sub _serialize {
     my $self = shift;
     my ( $options, @docs ) = @_;
 
+    $options->{_seen} //= {};
+
     my @result;
     foreach my $doc (@docs) {
+        if (ref $doc) {
+            $options->{_seen}->{"$doc"}++;
+
+            if ($options->{_seen}->{"$doc"} > 1) {
+                push @result, '__cycle_detected__';
+                next;
+            }
+        }
+
         if ( Scalar::Util::blessed($doc) ) {
             push @result, _unbless($doc);
         }
