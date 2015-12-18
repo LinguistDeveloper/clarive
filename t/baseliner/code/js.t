@@ -374,12 +374,22 @@ subtest 'dispatches to path' => sub {
     is $code->eval_code(q{Cla.Path.join('foo', 'bar', 'baz')}),   'foo/bar/baz';
 };
 
-subtest 'dispatches to CI attribute method' => sub {
+subtest 'dispatches to CI instance' => sub {
     _setup();
 
     my $code = _build_code( lang => 'js' );
 
-    my $status = TestUtils->create_ci( 'status', mid => '123' );
+    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
+
+    my $ret = $code->eval_code(q/var ci = Cla.CI.load('123'); ci.name()/);
+
+    is $ret, 'New';
+};
+
+subtest 'dispatches to CI attribute method' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.icon()/);
 
@@ -391,8 +401,6 @@ subtest 'dispatches to CI method' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $status = TestUtils->create_ci( 'status', mid => '123' );
-
     my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.delete()/);
 
     ok !mdb->master->find_one( { mid => '123' } );
@@ -403,7 +411,7 @@ subtest 'dispatches to CI method returning object' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $status = TestUtils->create_ci( 'status', mid => '123' );
+    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
 
     my @ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.searchCis()/);
 

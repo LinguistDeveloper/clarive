@@ -200,17 +200,20 @@ EOF
                 extname  => sub { ( File::Basename::fileparse( $_[1], qr/(?<=.)\.[^.]*/ ) )[2] },
                 join     => sub { shift; File::Spec->catfile(@_) },
             },
-            CI  => { map { ucfirst(_to_camel_case($_)) => $self->_map_ci($_) } $self->_list_available_ci_classes },
+            CI => {
+                map( { ucfirst( _to_camel_case($_) ) => $self->_map_ci($_) } $self->_list_available_ci_classes ),
+                load => sub { shift; $self->_map_instance( ci->new(@_) ) }
+            },
             Log => {
-                info  => sub { shift; _info($self->_to_json(@_)) },
-                debug => sub { shift; _debug($self->_to_json(@_)) },
-                warn  => sub { shift; _warn($self->_to_json(@_)) },
-                error => sub { shift; _error($self->_to_json(@_)) },
-                fatal => sub { shift; _fail($self->_to_json(@_)) },
+                info  => sub { shift; _info( $self->_to_json(@_) ) },
+                debug => sub { shift; _debug( $self->_to_json(@_) ) },
+                warn  => sub { shift; _warn( $self->_to_json(@_) ) },
+                error => sub { shift; _error( $self->_to_json(@_) ) },
+                fatal => sub { shift; _fail( $self->_to_json(@_) ) },
             },
             stash => sub {
                 shift;
-                my ($key, $value) = @_;
+                my ( $key, $value ) = @_;
 
                 return $stash if @_ == 0;
 
@@ -222,7 +225,7 @@ EOF
     );
 
     return try {
-        $js->eval($prefix . $code);
+        $js->eval( $prefix . $code );
     }
     catch {
         _fail "Error executing JavaScript: $_";
@@ -248,19 +251,27 @@ sub _map_ci {
     return sub {
         shift;
         my $instance = ci->$name->new(@_);
-        return unless $instance;
 
-        my @methods = $self->_map_methods($instance);
-
-        my $method_map = {};
-
-        foreach my $method (@methods) {
-            my $method_camelized = _to_camel_case($method);
-            $method_map->{$method_camelized} = sub { shift; $self->_serialize( {}, $instance->$method(@_) ) };
-        }
-
-        return $method_map;
+        return $self->_map_instance($instance);
       }
+}
+
+sub _map_instance {
+    my $self = shift;
+    my ($instance) = @_;
+
+    return unless $instance;
+
+    my @methods = $self->_map_methods($instance);
+
+    my $method_map = {};
+
+    foreach my $method (@methods) {
+        my $method_camelized = _to_camel_case($method);
+        $method_map->{$method_camelized} = sub { shift; $self->_serialize( {}, $instance->$method(@_) ) };
+    }
+
+    return $method_map;
 }
 
 sub _map_methods {
@@ -296,10 +307,10 @@ sub _serialize {
 
     my @result;
     foreach my $doc (@docs) {
-        if (ref $doc) {
+        if ( ref $doc ) {
             $options->{_seen}->{"$doc"}++;
 
-            if ($options->{_seen}->{"$doc"} > 1) {
+            if ( $options->{_seen}->{"$doc"} > 1 ) {
                 push @result, '__cycle_detected__';
                 next;
             }
