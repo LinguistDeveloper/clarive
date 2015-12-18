@@ -420,6 +420,8 @@ subtest 'dispatches to toJSON' => sub {
     is $code->eval_code(q/toJSON('foo')/), 'foo';
     is $code->eval_code(q/toJSON([1, 2, 3])/), qq/[\n   1,\n   2,\n   3\n]\n/;
     is $code->eval_code(q/toJSON({"foo":"bar"})/), qq/{\n   "foo" : "bar"\n}\n/;
+
+    is $code->eval_code(q/toJSON([1, [2, 3], 4])/), qq/[\n   1,\n   [\n      2,\n      3\n   ],\n   4\n]\n/;
 };
 
 subtest 'dispatches to stash' => sub {

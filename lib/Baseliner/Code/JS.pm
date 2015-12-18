@@ -281,7 +281,7 @@ sub _serialize {
         elsif ( ref $doc eq 'ARRAY' ) {
             my $array = [];
             foreach my $el (@$doc) {
-                push @$array, $self->_serialize( $options, $el );
+                push @$array, scalar $self->_serialize( $options, $el );
             }
 
             push @result, $array;
