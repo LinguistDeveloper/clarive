@@ -181,7 +181,7 @@ sub eval_code {
                 extname  => sub { ( File::Basename::fileparse( $_[1], qr/(?<=.)\.[^.]*/ ) )[2] },
                 join     => sub { shift; File::Spec->catfile(@_) },
             },
-            CI  => { map { _to_camel_case($_) => $self->_map_ci($_) } $self->_list_available_ci_classes },
+            CI  => { map { ucfirst(_to_camel_case($_)) => $self->_map_ci($_) } $self->_list_available_ci_classes },
             Log => {
                 info  => sub { shift; _info($self->_to_json(@_)) },
                 debug => sub { shift; _debug($self->_to_json(@_)) },

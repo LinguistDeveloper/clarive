@@ -381,7 +381,7 @@ subtest 'dispatches to CI attribute method' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123' );
 
-    my $ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.icon()/);
+    my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.icon()/);
 
     like $ret, qr{static/images};
 };
@@ -393,7 +393,7 @@ subtest 'dispatches to CI method' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123' );
 
-    my $ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.delete()/);
+    my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.delete()/);
 
     ok !mdb->master->find_one( { mid => '123' } );
 };
@@ -405,7 +405,7 @@ subtest 'dispatches to CI method returning object' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123' );
 
-    my @ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.searchCis()/);
+    my @ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.searchCis()/);
 
     is scalar @ret, 1;
     is $ret[0]->{mid}, '123';
