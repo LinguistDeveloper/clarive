@@ -97,6 +97,8 @@ use Exporter::Tidy default => [
     _stash_dump
     _stash_load
     _slurp
+    _to_camel_case
+    _unbless
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2352,5 +2354,20 @@ sub _pointer {
     return $p;
 }
 
+sub _to_camel_case {
+    my ($string) = @_;
+
+    return $string unless defined $string && length $string;
+
+    my @parts = grep { length $_ } split /_/, $string;
+    my $first = shift @parts;
+    @parts = map { ucfirst } @parts;
+
+    my $result = join '', $first, @parts;
+    $result = '_' . $result if $string =~ m/^_/;
+    $result .= '_' if $string =~ m/_$/;
+
+    return $result;
+}
 
 1;

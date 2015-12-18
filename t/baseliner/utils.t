@@ -8,7 +8,7 @@ use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique _array);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -115,6 +115,14 @@ subtest '_array' => sub {
 
     is_deeply [_array({}, undef, {})], [{}, {}];
     is_deeply [_array([{}, undef, {}])], [{}, {}];
+
+subtest '_to_camel_case: camelize strings' => sub {
+    is _to_camel_case(''), '';
+    is _to_camel_case('foo'), 'foo';
+    is _to_camel_case('foo_bar'), 'fooBar';
+    is _to_camel_case('foo_bar_'), 'fooBar_';
+    is _to_camel_case('_foo_bar'), '_fooBar';
+    is _to_camel_case('____foo_____bar____'), '_fooBar_';
 };
 
 done_testing;

@@ -5,14 +5,29 @@ use JavaScript::Duktape;
 use JSON ();
 use Try::Tiny;
 use File::Basename ();
+use Scalar::Util qw(blessed);
 use Baseliner::Mongo;
-use Baseliner::Utils qw(parse_vars _fail);
+use Baseliner::Utils qw(parse_vars packages_that_do _fail _to_camel_case _unbless);
+use Storable ();
+use Clarive::App;
 
 sub eval_code {
     my $self = shift;
     my ( $code, $stash ) = @_;
 
     my $js = JavaScript::Duktape->new;
+    $js->set(
+        toJSON => sub {
+            shift;
+            my ($what) = @_;
+
+            my $doc = $self->_serialize({convert_subs => 1}, $what);
+            return $doc unless ref $doc;
+
+            JSON->new->pretty(1)->canonical(1)->encode($doc);
+        }
+    );
+
     $js->set(
         Cla => {
             parseVars => sub {
@@ -52,7 +67,7 @@ sub eval_code {
 
                                 my $doc = $col->find_one(@_);
 
-                                return $self->_serialize($doc);
+                                return $self->_serialize({}, $doc);
 
                             },
                             find => sub {
@@ -61,14 +76,14 @@ sub eval_code {
                                 my $cursor = $col->find(@_);
 
                                 return {
-                                    next    => sub { $self->_serialize( $cursor->next ) },
+                                    next    => sub { $self->_serialize({}, $cursor->next ) },
                                     hasNext => sub { $cursor->has_next },
                                     forEach => sub {
                                         my $js = shift;
                                         my ($cb) = @_;
 
                                         while ( my $entry = $cursor->next ) {
-                                            $cb->( $self->_serialize($entry) );
+                                            $cb->( $self->_serialize({}, $entry) );
                                         }
 
                                         return;
@@ -168,7 +183,8 @@ sub eval_code {
                 dirname  => sub { File::Basename::dirname( $_[1] ) },
                 extname  => sub { ( File::Basename::fileparse( $_[1], qr/(?<=.)\.[^.]*/ ) )[2] },
                 join     => sub { shift; File::Spec->catfile(@_) },
-            }
+            },
+            CI => { map { _to_camel_case($_) => $self->_map_ci($_) } $self->_list_available_ci_classes },
         },
     );
 
@@ -180,16 +196,98 @@ sub eval_code {
     };
 }
 
+sub _list_available_ci_classes {
+    my $self = shift;
+
+    my @coll;
+    for my $pkg ( packages_that_do( 'Baseliner::Role::CI') ) {
+        my $coll = $pkg->collection;
+        push @coll, $coll;
+    }
+
+    return @coll;
+}
+
+sub _map_ci {
+    my $self = shift;
+    my $name = shift;
+
+    return sub {
+        shift;
+        my $instance = ci->$name->new(@_);
+        return unless $instance;
+
+        my @methods = $self->_map_methods($instance);
+
+        my $method_map = {};
+
+        foreach my $method (@methods) {
+            my $method_camelized = _to_camel_case($method);
+            $method_map->{$method_camelized} = sub { shift; $self->_serialize({}, $instance->$method(@_) ) };
+        }
+
+        return $method_map;
+    }
+}
+
+sub _map_methods {
+    my $self = shift;
+    my ($instance) = @_;
+
+    my @methods;
+    for my $method ( $instance->meta->get_all_methods ) {
+        my $name = $method->name;
+
+        # Skip private methods
+        next if $name =~ m/^_/;
+
+        # Skip special methods like DESTROY
+        next if $name =~ m/^[A-Z]/;
+
+        my $full_name = $method->fully_qualified_name;
+
+        # Skip everything that comes from Moose
+        next if $full_name =~ m/^(?:Moose|UNIVERSAL)::/;
+
+        push @methods, $name;
+    }
+
+    return @methods;
+}
+
 sub _serialize {
     my $self = shift;
-    my ($doc) = @_;
+    my ($options, @docs) = @_;
 
-    my $json = JSON->new->allow_blessed->convert_blessed;
+    my @result;
+    foreach my $doc (@docs) {
+        if (Scalar::Util::blessed($doc)) {
+            push @result, _unbless($doc);
+        }
+        elsif (ref $doc eq 'ARRAY') {
+            my $array = [];
+            foreach my $el (@$doc) {
+                push @$array, $self->_serialize($options, $el);
+            }
 
-    $doc = $json->encode($doc);
-    $doc = $json->decode($doc);
+            push @result, $array;
+        }
+        elsif (ref $doc eq 'HASH') {
+            my $hash = {};
+            foreach my $key (keys %$doc) {
+                $hash->{$key} = $self->_serialize($options, $doc->{$key});
+            }
+            push @result, $hash;
+        }
+        if ($options->{convert_subs} && ref $doc eq 'CODE') {
+            return 'function() { ... }';
+        }
+        else {
+            push @result, $doc;
+        }
+    }
 
-    return $doc;
+    return wantarray ? @result : $result[0];
 }
 
 1;

@@ -6,6 +6,7 @@ use Test::Fatal;
 use Test::TempDir::Tiny;
 use TestEnv;
 BEGIN { TestEnv->setup }
+use TestUtils;
 
 use Baseliner::Utils qw(_slurp);
 use_ok 'Baseliner::Code::JS';
@@ -373,9 +374,60 @@ subtest 'dispatches to path' => sub {
     is $code->eval_code(q{Cla.Path.join('foo', 'bar', 'baz')}),   'foo/bar/baz';
 };
 
+subtest 'dispatches to CI attribute method' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $status = TestUtils->create_ci( 'status', mid => '123' );
+
+    my $ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.icon()/);
+
+    like $ret, qr{static/images};
+};
+
+subtest 'dispatches to CI method' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $status = TestUtils->create_ci( 'status', mid => '123' );
+
+    my $ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.delete()/);
+
+    ok !mdb->master->find_one( { mid => '123' } );
+};
+
+subtest 'dispatches to CI method returning object' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $status = TestUtils->create_ci( 'status', mid => '123' );
+
+    my @ret = $code->eval_code(q/var ci = new Cla.CI.status({'mid': '123'}); ci.searchCis()/);
+
+    is scalar @ret, 1;
+    is $ret[0]->{mid}, '123';
+};
+
+subtest 'dispatches to toJSON' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    is $code->eval_code(q/toJSON('')/), '';
+    is $code->eval_code(q/toJSON('foo')/), 'foo';
+    is $code->eval_code(q/toJSON([1, 2, 3])/), qq/[\n   1,\n   2,\n   3\n]\n/;
+    is $code->eval_code(q/toJSON({"foo":"bar"})/), qq/{\n   "foo" : "bar"\n}\n/;
+};
+
 done_testing;
 
 sub _setup {
+    TestUtils->cleanup_cis;
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
+
     mdb->test_collection->drop;
 }
 
