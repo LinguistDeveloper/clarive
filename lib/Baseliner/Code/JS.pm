@@ -188,6 +188,16 @@ sub eval_code {
                 warn  => sub { shift; _warn($self->_to_json(@_)) },
                 error => sub { shift; _error($self->_to_json(@_)) },
                 fatal => sub { shift; _fail($self->_to_json(@_)) },
+            },
+            stash => sub {
+                shift;
+                my ($key, $value) = @_;
+
+                return $stash if @_ == 0;
+
+                return $stash->{$key} if @_ == 1;
+
+                $stash->{$key} = $value;
             }
         },
     );

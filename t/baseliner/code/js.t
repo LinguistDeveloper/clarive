@@ -422,6 +422,22 @@ subtest 'dispatches to toJSON' => sub {
     is $code->eval_code(q/toJSON({"foo":"bar"})/), qq/{\n   "foo" : "bar"\n}\n/;
 };
 
+subtest 'dispatches to stash' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $stash = {};
+    $code->eval_code(q/Cla.stash('foo', 'bar')/, $stash);
+
+    is_deeply $stash, {foo => 'bar'};
+
+    is $code->eval_code(q/Cla.stash('foo')/, $stash), 'bar';
+
+    is_deeply $code->eval_code(q/Cla.stash()/, $stash), $stash;
+
+};
+
 done_testing;
 
 sub _setup {
