@@ -15,6 +15,25 @@ sub eval_code {
     my $self = shift;
     my ( $code, $stash ) = @_;
 
+    my $prefix = <<"EOF";
+Duktape.modSearch = function (id) {
+    var res;
+
+    base = "$ENV{CLARIVE_HOME}/root/modules/";
+    id = id + '.js';
+
+    try {
+        res = Cla.FS.slurp(base + id);
+        if (typeof res === 'string') {
+            return res;
+        }
+    } catch(e) {
+    }
+
+    throw new Error('module not found: ' + id);
+}
+EOF
+
     my $js = JavaScript::Duktape->new;
     $js->set(
         toJSON => sub {
@@ -203,7 +222,7 @@ sub eval_code {
     );
 
     return try {
-        $js->eval($code);
+        $js->eval($prefix . $code);
     }
     catch {
         _fail "Error executing JavaScript: $_";
