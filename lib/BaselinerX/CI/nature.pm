@@ -38,10 +38,11 @@ sub item_match {
     my @include = Util->_array( $self->include );
     my @exclude = Util->_array( $self->exclude );
     my $match = 0;
-    for my $in ( @include ) {
+    IN: for my $in ( @include ) {
         next unless length $in;
         if( $item->{path} =~ /$in/ || ($item->{fullpath} && $item->{fullpath} =~ /$in/ )) {
             $match = 1; 
+            last IN;
         }
     }
     for my $ex ( @exclude ) {
@@ -56,9 +57,10 @@ sub item_match {
 # add item to 'items' if it belongs here
 sub push_item {
     my ($self, $item, %p ) = @_;
+    $self->items([]) unless ref $self->items;
     if( $self->item_match( item=>$item, %p ) ) {
         # TODO make them items unique
-        $self->items([ _array( $self->items ), $item ]);
+        push @{ $self->items }, $item;
         return 1;
     } else {
         return 0;
