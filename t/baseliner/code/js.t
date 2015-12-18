@@ -448,6 +448,24 @@ subtest 'dispatches to stash' => sub {
 
 };
 
+subtest 'exceptions catch internal errors' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    like exception { $code->eval_code( q/throw new Error('error!')/) }, qr/error!/;
+    ok !exception { $code->eval_code( q/try { throw new Error('error!') } catch(e) {}/) };
+};
+
+subtest 'exceptions catch external errors' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    like exception { $code->eval_code(q/Cla.FS.openFile('unknown')/) }, qr/Cannot open file unknown/;
+    ok !exception { $code->eval_code(q/try { Cla.FS.openFile('unknown') } catch(e) {}/) };
+};
+
 done_testing;
 
 sub _setup {
