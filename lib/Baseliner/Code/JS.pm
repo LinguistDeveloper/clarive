@@ -21,10 +21,7 @@ sub eval_code {
             shift;
             my ($what) = @_;
 
-            my $doc = $self->_serialize( { convert_subs => 1 }, $what );
-            return $doc unless ref $doc;
-
-            JSON->new->pretty(1)->canonical(1)->encode($doc);
+            return $self->_to_json($what);
         }
     );
 
@@ -186,11 +183,11 @@ sub eval_code {
             },
             CI  => { map { _to_camel_case($_) => $self->_map_ci($_) } $self->_list_available_ci_classes },
             Log => {
-                info  => sub { shift; _info(@_) },
-                debug => sub { shift; _debug(@_) },
-                warn  => sub { shift; _warn(@_) },
-                error => sub { shift; _error(@_) },
-                fatal => sub { shift; _fail(@_) },
+                info  => sub { shift; _info($self->_to_json(@_)) },
+                debug => sub { shift; _debug($self->_to_json(@_)) },
+                warn  => sub { shift; _warn($self->_to_json(@_)) },
+                error => sub { shift; _error($self->_to_json(@_)) },
+                fatal => sub { shift; _fail($self->_to_json(@_)) },
             }
         },
     );
@@ -295,6 +292,18 @@ sub _serialize {
     }
 
     return wantarray ? @result : $result[0];
+}
+
+sub _to_json {
+    my $self = shift;
+    my ($what) = @_;
+
+    return 'undefined' unless defined $what;
+
+    my $doc = $self->_serialize( { convert_subs => 1 }, $what );
+    return $doc unless ref $doc;
+
+    JSON->new->pretty(1)->canonical(1)->encode($doc);
 }
 
 1;
