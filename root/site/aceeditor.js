@@ -28,12 +28,15 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         self.body.dom.innerHTML = "";
         self.editor = ace.edit(self.body.id);
         self.editor.setTheme("ace/theme/" + self.getTheme() );
-        
+
         var session = self.editor.session;
         session.setMode("ace/mode/" + self.mode);
         self.editor.setHighlightActiveLine(false);
         self.editor.renderer.setShowGutter(self.gutter);
-        self.track_changes = false;
+        self.editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true
+        });
         if( self.font ) {
             self.el.setStyle({ 'font': self.font });
         }
