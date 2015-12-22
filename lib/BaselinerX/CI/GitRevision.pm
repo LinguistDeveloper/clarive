@@ -126,7 +126,7 @@ sub _find_sha_from_previous_jobs {
 
     my @refs;
     foreach my $ref ($git->exec(qw/show-ref/)) {
-        my ($name) = $ref =~ m#^$rev_sha refs/heads/(.*)$#;
+        my ($name) = $ref =~ m#^$rev_sha refs/(?:heads|tags)/(.*)$#;
 
         push @refs, $name if $name;
     }
