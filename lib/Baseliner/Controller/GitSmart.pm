@@ -35,7 +35,6 @@ sub begin : Private {  #TODO control auth here
 
 sub git : Path('/git/') {
     my ($self,$c, @args ) = @_;
-    my $p = $c->request->parameters;
     my $config = $c->stash->{git_config};
     my $cgi = $config->{gitcgi} or _throw 'Missing config.git.gitcgi';
     if( ! -e $cgi ) {
@@ -71,7 +70,7 @@ sub git : Path('/git/') {
     _debug ">>> GIT URI: " . $c->req->uri;
     _debug ">>> PATH_INFO: " . $c->req->path;
     _debug ">>> GIT REPO: $repo";
-    
+
     my ($ci_repo,$ci_prj);
     my ($uri_path, $filepath_info, $path_info);  # CGI ENV variables used by CI mode
 
@@ -170,33 +169,34 @@ sub git : Path('/git/') {
     my $ref;
     my $ref_prev;
     my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
-    if( ref ( my $fi = $c->req->body ) ) {
-        _debug "Checking BL tags in push $bls";
-        while( <$fi> ) {
-            # find SHA
-            my ($top,$com,$r) = split / /, $_;
-            if( defined $com && $com =~ /^\w+$/ ) {
-                _debug "GIT TOP=$top";
-                _debug "GIT COMMIT SHA=$com";
-                _debug "GIT REF=$r" if $r || ($r||='');
-                $sha = $com;
-                $ref = $r;
-                $ref_prev = substr $top, 4;
-                _debug "GIT REF_PREV=$ref_prev";
-            }
-            # check BL tags
-            if( /refs\/tags\/($bls)/ ) {
-                my $tag = $1;
-                my $can_tags = Baseliner->model("Permissions")->user_has_action(username=>$c->username,action=>'action.git.update_tags', bl=>$tag );
-                if ( !$can_tags ) {
-                    $self->process_error($c,'Push Error', _loc('Cannot update internal tag %1', $tag) );
-                    return;
-                }
+
+    my $text = $self->_get_text_line($c->req->body);
+
+    if ($text) {
+        my ( $top, $com, $r ) = split / /, $text;
+
+        if ( defined $com && $com =~ /^\w+$/ ) {
+            _debug "GIT TOP=$top";
+            _debug "GIT COMMIT SHA=$com";
+            _debug "GIT REF=$r" if $r || ( $r ||= '' );
+
+            $sha = $com;
+            $ref = $r;
+
+            _debug "GIT REF_PREV=$ref_prev";
+        }
+
+        # check BL tags
+        if ($text =~ /refs\/tags\/($bls)/) {
+            my $tag      = $1;
+            my $can_tags = Baseliner->model("Permissions")
+              ->user_has_action( username => $c->username, action => 'action.git.update_tags', bl => $tag );
+            if ( !$can_tags ) {
+                $self->process_error( $c, 'Push Error', _loc( 'Cannot update internal tag %1', $tag ) );
+                return;
             }
         }
-        seek $fi,0,0;  # reset fh
     }
-
 
     # run cgi
     my ($cgi_msg,$cgi_ret) = ('',0);
@@ -383,7 +383,7 @@ sub event_this {
                 _debug "GIT MESSAGE: " . $commit->message;
                 my $title = $commit->message;
                 event_new 'event.repository.update'
-                    => { username=>$c->username, repository=>$repo, message=>$title, commit=>$commit, diff=>$diff, branch=>$ref_short, ref=>$ref, sha=>$sha }
+                    => { username=>$c->username, repository=>$repo, message=>$title, diff=>$diff, branch=>$ref_short, ref=>$ref, sha=>$sha }
                     => sub { 
                         my $mid;
                         my $rev = ci->GitRevision->find_one({ sha=>"$sha" });
@@ -415,6 +415,24 @@ sub event_this {
     };
 }
 
+sub _get_text_line {
+    my $self = shift;
+    my ($fh) = @_;
+
+    # Git packet has the following format:
+    # SHA1 SHA2 REF \x00 BINARY DATA
+
+    # We set $/ to 0x00 which tells <> where the line ends
+    my $text = do { local $/ = "\x00"; <$fh> };
+
+    # Remove the null byte
+    chop $text;
+
+    # Reset fh
+    seek $fh, 0, 0;
+
+    return $text;
+}
 
 sub _format_diff {
     my ($diff, %p ) = @_;
