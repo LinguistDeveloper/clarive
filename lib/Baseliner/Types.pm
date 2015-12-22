@@ -38,6 +38,7 @@ subtype 'TimeStr', as 'Str', where {
 subtype 'ID', as 'Str';
 
 subtype 'GitBranch', as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
+subtype 'GitRef',    as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
 subtype 'GitTag',    as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
 subtype 'GitCommit', as 'Str', where { m/^[a-h0-9]+$/ };
 subtype 'GitFolder', as 'Str', where { m/^[[:alnum:]\-_\.\/]+$/ };
