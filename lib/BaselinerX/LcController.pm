@@ -1453,11 +1453,11 @@ sub favorite_add_to_folder : Local {
         my $id_folder= $p->{id_folder};
         # get data
         my $user = ci->new($user_mid);
-        my $d = $user->{favorites}->{ $id_folder }; 
+        my $d = $user->favorites->{ $id_folder }; 
         _fail _loc "Not found: %1", $id_folder unless defined $d; 
         $d->{contents} //= {};
         # delete old
-        my $fav = delete $user->{favorites}->{ $id_favorite}; 
+        my $fav = delete $user->favorites->{ $id_favorite}; 
         # set new 
         $d->{favorite_folder} = $id_folder;
         $d->{contents}{ $id_favorite} = $fav; 

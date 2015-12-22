@@ -175,6 +175,78 @@ subtest 'favorite_add: saves favorites to user when folder' => sub {
       };
 };
 
+subtest 'favorite_add_to_folder: sets correct params to stash' => sub {
+    _setup();
+
+    my $user_ci = TestUtils->create_ci('user');
+
+    $user_ci->favorites->{123} = {};
+    $user_ci->favorites->{345} = {};
+    $user_ci->save;
+
+    my $controller = _build_controller();
+
+    my $stash = {};
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        user_ci  => $user_ci,
+        req      => {
+            params => {
+                id_favorite     => '123',
+                favorite_folder => 'My Folder',
+                id_folder       => '345',
+            }
+        },
+        stash => $stash
+    );
+
+    $controller->favorite_add_to_folder($c);
+
+    is_deeply $c->stash, { json => { success => \1, msg => 'Favorite moved ok' } };
+};
+
+subtest 'favorite_add_to_folder: updates user favorites' => sub {
+    _setup();
+
+    my $user_ci = TestUtils->create_ci('user');
+
+    $user_ci->favorites->{123} = {};
+    $user_ci->favorites->{345} = {};
+    $user_ci->save;
+
+    my $controller = _build_controller();
+
+    my $stash = {};
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        user_ci  => $user_ci,
+        req      => {
+            params => {
+                id_favorite     => '123',
+                favorite_folder => 'My Folder',
+                id_folder       => '345',
+            }
+        },
+        stash => $stash
+    );
+
+    $controller->favorite_add_to_folder($c);
+
+    $user_ci = ci->new( $user_ci->mid );
+
+    is_deeply $user_ci->favorites,
+      {
+        '345' => {
+            'favorite_folder' => '345',
+            'contents'        => {
+                '123' => {}
+            }
+        }
+      };
+};
+
 done_testing;
 
 sub _build_controller {
