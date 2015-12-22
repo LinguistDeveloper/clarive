@@ -178,9 +178,12 @@ sub new {
     my $self = {};
     bless $self, $class;
 
+    $self->{uri}     = $params{uri};
+    $self->{method}  = $params{method} || 'GET';
     $self->{params}  = $params{params};
     $self->{headers} = $params{headers} || {};
     $self->{path}    = $params{path} || '/';
+    $self->{body}    = $params{body} || '';
 
     foreach my $key (keys %{$self->{headers}}) {
         $self->{headers}->{lc($key)} = delete $self->{headers}->{$key};
@@ -189,14 +192,17 @@ sub new {
     return $self;
 }
 
-sub content_type {'text/html'}
-sub user_agent { 'Mozilla/1.0' }
-sub address { '127.0.0.1' }
-sub parameters { &params }
+sub uri              { shift->{uri} || 'http://localhost' }
+sub content_type     { 'text/html' }
+sub user_agent       { 'Mozilla/1.0' }
+sub address          { '127.0.0.1' }
+sub parameters       { &params }
 sub query_parameters { &params }
-sub params     { shift->{params} }
-sub path       { shift->{path} }
-sub headers    { shift->{headers} }
+sub params           { shift->{params} }
+sub path             { shift->{path} }
+sub headers          { shift->{headers} }
+sub method           { shift->{method} }
+sub body             { shift->{body} }
 
 sub header {
     my $self = shift;
@@ -278,7 +284,7 @@ sub new {
     $self->{model}        = $params{model};
     $self->{config}       = $params{config} || {};
     $self->{authenticate} = $params{authenticate};
-    $self->{is_root} = 0;
+    $self->{is_root}      = 0;
 
     return $self;
 }

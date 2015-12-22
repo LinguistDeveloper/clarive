@@ -127,8 +127,9 @@ sub _parse_dir {
     my $class = shift;
     my ($repo) = @_;
 
-    my $repo_dir = $repo->repo_dir;
+    my $repo_dir = ref $repo ? $repo->repo_dir : $repo;
     my ($dir) = $repo_dir =~ m/^(.*)\.git$/;
+    $dir //= $repo_dir;
 
     return $dir;
 }
