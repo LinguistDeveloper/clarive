@@ -695,7 +695,7 @@ sub view_diff : Local {
       unless my $node = $self->validate_params(
         $c,
         repo_mid => { isa => 'ExistingCI' },
-        sha      => { isa => 'GitCommit' },
+        sha      => { isa => 'GitRef' },
         tag      => { isa => 'GitTag', default => '' }
       );
 
