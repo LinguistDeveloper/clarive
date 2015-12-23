@@ -3,14 +3,16 @@ title: Project
 icon: project
 ---
 
-<img src="/static/images/icons/project.png" /> A Project is the most common Clarive security scope. 
+* A Project is the most common Clarive security [scope](concepts/scope). 
 
-* A Clarive project is a collection of topics, and is defined according to your 
-organization's requirements. For example, a Clarive project could be: <br />
+* A Clarive project is a collection of [topics](concepts/topic), and is defined according to your organization's requirements. For example, a Clarive project could be: <br />
 
-&nbsp; &nbsp;• A software development project <br />
-&nbsp; &nbsp;• A system <br />
-&nbsp; &nbsp;• A group of software components <br />
+&nbsp; &nbsp;• A software development project. <br />
+
+&nbsp; &nbsp;• A system. <br />
+
+&nbsp; &nbsp;• A group of software components. <br />
+
 &nbsp; &nbsp;• Or, more commonly, an application.
 
 <br />

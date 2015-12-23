@@ -3,11 +3,9 @@ title: Webservice
 icon: webservice
 ---
 
-<img src="/static/images/icons/webservice.png" /> In Clarive, a webservice is a type of rule
-that can be called from outside Clarive. 
+* In Clarive, a webservice is a type of [rule](concepts/rule) that can be called from outside Clarive. 
 
-* Webservices are the preferred way of automating Clarive
-operations from the outside world. 
+* Webservices are the preferred way of automating Clarive operations from the outside world. 
 
 * Instead of calling API primitives directly (ie. "create a topic"), 
 we recommend creating a Webservice rule that creates a topic.

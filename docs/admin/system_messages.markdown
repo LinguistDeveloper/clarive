@@ -32,10 +32,15 @@ window will open with a list of current and previous messages.
 
 * Hit `Compose` to create a new message.  <br />
 
+
 &nbsp; &nbsp;• **Title**: The message title shown in the upper bar. Keep it short, like "New Release Tip" or "Maintenance scheduled". <br />
+
 &nbsp; &nbsp;• **Text**: The longer message shown in the upper bar. The title can actually be long, up to 130 is an acceptable title. <br />
+
 &nbsp; &nbsp;• **Expires**: When the message will stop being shown to users <br />
+
 &nbsp; &nbsp;• **Username**: Direct the message to only a given user. This can be used to quickly message a user that is logged in.  <br />
+
 &nbsp; &nbsp;• **More Info**: *Optional*. A longer message body, with detailed content.  
 The text area accepts even images, where you can explain a new behaviour or phone numbers to call, etc.  <br />
 

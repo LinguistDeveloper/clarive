@@ -7,9 +7,7 @@ icon: lock_small
     
 <br />
 
-<img src="/static/images/icons/lock_small.png" /> Allows to add a moniker in the form
-
-<br />
+* Allows to add a moniker (alias) in the form
 
 * There are a list of elements can be configured in the fieldlet:
 

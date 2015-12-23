@@ -7,9 +7,7 @@ icon: grid
     
 <br />
 
-<img src="/static/images/icons/grid.png" /> Allows to introduce a CI grid in the form.
-
-<br />
+* Allows to introduce a CI grid in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -37,9 +35,12 @@ icon: grid
 ### Type
 * Allow to set the type of the field. <br />
 
-&nbsp; &nbsp;• **Single** <br />
-&nbsp; &nbsp;• **Multiple** <br />
-&nbsp; &nbsp;• **Grid** 
+&nbsp; &nbsp;• **Single** - Allows to select one choice of the options available. <br />
+
+&nbsp; &nbsp;• **Multiple** - The user can select multiples choices. <br />
+
+&nbsp; &nbsp;• **Grid** - The added topics are shown in a table.
+
 
 <br />
 ### Display field
@@ -51,15 +52,26 @@ icon: grid
 
 <br />
 ### Selection method
-* Choose between selections. 
+* Choose between selections.
+
+&nbsp; &nbsp;• **Role selection** <br />
+
+&nbsp; &nbsp;• **Class selection**
+
 
 <br />
 ### Roles
+
 * Selection of roles to show in the grid.
+
+* If Class selection is selected, the value in this field must be ci.
 
 <br />
 ### CI Class
-* Specify the class of CI to be shown. Only available with Class Selection 
+
+* Select only works if *Class selection* is selected as a method.
+
+* Specify the class of CI to be shown.
 
 <br />
 ### Show class

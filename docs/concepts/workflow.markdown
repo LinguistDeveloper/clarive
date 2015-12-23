@@ -9,6 +9,7 @@ goes through during its lifecycle.
 * There are 2 types of workflows: <br />
 
 &nbsp; &nbsp;• Topic-based, which are for simple workflows <br />
+
 &nbsp; &nbsp;• Rule-based, for complex or reusable workflows <br />
 
 <br />
@@ -25,9 +26,12 @@ with just a simple, topic workflow.
 * Rule workflows should be used instead for complex decision transitions: <br />
 
 &nbsp; &nbsp;• Project specific flows <br />
+
 &nbsp; &nbsp;• Field-dependend transitions, ie. if "urgency" fieldlet value is "urgent" then skip "promote to QA" <br />
+
 &nbsp; &nbsp;• External dependent workflow decisions, like calling an external webservice to determine where or how 
 to promote the topic. <br />
+
 &nbsp; &nbsp;• Field content checks conditional, such as checking that 
 a given field has been filled-out before allowing promotion to 
 happen.

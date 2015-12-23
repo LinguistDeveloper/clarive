@@ -1,9 +1,12 @@
 ---
-title: cla lic - license verification
+title: cla lic - License verification
+icon: console
 ---
 
-####`cla lic`.    
-License verification. Shows all information data relating  to license and checks license is up to date. This command accepts the option:
+<img src="/static/images/icons/console.png" /> `cla lic`: License verification. 
 
-* `-- verbose`: to recover more information about license.    
+* Shows all information data relating  to license and checks license is up to date. 
 
+* This command accepts the option: <br />
+
+&nbsp; &nbsp; • `-- verbose`: To recover more information about license.

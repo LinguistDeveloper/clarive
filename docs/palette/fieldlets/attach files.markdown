@@ -7,9 +7,7 @@ icon: file.gif
     
 <br />
 
-<img src="/static/images/icons/file.gif" /> Allows to attach files in the form.
-
-<br />
+* Allows to attach files in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

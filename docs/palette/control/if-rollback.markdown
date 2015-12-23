@@ -3,7 +3,7 @@ title: IF ROLLBACK
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> Checks the status of rollback stash variable and process nested op if 
+* Checks the status of rollback stash variable and process nested op if 
 value match the value assigned to rollback key. 
 
 * Data editor has the following key: <br />

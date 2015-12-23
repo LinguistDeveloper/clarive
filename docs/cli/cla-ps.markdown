@@ -1,30 +1,30 @@
 ---
-title: cla ps - process monitoring
+title: cla ps - Process monitoring
+icon: console
 ---
 
-`cla-ps`: List processes directly related to Clarive services (pid files), classified depending on the type of process, it can be processes of: 
+<img src="/static/images/icons/console.png" /> `cla ps`: List processes directly related to Clarive services (pid files), classified depending on the type of process, it can be processes of: 
 
-* jobs
-* dispatcher
-* server
+* Jobs
+* Dispatcher
+* Server
 
-<br/>
-The output displayed has the following columns: PID, PPID, CPU, MEM, STAT, START, COMMAND.
 
-This command has a subcommand that can be displayed through the help option:
+* The output displayed has the following columns: PID, PPID, CPU, MEM, STAT, START, COMMAND.
 
-    >cla help ps
+* This command has a subcommand that can be displayed through the help option:
+            
+        >cla help ps
+        Clarive|Software – Copyright © 2013 VASSLabs
 
-    Clarive|Software – Copyright © 2013 VASSLabs
+        usage: cla [-h] [-v] [--config file] command <command-args>
 
-    usage: cla [-h] [-v] [--config file] command <command-args>
-
-    Subcommands available for ps (list server processes):
+        Subcommands available for ps (list server processes):
 
         ps-filter
-
-    cla help <command> to get all subcommands.
-    Cla <command> -h for command options.    
+        cla help <command> to get all subcommands.
+        cla <command> -h for command options.
+    
 <br/>
 
 * `cla ps-filter`: List all processes related to server and dispatcher.

@@ -7,4 +7,4 @@ icon: detail
     
 <br />
 
-<img src="/static/images/icons/detail.png" /> Edit the details of the labels.
+* Edit the details of the labels.

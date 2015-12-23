@@ -7,9 +7,7 @@ icon: milestone
     
 <br />
 
-<img src="/static/images/icons/milestone.png" /> Allows to add a plan with dates to follow the project status.
-
-<br />
+* Allows to add a table with the environments, planned start date and planned end date.
 
 * There are a list of elements can be configured in the fieldlet:
 

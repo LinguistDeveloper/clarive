@@ -8,18 +8,18 @@ It's concept is based around that of an email inbox.
 
 * The topic grid can be seen in Clarive in 3 initial modes:  <br />
 
-&nbsp; &nbsp;• **All Topics** - opened by selecting the `All` menu option in the Topic menu.  <br />
-&nbsp; &nbsp;• **By Category** - opened by selecting a category under the Topic menu.  <br />
-&nbsp; &nbsp;• **By Project** - opened by clicking on the project name under the project explorer <img src="/static/images/icons/project.png" />.
+&nbsp; &nbsp;• **All Topics** - Opened by selecting the `All` menu option in the Topic menu.  <br />
+
+&nbsp; &nbsp;• **By Category** - Opened by selecting a category under the Topic menu.  <br />
+
+&nbsp; &nbsp;• **By Project** - Opened by clicking on the project name under the project explorer <img src="/static/images/icons/project.png" />.
 
 <br />
 ### Sorting 
 
-* By default the topic grid sorts by most recently modified
-date on top.
+* By default the topic grid sorts by most recently modified date on top.
 
-* To change the criteria, click on the desired column. Each click 
-will change the direction of sort (ascending/descending). 
+* To change the criteria, click on the desired column. Each click will change the direction of sort (ascending/descending). 
 
 <br />
 ### Searching
@@ -36,9 +36,12 @@ will change the direction of sort (ascending/descending).
 
 * Each topic status has 3 states:<br />
 
-&nbsp; &nbsp;• Checked: show topics with this status <br />
-&nbsp; &nbsp;• Crossed: hide topics with this status <br />
-&nbsp; &nbsp;• Unselected: hide topics with this status (if there's another status checked) or show topics with this status (if there's no other status checked)  <br />
+
+&nbsp; &nbsp;• **Checked** - Show topics with this status <br />
+
+&nbsp; &nbsp;• **Crossed** - Hide topics with this status <br />
+
+&nbsp; &nbsp;• **Unselected** - Hide topics with this status (if there's another status checked) or show topics with this status (if there's no other status checked)  <br />
 
 * Therefore, if no status is checked or crossed, then all statuses are shown. 
 

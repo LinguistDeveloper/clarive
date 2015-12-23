@@ -7,9 +7,7 @@ icon: calendar
     
 <br />
 
-<img src="/static/images/icons/calendar.png" /> Allows to introduce a datefield in the form.
-
-<br />
+* Allows to introduce a datefield in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -35,7 +33,9 @@ icon: calendar
 
 <br />
 ### Data time format
-* Insert a custom format to show the date
+* Insert a custom format to show the date. If the user leave the field blank, the default date format is *Y-M-D*
+
+&nbsp; &nbsp;• *Ex*: d/m/y
 
 <br />
 ### Default today

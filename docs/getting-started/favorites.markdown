@@ -1,6 +1,7 @@
 ---
 title: Favorites
 index: 30
+icon: favorite
 ---
 
 * Clarive allows to user to store in one place all the stuff the user considered relevant for his interest.
@@ -19,5 +20,3 @@ index: 30
 ### Properties
 
 * The system let the user to introduce any HTML code in the Favorite name field. 
-
-

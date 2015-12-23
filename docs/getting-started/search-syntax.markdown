@@ -1,6 +1,7 @@
 ---
 title: Search Syntax
 index: 2000
+icon: search-small
 ---
 
 * Most of Clarive's lists and reports have search boxes. Terms

@@ -7,9 +7,7 @@ icon: combo_box
     
 <br />
 
-<img src="/static/images/icons/combo_box.png" /> Allows to introduce a combo box in the form.
-
-<br />
+* Allows to introduce a combo box in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

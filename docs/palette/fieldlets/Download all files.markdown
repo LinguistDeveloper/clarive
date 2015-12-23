@@ -7,9 +7,7 @@ icon: download
     
 <br />
 
-<img src="/static/images/icons/download.png" /> Allows to download all the files attached in the form.
-
-<br />
+* Allows to download all the files attached in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

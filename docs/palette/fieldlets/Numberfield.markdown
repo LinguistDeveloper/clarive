@@ -7,9 +7,7 @@ icon: number
     
 <br />
 
-<img src="/static/images/icons/number.png" /> Add a number field in the form.
-
-<br />
+* Add a number field in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

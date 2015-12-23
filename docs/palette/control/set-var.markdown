@@ -3,7 +3,7 @@ title: SET VAR
 icon: let.gif
 ---
 
-<img src="/static/images/icons/let.gif" /> Creates a new stash variable and set its value to a specific value. 
+* Creates a new stash variable and set its value to a specific value. 
 
 * Stash is accessible to set value to new variable. 
 

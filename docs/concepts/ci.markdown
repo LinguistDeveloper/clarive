@@ -3,7 +3,7 @@ title: CI
 icon: class.gif
 ---
 
-<img src="/static/images/icons/class.gif" /> To paraphrase Wikipedia, the term configuration item (CI) refers to the fundamental structural 
+* To paraphrase Wikipedia, the term configuration item (CI) refers to the fundamental structural 
 unit of a configuration management system. Clarive is such a configuration management system, 
 keeping track of all it's configuration entities as CIs in it's database. 
 

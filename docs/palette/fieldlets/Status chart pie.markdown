@@ -7,9 +7,7 @@ icon: chart_pie
     
 <br />
 
-<img src="/static/images/icons/chart_pie.png" /> Allows to show a status chart pie
-
-<br />
+* Allows to show a status chart pie
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -43,4 +41,4 @@ icon: chart_pie
 
 <br />
 ### Depth
-* Defines the depth of the category.
+* Select the search depth.

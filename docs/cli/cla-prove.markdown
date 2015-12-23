@@ -1,40 +1,47 @@
 ---
-title: cla prove - run internal testing
+title: cla prove - Run internal testing
+icon: console
 ---
 
-`cla-prove`: run system tests and check. This command executes test files located in the 
-directory and throws results to the screen. Each test case starts with 
+<img src="/static/images/icons/console.png" /> `cla prove`: run system tests and check. 
 
-====> `[start] <test case name>`  
+* This command executes test files located in the directory and throws results to the screen. 
 
-and finalize with
+* Each test case starts with 
 
-====> `[end] <test case name> [<duration of the test>]`
- 
-in case of error the output shows the error message in red.
+`[start] <test case name>`  
 
-This command accepts the following options:
+* And finalize with
 
-* `-- type <directory>`: Passed as an argument to the command, executes only the tests defined under …/t/< directory >.    
+`[end] <test case name> [<duration of the test>]`
 
-* `-- case <test_name>`: Executes only test <test_name>.
 
-This command has a subcommand that can be displayed through the help option
+* In case of error the output shows the error message in red.
 
-    >cla help prove
 
-    Clarive|Software - Copyright (c) 2013 VASSLabs
+* This command accepts the following options: <br />
 
-    usage: cla [-h] [-v] [--config file] command <command-args>
+&nbsp; &nbsp;• `-- type <directory>` - Passed as an argument to the command, executes only the tests defined under …/t/< directory >. <br />
 
-    Subcommands available for prove (run system tests and check):
+&nbsp; &nbsp;• `-- case <test_name>` - Executes only test <test_name>. <br />
 
-        prove-startup
+<br />
 
-    cla help <command> to get all subcommands.
-    cla <command> -h for command options.
+* This command has a subcommand that can be displayed through the help option
+            
+        > cla help prove
+        Clarive|Software - Copyright (c) 2013 VASSLab
+
+        usage: cla [-h] [-v] [--config file] command <command-args>
+        
+        Subcommands available for prove (run system tests and check)
+        prove-startu
+         
+        cla help <command> to get all subcommand
+        cla <command> -h for command options.
+
 
 <br/>
 
-* `cla prove-startup`:  Test  all systems involved in Clarive startup. Output shows Clarive release and version, patched installed, startup time and a message indicating if there has been any error or all system are ready.
+* `cla prove-startup`: Test  all systems involved in Clarive startup. Output shows Clarive release and version, patched installed, startup time and a message indicating if there has been any error or all system are ready.
 

@@ -7,9 +7,7 @@ icon: progressbar
     
 <br />
 
-<img src="/static/images/icons/progressbar.png" /> Shows a progress bar in the form.
-
-<br />
+* Shows a progress bar in the form.
 
 * There are a list of elements can be configured in the dashlet:
 

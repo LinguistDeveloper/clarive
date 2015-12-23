@@ -3,7 +3,7 @@ title: Job
 icon: job
 ---
 
-<img src="/static/images/icons/job.png" /> Jobs are rules executed by the Clarive server. 
+* Jobs are rules executed by the Clarive server. 
 
 * Jobs are always scheduled, even if scheduled to run "now" or in 3 months, 
 they always have a schedule and are run by the job daemon. 
@@ -19,5 +19,4 @@ reschedule or rerun them as many times as you like).
 <br />
 ## Job are CIs
 
-* The job name identifies the job. But jobs are also CIs and therefore have 
-a [mid](concepts/mid).
+* The job name identifies the job. But jobs are also CIs and therefore have a [mid](concepts/mid).

@@ -7,9 +7,7 @@ icon: milestone
     
 <br />
 
-<img src="/static/images/icons/milestone.png" /> Allows to add a plan with dates to follow the project status.
-
-<br />
+* Allows to add a plan with dates to follow the project status.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -35,4 +33,25 @@ icon: milestone
 
 <br />
 ### Columns
-* Define what columns will be shown in the dashlet
+* Set the columns to show in the table
+
+* The first literal indicate de name of the column and the second the type. The separator between columns are ;
+
+
+            
+        init_date,datefield; end_date, datefield; notes, text;
+
+<br />
+
+* Types availables
+
+&nbsp; &nbsp;• *Datefield* - Introduced a calendar into the column to put a date. <br />
+
+&nbsp; &nbsp;• *Textfield* - Put a text field into the column (one text row). <br />
+
+&nbsp; &nbsp;• *Text* - Put a text field into the column for example for descriptions or observations (three text rows ).
+
+
+
+
+        

@@ -13,12 +13,19 @@ This will display all the currently available Users in a list view.
 
 * The list view contains the following columns: <br />
 
+
 &nbsp; &nbsp;• `Avatar`: The user's avatar <br />
+
 &nbsp; &nbsp;• `User`: Userid of the user, used for login into the system <br />
+
 &nbsp; &nbsp;• `Name`: Full name of the user <br />
+
 &nbsp; &nbsp;• `Alias`: Alias for the userid <br />
+
 &nbsp; &nbsp;• `Language`: The selected user language <br />
+
 &nbsp; &nbsp;• `Email`: Email address of the User <br />
+
 &nbsp; &nbsp;• `Phone`: Phone number of the user 
 
 
@@ -27,12 +34,19 @@ This will display all the currently available Users in a list view.
 
 * The following information needs to be provided for creation: <br />
 
+
 &nbsp; &nbsp;• `User`: The Userid the user will use to logon to Clarive Software <br />
+
 &nbsp; &nbsp;• `Password`: The password the user will use in combination with the userid to logon to Clarive <br />
+
 &nbsp; &nbsp;• `Confirm Password`: The password the user will use in combination with the userid to logon to Clarive <br />
+
 &nbsp; &nbsp;• `Alias`: An Alias for a User <br />
+
 &nbsp; &nbsp;• `Name`: Full name of the User <br />
+
 &nbsp; &nbsp;• `Phone`: Phone number of the User <br />
+
 &nbsp; &nbsp;• `Email`: Email Address of the Use.
 
 
@@ -55,9 +69,13 @@ Click on the bottom left button  to add the project related roles for that user.
 
 * A few examples: <br />
 
+
 &nbsp; &nbsp;1. To unassign the Role “Developer” for all Clarive Projects from the user, mark the row and click on <img src="/static/images/icons/delete_red.png" /> <br />
+
 &nbsp; &nbsp;2. To unassign the Role “Developer” from the Clarive Project “ClientApp”  from  the user, mark the ckeckbox next to “Developer” in the left pane, mark the checkbox next to “ClientApp” in the right pane and click on  <img src="/static/images/icons/key_delete.png" /> <br />
+
 &nbsp; &nbsp;3. To unassign all Roles for the Clarive Project “ClientApp” from  a user, mark the checkbox next to “ClientApp” in the right pane, click on <img src="/static/images/icons/key_delete.png" /> <br />
+
 &nbsp; &nbsp;4. To unassign all Roles from  a user, click on <img src="/static/images/icons/del_all.png" /> 
 
 <br />

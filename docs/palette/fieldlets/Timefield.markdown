@@ -7,9 +7,7 @@ icon: time
     
 <br />
 
-<img src="/static/images/icons/time.png" /> Allows to add a text field in the form.
-
-<br />
+* Allows to add a time (hour, minutes) field in the form. If user wants to use a date, can use [Date time](fieldlets/Datefield) field.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -35,4 +33,6 @@ icon: time
 
 <br />
 ### Time format
-* Allows to use a personalize time format.
+* Field allows you to select a specific time
+
+* By default the value is H:i (Hours in 24h format and minutes). Use h to 12h format.

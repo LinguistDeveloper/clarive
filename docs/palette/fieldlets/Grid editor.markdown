@@ -7,10 +7,7 @@ icon: grid
     
 <br />
 
-<img src="/static/images/icons/grid.png" /> Allows to introduce a grid in the form.
-
-
-<br />
+* Allows to introduce a grid in the form with a column for a description.
 
 * There are a list of elements can be configured in the fieldlet:
 

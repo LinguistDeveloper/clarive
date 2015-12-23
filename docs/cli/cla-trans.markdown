@@ -1,8 +1,11 @@
 ---
-title: cla trans - conversion tool
+title: cla trans - Conversion tool
+icon: console
 ---
 
-`cla trans`: conversion tool, password encryption. Subcommands supported can be displayed with the help option:
+<img src="/static/images/icons/console.png" /> `cla trans`: Conversion tool, password encryption. 
+
+* Subcommands supported can be displayed with the help option:
 
 <br/>
 
@@ -23,25 +26,42 @@ title: cla trans - conversion tool
  
 <br/>
 
-* `cla trans-password`:       
+* `cla trans-password`: <br />
+
     
-      &nbsp; &nbsp; • `-u <username>`: User name to be encrypted password is a required parameter, it can be defined as an input parameter:      
-      &nbsp; &nbsp; • `-p <password>`: User password.     
-      &nbsp; &nbsp; • Typed from the keyboard when command asked for it.     
-Encryption is done using parameter decrypt_key or dec_key from config file.     
+      &nbsp; &nbsp;• *-u <\username>*: User name to be encrypted password is a required parameter, it can be defined as an input parameter: <br />
+
+      &nbsp; &nbsp;• *-p <\password>*: User password. <br />
+
+      &nbsp; &nbsp;• Typed from the keyboard when command asked for it. <br />
+
+<br />
+
+* Encryption is done using parameter decrypt_key or dec_key from config file. <br />
+
 <br/>
-* `cla trans-md5`:  Encrypt following MD5 algoritm. The input string can be defined:    
 
-      &nbsp; &nbsp; • `–s <string>`: String to encrypt.     
-      &nbsp; &nbsp; • Typed from the keyboard when command asks for it.    
+* `cla trans-md5`: Encrypt following MD5 algoritm. The input string can be defined: <br />
 
-* `cla trans-encrypt`: Encrypt following Blowfish algorithm. Encryption is done using:
+      &nbsp; &nbsp;• *–s <\string>*: String to encrypt. <br />
 
-      &nbsp; &nbsp; • `--key <key_name>`: Key to encrypt.    
-      &nbsp; &nbsp; • parameter decrypt_key or dec_key from config file.
+      &nbsp; &nbsp;• Typed from the keyboard when command asks for it. <br />
+
 <br/>
-* The input string can be defined:    
 
-      &nbsp; &nbsp; • `–s <string>`: String to encrypt.     
-      &nbsp; &nbsp; • Typed from the keyboard when command asks for it.
+* `cla trans-encrypt`: Encrypt following Blowfish algorithm. Encryption is done using: <br />
+
+
+      &nbsp; &nbsp;• *--key <\key_name>*: Key to encrypt. <br />
+
+      &nbsp; &nbsp;• parameter *decrypt_key* or *dec_key* from config file. <br />
+
+<br/>
+
+* The input string can be defined: <br />
+
+
+      &nbsp; &nbsp;• *–s <\string>*: String to encrypt. <br />
+
+      &nbsp; &nbsp;• Typed from the keyboard when command asks for it.
 

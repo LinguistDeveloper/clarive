@@ -7,9 +7,7 @@ icon: grid
     
 <br />
 
-<img src="/static/images/icons/grid.png" /> Allows to add topics to the form.
-
-<br />
+* Allows to add topics into a grid to the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

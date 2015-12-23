@@ -7,9 +7,7 @@ icon: html
     
 <br />
 
-<img src="/static/images/icons/html.png" /> Allows to add a moniker in the form
-
-<br />
+* Allows to add elements in Markdown language.
 
 * There are a list of elements can be configured in the fieldlet:
 

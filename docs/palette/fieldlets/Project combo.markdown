@@ -7,9 +7,7 @@ icon: combo_box
     
 <br />
 
-<img src="/static/images/icons/combo_box.png" /> Allows to introduce a combo box with the projects in the form.
-
-<br />
+* Allows to introduce a combo box with the projects in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -37,9 +35,11 @@ icon: combo_box
 ### Type
 * Allow to set the type of the field. <br />
 
-&nbsp; &nbsp;• **Single** <br />
-&nbsp; &nbsp;• **Multiple** <br />
-&nbsp; &nbsp;• **Grid**
+&nbsp; &nbsp;• **Single** - Allows to select one choice of the options available. <br />
+
+&nbsp; &nbsp;• **Multiple** - The user can select multiples choices. <br />
+
+&nbsp; &nbsp;• **Grid** - The added topics are shown in a table.
 
 
 <br />
@@ -48,15 +48,24 @@ icon: combo_box
 
 <br />
 ### Advanced filter JSON
-* Allows to use a JSON format to add a condition. 
+* Allows to use a JSON format to add a condition.
+
+            
+        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
+
+
+&nbsp;&nbsp;• Where id is the unique key of the category which can be consulted through the REPL.
+
 
 <br />
 ### CI Class
-* Specify the class of CI to be shown.
+* Specify the class of CI to be shown. Tipically the CI Class to use in this fieldlet is *project*.
 
 <br />
 ### Default value
-* The CI to show by default.
+* To show a default project in the box. 
+
+* The value indicated will be the ID of the CI.
 
 <br />
 ### Roles

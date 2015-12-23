@@ -3,7 +3,7 @@ title: DELETE hashkey
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> To delete an specified stash variable.
+* To delete an specified stash variable.
 
 * Data editor has the following key: <br />
 

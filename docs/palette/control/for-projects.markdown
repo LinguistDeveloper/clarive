@@ -3,7 +3,7 @@ title: FOR projects with changes DO
 icon: loop.gif
 ---
 
-<img src="/static/images/icons/loop.gif" /> Execute nested ops for each project that have changeset.
+* Execute nested ops for each project that have changeset.
 
 * Following project variables are included into stash: <br />
 

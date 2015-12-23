@@ -7,9 +7,9 @@ icon: separator
     
 <br />
 
-<img src="/static/images/icons/separator.png" width="16px" /> Allows to introduce a separator in the form. 
+* Allows to introduce a separator in the form. 
 
-<br />
+* The fieldlet name will appear above the separator bar. If the user want to put a separator nameless, leaving a blank space in the name.
 
 * There are a list of elements can be configured in the fieldlet:
 

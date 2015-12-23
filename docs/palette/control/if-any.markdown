@@ -3,7 +3,7 @@ title: IF ANY nature THEN
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> Checks if changeset accomplish defined natures and if it meets any of them process nested op. 
+* Checks if changeset accomplish defined natures and if it meets any of them process nested op. 
 
 * Form to configure has the following field: <br />
 

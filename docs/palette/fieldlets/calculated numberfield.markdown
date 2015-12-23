@@ -7,9 +7,7 @@ icon: number.png
     
 <br />
 
-<img src="/static/images/icons/number.png" /> Allows to calculate a value with operations between fields
-
-<br />
+* Allows to calculate a value with operations between fields
 
 * There are a list of elements can be configured in the fieldlet:
 

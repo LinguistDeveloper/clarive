@@ -3,10 +3,7 @@ title: EVAL JavaScript
 icon: cog_java
 ---
 
-### EVAL JavaScript
-
-
-<img src="/static/images/icons/cog_java.png" /> Run JavaScript code and assigns to new stash variables the newly created JavaScript variables, if any. 
+* Run JavaScript code and assigns to new stash variables the newly created JavaScript variables, if any. 
 
 * Stash variables are passed to javaScript. 
 

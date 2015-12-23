@@ -1,7 +1,8 @@
 ---
 title: cla version - Clarive version check
+icon: console
 ---
 
-### `cla version`
+<img src="/static/images/icons/console.png" /> `cla version`
 
-Shows Clarive version. 
+* Shows Clarive version. 

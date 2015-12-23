@@ -1,29 +1,35 @@
 ---
-title: cla start
+title: cla start - Start all server processes
+icon: console
 ---
 
-`cla start`: start all server tasks. It tries to start all systems Clarive needs to operate. They are:
+<img src="/static/images/icons/console.png" /> `cla start`: Start all server tasks. 
 
-* *mongo*: Starts mongo server with configuration file located in `$CLARIVE_BASE/config/mongod.conf`.    
+* It tries to start all systems Clarive needs to operate. 
 
-* *nginx*: Start nginx server.     
+* They are: <br />
 
-* *Clarive web server*: Web server started in daemon mode, options can be sent as arguments to the command to start web server in some way.
+&nbsp; &nbsp;• *mongo*: Starts mongo server with configuration file located in `$CLARIVE_BASE/config/mongod.conf`.
 
-* *Clarive dispatcher*: Dispatcher server is started in daemon mode. Options can be sent as arguments to the command to start dispatcher server in some way.
+&nbsp; &nbsp;• *nginx*: Start nginx server.
+
+&nbsp; &nbsp;• *Clarive web server*: Web server started in daemon mode, options can be sent as arguments to the command to start web server in some way.
+
+&nbsp; &nbsp;• *Clarive dispatcher*: Dispatcher server is started in daemon mode. Options can be sent as arguments to the command to start dispatcher server in some way.
 
 <br/> 
 
-This command supports some options. They are:    
+* This command supports some options. They are: <br/> 
 
-* `--no_mongo`: To not start mongo server.    
-* `--mongo_arbiter`: To start mongo arbiter server. It takes conf file from `$CLARIVE_BASE/conf/mongo-arb.conf`.   
+&nbsp; &nbsp;•  `--no_mongo`: To not start mongo server.<br/> 
 
-<br/>  
+&nbsp; &nbsp;•  `--mongo_arbiter`: To start mongo arbiter server. It takes conf file from `$CLARIVE_BASE/conf/mongo-arb.conf`.
 
-By default, this conf file is not installed in Clarive installation,  please consult mongo documentation to create this conf file.    
+<br/>
 
-* `--redis`: To start redis server.     
+* By default, this conf file is not installed in Clarive installation,  please consult mongo documentation to create this conf file.<br/> 
 
-* `--no_nginx`: To not start nginx server.
+&nbsp; &nbsp;•  `--redis`: To start redis server. <br/> 
+
+&nbsp; &nbsp;•  `--no_nginx`: To not start nginx server.
 

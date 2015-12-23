@@ -7,9 +7,7 @@ icon: field
     
 <br />
 
-<img src="/static/images/icons/field.png" /> Allows to add a text field in the form.
-
-<br />
+* Allows to add a text field in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -36,3 +34,7 @@ icon: field
 <br />
 ### Default value
 * The user can define a default value to show.
+
+<br />
+###  Maximum characters
+* Set the maximum number of characters can the user introduce.

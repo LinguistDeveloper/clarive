@@ -1,5 +1,6 @@
 ---
 title: Setup Your Preferences
+icon: prefs
 ---
 * Your user preferences page contains the default 
 settings for your account login and session, 
@@ -17,21 +18,20 @@ the option `Preferences`
 <br />
 ### General
 
-- **Interface Language** - Select your language from the drop-down menu.
-- **Timezone** - Select your timezone.
-- **Date Format** - Select your favorite date format.
-- **Time format** - Set your favorite time format.
-- **Default Dashboard** - Select your default dashboard from the list. Dashboards are assigned usually to roles in your organization. Make sure your administrator has enabled access to your roles.
+- **Interface Language** - Select your language from the drop-down menu. <br />
+
+- **Date Format** - Select your favorite date format. <br />
+
+- **Default Dashboard** - Select your default dashboard from the list. Dashboards are assigned usually 
+to roles in your organization. Make sure your administrator has enabled access to your roles. 
 
 
 <br />
 ### Avatar
 
-Here you can select the avatar for your user profile. 
+- **Change Avatar** - Randomly creates another fractal avatar. <br />
 
-- **Change Avatar** - Randomly creates another fractal avatar.
 - **Upload File** - Upload your own image.
-
 
 
 <br />

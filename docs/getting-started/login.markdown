@@ -1,18 +1,20 @@
 ---
 title: Login
 index: 30
+icon: user.gif
 ---
 
 * Before you can log in to Clarive, your Clarive Administrator must add you as a User of Clarive. 
 Your Clarive Administrator will then notify you of your login information consisting of: <br />
 
-&nbsp; &nbsp;• Username – The Username is in email address format, and is not case-sensitive. <br />
-&nbsp; &nbsp;• Password – The Password is case-sensitive.
+&nbsp; &nbsp;• **Username** – The Username is in email address format, and is not case-sensitive. <br />
 
-&nbsp; &nbsp;* You can easily change your password from your user preferences page.
+&nbsp; &nbsp;• **Password** – The Password is case-sensitive.
 
-**Note**: typically, Administrators will disable your password changing priviledges 
-when single signon or LDAP/SAML authentication is enabled. 
+&nbsp;* *You can easily change your password from your user preferences page.*
+
+**Note**: Typically, Administrators will disable your password changing privileges 
+when single sign on or LDAP/SAML authentication is enabled. 
 
 <br />
 ### External Login 

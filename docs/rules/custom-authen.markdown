@@ -1,5 +1,6 @@
 ---
 title: Writing Custom Authentication Rules
+icon: rule
 ---
 
 * It's possible to write custom authentication rules
@@ -25,8 +26,11 @@ or looking-up a user through a command.
 * The variables made available in the stash for you, are: <br />
 
 &nbsp; &nbsp;• `Username` - The user id, should match the record in the user database in Clarive. <br />
+
 &nbsp; &nbsp;• `Login` - The full text entered into the login box. <br />
+
 &nbsp; &nbsp;• `Password` - The password entered by the user *Caution*, be careful where you write this information. <br />
+
 &nbsp; &nbsp;• `Realm` - The login authentication realm the user has entered, could be empty (default) or could be something like
 'local' for local users, etc.
 

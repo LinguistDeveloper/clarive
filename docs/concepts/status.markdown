@@ -4,7 +4,7 @@ index: 400
 icon: status
 ---
 
-<img src="/static/images/icons/status.png" /> A status represents the state of an issue at a particular point in a specific workflow. An issue can be in only one status at a given point in time.
+* A status represents the state of an issue at a particular point in a specific [workflow](concepts/workflow). An issue can be in only one status at a given point in time.
 
 * When defining a status, you can optionally specify properties. Read more about them in the [administration page](admin/status). 
 
@@ -21,10 +21,14 @@ icon: status
 
 * There are 3 status types: <br />
 
-&nbsp; &nbsp;• **New** - Indicates that a topic has just been created and has not been "picked up" by the team <br />
+&nbsp; &nbsp;• **New** - Indicates that a [topic](concepts/topic) has just been created and has not been "picked up" by the team <br />
+
 &nbsp; &nbsp;• **Cancelled** - Indicates an aborted status <br />
+
 &nbsp; &nbsp;• **Closed** - Indicates that the status is probably the last one in the flow. By setting a status to Closed, we are preventing the topics in this state to be shown in most view, like the topic lists / grids and Kanbans. <br />
+
 &nbsp; &nbsp;• **Deployable** - Means that, as part of a transition into this status (promote), Changeset topics need to be deployed to one of the associated environments. As part of the transition out (demote), Changeset topics need to be backed-out from the environment. <br />
+
 &nbsp; &nbsp;• **Generic** - Any other statuses fall into this category.
 
 <br />
@@ -32,8 +36,7 @@ icon: status
 
 * Promote transitions in Clarive are meant to represent transitions to Deployable states.
 
-
 <br />
 ### Demote
 
-* Demote transitions, on the other hand, generate backout transitions, with a rollback job.
+* Demote transitions, on the other hand, generate backout transitions, with a rollback [job](concepts/job).

@@ -3,7 +3,7 @@ title: IF var THEN
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> Checks if the value of specific stash variable equals a defined value and if it is true, 
+* Checks if the value of specific stash variable equals a defined value and if it is true, 
 executes nested ops. Form to configure has the following fields:
 
 

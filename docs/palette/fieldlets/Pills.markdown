@@ -7,9 +7,7 @@ icon: pills
     
 <br />
 
-<img src="/static/images/icons/pills.png" /> Shows pills with the options are defined in the configuration of the dashlet
-
-<br />
+* Shows pills with the options are defined in the configuration of the dashlet
 
 * There are a list of elements can be configured in the dashlet:
 

@@ -4,12 +4,13 @@ index: 1200
 icon: kanban
 ---
 
-* Clarive has a Kanban board generator utility that is available from 2 places: <br />
+* Clarive has a Kanban board generator utility that is available from two places: <br />
 
 &nbsp; &nbsp;• The topic grid <br />
-&nbsp; &nbsp;• From withing a topic that holds other topics
 
-* The kanban board can be opened by clicking on the following icon: 
+&nbsp; &nbsp;• From withing a topic that holds other topics.
+
+* The Kanban board can be opened by clicking on the following icon: 
 <img src="/static/images/icons/kanban.png" />
 
 <br />
@@ -20,7 +21,8 @@ or from the topics contained within a topic.
 
 * From that list, the Kanban will show all from and to statuses available as immediate topic
 transitions (transitions that can be performed for the topics shown). 
-It will hide statuses that the user cannot transition to/from or that are not
+
+* It will hide statuses that the user cannot transition to/from or that are not
 available as a transition. 
 
 * To change the status of a topic, just drag and drop the status. Only allowed statuses 
@@ -34,8 +36,7 @@ the topic new status.
 * Statuses that are tied to environments have the environment name(s) on top. 
 
 * If a topic gets dragged into a promotable environment, a new job window will popup. Schedule the job accordingly. When the job runs, the pipeline will take 
-care of deploying the changeset contents and promoting the topics into (or demoting
-them out of) the destination evnironment and corresponding status. 
+care of deploying the changeset contents and promoting the topics into (or demoting them out of) the destination evnironment and corresponding status. 
 
 <br />
 ### Customizing the Kanban Board

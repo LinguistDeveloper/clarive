@@ -7,9 +7,7 @@ icon: chart_pie
     
 <br />
 
-<img src="/static/images/icons/chart_pie.png" /> Allows to show a chart pie
-
-<br />
+* Allows to show the change history of the topic
 
 * There are a list of elements can be configured in the fieldlet:
 

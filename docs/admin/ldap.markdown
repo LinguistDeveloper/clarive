@@ -1,6 +1,6 @@
 ---
 title: LDAP Authentication
-icon: users
+icon: users.gif
 ---
 
 ## Setup

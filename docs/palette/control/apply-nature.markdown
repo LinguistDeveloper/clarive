@@ -3,7 +3,7 @@ title: APPLY NATURE
 icon: loop.gif
 ---
 
-<img src="/static/images/icons/loop.gif" /> If nature applies to changeset, load config variables from the ci nature to the stash. 
+* If nature applies to changeset, load config variables from the ci nature to the stash. 
 
 * Form to configure has the following field: <br />
 

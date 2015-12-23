@@ -3,7 +3,7 @@ title: IF EXISTS nature THEN
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> Checks if changeset meets defined nature and if so process nested op. 
+* Checks if changeset meets defined nature and if so process nested op. 
 
 * Following variables are included into stash: <br />
 
@@ -15,7 +15,7 @@ icon: if.gif
 
 &nbsp; &nbsp;• **nature_items_comma**: String with all paths to changed items that meet the defined natured separated by commas. <br />
 
-&nbsp; &nbsp;• **nature_items_quote**: String with all paths to changed items that meet the defined natured each of one quoted.
+&nbsp; &nbsp;• **nature_items_quote**: String with all paths to changed items that meet the defined natured each of one quoted. <br />
 
 * Form to configure has the following fields: <br />
 

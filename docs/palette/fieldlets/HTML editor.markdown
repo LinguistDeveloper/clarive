@@ -7,9 +7,7 @@ icon: html
     
 <br />
 
-<img src="/static/images/icons/html.png" /> Allows to introduce a HTML code in the form.
-
-<br />
+* Allows to introduce a HTML code in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

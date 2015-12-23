@@ -3,7 +3,7 @@ title: IF var in LIST THEN
 icon: if.gif
 ---
 
-<img src="/static/images/icons/if.gif" /> Checks if the value of a specific stash variable equals any of a list of values, if so, process nested ops. 
+* Checks if the value of a specific stash variable equals any of a list of values, if so, process nested ops. 
 
 * Form to configure has the following fields: <br />
 

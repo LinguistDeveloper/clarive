@@ -7,9 +7,7 @@ icon: combo_box
     
 <br />
 
-<img src="/static/images/icons/combo_box.png" /> Allows to introduce a revision box.
-
-<br />
+* Allows to introduce a revision box into the topic form.
 
 * There are a list of elements can be configured in the fieldlet:
 
@@ -35,4 +33,4 @@ icon: combo_box
 
 <br />
 ### Branch
-* Configure the branch to view in the form.
+* Configure the branch to view in the topic.

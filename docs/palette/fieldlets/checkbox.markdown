@@ -7,9 +7,7 @@ icon: admin_request
     
 <br />
 
-<img src="/static/images/icons/admin_request.png" height="16px" width="16px" /> Allows to introduce a checkbox in the form.
-
-<br />
+* Allows to introduce a checkbox in the form.
 
 * There are a list of elements can be configured in the fieldlet:
 

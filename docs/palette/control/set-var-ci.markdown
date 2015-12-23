@@ -3,7 +3,7 @@ title: SET VAR to CI
 icon: let.gif
 ---
 
-<img src="/static/images/icons/let.gif" /> Creates a new stash variable and set its value to a reference to a ci instance. 
+* Creates a new stash variable and set its value to a reference to a ci instance. 
 
 * Data editor to configure has the following keys: <br />
 
