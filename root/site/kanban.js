@@ -22,8 +22,8 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     width: 800,
     is_fullscreen : false,
     is_tab : false,
-    // background: "#555 url('/static/images/bg/cork.jpg')",
-    background: "#535051",
+    background: "#555 url('/static/images/bg/CORK_1.jpg')",
+    //background: "#535051",
     title: _('Kanban'),
     header: false,
     constructor : function(c) {

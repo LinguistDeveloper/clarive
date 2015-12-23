@@ -1287,7 +1287,7 @@ Baseliner.loading_panel = function(msg){
             '<div style="position:absolute; left:0; top:0; width:100%; height:100%; background-color:white;"></div>',
             '<div style="position:absolute; left:45%; top:40%; padding:2px; height:auto;">',
             '<center>',
-            '<img style="" src="/static/images/loading.gif" />',
+            '<img style="height:32px;width:32px;" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
             msg,
             '</div>',

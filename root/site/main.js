@@ -24,7 +24,8 @@ Ext.onReady(function(){
        tooltip: _('Clarive Help'),
        menu: Cla.help_menu
     });
-    Cla.help_button.on('click', function(ev,hp){
+
+   Cla.help_button.on('click', function(ev,hp){
         // when the user sees the menu, switch the bulb off
         Cla.help_button.setIcon(IC('lightbulb_off.png'));
     });
@@ -161,12 +162,21 @@ Ext.onReady(function(){
     
     tbar_items.push( Cla.help_button );
 
-    tbar_items.push( '<img src="/static/images/icons/favorite.png" title="' + _("Add to Favorites...") + '" style="border:0px;" onclick="Cla.favorite_this()" onmouseover="this.style.cursor=\'pointer\'" />' );
+    Cla.share_button = new Ext.Button({
+       icon: '/static/images/icons/favorite.png',
+       cls: 'x-btn-icon',
+       tooltip: _('Add to Favorites...'),
+       handler: function(){
+                Cla.favorite_this();
+            }
+    });
+    tbar_items.push( Cla.share_button );
 
     Prefs.site.show_calendar = true;
     if( Prefs.site.show_calendar ) {
         var south_panel = new Ext.Button({
             icon: "/static/images/icons/calendar.png",
+            tooltip: _('Calendar'),
             enableToggle: true,
             pressed: false, handler: function(){
                 Cla.toggleCalendar( south_panel );
@@ -174,13 +184,57 @@ Ext.onReady(function(){
         });
         tbar_items.push( south_panel ); 
     }
+    Cla.share_button = new Ext.Button({
+       icon: '/static/images/icons/share_this.png',
+       cls: 'x-btn-icon',
+       tooltip: _('Share'),
+       handler: function(){
+                Cla.print_current_tab(true);
+            }
+    });
+    tbar_items.push( Cla.share_button );
 
-    tbar_items.push( String.format('<img src="/static/images/icons/share_this.png" title="' + _("Share") + '" style="border:0px;" onclick="Cla.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />' ) );
-    tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" title="' + _("Print") + '" onclick="Cla.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
-    tbar_items.push( String.format('<img src="/static/images/icons/detach.png" title="' + _("Duplicate active tab") + '" style="border:0px;" onclick="Cla.duplicate_tab()" onmouseover="this.style.cursor=\'pointer\'" />', _('Duplicate current tab')) );
+    Cla.print_button = new Ext.Button({
+       icon: '/static/images/icons/printer.png',
+       cls: 'x-btn-icon',
+       tooltip: _('Print'),
+       handler: function(){
+                Cla.print_current_tab(true);
+            }
+    });
+    tbar_items.push( Cla.print_button );
+
+    Cla.duplicate_button = new Ext.Button({
+       icon: '/static/images/icons/detach.png',
+       cls: 'x-btn-icon',
+       tooltip: _('Duplicate active tab'),
+       handler: function(){
+                Cla.duplicate_tab();
+            }
+    });
+    tbar_items.push( Cla.duplicate_button );
+
+    Cla.JSreload_button = new Ext.Button({
+       icon: '/static/images/icons/js-reload.png',
+       cls: 'x-btn-icon',
+       tooltip: _('JS reload'),
+       handler: function(){
+               Cla.js_reload(true);
+            }
+    });
     if( Prefs.stash.show_js_reload && Cla.DEBUG )
-        tbar_items.push( '<img src="/static/images/icons/js-reload.png" title="' + _("JS reload") + '" style="border:0px;" onclick="Cla.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
-    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" title="' + _("Refresh") + '" onclick="Cla.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+        tbar_items.push( Cla.JSreload_button );
+
+     Cla.refresh_button = new Ext.Button({
+       icon: '/static/images/icons/refresh.png',
+       cls: 'x-btn-icon',
+       tooltip: _('Refresh'),
+       handler: function(){
+               Cla.refreshCurrentTab();
+            }
+    });
+    tbar_items.push( Cla.refresh_button );
+
     tbar_items.push( '-');
 
     if( Prefs.is_logged_in ) { 

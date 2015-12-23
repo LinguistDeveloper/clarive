@@ -37,7 +37,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 <div id="[%= no_boot=="1" ? 'no-' : '' %]boot">
                     <div id="[%= id_div %]" 
                         style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;" 
-                        onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
+                        onmouseout="document.body.style.cursor='default';"><img style ='height:24px;width:24px;' src="/static/images/loading.gif" />
                     </div>
                 </div>
               </div>
@@ -142,7 +142,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var dashlet = self.dashlets[ id_dashlet ];
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
-        if(div) div.innerHTML= "<img src=/static/images/loading.gif />";
+        if(div) div.innerHTML= "<img style='height:16px;width:16px;' src=/static/images/loading.gif />";
         Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, project_id: self.project_id, topic_mid: self.topic_mid, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();
