@@ -979,6 +979,15 @@ msgstr ""
 msgid "User does not have permission to perform the operation"
 msgstr "El usuario no tiene permiso para realiza la operación"
 
+msgid "User %1 does not have permission to drop into field %2"
+msgstr "El usuario %1 no tiene permiso para relacionar el campo %2"
+
+msgid "No editable or matching fields found in topics #%1 and #%2"
+msgstr "No hay campos editables o coincidentes que se encuentran en los tópicos #%1 y #%2"
+
+msgid "No drop fields available in topics %1 or %2"
+msgstr "No hay campos disponibles para relacionar en tópicos %1 o %2"
+
 msgid "Requested By"
 msgstr "Solicitante"
 
