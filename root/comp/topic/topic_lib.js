@@ -1248,7 +1248,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     ' ',
                     self.btn_delete_form,
                     self.btn_comment,
-                    self.btn_save_form
+                    self.btn_save_form,
+                    '->',
+                    self.btn_change_status,
                 ]
             });
         };
@@ -1351,6 +1353,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_detail.toggle(true);
             self.view_is_dirty = false;
             self.detail_reload();
+            if ( self.reload_tab ) {
+                self.reload_tab = false;
+                Baseliner.refreshCurrentTab();
+            }
         }
     },
     detail_reload : function(){
@@ -1421,7 +1427,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     form2.findField("topic_mid").setValue( mid );
                     var status_hidden_field = form2.findField("status");
                     var status_value = status_hidden_field.getValue();
-                    
+                    if ( res.return_options.reload_tab == 1 ){
+                        self.reload_tab = true;
+                    }
                     if ( res.return_options.reload == 1 ) {
                     // if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;

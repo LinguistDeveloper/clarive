@@ -743,16 +743,23 @@ sub update {
                         project         => [map { $_->{mid} } $topic->projects]
                     };
                     
-                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, ($topic->title // ''));
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
+                    my @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $p->{username}, mid => $topic_mid  );
+                    my $wf = mdb->category->find_one( { id => $id_category } )->{workflow};
+                    $wf = grep {
+                        $_->{id_status_from} eq $id_category_status && $_->{job_type} && $_->{id_role} ~~ @user_roles
+                    } _array $wf;
+                    $return_options->{reload_tab} = 1 if $wf;
+
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
                         category=>$category->{name}, 
                         category_name=>$category->{name}, 
                         notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
-                });  
-                delete $return_options->{reload};                 
-                return $return;
+
+                });
+                $return_options->{reload} = 0;
             } 
             => sub { # catch
                 if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
