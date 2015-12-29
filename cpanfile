@@ -117,6 +117,7 @@ requires 'local::lib';
 requires 'Lucy';
 requires 'Lucy::Simple';
 requires 'LucyX::Simple::Result::Hash';
+requires 'LWP::Protocol::https';
 requires 'LWP::UserAgent';
 requires 'Math::Base36';
 requires 'MIME::Base64';
