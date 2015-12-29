@@ -195,35 +195,43 @@ sub check_output_errors {
     
     my $ignore_errors = 0;
     my ($output_ok, $output_error, $output_warn, $output_capture) = @{$config}{qw(output_ok output_error output_warn output_capture)}; 
+    my %found = ();
+
     OUT_OK: for my $ook ( _array($output_ok) ) {
         if( my @match = ( $output =~ _regex($ook) ) ) {
-           my %found = %+;
-           $log->info( _loc('Output ok detected by `%1` (errors will be ignored): %2', $ook, %found ? _encode_json(\%found) : join(',',@match) ) );
+           %found = %+;
+           $log->info( _loc('Output ok detected by regexp `%1` (errors will be ignored)', $ook ) );
            $ignore_errors = 1;
            last OUT_OK;
         }
     }
+
     for my $oerr ( _array($output_error) ) {
         if( my @match = ( $output =~ _regex($oerr) ) ) {
-           my %found = %+;
-           $log->error( _loc("Output error detected by '%1': %2", $oerr, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
+           %found = %+;
+           $log->error( _loc("Output error detected by '%1'", $oerr), data=>$output ) ;
            _fail _loc 'Output error detected' if $error_mode eq 'fail' && !$ignore_errors;
         }
     }
+
     for my $owarn ( _array($output_warn) ) {
         if( my @match = ( $output =~ _regex($owarn) ) ) {
-           my %found = %+;
-           $log->warn( _loc("Output error detected by '%1': %2", $owarn, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
+           %found = %+;
+           $log->warn( _loc("Output error detected by '%1'", $owarn), data=>$output );
         }
     }
+
     for my $ocap ( _array($output_capture) ) {
         if( $output =~ _regex($ocap) ) {
-           my %found = %+;
-           for( keys %found ) {
-               $log->debug( _loc("Captured from output '%1' into stash '%2'", $ocap, $_) );
-               $stash->{$_} = $found{$_};
-           }
+           %found = %+;
         }
+    }
+
+    if ( %found ) {
+       for( keys %found ) {
+           $log->debug( _loc("Captured %1 into stash variable '%2'", $found{$_}, $_) );
+           $stash->{$_} = $found{$_};
+       }
     }
 }
 
