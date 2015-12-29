@@ -1427,7 +1427,12 @@ sub get_fieldlet_nodes {
     my @all_nodes;
     while( my $cat = $cats->next ) {
         next if $all_fields && !length $cat->{default_form};
-        my @nodes = model->Rules->all_nodes( id_rule=>$cat->{default_form} );
+        my @nodes;
+        #Do not fail if a category has been imported but the rule does not exist
+        try {
+            @nodes = model->Rules->all_nodes( id_rule=>$cat->{default_form} );
+        };
+        next if !@nodes;
         @nodes = grep { $_->{key} =~ /^(fieldlet|dashlet)/ } @nodes;
         @nodes = map { 
             $$_{category_name} = $cat->{name};
@@ -3427,7 +3432,6 @@ sub get_topics_mdb {
             push @mids_in, $self->run_query_builder($query,$where,$username, build_query=>1);
         }
         $where->{mid} = mdb->in( @mids_in ) if @mids_in; 
-
         _throw _loc('Missing username') if !$username;
 
         Baseliner::Model::Permissions->new->build_project_security( $where, $username );
