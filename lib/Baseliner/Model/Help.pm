@@ -29,7 +29,7 @@ sub build_doc_tree {
         while( my $dir_or_file = $docs_root->next ) {
             my $name = $dir_or_file->basename;
             my $rel  = $dir_or_file->relative($opts->{feature_root});  # always to main root, be it Clarive's or feature's
-            my $dir_markdown = "user_lang/".$dir_or_file->basename . '.markdown';
+            my $dir_markdown = $dir_or_file->basename . '.markdown';
             next if $name =~ /^\./; 
             if( $dir_or_file->is_dir ) {
                 my @children = $self->build_doc_tree( $opts, $dir_or_file ); 
