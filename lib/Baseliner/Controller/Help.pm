@@ -15,9 +15,8 @@ sub docs_tree : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $query = $p->{query};
-
-    my @tree = $self->_build_help->build_doc_tree({ query=>$query }, $self->_build_help->docs_dirs($c) );
-
+    my $user_lang = ci->user->find_one({name=>$c->username})->{language_pref} // config_get('config.user.global')->{language};
+    my @tree = $self->_build_help->build_doc_tree({ query=>$query, user_lang => $user_lang }, $self->_build_help->docs_dirs($user_lang) );
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }

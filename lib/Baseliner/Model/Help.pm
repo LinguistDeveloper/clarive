@@ -10,14 +10,16 @@ use Baseliner::Utils qw(_array _load _throw _dump _loc _fail _log _warn _error _
 
 sub docs_dirs {
     my $self = shift;
-    my @feature_dirs = grep { -d } map { _dir($_->path,'docs') } _array(Clarive->features->list);
-    return Clarive->app->path_to('docs'), @feature_dirs; 
+    my ($user_lang) = @_;
+    my @feature_dirs = grep { -d } map { _dir($_->path,'docs/'.$user_lang) } _array(Clarive->features->list);
+    return Clarive->app->path_to('docs/'.$user_lang), @feature_dirs; 
 }
 
 sub build_doc_tree {
     my $self = shift;
     my ($opts, @roots) = @_;
     my $query = $opts->{query};
+    my $user_lang = $opts->{user_lang};
     
     my @tree;
     for my $docs_root ( @roots ) {
@@ -27,7 +29,7 @@ sub build_doc_tree {
         while( my $dir_or_file = $docs_root->next ) {
             my $name = $dir_or_file->basename;
             my $rel  = $dir_or_file->relative($opts->{feature_root});  # always to main root, be it Clarive's or feature's
-            my $dir_markdown = $dir_or_file->basename . '.markdown';
+            my $dir_markdown = "user_lang/".$dir_or_file->basename . '.markdown';
             next if $name =~ /^\./; 
             if( $dir_or_file->is_dir ) {
                 my @children = $self->build_doc_tree( $opts, $dir_or_file ); 
@@ -42,7 +44,7 @@ sub build_doc_tree {
                         expanded => \1,
                         index => $data->{index},
                         icon => $icon,
-                        data => { path=>"$rel" },
+                        data => { path=>"$user_lang/$rel" },
                         children => \@children,
                         text=> $data->{title}, 
                     }
@@ -51,7 +53,7 @@ sub build_doc_tree {
                         leaf => \0, 
                         expanded => \1,
                         icon => '/static/images/icons/catalog-folder.png',
-                        data => { path=>"$rel" },
+                        data => { path=>"$user_lang/$rel" },
                         children => \@children,
                         text=> $name, 
                     }
@@ -71,7 +73,7 @@ sub build_doc_tree {
             push @tree, { 
                 leaf => \1, 
                 icon => $icon,
-                data => { path=>$doc->{rel} },
+                data => { path=>"$user_lang/".$doc->{rel} },
                 search_results => {
                     found => $doc->{found},
                     matches => $doc->{matches},
