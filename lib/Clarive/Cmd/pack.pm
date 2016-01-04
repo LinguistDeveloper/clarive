@@ -8,8 +8,8 @@ use File::Spec;
 
 our $CAPTION = 'Pack';
 
-has os   => qw(is rw isa Str required 1);
-has arch => qw(is rw isa Str required 1);
+has os   => qw(is rw isa Str);
+has arch => qw(is rw isa Str);
 has
   version => qw(is rw isa Str lazy 1 default),
   sub {
@@ -20,9 +20,33 @@ has
 
 sub run { &run_dist }
 
+sub run_source {
+    my $self = shift;
+    my (%opts) = @_;
+
+    my $dist = sprintf 'clarive_%s', $self->version;
+    my $archive = "$dist.tar.gz";
+
+    my $cmd = sprintf 'git archive --format=tar --prefix=%s HEAD | gzip > %s', $dist, $archive;
+
+    warn "Packing $archive...\n";
+    system($cmd);
+
+    if ( -f $archive ) {
+        print $archive, "\n";
+        exit 0;
+    }
+    else {
+        exit 1;
+    }
+}
+
 sub run_dist {
     my $self = shift;
     my (%opts) = @_;
+
+    die 'os required'   unless $self->os;
+    die 'arch required' unless $self->arch;
 
     my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
     my $archive = "$dist.tar.gz";
@@ -32,16 +56,16 @@ sub run_dist {
     my $destdir = "/tmp/";
     mkdir $destdir;
 
-    my $archive_path = File::Spec->catfile($destdir, $archive);
+    my $archive_path = File::Spec->catfile( $destdir, $archive );
     unlink $archive_path;
 
-    my @sources = ("$base/local", "$base/clarive");
+    my @sources = ( "$base/local", "$base/clarive" );
     my $cmd = sprintf 'tar czf %s ', $archive_path;
     $cmd .= " $_" for @sources;
 
     system($cmd);
 
-    if (-f $archive_path) {
+    if ( -f $archive_path ) {
         print $archive_path, "\n";
         exit 0;
     }
