@@ -38,7 +38,11 @@ elif [ "$1" == "stew" ]; then
     CMD=$1
     shift
 
-    stew $CMD --repo ~/work/clarive-stew --base $CLARIVE_BASE "$@"
+    stew $CMD --repo http://sources.clarive.com --base $CLARIVE_BASE "$@"
+elif [ "$1" == "bootstrap" ]; then
+    shift
+
+    cla-bootstrap "$@"
 else
     $PERL $BINDIR/cla-cmd "$@"
 fi
