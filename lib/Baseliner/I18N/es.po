@@ -34,6 +34,21 @@ msgstr "D d/m/Y h:i:s"
 msgid "ci:bl"
 msgstr "Entorno"
 
+msgid "Invalid value. Use only 'a-z' and '_'"
+msgstr "Valor no válido. Use sólo 'a-z' y '_'"
+
+msgid "Select rule to export first"
+msgstr "Seleccione primero una regla que exportar"
+
+msgid "Select rows first"
+msgstr "Seleccione primero la fila"
+
+msgid "Name assignment"
+msgstr "Asignar nombre"
+
+msgid "Field with this id already exists"
+msgstr "Ya existe un campo con este id"
+
 msgid "Monday"
 msgstr "Lunes"
 
@@ -6960,6 +6975,9 @@ msgstr "Importar YAML"
 
 msgid "Edit Rule"
 msgstr "Editar regla"
+
+msgid "Imported rule: %1"
+msgstr "Importada la regla: %1"
 
 msgid "job chain: %1"
 msgstr "cadena de pase: %1"

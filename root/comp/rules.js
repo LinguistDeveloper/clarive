@@ -1026,7 +1026,7 @@
                     validator: function(val) {
                         var rv = Baseliner.validate_id(val);
                         if (!rv) {
-                            return "Invalid value. Use only 'a-z' and '_'"
+                            return _loc("Invalid value. Use only 'a-z' and '_'")
                         }
 
                         var exists = false;
@@ -1041,7 +1041,7 @@
                             return true;
                         }
 
-                        return 'Field with this id already exists';
+                        return _loc('Field with this id already exists');
                     }
                 },
             ]
