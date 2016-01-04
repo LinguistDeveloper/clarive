@@ -27,7 +27,7 @@ sub run_source {
     my $dist = sprintf 'clarive_%s', $self->version;
     my $archive = "$dist.tar.gz";
 
-    my $cmd = sprintf 'git archive --format=tar --prefix=%s HEAD | gzip > %s', $dist, $archive;
+    my $cmd = sprintf 'git archive --format=tar --prefix=%s/ HEAD | gzip > %s', $dist, $archive;
 
     warn "Packing $archive...\n";
     system($cmd);
