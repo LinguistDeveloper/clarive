@@ -2259,12 +2259,18 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         
         var node_data1 = n1.attributes.data;
         var node_data2 = n2.attributes.data;
+        var favorite = n1.attributes.id_favorite && n2.attributes.id_favorite && n2.attributes.id_folder;
         if( node_data1 == undefined ) node_data1={};
         if( node_data2 == undefined ) return false;
         if( node_data2.on_drop != undefined ) {
             var on_drop = node_data2.on_drop;
             if( on_drop.url != undefined ) {
                 var p = { node1: node_data1, node2: node_data2, id_file: node_data1.id_file  };
+                if(favorite){
+                    p.id_favorite= n1.attributes.id_favorite;
+                    p.favorite_folder= n2.attributes.id_favorite;
+                    p.id_folder= n2.attributes.id_folder;
+                }
                 if( n2.parentNode && n2.parentNode.attributes.data ) 
                     p.id_project = n2.parentNode.attributes.data.id_project
                         
@@ -2279,6 +2285,12 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                             Baseliner.message( _('Drop'), res.msg );
                             //Ext.Msg.alert( _('Error'), res.msg );
                         }
+                    }
+                    if(favorite){
+                        var is = n2.isExpanded();
+                        e.tree.getLoader().load( n2 );
+                        if( is ) n2.expand();
+                        n1.parentNode.removeChild( n1 );
                     }
                 });
                 return false;

@@ -1335,11 +1335,10 @@ sub tree_favorites : Local {
     my $provider;
     my $user_mid = $c->user_ci->{mid};
     $self->check_user_favorites($user_mid);
-    my $user = ci->find($user_mid);
+    my $user = ci->user->find_one($user_mid);
     my $root = length $p->{id_folder} 
-        ? $user->favorites->{ $p->{id_folder} }{contents}
-        : $user->favorites;
-   
+        ? $user->{favorites}->{ $p->{id_folder} }{contents}
+        : $user->{favorites};
     $root //= {};
     my $favs = [ map { $root->{$_} } sort { $a cmp $b }
         keys %$root ];
@@ -1377,29 +1376,43 @@ sub tree_workspaces : Local {
 
 
 sub favorite_add : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     $c->stash->{json} = try {
-        # create the favorite id 
-        my $id = time . '-' .  int rand(9999);
+
+        # create the favorite id
+        my $id = time . '-' . int rand(9999);
+
         # delete empty ones
         $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
+
         # if its a folder
-        if( length $p->{id_folder} ) {
-           $p->{id_folder} = $id; #_name_to_id delete $p->{id_folder};
-           $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
+        if ( length $p->{id_folder} ) {
+            #_name_to_id delete $p->{id_folder};
+            $p->{id_folder} = $id;
+            $p->{icon}      = '/static/images/icons/folder-collapsed.png';
+            $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
         }
+
         # decode data structures
         defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
+
         $p->{id_favorite} = $id;
-        my $user = $c->user_ci; 
-        $user->favorites->{$id} = $p; 
+
+        my $user = $c->user_ci;
+        $user->favorites->{$id} = $p;
         $user->save;
-        { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
-    } catch {
-        { success=>\0, msg=>shift() }
+
+        cache->remove( { d => "ci", mid => $user->{mid} } );
+
+        { success => \1, msg => _loc("Favorite added ok"), id_folder => $p->{id_folder} }
+    }
+    catch {
+        { success => \0, msg => shift() }
     };
-    $c->forward( 'View::JSON' );
+    $c->forward('View::JSON');
 }
 
 sub favorite_del : Local {
@@ -1415,6 +1428,7 @@ sub favorite_del : Local {
             delete $favs->{$_}{contents}{$id} for keys %$favs;  
         }
         $user->save;
+        cache->remove({ d=>"ci", mid=>$user->{mid} });
         { success=>\1, msg=>_loc("Favorite removed ok") }
     } catch {
         { success=>\0, msg=>shift() }
@@ -1443,22 +1457,28 @@ sub favorite_rename : Local {
 sub favorite_add_to_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
+    my $user_mid = $c->user_ci->{mid}; 
+    cache->remove({ d=>"ci", mid=>$user_mid });
     $c->stash->{json} = try {
+        my $favorite_folder= $p->{favorite_folder};
+        my $id_favorite= $p->{id_favorite};
+        my $id_folder= $p->{id_folder};
         # get data
-        my $user = $c->user_ci; 
-        my $d = $user->favorites->{ $p->{id_folder} }; 
-        _fail _loc "Not found: %1", $p->{id_folder} unless defined $d; 
+        my $user = ci->new($user_mid);
+        my $d = $user->favorites->{ $id_folder }; 
+        _fail _loc "Not found: %1", $id_folder unless defined $d; 
         $d->{contents} //= {};
         # delete old
-        my $fav = delete $user->favorites->{ $p->{id_favorite} }; 
+        my $fav = delete $user->favorites->{ $id_favorite}; 
         # set new 
-        $d->{favorite_folder} = $p->{id_folder};
-        $d->{contents}{ $p->{id_favorite} } = $fav; 
+        $d->{favorite_folder} = $id_folder;
+        $d->{contents}{ $id_favorite} = $fav; 
         $user->save;
         { success=>\1, msg=>_loc("Favorite moved ok") }
     } catch {
         { success=>\0, msg=>shift() }
     };
+    cache->remove({ d=>"ci", mid=>$user_mid });
     $c->forward( 'View::JSON' );
 }
 
