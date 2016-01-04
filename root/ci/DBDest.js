@@ -24,7 +24,7 @@
                 Ext.apply({ dataIndex:'port', header: _('Port') }, ta() ),
                 Ext.apply({ dataIndex: 'service_name', header:_('Service Name') }, ta() ),
                 Ext.apply({ dataIndex:'scheme', header:_('Scheme') }, ta() ),
-                Ext.apply({ dataIndex:'rdbms', header:_('Type') }, cb({ default_value:'Oracle', data: [ ['Oracle',_('Oracle')], ['MySQL',_('MySQL')], ['Sybase',_('Sybase')] ]}) ),
+                Ext.apply({ dataIndex:'rdbms', header:_('Type') }, cb({ default_value:'Oracle', data: [ ['Oracle',_('Oracle')], ['MySQL',_('MySQL')], ['SQLServer',_('SQLServer')], ['Sybase',_('Sybase')] ]}) ),
                 Ext.apply({ dataIndex: 'connect_string', header:'Conection String' }, tf() )
             ],
             viewConfig: { forceFit: true }
