@@ -43,6 +43,7 @@ sub _build_comm {
     my $comm = Baseliner::Comm::Email->new(@_);
 
     $comm = Test::MonkeyMock->new($comm);
+    $comm->mock( _init_connection    => sub { } );
     $comm->mock( _send               => sub { } );
     $comm->mock( _path_to_about_icon => sub { 'root/static/images/about.png' } );
 
