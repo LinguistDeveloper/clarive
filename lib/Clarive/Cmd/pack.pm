@@ -60,7 +60,7 @@ sub run_dist {
     unlink $archive_path;
 
     my @sources = ( "$base/local", "$base/clarive" );
-    my $cmd = sprintf 'tar czf %s ', $archive_path;
+    my $cmd = sprintf q{tar --exclude 'build' -czf %s}, $archive_path;
     $cmd .= " $_" for @sources;
 
     system($cmd);
