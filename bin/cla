@@ -8,13 +8,13 @@ PERL="$LOCALDIR/bin/perl"
 if [ ! -e $PERL ]; then
     PERL=`which perl`
 fi
+export CLARIVE_BASE="$BINDIR/../../"
+export CLARIVE_HOME="$CLARIVE_BASE/clarive"
 export PATH="$BINDIR:$LOCALDIR/perl/bin:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
 
-export PERL5LIB="$LOCALDIR/perl/lib/perl5:$LOCALDIR/lib/perl5"
-export PERL_LOCAL_LIB_ROOT="$LOCALDIR/perl"
-export PERL_MB_OPT="--install_base "$LOCALDIR/perl""
-export PERL_MM_OPT="INSTALL_BASE=$LOCALDIR/perl"
+export PERL5LIB=""
+export PERL_LOCAL_LIB_ROOT=""
 
 export NODE_MODULES="$LOCALDIR/lib/node_modules"
 
@@ -26,6 +26,23 @@ if [ "$1" == "exec" ]; then
     fi
 
     "$@"
+elif [ "$1" == "cpanm" ]; then
+    shift
+
+    export PERL_MB_OPT="--installdirs site"
+    export PERL_MM_OPT="INSTALLDIRS=site"
+
+    cpanm --mirror-only --mirror http://cpan.clarive.com "$@"
+elif [ "$1" == "stew" ]; then
+    shift
+    CMD=$1
+    shift
+
+    stew $CMD --repo http://sources.clarive.com --base $CLARIVE_BASE "$@"
+elif [ "$1" == "bootstrap" ]; then
+    shift
+
+    cla-bootstrap "$@"
 else
     $PERL $BINDIR/cla-cmd "$@"
 fi
