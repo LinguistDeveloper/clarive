@@ -84,6 +84,8 @@ sub topic_categories_to_rules {
                     $fieldlet->{params}->{id_field} eq 'modified_on' || $fieldlet->{params}->{id_field} eq 'modified_by' ||
                     $fieldlet->{params}->{id_field} eq 'category' || $fieldlet->{params}->{id_field} eq 'labels' ||
                     $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' || 
+                    ($fieldlet->{params}->{id_field} eq 'description' && $fieldlet->{params}->{bd_field} eq 'description' &&
+                        $fieldlet->{params}->{hidden} eq '1' && $fieldlet->{params}->{name_field} eq 'Description') ||
                     $fieldlet->{params}->{id_field} eq 'moniker';
             foreach my $key (keys $fieldlet->{params}){
                 if($key eq '_html'){
