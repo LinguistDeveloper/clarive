@@ -2,14 +2,4 @@
 
 echo 'Installing dependencies...'
 
-bin/cla stew install libclarive-modules-perl git nginx
-
-while getopts "t" arg; do
-  case $arg in
-    t)
-      echo "Installing smoke tests"
-
-      bin/cla stew install nightwatch
-      ;;
-  esac
-done
+bin/cla stew install . "$@"
