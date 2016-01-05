@@ -6,6 +6,9 @@ libmodule-build-xsutil-perl
 libmodule-install-perl
 libmodule-runtime-perl
 
+# Command-line utilities
+liblinux-distribution-perl
+
 # Utils
 libalgorithm-c3-perl
 libalgorithm-diff-xs-perl

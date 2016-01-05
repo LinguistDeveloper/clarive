@@ -5,6 +5,7 @@ BEGIN { extends 'Clarive::Cmd' }
 
 use Cwd qw(getcwd);
 use File::Spec;
+use Linux::Distribution;
 
 our $CAPTION = 'Pack';
 
@@ -45,8 +46,33 @@ sub run_dist {
     my $self = shift;
     my (%opts) = @_;
 
+    if ( $^O =~ m/linux/i ) {
+        my $dist_name = Linux::Distribution::distribution_name() // 'generic';
+        my $dist_version = eval { Linux::Distribution::distribution_version() };
+
+        my $os = 'linux';
+
+        if ( $dist_version && $dist_version =~ m/^(\d+(?:\.\d+)?)/ ) {
+            $dist_version = $1;
+        }
+        else {
+            $dist_version = undef;
+        }
+        $os .= "-$dist_name";
+        $os .= "-$dist_version" if $dist_version;
+
+        my $arch;
+        chomp( $arch //= `uname -m` );
+        $arch = lc $arch;
+
+        $self->os($os);
+        $self->arch($arch);
+    }
+
     die 'os required'   unless $self->os;
     die 'arch required' unless $self->arch;
+
+    warn sprintf "Packing for %s-%s...\n", $self->os, $self->arch;
 
     my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
     my $archive = "$dist.tar.gz";
