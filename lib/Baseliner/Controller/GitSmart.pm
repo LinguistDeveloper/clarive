@@ -10,6 +10,7 @@ This controller manages all interagtions with git-http-backend
 
 =cut
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
@@ -165,38 +166,46 @@ sub git : Path('/git/') {
     _debug ">>> GIT SERVICE=$service";
     
     # parse request body, if any, to find the commit sha and branch (ref)
-    my $sha;
-    my $ref;
-    my $ref_prev;
     my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
 
-    my $text = $self->_get_text_line($c->req->body);
+    my $fh = $c->req->body;
 
-    if ($text) {
-        my ( $top, $com, $r ) = split / /, $text;
+    my @events;
+    while (1) {
+        read($fh, my $length, 4);
+        $length = hex $length;
 
-        if ( defined $com && $com =~ /^\w+$/ ) {
-            _debug "GIT TOP=$top";
-            _debug "GIT COMMIT SHA=$com";
-            _debug "GIT REF=$r" if $r || ( $r ||= '' );
+        last unless $length;
 
-            $sha = $com;
-            $ref = $r;
+        read($fh, my $text, $length);
 
-            _debug "GIT REF_PREV=$ref_prev";
-        }
+        last unless $text;
+
+        my ($old, $new, $ref) = split /[ \x00]/, $text;
+
+        push @events, {
+            ref => $ref,
+            old => $old,
+            new => $new,
+        };
 
         # check BL tags
-        if ($text =~ /refs\/tags\/($bls)/) {
+        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
             my $tag      = $1;
-            my $can_tags = Baseliner->model("Permissions")
-              ->user_has_action( username => $c->username, action => 'action.git.update_tags', bl => $tag );
-            if ( !$can_tags ) {
-                $self->process_error( $c, 'Push Error', _loc( 'Cannot update internal tag %1', $tag ) );
+            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                username => $c->username,
+                action   => 'action.git.update_tags',
+                bl       => $tag
+            );
+            if (!$can_tags) {
+                $self->process_error($c, 'Push Error',
+                    _loc('Cannot update internal tag %1', $tag));
                 return;
             }
         }
     }
+
+    seek $fh, 0, 0;
 
     # run cgi
     my ($cgi_msg,$cgi_ret) = ('',0);
@@ -220,7 +229,10 @@ sub git : Path('/git/') {
     }); 
 
     # now gather commit info and event it
-    $self->event_this($c,$sha,$fullpath,$ref,$ref_prev,$repo);
+    foreach my $event (@events) {
+        $self->event_this($c, $event->{new}, $fullpath, $event->{ref},
+            $event->{old}, $repo);
+    }
 }
 
 sub run_forked {
@@ -375,7 +387,7 @@ sub event_this {
             if ( $repo_id ) {
 
                 my $commit = $g->commit( $sha );
-                my $diff = $ref_prev eq 0 # ref_prev == 0 when it's a new repository
+                my $diff = $ref_prev eq ('0' x 40) # ref_prev == 0 when it's a new repository
                     ? _format_diff(  join "\n", $g->exec( 'show', $sha ) )
                     : _format_diff( join "\n", $g->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
                 _debug $diff;
@@ -413,25 +425,6 @@ sub event_this {
     } catch {
         _log "GIT: ERROR: Could not event git operation: " . shift();
     };
-}
-
-sub _get_text_line {
-    my $self = shift;
-    my ($fh) = @_;
-
-    # Git packet has the following format:
-    # SHA1 SHA2 REF \x00 BINARY DATA
-
-    # We set $/ to 0x00 which tells <> where the line ends
-    my $text = do { local $/ = "\x00"; <$fh> };
-
-    # Remove the null byte
-    chop $text;
-
-    # Reset fh
-    seek $fh, 0, 0;
-
-    return $text;
 }
 
 sub _format_diff {
