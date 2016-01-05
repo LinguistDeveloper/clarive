@@ -216,13 +216,7 @@ sub send {
         _throw _loc("Could not send email '$subject'. No recipients in TO or CC.\n");
     }
 
-    Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";
-
-    if ( $p{auth} ) {
-        MIME::Lite->send('smtp', $server, Timeout=>60, AuthUser=>$p{user}, AuthPass=>$p{password});  ## a veces hay que comentar esta línea
-    } else {
-        MIME::Lite->send('smtp', $server, Timeout=>60);  ## a veces hay que comentar esta línea
-    }
+    $self->_init_connection($server, %p);
 
     _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
@@ -297,6 +291,19 @@ sub _path_to_about_icon {
 
     # TODO: Baseliner should be removed from here
     return '' . Baseliner->path_to( 'root', 'static/images/about.png' );
+}
+
+sub _init_connection {
+    my $self = shift;
+    my ($server, %p) = @_;
+
+    Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";
+
+    if ( $p{auth} ) {
+        MIME::Lite->send('smtp', $server, Timeout=>60, AuthUser=>$p{user}, AuthPass=>$p{password});  ## a veces hay que comentar esta línea
+    } else {
+        MIME::Lite->send('smtp', $server, Timeout=>60);  ## a veces hay que comentar esta línea
+    }
 }
 
 sub _send {
