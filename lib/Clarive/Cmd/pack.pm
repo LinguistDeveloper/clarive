@@ -46,7 +46,7 @@ sub run_dist {
     my $self = shift;
     my (%opts) = @_;
 
-    if ( $^O =~ m/linux/i ) {
+    if ( !$self->os && $^O =~ m/linux/i ) {
         my $dist_name = Linux::Distribution::distribution_name() // 'generic';
         my $dist_version = eval { Linux::Distribution::distribution_version() };
 
@@ -61,11 +61,14 @@ sub run_dist {
         $os .= "-$dist_name";
         $os .= "-$dist_version" if $dist_version;
 
+        $self->os($os);
+    }
+
+    if (!$self->arch) {
         my $arch;
         chomp( $arch //= `uname -m` );
         $arch = lc $arch;
 
-        $self->os($os);
         $self->arch($arch);
     }
 
