@@ -22,6 +22,23 @@ subtest 'builds correct email' => sub {
     like $msg_string, qr/To: you\@localhost/;
 };
 
+subtest 'builds correct email with several recipients' => sub {
+    my $comm = _build_comm();
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost,foo@bar'
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    my $msg_string = $msg->as_string;
+
+    like $msg_string, qr/To: you\@localhost,foo\@bar/;
+};
+
 subtest 'builds correct email with unicode' => sub {
     my $comm = _build_comm();
 
