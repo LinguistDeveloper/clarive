@@ -1,6 +1,5 @@
 (function() {
     var default_page_size = 30;
-
     var hm = function() {
         new Date(Date.now()).format('H:i:s')
     }
@@ -117,6 +116,59 @@
                     }
                 }
             );
+        }
+    };
+
+    var run_schedule_handler = function() {
+        var sm = grid.getSelectionModel();
+        if (sm.hasSelection()) {
+            var r = sm.getSelected();
+            Baseliner.ajaxEval('/scheduler/run_schedule', {
+                    id: r.data.id
+                },
+                function(response) {
+                    if (response.success) {
+                        Baseliner.message(_('SUCCESS'), _('Scheduled to run now'));
+                        store.load({
+                            params: {
+                                limit: default_page_size
+                            }
+                        });
+                    } else {
+                        Baseliner.message(_('ERROR'), _('Could not schedule task'));
+                    }
+                }
+            );
+
+        } else {
+            alert(_('Select a row'));
+        }
+    };
+
+    var kill_schedule_handler = function() {
+        var sm = grid.getSelectionModel();
+        if (sm.hasSelection()) {
+            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text) {
+                if (btn == 'yes') {
+                    var r = sm.getSelected();
+                    Baseliner.ajaxEval('/scheduler/kill_schedule', {
+                            id: r.data.id
+                        },
+                        function(response) {
+                            if (response.success) {
+                                Baseliner.message(_('SUCCESS'), _('Task killed'));
+                                store.load({
+                                    params: {
+                                        limit: default_page_size
+                                    }
+                                });
+                            } else {
+                                Baseliner.message(_('ERROR'), _('Could not kill task'));
+                            }
+                        }
+                    );
+                }
+            });
         }
     };
 
@@ -505,59 +557,6 @@
                     }
                 }
             );
-        }
-    };
-
-    var run_schedule_handler = function() {
-        var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            var r = sm.getSelected();
-            Baseliner.ajaxEval('/scheduler/run_schedule', {
-                    id: r.data.id
-                },
-                function(response) {
-                    if (response.success) {
-                        Baseliner.message(_('SUCCESS'), _('Scheduled to run now'));
-                        store.load({
-                            params: {
-                                limit: default_page_size
-                            }
-                        });
-                    } else {
-                        Baseliner.message(_('ERROR'), _('Could not schedule task'));
-                    }
-                }
-            );
-
-        } else {
-            alert(_('Select a row'));
-        }
-    };
-
-    var kill_schedule_handler = function() {
-        var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text) {
-                if (btn == 'yes') {
-                    var r = sm.getSelected();
-                    Baseliner.ajaxEval('/scheduler/kill_schedule', {
-                            id: r.data.id
-                        },
-                        function(response) {
-                            if (response.success) {
-                                Baseliner.message(_('SUCCESS'), _('Task killed'));
-                                store.load({
-                                    params: {
-                                        limit: default_page_size
-                                    }
-                                });
-                            } else {
-                                Baseliner.message(_('ERROR'), _('Could not kill task'));
-                            }
-                        }
-                    );
-                }
-            });
         }
     };
 
