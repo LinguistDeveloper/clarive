@@ -12,6 +12,39 @@ use TestGit;
 use Baseliner::Utils qw(_load);
 use_ok 'Baseliner::Controller::GitSmart';
 
+subtest 'git: ignores requests with empty body' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository(name => 'Repo');
+    my $sha = TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [$repo->mid]
+    );
+
+    my $controller = _build_controller();
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => {params => {}, body => ''},
+        stash    => $stash
+    );
+
+    $controller->git($c, '.git');
+
+    my @events = mdb->event->find({event_key => 'event.repository.update'})->all;
+    is scalar @events, 0;
+};
+
 subtest 'git: creates correct event on first push' => sub {
     _setup();
 

@@ -171,41 +171,43 @@ sub git : Path('/git/') {
     my $fh = $c->req->body;
 
     my @events;
-    while (1) {
-        read($fh, my $length, 4);
-        $length = hex $length;
+    if ($fh && ref $fh) {
+        while (1) {
+            read($fh, my $length, 4);
+            $length = hex $length;
 
-        last unless $length;
+            last unless $length;
 
-        read($fh, my $text, $length);
+            read($fh, my $text, $length);
 
-        last unless $text;
+            last unless $text;
 
-        my ($old, $new, $ref) = split /[ \x00]/, $text;
+            my ($old, $new, $ref) = split /[ \x00]/, $text;
 
-        push @events, {
-            ref => $ref,
-            old => $old,
-            new => $new,
-        };
+            push @events, {
+                ref => $ref,
+                old => $old,
+                new => $new,
+            };
 
-        # check BL tags
-        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-            my $tag      = $1;
-            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                username => $c->username,
-                action   => 'action.git.update_tags',
-                bl       => $tag
-            );
-            if (!$can_tags) {
-                $self->process_error($c, 'Push Error',
-                    _loc('Cannot update internal tag %1', $tag));
-                return;
+            # check BL tags
+            if ($bls && $ref =~ /refs\/tags\/($bls)/) {
+                my $tag      = $1;
+                my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                    username => $c->username,
+                    action   => 'action.git.update_tags',
+                    bl       => $tag
+                );
+                if (!$can_tags) {
+                    $self->process_error($c, 'Push Error',
+                        _loc('Cannot update internal tag %1', $tag));
+                    return;
+                }
             }
         }
-    }
 
-    seek $fh, 0, 0;
+        seek $fh, 0, 0;
+    }
 
     # run cgi
     my ($cgi_msg,$cgi_ret) = ('',0);
