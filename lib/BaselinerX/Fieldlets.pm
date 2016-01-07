@@ -293,7 +293,8 @@ register 'fieldlet.system.status_new' => {
     framed      => 1,
     origin      => 'system',
     relation    => 'status',
-    meta_type   => 'status'
+    meta_type   => 'status',
+    section     => 'body'
 };
 
 register 'fieldlet.system.moniker' => {
@@ -317,7 +318,8 @@ register 'fieldlet.system.title' => {
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/title.js',
     icon        => '/static/images/icons/lock_small.png',
-    origin      => 'system'
+    origin      => 'system',
+    section     => 'head'
 };
 
 register 'fieldlet.system.labels' => {

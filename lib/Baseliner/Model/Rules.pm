@@ -59,6 +59,9 @@ sub init_fieldlets_tasks {
         $node->{data}{hidden} = 0;
         $node->{data}{allowBlank} = 0;
         $node->{data}{editable} = 1;
+        $node->{data}{active} = 1;
+        $node->{data}{colspan} = 12;
+        $node->{data}{hide_from_edit_cb} = '0';
         $node->{ts} = mdb->ts;
         # $node->{who} = 'root'; # TODO get user from $c->username
         $node 
@@ -102,20 +105,29 @@ sub build_tree {
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
     _fail _loc 'Could not find rule %1', $id_rule unless $rule;
     my $rule_tree_json = $rule->{rule_tree};
+
     if( $rule_tree_json ) {
         my $rule_tree = Util->_decode_json( $rule_tree_json );
         _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
         my @tf = $self->tree_format( @$rule_tree );
         return @tf;
     } else {
+        my @tf;
         if( $rule->{rule_type} eq 'pipeline' ) {
-            return $self->init_job_tasks;
+            @tf = $self->init_job_tasks;
         }
         if ( $rule->{rule_type} eq 'form') {
-            return $self->init_fieldlets_tasks;
+            @tf = $self->init_fieldlets_tasks;
         }
-        _warn _loc 'Rule tree is empty for rule %1', $id_rule;
-        return ();
+        $self->save_rule(
+            id_rule    => $id_rule,
+            stmts_json => Util->_encode_json(\@tf),
+            username   => $p{username} || 'clarive',
+            was        => $p{ts} || ''._ts
+        );
+
+        # _warn _loc 'Rule tree is empty for rule %1', $id_rule;
+        return @tf;
     }
 }
 
@@ -1319,7 +1331,40 @@ sub delete_rule_from_folder {
     mdb->rule->update({id=>$rule_id}, {'$set'=>{folders=>@new_folders}});
 }
 
+sub save_rule {
+    my ($self,%p)=@_;
+
+    my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
+    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
+
+    my $ts_modified = 0;
+    my $old_timestamp = ''.$p{old_ts};
+    my $actual_timestamp = $p{ts} || $doc->{ts};
+    my %other_options;
+    defined $p{$_} and $other_options{$_}=$p{$_} for qw(detected_errors ignore_dsl_errors);
+    my $previous_user = $doc->{username};
+    if (!$actual_timestamp and !$previous_user){
+        $actual_timestamp = $old_timestamp;
+        $previous_user = $p{username};
+        mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } ); 
+    }
+    $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
+
+    $old_timestamp = $p{ts} // mdb->ts;
+    mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
+    # now, version
+    # check if collection exists
+    # if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+    #     mdb->create_capped( 'rule_version' );
+    # }
+
+    delete $doc->{_id};
+    mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
+    { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
+
+}
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+

@@ -19,7 +19,10 @@ params:
     var df = meta.format || 'Y-m-d';
 
     var value = data ? data[meta.id_field]: ''; 
-    if( value == '' && meta.default_today && (meta.default_today == 'true' || meta.default_today == 'on') ) value = Cla.user_date(new Date(),df);
+
+    if( !value && meta.default_today && (meta.default_today == 'true' || meta.default_today == 'on') ) {
+        value = new Date();
+    };
 	
     return [
 		{

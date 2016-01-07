@@ -519,7 +519,7 @@
                     handler: annotation
                 },
                 button_resume,
-% if( $user_action->{'action.admin.default'} ) {
+% if( $user_action->{'action.job.advanced_menu'} ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
                     icon: '/static/images/icons/password.png', 
