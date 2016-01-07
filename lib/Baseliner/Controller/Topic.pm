@@ -33,7 +33,9 @@ register 'registor.menu.topics' => {
                 label    => qq[<span id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></span>],
                 title    => qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
                 index    => $seq++,
-                actions  => ["action.topics.$id.view"],
+                actions  => ["action.topics.$id.view","action.topics.$id.create","action.topics.$id.edit",
+                "action.topics.$id.delete","action.topics.$id.comment","action.topics.$id.jobs",
+                "action.topics.$id.activity"],
                 url_comp => "/topic/grid?category_id=" . $data->{id},
                 #icon     => '/static/images/icons/topic.png',
                 tab_icon => '/static/images/icons/topic.png'
