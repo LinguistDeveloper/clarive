@@ -59,8 +59,8 @@ sub git : Path('/git/') {
     # normalize paths
     my $fullpath = _file( $home, $repo ); # simulate it's a file
     $repo = $fullpath->basename;  # should be something.git
-    my $project = $args[0];
-    my $reponame = $args[1];
+    my $project = $args[0] // '';
+    my $reponame = $args[1] // '';
     my $lastarg = $args[-1];
     $c->stash->{git_lastarg} = $lastarg;
     my $repopath = join('/', @args );
