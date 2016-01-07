@@ -68,7 +68,7 @@ sub run_once {
 
     my $scheduler = $self->_build_scheduler;
 
-    my @tasks = $scheduler->tasks_list( status => 'IDLE' );
+    my @tasks = $scheduler->tasks_list( );
 
     _log "Number of tasks to dispatch: " . @tasks;
 
