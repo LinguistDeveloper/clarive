@@ -23,9 +23,17 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     },
     redraw: function(){
         var self = this;
-        Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth: self.depth, condition: self.condition,
-                        mode:self.mode, unique:self.unique, include_cl: self.include_cl, exclude_cl: self.exclude_cl }, function(res){
-];
+        Baseliner.ajaxEval('/ci/json_tree', { 
+            mid:self.mid, 
+            direction: self.direction, 
+            depth: self.depth, 
+            condition: self.condition,
+            mode:self.mode, 
+            unique:self.unique, 
+            include_cl: self.include_cl, 
+            exclude_cl: 
+            self.exclude_cl 
+        }, function(res){
             
             var link = function(source){
                 Ext.each( source.children, function(chi){
