@@ -25,6 +25,7 @@ sub commit {
     my $class = shift;
     my ( $repo, %params ) = @_;
 
+    $STORE{"$repo"} //= 30 * 24 * 3600;
     $STORE{"$repo"}++;
 
     my $timestamp = $STORE{"$repo"};
