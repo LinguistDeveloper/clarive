@@ -68,8 +68,6 @@ liblucyx-simple-result-hash-perl
 libtext-markdown-perl
 libtext-template-perl
 libtext-textile-perl
-libhtml-mason-perl
-libtemplate-perl
 
 # Cache
 libcache-fastmmap-perl
@@ -96,8 +94,6 @@ libmro-compat-perl
 libclass-c3-xs-perl
 libmoose-perl
 libmoose-autobox-perl
-libmoose-exporter-perl
-libmoose-role-perl
 libmoosex-attributehelpers-perl
 libmoosex-classattribute-perl
 libmoosex-methodattributes-perl
@@ -131,7 +127,6 @@ libgit-wrapper-perl
 # Encodings
 libencode-perl
 libencode-detect-perl
-libencode-guess-perl
 libutf8-all-perl
 libconvert-ebcdic-perl
 
@@ -140,8 +135,8 @@ libsereal-decoder-perl
 libsereal-encoder-perl
 libjson-perl
 libjson-xs-perl
-libxml-compile-soap-daemon-cgi-perl
-libxml-compile-soap-util-perl
+libxml-compile-soap-perl
+libxml-compile-soap-daemon-perl
 libxml-compile-wsdl11-perl
 libxml-smart-perl
 libyaml-perl
@@ -161,11 +156,8 @@ libconfig-tiny-perl
 # Net/HTTP
 nginx
 libcgi-perl
-libcgi-carp-perl
-libcgi-util-perl
 libfcgi-perl
 libnet-daemon-perl
-libnet-http-nb-perl
 libnet-openssh-perl
 libnet-scp-perl
 libnet-ssh-perl
@@ -200,7 +192,6 @@ libcatalyst-plugin-singleton-perl
 libcatalyst-plugin-stacktrace-perl
 libcatalyst-plugin-static-simple-perl
 libcatalyst-plugin-unicode-perl
-libcatalyst-plugin-unicode-encoding-perl
 libcatalyst-view-json-perl
 libcatalyst-view-mason-perl
 libcatalyst-view-tt-perl
@@ -223,4 +214,4 @@ libtest-deep-perl
 libtest-tempdir-tiny-perl
 
 # utils
-libapp-ack-perl
+liback-perl
