@@ -5,7 +5,6 @@ BEGIN { extends 'Clarive::Cmd' }
 
 use Cwd qw(getcwd);
 use File::Spec;
-use Linux::Distribution;
 
 our $CAPTION = 'Pack';
 
@@ -47,6 +46,7 @@ sub run_dist {
     my (%opts) = @_;
 
     if ( !$self->os && $^O =~ m/linux/i ) {
+        require Linux::Distribution;
         my $dist_name = Linux::Distribution::distribution_name() // 'generic';
         my $dist_version = eval { Linux::Distribution::distribution_version() };
 
