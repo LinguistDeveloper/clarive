@@ -12,6 +12,39 @@ use TestGit;
 use Baseliner::Utils qw(_load);
 use_ok 'Baseliner::Controller::GitSmart';
 
+subtest 'git: ignores requests with empty body' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository(name => 'Repo');
+    my $sha = TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [$repo->mid]
+    );
+
+    my $controller = _build_controller();
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => {params => {}, body => ''},
+        stash    => $stash
+    );
+
+    $controller->git($c, '.git');
+
+    my @events = mdb->event->find({event_key => 'event.repository.update'})->all;
+    is scalar @events, 0;
+};
+
 subtest 'git: creates correct event on first push' => sub {
     _setup();
 
@@ -33,7 +66,7 @@ subtest 'git: creates correct event on first push' => sub {
         }
     };
 
-    my $body = "0090"
+    my $body = "0094"
       . "0000000000000000000000000000000000000000 $sha refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
       . "0000";
     open my $fh, '<', \$body;
@@ -81,7 +114,7 @@ subtest 'git: creates correct event on push' => sub {
         }
     };
 
-    my $body = "0090"
+    my $body = "0094"
       . "$sha $sha2 refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
       . "0000";
     open my $fh, '<', \$body;
@@ -132,9 +165,9 @@ subtest 'git: creates correct event on push several references' => sub {
     };
 
     my $body =
-        "0090"
+        "0094"
       . "0000000000000000000000000000000000000000 $master_sha refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
-      . "0060"
+      . "0064"
       . "0000000000000000000000000000000000000000 $new_sha refs/heads/new"
       . "0000";
     open my $fh, '<', \$body;
@@ -187,7 +220,7 @@ subtest 'git: creates correct event on push tag' => sub {
     };
 
     my $body =
-        "0090"
+        "0094"
       . "0000000000000000000000000000000000000000 $sha refs/tags/TAG\x00 report-status side-band-64k agent=git/2.6.4"
       . "0000";
     open my $fh, '<', \$body;
@@ -236,7 +269,7 @@ subtest 'git: forbids pushing system tags' => sub {
     TestUtils->create_ci('bl', bl => 'TAG');
 
     my $body =
-        "0090"
+        "0094"
       . "0000000000000000000000000000000000000000 $sha refs/tags/TAG\x00 report-status side-band-64k agent=git/2.6.4"
       . "0000";
     open my $fh, '<', \$body;
@@ -308,7 +341,7 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
     );
 
     my $body =
-        "0090"
+        "0094"
       . "0000000000000000000000000000000000000000 $sha refs/tags/TAG\x00 report-status side-band-64k agent=git/2.6.4"
       . "0000";
     open my $fh, '<', \$body;

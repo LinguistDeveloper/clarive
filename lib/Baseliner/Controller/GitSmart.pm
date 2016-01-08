@@ -59,8 +59,8 @@ sub git : Path('/git/') {
     # normalize paths
     my $fullpath = _file( $home, $repo ); # simulate it's a file
     $repo = $fullpath->basename;  # should be something.git
-    my $project = $args[0];
-    my $reponame = $args[1];
+    my $project = $args[0] // '';
+    my $reponame = $args[1] // '';
     my $lastarg = $args[-1];
     $c->stash->{git_lastarg} = $lastarg;
     my $repopath = join('/', @args );
@@ -171,41 +171,47 @@ sub git : Path('/git/') {
     my $fh = $c->req->body;
 
     my @events;
-    while (1) {
-        read($fh, my $length, 4);
-        $length = hex $length;
+    if ($fh && ref $fh) {
+        while (1) {
+            read($fh, my $length, 4);
+            last unless $length =~ m/^[a-f0-9]+$/;
 
-        last unless $length;
+            $length = hex $length;
 
-        read($fh, my $text, $length);
+            last unless $length && $length > 4;
 
-        last unless $text;
+            $length -= 4;
 
-        my ($old, $new, $ref) = split /[ \x00]/, $text;
+            read($fh, my $text, $length);
 
-        push @events, {
-            ref => $ref,
-            old => $old,
-            new => $new,
-        };
+            last unless $text;
 
-        # check BL tags
-        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-            my $tag      = $1;
-            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                username => $c->username,
-                action   => 'action.git.update_tags',
-                bl       => $tag
-            );
-            if (!$can_tags) {
-                $self->process_error($c, 'Push Error',
-                    _loc('Cannot update internal tag %1', $tag));
-                return;
+            my ($old, $new, $ref) = split /[ \x00]/, $text;
+
+            push @events, {
+                ref => $ref,
+                old => $old,
+                new => $new,
+            };
+
+            # check BL tags
+            if ($bls && $ref =~ /refs\/tags\/($bls)/) {
+                my $tag      = $1;
+                my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                    username => $c->username,
+                    action   => 'action.git.update_tags',
+                    bl       => $tag
+                );
+                if (!$can_tags) {
+                    $self->process_error($c, 'Push Error',
+                        _loc('Cannot update internal tag %1', $tag));
+                    return;
+                }
             }
         }
-    }
 
-    seek $fh, 0, 0;
+        seek $fh, 0, 0;
+    }
 
     # run cgi
     my ($cgi_msg,$cgi_ret) = ('',0);
@@ -320,7 +326,7 @@ sub process_error {
     # client version parse
     require version;
     my ($git_ver) = $c->req->user_agent =~ /git\/([\d\.]+)/;
-    $git_ver =~ s/\.$//g; # ie. 2.1.0.GIT => 2.1.0.
+    $git_ver =~ s/\.$//g if $git_ver; # ie. 2.1.0.GIT => 2.1.0.
     $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
 
     my $service = $c->stash->{git_service}; 
