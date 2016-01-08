@@ -10,7 +10,7 @@ BEGIN { TestEnv->setup }
 
 use_ok 'Baseliner::Comm::Email';
 
-subtest 'builds correct email' => sub {
+subtest 'send: builds correct email' => sub {
     my $comm = _build_comm();
 
     $comm->send( from => 'me@localhost', subject => 'Hi there!', body => 'Hello', to => 'you@localhost' );
@@ -22,7 +22,7 @@ subtest 'builds correct email' => sub {
     like $msg_string, qr/To: you\@localhost/;
 };
 
-subtest 'builds correct email with several recipients' => sub {
+subtest 'send: builds correct email with several recipients' => sub {
     my $comm = _build_comm();
 
     $comm->send(
@@ -39,7 +39,7 @@ subtest 'builds correct email with several recipients' => sub {
     like $msg_string, qr/To: you\@localhost,foo\@bar/;
 };
 
-subtest 'builds correct email with unicode' => sub {
+subtest 'send: builds correct email with unicode' => sub {
     my $comm = _build_comm();
 
     $comm->send(

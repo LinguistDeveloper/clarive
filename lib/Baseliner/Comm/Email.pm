@@ -7,6 +7,7 @@ use Try::Tiny;
 use MIME::Base64 qw(encode_base64);
 use Compress::Zlib;
 use Encode ();
+use Baseliner::Model::Messaging;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
@@ -40,7 +41,7 @@ sub group_queue {
     $query{where}{'queue.carrier'} = 'email';
     $query{is_daemon} = '1';
 
-    my ($queue,$cnt) = Baseliner->model('Messaging')->transform(%query);
+    my ($queue,$cnt) = Baseliner::Model::Messaging->new->transform(%query);
 
     my @q = $self->filter_queue(_array $queue);
 
@@ -155,13 +156,13 @@ sub process_queue {
             );
             # need to deactivate the message before sending it
             for my $id ( _array $em->{id_list} ) {
-                Baseliner->model('Messaging')->delivered( id=>$id, result=>$result );
+                Baseliner::Model::Messaging->new->delivered( id=>$id, result=>$result );
             }
 
         } catch {
             my $error = shift;
             for my $id ( _array $em->{id_list} ) {
-                Baseliner->model('Messaging')->failed( id=>$id, result=>$error, max_attempts=>$config->{max_attempts} );
+                Baseliner::Model::Messaging->new->failed( id=>$id, result=>$error, max_attempts=>$config->{max_attempts} );
             }
             _log "Error enviando correo - $error";
         };
@@ -276,7 +277,7 @@ sub filter_queue {
             }else{
                 my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);    
                 if ($schedule_time lt $now) {
-                    Baseliner->model('Messaging')->send_schedule_mail(%$r);
+                    Baseliner::Model::Messaging->new->send_schedule_mail(%$r);
                     push (@q, $r);
                 }
             }
