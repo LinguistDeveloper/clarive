@@ -18,7 +18,7 @@ Baseliner.name_to_id = function( s ) {
 };
 
 Baseliner.validate_id = function( id ) {
-    var regexp = /^[a-z0-9_]+$/;
+    var regexp = /^[A-Za-z0-9_]+$/;
 
     var rv = regexp.test(id);
 
