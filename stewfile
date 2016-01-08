@@ -173,7 +173,7 @@ libnet-telnet-perl
 libhttp-daemon-perl
 libhttp-tiny-perl
 liblwp-protocol-https-perl
-liblibwww-perl
+liblibwww-perl-perl
 
 # Catalyst
 libcatalyst-runtime-perl
