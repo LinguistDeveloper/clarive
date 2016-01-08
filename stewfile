@@ -47,8 +47,6 @@ libregexp-grammars-perl
 libscalar-util-perl
 libsql-abstract-perl
 libsql-translator-perl
-libsql-translator-diff-perl
-libsql-translator-parser-oracle-perl
 libstring-crc32-perl
 libstring-shellquote-perl
 libterm-readkey-perl
