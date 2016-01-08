@@ -326,7 +326,7 @@ sub process_error {
     # client version parse
     require version;
     my ($git_ver) = $c->req->user_agent =~ /git\/([\d\.]+)/;
-    $git_ver =~ s/\.$//g; # ie. 2.1.0.GIT => 2.1.0.
+    $git_ver =~ s/\.$//g if $git_ver; # ie. 2.1.0.GIT => 2.1.0.
     $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
 
     my $service = $c->stash->{git_service}; 
