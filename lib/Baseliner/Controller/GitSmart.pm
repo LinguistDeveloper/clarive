@@ -174,9 +174,13 @@ sub git : Path('/git/') {
     if ($fh && ref $fh) {
         while (1) {
             read($fh, my $length, 4);
+            last unless $length =~ m/^[a-f0-9]+$/;
+
             $length = hex $length;
 
-            last unless $length;
+            last unless $length && $length > 4;
+
+            $length -= 4;
 
             read($fh, my $text, $length);
 
