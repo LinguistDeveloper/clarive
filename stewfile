@@ -62,7 +62,6 @@ libserver-starter-perl
 
 # Search
 liblucy-perl
-liblucy-simple-perl
 liblucyx-simple-result-hash-perl
 
 # Templates
