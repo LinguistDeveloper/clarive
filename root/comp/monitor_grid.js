@@ -957,7 +957,7 @@
                     title: _('Rerun'),
                     width: 400,
                     height: 200,
-                    bodyStyle:'background-color:#e0c080;padding: 10px',
+                    bodyStyle:'padding: 10px',
                     items: form_res
                 });
                 win_res.show();
