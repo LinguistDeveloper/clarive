@@ -214,7 +214,7 @@ liberror-perl
 libio-captureoutput-perl
 
 # testing
-libtest-more-perl
+libtest-simple-perl
 libtest-fatal-perl
 libtest-monkeymock-perl>=0.09
 libtest-mocksleep-perl
