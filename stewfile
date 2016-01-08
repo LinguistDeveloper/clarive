@@ -74,7 +74,6 @@ libtemplate-perl
 # Cache
 libcache-fastmmap-perl
 libchi-perl
-libchi-driver-fastmmap-perl
 libchi-driver-redis-perl
 
 # Identicons
