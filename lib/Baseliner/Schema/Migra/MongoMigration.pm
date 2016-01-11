@@ -223,6 +223,13 @@ sub topic_categories_to_rules {
             }
 
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
+                if ($data->{list_type} && $data->{list_type} eq 'grid') {
+                    $attributes->{key} = 'fieldlet.ci_grid'
+                }
+                else {
+                    $attributes->{key} = 'fieldlet.system.cis'
+                }
+
                 if ($data->{ci_class}){
                     my @ar = split (',', $data->{ci_class});
                     $data->{ci_class_box} = \@ar;
