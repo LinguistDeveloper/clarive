@@ -110,12 +110,22 @@ sub topic_categories_to_rules {
                   #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ; 
                   #next;
             }
-            #_log _dump $fieldlet;
+            # _log _dump $fieldlet;
             my $icon = $registers->{$reg_key} ? Baseliner::Core::Registry->get($registers->{$reg_key})->{icon} : '';
-
-            $data->{allowBlank} = exists $fieldlet->{allowBank} && (!$fieldlet->{allowBlank} || $fieldlet->{allowBlank} eq 'false') ? 0 : 1;
-            $data->{editable} = '1' if not $fieldlet->{editable};
-            $data->{hidden} = '0' if not $fieldlet->{hidden};
+            if ( exists $fieldlet->{params}->{allowBlank} ) {
+                if ($fieldlet->{params}->{allowBlank} eq 'false' || $fieldlet->{params}->{allowBlank} eq '0') {
+                    $data->{allowBlank} = 'false';
+                    $data->{mandatory_cb} = '1';
+                } else {
+                    $data->{allowBlank} = 'true';
+                    $data->{mandatory_cb} = '0';
+                }
+            } else {
+                $data->{allowBlank} = 'true';
+                $data->{mandatory_cb} = '0';
+            }
+            $data->{editable} = '1' if not $fieldlet->{params}->{editable};
+            $data->{hidden} = '0' if not $fieldlet->{params}->{hidden};
             
          
             $attributes->{active} = '1';
@@ -213,6 +223,15 @@ sub topic_categories_to_rules {
             }
 
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
+                if ($data->{list_type} && $data->{list_type} eq 'grid') {
+                    $attributes->{key} = 'fieldlet.ci_grid';
+                    $attributes->{icon} = '/static/images/icons/grid.png';
+                }
+                else {
+                    $attributes->{key} = 'fieldlet.system.cis';
+                    $attributes->{icon} = '/static/images/icons/combo_box.png';
+                }
+
                 if ($data->{ci_class}){
                     my @ar = split (',', $data->{ci_class});
                     $data->{ci_class_box} = \@ar;
@@ -233,6 +252,11 @@ sub topic_categories_to_rules {
             $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
+
+            if ( $attributes->{key} eq 'fieldlet.text' &&
+             (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/lock_small.png')) {
+                $attributes->{icon} = '/static/images/icons/field.png';
+            }
             
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
                 _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
