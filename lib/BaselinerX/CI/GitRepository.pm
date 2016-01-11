@@ -226,6 +226,8 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         for my $rev ( @revisions ) {
             my $sha = $rev->{sha};
 
+            $sha = $git->exec( 'rev-parse', $sha );
+
             try {
                 $git->exec( 'merge-base', '--is-ancestor', $sha, $dest);
             } catch {
