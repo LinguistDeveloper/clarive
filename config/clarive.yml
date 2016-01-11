@@ -179,41 +179,25 @@ baseliner:
 # Licensing - this is a default license for 5 users max
 #
 license:
-  end_date: 2015-12-31
+  end_date: 2016-12-31
   id: trial_customer
-  lic_data: AOgB0BGkI09DzdfLqC6oTCkDml4f3DqK4x6Ab3kX0AGytwPCEO/oFBEnDbbC46OUhA8dprJAJE5IOBfWjg6BK352IBFER+/DeJm2aDKcVulC2GT8+BtpagDBwGydbDBFOEzA
-  lic_key: BewxkdFBuW0ayXl4IUEGMWGuX8sToeA/gk1SeE7c5A5gSgvalkW+3yZaRTLevMaZVoLVY2Im7OGbVYa18zuwCZjxL5H3nY+7KXk+pN++3I2ssocsZDZ7X5tMCREhxUvrOXx+VBpbKAGdTrB46GV+/zPm7xKlYA5Y4HbyfGw6a1E=
+  lic_data: ipyBDBNsUO0ADKgF7DKJjTqCDauCJAszrASCPiWUEBUiL2/CKBUvrCmxZiADsuwAoDu6kasCMiR/MByA8syAcDdQyCfhSdlC+vGBUAIhLb1D2bLouCW5KPQCroL+IB7LqOyC
+  lic_key: RNlqzIYOc2UUCH1N53TBmq4cDJYNZ8x2/UuW5N5jrWxBqZE/kNi7OAdpktAg2an+oDclcvh/XK6z5dZVTPArAUqy9PhGPW9UY7EtCTlbU6hSZK6EGFhXUkLJ+Gbu49MlB6eQ9ilRPzBtEePCafdSQ0C44/DGJhAnsoglHM87gJo=
   name: Trial Customer
-  users: 5
-  private_key: '-----BEGIN RSA PRIVATE KEY-----
-
-    MIICXgIBAAKBgQDIAmKfmB6uJrJtRtyuNenHtQn1ZUnqEmvLayGF2NerE7J/nAVM
-
-    yEvPyexK9jox9QMTg9/ezT+11HBdBRPaR3dWoJOqtd9yd+rGWYpTp0FnjzBHWzKv
-
-    227lIUUBzGgySyO74Bk3kgErG/2RweA6vHQY3vMhwms46d+kzvkjgyaqWwIDAQAB
-
-    AoGBAJShoSS0aOhF/YZTiJ81lVtBX/sqoDkAI3bxT+IleG+7nYRTL2UV27C4f45d
-
-    WHXTe8u+zljF8jhvfGjD4zLstPMsJCV5Mf1bYCTS7f6fbMf2oIJBfDvf91cegHYO
-
-    0M6r13WRpEZ0DYCOnPL26MVmYEFNS368LkdXkR78JSR+OaXxAkEA8fZQNmQTofJp
-
-    QFEZNjMLdxZFx6HDo4cM6DkfKZyc8XmzJBP0cOWm1MZPUjXSdYPfggfBQV2kVjnC
-
-    /u9Vxs55ZwJBANOc+iEpsVWBRbZQUScPDoshpPfbU3RDsLSjcnIlvq8B4hVMC5Ec
-
-    wQgetBzzkKlkxZ4+FPh0EsOa/5FsNjIDyu0CQQCBdbG7OFaMyr/nyrx7lFopEICr
-
-    bHDZuPN9+LoksIgEZ4Ii5o5eLXHS3HwqV2PQvotC7lVHXQwFmogrkPDLG0Q3AkEA
-
-    xz5EXLku2T0wcCpLXqVUojd5Zk3B0/RwCoTimwti8NCrGDZTpbwXHBgcqi3ChVv2
-
-    nboCcLSJflcQTtI+bPUZOQJADeZIs7eMui+/4Kw5aippA/RN9iZwKGPOz8w+IIjM
-
-    Q5E4YL/dZKZ9Q1KruUwaqB30GBvLiZ9mwNbqk5d1pugjIQ==
-
+  private_key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIICXQIBAAKBgQDja91pwlAaqcn5qYQ6QUCP7KxHXu1qVUeK3I74sRP7AOZD/p2c
+    tz782xkps1BbdyKKu+zIwzHHQz3Qj2fQoPA9Ryc4YhIBhW7VwX99mzeKke7Qc5MJ
+    FFwGjmc/k2xw+TIyHqB6q2i4hCMAbYophKIt44ohzv/BNXml1U6JJhcR9QIDAQAB
+    AoGAB7pbnMNom29XmK9E+gHLothlBkvYf3uEYdia1yKVTjs6l+boDjI/5rG/SiZ4
+    vZLvzo0SP8Q6Rc4oJJUq7vD5GNuSyL6DN0abOzSPLSQ81bWZTrKVxvtXoZJElMJH
+    KzYrepK/hdTvnmXRIgdL6ZIK+653zO+MTcZVRSrLzLWNvyECQQD0M6jVVwsSuwP7
+    eIML77VbFBqTBWZSjxx/33GcAcAxfFbz9+DLvuWcMAaE4J9i69ZtbrjUHPOWBMpl
+    Qq5n+WoJAkEA7mipQ9rUNmipcvzIRxfJ5ifPS0o1TuRf5SFDduhkhwcK2JI7yh2L
+    AqwRbL/4fdc/9YjMfTcGy9K3VbnVwlETjQJBAMm4Qqa4GDWItmlryxR5Fl395VW9
+    CCD6hpg6gyZTa+d0xn8RK2gicJjsMvZgdkjId4A+Df9pSu2JV4b95gONS8ECQDiG
+    E+uEjF/B/LrId+tzFmk88wbUt0LXHm1Cr64Xdw4Ue1vRf99xla2yggcYlJ+xUvax
+    0lm1nCTi9piakLWbZ1kCQQCX8Qb1GE/EXLD0gF6XUYuj9iebNZjWxvzuGeU7AZDj
+    cmvba5uBqXYsR3dKU9l9Q69X34wNpvAspOsQ1CKdf/JV
     -----END RSA PRIVATE KEY-----
-
-'
-
+  users: 5
