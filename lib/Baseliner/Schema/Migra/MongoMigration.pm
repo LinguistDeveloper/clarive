@@ -224,10 +224,12 @@ sub topic_categories_to_rules {
 
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
                 if ($data->{list_type} && $data->{list_type} eq 'grid') {
-                    $attributes->{key} = 'fieldlet.ci_grid'
+                    $attributes->{key} = 'fieldlet.ci_grid';
+                    $attributes->{icon} = '/static/images/icons/grid.png';
                 }
                 else {
-                    $attributes->{key} = 'fieldlet.system.cis'
+                    $attributes->{key} = 'fieldlet.system.cis';
+                    $attributes->{icon} = '/static/images/icons/combo_box.png';
                 }
 
                 if ($data->{ci_class}){
