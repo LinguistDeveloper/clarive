@@ -114,15 +114,15 @@ sub topic_categories_to_rules {
             my $icon = $registers->{$reg_key} ? Baseliner::Core::Registry->get($registers->{$reg_key})->{icon} : '';
             if ( exists $fieldlet->{params}->{allowBlank} ) {
                 if ($fieldlet->{params}->{allowBlank} eq 'false' || $fieldlet->{params}->{allowBlank} eq '0') {
-                    $data->{allowBlank} = 0;
-                    $data->{mandatory_cb} = 0;
+                    $data->{allowBlank} = 'false';
+                    $data->{mandatory_cb} = '1';
                 } else {
-                    $data->{allowBlank} = 1;
-                    $data->{mandatory_cb} = 1;
+                    $data->{allowBlank} = 'true';
+                    $data->{mandatory_cb} = '0';
                 }
             } else {
-                $data->{allowBlank} = 1;
-                $data->{mandatory_cb} = 1;
+                $data->{allowBlank} = 'true';
+                $data->{mandatory_cb} = '0';
             }
             $data->{editable} = '1' if not $fieldlet->{params}->{editable};
             $data->{hidden} = '0' if not $fieldlet->{params}->{hidden};
