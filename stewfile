@@ -215,3 +215,9 @@ libtest-tempdir-tiny-perl
 
 # utils
 liback-perl
+
+# features
+# svncore
+subversion
+# sqa
+libjson-any-perl
