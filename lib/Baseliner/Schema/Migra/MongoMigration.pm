@@ -252,6 +252,11 @@ sub topic_categories_to_rules {
             $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
+
+            if ( $attributes->{key} eq 'fieldlet.text' &&
+             (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/lock_small.png')) {
+                $attributes->{icon} = '/static/images/icons/field.png';
+            }
             
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
                 _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
