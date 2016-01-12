@@ -1,6 +1,8 @@
 package Baseliner::Code::JS;
 use Moose;
 
+BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }
+
 use JavaScript::Duktape;
 use JSON ();
 use Try::Tiny;
