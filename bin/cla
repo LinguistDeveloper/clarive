@@ -10,13 +10,19 @@ if [ ! -e $PERL ]; then
 fi
 export CLARIVE_BASE="$BINDIR/../../"
 export CLARIVE_HOME="$CLARIVE_BASE/clarive"
-export PATH="$BINDIR:$LOCALDIR/perl/bin:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
+export PATH="$BINDIR:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
 
 export PERL5LIB=""
 export PERL_LOCAL_LIB_ROOT=""
+export PERL_MB_OPT="--installdirs site"
+export PERL_MM_OPT="INSTALLDIRS=site"
 
 export NODE_MODULES="$LOCALDIR/lib/node_modules"
+
+# Old profile.sh cleanup
+export PERLHOME=""
+export PERL_CPANM_OPT=""
 
 if [ "$1" == "exec" ]; then
     shift
@@ -29,10 +35,7 @@ if [ "$1" == "exec" ]; then
 elif [ "$1" == "cpanm" ]; then
     shift
 
-    export PERL_MB_OPT="--installdirs site"
-    export PERL_MM_OPT="INSTALLDIRS=site"
-
-    cpanm --mirror-only --mirror http://cpan.clarive.com "$@"
+    perl bin/cpanm --mirror-only --mirror http://cpan.clarive.com "$@"
 elif [ "$1" == "stew" ]; then
     shift
     CMD=$1
