@@ -339,7 +339,8 @@ subtest 'dispatches to fs: walk directory' => sub {
     [dirs, files]
 EOF
 
-    is_deeply $ret, [ [qw/dir2 dir1/], [qw/file2 file1/] ];
+    is_deeply [ sort @{$ret->[0]} ], [ qw/dir1 dir2/ ];
+    is_deeply [ sort @{$ret->[1]} ], [ qw/file1 file2/ ];
 };
 
 subtest 'dispatches to fs: delete dir and file' => sub {
