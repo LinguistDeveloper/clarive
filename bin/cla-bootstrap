@@ -1,5 +1,29 @@
 #!/bin/bash
 
+BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+CLARIVE_BASE=`realpath "$BINDIR/../../"`
+RESET=0
+
+ARGV=( "$@" )
+
+index=0
+for keyword in ${ARGV[@]}; do
+    if [ "$keyword" = "--reset" ]; then
+        RESET=1
+        unset ARGV[$index]
+        break
+    fi
+    let index++
+done
+
+if [[ "$RESET" == 1 ]]; then
+    echo 'Resetting bootstrap...'
+
+    rm -rf "$CLARIVE_BASE/local";
+    rm -rf "$CLARIVE_BASE/stew.snapshot";
+    rm -rf "$CLARIVE_BASE/clarive/build";
+fi
+
 echo 'Installing dependencies...'
 
-bin/cla stew install . "$@"
+bin/cla stew install . "${ARGV[0]}"
