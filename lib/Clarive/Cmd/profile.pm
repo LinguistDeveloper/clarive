@@ -19,6 +19,7 @@ export CLARIVE_ENV=myenv
 
 # System settings
 export CLARIVE_HOME=\$CLARIVE_BASE/clarive
+export LD_LIBRARY_PATH=\$CLARIVE_BASE/local/lib
 export PATH="\$CLARIVE_HOME/bin:\$CLARIVE_BASE/local/bin:\$CLARIVE_BASE/local/sbin:\$PATH"
 
 # End of Clarive profile
