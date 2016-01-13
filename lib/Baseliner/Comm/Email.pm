@@ -9,7 +9,9 @@ use Compress::Zlib;
 use Encode ();
 use Baseliner::Model::Messaging;
 use Baseliner::Core::Registry ':dsl';
+use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils;
+use Clarive::ci;
 
 with 'Baseliner::Role::Service';
 
@@ -184,7 +186,7 @@ sub resolve_address {
         if ( $username =~ /\@/ ) {
             return $username;
         } else {        
-            my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+            my $config = BaselinerX::Type::Model::ConfigStore->new->get( 'config.comm.email' );
             my $ret = '';
             if ( $config->{auto_generate_empty_emails} ) {                
                 my $domain = $config->{domain};

@@ -617,12 +617,11 @@ sub get_file_history : Local {
 
     my $repo_ci = $node->{repo_mid};
 
+    my $g = Girl::Repo->new( path => $repo_ci->repo_dir );
+
     my $history_limit = 200;
 
     my $file = $node->{file};
-    my $repo = $repo_ci->repo_dir;
-
-    my $g = Girl::Repo->new( path => $repo_ci->repo_dir );
 
     my @logs;
     my $i = 0;
@@ -636,20 +635,28 @@ sub get_file_history : Local {
     }
 
     my @res;
-    for (@logs) {
-        my @log         = _array $_;
+    for my $log (@logs) {
         my $commit_info = {};
-        $log[0] =~ /commit ([a-f0-9]+)/;
-        $commit_info->{revision} = substr( $1, 0, 8 );
+
+        if ( $log->[0] =~ /commit ([a-f0-9]+)/ ) {
+            $commit_info->{revision} = substr( $1, 0, 8 );
+        }
+
         my $offset = 0;
-        if ( $log[1] =~ /^Merge/ ) {
+        if ( $log->[1] =~ /^Merge/ ) {
             $offset = 1;
         }
-        $log[ 1 + $offset ] =~ /Author: (.+)/;
-        $commit_info->{author} = _to_utf8 $1;
-        $log[ 2 + $offset ] =~ /Date: (.+)/;
-        $commit_info->{date} = _to_utf8 $1;
-        $commit_info->{comment} = _to_utf8 join( "\n", @log[ 4 + $offset .. $#log ] );
+
+        if ( $log->[ 1 + $offset ] =~ /Author: (.+)/ ) {
+            $commit_info->{author} = _to_utf8 $1;
+        }
+
+        if ($log->[ 2 + $offset ] =~ /Date: (.+)/) {
+            $commit_info->{date} = _to_utf8 $1;
+        }
+
+        $commit_info->{comment} = _to_utf8 join( "\n", @$log[ 4 + $offset .. $#$log ] );
+
         push @res, [ $commit_info->{author}, $commit_info->{date}, $commit_info->{revision}, $commit_info->{comment} ];
     }
 
