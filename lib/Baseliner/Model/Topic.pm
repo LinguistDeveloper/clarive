@@ -729,7 +729,7 @@ sub update {
             $p->{cancelEvent} = 1;
 
             event_new 'event.topic.create' => $stash => sub {
-                mdb->txn(sub{
+                my $return = mdb->txn(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
 
                     $stash->{topic_meta} = $meta; 
@@ -769,6 +769,7 @@ sub update {
                         notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
                 });  
                 delete $return_options->{reload};                 
+                return $return;
             } 
             => sub { # catch
                 if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
