@@ -580,12 +580,14 @@ sub _parameters {
 # rgo: fix the hash to hash-items problem, use Util->_array_all for legacy
 sub _array {
     my @array;
-    for my $item ( @_ ) {
-        if( ref $item eq 'ARRAY' ) {
-            push @array, @{ $item };
-        } elsif( ref $item eq 'HASH' ) {
+    for my $item (@_) {
+        if ( ref $item eq 'ARRAY' ) {
+            push @array, grep { length } @{$item};
+        }
+        elsif ( ref $item eq 'HASH' ) {
             push @array, $item;
-        } else {
+        }
+        else {
             push @array, $item if length $item;
         }
     }

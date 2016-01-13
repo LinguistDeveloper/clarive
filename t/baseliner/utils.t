@@ -8,7 +8,7 @@ use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique);
+use Baseliner::Utils qw(_pointer query_grep _unique _array);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -104,6 +104,17 @@ subtest '_unique: returns unique fields' => sub {
     is_deeply [_unique('foo', undef, 'foo')], [('foo', undef)];
     is_deeply [_unique('foo', 'foo')], [('foo')];
     is_deeply [_unique('foo', 'bar', 'foo')], [('foo', 'bar')];
+};
+
+subtest '_array' => sub {
+    is_deeply [_array(undef, '', 0)], [0];
+    is_deeply [_array([undef, '', 0])], [0];
+
+    is_deeply [_array(qw/foo bar baz/)], [(qw/foo bar baz/)];
+    is_deeply [_array([qw/foo bar baz/])], [(qw/foo bar baz/)];
+
+    is_deeply [_array({}, undef, {})], [{}, {}];
+    is_deeply [_array([{}, undef, {}])], [{}, {}];
 };
 
 done_testing;
