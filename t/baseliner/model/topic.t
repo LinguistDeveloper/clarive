@@ -14,6 +14,7 @@ use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
 use BaselinerX::Type::Statement;
 use BaselinerX::Type::Event;
+use Baseliner::Utils qw(_load);
 
 use_ok 'Baseliner::Model::Events';
 use_ok 'Baseliner::Model::Topic';
@@ -203,10 +204,43 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' =>
     is $doc->{to_cl}, 'project';
 };
 
+subtest 'update: creates correct event.topic.create' => sub {
+    _setup();
+
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.create' } );
+    my $event_data = _load $event->{event_data};
+
+    my $topic = mdb->master->find_one( { mid => "$topic_mid" } );
+    my $category = mdb->category->find_one;
+
+    is $event_data->{mid},           $topic_mid;
+    is $event_data->{title},         $topic->{title};
+    is $event_data->{topic},         $topic->{title};
+    is $event_data->{name_category}, $category->{name};
+    is $event_data->{category},      $category->{name};
+    is $event_data->{category_name}, $category->{name};
+    is_deeply $event_data->{notify_default}, [];
+    like $event_data->{subject}, qr/New topic: Category #\d+/;
+    is_deeply $event_data->{notify},
+      {
+        'project'         => [ $base_params->{project} ],
+        'category_status' => $category->{statuses}->[0],
+        'category'        => $category->{id}
+      };
+};
+
 done_testing();
 
 sub _setup {
     mdb->category->drop;
+
+    mdb->event->drop;
 }
 
 sub _build_model {
