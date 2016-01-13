@@ -141,7 +141,7 @@ libxml-compile-wsdl11-perl
 libxml-smart-perl
 libyaml-perl
 libyaml-syck-perl
-libyaml-xs-perl
+libyaml-libyaml-perl
 libtext-csv-perl
 libtext-csv-slurp-perl
 libtext-csv-xs-perl
