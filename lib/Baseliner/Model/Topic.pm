@@ -3551,13 +3551,16 @@ sub get_status_history_topics{
 sub upload {
     my ($self, %c) = @_;
 
-    my $f = $c{f};
-    my $p = $c{p};
-    my $username = $c{username};
+    my $f = $c{f} or _fail 'f required';;
+    my $username = $c{username} or _fail 'username required';
 
-    my $filename = $p->{qqfile};
+    my $p = $c{p};
+    my $filename = $p->{qqfile} or _fail 'filename required';
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
+
+    my $file_field = $p->{filter} or _fail 'filter required';
+
     my $msg;
     my $success;
     my $status;
@@ -3565,7 +3568,6 @@ sub upload {
         if((length $p->{topic_mid}) && (my $topic = mdb->topic->find_one({mid=>$p->{topic_mid}},{ mid=>1, category=>1, category_status=>1 }))) {
             my ($topic_mid, $file_mid);
             $topic_mid = $topic->{mid};
-            my $file_field = $$p{filter};
             #Comprobamos que el campo introducido es correcto
             my $found = 0;
             my $meta = $self->get_meta($topic_mid);
