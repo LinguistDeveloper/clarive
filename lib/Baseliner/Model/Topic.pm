@@ -3639,7 +3639,7 @@ sub upload {
                     username        => $username,
                     mid             => $topic_mid,
                     id_file         => $new_asset->mid,
-                    id_field        => $file_field,
+                    id_field_asset  => $file_field,
                     filename        => $filename,
                     notify_default  => \@users,
                     subject         => $subject

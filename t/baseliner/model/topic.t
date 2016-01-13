@@ -295,7 +295,7 @@ subtest 'upload: creates correct event.file.create event' => sub {
     is $event_data->{username}, 'clarive';
     is $event_data->{mid},      $topic_mid;
     is $event_data->{id_file},  $asset->{mid};
-    is $event_data->{id_field},  'test_file';
+    is $event_data->{id_field_asset},  'test_file';
     is $event_data->{filename}, $filename;
     is_deeply $event_data->{notify_default}, [];
     like $event_data->{subject}, qr/Created file $filename to topic \[\d+\]/;
