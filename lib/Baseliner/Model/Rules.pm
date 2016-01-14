@@ -1344,7 +1344,7 @@ sub save_rule {
     _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
 
     my $ts_modified = 0;
-    my $old_timestamp = ''.$p{old_ts};
+    my $old_timestamp = ''.($p{old_ts} //'');
     my $actual_timestamp = $p{ts} || $doc->{ts};
     my %other_options;
     defined $p{$_} and $other_options{$_}=$p{$_} for qw(detected_errors ignore_dsl_errors);

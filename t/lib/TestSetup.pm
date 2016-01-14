@@ -28,6 +28,129 @@ sub _setup_user {
     $user->save;
 }
 
+sub create_label {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_label = mdb->seq('id');
+    mdb->label->insert(
+        {
+            id    => "$id_label",
+            name  => 'label',
+            color => '#000000',
+            %params
+        }
+    );
+
+    return "$id_label";
+}
+
+sub create_rule_form {
+    my $class = shift;
+
+    my $id_rule = mdb->seq('id');
+    mdb->rule->insert(
+        {
+            id        => "$id_rule",
+            ts        => '2015-08-06 09:44:30',
+            rule_type => "form",
+            rule_seq  => $id_rule,
+            #rule_tree => JSON::encode_json(_fieldlets())
+        }
+    );
+
+    return "$id_rule";
+}
+
+sub create_category {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_status = delete $params{id_status} || ci->status->new( name => 'New', type => 'I' )->save;
+    my $id_rule = delete $params{id_rule};
+
+    my $id_cat = mdb->seq('id');
+    mdb->category->insert(
+        {
+            id       => "$id_cat",
+            name     => 'Category',
+            statuses => [$id_status],
+            $id_rule ? ( default_form => "$id_rule" ) : (),
+            %params
+        }
+    );
+
+    return "$id_cat";
+}
+
+sub create_topic {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_form = delete $params{form} || TestSetup->create_rule_form;
+    my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_category =
+      delete $params{id_category} || TestSetup->create_category( id_rule => $id_form, id_status => $status->mid );
+    my $project = delete $params{project} || TestUtils->create_ci_project;
+
+    my $base_params = {
+        'project'         => $project->mid,
+        'category'        => $id_category,
+        'status_new'      => $status->mid,
+        'status'          => $status->mid,
+        'id_rule'         => $id_form,
+        'category_status' => { id => $status->mid },
+    };
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
+        {
+            %$base_params,
+            action => 'add',
+            title  => 'New Topic',
+            %params
+        }
+    );
+
+    return $topic_mid;
+}
+
+sub create_role {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_role = mdb->seq('id');
+    mdb->role->insert(
+        {
+            id      => "$id_role",
+            actions => delete $params{actions} || [],
+            role    => delete $params{role} || 'Role',
+            %params
+        }
+    );
+
+    return $id_role;
+}
+
+sub create_user {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_role = delete $params{id_role} or die 'id_role required';
+    my $project = delete $params{project} or die 'project required';
+
+    return TestUtils->create_ci(
+        'user',
+        name             => 'developer',
+        username         => 'developer',
+        project_security => {
+            $id_role => {
+                project => [$project->mid]
+            }
+        },
+        %params
+    );
+}
+
 sub _topic_setup {
     mdb->topic->drop;
     mdb->category->drop;

@@ -8,14 +8,11 @@ use Test::Fatal;
 use Test::Deep;
 use TestEnv;
 use TestUtils ':catalyst', 'mock_time';
-
-BEGIN {
-    TestEnv->setup;
-}
+BEGIN { TestEnv->setup }
+use TestSetup;
 
 use Clarive::ci;
 use Clarive::mdb;
-use Baseliner::Core::Registry;
 use Baseliner::Controller::Dashboard;
 use Class::Date;
 
@@ -119,6 +116,368 @@ subtest 'roadmap: basic condition take in' => sub {
     is @{ $stash->{json}{data} }, 21, 'get the default 10wks + 10wks + 1 rows';
 };
 
+subtest 'list_topics: returns empty response when no topics' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => {} } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    is_deeply $stash,
+      {
+        'json' => {
+            'success' => \1,
+            'cis'     => {},
+            'data'    => []
+        }
+      };
+};
+
+subtest 'list_topics: returns topics' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project);
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => {} } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    cmp_deeply $stash,
+      {
+        'json' => {
+            'success' => \1,
+            'cis'     => {},
+            'data'    => [ignore()]
+        }
+      };
+
+    my $data = $stash->{json}->{data}->[0];
+
+    is $data->{title}, 'New Topic';
+};
+
+subtest 'list_topics: returns topics limited' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    TestSetup->create_topic(project => $project) for 1 .. 10;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { limit => 5} } );
+
+    $controller->list_topics($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is scalar @$data, 5;
+};
+
+subtest 'list_topics: returns topics filtered by category' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            },
+            {
+                action => 'action.topics.othercategory.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
+    TestSetup->create_topic( project => $project, id_category => $id_category2, status => $status, title => 'Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { categories => [$id_category] } } );
+
+    $controller->list_topics($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is scalar @$data, 1;
+    is $data->[0]->{title}, 'Topic';
+};
+
+subtest 'list_topics: returns topics filtered by status' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status2  = TestUtils->create_ci( 'status', name => 'Closed', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
+    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status2, title => 'Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { statuses => [$status->mid]} } );
+
+    $controller->list_topics($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is scalar @$data, 1;
+    is $data->[0]->{title}, 'Topic';
+};
+
+subtest 'list_topics: returns topics filtered by status exclusively' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status2  = TestUtils->create_ci( 'status', name => 'Closed', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
+    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status2, title => 'Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { statuses => [$status->mid], not_in_status => 1} } );
+
+    $controller->list_topics($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is scalar @$data, 1;
+    is $data->[0]->{title}, 'Topic2';
+};
+
+subtest 'list_topics: does not return topics if user does not have access' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_category = TestSetup->create_category(name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid);
+    TestSetup->create_topic(project => $project, id_category => $id_category, status => $status);
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => {} } );
+
+    $controller->list_topics($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is scalar @$data, 0;
+};
+
+subtest 'list_topics: filters by user Any' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+    my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
+
+    my $topic_mid = TestSetup->create_topic(project => $project);
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
+
+    my $topic_mid2 = TestSetup->create_topic(project => $project);
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Any'} } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is scalar(@$data), 2;
+};
+
+subtest 'list_topics: filters by user Current' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+    my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
+
+    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
+
+    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'His Topic');
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+    is scalar(@$data), 1;
+
+    is $data->[0]->{title}, 'My Topic';
+};
+
+#subtest 'list_topics: filters by user Current when no topics' => sub {
+#    _setup();
+#
+#    my $project = TestUtils->create_ci_project;
+#    my $id_role = TestSetup->create_role(
+#        actions => [
+#            {
+#                action => 'action.topics.category.view',
+#            }
+#        ]
+#    );
+#
+#    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+#
+#    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+#
+#    my $controller = _build_controller();
+#
+#    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
+#
+#    $controller->list_topics($c);
+#
+#    my $stash = $c->stash;
+#
+#    my $data = $stash->{json}->{data};
+#    is scalar(@$data), 0;
+#};
+
+#subtest 'list_topics: filters by user No-one' => sub {
+#    _setup();
+#
+#    my $project = TestUtils->create_ci_project;
+#    my $id_role = TestSetup->create_role(
+#        actions => [
+#            {
+#                action => 'action.topics.category.view',
+#            }
+#        ]
+#    );
+#
+#    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+#    my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
+#
+#    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+#    mdb->master_rel->insert(
+#        { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
+#
+#    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'His Topic');
+#    mdb->master_rel->insert(
+#        { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
+#
+#    my $topic_mid3 = TestSetup->create_topic(project => $project, title => 'No-ones Topic');
+#
+#    my $controller = _build_controller();
+#
+#    my $c = _build_c( username => $developer->username, req => { params => { assigned_to => 'No-one' } } );
+#
+#    $controller->list_topics($c);
+#
+#    my $stash = $c->stash;
+#
+#    my $data = $stash->{json}->{data};
+#    is scalar(@$data), 1;
+#
+#    is $data->[0]->{title}, 'No-ones Topic';
+#};
+
 ############ end of tests
 
 sub _build_c {
@@ -126,11 +485,21 @@ sub _build_c {
 }
 
 sub _setup {
-    Baseliner::Core::Registry->clear();
-    TestUtils->register_ci_events();
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic'
+    );
+
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;
+
+    mdb->category->drop;
+    mdb->role->drop;
+    mdb->rule->drop;
 
     my $user = ci->user->new( name => 'test' );
     $user->save;

@@ -1,14 +1,19 @@
 package Baseliner::Controller::Dashboard;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(:default _load_yaml_from_comment);
-use Baseliner::Sugar;
+BEGIN {  extends 'Catalyst::Controller' }
+
 use Try::Tiny;
 use Scalar::Util qw(looks_like_number);
 use v5.10;
 use experimental 'switch', 'autoderef';
 
-BEGIN {  extends 'Catalyst::Controller' }
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Utils qw(:default _load_yaml_from_comment);
+use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Topic;
+
+with 'Baseliner::Role::ControllerValidator';
 
 register 'action.dashboards.view' => { name => 'Change dashboards in explorer'};
 
@@ -1194,107 +1199,86 @@ sub gauge_data {
     $units = $units.'s' if $units;
     return { avg => $avg, sum => $sum, min => $min, max => $max, count => $count, units => $units };
 }
-sub list_topics: Local {
+
+sub list_topics : Local {
     my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
 
-    my (@topics, $colors, @data, %status );
-    my $group_threshold = $p->{group_threshold};
     my $categories = $p->{categories} || [];
-    my $statuses = $p->{statuses} || [];
+    my $statuses   = $p->{statuses}   || [];
     my $not_in_status = $p->{not_in_status};
-    my $filter_user = $p->{assigned_to};
-    my $limit = $p->{limit} // 100;
-    my $condition = {};
-    my $where = {};
+    my $filter_user   = $p->{assigned_to};
+    my $limit         = $p->{limit} // 100;
+    my $id_project    = $p->{project_id};
+    my $topic_mid     = $p->{topic_mid};
+    my $condition     = $p->{condition};
 
-    my $id_project = $p->{project_id};
-    my $topic_mid = $p->{topic_mid};
+    my $main_conditions = {
+        username => $c->username,
+        limit    => $limit
+    };
 
-    if ( $p->{condition} ) {
+    if ( $condition ) {
         try {
-            my $cond = eval('q/'.$p->{condition}.'/');
-            $condition = Util->_decode_json($cond);
-        } catch {
-            _error "JSON condition malformed (".$p->{condition}."): ".shift;
+            my $cond = eval( 'q/' . $condition . '/' );
+            $main_conditions->{where} = Util->_decode_json($cond);
+        }
+        catch {
+            _error "JSON condition malformed (" . $condition . "): " . shift;
         }
     }
 
-    $where = $condition;
-
-    if ( $filter_user && $filter_user ne 'Any') {
-        if ( $filter_user eq _loc('Current')) {
-            $filter_user = $c->username;
-        }
-        my $ci_user = ci->user->find_one({ name=>$filter_user });
-        if ($ci_user) {
-            my @topic_mids = 
-                map { $_->{from_mid} }
-                mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
-            if (@topic_mids) {
-                $where->{'mid'} = mdb->in(@topic_mids);
-            } else {
-                $where->{'mid'} = -1;
-            }
+    if ( $filter_user && $filter_user ne 'Any' ) {
+        if ( $filter_user eq _loc('Current') ) {
+            $main_conditions->{assigned_to_me} = 1;
         }
     }
 
-    my $main_conditions = {};
-
-    if ( _array($statuses) ) {
-        my @local_statuses = _array($statuses);
-        if ( $not_in_status ) {
-            @local_statuses = map { $_ * -1 } @local_statuses;
-            $main_conditions->{'statuses'} = \@local_statuses;
-        } else {
-            $main_conditions->{'statuses'} = \@local_statuses;
+    if ( my @statuses = _array($statuses) ) {
+        if ($not_in_status) {
+            $main_conditions->{statuses} = [ map { "!$_" } @statuses ];
+        }
+        else {
+            $main_conditions->{statuses} = \@statuses;
         }
     }
-    my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
 
-    my @user_categories =  map {
-        $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    $main_conditions->{'categories'} = $categories;
 
-    if ( _array($categories) ) {
-        use Array::Utils qw(:all);
-        my @categories_ids = _array($categories);
-        @user_categories = intersect(@categories_ids,@user_categories);
-    }
+    Baseliner::Model::Topic->new->filter_children(
+        $main_conditions->{where},
+        id_project => $id_project,
+        topic_mid  => $topic_mid
+    );
 
-    my $is_root = $perm->is_root( $username );
-    if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
-    $main_conditions->{'categories'} = \@user_categories;
-
-    my $cnt = 0;
-    my $complete_parms = { limit => $limit, where => $where, %$main_conditions, username=>$username };
-    
-    if ( $topic_mid ) {
+    if ($topic_mid) {
         my $ci = ci->new($topic_mid);
-        my @related_topics = map{ $$_{mid} } $ci->children( where => { collection => 'topic'}, mids_only => 1, depth => 0) if $ci;
-        if ( @related_topics ) {
-            $complete_parms->{topic_list} = \@related_topics;
-        } else {
-            $complete_parms->{topic_list} = [$topic_mid];
+        my @related_topics =
+          map { $$_{mid} } $ci->children( where => { collection => 'topic' }, mids_only => 1, depth => 0 )
+          if $ci;
+        if (@related_topics) {
+            $main_conditions->{topic_list} = \@related_topics;
         }
-        # delete $where->{mid};
+        else {
+            $main_conditions->{topic_list} = [$topic_mid];
+        }
     }
 
-    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user($complete_parms); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    my ( $cnt, @topics ) = Baseliner::Model::Topic->new->topics_for_user($main_conditions);
 
-    my @topic_cis = map {$_->{mid}} @topics;
-    @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
-    my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
-    my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
+    my @topic_cis = map { $_->{mid} } @topics;
+    @topics = map { my $t = {}; $t = hash_flatten($_); $t } @topics;
+    my @cis =
+      map { ( $_->{to_mid}, $_->{from_mid} ) }
+      mdb->master_rel->find( { '$or' => [ { from_mid => mdb->in(@topic_cis) }, { to_mid => mdb->in(@topic_cis) } ] } )
+      ->all;
+    my %ci_names = map { $_->{mid} => $_->{name} } mdb->master->find( { mid => mdb->in(@cis) } )->all;
 
-    $c->stash->{json} = { success => \1, data=>\@topics, cis=>\%ci_names };
-    $c->forward('View::JSON'); 
+    $c->stash->{json} = { success => \1, data => \@topics, cis => \%ci_names };
+    $c->forward('View::JSON');
 }
+
 sub topics_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
