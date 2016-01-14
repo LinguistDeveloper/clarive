@@ -547,13 +547,13 @@ sub topics_by_field : Local {
             $others += $topic->{total};
             push @other_topics, _array($topic->{topics_list});
         } else {
-            if ( Util->is_number($topic->{field}) && $topic->{field} > 1 ) {
+            if ( !ref $topic->{field} ) {
                 try {
                     $name = mdb->master->find_one({mid=>"$topic->{field}"})->{name};#ci->new($topic->{field})->name;
                 } catch {
 
                 };
-            } elsif ( ref $topic->{field} ) {
+            } else {
                 my ($val) = _array($topic->{field});
                 try {
                     $name = mdb->master->find_one({mid=>"$val"})->{name};#ci->new($val)->name;
@@ -1774,7 +1774,7 @@ sub list_filtered_topics_old: Private{
     
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
     
     ##########################################################################################################      
     
@@ -1870,7 +1870,7 @@ sub list_my_topics: Private{
     
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_my_topics'} _array $dashboard_rs->{dashlets};
@@ -1881,7 +1881,7 @@ sub list_my_topics: Private{
             };              
         }      
     }   
-    ##########################################################################################################		
+    ##########################################################################################################      
     
     # go to the controller for the list
     my $limit = $default_config->{rows} && $default_config->{rows} ne 'ALL'? $default_config->{rows}:'';
@@ -1929,10 +1929,10 @@ sub topics_open_by_category: Local{
     
     foreach my $topic (@topics_open_by_category){
         push @datas, {
-                    total 			=> $topic->{total},
-                    category		=> $topic->{category},
-                    color			=> $topic->{color},
-                    category_id		=> $topic->{_id}
+                    total           => $topic->{total},
+                    category        => $topic->{category},
+                    color           => $topic->{color},
+                    category_id     => $topic->{_id}
                 };
      }
     $c->stash->{topics_open_by_category} = \@datas;
