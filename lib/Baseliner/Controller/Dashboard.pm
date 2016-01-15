@@ -1213,10 +1213,14 @@ sub list_topics : Local {
     my $id_project    = $p->{project_id};
     my $topic_mid     = $p->{topic_mid};
     my $condition     = $p->{condition};
+    my $sort          = $p->{sort};
+    my $dir           = $p->{dir};
 
     my $main_conditions = {
         username => $c->username,
-        limit    => $limit
+        limit    => $limit,
+        sort     => $sort,
+        dir      => $dir
     };
 
     if ( $condition ) {

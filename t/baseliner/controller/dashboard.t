@@ -411,74 +411,95 @@ subtest 'list_topics: filters by user Current' => sub {
     is $data->[0]->{title}, 'My Topic';
 };
 
-#subtest 'list_topics: filters by user Current when no topics' => sub {
-#    _setup();
-#
-#    my $project = TestUtils->create_ci_project;
-#    my $id_role = TestSetup->create_role(
-#        actions => [
-#            {
-#                action => 'action.topics.category.view',
-#            }
-#        ]
-#    );
-#
-#    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
-#
-#    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
-#
-#    my $controller = _build_controller();
-#
-#    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
-#
-#    $controller->list_topics($c);
-#
-#    my $stash = $c->stash;
-#
-#    my $data = $stash->{json}->{data};
-#    is scalar(@$data), 0;
-#};
+subtest 'list_topics: filters by user Current when no topics' => sub {
+    _setup();
 
-#subtest 'list_topics: filters by user No-one' => sub {
-#    _setup();
-#
-#    my $project = TestUtils->create_ci_project;
-#    my $id_role = TestSetup->create_role(
-#        actions => [
-#            {
-#                action => 'action.topics.category.view',
-#            }
-#        ]
-#    );
-#
-#    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
-#    my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
-#
-#    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
-#    mdb->master_rel->insert(
-#        { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
-#
-#    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'His Topic');
-#    mdb->master_rel->insert(
-#        { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
-#
-#    my $topic_mid3 = TestSetup->create_topic(project => $project, title => 'No-ones Topic');
-#
-#    my $controller = _build_controller();
-#
-#    my $c = _build_c( username => $developer->username, req => { params => { assigned_to => 'No-one' } } );
-#
-#    $controller->list_topics($c);
-#
-#    my $stash = $c->stash;
-#
-#    my $data = $stash->{json}->{data};
-#    is scalar(@$data), 1;
-#
-#    is $data->[0]->{title}, 'No-ones Topic';
-#};
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
 
-############ end of tests
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+    is scalar(@$data), 0;
+};
+
+subtest 'list_topics: sorts topics DESC by default' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => {params => {sort => 'topic_name'}} );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is $data->[0]->{title}, 'My Topic2';
+    is $data->[1]->{title}, 'My Topic';
+};
+
+subtest 'list_topics: sorts topics' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => { sort => 'topic_name', dir => 'ASC' } } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is $data->[0]->{title}, 'My Topic';
+    is $data->[1]->{title}, 'My Topic2';
+};
 
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );

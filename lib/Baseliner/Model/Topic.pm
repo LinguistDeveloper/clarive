@@ -315,7 +315,7 @@ sub build_sort {
     my $order_by;
 
     if ( $sort eq 'topic_name' ) {
-        $order_by = mdb->ixhash( created_on => $dir, _seq => $dir );
+        $order_by = mdb->ixhash( created_on => $dir, mid => $dir );
     }
     elsif (( $sort eq 'category_status_name' )
         || ( $sort eq 'modified_on' )
@@ -383,7 +383,7 @@ sub topics_for_user {
     
     my ($select,$order_by, $as, $group_by);
     if( !$sort ) {
-        $order_by = { 'modified_on' => -1 };
+        $order_by = { 'modified_on' => $dir };
     } else {
         $order_by = $self->build_sort($sort,$dir);
     }

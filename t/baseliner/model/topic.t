@@ -758,7 +758,7 @@ subtest 'build_sort: builds correct condition' => sub {
 
     my %hash = pairwise { no warnings 'once'; ( $a, $b ) } @keys, @values;
 
-    is_deeply \%hash, {created_on => 1, _seq => 1};
+    is_deeply \%hash, {created_on => 1, mid => 1};
 };
 
 subtest 'grep_in_and_nin: builds correct condition' => sub {
