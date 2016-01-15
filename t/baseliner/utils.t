@@ -115,6 +115,7 @@ subtest '_array' => sub {
 
     is_deeply [_array({}, undef, {})], [{}, {}];
     is_deeply [_array([{}, undef, {}])], [{}, {}];
+};
 
 subtest '_to_camel_case: camelize strings' => sub {
     is _to_camel_case(''), '';
