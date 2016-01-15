@@ -173,7 +173,7 @@ sub action_tree : Local {
             my $folder = pop @kp;
             my $parent = join '.',@kp;
             my $fkey = $parent ? "$parent.$folder" : $folder; 
-            $folders{$fkey} //= { key=>$fkey, text=>$folder, leaf=>\0, icon=>'/static/images/icons/action_folder.gif', parents=>\@kp };
+            $folders{$fkey} //= { key=>$fkey, text=>$folder, leaf=>\0, draggable => \0, icon=>'/static/images/icons/action_folder.gif', parents=>\@kp };
             my $node = { text=>$$act{name}, id=>$key, key=>$key, icon=>'/static/images/icons/lock_small.png', leaf=>\1 };
             push @{ $folders{$fkey}{children} }, $node;
         }
@@ -187,7 +187,7 @@ sub action_tree : Local {
                 my $pn = pop @$parents;
                 my $parent = join '.', @$parents, $pn;
                 #say "$fkey INTO $parent";
-                $folders{$parent} //= { key=>$parent, text=>$pn, icon=>'/static/images/icons/action_folder.gif', leaf=>\0, parents=>$parents };
+                $folders{$parent} //= { key=>$parent, text=>$pn, icon=>'/static/images/icons/action_folder.gif', draggable => \0, leaf=>\0, parents=>$parents };
                 push @{ $folders{$parent}{children} }, $fnode;
                 $push_parent->($parent);
             }
