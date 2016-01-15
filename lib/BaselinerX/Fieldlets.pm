@@ -91,7 +91,7 @@ register 'fieldlet.combo' => {
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
     icon        => '/static/images/icons/combo_box.png',
-    section_allowed => ['body']
+    section_allowed => ['body','head']
 };
 
 register 'fieldlet.dbi_query' => {
