@@ -2305,7 +2305,10 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
     },
     click_handler : function(item){
         var n = item.node;
-        var c = n.attributes.data.click;
+        var ndata = n.attributes.data;
+        if (!ndata) return;
+
+        var c = ndata.click;
         var params = n.attributes.data;
 
         if( !c ) return;

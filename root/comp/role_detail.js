@@ -121,15 +121,46 @@
         containerScroll: true,
         autoScroll: true,
         rootVisible: false,
+        contextMenu: new Ext.menu.Menu({
+            items: [
+                {
+                     type: 'expand',
+                     text: 'Expand All'
+                },
+                {
+                     type: 'collapse',
+                     text: 'Collapse All'
+                }
+            ],
+            listeners: {
+                itemclick: function(item) {
+                    switch (item.type) {
+                        case 'expand' :
+                            var n = item.parentMenu.contextNode;
+                            n.expand(true);
+                            break;
+                        case 'collapse' :
+                            var n = item.parentMenu.contextNode;
+                            n.collapse(true);
+                            break;
+                    }
+                }
+            }
+        }),
         root: treeRoot,
         tbar: [ search_box ],
+        menu_click: function(node, e) {
+            var c = node.getOwnerTree().contextMenu;
+            c.contextNode = node;
+            c.showAt(e.getXY());
+        },
         listeners: {
             'render': function() {
                 Baseliner.showLoadingMask( this.getEl() , _('Loading...') );
             },
             'load': function() {
                 this.getEl().unmask();
-            }          
+            }
         }
     });
 
