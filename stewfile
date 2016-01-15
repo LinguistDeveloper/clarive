@@ -53,6 +53,7 @@ libterm-readkey-perl
 libterm-size-any-perl
 libtext-unaccent-pureperl-perl
 libtie-ixhash-perl
+libjavascript-duktape-perl
 
 # Daemons/Processes
 libproc-background-perl

@@ -8,6 +8,7 @@ use Baseliner::Sugar qw(event_new);
 use Baseliner::Core::Registry;
 use Clarive::ci;
 use Clarive::queue;
+use Baseliner::Code;
 
 use Exporter::Tidy default => [
     qw(
@@ -25,10 +26,17 @@ use Exporter::Tidy default => [
       semaphore
       stash_has_nature
       variables_for_bl
+      eval_code
       )
 ];
 
 our $DATA;
+
+sub eval_code {
+    my ( $lang, $code, $stash ) = @_;
+
+    Baseliner::Code->new( lang=>$lang )->eval_code($code,$stash);
+}
 
 sub parallel_run {
     my ( $name, $mode, $stash, $code ) = @_;

@@ -1020,22 +1020,28 @@ register 'statement.perl.for' => {
     },
 };
 
-register 'statement.js.code' => {
-    text => 'EVAL JavaScript', data => { code=>'' },
+register 'statement.code.server' => {
+    text => 'Server CODE', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/cog_java.png', 
-    form => '/forms/stmt_for.js', 
+    icon => '/static/images/icons/cog_perl.png',
+    holds_children => 0,
+    form => '/forms/server_code.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
-        sprintf(q{
-            require Baseliner::JS;
-            Baseliner::JS->run( stash=>$stash, code=>q{%s} ); 
-        }, $n->{code} // '()',  $self->dsl_build( $n->{children}, %p ) );
+        if( $n->{lang} eq 'js' ) {
+            sprintf(q{
+                eval_code('js', q{%s}, $stash);
+            }, $n->{code} // '' );
+        } else {
+            sprintf(q{
+                %s;
+            }, $n->{code} // '' );
+        }
     },
 };
 
 register 'statement.perl.code' => {
-    text => 'CODE', data => { code=>'' },
+    text => 'CODE (Perl)', data => { code=>'' },
     type => 'loop',
     icon => '/static/images/icons/cog_perl.png',
     holds_children => 0,
