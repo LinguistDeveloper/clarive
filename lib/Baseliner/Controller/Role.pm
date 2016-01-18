@@ -143,6 +143,8 @@ sub action_tree : Local {
     }
 
     my $actions = $self->_build_model_actions;
+    my $permissions = Baseliner::Model::Permissions->new;
+
     my @actions = $actions->list;
 
     if ( length( my $query = $c->req->params->{query} ) ) {
@@ -156,11 +158,16 @@ sub action_tree : Local {
             my $name = $act->{name};
             my $txt  = "$key,$name";
             if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
+                my $icon = '/static/images/icons/lock_small.png';
+                if ( $permissions->has_role_action( action => $key, role => $role ) ) {
+                    $icon = '/static/images/icons/checkbox.png';
+                }
+
                 push @tree_query,
                   {
                     id   => $key,
                     text => ( $name ne $key ? "$name" : "$key" ),
-                    icon => '/static/images/icons/lock_small.png',
+                    icon => $icon,
                     leaf => \1
                   };
             }
@@ -169,8 +176,6 @@ sub action_tree : Local {
         $c->forward("View::JSON");
         return;
     }
-
-    my $permissions = Baseliner::Model::Permissions->new;
 
     my $cached_tree = cache->get("roles:tree:$id_role:");
 

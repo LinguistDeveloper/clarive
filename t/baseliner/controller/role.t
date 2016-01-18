@@ -68,6 +68,40 @@ subtest 'action_tree: returns action tree' => sub {
       };
 };
 
+subtest 'action_tree: searches through actions' => sub {
+    _setup();
+
+    mdb->role->insert(
+        {
+            id      => '1',
+            role    => 'Role',
+            actions => [
+                {
+                    action => 'action.topics.category.view',
+                }
+            ]
+        }
+    );
+
+    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view', name => 'View topics' } ] );
+
+    my $c = _build_c( req => { params => { id_role => '1', query => 'topics' } }, authenticate => {} );
+
+    $controller->action_tree($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => [
+            {
+                'icon' => '/static/images/icons/checkbox.png',
+                'text' => 'View topics',
+                'id'   => 'action.topics.category.view',
+                'leaf' => \1
+            }
+        ]
+      };
+};
+
 sub _setup {
     mdb->master->drop;
     mdb->master_rel->drop;

@@ -103,7 +103,7 @@
         width: 220,
         handler: function(){
             var lo = action_tree.getLoader();
-            lo.baseParams = { query: this.getValue() };
+            lo.baseParams = { id_role: params.id_role, query: this.getValue() };
             Baseliner.showLoadingMask( action_tree.getEl() );
             lo.load( action_tree.root, function(){
                 Baseliner.hideLoadingMask( action_tree.getEl() );
@@ -416,6 +416,7 @@
                             if( grid ) {
                                 grid.getStore().load();
                             }
+
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
                         },
                         failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
