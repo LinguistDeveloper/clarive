@@ -172,7 +172,7 @@ sub action_tree : Local {
 
     my $permissions = Baseliner::Model::Permissions->new;
 
-    my $cached_tree = 0;    #cache->get( "roles:tree:$id_role:");
+    my $cached_tree = cache->get("roles:tree:$id_role:");
 
     my @tree_final;
     if ($cached_tree) {
@@ -271,6 +271,7 @@ sub update : Local {
         }else{
             mdb->role->update( { id=>"$row->{id}" }, $row );
         }
+        cache->remove("roles:tree:$p->{id}:") if $p->{id};
         cache->remove(":role:actions:$p->{id}:") if $p->{id};
         cache->remove(':role:ids:');
     };
@@ -307,6 +308,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
+    cache->remove("roles:tree:$p->{id_role}:");
     cache->remove(':role:ids:');
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
