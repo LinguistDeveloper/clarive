@@ -306,19 +306,34 @@ sub build_field_query {
 }
 
 sub build_sort {
-    my ($self,$sort,$dir) =@_;
+    my $self = shift;
+    my ( $sort, $dir ) = @_;
+
+    die 'sort is required' unless $sort;
+    die 'dir is required'  unless $dir;
+
     my $order_by;
-    if( $sort eq 'topic_name' ) {
-        $order_by = mdb->ixhash( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
-    } elsif( ($sort eq 'category_status_name') || ($sort eq 'modified_on') || 
-        ($sort eq 'created_on') || ($sort eq 'modified_by') || ($sort eq 'created_by') || 
-        ($sort eq 'category_name') || ($sort eq 'moniker')) {
-        $order_by = { $sort => $dir };
-    } elsif( $sort eq 'topic_mid' ) {
-        $order_by = { _id => $dir };
-    } else {
-        $order_by = { '_sort.'.$sort => $dir };
+
+    if ( $sort eq 'topic_name' ) {
+        $order_by = mdb->ixhash( created_on => $dir, mid => $dir );
     }
+    elsif (( $sort eq 'category_status_name' )
+        || ( $sort eq 'modified_on' )
+        || ( $sort eq 'created_on' )
+        || ( $sort eq 'modified_by' )
+        || ( $sort eq 'created_by' )
+        || ( $sort eq 'category_name' )
+        || ( $sort eq 'moniker' ) )
+    {
+        $order_by = { $sort => $dir };
+    }
+    elsif ( $sort eq 'topic_mid' ) {
+        $order_by = { _id => $dir };
+    }
+    else {
+        $order_by = { '_sort.' . $sort => $dir };
+    }
+
     return $order_by;
 }
 
@@ -345,15 +360,20 @@ sub run_query_builder {
 #
 sub topics_for_user {
     my ($self, $p) = @_;
+
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
 
     $start||= 0;
     $limit ||= 100;
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
+    my @filter_categories     = _array( $p->{categories} );
+    my @filter_statuses     = _array( $p->{statuses} );
+    my @filter_labels     = _array( $p->{labels} );
+
     my $where = $p->{where} // {};
     my $perm = Baseliner::Model::Permissions->new;
-    my $username = $p->{username};
+    my $username = $p->{username} or die 'username required';
     my $is_root = $perm->is_root( $username );
     my @topic_list = _array($p->{topic_list});
     my ( @mids_in, @mids_nin, @mids_or );
@@ -363,37 +383,16 @@ sub topics_for_user {
     
     my ($select,$order_by, $as, $group_by);
     if( !$sort ) {
-        $order_by = { 'modified_on' => -1 };
+        $order_by = { 'modified_on' => $dir };
     } else {
         $order_by = $self->build_sort($sort,$dir);
     }
-    my @categories;
-    if($p->{categories}){
-        @categories = _array( $p->{categories} );
-        my @user_categories = map {
-            $_->{id};
-        } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
-        my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
-        my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
-        if (@not_in && @in){
-            @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
-            $where->{'category.id'} = mdb->in(@in);
-        }else{
-            if (@not_in){
-                @in = grep{ not $_ ~~ @not_in } @user_categories;
-                $where->{'category.id'} = mdb->in(@in);
-            }else{
-                $where->{'category.id'} = mdb->in(@in);
-            }
-        }        
-        #$where->{'category.id'} = \@categories;
-    }else{
-        # all categories, but limited by user permissions
-        #   XXX consider removing this check on root and other special permissions
-        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category.id'} = mdb->in(@categories);
-    }
+    my @user_categories = map { $_->{id} }
+      Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
+
+    my @categories = @{ $self->grep_in_and_nin(\@user_categories, \@filter_categories) };
+    $where->{'category.id'} = mdb->in(@categories);
 
     # project security - grouped by - into $or 
     Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @categories );
@@ -446,36 +445,13 @@ sub topics_for_user {
     #*****************************************************************************************************************************
     
     #FILTERS**********************************************************************************************************************
-    if($p->{labels}){
-        my @labels = _array $p->{labels};
-        my @not_in = map { abs $_ } grep { $_ < 0 } @labels;
-        my @in = @not_in ? grep { $_ > 0 } @labels : @labels;
-        if (@not_in && @in){
-            $where->{'labels'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
-        }else{
-            if (@not_in){
-                $where->{'labels'} = {'$nin' => mdb->str(@not_in) };
-            }elsif (@in) {
-                $where->{'labels'} = { '$in' => mdb->str(@in)};
-            }
-        }            
+    if (@filter_labels){
+        $where->{'labels'} = $self->build_in_and_nin_query(\@filter_labels);
     }
-# _debug( $where );
-    
+
     my $default_filter;
-    if($p->{statuses}){
-        my @statuses = _array( $p->{statuses} );
-        my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
-        my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
-        if (@not_in && @in){
-            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
-        }else{
-            if (@not_in){
-                $where->{'category_status.id'} = mdb->nin(@not_in);
-            }else{
-                $where->{'category_status.id'} = mdb->in(@in);
-            }
-        }
+    if (@filter_statuses){
+        $where->{'category_status.id'} = $self->build_in_and_nin_query( \@filter_statuses );
     }else {
         if (!$p->{clear_filter}){  
             my @status_ids;
@@ -2864,7 +2840,6 @@ sub get_categories_permissions{
     if ( Baseliner::Model::Permissions->new->is_root( $username) ) {
         return @categories;
     }
-    
     push @permission_categories, _unique map { 
         $_ =~ $re_action;
         $1;
@@ -3746,6 +3721,51 @@ sub getCategoryAcronyms {
     }
     return _encode_json($acronyms);
 }
+
+sub grep_in_and_nin {
+    my $self = shift;
+    my ($orig, $filter) = @_;
+
+    my $in  = [ grep { !/^!/ } @$filter ];
+    my $nin = [ map { s/^!//; $_ } grep { /^!/ } @$filter ];
+
+    my @result = @$orig;
+
+    if ($in && @$in) {
+        @result = intersect(@result, @$in);
+    }
+
+    if ($nin && @$nin) {
+        @result = array_diff(@result, @$nin);
+    }
+
+    return \@result;
+}
+
+sub build_in_and_nin_query {
+    my $self = shift;
+    my ($filter) = @_;
+
+    my $in = [ grep { !/^!/ } @$filter ];
+    my $nin = [ map { s/^!//; $_ } grep { /^!/ } @$filter ];
+
+    my $query;
+
+    if ( @$in && @$nin ) {
+        $query = { '$nin' => mdb->str(@$nin), '$in' => mdb->str(@$in) };
+    }
+    else {
+        if (@$nin) {
+            $query = mdb->nin(@$nin);
+        }
+        elsif (@$in) {
+            $query = mdb->in(@$in);
+        }
+    }
+
+    return $query;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

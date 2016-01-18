@@ -27,7 +27,13 @@
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields },
-                { xtype:'numberfield', fieldLabel: _('Maximum number of topics to list'), allowBlank: false, name: 'limit', value: data.limit || 100}
+                { xtype:'numberfield', fieldLabel: _('Maximum number of topics to list'), allowBlank: false, name: 'limit', value: data.limit || 100},
+                { xtype:'textfield', fieldLabel: _('Sort By'), name: 'sort', value: data.sort },
+                new Baseliner.ComboSingle({ forceSelection: true, allowBlank: false, fieldLabel: _('Sort Order'), editable: false, name: 'dir', value: data.dir || '', data: [
+                    [_('DESC')],
+                    [_('ASC')]
+                  ] 
+                }),
               ]
             }
           ]

@@ -249,7 +249,7 @@ sub user_actions_list {
     } elsif ( $mid ) {
         @actions = _array($self->user_actions_by_topic( %p )->{positive});
     } else {
-        @actions = Baseliner->model('Users')->get_actions_from_user( $username, @bl );
+        @actions = Baseliner::Model::Users->new->get_actions_from_user( $username, @bl );
     } ## end else [ if ( $self->is_root( $username...))]
     return grep { $_ =~ $regexp_action } @actions;
 } ## end sub user_actions_list
@@ -383,9 +383,9 @@ sub user_projects_ids_with_collection {
     my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
     my $project_security = $user->{project_security};
     if(!@roles){
-        @roles = keys $project_security;
+        @roles = keys %$project_security;
     }
-    my @user_roles = keys $user->{project_security};
+    my @user_roles = keys %{$user->{project_security}};
 
     foreach my $id_role (@user_roles){
         foreach my $actual_id (@roles){

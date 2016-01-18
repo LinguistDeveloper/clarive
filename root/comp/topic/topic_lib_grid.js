@@ -1803,7 +1803,7 @@ Cla.topic_grid = function(params){
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
             //if (type == 'C') console.log(node);
-            var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
+            var node_value = node.attributes.checked3 == -1 ? '!' + node.attributes.idfilter : node.attributes.idfilter;
             switch (type){
                 //Views
                 case 'V':   
