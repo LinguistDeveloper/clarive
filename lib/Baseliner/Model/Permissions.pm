@@ -131,6 +131,22 @@ sub delete_role {
     }
 }
 
+sub has_role_action {
+    my $self = shift;
+    my ( %params ) = @_;
+
+    my $action = $params{action} or _fail 'action required';
+    my $role = $params{role} or _fail 'role required';
+    return 0 unless $role;
+
+    if ( grep { $_->{action} eq $action } @{ $role->{actions} } ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 =head2 user_has_action username=>Str, action=>Str
 
 Returns true if a user has a given action.

@@ -44,7 +44,7 @@
     //////////////// Actions Tree
     var treeLoader = new Ext.tree.TreeLoader({
         dataUrl: '/role/action_tree',
-        baseParams: { type: 'all' },
+        baseParams: { type: 'all', id_role: params.id_role },
         preloadChildren:true
     });
 

@@ -1,12 +1,20 @@
 package BaselinerX::Type::Model::Actions;
 use Moose;
-extends qw/Catalyst::Model/;
-use Baseliner::Utils;
-use Carp;
+
+use Clarive::cache;
+use Baseliner::Core::Registry;
+use Baseliner::Utils qw(_array);
 
 sub list {
-    my ($self,%p) = @_;
-    my @actions = Baseliner->model('Registry')->search_for(key=>'action.');
+    my $self = shift;
+
+    my $cached = cache->get('roles:actions:');
+    return _array $cached if $cached;
+
+    my @actions = Baseliner::Core::Registry->search_for( key => 'action.' );
+
+    cache->set( 'roles:actions:' => \@actions );
+
     return @actions;
 }
 
