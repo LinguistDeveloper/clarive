@@ -7,7 +7,7 @@ use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 use experimental 'switch', 'smartmatch', 'autoderef';
 
-# register 'action.ci.admin' => { name => 'Admin CIs' };
+register 'action.ci.admin' => { name => 'Admin CIs' };
 # register 'menu.tools.ci' => {
 #     label    => 'CI Viewer',
 #     url_comp => '/comp/ci-viewer-tree.js',
@@ -138,7 +138,7 @@ sub tree_roles {
     for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
         my $role = $_->{role};
         my $name = $_->{name};
-        if ( Baseliner->model( 'Permissions' )
+        if ( Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $user ) || Baseliner->model( 'Permissions' )
             ->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%') )
         {
             $role = 'Generic' if $name eq '';
@@ -175,7 +175,7 @@ sub tree_classes {
         my $collection = $_->collection;
         my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        my $has_permission = Baseliner->model( 'Permissions' )
+        my $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $user ) || Baseliner->model( 'Permissions' )
             ->user_has_any_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item );
         if ( $has_permission )
         {
@@ -1403,7 +1403,7 @@ sub edit : Local {
         my $collection = $doc->{collection};
         _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) ) 
             unless $c->has_action("action.ci.view.%.$collection");
-        $has_permission = $c->has_action( 'action.ci.admin.%.'. $collection );
+        $has_permission = $c->has_action( 'action.ci.admin' ) || $c->has_action( 'action.ci.admin.%.'. $collection );
     } else {
         $has_permission = 1;
     }
@@ -1547,8 +1547,8 @@ sub grid : Local {
     my $has_permission;
    
     if ( $p->{collection} ) {
-        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
-    } else {
+        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $c->username ) ||Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
+    } else { 
         $has_permission = 0;
     }
 
