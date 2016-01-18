@@ -44,7 +44,7 @@
     //////////////// Actions Tree
     var treeLoader = new Ext.tree.TreeLoader({
         dataUrl: '/role/action_tree',
-        baseParams: { type: 'all' },
+        baseParams: { type: 'all', id_role: params.id_role },
         preloadChildren:true
     });
 
@@ -103,7 +103,7 @@
         width: 220,
         handler: function(){
             var lo = action_tree.getLoader();
-            lo.baseParams = { query: this.getValue() };
+            lo.baseParams = { id_role: params.id_role, query: this.getValue() };
             Baseliner.showLoadingMask( action_tree.getEl() );
             lo.load( action_tree.root, function(){
                 Baseliner.hideLoadingMask( action_tree.getEl() );
@@ -121,15 +121,46 @@
         containerScroll: true,
         autoScroll: true,
         rootVisible: false,
+        contextMenu: new Ext.menu.Menu({
+            items: [
+                {
+                     type: 'expand',
+                     text: 'Expand All'
+                },
+                {
+                     type: 'collapse',
+                     text: 'Collapse All'
+                }
+            ],
+            listeners: {
+                itemclick: function(item) {
+                    switch (item.type) {
+                        case 'expand' :
+                            var n = item.parentMenu.contextNode;
+                            n.expand(true);
+                            break;
+                        case 'collapse' :
+                            var n = item.parentMenu.contextNode;
+                            n.collapse(true);
+                            break;
+                    }
+                }
+            }
+        }),
         root: treeRoot,
         tbar: [ search_box ],
+        menu_click: function(node, e) {
+            var c = node.getOwnerTree().contextMenu;
+            c.contextNode = node;
+            c.showAt(e.getXY());
+        },
         listeners: {
             'render': function() {
                 Baseliner.showLoadingMask( this.getEl() , _('Loading...') );
             },
             'load': function() {
                 this.getEl().unmask();
-            }          
+            }
         }
     });
 
@@ -385,6 +416,9 @@
                             if( grid ) {
                                 grid.getStore().load();
                             }
+
+                            action_tree.getRootNode().reload();
+
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
                         },
                         failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }

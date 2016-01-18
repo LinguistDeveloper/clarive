@@ -3,6 +3,8 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
+use Baseliner::Model::Permissions;
+use BaselinerX::Type::Model::Actions;
 use Try::Tiny;
 use Encode;
 use 5.010;
@@ -128,78 +130,137 @@ sub action_tree_old : Local {
 
 sub action_tree : Local {
     my ( $self, $c ) = @_;
-    my $cached = cache->get( "roles:actions:");
 
-    my @actions;
+    my $params = $c->req->parameters;
 
-    if ( $cached ) {
-        @actions = _array $cached;
-    } else {
-        @actions = $c->model('Actions')->list;
-        cache->set( "roles:actions:", \@actions);        
+    my $id_role = $params->{id_role};
+    my $role;
+
+    if ( !$id_role || !( $role = mdb->role->find_one( { id => $id_role } ) ) ) {
+        $c->stash->{json} = { success => \0 };
+        $c->forward("View::JSON");
+        return;
     }
-    
-    if( length( my $query = $c->req->params->{query}) ) {
+
+    my $actions = $self->_build_model_actions;
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my @actions = $actions->list;
+
+    if ( length( my $query = $c->req->params->{query} ) ) {
         my @qrs = map { qr/\Q$_\E/i } split /\s+/, $query;
         my @tree_query;
         foreach my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
+
             #( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
             my $key = $act->{key};
             ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
             my $name = $act->{name};
-            my $txt = "$key,$name";
-            if( List::MoreUtils::all(sub{ $txt =~ $_ }, @qrs) ) {
-                #_debug( $act );
-                push @tree_query, { id=>$key, text =>( $name ne $key ? "$name" : "$key" ), icon=>'/static/images/icons/lock_small.png', leaf=>\1 };
+            my $txt  = "$key,$name";
+            if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
+                my $icon = '/static/images/icons/lock_small.png';
+                if ( $permissions->has_role_action( action => $key, role => $role ) ) {
+                    $icon = '/static/images/icons/checkbox.png';
+                }
+
+                push @tree_query,
+                  {
+                    id   => $key,
+                    text => ( $name ne $key ? "$name" : "$key" ),
+                    icon => $icon,
+                    leaf => \1
+                  };
             }
         }
         $c->stash->{json} = \@tree_query;
         $c->forward("View::JSON");
         return;
     }
+
+    my $cached_tree = cache->get("roles:tree:$id_role:");
+
     my @tree_final;
-    my %tree;
-
-    my $cached_tree = cache->get( "roles:tree:");
-
-    if ( $cached_tree ) {
+    if ($cached_tree) {
         @tree_final = _array $cached_tree;
-    } else {
+    }
+    else {
         my %folders;
         for my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
-            my $key = $$act{key};
-            my @kp = split /\./, $key;
-            my $perm = pop @kp;
+            my $key    = $$act{key};
+            my @kp     = split /\./, $key;
+            my $perm   = pop @kp;
             my $folder = pop @kp;
-            my $parent = join '.',@kp;
-            my $fkey = $parent ? "$parent.$folder" : $folder; 
-            $folders{$fkey} //= { key=>$fkey, text=>$folder, leaf=>\0, icon=>'/static/images/icons/action_folder.gif', parents=>\@kp };
-            my $node = { text=>$$act{name}, id=>$key, key=>$key, icon=>'/static/images/icons/lock_small.png', leaf=>\1 };
+            my $parent = join '.', @kp;
+            my $fkey   = $parent ? "$parent.$folder" : $folder;
+
+            $folders{$fkey} //= {
+                key       => $fkey,
+                text      => $folder,
+                leaf      => \0,
+                draggable => \0,
+                icon      => '/static/images/icons/action_folder.gif',
+                parents   => \@kp
+            };
+
+            my $icon = '/static/images/icons/lock_small.png';
+
+            my $text = $act->{name};
+            if ( $permissions->has_role_action( action => $key, role => $role ) ) {
+                if (!$folders{$fkey}->{_modified}) {
+                    $folders{$fkey}->{_modified}++;
+                    $folders{$fkey}->{icon} = '/static/images/icons/folder.gif';
+                }
+
+                $icon = '/static/images/icons/checkbox.png';
+            }
+
+            my $node =
+              { text => $text, id => $key, key => $key, icon => $icon, leaf => \1 };
+
             push @{ $folders{$fkey}{children} }, $node;
         }
+
         # now create intermediate folders
         my $push_parent;
-        $push_parent = sub{
-            my ($fkey) = @_;
-            my $fnode = $folders{$fkey};
+        $push_parent = sub {
+            my ($fkey)  = @_;
+
+            my $fnode   = $folders{$fkey};
             my $parents = delete $$fnode{parents};
-            if( $parents && @$parents ) {
-                my $pn = pop @$parents;
-                my $parent = join '.', @$parents, $pn;
-                #say "$fkey INTO $parent";
-                $folders{$parent} //= { key=>$parent, text=>$pn, icon=>'/static/images/icons/action_folder.gif', leaf=>\0, parents=>$parents };
+            if ( $parents && @$parents ) {
+                my $parent_name = pop @$parents;
+                my $parent = join '.', @$parents, $parent_name;
+
+                $folders{$parent} //= {
+                    key       => $parent,
+                    text      => $parent_name,
+                    icon      => '/static/images/icons/action_folder.gif',
+                    draggable => \0,
+                    leaf      => \0,
+                    parents   => $parents
+                };
+
                 push @{ $folders{$parent}{children} }, $fnode;
                 $push_parent->($parent);
             }
+            else {
+                if ( !$fnode->{_modified} && $fnode->{children} && grep { $_->{_modified} } @{ $fnode->{children} } ) {
+                    $fnode->{_modified}++;
+                    $fnode->{icon} = '/static/images/icons/folder.gif';
+                }
+            }
         };
+
         $push_parent->($_) for sort keys %folders;
-        @tree_final = @{ $folders{'action'}{children} };
-        cache->set( "roles:tree:", \@tree_final);
-    };
+
+        @tree_final = @{ $folders{'action'}{children} || [] };
+
+        cache->set( "roles:tree:$id_role:", \@tree_final );
+    }
+
     $c->stash->{json} = \@tree_final;
     $c->forward("View::JSON");
 }
-
 
 sub update : Local {
     my ( $self, $c ) = @_;
@@ -215,6 +276,7 @@ sub update : Local {
         }else{
             mdb->role->update( { id=>"$row->{id}" }, $row );
         }
+        cache->remove("roles:tree:$p->{id}:") if $p->{id};
         cache->remove(":role:actions:$p->{id}:") if $p->{id};
         cache->remove(':role:ids:');
     };
@@ -251,6 +313,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
+    cache->remove("roles:tree:$p->{id_role}:");
     cache->remove(':role:ids:');
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
@@ -385,6 +448,12 @@ sub roleprojects : Local {
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
     $c->forward('View::JSON');  
+}
+
+sub _build_model_actions {
+    my $self = shift;
+
+    return BaselinerX::Type::Model::Actions->new;
 }
 
 no Moose;
