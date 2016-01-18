@@ -417,6 +417,8 @@
                                 grid.getStore().load();
                             }
 
+                            action_tree.getRootNode().reload();
+
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
                         },
                         failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
