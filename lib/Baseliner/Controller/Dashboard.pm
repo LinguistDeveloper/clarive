@@ -1186,6 +1186,7 @@ sub list_topics : Local {
     my $condition     = $p->{condition};
     my $sort          = $p->{sort};
     my $dir           = $p->{dir};
+    my $show_totals = $p->{show_totals};
 
     my $main_conditions = {
         username => $c->username,

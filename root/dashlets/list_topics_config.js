@@ -34,6 +34,7 @@
                     [_('ASC')]
                   ] 
                 }),
+                { xtype : "checkbox", name : "show_totals", checked: data.show_totals=='on' ? true : false, boxLabel : _('Show totals row?') }
               ]
             }
           ]
