@@ -88,10 +88,25 @@ sub run_dist {
     my $archive_path = File::Spec->catfile( $destdir, $archive );
     unlink $archive_path;
 
-    my @sources = ( "$base/local", "$base/clarive" );
-    my $cmd = sprintf q{tar --exclude 'build' -czf %s}, $archive_path;
-    $cmd .= " $_" for @sources;
+    my @exclude = qw(
+      clarive/.git
+      clarive/.gitignore
+      clarive/.gitmodules
+      clarive/build
+      clarive/t
+      clarive/ui-tests
+      clarive/rec-tests
+      clarive/features/extjs_3.4.0/root/static/ext/docs
+      clarive/features/extjs_3.4.0/root/static/ext/examples
+    );
+    my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
+    `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
+    `find $base/local -type f | sed -e 's#^$base/##' >> MANIFEST`;
+    `echo 'stew.snapshot' >> MANIFEST`;
+
+    my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
+      $exclude_str, $archive_path;
     system($cmd);
 
     if ( -f $archive_path ) {
