@@ -26,4 +26,4 @@ fi
 
 echo 'Installing dependencies...'
 
-bin/cla stew install . "${ARGV[0]}"
+bin/cla stew install . "${ARGV[@]}"
