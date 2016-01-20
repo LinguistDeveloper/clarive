@@ -495,6 +495,258 @@ subtest 'topic_drop: drops child to parent' => sub {
     is_deeply $changeset_doc->{release}, [$release_mid];
 };
 
+subtest 'topic_drop: asks user if several variants possible' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+            {
+                action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.topicsfield.release.changesets.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Sprint',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { node1 => { topic_mid => $changeset_mid }, node2 => { topic_mid => $release_mid } } }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'targets' => [ ignore(), ignore() ],
+            'success' => \1
+        }
+      };
+
+    is $c->stash->{json}->{targets}->[0]->{meta}->{name}, 'Release';
+    is $c->stash->{json}->{targets}->[1]->{meta}->{name}, 'Sprint';
+};
+
+subtest 'topic_drop: uses selected by user variant' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+            {
+                action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.topicsfield.release.changesets.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Sprint',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                selected_id_field => 'release',
+                selected_mid => $changeset_mid,
+                node1             => { topic_mid => $changeset_mid },
+                node2             => { topic_mid => $release_mid }
+            }
+        }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Topic #$release_mid added to #$changeset_mid in field `release`",
+            'success' => \1
+        }
+      };
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }
