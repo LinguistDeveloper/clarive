@@ -1397,7 +1397,8 @@ sub delete_rule {
 sub restore_rule {
     my ($self,%p)=@_;
 
-    my $rule = mdb->rule_version->find_one({ id => $p{id_rule}, deleted => 1});
+    my $rule = mdb->rule_version->find_one({ id => "$p{id_rule}", deleted => '1'});
+    _fail _loc 'Rule version not found for restore, id=%1', $p{id_rule} unless $rule;
 
     delete $rule->{_id};
     delete $rule->{deleted};
@@ -1408,7 +1409,7 @@ sub restore_rule {
     $rule->{ts} = $ts;
 
     mdb->rule->insert($rule);
-    mdb->rule_version->update({ id => $p{id_rule}, deleted => 1 }, { '$unset' => { 'deleted' => ''}, '$set' => { 'ts' => $ts }});
+    mdb->rule_version->update({ id => $p{id_rule}, deleted => '1' }, { '$unset' => { 'deleted' => ''}, '$set' => { 'ts' => $ts }});
 }
 
 no Moose;
