@@ -47,6 +47,9 @@ sub create_label {
 
 sub create_rule_form {
     my $class = shift;
+    my (%params) = @_;
+
+    $params{rule_tree} = JSON::encode_json( $params{rule_tree} ) if $params{rule_tree} && ref $params{rule_tree};
 
     my $id_rule = mdb->seq('id');
     mdb->rule->insert(
@@ -55,6 +58,7 @@ sub create_rule_form {
             ts        => '2015-08-06 09:44:30',
             rule_type => "form",
             rule_seq  => $id_rule,
+            %params
             #rule_tree => JSON::encode_json(_fieldlets())
         }
     );

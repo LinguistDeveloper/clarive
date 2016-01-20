@@ -1,5 +1,7 @@
 package Baseliner::Model::Topic;
 use Moose;
+BEGIN { extends 'Catalyst::Model' }
+
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -12,8 +14,6 @@ use Array::Utils qw(:all);
 use v5.10;
 use utf8;
 use experimental 'autoderef', 'switch';
-
-BEGIN { extends 'Catalyst::Model' }
 
 my $post_filter = sub {
         my ($text, @vars ) = @_;
@@ -2865,19 +2865,51 @@ sub get_meta_permissions {
     #     cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
     # defined && $mid && return $_ for cache->get($cache_key);
     
-    my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
-    my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
-    my $sec = $data->{_project_security};
-    
-    my $is_root = model->Permissions->is_root( $username );
+    my $parse_category;
+
+    # This is mainly for backwards compatibility
+    if ($data->{name_category}) {
+        $parse_category = $data->{name_category};
+    }
+    elsif ($name_category) {
+        $parse_category = $name_category;
+    }
+
+    # This is the current way for doing things
+    elsif (my $category = $data->{category}) {
+        $parse_category = $category->{name};
+    }
+
+    _fail 'cannot parse category name' unless $parse_category = _name_to_id($parse_category);
+
+    my $parse_status;
+
+    # This is mainly for backwards compatibility
+    if ($data->{name_status}) {
+        $parse_status = $data->{name_status};
+    }
+    elsif ($name_status) {
+        $parse_status = $name_status;
+    }
+
+    # This is the current way for doing things
+    elsif (my $status = $data->{category_status}) {
+        $parse_status = $status->{name};
+    }
+
+    _fail 'cannot parse status name' unless $parse_status = _name_to_id($parse_status);
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my $is_root = $permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $mid,user_security => $user_security );
-    my @user_actions_for_topic = $user_actions->{positive};
-    my @user_read_actions_for_topic = $user_actions->{negative};
+    my $user_actions = $permissions->user_actions_by_topic( username=> $username, mid => $mid,user_security => $user_security );
+    my @user_actions_for_topic = _array $user_actions->{positive};
+    my @user_read_actions_for_topic = _array $user_actions->{negative};
 
     for (_array $meta){
         my $parse_id_field = $_->{id_field};
-        
+
         if($_->{fieldlets}){
         	my @fields_form = _array $_->{fieldlets};
             for my $field_form ( @fields_form ){
