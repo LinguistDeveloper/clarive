@@ -1369,6 +1369,48 @@ sub save_rule {
     { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
 
 }
+
+sub delete_rule {
+    my ($self,%p)=@_;
+
+    my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
+    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
+
+    my $ts_modified = 0;
+    my $old_timestamp = ''.$doc->{ts};
+    my $actual_timestamp = ''.Class::Date->now();
+
+    my $name = $doc->{rule_name};
+    if($doc->{rule_type} eq 'fieldlets'){
+        #remove relationship between rule and category
+        mdb->category->update({default_form=>"$p{id_rule}"},{'$set'=>{default_form=>''}});
+    }
+    mdb->rule->remove({ id=>"$p{id_rule}" },{ multiple=>1 });
+    mdb->grid->remove({ id_rule=>"$p{id_rule}" });
+
+    delete $doc->{_id};
+
+    mdb->rule_version->insert({ %$doc, deleted=>'1', ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, was=>'' });    
+    return $name;
+}
+
+sub restore_rule {
+    my ($self,%p)=@_;
+
+    my $rule = mdb->rule_version->find_one({ id => $p{id_rule}, deleted => 1});
+
+    delete $rule->{_id};
+    delete $rule->{deleted};
+    delete $rule->{was};
+
+    my $ts = mdb->ts;
+
+    $rule->{ts} = $ts;
+
+    mdb->rule->insert($rule);
+    mdb->rule_version->update({ id => $p{id_rule}, deleted => 1 }, { '$unset' => { 'deleted' => ''}, '$set' => { 'ts' => $ts }});
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

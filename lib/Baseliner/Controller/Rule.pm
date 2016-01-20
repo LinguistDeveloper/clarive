@@ -209,16 +209,7 @@ sub delete : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        my $row = mdb->rule->find_one({ id=>"$p->{id_rule}" });
-        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        my $name = $row->{rule_name};
-        if($row->{rule_type} eq 'fieldlets'){
-            #remove relationship between rule and category
-            mdb->category->update({default_form=>"$p->{id_rule}"},{'$set'=>{default_form=>''}});
-        }
-        mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
-        mdb->grid->remove({ id_rule=>"$p->{id_rule}" });
-        # TODO delete rule_version? its capped, it can't be deleted... may be good to keep history
+        my $name = Baseliner->model('Rules')->delete_rule( username => $c->username, id_rule => $p->{id_rule} );
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
         my $err = shift;

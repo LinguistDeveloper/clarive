@@ -12,6 +12,7 @@ TestEnv->setup;
 use Baseliner::Role::CI;
 use BaselinerX::Type::Statement;
 use BaselinerX::Type::Service;
+use Class::Date;
 use JSON ();
 
 use_ok 'Baseliner::Model::Rules';
@@ -78,7 +79,7 @@ subtest 'does not compile when config flag is off and rule is on' => sub {
 };
 
 subtest 'does not compile when config flag is off and rule is off' => sub {
-    _setup( rule_compile_mode => 'none' );
+    _setup( rule_compile_mode => 'none', ts => "2015-06-30 13:44:11" );
 
     my $rules = _build_model();
 
@@ -238,12 +239,52 @@ subtest 'meta key with attributes sent to service op' => sub {
     ok $stash->{is_ok};
 };
 
+subtest 'delete_rule: actually deletes the rule' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+
+    my $rule = mdb->rule->find_one({ id => '1' });
+
+    ok !$rule;
+};
+
+subtest 'delete_rule: creates a delete version' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+
+    my $version = mdb->rule_version->find_one({ id => '1', deleted => '1'});
+
+    ok $version;
+};
+
+subtest 'restore_rule: actually restores the rule' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+
+    $rules->restore_rule( id_rule => '1' );
+    my $rule = mdb->rule->find_one({ id => '1' });
+
+    ok $rule;
+};
+
 sub _setup {
     my (%params) = @_;
 
     TestUtils->setup_registry('BaselinerX::Type::Statement', 'Baseliner::Model::Rules');
 
     my $code = $params{code} || q%return 'hi there';%;
+    my $ts = $params{ts} || ''.Class::Date->now();
+    my $iso_ts = $ts;
+    $iso_ts =~ s/\s/T/;
 
     mdb->rule->drop;
     mdb->rule->insert(
@@ -256,7 +297,7 @@ sub _setup {
             "authtype"        => "required",
             "rule_name"       => "test",
             rule_compile_mode => $params{rule_compile_mode} // 'none',
-            "ts"              => "2015-06-30 13:44:11",
+            "ts"              => $ts,
             "username"        => "root",
             "rule_seq"        => 1,
             "rule_event"      => undef,
@@ -264,7 +305,7 @@ sub _setup {
             "subtype"         => "-",
             "detected_errors" => "",
             "rule_tree" =>
-qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.png","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.png","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.png","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.png","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"2015-06-30T13:42:57","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.png","id":"xnode-1027"},"children":[]}]%
+qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.png","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.png","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.png","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.png","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"$iso_ts","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.png","id":"xnode-1027"},"children":[]}]%
         }
     );
 }
