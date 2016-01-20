@@ -1,10 +1,12 @@
 package Baseliner::Controller::CI;
 use Moose;
+BEGIN { extends 'Catalyst::Controller' }
+
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
 use Try::Tiny;
-BEGIN { extends 'Catalyst::Controller' }
 use experimental 'switch', 'smartmatch', 'autoderef';
 
 register 'action.ci.admin' => { name => 'Admin CIs' };
@@ -131,18 +133,22 @@ sub dispatch {
 sub tree_roles {
     my ( $self, %p ) = @_;
 
-    #my $last1 = '2011-11-04 10:49:22';
-    my $cnt  = 1;
-    my $user = $p{user};
+    my $user = $p{user} or _fail 'user required';
+
+    my $permissions = Baseliner::Model::Permissions->new;
+    my $is_ci_admin = $self->user_is_admin_ci($user);
+
+    my $cnt = 1;
     my @tree;
     for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
         my $role = $_->{role};
         my $name = $_->{name};
-        if ( Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $user ) || Baseliner->model( 'Permissions' )
-            ->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%') )
+        if (   $is_ci_admin
+            || $permissions->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%' ) )
         {
             $role = 'Generic' if $name eq '';
-            push @tree, {
+            push @tree,
+              {
                 _id        => $cnt++,
                 _parent    => undef,
                 _is_leaf   => \0,
@@ -156,53 +162,63 @@ sub tree_roles {
                 ts         => '-',
                 tags       => [],
                 properties => undef,
+              };
+        }
+    }
 
-                #children => [], #\@chi
-            };
-        } ## end if ( Baseliner->model(...))
-    } 
     return @tree;
 }
 
 sub tree_classes {
-    my ($self, %p)=@_;
-    my $role = $p{role};
-    my $user = $p{user};
-    my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    my ( $self, %p ) = @_;
+
+    my $role      = $p{role}      or _fail 'role required';
+    my $role_name = $p{role_name} or _fail 'role_name required';
+    my $user      = $p{user}      or _fail 'user required';
+    my $parent = $p{parent} || 0;
+
+    my $cnt = substr( _nowstamp(), -6 ) . ( $parent * 1 );
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my $is_ci_admin = $self->user_is_admin_ci($user);
+
     my @tree;
-    map {
-        my $item       = $_;
-        my $collection = $_->collection;
-        my $ci_form = $self->form_for_ci( $item, $collection );
+
+    foreach my $package (packages_that_do($role)) {
+        my $item       = $package;
+        my $collection = $package->collection;
+
+        my $ci_form    = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        my $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $user ) || Baseliner->model( 'Permissions' )
-            ->user_has_any_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item );
-        if ( $has_permission )
+
+        if ( $is_ci_admin
+            || $permissions->user_has_any_action( username => $user,
+                action => 'action.ci.%.' . $role_name . '.' . $item ) )
         {
-
             $cnt++;
-            push @tree, {
-                _id      => ++$cnt,
-                _parent  => $p{parent} || undef,
-                _is_leaf => \0,
-                type     => 'class',
-
-                #mid        => $cnt,
+            push @tree,
+              {
+                _id             => ++$cnt,
+                _parent         => $p{parent} || undef,
+                _is_leaf        => \0,
+                type            => 'class',
                 item            => $item,
                 collection      => $collection,
                 ci_form         => $ci_form,
-                class           => $_,
-                classname       => $_,
-                icon            => $_->icon,
-                has_bl          => $_->has_bl,
-                has_description => $_->has_description,
+                class           => $package,
+                classname       => $package,
+                icon            => $package->icon,
+                has_bl          => $package->has_bl,
+                has_description => $package->has_description,
                 versionid       => '',
                 ts              => '-',
                 properties      => '',
-            };
-        } 
-    } packages_that_do( $role );
-    return sort { lc $a->{class} cmp lc $b->{class} } @tree; 
+              };
+        }
+    }
+
+    return sort { lc $a->{class} cmp lc $b->{class} } @tree;
 }
 
 sub form_for_ci {
@@ -211,7 +227,7 @@ sub form_for_ci {
     my $ci_form = $class && $class->can('ci_form') 
         ? $class->ci_form 
         : sprintf( "/ci/%s.js", $collection );
-    my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
+    my $component_exists = -e Clarive->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
 }
 
@@ -961,48 +977,60 @@ _warn $p;
     $c->forward('View::JSON');
 }
 
-=head2 load
-
-Load a CI row.
-
-=cut
 sub load : Local {
-    my ($self, $c, $action) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
-    my $mid = $p->{mid};
+
+    my $mid = $p->{mid} or _fail 'mid required';
+
     local $Baseliner::CI::get_form = 1;
     my $cache_key;
-    if( length $mid ) {
-        $cache_key = { d=>'ci:load', mid=>"$mid", p=>$p }; # [ "ci:load:$mid:", $p ];
-        if( my $cc = cache->get( $cache_key ) ) {
+    if ( length $mid ) {
+        $cache_key = { d => 'ci:load', mid => "$mid", p => $p };    # [ "ci:load:$mid:", $p ];
+        if ( my $cc = cache->get($cache_key) ) {
             $c->stash->{json} = $cc;
             return $c->forward('View::JSON');
         }
     }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
+        my $permissions = Baseliner::Model::Permissions->new;
+
         local $Baseliner::CI::use_empty_ci = 1;
-        my $obj = Baseliner::CI->new( $mid );
-        my $class = ref $obj;
+        my $obj        = Baseliner::CI->new($mid);
+        my $class      = ref $obj;
         my $collection = Util->to_base_class($class);
-        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) )
-            unless $c->has_action("action.ci.view.%.$collection");
-        my $rec = $obj->load;
-        Util->_unbless( $rec );
-        $rec->{has_bl} = $obj->has_bl;
-        $rec->{has_description} = $obj->has_description;
-        $rec->{classname} = $rec->{class} = $class;
-        $rec->{icon} = $obj->icon;
-        $rec->{active} = $rec->{active} ? \1 : \0;
-        $rec->{services} = [ $obj->service_list ];
-        $rec->{password} = $Baseliner::CI::password_hide_str; 
-        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
-    } catch {
+
+        _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
+          unless $self->user_can_view_ci($c->username, $collection);
+
+        my $rec;
+
+        my $cache_key = { d => 'ci:load', mid => "$mid" };
+        $rec = cache->get($cache_key);
+
+        if (!$rec) {
+            $rec = $obj->load;
+            Util->_unbless($rec);
+            $rec->{has_bl}          = $obj->has_bl;
+            $rec->{has_description} = $obj->has_description;
+            $rec->{classname}       = $rec->{class} = $class;
+            $rec->{icon}            = $obj->icon;
+            $rec->{active}          = $rec->{active} ? \1 : \0;
+            $rec->{services}        = [ $obj->service_list ];
+            $rec->{password}        = $Baseliner::CI::password_hide_str;
+
+            cache->set( $cache_key, $rec );
+        }
+
+        $c->stash->{json} = { success => \1, msg => _loc( 'CI %1 loaded ok', $mid ), rec => $rec };
+    }
+    catch {
         my $err = shift;
-        _error( $err );
-        $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
+        _error($err);
+        $c->stash->{json} = { success => \0, msg => _loc( 'CI load error: %1', $err ) };
     };
-    cache->set( $cache_key, $c->stash->{json} ) if defined $cache_key;
     $c->forward('View::JSON');
 }
 
@@ -1392,27 +1420,33 @@ sub service_run : Local {
 }
 
 sub edit : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
     if ( my $mid = $p->{mid} ) {
-        my $doc = mdb->master->find_one({ mid=>"$mid" });
+        my $doc = mdb->master->find_one( { mid => "$mid" } );
         _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
+
         my $collection = $doc->{collection};
-        _fail(_loc('User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection) ) 
-            unless $c->has_action("action.ci.view.%.$collection");
-        $has_permission = $c->has_action( 'action.ci.admin' ) || $c->has_action( 'action.ci.admin.%.'. $collection );
-    } else {
-        $has_permission = 1;
+
+        _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
+          unless $self->user_can_view_ci($c->username, $collection);
+
+        $has_permission = $self->user_can_admin_ci($c->username, $collection);
+    }
+    else {
+        $has_permission = 0;
     }
 
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
 }
 
-sub import : Local {
+sub import_all : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     
@@ -1541,14 +1575,18 @@ sub get_ci_from_row{
 }
 
 sub grid : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
 
+    my $collection = $p->{collection};
+
     my $has_permission;
-   
-    if ( $p->{collection} ) {
-        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin', username => $c->username ) ||Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
-    } else { 
+
+    if ( $collection ) {
+        $has_permission = $self->user_can_admin_ci($c->username, $collection);
+    }
+    else {
         $has_permission = 0;
     }
 
@@ -1717,9 +1755,55 @@ sub default : Path Args(2) {
 }
 
 sub user_can_search {
-    my ($self, $username) = @_;
-    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.ci');
+    my $self = shift;
+    my ($username) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return $permissions->user_has_action( username => $username, action => 'action.search.ci' );
 }
+
+sub user_is_admin_ci {
+    my $self = shift;
+    my ($username) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return $permissions->user_has_action( action => 'action.ci.admin', username => $username );
+}
+
+sub user_can_view_ci {
+    my $self = shift;
+    my ( $username, $collection ) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return 1 if $self->user_is_admin_ci($username);
+
+    return 1 if $permissions->user_has_any_action(
+        action   => 'action.ci.view.%.' . $collection,
+        username => $username
+    );
+
+    return 0;
+}
+
+sub user_can_admin_ci {
+    my $self = shift;
+    my ( $username, $collection ) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return 1 if $self->user_is_admin_ci($username);
+
+    return 1 if $permissions->user_has_any_action(
+        action   => 'action.ci.admin.%.' . $collection,
+        username => $username
+    );
+
+    return 0;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
