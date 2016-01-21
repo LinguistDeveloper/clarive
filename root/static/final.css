@@ -526,17 +526,14 @@ a {
 }
 
 .x-tree-node-expanded .x-tree-node-icon {
-    /*background-image:url('/static/images/icons/folder-expanded.png');*/
     background-image: none;
 }
 
 .x-tree-node-collapsed .x-tree-node-icon {
-    /*background-image:url('/static/images/icons/folder-collapsed.png');*/
     background-image: none;
 }
 
 .x-tree-node-leaf .x-tree-node-icon {
-    /*background-image:url('/static/images/icons/leaf.png');*/
     background-image: none;
 }
 
