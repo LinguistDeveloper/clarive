@@ -1237,7 +1237,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_docgen,
                     self.btn_kanban,
                     self.btn_graph,
-                    self.btn_life_cicle
+                    self.btn_timeline,
+                    self.btn_life_cicle,
                 ]
             });
         } else {
