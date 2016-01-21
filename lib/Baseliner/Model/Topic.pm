@@ -3204,8 +3204,8 @@ sub status_changes {
     my ( $topic_mid, $limit ) = @_;
 
     $limit //= 100;
-
     my @status_changes;
+
 
     my $rs =
       mdb->activity->find( { event_key => 'event.topic.change_status', mid => "$topic_mid" } )->sort( { ts => -1 } )
