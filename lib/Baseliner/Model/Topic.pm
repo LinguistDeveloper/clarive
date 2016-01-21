@@ -3206,14 +3206,12 @@ sub status_changes {
     $limit //= 100;
     my @status_changes;
 
-
     my $rs =
       mdb->activity->find( { event_key => 'event.topic.change_status', mid => "$topic_mid" } )->sort( { ts => -1 } )
       ->limit($limit);
     for my $ev ( $rs->all ) {
         try {
             my $ed = $ev->{vars};
-
             push @status_changes,
               {
                 old_status => $ed->{old_status},
@@ -3229,25 +3227,17 @@ sub status_changes {
 
 sub list_status_changes {
 
-    my ($self, $data) = @_;
-    my @status_changes;
-    my $cont = 0;
-    #_log _dump "estos son los datos";
-    #_log _dump $data;
-    for my $ev ( mdb->activity->find({ mid => $data, event_key => 'event.topic.change_status'})->all ) {
-        try {
-            my $ed = $ev->{vars};
-            push @status_changes, {
+            push @status_changes,
+              {
                 old_status => $ed->{old_status},
                 status     => $ed->{status},
                 username   => $ed->{username},
                 when       => Class::Date->new( $ev->{ts} )
-            };
-        } catch {};
+              };
+        }
+        catch {};
     }
-
-    #_log _dump @status_changes;
-    return @status_changes
+    return @status_changes;
 }
 
 sub get_users_friend {
