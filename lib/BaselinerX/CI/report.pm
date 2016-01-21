@@ -1204,9 +1204,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     $row{$k. "_$category"} = $cal;
                 }
             }elsif( $mt =~ /history/ ) {
-                my $data;
-                $data->{topic_mid} = $_->{mid};
-                my @status_changes = Baseliner->model('Topic')->status_changes( $data );
+                my @status_changes = Baseliner->model('Topic')->status_changes( $_->{mid} );
                 my $html = '<div style="width:250px">';
                 for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
                     $html .= '<p style="font: 10px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";

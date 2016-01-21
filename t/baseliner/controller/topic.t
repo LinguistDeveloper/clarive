@@ -305,6 +305,62 @@ subtest 'new topics have category_id in stash' => sub {
     is $stash->{category_id}, $base_params->{category};
 };
 
+subtest 'list_status_changes: returns status changes' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $topic_mid = TestSetup->create_topic(
+        status => $status,
+        title  => "Topic"
+    );
+
+    my $model = Baseliner::Model::Topic->new;
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
+    $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => 'user' );
+
+    my $status2 = TestUtils->create_ci( 'status', name => 'Change2', type => 'I' );
+    $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
+
+    my @changes = $model->status_changes($topic_mid);
+
+    my $c = _build_c( req => { params => { mid => $topic_mid } } );
+
+    my $controller = _build_controller();
+    $controller->list_status_changes($c);
+
+    cmp_deeply $c->stash, {
+        json => {
+            data => [
+                {
+                    when         => ignore(),
+                    'old_status' => 'New',
+                    'status'     => 'Change1',
+                    'username'   => 'user'
+                },
+                {
+                    when         => ignore(),
+                    'old_status' => 'Change1',
+                    'status'     => 'Change2',
+                    'username'   => 'user'
+                },
+            ]
+        }
+    };
+};
+
+sub _setup {
+    TestUtils->cleanup_cis;
+    TestUtils->setup_registry( 'BaselinerX::CI',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic' );
+
+    mdb->activity->drop;
+    mdb->topic->drop;
+}
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }

@@ -2352,17 +2352,14 @@ sub topic_drop : Local {
 }
 
 sub list_status_changes : Local {
+    my ( $self, $c ) = @_;
 
-    my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $data;
-    $data = $p->{mid};
 
-    my @status_changes = Baseliner->model('Topic')->status_changes( $data, 1 );
+    my @status_changes = Baseliner::Model::Topic->new->status_changes( $p->{mid} );
 
-    $c->stash->{json} = { data=>\@status_changes};
+    $c->stash->{json} = { data => \@status_changes };
     $c->forward('View::JSON');
-
 }
 
 no Moose;

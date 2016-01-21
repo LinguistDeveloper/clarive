@@ -65,8 +65,8 @@ sub init_fieldlets_tasks {
         $node->{ts} = mdb->ts;
         # $node->{who} = 'root'; # TODO get user from $c->username
         $node 
-    } Baseliner->registry->get('fieldlet.system.status_new')->registry_node->raw, 
-    Baseliner->registry->get('fieldlet.system.title')->registry_node->raw;
+    } Baseliner::Core::Registry->get('fieldlet.system.status_new')->registry_node->raw, 
+    Baseliner::Core::Registry->get('fieldlet.system.title')->registry_node->raw;
 }
 
 sub tree_format {
