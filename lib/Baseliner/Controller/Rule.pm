@@ -302,36 +302,8 @@ sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
     try {
-        if( $$p{wsdl} ) {
-            # soap envelope received, precompile for errors
-            $self->compile_wsdl($$p{wsdl});
-        }
-        my $data = {
-            rule_active => '1',
-            rule_name  => $p->{rule_name},
-            rule_when  => ( $p->{rule_type} eq 'pipeline' 
-                ? $p->{pipeline_default}  
-                : $p->{rule_when} ),
-            rule_event => $p->{rule_event},
-            rule_type  => $p->{rule_type},
-            rule_compile_mode  => $p->{rule_compile_mode},
-            rule_desc  => substr($p->{rule_desc},0,2000),
-            subtype => $p->{subtype},
-            authtype => $p->{authtype},
-            wsdl => $p->{wsdl},
-            ts =>  mdb->ts,
-            username => $c->username
-        };
-        if ( length $p->{rule_id} ) {
-            my $doc = mdb->rule->find_one({ id=>"$p->{rule_id}" });
-            _fail _loc 'Rule %1 not found', $p->{rule_id} unless $doc;
-            mdb->rule->update({ id=>"$p->{rule_id}" },{ %$doc, %$data });
-        } else {
-            $data->{id} = mdb->seq('rule');
-            $data->{rule_seq} = 0+mdb->seq('rule_seq');
-            mdb->rule->insert($data);
-        }
-        $c->stash->{json} = { success => \1, msg => 'Creado' };
+        my $res = Baseliner::Model::Rules->new->save_rule( %$p, username => $c->username );
+        $c->stash->{json} = { success => \1, msg => _loc('Rule %1 saved', $res->{rule_name}) };
     } catch {
         my $err = shift;
         my $msg = _loc('Error saving rule: %1', $err );
@@ -621,7 +593,7 @@ sub local_stmts_save {
         return $err if $ignore_dsl_errors;
         _fail _loc "Error testing DSL build: %1", $err;
     };
-    $returned_ts = Baseliner::Model::Rules->new->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts},
+    $returned_ts = Baseliner::Model::Rules->new->write_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts},
         detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
         ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
     return ($detected_errors,$returned_ts,$error_checking_dsl);
@@ -671,7 +643,7 @@ sub rollback_version : Local {
     my $ver = mdb->rule_version->find_one({ _id=>mdb->oid($version_id) });
     _fail _loc 'Version not found: %1', $version_id unless $ver;
     try {
-        Baseliner->model('Rules')->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
+        Baseliner::Model::Rules->new->write_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
         $c->stash->{json} = { success=>\1, msg => _loc('Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
     } catch {
         my $err = shift;

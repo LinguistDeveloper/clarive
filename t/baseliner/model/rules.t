@@ -263,6 +263,149 @@ subtest 'delete_rule: creates a delete version' => sub {
     ok $version;
 };
 
+subtest 'delete_rule: creates the correct event' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+
+    my @events = mdb->event->find({event_key => 'event.rule.delete'})->all;
+
+    is scalar @events, 1;
+};
+
+subtest 'save_rule: actually creates a new rule' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe'
+    };
+
+    $rules->save_rule( %$data );
+
+    my @rules = mdb->rule->find({})->all;
+
+    is scalar @rules, 2;
+};
+
+subtest 'save_rule: updates the rule data' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe'
+    };
+
+    $rules->save_rule( %$data );
+
+    my $rule = mdb->rule->find_one({ rule_name => 'Test rule'});
+
+    $data = {
+        rule_id => $rule->{id},
+        rule_active => '1',
+        rule_name  => 'Test rule updated',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule updated',
+        ts =>  mdb->ts,
+        username => 'mary_key'
+    };
+
+    $rules->save_rule( %$data );
+
+    $rule = mdb->rule->find_one({ id => $rule->{id} });
+
+    is $rule->{rule_desc}, 'Test rule updated';
+    is $rule->{username}, 'mary_key';
+};
+
+subtest 'save_rule: creates the correct event when updated' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe'
+    };
+
+    $rules->save_rule( %$data );
+
+    my $rule = mdb->rule->find_one({ rule_name => 'Test rule'});
+
+    $data = {
+        rule_id => $rule->{id},
+        rule_active => '1',
+        rule_name  => 'Test rule updated',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule updated',
+        ts =>  mdb->ts,
+        username => 'mary_key'
+    };
+
+    $rules->save_rule( %$data );
+
+    my @events = mdb->event->find({event_key => 'event.rule.update'})->all;
+
+    is scalar @events, 1;
+};
+
+subtest 'save_rule: creates the correct event for new rule' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe'
+    };
+
+    $rules->save_rule( %$data );
+
+    my @events = mdb->event->find({event_key => 'event.rule.create'})->all;
+
+    is scalar @events, 1;
+};
+
 subtest 'restore_rule: actually restores the rule' => sub {
     _setup();
 
@@ -279,13 +422,14 @@ subtest 'restore_rule: actually restores the rule' => sub {
 sub _setup {
     my (%params) = @_;
 
-    TestUtils->setup_registry('BaselinerX::Type::Statement', 'Baseliner::Model::Rules');
+    TestUtils->setup_registry('BaselinerX::Type::Event','BaselinerX::Events','BaselinerX::Type::Statement', 'Baseliner::Model::Rules');
 
     my $code = $params{code} || q%return 'hi there';%;
     my $ts = $params{ts} || ''.Class::Date->now();
     my $iso_ts = $ts;
     $iso_ts =~ s/\s/T/;
 
+    mdb->event->drop;
     mdb->rule->drop;
     mdb->rule->insert(
         {
