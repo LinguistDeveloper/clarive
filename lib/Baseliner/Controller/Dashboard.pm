@@ -481,6 +481,7 @@ sub topics_by_field : Local {
     } elsif ( $group_by eq 'topics_by_status') {
         $group_by = 'category_status.name';
     }
+
     if ( $p->{condition} ) {
         try {
             my $cond = eval('q/'.$p->{condition}.'/');
@@ -513,10 +514,12 @@ sub topics_by_field : Local {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
+        $perm->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
+
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     try {
         @topics_by_category = $self->_data_to_aggregate(where => $where,
