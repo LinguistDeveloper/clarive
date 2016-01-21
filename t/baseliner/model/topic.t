@@ -921,7 +921,8 @@ sub _setup {
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic'
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;

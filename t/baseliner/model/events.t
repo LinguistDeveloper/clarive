@@ -91,6 +91,7 @@ subtest 'new_event: creates new event' => sub {
     _setup();
 
     Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.rule.update', {} );
 
     my $events = _build_model();
 
