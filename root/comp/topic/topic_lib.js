@@ -1217,26 +1217,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     create_toolbar : function(){
         var self = this;
-        var tb = new Ext.Toolbar({
-            isFormField: true,
-            items: [
-                self.btn_detail,
-                self.btn_edit,
-                //'-',
-                ' ',
-                self.btn_delete_form,
-                self.btn_comment,
-                self.btn_save_form,
-                '->',
-                self.btn_deploy,
-               // '-',
-                self.btn_change_status,
-                self.btn_docgen,
-                self.btn_graph,
-                self.btn_kanban,
-                self.btn_life_cicle,
-                self.btn_timeline
-            ]
+        var tb;
 
         if ( self.topic_mid ) {
             tb = new Ext.Toolbar({
@@ -1254,8 +1235,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    // '-',
                     self.btn_change_status,
                     self.btn_docgen,
-                    self.btn_graph,
                     self.btn_kanban,
+                    self.btn_graph,
                     self.btn_life_cicle
                 ]
             });
@@ -1280,7 +1261,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
         var win = window.open( url, '_blank' );
     },
-    show_diagram : function(){
+    show_life_cicle : function(){
         var self = this;
 
         Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){

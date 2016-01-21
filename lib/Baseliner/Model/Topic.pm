@@ -3209,7 +3209,7 @@ sub status_changes {
 
     my $rs = mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$mid })->sort({ ts=>-1 });
 
-    $rs->limit>(100) if !$limit;
+    $rs->limit(100) if !$limit;
 
     for my $ev ( $rs->all ) {
         try {
