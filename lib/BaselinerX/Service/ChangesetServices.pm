@@ -480,6 +480,7 @@ sub checkout {
     _fail _loc 'Missing job_dir' unless length $job_dir;
     
     my $cnt = 0;
+    # TODO group all items by repo provider and ask repo for a multi-item checkout
     my @items = _array( $stash->{items} );
     for my $item ( @items ) {
         $item->checkout( dir=>$job_dir );
@@ -507,13 +508,16 @@ sub nature_items {
     my $log   = $job->logger;
     my $stash = $c->stash;
     
-    my $commit_items = $config->{commit_items};
+    my $commit_items = $config->{commit_items} // 0;
 
     $stash->{natures} = {}; 
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
+    $log->info( _loc('Starting nature analysis for all job items...') );
    
     my @nat_rows =  ci->nature->find({active=>'1'})->fields({ mid=>1 })->all;
     my @projects = _array( $job->projects );
+    my $start_t = Util->_ts();
+    my $item_cnt = 0;
     for my $project ( @projects ) {
         #my @items = @{ $stash->{items} || [] };
         my @items = @{ $stash->{project_items}{ $project->mid }{items} || [] };
@@ -521,20 +525,21 @@ sub nature_items {
         my %nature_names;
         my @msg;
         for my $nature ( map { ci->new($_->{mid}) } @nat_rows ) {
+            my $nature_clon = Util->_clone( $nature );
             my @chosen;
             push @msg, "nature = " . $nature->name;
             ITEM: for my $it ( @items ) {
-                my $nature_clon = Util->_clone( $nature );
+                $item_cnt++;
                 if( $commit_items && $it->ns && !ci->find( ns=>$it->ns) ) {
                     $it->save;
                 }
-                push @msg, "item = " . $it->{fullpath};
+                push @msg, "item = " . $it->{fullpath} if $it->{fullpath};
                 if( $nature->push_item( $it ) ) {
                     my $id =  $nature->$nat_id;
                     my $mid =  $nature->mid;
                     $stash->{natures}{ $project->mid }{ $id } = $nature;
                     $stash->{natures}{ $project->mid }{ $mid } = $nature;
-                    $nature_names{ $nature->name } = ();
+                    $nature_names{ $nature->name }++;
                     $job->push_ci_unique( 'natures', $nature_clon );
                     push @chosen, $it;
                     
@@ -551,9 +556,10 @@ sub nature_items {
         # $log->debug( _loc('Project natures for %1', $project->name), $stash->{project_items}{ $project->mid }{natures} );
         # $log->debug( _loc('Nature check log'), \@msg );
         # $log->debug( _loc('Natures'), $stash->{natures} );
+        $log->debug( _loc('%1 analysis executed in %2 seconds', $item_cnt, -($start_t - Util->_ts()) ) );
         my @nats = keys %nature_names;
         if( my $cnt = scalar @nats ) {
-            $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );
+            $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ', map{ sprintf '%s (%d)', $_, $nature_names{$_}//0 } @nats ) );
         } else {
             $log->warn( _loc('No natures detected in job items') );
         }

@@ -115,6 +115,7 @@ params:
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
                     if (node_data.repo_dir != undefined) { ci.data.repo_dir = node_data.repo_dir };
+                    ci.data.sha = ci.sha;
                     var mid = node_data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
                         Baseliner.message( _('Error'), _('Node is not a revision'));
