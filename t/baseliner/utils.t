@@ -8,7 +8,7 @@ use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -124,6 +124,48 @@ subtest '_to_camel_case: camelize strings' => sub {
     is _to_camel_case('foo_bar_'), 'fooBar_';
     is _to_camel_case('_foo_bar'), '_fooBar';
     is _to_camel_case('____foo_____bar____'), '_fooBar_';
+};
+
+subtest 'parse_vars: parses string' => sub {
+    is parse_vars(''), '';
+
+    is parse_vars('foo'), 'foo';
+
+    is parse_vars('${foo}', {foo => 'bar'}), 'bar';
+    is parse_vars('${foo} ${bar}', {foo => 'bar', bar => 'baz'}), 'bar baz';
+    is parse_vars('before${foo}after', {foo => '|'}), 'before|after';
+};
+
+subtest 'parse_vars: parses references' => sub {
+    is parse_vars( \'${foo}', { foo => 'bar' } ), 'bar';
+    is_deeply parse_vars( { foo => '${foo}' }, { foo => 'bar' } ), { foo => 'bar' };
+    is_deeply parse_vars( ['${foo}'], { foo => 'bar' } ), ['bar'];
+    is parse_vars( MongoDB::OID->new( value => '${foo}' ), { foo => 'bar' } ), 'bar';
+};
+
+subtest 'parse_vars: parses recursively' => sub {
+    is parse_vars('before${foo}after', {foo => '${bar}', bar => '|'}), 'before|after';
+
+    like exception { parse_vars( '${foo}', { foo => '${foo}' } ) },
+      qr/Deep recursion in parse_vars for variable `foo`, path \${foo}/;
+};
+
+subtest 'parse_vars: throws when unknown variables' => sub {
+    like exception { parse_vars( '${foo}', { blah => 'blah' }, throw => 1 ) }, qr/Unresolved vars: 'foo' in \${foo}/;
+};
+
+subtest 'parse_vars: parses with field access' => sub {
+    is parse_vars( '${foo.bar}', { foo => '' } ), '${foo.bar}';
+    is parse_vars( '${foo.bar}', { foo => { bar => '123' } } ), '123';
+};
+
+subtest 'parse_vars: parses with functions' => sub {
+    is parse_vars( '${lc(foo)}', { foo => 'FOO' } ), 'foo';
+    is parse_vars( '${uc(foo)}', { foo => 'foo' } ), 'FOO';
+};
+
+subtest 'parse_vars: cleans up unresolved vars' => sub {
+    is parse_vars( '${foo}', {}, throw => 0, cleanup => 1 ), '';
 };
 
 done_testing;

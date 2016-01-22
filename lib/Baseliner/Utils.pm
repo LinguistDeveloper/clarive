@@ -1365,7 +1365,7 @@ sub parse_vars {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
 
-          $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+          $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw}, cleanup => $args{cleanup} );
           alarm 0;
     }
     return $ret;
