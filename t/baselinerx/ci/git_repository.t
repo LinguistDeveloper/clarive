@@ -449,6 +449,28 @@ subtest 'top_revision: returns top revision from random commits' => sub {
     is $rev->sha, $sha5;
 };
 
+subtest 'top_revision: returns top revision ignoring dates' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
+
+    my $sha  = TestGit->commit($repo, datetime => '2015-01-01 00:00:00');
+    my $sha1 = TestGit->commit($repo, datetime => '2015-01-02 00:00:00');
+    my $sha2 = TestGit->commit($repo, datetime => '2015-01-03 00:00:00');
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    my $sha3 = TestGit->commit($repo, datetime => '2015-01-04 00:00:00');
+    my $sha4 = TestGit->commit($repo, datetime => '2015-01-05 00:00:00');
+    my $sha5 = TestGit->commit($repo, datetime => '2015-01-01 00:00:00');
+
+    my $rev = $repo->top_revision(
+        revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => $sha5 } ],
+        tag       => 'TEST'
+    );
+
+    is $rev->sha, $sha5;
+};
+
 subtest 'top_revision: returns same top revision when already on top' => sub {
     _setup();
 

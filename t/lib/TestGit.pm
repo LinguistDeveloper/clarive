@@ -30,7 +30,8 @@ sub commit {
 
     my $timestamp = $STORE{"$repo"};
 
-    my $datetime = Time::Piece->new($timestamp)->strftime('%Y-%m-%d %T');
+    my $datetime = $params{datetime}
+      || Time::Piece->new($timestamp)->strftime('%Y-%m-%d %T');
 
     local $ENV{GIT_AUTHOR_DATE}    = $datetime;
     local $ENV{GIT_COMMITTER_DATE} = $datetime;
