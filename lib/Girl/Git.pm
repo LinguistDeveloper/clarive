@@ -4,6 +4,7 @@ use Any::Moose;
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use namespace::autoclean;
 use Baseliner::Utils;
+use Git::Wrapper;
 
 has dir  => qw(is ro isa Path::Class::Dir required 1);
 has bare => qw(is ro isa Bool required 1);

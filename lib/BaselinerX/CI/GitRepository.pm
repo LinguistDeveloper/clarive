@@ -4,7 +4,7 @@ use Baseliner::Utils;
 use BaselinerX::CI::bl;
 use BaselinerX::CI::GitRevision;
 use BaselinerX::GitBranch;
-use Git::Wrapper;
+use Git;
 use Try::Tiny;
 use experimental 'smartmatch';
 
@@ -105,7 +105,7 @@ sub group_items_for_revisions {
     my @items;
     if( $self->revision_mode eq 'show' ) {
         my %all_revs = map { $_->sha_long => $_ } _array($revisions);
-        my @ordered_revs = $self->git->exec( 'rev-list', '--no-walk=sorted', keys %all_revs );
+        my @ordered_revs = $self->_order_revisions(keys %all_revs);
         @ordered_revs = reverse @ordered_revs if $type ne 'demote';
         _debug( \@ordered_revs );
         my %items_uniq;
@@ -152,93 +152,118 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     my $git = $self->git;
 
     my @revisions = _array($revisions) or _fail 'Error: No revisions passed';
-    my $top_rev;
 
-    my %shas = map { 
-        # make sure every sha is there, for better error messaging
-        my $sha = $_->{sha};
-        my $long = try { $git->exec('rev-parse', $sha ) }
-        catch { _fail _loc "Error: revision `%1` not found in repository %2", $sha, $self->name };
-        $long => 1;
-    } @revisions; 
+    my %shas;
+    foreach my $revision (@revisions) {
+        my $ref = $revision->{sha};
+
+        my $sha = try { $git->exec('rev-parse', $ref) }
+        catch {
+            _fail _loc "Error: revision `%1` not found in repository %2", $ref,
+              $self->name
+        };
+
+        $shas{$sha}++;
+    }
+
     _debug "looking for top revision among shas: " . join ',', keys %shas;
 
     # get the tag sha
     my $tag_sha = try {
-        $git->exec( 'rev-parse', $tag );
+        $git->exec('rev-parse', $tag);
     }
     catch {
-        _fail _loc("Error: tag `%1` not found in repository %2", $tag, $self->name)
+        _fail _loc("Error: tag `%1` not found in repository %2", $tag,
+            $self->name)
     };
 
-    # get an ordered list, with the tag in the middle
-    my @sorted = $git->exec( 'rev-list', '--no-walk=sorted', keys %shas, $tag_sha );
-    _fail _loc "None of the given revisions are in the repository: %1", join(', ', keys %shas)
-         unless @sorted;
+    my @sorted = $self->_order_revisions(keys %shas, $tag_sha);
 
-    # index
-    my $k=1;
-    my %by_sha = map { $_ => $k++ } @sorted;
-    $k=1;
-    my %by_pos = map { $k++ => $_ } @sorted;
-
-    if( !exists $by_sha{ $tag_sha} ) {
-        _fail _loc "Could not find tag %1 (sha %2) in repository", $tag, $tag_sha;
+    my $top_rev;
+    if ($type eq 'promote') {
+        my $first_sha = $sorted[0];
+        _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha
+          if $first_sha eq $tag_sha;
+        $top_rev = BaselinerX::CI::GitRevision->new(
+            sha  => $first_sha,
+            name => $tag,
+            repo => $self
+        );
     }
-
-    if( $type eq 'promote' ) {
-        my $first_sha = $by_pos{1};
-        _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha if $first_sha eq $tag_sha;
-        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
+    elsif ($type eq 'static') {
+        my $first_sha = $sorted[0];
+        $top_rev = BaselinerX::CI::GitRevision->new(
+            sha  => $first_sha,
+            name => $tag,
+            repo => $self
+        );
     }
-    elsif( $type eq 'static' ) {
-        my $first_sha = $by_pos{1};
-        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$first_sha, name=>$tag, repo=>$self );
-    }
-    elsif( $type eq 'demote' ) {
-        my $last_sha = $by_pos{ scalar @sorted };
+    elsif ($type eq 'demote') {
+        my $last_sha = $sorted[-1];
 
         my $before_last = try {
-            $git->exec( 'rev-parse', $last_sha . '~1' );
-        } catch {
-            _fail _loc "Trying to demote all revisions in a repository, can't set tag %1 before %2", $tag,
-              substr( $last_sha, 0, 7 );
+            $git->exec('rev-parse', $last_sha . '~1');
+        }
+        catch {
+            _fail _loc
+              "Trying to demote all revisions in a repository, "
+              . "can't set tag %1 before %2",
+              $tag,
+              substr($last_sha, 0, 7);
         };
 
-        _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha if $before_last eq $tag_sha;
-        $top_rev = BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>$self );
+        _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha
+          if $before_last eq $tag_sha;
+        $top_rev = BaselinerX::CI::GitRevision->new(
+            sha  => $before_last,
+            name => $tag,
+            repo => $self
+        );
     }
 
-    if ( $top_rev &&  $check_history ) {
-        my ($orig, $dest) = $type eq 'demote'
-           ? ($top_rev->{sha}, $tag_sha)
-           : ($tag_sha, $top_rev->{sha});
+    if ($top_rev && $check_history) {
+        my ($orig, $dest) =
+          $type eq 'demote'
+          ? ($top_rev->{sha}, $tag_sha)
+          : ($tag_sha, $top_rev->{sha});
 
-        _debug _loc("Looking for common history between %1 and %2", $orig, $dest);
+        _debug _loc("Looking for common history between %1 and %2", $orig,
+            $dest);
 
         try {
-            $git->exec( 'merge-base', '--is-ancestor', $orig, $dest);
-        } catch {
-            _fail _loc("Cannot %1 commit [%2] to %3 since they don't have common history and doing that may cause regressions.  You probably need to merge branches", _loc($type), substr($top_rev->{sha},0,6),$tag);
+            $git->exec('merge-base', '--is-ancestor', $orig, $dest);
+        }
+        catch {
+            _fail _loc(
+                "Cannot %1 commit [%2] to %3 since "
+                  . "they don't have common history and doing that may cause regressions. "
+                  . "You probably need to merge branches",
+                _loc($type), substr($top_rev->{sha}, 0, 6), $tag
+            );
         };
 
         my $valid = 1;
-        for my $rev ( @revisions ) {
-            my $sha = $rev->{sha};
-
-            $sha = $git->exec( 'rev-parse', $sha );
-
+        for my $sha (keys %shas) {
             try {
-                $git->exec( 'merge-base', '--is-ancestor', $sha, $dest);
-            } catch {
-                _error _loc("Revision [%1] is not in the top revision's history", substr($sha,0,6));
+                $git->exec('merge-base', '--is-ancestor', $sha, $dest);
+            }
+            catch {
+                _error _loc(
+                    "Revision [%1] is not in the top revision's history",
+                    substr($sha, 0, 6));
                 $valid = 0;
             };
         }
-        if ( !$valid ) {
-            _fail _loc("Not all commits are in [%1] history.  You probably need to merge branches", substr($dest,0,6) );
+
+        if (!$valid) {
+            _fail _loc(
+                "Not all commits are in [%1] history. "
+                  . "You probably need to merge branches",
+                substr($dest, 0, 6)
+            );
         }
     }
+
     return $top_rev;
 }
 
@@ -543,6 +568,38 @@ method bl_to_tag(Maybe[Str] $bl = undef, Any $project = undef) {
     _fail 'project has to have moniker' unless my $moniker = $project->moniker;
 
     return sprintf( '%s-%s', $moniker, $bl);
+}
+
+sub _order_revisions {
+    my $self = shift;
+    my (@shas) = @_;
+
+    my %shas = map { $_ => 1 } @shas;
+    my $shas_count = keys %shas;
+
+    my $repo = Git->repository(Directory => $self->repo_dir);
+    my ($fh, $ctx) = $repo->command_output_pipe('rev-list', '--topo-order', keys %shas);
+
+    my @sorted;
+    while (my $line = <$fh>) {
+        chomp($line);
+
+        if ($shas{$line}) {
+            push @sorted, $line;
+
+            if (@sorted == $shas_count) {
+                last;
+            }
+        }
+    }
+
+    $repo->command_close_pipe($fh, $ctx);
+
+    if (@sorted != $shas_count) {
+        _fail _loc "Not all given commits were found: %1", join(', ', keys %shas);
+    }
+
+    return @sorted;
 }
 
 1;
