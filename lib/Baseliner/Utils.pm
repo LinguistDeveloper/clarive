@@ -134,6 +134,7 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use experimental 'switch';
 use DateTime::TimeZone;
 use Baseliner::I18N;
+use Baseliner::VarsParser;
 
 BEGIN {
     # enable a TO_JSON converter
@@ -1359,134 +1360,12 @@ the timeout secs (or zero to disable);
 =cut
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
-    return $data unless ref $vars;
-    my $ret;
-    {
-          local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
-          alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
 
-          $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw}, cleanup => $args{cleanup} );
-          alarm 0;
-    }
-    return $ret;
-}
+    my $parser =
+      Baseliner::VarsParser->new( %args,
+        timeout => $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
 
-our $parse_vars_raw_scope;
-sub parse_vars_raw {
-    my %args = @_;
-    my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
-    my $ref = ref $data;
-    # block recursion
-    $parse_vars_raw_scope or local $parse_vars_raw_scope={};
-    return () if $ref && exists $parse_vars_raw_scope->{"$data"};
-    $parse_vars_raw_scope->{"$data"}=() if $ref;
-    my $stack = $args{stack};
-    
-    if( $ref eq 'HASH' ) {
-        my %ret;
-        for my $k ( keys %$data ) {
-            my $v = $data->{$k};
-            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw, stack=>$stack );
-        }
-        return \%ret;
-    } elsif( $ref =~ /Baseliner/ ) {
-        my $class = $ref;
-        my %ret;
-        for my $k ( keys %$data ) {
-            my $v = $data->{$k};
-            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw, stack=>$stack );
-        }
-        return bless \%ret => $class;
-    } elsif( $ref eq 'ARRAY' ) {
-        my @tmp;
-        for my $i ( @$data ) {
-            push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw, stack=>$stack );
-        }
-        return \@tmp;
-    } elsif( $ref eq 'SCALAR' ) {
-        return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw,stack=>$stack );
-    } elsif( $ref eq 'MongoDB::OID') {
-        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw,stack=>$stack );
-    } elsif($ref) {
-        return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw,stack=>$stack );
-    } else {
-        # string
-        return $data unless $data && $data =~ m/\$\{[^\}]+\}/;
-        my $str = "$data";
-        while(1) {
-            # ref replaces
-            if( $str =~ /^\$\{([^\}]+)\}$/ ) {
-                # just the var: "${my_server}"
-
-                # control recursion and create a path for a clearer error message
-                my $k = $1;
-                _throw _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k, '${'.join('}/${',_array($stack->{path})).'}' 
-                    if exists $stack->{unresolved}{$k};
-                $stack->{unresolved}{$k}=1;
-                $stack->{path} or local $stack->{path} = []; 
-                push @{ $stack->{path} }, $k;
-
-                # just a var
-                if( exists $vars->{$k} ) {
-                    $str = parse_vars_raw(data=>$vars->{$k},vars=>$vars,throw=>$throw,stack=>$stack); 
-                    delete $stack->{unresolved}{$k};
-                    last;
-                }
-                # dot?
-                my @keys = split( /\./, $k) if $k =~ /[\.\w]+/;
-                if( @keys > 1 ) {
-                    my $k2 = join('}{', @keys );
-                    if( eval('exists $vars->{'.$k2.'}') ) {
-                        $str = parse_vars_raw( data=>eval('$vars->{'.$k2.'}'), vars=>$vars, throw=>$throw,stack=>$stack);
-                        delete $stack->{unresolved}{$k};
-                        last;
-                    }
-                }
-                if( $k =~ /^(uc|lc)\(([^\)]+)\)/ ) {
-                    my $v = parse_vars_raw( data=>'${'.$2.'}', vars=>$vars, throw=>$throw,stack=>$stack );
-                    $str = $1 eq 'uc' ? uc($v) : lc($v);
-                    last;
-                }
-                if( $k =~ /^to_id\(([^\)]+)\)/ ) {
-                    $str = _name_to_id(parse_vars_raw( data=>$1, vars=>$vars, throw=>$throw,stack=>$stack ));
-                    last;
-                }
-                if( $k =~ /^quote_list\(([^\),]+)(?:,(\S))?\)$/ ) {
-                    my $qt = $3 // '"';  # double quote is default
-                    $str = join "$qt $qt", _array( parse_vars_raw( data=>'${'.$1.'}', vars=>$vars, throw=>$throw,stack=>$stack ) );
-                    $str = $qt . $str . $qt;
-                    last;
-                }
-                if( $k =~ /^nvl\(([^\)]+),(.+)\)/ ) {
-                    $str = $vars->{$1} // $2;
-                    last;
-                }
-                if( $k =~ /^ci\(([^\)]+)\)\.(.+)/ ) {
-                    my $ci = ci->new( $vars->{$1} );
-                    $str = $ci->can($2) ? $ci->$2 : $ci->{$2};
-                    last;
-                }
-                if( $k =~ /^ci\(([^\)]+)\)/ ) {
-                    $str = ci->new( $vars->{$1} );   # better than ci->find, this way it fails when mid not found
-                    last;
-                }
-            }
-            else {
-                # a string with more text, ex: "sudo ${my_user} ; ls ${my_path}"
-                $str =~ s/(\$\{[^\}]+\})/parse_vars_raw(data=>$1,vars=>$vars,throw=>$throw,stack=>$stack)/eg;
-            }
-            last;
-        }
-        # cleanup or throw unresolved vars
-        if( $throw ) { 
-            if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
-                _throw _loc( "Unresolved vars: '%1' in %2", join( "', '", @unresolved ), $str );
-            }
-        } elsif( $cleanup ) {
-            $str =~ s/\$\{.*?\}//g; 
-        }
-        return $str;
-    }
+    return $parser->parse_vars($data, $vars);
 }
 
 =head2 _repl
