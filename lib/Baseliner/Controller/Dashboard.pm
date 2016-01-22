@@ -1268,11 +1268,17 @@ sub topics_burndown : Local {
     my $days_from = $p->{days_from} || 0;
 
     my $date;
+    my $today;
+    my $days_from_format_date = $p->{days_from_format_date};
 
     $date = Class::Date->now();
     $date = $date + ($days_from .'D');
-
-    my $today    = substr( $date,        0, 10 );
+  if ($days_from_format_date != 0)
+  {
+    $today = $days_from_format_date;
+  }else {
+     $today    = substr( $date,        0, 10 );
+  }
     my $tomorrow = substr( $date + "1D", 0, 10 );
     my %hours = map { $_ => 0 } 0 .. 23;
     my $date_field = $p->{date_field};
@@ -1384,15 +1390,18 @@ sub topics_period_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
+    use Data::Dumper;
+    warn Dumper($p);
+
     my $days_before = $p->{days_before} || -10;
     my $days_after = $p->{days_after} || 10;
-
+    my $days_before_format_date = $p->{days_before_format_date};
+    my $days_after_format_date = $p->{days_after_format_date};
     my $start;
     my $end;
 
     $start = Class::Date->now();
     $start = $start + ($days_before .'D');
-
     $end = Class::Date->now();
     $end = $end + ($days_after .'D');
 
@@ -1488,14 +1497,27 @@ sub topics_period_burndown : Local {
     unshift @real_data,     'Real';
     unshift @expected_data, 'Expected';
 
-    $c->stash->{json} = {
-        success => \1,
-        date_from    => substr($start,0,10),
-        date_to    => substr($end,0,10),
-        future_start => substr($today,0,10),
-        data    => [ \@data_dates, \@real_data, \@expected_data ]
-    };
-    $c->forward('View::JSON');
+    if ($days_before_format_date != 0)
+    {
+        $c->stash->{json} = {
+            success => \1,
+            date_from    => $days_before_format_date,
+            date_to    => $days_after_format_date,
+            future_start => substr($today,0,10),
+            data    => [ \@data_dates, \@real_data, \@expected_data ]
+        };
+    }else{
+
+            $c->stash->{json} = {
+            success => \1,
+            date_from    => substr($start,0,10),
+            date_to    => substr($end,0,10),
+            future_start => substr($today,0,10),
+            data    => [ \@data_dates, \@real_data, \@expected_data ]
+        };
+  
+    }
+      $c->forward('View::JSON');
 }
 
 sub list_emails: Local {
