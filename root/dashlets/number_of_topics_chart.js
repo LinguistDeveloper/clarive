@@ -9,14 +9,32 @@
     var group_threshold = params.data.group_threshold || '5';
     var not_in_status = params.data.not_in_status;
     var condition = params.data.condition || '';
+    var result_type = params.data.result_type || 'count';
     var group_by = params.data.group_by || 'category.name';
     var graph_title;
 
     Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, _ignore_conn_errors: true  }, function(res){
+              var updatedResult = [];
+              if(result_type == 'total'){
+                for( var i=0; i<res.data.length; i++ ) {
+                  if(res.data[i][0] != 'Empty'){
+                    updatedResult.push([res.data[i][0],parseInt(res.data[i][0])*res.data[i][1]]);
+                  }
+                }
+              }else if(result_type != 'count'){
+                for( var i=0; i<res.data.length; i++ ) {
+                  if(res.data[i][0] != 'Empty'){
+                    updatedResult.push([res.data[i][0], res.data[i][0]]);
+                  }
+                }
+              }else{
+                updatedResult = res.data;
+              }
+
               c3.generate({
                 bindto: '#'+id,
                 data: {
-                    columns: res.data,
+                    columns: updatedResult,
                     type : graph_type,
                     colors: res.colors,
                     onclick: function (d, i) { 

@@ -45,7 +45,15 @@
               columnWidth: .5, 
               bodyStyle: 'background:transparent;',
               items: [
-                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5}
+                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5},
+                new Baseliner.ComboDouble({ fieldLabel: _('Show grouping field number as...'), name:'result_type', value: data.result_type || 'count', data: [
+                    ['count', _('Count')],
+                    ['avg', _('Average')],
+                    ['total', _('Sum Total')],
+                    ['min', _('MIN')],
+                    ['max', _('MAX')]
+                  ]
+                })
               ]
             }
           ]
