@@ -89,16 +89,16 @@ subtest 'new: from moniker' => sub {
     isa_ok $ci, 'BaselinerX::CI::status';
 };
 
-#subtest 'new: from array' => sub {
-#    _setup();
-#
-#    mdb->master->insert( { mid => 'status-123', collection => 'status', yaml => '---' } );
-#    mdb->master->insert( { mid => 'status-321', collection => 'status', yaml => '---' } );
-#
-#    my @cis = Baseliner::CI->new(['status-123', 'status-321']);
-#
-#    is @cis, 2;
-#};
+subtest 'new: from array' => sub {
+    _setup();
+
+    mdb->master->insert( { mid => 'status-123', collection => 'status', yaml => '---' } );
+    mdb->master->insert( { mid => 'status-321', collection => 'status', yaml => '---' } );
+
+    my @cis = Baseliner::CI->new(['status-123', 'status-321']);
+
+    is @cis, 2;
+};
 
 subtest 'new: from search' => sub {
     _setup();
