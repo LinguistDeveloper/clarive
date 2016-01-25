@@ -81,7 +81,8 @@ subtest 'new: from name' => sub {
 subtest 'new: from moniker' => sub {
     _setup();
 
-    mdb->master->insert( { mid => 'status-123', name => 'status', moniker => 'Status', collection => 'status', yaml => '---' } );
+    mdb->master->insert(
+        { mid => 'status-123', name => 'status', moniker => 'Status', collection => 'status', yaml => '---' } );
 
     my $ci = Baseliner::CI->new('moniker:Status');
 
@@ -95,7 +96,7 @@ subtest 'new: from array' => sub {
     mdb->master->insert( { mid => 'status-123', collection => 'status', yaml => '---' } );
     mdb->master->insert( { mid => 'status-321', collection => 'status', yaml => '---' } );
 
-    my @cis = Baseliner::CI->new(['status-123', 'status-321']);
+    my @cis = Baseliner::CI->new( [ 'status-123', 'status-321' ] );
 
     is @cis, 2;
 };
@@ -106,7 +107,7 @@ subtest 'new: from search' => sub {
     mdb->master->insert( { mid => 'status-123', name => 'Status1', collection => 'status', yaml => '---' } );
     mdb->master->insert( { mid => 'status-321', name => 'Status2', collection => 'status', yaml => '---' } );
 
-    my $ci = Baseliner::CI->new(name => 'Status1');
+    my $ci = Baseliner::CI->new( name => 'Status1' );
 
     ok $ci;
     is $ci->mid, 'status-123';
@@ -117,9 +118,39 @@ subtest 'new: from search returns undef when not found' => sub {
 
     mdb->master->insert( { mid => 'status-123', name => 'Status1', collection => 'status', yaml => '---' } );
 
-    my $ci = Baseliner::CI->new(name => 'Unknown');
+    my $ci = Baseliner::CI->new( name => 'Unknown' );
 
     ok !defined $ci;
+};
+
+subtest 'find: finds cis' => sub {
+    _setup();
+
+    mdb->master->insert( { mid => 'status-123', name => 'Status1', collection => 'status', yaml => '---' } );
+
+    my $ci = Baseliner::CI->find('status-123');
+
+    ok $ci;
+    isa_ok $ci, 'BaselinerX::CI::status';
+};
+
+subtest 'find: returns undef when not found' => sub {
+    _setup();
+
+    my $ci = Baseliner::CI->find('status-123');
+
+    ok !defined $ci;
+};
+
+subtest 'is_ci: checks if args is a CI' => sub {
+    _setup();
+
+    mdb->master->insert( { mid => 'status-123', name => 'Status1', collection => 'status', yaml => '---' } );
+
+    my $ci = Baseliner::CI->new('status-123');
+
+    ok(Baseliner::CI->is_ci($ci));
+    ok(!Baseliner::CI->is_ci(123));
 };
 
 done_testing;
