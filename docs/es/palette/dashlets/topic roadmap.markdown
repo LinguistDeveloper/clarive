@@ -51,7 +51,3 @@ icon: roadmap
 <br />
 ### Label mask
 * Allows to personalize the information will show in the topic mask.
-<<<<<<< HEAD
-=======
-
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

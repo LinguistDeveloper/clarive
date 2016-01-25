@@ -25,8 +25,4 @@ icon: webservice
 
 <br />
 ### URL
-<<<<<<< HEAD
 * The website to show in the dashboard.
-=======
-* The website to show in the dashboard.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

@@ -27,15 +27,9 @@ icon: html
 ### Sample snippers
 * Some examples of code to add to the dashlet.
 
-
 <br />
 ### Data URL
 
-
 <br />
 ### HTML/JS code
-<<<<<<< HEAD
 * An powerful editor to create a personalized dashlet with HTML/JS code.
-=======
-* An powerful editor to create a personalized dashlet with HTML/JS code.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

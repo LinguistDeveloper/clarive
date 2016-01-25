@@ -10,10 +10,6 @@ icon: calendar
 <img src="/static/images/icons/calendar.png" /> Shows the calendar in the dashboard.
 
 <br />
-<<<<<<< HEAD
-=======
-
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b
 * There are a list of elements can be configured in the dashlet:
 
 <br />
@@ -66,8 +62,5 @@ icon: calendar
 
 
 <br />
-<<<<<<< HEAD
-=======
-### Laber mask
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b
+### Label mask
 * Allows to personalize the information will show in the topic mask.

@@ -47,7 +47,3 @@ icon: chart_line
 <br />
 ### Select topics in categories
 * Select one o more categories to show in the graph.
-<<<<<<< HEAD
-=======
-
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

@@ -56,8 +56,4 @@ icon: chart_curve
 
 <br />
 ### Data grouped by
-<<<<<<< HEAD
 * Select the criteria for grouping data.
-=======
-* Select the criteria for grouping data.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

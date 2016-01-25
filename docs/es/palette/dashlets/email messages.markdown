@@ -19,8 +19,4 @@ icon: envelope
 
 <br />
 ### Autorefresh
-<<<<<<< HEAD
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-=======
-* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

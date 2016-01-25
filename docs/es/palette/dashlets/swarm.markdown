@@ -51,10 +51,6 @@ icon: swarm
 ### Select topics in categories
 * Select one o more categories to show in the swarm.
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b
 <br />
 ### Select topics in statuses
 * Select one o more status to configure the view.

@@ -47,8 +47,4 @@ icon: gauge
 
 <br />
 ### Data collection
-<<<<<<< HEAD
 * Use this fields to configure additional elements of the data collection for the dashlet.
-=======
-* Use this fields to configure additional elements of the data collection for the dashlet.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

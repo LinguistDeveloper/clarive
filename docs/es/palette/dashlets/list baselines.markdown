@@ -30,8 +30,4 @@ icon: report_default
 
 <br />
 ### Number of days before today to list jobs
-<<<<<<< HEAD
 * Set the lower limit in days to list jobs.
-=======
-* Set the lower limit in days to list jobs.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

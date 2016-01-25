@@ -40,8 +40,4 @@ icon: ci-grey
 
 <br />
 ### CI as Graph Starting Point
-<<<<<<< HEAD
 * Select one o more CI as a start point.
-=======
-* Select one o more CI as a start point.
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b

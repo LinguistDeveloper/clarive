@@ -50,8 +50,4 @@ icon: chart_line
 
 <br />
 ### Which environmets do you want to see
-<<<<<<< HEAD
 * Allows to select one o more environments
-=======
-* Allows to select one o more environments
->>>>>>> 074643b63916991e2a32ef6e59199b07638bd93b
