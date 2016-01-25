@@ -43,43 +43,64 @@ The new instanciates a CI or throws an error otherwise.
 sub new {
     my $class = shift;
     my %args;
-    require Baseliner::Role::CI; 
-    if( @_ == 0 ) {
-        _throw "Missing CI mid";
-    } elsif( @_ == 1 && ref $_[0] eq 'HASH' ) {
-        # ci record
-        my $rec = $_[0];
-        return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-    } elsif( @_ == 1 && ( is_number( $_[0] ) || $_[0] !~ /^(name|moniker):/ ) ) {
-        # mid, number or any string that does not start with "name:xxxx", "moniker:xxxx"
-        my $mid = $_[0];
-        my $rec = Baseliner::Role::CI->load( $mid );
-        _throw _loc('CI record not found for mid %1', $mid) unless ref $rec;
-        return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-    } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
-        # already a full grown CI
-        return $_[0]->can('mid') ? $class->new( $_[0]->mid ) : $_[0];  # renew if it has mid, otherwise just keep it as-is (it's a handmade CI)
-    } elsif( @_ == 1 && $_[0] =~ /^(\w+):(.+)/ ) {
+
+    _throw "Missing CI mid" unless @_;
+
+    if ( @_ == 1 ) {
+        my $ref = ref $_[0];
+
+        if ($ref) {
+
+            # CI record
+            if ( $ref eq 'HASH' ) {
+                my $rec = $_[0];
+                return Baseliner::Role::CI->_build_ci_instance_from_rec($rec);
+            }
+
+            # Already a full grown CI
+            elsif ( $ref =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
+
+                # Renew if it has mid, otherwise just keep it as-is (it's a handmade CI)
+                return $_[0]->can('mid') ? $class->new( $_[0]->mid ) : $_[0];
+            }
+
+            # Several CIs at once  TODO optimize loading in load for array, using a mdb->master->find
+            elsif ( $ref eq 'ARRAY' ) {
+                my @mids = Util->_array( $_[0] );
+                return map { ci->new($_) } @mids;
+            }
+            else {
+                _throw _loc( 'Unexpected reference when loading CI: ', $ref );
+            }
+        }
+
         # name, moniker, etc.
-        my ($parm,$val) = ($1,$2);
-        my $rec = try { Baseliner::Role::CI->load_from_search({ $parm=>$val }, single=>1 ) };
-        _throw _loc('CI record not found for search %1', _to_json(\%args) ) if !ref $rec && !$Baseliner::CI::no_throw_on_search;
-        return undef if !ref $rec;
-        return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-    } elsif( @_ == 1 && ! ref $_[0] ) {
-        # NOP: could be moniker?
-        _throw _loc("Could not instanciate CI from parameter %1", $_[0] );
-    } elsif( @_ == 1 && ref $_[0] eq 'ARRAY' ) {
-        # several CIs at once  TODO optimize loading in load for array, using a mdb->master->find
-        my @mids = Util->_array($_[0]);
-        return map { ci->new($_) } @mids;
-    } else {
-        # search %hash 
+        elsif ( @_ == 1 && $_[0] =~ /^(\w+):(.+)/ ) {
+            my ( $parm, $val ) = ( $1, $2 );
+            my $rec = try { Baseliner::Role::CI->load_from_search( { $parm => $val }, single => 1 ) };
+            _throw _loc( 'CI record not found for search %1', _to_json( \%args ) )
+              if !ref $rec && !$Baseliner::CI::no_throw_on_search;
+            return undef if !ref $rec;
+            return Baseliner::Role::CI->_build_ci_instance_from_rec($rec);
+        }
+
+        # mid, number or any string
+        else {
+            my $mid = $_[0];
+            my $rec = Baseliner::Role::CI->load($mid);
+            _throw _loc( 'CI record not found for mid %1', $mid ) unless ref $rec;
+            return Baseliner::Role::CI->_build_ci_instance_from_rec($rec);
+        }
+    }
+
+    # Search %hash
+    else {
         %args = @_;
-        my $rec = try { Baseliner::Role::CI->load_from_search( \%args, single=>1 ) };
-        _throw _loc('CI record not found for search %1', _to_json(\%args) ) if !ref $rec && !$Baseliner::CI::no_throw_on_search;
+        my $rec = try { Baseliner::Role::CI->load_from_search( \%args, single => 1 ) };
+        _throw _loc( 'CI record not found for search %1', _to_json( \%args ) )
+          if !ref $rec && !$Baseliner::CI::no_throw_on_search;
         return undef if !ref $rec;
-        return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
+        return Baseliner::Role::CI->_build_ci_instance_from_rec($rec);
     }
 }
 
