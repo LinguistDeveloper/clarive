@@ -10,7 +10,7 @@ my $RE_NR_START = qr/\${{/;
 my $RE_NR_END   = qr/}}/;
 my $RE_INSIDE   = qr/[^\}]+/;
 
-my $RE_WITH_CAPTURES = qr/
+my $RE_WITH_CAPTURES = qr{
     (
         (?:
             $RE_NR_START
@@ -22,7 +22,7 @@ my $RE_WITH_CAPTURES = qr/
             $RE_END
         )
     )
-/x;
+}x;
 
 sub new {
     my $class = shift;
@@ -175,14 +175,16 @@ sub _parse_var {
     }
 
     # Dot?
-    my @keys = split( /\./, $k ) if $k =~ /[\.\w]+/;
-    if ( @keys > 1 ) {
-        my $k2 = join( '}->{', @keys );
-        if ( eval( 'exists $vars->{' . $k2 . '}' ) ) {
-            my $new_k = eval( '$vars->{' . $k2 . '}' );
-            $str = $recursive ? $self->_parse_vars( $new_k, $vars ) : $new_k;
-            delete $stack->{unresolved}->{$k};
-            return $str;
+    if ($k =~ /[\.\w]+/) {
+        my @keys = split( /\./, $k ) ;
+        if ( @keys > 1 ) {
+            my $k2 = join( '}->{', @keys );
+            if ( eval( 'exists $vars->{' . $k2 . '}' ) ) {
+                my $new_k = eval( '$vars->{' . $k2 . '}' );
+                $str = $recursive ? $self->_parse_vars( $new_k, $vars ) : $new_k;
+                delete $stack->{unresolved}->{$k};
+                return $str;
+            }
         }
     }
 
