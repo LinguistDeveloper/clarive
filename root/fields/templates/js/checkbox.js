@@ -16,7 +16,7 @@ params:
     
     var checkbox = new Baseliner.CBox({
         name: meta.id_field,
-        checked: Baseliner.eval_boolean(data[meta.id_field], false),
+        checked: Baseliner.eval_boolean(data[meta.id_field] || meta.default_value, false),
         disabled: Baseliner.eval_boolean(meta.readonly),
         hidden: Baseliner.eval_boolean(meta.hidden),
         anchor: meta.anchor || '100%',
