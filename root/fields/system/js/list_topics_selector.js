@@ -164,7 +164,13 @@ params:
 
             function extract_mids (field){
                 var mids = "";
-                var value = filter_field.items.items;
+                var value;
+
+                if (filter_field.items) {
+                    value = filter_field.items.items;
+                } else {
+                    value = [filter_field];
+                }
                 value.forEach(function(val){
                     mids += val.value + ",";
                 });
@@ -172,10 +178,12 @@ params:
                 return mids;
             };
 
-            filter_field.store.on('load',function(res, records, options){
-                var mids = extract_mids(res);
-                generate_txt(mids);
-            });
+            if(filter_field.store){
+                filter_field.store.on('load',function(res, records, options){
+                    var mids = extract_mids(res);
+                    generate_txt(mids);
+                });
+            }
             filter_field.on('change',function (res) {
                 var mids = extract_mids(res);
                 generate_txt(mids);
