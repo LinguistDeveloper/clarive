@@ -367,10 +367,13 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
 done_testing;
 
 sub _build_controller {
+    my $cgi_wrapper = Test::MonkeyMock->new;
+    $cgi_wrapper->mock(run => sub {});
+
     my $controller = Baseliner::Controller::GitSmart->new(application => '');
     $controller = Test::MonkeyMock->new($controller);
 
-    $controller->mock(wrap_cgi_stream => sub { });
+    $controller->mock(_build_cgi_wrapper => sub { $cgi_wrapper });
 
     return $controller;
 }

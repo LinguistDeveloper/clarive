@@ -6,6 +6,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
+use Baseliner::CGIWrapper;
 use Try::Tiny;
 use Path::Class;
 use experimental 'smartmatch';
@@ -184,110 +185,29 @@ sub git : Path('/git/') {
         }
     }
 
-    # run cgi
-    my ($cgi_msg,$cgi_ret) = ('',0);
-    $self->wrap_cgi_stream($c, sub {
-        #_debug \%ENV;
-        #_debug $p;
-        # my $prjr = _file $home;
-        # $prjr = $prjr->dir . "";
-        $ENV{GIT_HTTP_EXPORT_ALL} = 1;
-        $ENV{GIT_PROJECT_ROOT} = "$home";
-        $ENV{REMOTE_USER} ||= 'baseliner';
-        $ENV{REMOTE_ADDR} ||= 'localhost';
-        $ENV{REQUEST_URI} = $uri_path if length $uri_path; 
-        $ENV{FILEPATH_INFO} = $filepath_info if length $filepath_info; 
-        $ENV{PATH_INFO} = $path_info if length $path_info; 
-        
-        $cgi_ret = $self->run_forked( $c, $cgi );   # TODO use system $cgi in CygWin?
-    },sub{
-       my $err = shift;
-       $self->process_error($c,'GIT ERROR', $err);
-    }); 
+    my $cgi_wrapper = $self->_build_cgi_wrapper(
+        env => {
+            GIT_HTTP_EXPORT_ALL => 1,
+            GIT_PROJECT_ROOT    => "$home",
+            REMOTE_USER         => 'baseliner',
+            REMOTE_ADDR         => 'localhost',
+            $uri_path      ? ( REQUEST_URI   => $uri_path )      : (),
+            $filepath_info ? ( FILEPATH_INFO => $filepath_info ) : (),
+            $path_info     ? ( PATH_INFO     => $path_info )     : ()
+        }
+    );
+
+    my $result = $cgi_wrapper->run($c, $cgi);
+
+    if (!$result->{is_success}) {
+       $self->process_error($c,'GIT ERROR', $result->{error} || 'Unknown error');
+    }
 
     # now gather commit info and event it
     foreach my $change (@changes) {
         $self->event_this($c, $change->{new}, $fullpath, $change->{ref},
             $change->{old}, $repo);
     }
-}
-
-sub run_forked {
-    my ($self,$c,$cgi) = @_;
-    
-    # fork a child
-    use POSIX ":sys_wait_h";
-    pipe( my $stdoutr, my $stdoutw );
-    pipe( my $stderrr, my $stderrw );
-    pipe( my $stdinr,  my $stdinw );
-    my $pid = fork();
-    _fail("fork failed: $!") unless defined $pid;
-
-    if ($pid == 0) { # child
-        local $SIG{__DIE__} = sub {
-            print STDERR @_;
-            exit(1);
-        };
-        close $stdoutr;
-        close $stderrr;
-        close $stdinw;
-        #require CGI::Emulate::PSGI;
-        #local %ENV = (%ENV, CGI::Emulate::PSGI->emulate_environment($env));
-        open( STDOUT, ">&=" . fileno($stdoutw) ) or _fail( "Cannot dup STDOUT: $!");
-        open( STDERR, ">&=" . fileno($stderrw) ) or _fail( "Cannot dup STDERR: $!");
-        open( STDIN, "<&=" . fileno($stdinr) ) or _fail( "Cannot dup STDIN: $!");
-        #chdir(File::Basename::dirname($cgi));
-        exec($cgi) or _fail( "exec: $!");
-        exit(2);
-    }
-    close $stdoutw;
-    close $stderrw;
-    close $stdinr;
-    
-    my $siz = 0;
-    # do some writing to process STDIN
-    { 
-        _debug( 'starting write' );
-        local $/ = \10_485_760;
-		if( my $fh = $c->req->body ) {
-			while( my $in = <$fh> ) { #<STDIN> ) {
-				_debug( sprintf 'write: %d (total=%s)', length $in, $siz+=length $in );
-				syswrite($stdinw, $in ) if length $in;
-            }
-        }
-    }
-    # close STDIN so child will stop waiting
-    close $stdinw;
-    
-    # now read git STDOUT
-    $siz = 0;
-    my $has_headers = 0;
-    while (waitpid($pid, WNOHANG) <= 0) {
-        my $out = do { local $/ = \10_485_760; <$stdoutr> } || '';
-        _debug( sprintf 'read: %d (total=%s)', length $out, $siz+=length $out );
-        if( !$has_headers && $out =~ m/^(.*?)\r\n\r\n(.*)$/s ) {
-            my $head = $1;
-            while( $head =~ m/^(.+): (.+)[\n\r]?/mg ) {
-                $c->res->headers->header( $1 => $2 );
-            }
-            $out = $2;
-            $has_headers = 1;
-            _debug( 'finhead: ' . length $head );
-            _debug( 'finread: ' . length $out );
-            $c->res->finalize_headers($c);
-        }
-        $c->res->write( $out ) if length $out;
-    }
-    my $out = do { local $/; <$stdoutr> } || '';
-    my $err = do { local $/; <$stderrr> } || '';
-    _error( "ERROR FINAL git cgi: $err" ) if length $err;
-    if( length $err ) {
-        _fail $err;
-    }
-    _debug( sprintf 'readfin: %d (total=%s)', length $out, $siz+=length $out );
-    $c->res->write( $out ) if length $out;
-    $c->res->body( '' );
-    return 0;
 }
 
 sub process_error {
@@ -364,9 +284,8 @@ sub event_this {
             if ( $repo_id ) {
 
                 my $commit = $g->commit( $sha );
-                my $diff = $ref_prev eq ('0' x 40) # ref_prev == 0 when it's a new repository
-                    ? _format_diff(  join "\n", $g->exec( 'show', $sha ) )
-                    : _format_diff( join "\n", $g->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
+
+                my $diff = $self->_diff($g, $ref_prev, $sha);
                 _debug $diff;
                 my $ref_short = [ split '/', $ref ]->[-1];
                 _debug "GIT MESSAGE: " . $commit->message;
@@ -404,6 +323,18 @@ sub event_this {
     };
 }
 
+sub _diff {
+    my $self = shift;
+    my ($git, $ref_prev, $sha) = @_;
+
+    # ref_prev == 0 when it's a new repository
+    my $diff = $ref_prev eq ('0' x 40)
+        ? _format_diff(  join "\n", $git->exec( 'show', $sha ) )
+        : _format_diff( join "\n", $git->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
+
+    return $diff;
+}
+
 sub _format_diff {
     my ($diff, %p ) = @_;
     #my ($header, $rest ) = split /
@@ -432,121 +363,10 @@ sub git_error {
     );
 }
 
-# rgo: my own CGI wrapper:  TODO maybe a Catalyst module somewhere?
-use URI ();
-use URI::Escape;
-use HTTP::Request::Common;
-open my $REAL_STDIN, "<&=".fileno(*STDIN);
-open my $REAL_STDOUT, ">>&=".fileno(*STDOUT);
- 
-sub wrap_cgi_stream {
-  my ($self, $c, $call, $call_err) = @_;
-  my $req = HTTP::Request->new(
-    map { $c->req->$_ } qw/method uri headers/
-  );
-  my $body = $c->req->body;
-  my $body_content = '';
- 
-  $req->content_type($c->req->content_type); # set this now so we can override
- 
-  if (!$body) { # Slurp from body filehandle
-    my $body_params = $c->req->body_parameters || {};
- 
-    if (%$body_params) {
-      my $encoder = URI->new;
-      $encoder->query_form(%$body_params);
-      $body_content = $encoder->query;
-      $req->content_type('application/x-www-form-urlencoded');
-      $req->content($body_content);
-      $req->content_length(length($body_content));
-    }
-  }
- 
-  my $username_field = $self->{CGI}{username_field} || 'username';
-  my $username = (($c->can('user_exists') && $c->user_exists)
-               ? eval { $c->user->obj->$username_field }
-                : '');
-  $username ||= $c->req->remote_user if $c->req->can('remote_user');
- 
-  my $path_info = '/'.join '/' => map {
-    utf8::is_utf8($_) ? uri_escape_utf8($_) : uri_escape($_)
-  } @{ $c->req->args };
- 
-  my $env = HTTP::Request::AsCGI->new(
-              $req,
-              ($username ? (REMOTE_USER => $username) : ()),
-              PATH_INFO => $path_info,
-# eww, this is likely broken:
-              FILEPATH_INFO => '/'.$c->action.$path_info,
-              SCRIPT_NAME => $c->uri_for($c->action, $c->req->captures)->path
-            );
- 
-  {
-    my $saved_error;
- 
-    local %ENV = %{ $self->_filtered_env(\%ENV) };
- 
-    $env->setup;
-    eval { $call->() };
-    $saved_error = $@;
-    #$env->restore;
- 
-    if( $saved_error ) {
-        if( $call_err ) {
-            $call_err->($saved_error);
-        } else {
-            die $saved_error if ref $saved_error;
-            Catalyst::Exception->throw(
-                message => "CGI invocation failed: $saved_error"
-               );
-        }
-    }
-  }
- 
-  #return $env->response;
- return ;
-}
-my $DEFAULT_KILL_ENV = [qw/
-  MOD_PERL SERVER_SOFTWARE SERVER_NAME GATEWAY_INTERFACE SERVER_PROTOCOL
-  SERVER_PORT REQUEST_METHOD PATH_INFO PATH_TRANSLATED SCRIPT_NAME QUERY_STRING
-  REMOTE_HOST REMOTE_ADDR AUTH_TYPE REMOTE_USER REMOTE_IDENT CONTENT_TYPE
-  CONTENT_LENGTH HTTP_ACCEPT HTTP_USER_AGENT
-/];
- 
-sub _filtered_env {
-  my ($self, $env) = @_;
-  my @ok;
- 
-  my $pass_env = $self->{CGI}{pass_env};
-  $pass_env = []            if not defined $pass_env;
-  $pass_env = [ $pass_env ] unless ref $pass_env;
- 
-  my $kill_env = $self->{CGI}{kill_env};
-  $kill_env = $DEFAULT_KILL_ENV unless defined $kill_env;
-  $kill_env = [ $kill_env ]  unless ref $kill_env;
- 
-  if (@$pass_env) {
-    for (@$pass_env) {
-      if (m!^/(.*)/\z!) {
-        my $re = qr/$1/;
-        push @ok, grep /$re/, keys %$env;
-      } else {
-        push @ok, $_;
-      }
-    }
-  } else {
-    @ok = keys %$env;
-  }
- 
-  for my $k (@$kill_env) {
-    if ($k =~ m!^/(.*)/\z!) {
-      my $re = qr/$1/;
-      @ok = grep { ! /$re/ } @ok;
-    } else {
-      @ok = grep { $_ ne $k } @ok;
-    }
-  }
-  return { map {; $_ => $env->{$_} } @ok };
+sub _build_cgi_wrapper {
+    my $self = shift;
+
+    return Baseliner::CGIWrapper->new(@_);
 }
 
 sub _build_parser {
