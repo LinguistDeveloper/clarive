@@ -8364,3 +8364,18 @@ msgstr "Ayuda Clarive"
 
 msgid "File is already the latest version"
 msgstr "El fichero ya está en su última versión"
+
+msgid "Common Options"
+msgstr "Opciones comunes"
+
+msgid "Section to view"
+msgstr "Sección"
+
+msgid "Row width"
+msgstr "Ancho columna"
+
+msgid "Hidden from view mode"
+msgstr "Ocultar en modo vista"
+
+msgid "Hide from edit view"
+msgstr "Ocultar modo edición"
