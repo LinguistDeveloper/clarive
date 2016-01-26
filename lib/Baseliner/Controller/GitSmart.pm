@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
 use Baseliner::CGIWrapper;
+use Cwd qw(realpath);
 use Try::Tiny;
 use Path::Class;
 use experimental 'smartmatch';
@@ -41,17 +42,17 @@ sub git : Path('/git/') {
         return;
     };
 
-    # extract reponame from url
-    my $flag = 2;
-    my @repo = grep {  
-        $flag = 0 if $flag == 1;
-        $flag-- if /\.git$/; # stop when name.git found in path  
-        $flag;
-    } @args;
-    my $repo = "". _dir( @repo );
+    my $repo = $self->_extract_repo(@args);
 
     # normalize paths
     my $fullpath = _file( $home, $repo ); # simulate it's a file
+
+    unless ($fullpath && -d $fullpath) {
+        $self->git_error( $c, 'internal error', 'Repository does not exist' );
+        $c->response->status( 404 );
+        return;
+    }
+
     $repo = $fullpath->basename;  # should be something.git
     my $project = $args[0] // '';
     my $reponame = $args[1] // '';
@@ -197,23 +198,91 @@ sub git : Path('/git/') {
         }
     );
 
-    my $result = $cgi_wrapper->run($c, $cgi);
+    $fullpath = realpath $fullpath;
 
-    if (!$result->{is_success}) {
-       $self->process_error($c,'GIT ERROR', $result->{error} || 'Unknown error');
-    }
-
-    # now gather commit info and event it
+    my $error;
     foreach my $change (@changes) {
-        $self->event_this($c, $change->{new}, $fullpath, $change->{ref},
-            $change->{old}, $repo);
+        my $sha = $change->{new};
+        my $ref = $change->{ref};
+
+        my $ref_short = [ split '/', $ref ]->[-1];
+
+        event_new
+          'event.repository.update' => {
+            username   => $c->username,
+            repository => $repo,
+            branch     => $ref_short,
+            ref        => $ref,
+            sha        => $sha,
+            _steps     => ['PRE']
+          },
+          sub { }, sub {
+            my ($err) = @_;
+
+            $error = $err;
+          };
     }
+
+    if ($error) {
+        $self->process_error( $c, 'GIT ERROR', $error );
+        return;
+    }
+
+    my $result = $cgi_wrapper->run( $c, $cgi );
+
+    if ( !$result->{is_success} ) {
+        $self->process_error( $c, 'GIT ERROR', $result->{error} || 'Unknown error' );
+        return;
+    }
+
+    my $repo_id = $self->_create_or_find_repo($fullpath);
+    my $g = Girl::Repo->new( path => "$fullpath" );
+
+    foreach my $change (@changes) {
+        my $sha       = $change->{new};
+        my $ref_prev  = $change->{old};
+        my $ref       = $change->{ref};
+        my $ref_short = [ split '/', $ref ]->[-1];
+
+        my $commit    = $g->commit($sha);
+        my $diff      = $self->_diff( $g, $ref_prev, $sha );
+        my $title     = $commit->message;
+
+        my $rev_mid = $self->_create_or_find_rev( $sha, $repo_id, $commit, $ref_short );
+
+        event_new 'event.repository.update' => {
+            username   => $c->username,
+            repository => $repo,
+            message    => $title,
+            diff       => $diff,
+            branch     => $ref_short,
+            ref        => $ref,
+            sha        => $sha,
+            _steps     => ['POST'],
+          } => sub {
+            return { mid => $rev_mid, title => $title };
+          };
+    }
+}
+
+sub _extract_repo {
+    my $self = shift;
+    my (@parts) = @_;
+
+    my @repo;
+    foreach my $part (@parts) {
+        push @repo, $part;
+
+        last if $part =~ m/\.git$/;
+    }
+
+    return "". _dir( @repo );
 }
 
 sub process_error {
     my ($self,$c,$type,$err) = @_;
     my $msg = _loc( "CLARIVE: %1: %2", $type, "$err\n" );
-    
+
     # client version parse
     require version;
     my ($git_ver) = $c->req->user_agent =~ /git\/([\d\.]+)/;
@@ -258,69 +327,54 @@ sub process_error {
     }
 }
 
+sub _create_or_find_repo {
+    my $self = shift;
+    my ($fullpath) = @_;
 
-sub event_this {
-    my ($self,$c,$sha,$fullpath,$ref,$ref_prev,$repo)=@_;
-    try {
-        if( $sha ) {  
-            my $g = Girl::Repo->new( path=>"$fullpath" );
-            my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
-            my $repo_id;
-            if ($repo_row) {
-                $repo_id = $repo_row->{mid};
-            } else {
-                master_new 'GitRepository' => {
-                    name    => "$fullpath",
-                    moniker => "$fullpath",
-                    data    => {
-                        repo_dir   => "$fullpath",
-                        rel_path   => "/",
-                    }
-                    } => sub {
-                        $repo_id = shift;
-                    };
+    my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
+    my $repo_id;
+    if ($repo_row) {
+        $repo_id = $repo_row->{mid};
+    } else {
+        master_new 'GitRepository' => {
+            name    => "$fullpath",
+            moniker => "$fullpath",
+            data    => {
+                repo_dir   => "$fullpath",
+                rel_path   => "/",
             }
+            } => sub {
+                $repo_id = shift;
+            };
+    }
 
-            if ( $repo_id ) {
+    return $repo_id;
+}
 
-                my $commit = $g->commit( $sha );
+sub _create_or_find_rev {
+    my $self = shift;
+    my ( $sha, $repo_id, $commit, $ref_short ) = @_;
 
-                my $diff = $self->_diff($g, $ref_prev, $sha);
-                _debug $diff;
-                my $ref_short = [ split '/', $ref ]->[-1];
-                _debug "GIT MESSAGE: " . $commit->message;
-                my $title = $commit->message;
-                event_new 'event.repository.update'
-                    => { username=>$c->username, repository=>$repo, message=>$title, diff=>$diff, branch=>$ref_short, ref=>$ref, sha=>$sha }
-                    => sub { 
-                        my $mid;
-                        my $rev = ci->GitRevision->find_one({ sha=>"$sha" });
-                        if( ! $rev ) {
-                            my $commit2 = substr( $sha, 0, 7 );
-                            my $msg = substr( $commit->message, 0, 15 );
-                            master_new 'GitRevision' => {
-                                    name    => "[$commit2] $title",
-                                    moniker => $commit2,
-                                    data    => { sha => $sha, repo => $repo_id, branch => $ref_short }
-                                } => sub {
-                                    $mid = shift;
-                                };
+    my $mid;
 
-                        } else {
-                            $mid = $rev->{mid};
-                        }
-                        { mid => $mid, title => $title };
-                };
-                _debug "GIT: evented SHA $sha";
-            } else {
-                _debug "GIT: repository not found";
-            }
-        } else {
-            _debug "GIT: no sha defined to event operation";
-        }
-    } catch {
-        _log "GIT: ERROR: Could not event git operation: " . shift();
-    };
+    my $rev = ci->GitRevision->find_one( { sha => "$sha" } );
+    if ($rev) {
+        $mid = $rev->{mid};
+    }
+    else {
+        my $title     = $commit->message;
+        my $commit2 = substr( $sha,             0, 7 );
+        my $msg     = substr( $commit->message, 0, 15 );
+        master_new 'GitRevision' => {
+            name    => "[$commit2] $title",
+            moniker => $commit2,
+            data    => { sha => $sha, repo => $repo_id, branch => $ref_short }
+          } => sub {
+            $mid = shift;
+          };
+    }
+
+    return $mid;
 }
 
 sub _diff {

@@ -178,12 +178,13 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $self->{uri}     = $params{uri};
-    $self->{method}  = $params{method} || 'GET';
-    $self->{params}  = $params{params};
-    $self->{headers} = $params{headers} || {};
-    $self->{path}    = $params{path} || '/';
-    $self->{body}    = $params{body} || '';
+    $self->{uri}        = $params{uri};
+    $self->{method}     = $params{method} || 'GET';
+    $self->{params}     = $params{params};
+    $self->{headers}    = $params{headers} || {};
+    $self->{path}       = $params{path} || '/';
+    $self->{body}       = $params{body} || '';
+    $self->{user_agent} = $params{user_agent} || '';
 
     foreach my $key (keys %{$self->{headers}}) {
         $self->{headers}->{lc($key)} = delete $self->{headers}->{$key};
@@ -194,7 +195,7 @@ sub new {
 
 sub uri              { shift->{uri} || 'http://localhost' }
 sub content_type     { 'text/html' }
-sub user_agent       { 'Mozilla/1.0' }
+sub user_agent       { shift->{user_agent} || 'Mozilla/1.0' }
 sub address          { '127.0.0.1' }
 sub parameters       { &params }
 sub query_parameters { &params }
