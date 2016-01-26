@@ -1,18 +1,11 @@
 package Baseliner::Controller::GitSmart;
 use Moose;
-=head1 NAME
 
-BaselinerX::Controller::GitSmart - interface to Git Smart HTTP
-
-=head1 DESCRIPTION
-
-This controller manages all interagtions with git-http-backend
-
-=cut
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::GitSmartParser;
 use Try::Tiny;
 use Path::Class;
 use experimental 'smartmatch';
@@ -165,52 +158,30 @@ sub git : Path('/git/') {
     $c->stash->{git_service} = $service;
     _debug ">>> GIT SERVICE=$service";
     
+    my $fh = $c->req->body;
+
+    my @changes = $self->_build_parser()->parse_fh($fh);
+
     # parse request body, if any, to find the commit sha and branch (ref)
     my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
 
-    my $fh = $c->req->body;
+    # Check BL tags
+    foreach my $change (@changes) {
+        my $ref = $change->{ref};
 
-    my @events;
-    if ($fh && ref $fh) {
-        while (1) {
-            read($fh, my $length, 4);
-            last unless $length =~ m/^[a-f0-9]+$/;
-
-            $length = hex $length;
-
-            last unless $length && $length > 4;
-
-            $length -= 4;
-
-            read($fh, my $text, $length);
-
-            last unless $text;
-
-            my ($old, $new, $ref) = split /[ \x00]/, $text;
-
-            push @events, {
-                ref => $ref,
-                old => $old,
-                new => $new,
-            };
-
-            # check BL tags
-            if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-                my $tag      = $1;
-                my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                    username => $c->username,
-                    action   => 'action.git.update_tags',
-                    bl       => $tag
-                );
-                if (!$can_tags) {
-                    $self->process_error($c, 'Push Error',
-                        _loc('Cannot update internal tag %1', $tag));
-                    return;
-                }
+        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
+            my $tag      = $1;
+            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                username => $c->username,
+                action   => 'action.git.update_tags',
+                bl       => $tag
+            );
+            if (!$can_tags) {
+                $self->process_error($c, 'Push Error',
+                    _loc('Cannot update internal tag %1', $tag));
+                return;
             }
         }
-
-        seek $fh, 0, 0;
     }
 
     # run cgi
@@ -235,9 +206,9 @@ sub git : Path('/git/') {
     }); 
 
     # now gather commit info and event it
-    foreach my $event (@events) {
-        $self->event_this($c, $event->{new}, $fullpath, $event->{ref},
-            $event->{old}, $repo);
+    foreach my $change (@changes) {
+        $self->event_this($c, $change->{new}, $fullpath, $change->{ref},
+            $change->{old}, $repo);
     }
 }
 
@@ -576,6 +547,12 @@ sub _filtered_env {
     }
   }
   return { map {; $_ => $env->{$_} } @ok };
+}
+
+sub _build_parser {
+    my $self = shift;
+
+    return Baseliner::GitSmartParser->new;
 }
 
 no Moose;
