@@ -1,27 +1,31 @@
 package Baseliner::Schema::Migrations::0104_ci_seq;
 use Moose;
 
+# This is an invalid migration, it is fixed in 0106
+
 sub upgrade {
     my %master_mids;
 
-    mdb->master->drop_index({ _seq=>1 },{ unique=>1 });
-    mdb->master_doc->drop_index({ _seq=>1 },{ unique=>1 });
+    #mdb->master->drop_index({ _seq=>1 },{ unique=>1 });
+    #mdb->master_doc->drop_index({ _seq=>1 },{ unique=>1 });
 
-    mdb->seq('ci-seq',0);
+    #mdb->seq('ci-seq',0);
 
-    my @cis = sort { $a->{mid} <=> $b->{mid} } mdb->master->find->fields( { mid => 1, _id => 1 } )->all;
+    #my @cis = sort { $a->{mid} <=> $b->{mid} } mdb->master->find->fields( { mid => 1, _id => 1 } )->all;
+    my @cis = mdb->master->find->fields( { mid => 1, _id => 1 } )->all;
 
     foreach my $ci (@cis) {
-       my $_seq = mdb->seq('ci-seq');
+       #my $_seq = mdb->seq('ci-seq');
 
-       warn "Migration: Applying sequence to mid=$ci->{mid} ==> seq=$_seq\n";
+       #warn "Migration: Applying sequence to mid=$ci->{mid} ==> seq=$_seq\n";
 
-       mdb->master->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
-       mdb->master_doc->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
+       #mdb->master->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
+       #mdb->master_doc->update({ mid=>"$ci->{mid}" },{ '$set'=>{_seq=>$_seq} });
 
        $master_mids{$ci->{mid}}++;
     }
 
+    # This part is still OK
     my $master_doc_iter = mdb->master_doc->find({_seq => undef}, {mid => 1});
     while( my $ci = $master_doc_iter->next ) {
         if (!exists $master_mids{$ci->{mid}}) {
@@ -31,8 +35,8 @@ sub upgrade {
         }
     }
 
-    mdb->master->ensure_index({ _seq=>1 },{ unique=>1 });
-    mdb->master_doc->ensure_index({ _seq=>1 },{ unique=>1 });
+    #mdb->master->ensure_index({ _seq=>1 },{ unique=>1 });
+    #mdb->master_doc->ensure_index({ _seq=>1 },{ unique=>1 });
 }
 
 sub downgrade {
