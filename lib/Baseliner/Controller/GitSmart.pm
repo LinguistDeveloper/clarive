@@ -1,18 +1,13 @@
 package Baseliner::Controller::GitSmart;
 use Moose;
-=head1 NAME
 
-BaselinerX::Controller::GitSmart - interface to Git Smart HTTP
-
-=head1 DESCRIPTION
-
-This controller manages all interagtions with git-http-backend
-
-=cut
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::GitSmartParser;
+use Baseliner::CGIWrapper;
+use Cwd qw(realpath);
 use Try::Tiny;
 use Path::Class;
 use experimental 'smartmatch';
@@ -47,17 +42,17 @@ sub git : Path('/git/') {
         return;
     };
 
-    # extract reponame from url
-    my $flag = 2;
-    my @repo = grep {  
-        $flag = 0 if $flag == 1;
-        $flag-- if /\.git$/; # stop when name.git found in path  
-        $flag;
-    } @args;
-    my $repo = "". _dir( @repo );
+    my $repo = $self->_extract_repo(@args);
 
     # normalize paths
     my $fullpath = _file( $home, $repo ); # simulate it's a file
+
+    unless ($fullpath && -d $fullpath) {
+        $self->git_error( $c, 'internal error', 'Repository does not exist' );
+        $c->response->status( 404 );
+        return;
+    }
+
     $repo = $fullpath->basename;  # should be something.git
     my $project = $args[0] // '';
     my $reponame = $args[1] // '';
@@ -165,164 +160,129 @@ sub git : Path('/git/') {
     $c->stash->{git_service} = $service;
     _debug ">>> GIT SERVICE=$service";
     
+    my $fh = $c->req->body;
+
+    my @changes = $self->_build_parser()->parse_fh($fh);
+
     # parse request body, if any, to find the commit sha and branch (ref)
     my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
 
-    my $fh = $c->req->body;
+    # Check BL tags
+    foreach my $change (@changes) {
+        my $ref = $change->{ref};
 
-    my @events;
-    if ($fh && ref $fh) {
-        while (1) {
-            read($fh, my $length, 4);
-            last unless $length =~ m/^[a-f0-9]+$/;
-
-            $length = hex $length;
-
-            last unless $length && $length > 4;
-
-            $length -= 4;
-
-            read($fh, my $text, $length);
-
-            last unless $text;
-
-            my ($old, $new, $ref) = split /[ \x00]/, $text;
-
-            push @events, {
-                ref => $ref,
-                old => $old,
-                new => $new,
-            };
-
-            # check BL tags
-            if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-                my $tag      = $1;
-                my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                    username => $c->username,
-                    action   => 'action.git.update_tags',
-                    bl       => $tag
-                );
-                if (!$can_tags) {
-                    $self->process_error($c, 'Push Error',
-                        _loc('Cannot update internal tag %1', $tag));
-                    return;
-                }
+        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
+            my $tag      = $1;
+            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                username => $c->username,
+                action   => 'action.git.update_tags',
+                bl       => $tag
+            );
+            if (!$can_tags) {
+                $self->process_error($c, 'Push Error',
+                    _loc('Cannot update internal tag %1', $tag));
+                return;
             }
         }
-
-        seek $fh, 0, 0;
     }
 
-    # run cgi
-    my ($cgi_msg,$cgi_ret) = ('',0);
-    $self->wrap_cgi_stream($c, sub {
-        #_debug \%ENV;
-        #_debug $p;
-        # my $prjr = _file $home;
-        # $prjr = $prjr->dir . "";
-        $ENV{GIT_HTTP_EXPORT_ALL} = 1;
-        $ENV{GIT_PROJECT_ROOT} = "$home";
-        $ENV{REMOTE_USER} ||= 'baseliner';
-        $ENV{REMOTE_ADDR} ||= 'localhost';
-        $ENV{REQUEST_URI} = $uri_path if length $uri_path; 
-        $ENV{FILEPATH_INFO} = $filepath_info if length $filepath_info; 
-        $ENV{PATH_INFO} = $path_info if length $path_info; 
-        
-        $cgi_ret = $self->run_forked( $c, $cgi );   # TODO use system $cgi in CygWin?
-    },sub{
-       my $err = shift;
-       $self->process_error($c,'GIT ERROR', $err);
-    }); 
+    my $cgi_wrapper = $self->_build_cgi_wrapper(
+        env => {
+            GIT_HTTP_EXPORT_ALL => 1,
+            GIT_PROJECT_ROOT    => "$home",
+            REMOTE_USER         => 'baseliner',
+            REMOTE_ADDR         => 'localhost',
+            $uri_path      ? ( REQUEST_URI   => $uri_path )      : (),
+            $filepath_info ? ( FILEPATH_INFO => $filepath_info ) : (),
+            $path_info     ? ( PATH_INFO     => $path_info )     : ()
+        }
+    );
 
-    # now gather commit info and event it
-    foreach my $event (@events) {
-        $self->event_this($c, $event->{new}, $fullpath, $event->{ref},
-            $event->{old}, $repo);
+    $fullpath = realpath $fullpath;
+
+    my $error;
+    foreach my $change (@changes) {
+        my $sha = $change->{new};
+        my $ref = $change->{ref};
+
+        my $ref_short = [ split '/', $ref ]->[-1];
+
+        event_new
+          'event.repository.update' => {
+            username   => $c->username,
+            repository => $repo,
+            branch     => $ref_short,
+            ref        => $ref,
+            sha        => $sha,
+            _steps     => ['PRE']
+          },
+          sub { }, sub {
+            my ($err) = @_;
+
+            $error = $err;
+          };
+    }
+
+    if ($error) {
+        $self->process_error( $c, 'GIT ERROR', $error );
+        return;
+    }
+
+    my $result = $cgi_wrapper->run( $c, $cgi );
+
+    if ( !$result->{is_success} ) {
+        $self->process_error( $c, 'GIT ERROR', $result->{error} || 'Unknown error' );
+        return;
+    }
+
+    my $repo_id = $self->_create_or_find_repo($fullpath);
+    my $g = Girl::Repo->new( path => "$fullpath" );
+
+    foreach my $change (@changes) {
+        my $sha       = $change->{new};
+        my $ref_prev  = $change->{old};
+        my $ref       = $change->{ref};
+        my $ref_short = [ split '/', $ref ]->[-1];
+
+        my $commit    = $g->commit($sha);
+        my $diff      = $self->_diff( $g, $ref_prev, $sha );
+        my $title     = $commit->message;
+
+        my $rev_mid = $self->_create_or_find_rev( $sha, $repo_id, $commit, $ref_short );
+
+        event_new 'event.repository.update' => {
+            username   => $c->username,
+            repository => $repo,
+            message    => $title,
+            diff       => $diff,
+            branch     => $ref_short,
+            ref        => $ref,
+            sha        => $sha,
+            _steps     => ['POST'],
+          } => sub {
+            return { mid => $rev_mid, title => $title };
+          };
     }
 }
 
-sub run_forked {
-    my ($self,$c,$cgi) = @_;
-    
-    # fork a child
-    use POSIX ":sys_wait_h";
-    pipe( my $stdoutr, my $stdoutw );
-    pipe( my $stderrr, my $stderrw );
-    pipe( my $stdinr,  my $stdinw );
-    my $pid = fork();
-    _fail("fork failed: $!") unless defined $pid;
+sub _extract_repo {
+    my $self = shift;
+    my (@parts) = @_;
 
-    if ($pid == 0) { # child
-        local $SIG{__DIE__} = sub {
-            print STDERR @_;
-            exit(1);
-        };
-        close $stdoutr;
-        close $stderrr;
-        close $stdinw;
-        #require CGI::Emulate::PSGI;
-        #local %ENV = (%ENV, CGI::Emulate::PSGI->emulate_environment($env));
-        open( STDOUT, ">&=" . fileno($stdoutw) ) or _fail( "Cannot dup STDOUT: $!");
-        open( STDERR, ">&=" . fileno($stderrw) ) or _fail( "Cannot dup STDERR: $!");
-        open( STDIN, "<&=" . fileno($stdinr) ) or _fail( "Cannot dup STDIN: $!");
-        #chdir(File::Basename::dirname($cgi));
-        exec($cgi) or _fail( "exec: $!");
-        exit(2);
+    my @repo;
+    foreach my $part (@parts) {
+        push @repo, $part;
+
+        last if $part =~ m/\.git$/;
     }
-    close $stdoutw;
-    close $stderrw;
-    close $stdinr;
-    
-    my $siz = 0;
-    # do some writing to process STDIN
-    { 
-        _debug( 'starting write' );
-        local $/ = \10_485_760;
-		if( my $fh = $c->req->body ) {
-			while( my $in = <$fh> ) { #<STDIN> ) {
-				_debug( sprintf 'write: %d (total=%s)', length $in, $siz+=length $in );
-				syswrite($stdinw, $in ) if length $in;
-            }
-        }
-    }
-    # close STDIN so child will stop waiting
-    close $stdinw;
-    
-    # now read git STDOUT
-    $siz = 0;
-    my $has_headers = 0;
-    while (waitpid($pid, WNOHANG) <= 0) {
-        my $out = do { local $/ = \10_485_760; <$stdoutr> } || '';
-        _debug( sprintf 'read: %d (total=%s)', length $out, $siz+=length $out );
-        if( !$has_headers && $out =~ m/^(.*?)\r\n\r\n(.*)$/s ) {
-            my $head = $1;
-            while( $head =~ m/^(.+): (.+)[\n\r]?/mg ) {
-                $c->res->headers->header( $1 => $2 );
-            }
-            $out = $2;
-            $has_headers = 1;
-            _debug( 'finhead: ' . length $head );
-            _debug( 'finread: ' . length $out );
-            $c->res->finalize_headers($c);
-        }
-        $c->res->write( $out ) if length $out;
-    }
-    my $out = do { local $/; <$stdoutr> } || '';
-    my $err = do { local $/; <$stderrr> } || '';
-    _error( "ERROR FINAL git cgi: $err" ) if length $err;
-    if( length $err ) {
-        _fail $err;
-    }
-    _debug( sprintf 'readfin: %d (total=%s)', length $out, $siz+=length $out );
-    $c->res->write( $out ) if length $out;
-    $c->res->body( '' );
-    return 0;
+
+    return "". _dir( @repo );
 }
 
 sub process_error {
     my ($self,$c,$type,$err) = @_;
     my $msg = _loc( "CLARIVE: %1: %2", $type, "$err\n" );
-    
+
     # client version parse
     require version;
     my ($git_ver) = $c->req->user_agent =~ /git\/([\d\.]+)/;
@@ -367,70 +327,66 @@ sub process_error {
     }
 }
 
+sub _create_or_find_repo {
+    my $self = shift;
+    my ($fullpath) = @_;
 
-sub event_this {
-    my ($self,$c,$sha,$fullpath,$ref,$ref_prev,$repo)=@_;
-    try {
-        if( $sha ) {  
-            my $g = Girl::Repo->new( path=>"$fullpath" );
-            my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
-            my $repo_id;
-            if ($repo_row) {
-                $repo_id = $repo_row->{mid};
-            } else {
-                master_new 'GitRepository' => {
-                    name    => "$fullpath",
-                    moniker => "$fullpath",
-                    data    => {
-                        repo_dir   => "$fullpath",
-                        rel_path   => "/",
-                    }
-                    } => sub {
-                        $repo_id = shift;
-                    };
+    my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
+    my $repo_id;
+    if ($repo_row) {
+        $repo_id = $repo_row->{mid};
+    } else {
+        master_new 'GitRepository' => {
+            name    => "$fullpath",
+            moniker => "$fullpath",
+            data    => {
+                repo_dir   => "$fullpath",
+                rel_path   => "/",
             }
+            } => sub {
+                $repo_id = shift;
+            };
+    }
 
-            if ( $repo_id ) {
+    return $repo_id;
+}
 
-                my $commit = $g->commit( $sha );
-                my $diff = $ref_prev eq ('0' x 40) # ref_prev == 0 when it's a new repository
-                    ? _format_diff(  join "\n", $g->exec( 'show', $sha ) )
-                    : _format_diff( join "\n", $g->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
-                _debug $diff;
-                my $ref_short = [ split '/', $ref ]->[-1];
-                _debug "GIT MESSAGE: " . $commit->message;
-                my $title = $commit->message;
-                event_new 'event.repository.update'
-                    => { username=>$c->username, repository=>$repo, message=>$title, diff=>$diff, branch=>$ref_short, ref=>$ref, sha=>$sha }
-                    => sub { 
-                        my $mid;
-                        my $rev = ci->GitRevision->find_one({ sha=>"$sha" });
-                        if( ! $rev ) {
-                            my $commit2 = substr( $sha, 0, 7 );
-                            my $msg = substr( $commit->message, 0, 15 );
-                            master_new 'GitRevision' => {
-                                    name    => "[$commit2] $title",
-                                    moniker => $commit2,
-                                    data    => { sha => $sha, repo => $repo_id, branch => $ref_short }
-                                } => sub {
-                                    $mid = shift;
-                                };
+sub _create_or_find_rev {
+    my $self = shift;
+    my ( $sha, $repo_id, $commit, $ref_short ) = @_;
 
-                        } else {
-                            $mid = $rev->{mid};
-                        }
-                        { mid => $mid, title => $title };
-                };
-                _debug "GIT: evented SHA $sha";
-            } else {
-                _debug "GIT: repository not found";
-            }
-        } else {
-            _debug "GIT: no sha defined to event operation";
-        }
-    } catch {
-        _log "GIT: ERROR: Could not event git operation: " . shift();
-    };
+    my $mid;
+
+    my $rev = ci->GitRevision->find_one( { sha => "$sha" } );
+    if ($rev) {
+        $mid = $rev->{mid};
+    }
+    else {
+        my $title     = $commit->message;
+        my $commit2 = substr( $sha,             0, 7 );
+        my $msg     = substr( $commit->message, 0, 15 );
+        master_new 'GitRevision' => {
+            name    => "[$commit2] $title",
+            moniker => $commit2,
+            data    => { sha => $sha, repo => $repo_id, branch => $ref_short }
+          } => sub {
+            $mid = shift;
+          };
+    }
+
+    return $mid;
+}
+
+sub _diff {
+    my $self = shift;
+    my ($git, $ref_prev, $sha) = @_;
+
+    # ref_prev == 0 when it's a new repository
+    my $diff = $ref_prev eq ('0' x 40)
+        ? _format_diff(  join "\n", $git->exec( 'show', $sha ) )
+        : _format_diff( join "\n", $git->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
+
+    return $diff;
 }
 
 sub _format_diff {
@@ -461,121 +417,16 @@ sub git_error {
     );
 }
 
-# rgo: my own CGI wrapper:  TODO maybe a Catalyst module somewhere?
-use URI ();
-use URI::Escape;
-use HTTP::Request::Common;
-open my $REAL_STDIN, "<&=".fileno(*STDIN);
-open my $REAL_STDOUT, ">>&=".fileno(*STDOUT);
- 
-sub wrap_cgi_stream {
-  my ($self, $c, $call, $call_err) = @_;
-  my $req = HTTP::Request->new(
-    map { $c->req->$_ } qw/method uri headers/
-  );
-  my $body = $c->req->body;
-  my $body_content = '';
- 
-  $req->content_type($c->req->content_type); # set this now so we can override
- 
-  if (!$body) { # Slurp from body filehandle
-    my $body_params = $c->req->body_parameters || {};
- 
-    if (%$body_params) {
-      my $encoder = URI->new;
-      $encoder->query_form(%$body_params);
-      $body_content = $encoder->query;
-      $req->content_type('application/x-www-form-urlencoded');
-      $req->content($body_content);
-      $req->content_length(length($body_content));
-    }
-  }
- 
-  my $username_field = $self->{CGI}{username_field} || 'username';
-  my $username = (($c->can('user_exists') && $c->user_exists)
-               ? eval { $c->user->obj->$username_field }
-                : '');
-  $username ||= $c->req->remote_user if $c->req->can('remote_user');
- 
-  my $path_info = '/'.join '/' => map {
-    utf8::is_utf8($_) ? uri_escape_utf8($_) : uri_escape($_)
-  } @{ $c->req->args };
- 
-  my $env = HTTP::Request::AsCGI->new(
-              $req,
-              ($username ? (REMOTE_USER => $username) : ()),
-              PATH_INFO => $path_info,
-# eww, this is likely broken:
-              FILEPATH_INFO => '/'.$c->action.$path_info,
-              SCRIPT_NAME => $c->uri_for($c->action, $c->req->captures)->path
-            );
- 
-  {
-    my $saved_error;
- 
-    local %ENV = %{ $self->_filtered_env(\%ENV) };
- 
-    $env->setup;
-    eval { $call->() };
-    $saved_error = $@;
-    #$env->restore;
- 
-    if( $saved_error ) {
-        if( $call_err ) {
-            $call_err->($saved_error);
-        } else {
-            die $saved_error if ref $saved_error;
-            Catalyst::Exception->throw(
-                message => "CGI invocation failed: $saved_error"
-               );
-        }
-    }
-  }
- 
-  #return $env->response;
- return ;
+sub _build_cgi_wrapper {
+    my $self = shift;
+
+    return Baseliner::CGIWrapper->new(@_);
 }
-my $DEFAULT_KILL_ENV = [qw/
-  MOD_PERL SERVER_SOFTWARE SERVER_NAME GATEWAY_INTERFACE SERVER_PROTOCOL
-  SERVER_PORT REQUEST_METHOD PATH_INFO PATH_TRANSLATED SCRIPT_NAME QUERY_STRING
-  REMOTE_HOST REMOTE_ADDR AUTH_TYPE REMOTE_USER REMOTE_IDENT CONTENT_TYPE
-  CONTENT_LENGTH HTTP_ACCEPT HTTP_USER_AGENT
-/];
- 
-sub _filtered_env {
-  my ($self, $env) = @_;
-  my @ok;
- 
-  my $pass_env = $self->{CGI}{pass_env};
-  $pass_env = []            if not defined $pass_env;
-  $pass_env = [ $pass_env ] unless ref $pass_env;
- 
-  my $kill_env = $self->{CGI}{kill_env};
-  $kill_env = $DEFAULT_KILL_ENV unless defined $kill_env;
-  $kill_env = [ $kill_env ]  unless ref $kill_env;
- 
-  if (@$pass_env) {
-    for (@$pass_env) {
-      if (m!^/(.*)/\z!) {
-        my $re = qr/$1/;
-        push @ok, grep /$re/, keys %$env;
-      } else {
-        push @ok, $_;
-      }
-    }
-  } else {
-    @ok = keys %$env;
-  }
- 
-  for my $k (@$kill_env) {
-    if ($k =~ m!^/(.*)/\z!) {
-      my $re = qr/$1/;
-      @ok = grep { ! /$re/ } @ok;
-    } else {
-      @ok = grep { $_ ne $k } @ok;
-    }
-  }
-  return { map {; $_ => $env->{$_} } @ok };
+
+sub _build_parser {
+    my $self = shift;
+
+    return Baseliner::GitSmartParser->new;
 }
 
 no Moose;

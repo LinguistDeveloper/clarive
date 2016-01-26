@@ -255,6 +255,8 @@ sub _new_event {
     my $self = shift;
     my ( $ev, $key, $data, $module, $code ) = @_;
 
+    my $steps = delete $data->{_steps} || [qw/PRE RUN POST/];
+
     try {
         if ( length $data->{mid} ) {
             my $ci = $data->{ci} // ci->new( $data->{mid} );
@@ -271,28 +273,32 @@ sub _new_event {
 
     my @rule_log;
 
-    # PRE rules
-    my $rules_pre = $ev->rules_pre_online($data);
-    
-    $data->{return_options}{reload} = 1 if $rules_pre->{stash}{rules_exec}{$ev->key}{'pre-online'};
-
-    push @rule_log, _array( $rules_pre->{rule_log} );
-
     my $obj = Baseliner::Core::Event->new( data => $data );
 
-    # PRE hooks
-    for my $hk ( $ev->before_hooks ) {
-        my $hk_data = $hk->($obj);
-        $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
-        $obj->data($data);
+    # PRE
+    if (grep { $_ eq 'PRE' } @$steps) {
+        my $rules_pre = $ev->rules_pre_online($data);
+
+        $data->{return_options}{reload} = 1 if $rules_pre->{stash}{rules_exec}{$ev->key}{'pre-online'};
+
+        push @rule_log, _array( $rules_pre->{rule_log} );
+
+        # PRE hooks
+        for my $hk ( $ev->before_hooks ) {
+            my $hk_data = $hk->($obj);
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data($data);
+        }
     }
 
     # RUN
-    if ( ref $code eq 'CODE' ) {
-        my $rundata = $code->($data);
+    if (grep { $_ eq 'RUN' } @$steps) {
+        if ( ref $code eq 'CODE' ) {
+            my $rundata = $code->($data);
 
-        if (ref $rundata eq 'HASH') {
-            $data = { %$data, %$rundata };
+            if (ref $rundata eq 'HASH') {
+                $data = { %$data, %$rundata };
+            }
         }
     }
 
@@ -303,18 +309,20 @@ sub _new_event {
     #}
 
     # POST hooks
-    $obj->data($data);
-    for my $hk ( $ev->after_hooks ) {
-        my $hk_data = $hk->($obj);
-        $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+    if (grep { $_ eq 'POST' } @$steps) {
         $obj->data($data);
+        for my $hk ( $ev->after_hooks ) {
+            my $hk_data = $hk->($obj);
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data($data);
+        }
+
+        # POST rules
+        my $rules_post = $ev->rules_post_online($data);
+        push @rule_log, _array( $rules_post->{rule_log} );
+
+        $self->_create_event_and_friends( $ev, $key, $module, $data, @rule_log );    #if defined $data->{mid};
     }
-
-    # POST rules
-    my $rules_post = $ev->rules_post_online($data);
-    push @rule_log, _array( $rules_post->{rule_log} );
-
-    $self->_create_event_and_friends( $ev, $key, $module, $data, @rule_log );    #if defined $data->{mid};
 
     return $data;
 }
