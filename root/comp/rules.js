@@ -1725,7 +1725,7 @@
 
     var toggle_button = new Ext.Button(
         { 
-            tooltip:_(''), 
+            tooltip:_('Tree view'), 
             pressed: false,
             stateful: true,
             toggleGroup:'rule-tree-group'+Ext.id(), 
@@ -1774,7 +1774,7 @@
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             toggle_button,
-            { xtype:'button', icon: '/static/images/icons/wrench.gif', cls: 'x-btn-icon', menu:[
+            { xtype:'button', icon: '/static/images/icons/wrench.gif', tooltip:_('Import/Export'), cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
                 '-',
