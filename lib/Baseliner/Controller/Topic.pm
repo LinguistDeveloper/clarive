@@ -1698,8 +1698,6 @@ sub list_users : Local {
     my (@rows, $users_friends);
     my $username = $c->username;
 
-_warn $p;
-
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
@@ -1707,16 +1705,12 @@ _warn $p;
         my $topic_row;
         my @topic_projects;
         if ( $p->{topic_mid}) {
-            # $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
             @topic_projects = ci->new($$p{topic_mid})->projects;
-            # @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
         }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
-            my @id_roles;
-            foreach my $role_name (@name_roles){
-                push @id_roles, mdb->role->find_one({ role=> qr/$role_name/i })->{id};
-            }
+            my @id_roles = map { $_->{id} } grep { $_->{id} } mdb->role->find({ role=> mdb->in(@name_roles) });
+
             if (@id_roles){
                 $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects); 
             }
