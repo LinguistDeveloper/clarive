@@ -74,8 +74,7 @@ subtest 'git: creates no events when no changes' => sub {
         stash    => $stash
     );
 
-    my $cgi_wrapper = _mock_cgi_wrapper();
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
+    my $controller = _build_controller();
 
     $controller->git( $c, '.git' );
 
@@ -83,7 +82,7 @@ subtest 'git: creates no events when no changes' => sub {
 
     is @events, 0;
 
-    ok $cgi_wrapper->mocked_called('run');
+    ok $controller->mocked_called('cgi_to_response');
 };
 
 subtest 'git: creates correct event on first push' => sub {
@@ -218,8 +217,7 @@ subtest 'git: creates correct event on push several references' => sub {
         stash    => $stash
     );
 
-    my $cgi_wrapper = _mock_cgi_wrapper();
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
+    my $controller = _build_controller();
 
     $controller->git( $c, '.git' );
 
@@ -237,7 +235,7 @@ subtest 'git: creates correct event on push several references' => sub {
     is $data[1]->{ref},    'refs/heads/new';
     is $data[1]->{sha},    $new_sha;
 
-    is $cgi_wrapper->mocked_called('run'), 1;
+    is $controller->mocked_called('cgi_to_response'), 1;
 };
 
 subtest 'git: creates correct event on push tag' => sub {
@@ -593,67 +591,15 @@ subtest 'git: if pre-online event fails return an error' => sub {
     like $c->res->body, qr/CLARIVE: GIT ERROR: \(rule 1\): here/;
 };
 
-subtest 'git: if cgi wrapper fails returns an error' => sub {
-    _setup();
-
-    my $repo_dir = TestGit->create_repo;
-    my $sha      = TestGit->commit($repo_dir);
-
-    TestUtils->create_ci( 'GitRevision', sha => $sha );
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
-
-    my $stash = {
-        git_config => {
-            gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   => $repo_dir
-        }
-    };
-
-    my $body = "0094"
-      . "0000000000000000000000000000000000000000 $sha refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
-      . "0000";
-    open my $fh, '<', \$body;
-
-    my $c = mock_catalyst_c(
-        username => 'foo',
-        req      => {
-            params     => {},
-            user_agent => 'git/2.8.6',
-            body       => $fh
-        },
-        stash => $stash
-    );
-
-    my $cgi_wrapper = _mock_cgi_wrapper( run => sub { { is_success => 0, error => 'Some error' } } );
-
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
-    $controller->git( $c, '.git' );
-
-    is $c->res->status, 500;
-    like $c->res->body, qr/CLARIVE: GIT ERROR: Some error/;
-};
-
 done_testing;
-
-sub _mock_cgi_wrapper {
-    my (%params) = @_;
-
-    my $cgi_wrapper = Test::MonkeyMock->new;
-    $cgi_wrapper->mock( run => $params{run} || sub { { is_success => 1 } } );
-
-    return $cgi_wrapper;
-}
 
 sub _build_controller {
     my (%params) = @_;
 
-    my $cgi_wrapper = $params{cgi_wrapper} || _mock_cgi_wrapper();
-
     my $controller = Baseliner::Controller::GitSmart->new( application => '' );
     $controller = Test::MonkeyMock->new($controller);
 
-    $controller->mock( _build_cgi_wrapper => sub { $cgi_wrapper } );
+    $controller->mock( cgi_to_response => sub { } );
 
     return $controller;
 }

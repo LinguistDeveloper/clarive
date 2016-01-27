@@ -6,19 +6,16 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
-use Baseliner::CGIWrapper;
 use Cwd qw(realpath);
 use Try::Tiny;
 use Path::Class;
 use experimental 'smartmatch';
 
-#BEGIN { extends 'Catalyst::Controller::WrapCGI' }
-BEGIN { extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 sub begin : Private {  #TODO control auth here
      my ($self,$c) = @_;
      my $config = config_get 'config.git';
-     _debug _dump $c->req->headers;
      $c->stash->{git_config} = $config;
      if( $config->{no_auth} ) {
          $c->stash->{auth_skip} = 1;
@@ -186,18 +183,6 @@ sub git : Path('/git/') {
         }
     }
 
-    my $cgi_wrapper = $self->_build_cgi_wrapper(
-        env => {
-            GIT_HTTP_EXPORT_ALL => 1,
-            GIT_PROJECT_ROOT    => "$home",
-            REMOTE_USER         => 'baseliner',
-            REMOTE_ADDR         => 'localhost',
-            $uri_path      ? ( REQUEST_URI   => $uri_path )      : (),
-            $filepath_info ? ( FILEPATH_INFO => $filepath_info ) : (),
-            $path_info     ? ( PATH_INFO     => $path_info )     : ()
-        }
-    );
-
     $fullpath = realpath $fullpath;
 
     my $error;
@@ -228,12 +213,22 @@ sub git : Path('/git/') {
         return;
     }
 
-    my $result = $cgi_wrapper->run( $c, $cgi );
+    $self->cgi_to_response(
+        $c,
+        sub {
+            local $ENV{GIT_HTTP_EXPORT_ALL} = 1;
+            local $ENV{GIT_PROJECT_ROOT}    = "$home";
 
-    if ( !$result->{is_success} ) {
-        $self->process_error( $c, 'GIT ERROR', $result->{error} || 'Unknown error' );
-        return;
-    }
+            local $ENV{REMOTE_USER} ||= $c->username;
+            local $ENV{REMOTE_ADDR} ||= 'localhost';
+
+            local $ENV{REQUEST_URI}  = $uri_path if $uri_path;
+            local $ENV{FILEPATH_INFO}= $filepath_info if $filepath_info;
+            local $ENV{PATH_INFO}    = $path_info if $path_info;
+
+            system($cgi);
+        }
+    );
 
     my $repo_id = $self->_create_or_find_repo($fullpath);
     my $g = Girl::Repo->new( path => "$fullpath" );
