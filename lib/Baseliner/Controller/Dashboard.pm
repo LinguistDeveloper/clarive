@@ -470,6 +470,8 @@ sub topics_by_field: Local {
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+    my $numberfield_group = $p->{numberfield_group};
+    my $result_type = $p->{result_type};
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
@@ -519,39 +521,20 @@ sub topics_by_field: Local {
     $where->{'category.id'} = mdb->in(@user_categories);
 
     model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
-
     try {
-        @topics_by_category = _array(mdb->topic->aggregate( [
-            { '$match' => $where },
-            { '$unwind' =>  '$'.$group_by },
-            { '$group' => { 
-                _id => '$'.$group_by, 
-                'field' => {'$max' => '$'.$group_by},
-                'category_color' => {'$max' => '$category.color'}, 
-                'status_color' => {'$max' => '$category_status.color'}, 
-                'total' => { '$sum' => 1 },
-                'topics_list' => { '$push' => '$mid'}
-              } 
-            },
-            { '$sort' => { total => -1}}
-        ]));
+        @topics_by_category = $self->data_to_aggreate(where => $where,
+            numberfield_group => $numberfield_group,
+            result_type => $result_type,
+            unwind => $group_by,
+            group_by => $group_by
+            );
     } catch {
-        @topics_by_category = _array(mdb->topic->aggregate( [
-            { '$match' => $where },
-            { '$group' => { 
-                _id => '$'.$group_by, 
-                'field' => {'$max' => '$'.$group_by},
-                'category_color' => {'$max' => '$category.color'}, 
-                'status_color' => {'$max' => '$category_status.color'}, 
-                'total' => { '$sum' => 1 },
-                'topics_list' => { '$push' => '$mid'}
-              } 
-            },
-            { '$sort' => { total => -1}}
-        ]));
-
+        @topics_by_category = $self->data_to_aggreate(where => $where,
+            numberfield_group => $numberfield_group,
+            result_type => $result_type,
+            group_by => $group_by
+            );
     };
-    
     my $total = 0;
     my $topics_list;
     map { $total += $_->{total} } @topics_by_category;
@@ -2017,6 +2000,29 @@ sub list_status_changed: Local{
     $c->stash->{list_status_changed} = \@status_changes;
     $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
 };
+
+sub data_to_aggreate {
+    my $self = shift;
+    my (%params) = @_;
+    my $result = {'$sum' => 1 };
+    if($params{result_type} ne 'count' && $params{numberfield_group}){
+        $result = {'$'.$params{result_type} => '$'.$params{numberfield_group}};
+    }
+    return _array(mdb->topic->aggregate( [
+        { '$match' => $params{where} },
+        $params{unwind} ? ( { '$unwind' => $params{unwind}  } ) : (),
+        { '$group' => {
+            _id => '$'.$params{group_by},
+            'field' => {'$max' => '$'.$params{group_by}},
+            'category_color' => {'$max' => '$category.color'},
+            'status_color' => {'$max' => '$category_status.color'},
+            'total' => $result,
+            'topics_list' => { '$push' => '$mid'}
+          }
+        },
+        { '$sort' => { total => -1}}
+    ]));
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
