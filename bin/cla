@@ -9,8 +9,12 @@ if [ ! -e $PERL ]; then
     PERL=`which perl`
 fi
 export PATH="$BINDIR:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
-export CLARIVE_BASE=`realpath "$BINDIR/../../"`
-export CLARIVE_HOME=`realpath "$BINDIR/../"`
+if [ "$CLARIVE_BASE" == "" ]; then
+    export CLARIVE_BASE=`realpath "$BINDIR/../../"`
+fi
+if [ "$CLARIVE_HOME" == "" ]; then
+    export CLARIVE_HOME=`realpath "$BINDIR/../"`
+fi
 export LD_LIBRARY_PATH="$LOCALDIR/lib"
 
 export PERL5LIB=""
