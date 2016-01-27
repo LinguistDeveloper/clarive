@@ -1,6 +1,7 @@
 package BaselinerX::CI::project;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Permissions;
 use BaselinerX::CI::variable;
 
 with 'Baseliner::Role::CI::Project';
@@ -36,8 +37,9 @@ service 'scan' => 'Run Scanner' => sub {
 };
 
 method user_has_action( :$username, :$action=undef ) {
-    return scalar grep { $_ == $self->mid } Baseliner->model( 'Permissions' )
-        ->user_projects_with_action( username=>$username, action=>$action );
+    return
+      scalar grep { $_ eq $self->mid }
+      Baseliner::Model::Permissions->new->user_projects_with_action( username => $username, action => $action );
 }
 
 after save_data => sub {

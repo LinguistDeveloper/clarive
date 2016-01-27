@@ -1,17 +1,15 @@
 package Baseliner::Controller::GitSmart;
 use Moose;
+BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
+use Cwd qw(realpath);
+use Try::Tiny;
+use Path::Class;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
-use Cwd qw(realpath);
-use Try::Tiny;
-use Path::Class;
-use experimental 'smartmatch';
-
-BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 sub begin : Private {  #TODO control auth here
      my ($self,$c) = @_;
@@ -28,7 +26,11 @@ sub begin : Private {  #TODO control auth here
 
 sub git : Path('/git/') {
     my ($self,$c, @args ) = @_;
+
+    my $original_path = join '/', @args;
+
     my $config = $c->stash->{git_config};
+
     my $cgi = $config->{gitcgi} or _throw 'Missing config.git.gitcgi';
     if( ! -e $cgi ) {
         $self->process_error( $c, 'internal error', _loc("File %1 does not exist", $cgi) );
@@ -38,152 +40,90 @@ sub git : Path('/git/') {
         $self->process_error( $c, 'internal error', 'Missing config.git.repo' );   
         return;
     };
+    my $path_info;
 
-    my $repo = $self->_extract_repo(@args);
+    my $project;
+    my $repo;
+    my $fullpath;
 
-    # normalize paths
-    my $fullpath = _file( $home, $repo ); # simulate it's a file
+    $c->{stash}->{git_lastarg} = $args[-1] // '';
 
-    unless ($fullpath && -d $fullpath) {
-        $self->git_error( $c, 'internal error', 'Repository does not exist' );
-        $c->response->status( 404 );
-        return;
-    }
-
-    $repo = $fullpath->basename;  # should be something.git
-    my $project = $args[0] // '';
-    my $reponame = $args[1] // '';
-    my $lastarg = $args[-1];
-    $c->stash->{git_lastarg} = $lastarg;
-    my $repopath = join('/', @args );
-    _debug ">>> GIT ARGS (repopath): " . $repopath;
-    _debug ">>> GIT HOME: $home";
-    _debug ">>> GIT CI PROJECT: $project";
-    _debug ">>> GIT CI REPONAME: $reponame";
-    _debug ">>> GIT URI: " . $c->req->uri;
-    _debug ">>> PATH_INFO: " . $c->req->path;
-    _debug ">>> GIT REPO: $repo";
-
-    my ($ci_repo,$ci_prj);
-    my ($uri_path, $filepath_info, $path_info);  # CGI ENV variables used by CI mode
-
-    if( !$config->{force_authorization} && $repo =~ /\.git$/ ) {   # old style /git/repo.git, by default is off
+    if( !$config->{force_authorization} && $original_path =~ m{\.git} ) {
+        my $repo_name = $self->_extract_repo(@args);
+        $fullpath = _file( $home, $repo_name ); # simulate it's a file
         $home = $fullpath->dir->absolute;
-        _log ">>> GIT USER: " . $c->username;
-        _log ">>> GIT HOME REPO: $home"; 
-    } elsif( length $project && length $reponame ) {
-        ($ci_prj)  = ci->search_cis( '$or'=>[ {name=>$project}, {moniker=>$project} ], collection=>'project' );
-        unless( $ci_prj ) {
-            $self->git_error( $c, 'internal error', _loc('Project `%1` not found', $project) );
+
+        $path_info = "/$original_path";
+    }
+    else {
+        my $project_name = $args[0] // '';
+        my $repo_name = $args[1] // '';
+
+        unless ($project_name && $repo_name) {
+            $self->process_error(
+                $c,
+                'invalid repository',
+                _loc( "Invalid or unauthorized git repository path %1", join( '/', @args ) )
+            );
+            $c->response->status( 401 );
+            return;
+        }
+
+        $project = ci->search_ci(
+            '$or'      => [ { name => $project_name }, { moniker => $project_name } ],
+            collection => 'project'
+        );
+        unless( $project ) {
+            $self->git_error( $c, 'internal error', _loc('Project `%1` not found', $project_name) );
             $c->response->status( 404 );
             return;
         }
-        ($ci_repo) = ci->search_cis( '$or'=>[ {name=>$reponame}, {moniker=>$reponame}, {moniker=>lc($project)."_".$reponame} ], collection=>'GitRepository' );
-        unless( $ci_repo ) {
-            $self->git_error( $c, 'internal error', _loc('Repository `%1` not found for project `%2`', $reponame, $project) );
-            $c->response->status( 404 );
+
+        $repo = ci->search_ci(
+            '$or' => [
+                { name => $repo_name }, { moniker => $repo_name }, { moniker => lc($project_name) . "_" . $repo_name }
+            ],
+            collection => 'GitRepository'
+        );
+        unless ($repo) {
+            $self->git_error(
+                $c,
+                'internal error',
+                _loc( 'Repository `%1` not found for project `%2`', $repo_name, $project_name )
+            );
+            $c->response->status(404);
             return;
         }
-        my $repo_dir = _dir( $ci_repo->repo_dir );
+
+        $fullpath = $repo->repo_dir;
+        my $repo_dir = _dir( $repo->repo_dir );
         $home = $repo_dir->parent;
-        # build the CGI path needed
-        if( $c->req->uri =~ m{^.*/git/$project/$reponame/(.*)$} ) {
-            my $short_uri = $1;
-            my $rest_uri = join('/', splice(@args,2) );
-            $uri_path      = sprintf '/git/%s/%s', $repo_dir->basename, $short_uri;
-            $filepath_info = sprintf '/gitsmart/git/%s/%s', $repo_dir->basename, $rest_uri; #  FILEPATH_INFO: /gitsmart/git/VT-FILES.git/info/refs
-            $path_info = sprintf '/%s/%s', $repo_dir->basename, $rest_uri; # PATH_INFO: /VT-FILES.git/info/refs
-        } else {
-            $self->process_error( $c, 'internal error', _loc 'Could not parse git uri: %1', $c->req->uri );
-            $c->response->status( 404 );
-            return;
-        }
-        
-        if( !defined $ci_prj ) {
-            $self->process_error( $c, 'internal error', _loc("Invalid project name %1", $project) );
-            $c->response->status( 404 );
-            return;
-        }
-        if( !defined $ci_repo ) {
-            $self->process_error( $c, 'internal error', _loc("Invalid repository name %1", $reponame) );
-            $c->response->status( 404 );
-            return;
-        }
-        _log _loc "Git: User %1 access to project %2 (mid=%3) repository %4 (mid=%5)", $c->username, $project, $ci_prj->mid,
-            $reponame, $ci_repo->mid;
-    } else {
-        $self->process_error( $c, 'invalid repository', _loc("Invalid or unauthorized git repository path %1", $repopath ) );
-        $c->response->status( 401 );
-        return;
+
+        shift @args;
+        shift @args;
+        $path_info = join('/', $repo_dir, @args);
+        $path_info =~ s{^$home}{};
     }
-    # Check permissions
-    if( ! length $c->username ) {
-        if( ! exists $c->req->params->{service} ) {  # first request has param 'service'
-            $self->process_error( $c, 'access denied', 
-                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
-                );
-            return;
-        } elsif( $c->req->user_agent =~ /JGit/i ) {
-            _debug "Unauthorized JGit";
-            # This response forces JGIt to say "not authorized"
-            $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic realm="clarive"' );
-            $c->response->body( _loc('Invalid User') );
-            $c->response->status( 401 );
-            return;
-        } else {
-            $self->process_error( $c, 'access denied', 
-                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
-                );
-            $c->response->status( 401 );
-            return;
-        }
-    } elsif( $ci_prj ) {
-        my $id_project = $ci_prj->{mid};
-        my @project_ids = Baseliner->model('Permissions')->user_projects_ids(username=>$c->username);
-        if( !$ci_prj->user_has_action(username=>$c->username,action=>'action.git.repository_access') || (!$id_project ~~ @project_ids) ) {
-            $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project ) );
-            return;
-        } 
-    }
+
+    return unless $self->access_granted($c, $project);
 
     # TODO - check if the user has "action.git.repo_new" :
     # $c->model('Git')->setup_new_repo( service=>$p->{service}, repo=>$repo, home=>$home );
 
     # get git service 
+    my $lastarg = $c->stash->{git_lastarg};
     my $service = $c->req->params->{service};
     $service=$lastarg if !$service && $lastarg =~ /^git-/;  # last arg is service then? ie. git/prj/repo/git-upload-pack
     $service //= $c->session->{git_last_service} // 'git-upload-pack';
     $c->session->{git_last_service} //= $service;
     $c->stash->{git_service} = $service;
-    _debug ">>> GIT SERVICE=$service";
+    #_debug ">>> GIT SERVICE=$service";
     
     my $fh = $c->req->body;
 
     my @changes = $self->_build_parser()->parse_fh($fh);
 
-    # parse request body, if any, to find the commit sha and branch (ref)
-    my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
-
-    # Check BL tags
-    foreach my $change (@changes) {
-        my $ref = $change->{ref};
-
-        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-            my $tag      = $1;
-            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                username => $c->username,
-                action   => 'action.git.update_tags',
-                bl       => $tag
-            );
-            if (!$can_tags) {
-                $self->process_error($c, 'Push Error',
-                    _loc('Cannot update internal tag %1', $tag));
-                return;
-            }
-        }
-    }
-
-    $fullpath = realpath $fullpath;
+    return unless $self->bl_change_granted($c, \@changes);
 
     my $error;
     foreach my $change (@changes) {
@@ -221,16 +161,13 @@ sub git : Path('/git/') {
 
             local $ENV{REMOTE_USER} ||= $c->username;
             local $ENV{REMOTE_ADDR} ||= 'localhost';
-
-            local $ENV{REQUEST_URI}  = $uri_path if $uri_path;
-            local $ENV{FILEPATH_INFO}= $filepath_info if $filepath_info;
-            local $ENV{PATH_INFO}    = $path_info if $path_info;
+            local $ENV{PATH_INFO} = $path_info;
 
             system($cgi);
         }
     );
 
-    my $repo_id = $self->_create_or_find_repo($fullpath);
+    my $repo_id = $self->_create_or_find_repo("$fullpath");
     my $g = Girl::Repo->new( path => "$fullpath" );
 
     foreach my $change (@changes) {
@@ -258,6 +195,76 @@ sub git : Path('/git/') {
             return { mid => $rev_mid, title => $title };
           };
     }
+}
+
+sub bl_change_granted {
+    my $self = shift;
+    my ($c, $changes) = @_;
+
+    my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
+
+    foreach my $change (@$changes) {
+        my $ref = $change->{ref};
+
+        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
+            my $tag      = $1;
+            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
+                username => $c->username,
+                action   => 'action.git.update_tags',
+                bl       => $tag
+            );
+            if (!$can_tags) {
+                $self->process_error($c, 'Push Error',
+                    _loc('Cannot update internal tag %1', $tag));
+                return;
+            }
+        }
+    }
+
+    return 1;
+}
+
+sub access_granted {
+    my $self = shift;
+    my ($c, $project) = @_;
+
+    # Check permissions
+    if( ! length $c->username ) {
+        if( ! exists $c->req->params->{service} ) {  # first request has param 'service'
+            $self->process_error( $c, 'access denied', 
+                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
+                );
+            return;
+        } elsif( $c->req->user_agent =~ /JGit/i ) {
+            _debug "Unauthorized JGit";
+            # This response forces JGIt to say "not authorized"
+            $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic realm="clarive"' );
+            $c->response->body( _loc('Invalid User') );
+            $c->response->status( 401 );
+            return;
+        } else {
+            $self->process_error( $c, 'access denied', 
+                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
+                );
+            $c->response->status( 401 );
+            return;
+        }
+    } elsif( $project ) {
+        my $id_project = $project->{mid};
+        my @project_ids = Baseliner::Model::Permissions->new->user_projects_ids(username=>$c->username);
+
+        my $is_user_project = (grep { $_ eq $id_project } @project_ids) ? 1 : 0;
+        my $user_has_action =
+          $project->user_has_action( username => $c->username, action => 'action.git.repository_access' );
+
+        unless ($is_user_project && $user_has_action) {
+            $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project->name ) );
+            $c->response->status( 401 );
+            return;
+        } 
+    }
+
+    return 1;
 }
 
 sub _extract_repo {
@@ -325,6 +332,8 @@ sub process_error {
 sub _create_or_find_repo {
     my $self = shift;
     my ($fullpath) = @_;
+
+    $fullpath = realpath $fullpath;
 
     my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
     my $repo_id;
@@ -410,12 +419,6 @@ sub git_error {
     $c->res->body(
         $self->res_msg( sprintf("\nCLARIVE ERROR: %s",$msg), $err)
     );
-}
-
-sub _build_cgi_wrapper {
-    my $self = shift;
-
-    return Baseliner::CGIWrapper->new(@_);
 }
 
 sub _build_parser {
