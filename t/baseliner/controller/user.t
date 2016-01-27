@@ -117,6 +117,48 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
     cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
+subtest 'identicon: when no user generate identican anyway' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    my $png = $controller->identicon($c, 'unknown');
+
+    like $png, qr/^.PNG/;
+};
+
+subtest 'identicon: when user found return png' => sub {
+    _setup();
+
+    my $user = TestUtils->create_ci('user', username => 'developer');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    my $png = $controller->identicon($c, 'developer');
+
+    like $png, qr/^.PNG/;
+};
+
+subtest 'identicon: when user found save to user' => sub {
+    _setup();
+
+    my $user = TestUtils->create_ci('user', username => 'developer');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    $controller->identicon($c, 'developer');
+
+    $user = ci->new($user->{mid});
+
+    like $user->avatar, qr/^.PNG/;
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', model => 'Baseliner::Model::Permissions', @_ );
 }
