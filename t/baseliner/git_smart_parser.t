@@ -19,6 +19,23 @@ subtest 'parse_fh: returns no changes when input is empty' => sub {
     is_deeply [ $parser->parse_fh($fh) ], [];
 };
 
+subtest 'parse_fh: skips everything that doesnt look like a change' => sub {
+    my $parser = _build_parser();
+
+    my $sha = _generate_sha();
+
+    my $body = "0082";
+    $body .= "want d30eb1c3bfb9ba62f3e1d64588484bd869a00430 multi_ack_detailed no-done side-band-64k thin-pack ofs-delta agent=git/2.7.0.rc3";
+    $body .= "0031";
+    $body .= "want 37b88df6173aa5fd41f9c3b560cbe161fdce4128";
+
+    open my $fh, '<', \$body;
+
+    my @changes = $parser->parse_fh($fh);
+
+    is @changes, 0;
+};
+
 subtest 'parse_fh: parses single push' => sub {
     my $parser = _build_parser();
 

@@ -1,6 +1,8 @@
 package Baseliner::GitSmartParser;
 use Moose;
 
+my $HEX_RE = qr/^[a-f0-9]{40}$/;
+
 sub parse_fh {
     my $self = shift;
     my ($fh) = @_;
@@ -23,6 +25,8 @@ sub parse_fh {
         last unless $text;
 
         my ( $old, $new, $ref ) = split /[ \x00]/, $text;
+
+        next unless $old =~ m/$HEX_RE/ && $new =~ m/$HEX_RE/ && $ref;
 
         push @changes,
           {
