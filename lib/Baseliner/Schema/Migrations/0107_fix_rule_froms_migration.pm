@@ -47,8 +47,8 @@ sub upgrade {
             my $data = $attributes->{data};
             if ($attributes->{key} eq 'fieldlet.system.cis') {
                 if($data->{html} eq '/fields/templates/html/ci_grid.html' && $data->{js} eq '/fields/system/js/list_ci.js'){
-                    $attributes->{key} = 'fieldlet.ci_grid';
-                    $data->{fieldletType} = 'fieldlet.ci_grid';
+                    $attributes->{key} = 'fieldlet.ci_list';
+                    $data->{fieldletType} = 'fieldlet.ci_list';
                     $data->{list_type} = '';
                 }
             }

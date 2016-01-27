@@ -67,7 +67,14 @@ register 'fieldlet.time' => {
     section_allowed => ['body']
 };
 
-
+register 'fieldlet.ci_list' => {
+    name        => _loc('CI List'),
+    html        => '/fields/templates/html/ci_grid.html',
+    js          => '/fields/system/js/list_ci.js',
+    form        => '/fields/templates/config/ci_grid.js',
+    icon        => '/static/images/icons/grid.png',
+    section_allowed => ['more','head']
+};
 
 register 'fieldlet.ci_grid' => {
     name        => _loc('CI Grid'),
