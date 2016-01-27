@@ -1290,7 +1290,6 @@ sub topics_burndown : Local {
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
 
-
     my @user_categories
         = map { $_->{id}; }
         Baseliner::Model::Topic->new

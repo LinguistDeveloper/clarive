@@ -3806,6 +3806,119 @@ sub build_in_and_nin_query {
     return $query;
 }
 
+sub burndown {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $username = $params{username} or die 'username required';
+
+    my $from            = $params{from}            || 'yesterday';
+    my $to              = $params{to}              || 'today';
+    my $group_by_period = $params{group_by_period} || 'hour';
+    my $date_field      = $params{date_field}      || 'created_on';
+
+    my $date_query_before_period = { '$lt' => $from };
+    my $date_query_during_period = { '$gte' => $from, '$lt' => $to };
+
+    my $group_by;
+    my $where = {};
+
+    my %burndown = ();
+    if ( $group_by_period eq 'hour' ) {
+        $group_by = { '$substr' => [ '$ts', 11, 2 ] };
+
+        $burndown{sprintf('%02d', $_)} = 0 for 0 .. 23;
+    }
+    elsif ( $group_by_period eq 'day' ) {
+        $group_by = { '$substr' => [ '$ts', 8, 2 ] };
+
+        $burndown{sprintf('%02d', $_)} = 0 for 0 .. 6;
+    }
+    else {
+        die 'unknown group_by_period';
+    }
+
+    my @user_categories = map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view' );
+
+    my $perm = Baseliner::Model::Permissions->new;
+
+    my $is_root = $perm->is_root($username);
+    if ( $username && !$is_root ) {
+        $perm->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    my @closed_status = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
+
+    my @backlog = mdb->topic->find(
+        {
+            'category_status.name' => mdb->nin(@closed_status),
+            'category.id'          => mdb->in(@user_categories),
+            '$and'                 => [ { $date_field => $date_query_before_period }, { $date_field => { '$ne' => '' } } ],
+            %$where,
+        }
+    )->fields( { _id => 0, mid => 1 } )->all;
+    my @all_topics = map { $_->{mid} } mdb->topic->find(
+        {
+            'category.id' => mdb->in(@user_categories),
+            '$and'        => [ { $date_field => $date_query_before_period }, { $date_field => { '$ne' => '' } } ],
+            %$where,
+        }
+    )->fields( { mid => 1 } )->all;
+
+    foreach my $by (keys %burndown) {
+        $burndown{$by} = @backlog;
+    }
+
+    my @closed_topics = mdb->activity->aggregate(
+        [
+            {
+                '$match' => {
+                    'event_key'   => 'event.topic.change_status',
+                    'mid'         => mdb->in(@all_topics),
+                    'vars.status' => mdb->in(@closed_status),
+                    'ts'          => $date_query_during_period,
+                }
+            },
+            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+        ]
+    );
+
+    my @created_topics = mdb->topic->aggregate(
+        [
+            {
+                '$match' => {
+                    'category.id' => mdb->in(@user_categories),
+                    $date_field => $date_query_during_period,
+                    %$where,
+                }
+            },
+            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+        ]
+    );
+
+    $self->_update_burndown( $closed_topics[0],  \%burndown, -1 );
+    $self->_update_burndown( $created_topics[0], \%burndown, 1 );
+
+    return \%burndown;
+}
+
+sub _update_burndown {
+    my $self = shift;
+    my ($topics, $burndown, $diff) = @_;
+
+    foreach my $topic (@$topics) {
+        my $from = $topic->{_id};
+
+        foreach my $by ( sort { $a cmp $b } keys %$burndown ) {
+            $by = sprintf('%02d', $by);
+
+            next if $by lt $from;
+
+            $burndown->{$by} += $diff;
+        }
+    }
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

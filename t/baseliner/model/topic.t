@@ -997,6 +997,265 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
     cmp_deeply $release_field->{readonly}, \0;
 };
 
+subtest 'burndown: group by hour period' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    mock_time '2015-01-02T00:00:00',
+      sub { $model->change_status( mid => $topic_in_progress_mid, id_status => $status_in_progress->mid ) };
+
+    mock_time '2015-01-02T01:00:00', sub {
+        $model->change_status( mid => $topic_in_progress_mid, id_status => $status_in_progress->mid );
+        $model->change_status( mid => $topic_in_progress_mid, id_status => $status_finished->mid );
+    };
+
+    my $topic_during = mock_time '2015-01-02T03:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $burndown = $model->burndown( username => $user->username, from => '2015-01-02', to => '2015-01-03' );
+    is_deeply $burndown,
+      {
+        '00' => 3,
+        '01' => 2,
+        '02' => 2,
+        '03' => 3,
+        '04' => 3,
+        '05' => 3,
+        '06' => 3,
+        '07' => 3,
+        '08' => 3,
+        '09' => 3,
+        '10' => 3,
+        '11' => 3,
+        '12' => 3,
+        '13' => 3,
+        '14' => 3,
+        '15' => 3,
+        '16' => 3,
+        '17' => 3,
+        '18' => 3,
+        '19' => 3,
+        '20' => 3,
+        '21' => 3,
+        '22' => 3,
+        '23' => 3,
+      };
+};
+
+subtest 'burndown: group by day period' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    mock_time '2015-01-02T00:00:00',
+      sub { $model->change_status( mid => $topic_in_progress_mid, id_status => $status_in_progress->mid ) };
+
+    mock_time '2015-01-02T01:00:00', sub {
+        $model->change_status( mid => $topic_in_progress_mid, id_status => $status_in_progress->mid );
+        $model->change_status( mid => $topic_in_progress_mid, id_status => $status_finished->mid );
+    };
+
+    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $burndown = $model->burndown(
+        username        => $user->username,
+        from            => '2015-01-02',
+        to              => '2015-01-05',
+        group_by_period => 'day'
+    );
+
+    is_deeply $burndown,
+      {
+        '00' => 3,
+        '01' => 3,
+        '02' => 2,
+        '03' => 2,
+        '04' => 3,
+        '05' => 3,
+        '06' => 3,
+      };
+};
+
+subtest 'burndown: filters out categories that user has no access to' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+    my $other_category = TestSetup->create_category(
+        name      => 'Other category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( project => $project, id_category => $other_category ) };
+
+    mock_time '2015-01-02T01:00:00', sub {
+        $model->change_status( mid => $topic_finished, id_status => $status_finished->mid );
+    };
+
+    my $burndown = $model->burndown(
+        username        => $user->username,
+        from            => '2015-01-02',
+        to              => '2015-01-05',
+        group_by_period => 'day'
+    );
+
+    is_deeply $burndown,
+      {
+        '00' => 0,
+        '01' => 0,
+        '02' => 0,
+        '03' => 0,
+        '04' => 0,
+        '05' => 0,
+        '06' => 0,
+      };
+};
+
+subtest 'burndown: filters out topics that user has no access to project' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type => 'project',
+                        collection => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $other_project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( project => $other_project, id_category => $id_category, status => $status_new ) };
+
+    mock_time '2015-01-02T01:00:00', sub {
+        $model->change_status( mid => $topic_finished, id_status => $status_finished->mid );
+    };
+
+    my $burndown = $model->burndown(
+        username        => $user->username,
+        from            => '2015-01-02',
+        to              => '2015-01-05',
+        group_by_period => 'day'
+    );
+
+    is_deeply $burndown,
+      {
+        '00' => 0,
+        '01' => 0,
+        '02' => 0,
+        '03' => 0,
+        '04' => 0,
+        '05' => 0,
+        '06' => 0,
+      };
+};
+
 done_testing();
 
 sub _setup {
@@ -1018,6 +1277,7 @@ sub _setup {
     mdb->category->drop;
     mdb->label->drop;
     mdb->topic->drop;
+    mdb->activity->drop;
 }
 
 sub _create_file {
