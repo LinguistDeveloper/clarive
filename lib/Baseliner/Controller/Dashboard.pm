@@ -1385,12 +1385,38 @@ sub topics_burndown : Local {
     $c->forward('View::JSON');
 }
 
+sub topics_burndown2 : Local {
+    my ($self, $c) = @_;
+
+    my $p = $c->req->params;
+
+    my $model = Baseliner::Model::Topic->new;
+    my $burndown = $model->burndown(username => $c->username);
+
+    my @topics;
+    my @dates;
+    my @reg_line;
+
+    push @dates,  map { $_->[0] } @$burndown;
+    push @topics, map { $_->[1] } @$burndown;
+
+    @reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
+
+    unshift @topics,   'Topics';
+    unshift @dates,    'x';
+    unshift @reg_line, 'Trend';
+
+    $c->stash->{json} = {
+        success => \1,
+        date    => 'today',
+        data    => [\@dates, \@topics, \@reg_line]
+    };
+    $c->forward('View::JSON');
+}
+
 sub topics_period_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-
-    use Data::Dumper;
-    warn Dumper($p);
 
     my $days_before = $p->{days_before} || -10;
     my $days_after = $p->{days_after} || 10;

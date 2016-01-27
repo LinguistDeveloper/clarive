@@ -3812,8 +3812,8 @@ sub burndown {
 
     my $username = $params{username} or die 'username required';
 
-    my $from            = $params{from}            || 'yesterday';
-    my $to              = $params{to}              || 'today';
+    my $to              = $params{to}              || _now();
+    my $from            = $params{from}            || do { my $copy = $to; $copy =~ s/ \d\d:\d\d:\d\d/ 00:00:00/; $copy };
     my $group_by_period = $params{group_by_period} || 'hour';
     my $date_field      = $params{date_field}      || 'created_on';
 
@@ -3849,32 +3849,47 @@ sub burndown {
 
     my @closed_status = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
 
-    my @backlog = mdb->topic->find(
+    my @backlog_remaining = map {$_->{mid}} mdb->topic->find(
         {
-            'category_status.name' => mdb->nin(@closed_status),
             'category.id'          => mdb->in(@user_categories),
-            '$and'                 => [ { $date_field => $date_query_before_period }, { $date_field => { '$ne' => '' } } ],
+            'category_status.name' => mdb->nin(@closed_status),
+            $date_field            => $date_query_before_period,
             %$where,
         }
-    )->fields( { _id => 0, mid => 1 } )->all;
-    my @all_topics = map { $_->{mid} } mdb->topic->find(
+    )->fields({_id => 0, mid => 1})->all;
+    my @topics_created_during = map { $_->{mid} } mdb->topic->find(
         {
             'category.id' => mdb->in(@user_categories),
-            '$and'        => [ { $date_field => $date_query_before_period }, { $date_field => { '$ne' => '' } } ],
+            $date_field   => $date_query_during_period,
             %$where,
         }
-    )->fields( { mid => 1 } )->all;
+    )->fields({mid => 1})->all;
+    my @topics_created_before = map { $_->{mid} } mdb->topic->find(
+        {
+            'category.id' => mdb->in(@user_categories),
+            $date_field   => $date_query_before_period,
+            %$where,
+        }
+    )->fields({mid => 1})->all;
+    my @backlog_closed = map {$_->{mid}} mdb->activity->find(
+        {
+            'mid'         => mdb->in(@topics_created_before),
+            'event_key'   => 'event.topic.change_status',
+            'vars.status' => mdb->in(@closed_status),
+            'ts'          => $date_query_during_period,
+        },
+    )->fields({_id => 0, mid => 1})->all;
 
     foreach my $by (keys %burndown) {
-        $burndown{$by} = @backlog;
+        $burndown{$by} = @backlog_remaining + @backlog_closed;
     }
 
-    my @closed_topics = mdb->activity->aggregate(
+    my @closed_topics_aggr = mdb->activity->aggregate(
         [
             {
                 '$match' => {
                     'event_key'   => 'event.topic.change_status',
-                    'mid'         => mdb->in(@all_topics),
+                    'mid'         => mdb->in(@topics_created_during, @topics_created_before),
                     'vars.status' => mdb->in(@closed_status),
                     'ts'          => $date_query_during_period,
                 }
@@ -3883,38 +3898,40 @@ sub burndown {
         ]
     );
 
-    my @created_topics = mdb->topic->aggregate(
+    my @created_topics_aggr = mdb->topic->aggregate(
         [
             {
                 '$match' => {
                     'category.id' => mdb->in(@user_categories),
-                    $date_field => $date_query_during_period,
+                    $date_field   => $date_query_during_period,
                     %$where,
                 }
             },
-            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+            {'$group' => {_id => $group_by, total => {'$sum' => 1}}}
         ]
     );
 
-    $self->_update_burndown( $closed_topics[0],  \%burndown, -1 );
-    $self->_update_burndown( $created_topics[0], \%burndown, 1 );
+    $self->_update_burndown( $created_topics_aggr[0], \%burndown, 1 );
+    $self->_update_burndown( $closed_topics_aggr[0],  \%burndown, -1 );
 
-    return \%burndown;
+    return [map { [$_, $burndown{$_}] }
+          sort { $a cmp $b } keys %burndown];
 }
 
 sub _update_burndown {
     my $self = shift;
-    my ($topics, $burndown, $diff) = @_;
+    my ($topics, $burndown, $sign) = @_;
 
     foreach my $topic (@$topics) {
         my $from = $topic->{_id};
+        my $total = $topic->{total};
 
         foreach my $by ( sort { $a cmp $b } keys %$burndown ) {
             $by = sprintf('%02d', $by);
 
             next if $by lt $from;
 
-            $burndown->{$by} += $diff;
+            $burndown->{$by} += $total * $sign;
         }
     }
 }
