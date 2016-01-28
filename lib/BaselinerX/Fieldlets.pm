@@ -279,6 +279,7 @@ register 'fieldlet.number' => {
     js          => '/fields/templates/js/numberfield.js',
     form        => '/fields/templates/config/numberfield.js',
     icon        => '/static/images/icons/number.png',
+    meta_type   => 'number',
     section_allowed => ['body']
 };
 
