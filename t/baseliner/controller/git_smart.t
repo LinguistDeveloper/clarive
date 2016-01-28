@@ -5,11 +5,14 @@ use lib 't/lib';
 use Test::More;
 use Test::MonkeyMock;
 use TestEnv;
+use TestSetup;
 use TestUtils ':catalyst';
 BEGIN { TestEnv->setup }
 use TestGit;
+use Cwd qw(realpath);
 use JSON ();
 
+use Storable ();
 use Baseliner::Utils qw(_load);
 use_ok 'Baseliner::Controller::GitSmart';
 
@@ -19,28 +22,18 @@ subtest 'git: ignores requests with empty body' => sub {
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     my $sha = TestGit->commit($repo);
 
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
-
     my $controller = _build_controller();
 
     my $stash = {
         git_config => {
             gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   => $repo->repo_dir . '/../'
+            home   => realpath( $repo->repo_dir . '/../' )
         }
     };
 
-    my $c = mock_catalyst_c(
-        username => 'foo',
-        req      => { params => {}, body => '' },
-        stash    => $stash
-    );
+    my $c = mock_catalyst_c( username => 'foo', stash => $stash );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
     is scalar @events, 0;
@@ -51,12 +44,6 @@ subtest 'git: creates no events when no changes' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     my $sha = TestGit->commit($repo);
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
 
     my $stash = {
         git_config => {
@@ -74,16 +61,15 @@ subtest 'git: creates no events when no changes' => sub {
         stash    => $stash
     );
 
-    my $cgi_wrapper = _mock_cgi_wrapper();
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
+    my $controller = _build_controller();
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
     is @events, 0;
 
-    ok $cgi_wrapper->mocked_called('run');
+    ok $controller->mocked_called('cgi_to_response');
 };
 
 subtest 'git: creates correct event on first push' => sub {
@@ -91,12 +77,6 @@ subtest 'git: creates correct event on first push' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     my $sha = TestGit->commit($repo);
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
 
     my $controller = _build_controller();
 
@@ -118,7 +98,7 @@ subtest 'git: creates correct event on first push' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -142,12 +122,6 @@ subtest 'git: creates correct event on push' => sub {
     my $sha  = TestGit->commit($repo);
     my $sha2 = TestGit->commit($repo);
 
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
-
     my $controller = _build_controller();
 
     my $stash = {
@@ -166,7 +140,7 @@ subtest 'git: creates correct event on push' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -192,12 +166,6 @@ subtest 'git: creates correct event on push several references' => sub {
     TestGit->create_branch($repo);
     my $new_sha = TestGit->commit($repo);
 
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
-
     my $stash = {
         git_config => {
             gitcgi => '../local/libexec/git-core/git-http-backend',
@@ -218,10 +186,9 @@ subtest 'git: creates correct event on push several references' => sub {
         stash    => $stash
     );
 
-    my $cgi_wrapper = _mock_cgi_wrapper();
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
+    my $controller = _build_controller();
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -237,7 +204,46 @@ subtest 'git: creates correct event on push several references' => sub {
     is $data[1]->{ref},    'refs/heads/new';
     is $data[1]->{sha},    $new_sha;
 
-    is $cgi_wrapper->mocked_called('run'), 1;
+    is $controller->mocked_called('cgi_to_response'), 1;
+};
+
+subtest 'git: does not craete an event when removing a reference' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $master_sha = TestGit->commit($repo);
+
+    TestGit->create_branch($repo);
+    my $new_sha = TestGit->commit($repo);
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $body =
+        "0094"
+      . "$master_sha 0000000000000000000000000000000000000000 refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is scalar @events, 0;
+
+    is $controller->mocked_called('cgi_to_response'), 1;
 };
 
 subtest 'git: creates correct event on push tag' => sub {
@@ -247,12 +253,6 @@ subtest 'git: creates correct event on push tag' => sub {
     my $sha = TestGit->commit($repo);
 
     TestGit->tag( $repo, tag => 'TAG' );
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
 
     my $controller = _build_controller();
 
@@ -275,7 +275,7 @@ subtest 'git: creates correct event on push tag' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -296,12 +296,6 @@ subtest 'git: forbids pushing system tags' => sub {
     my $sha = TestGit->commit($repo);
 
     TestGit->tag( $repo, tag => 'TAG' );
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ]
-    );
 
     my $controller = _build_controller();
 
@@ -326,7 +320,7 @@ subtest 'git: forbids pushing system tags' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -345,13 +339,13 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
 
     TestGit->tag( $repo, tag => 'TAG' );
 
+    my $controller = _build_controller();
+
     my $project = TestUtils->create_ci(
         'project',
         name         => 'Project',
         repositories => [ $repo->mid ]
     );
-
-    my $controller = _build_controller();
 
     my $stash = {
         git_config => {
@@ -397,7 +391,7 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -416,8 +410,6 @@ subtest 'git: creates repo ci when does not exist' => sub {
 
     my $repo_dir = TestGit->create_repo;
     my $sha      = TestGit->commit($repo_dir);
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
     my $controller = _build_controller();
 
@@ -439,7 +431,7 @@ subtest 'git: creates repo ci when does not exist' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @repo_cis = ci->GitRepository->find->all;
     is @repo_cis, 1;
@@ -450,8 +442,6 @@ subtest 'git: does not create repo ci when exists' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     my $sha = TestGit->commit($repo);
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
     my $controller = _build_controller();
 
@@ -473,7 +463,7 @@ subtest 'git: does not create repo ci when exists' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @repo_cis = ci->GitRepository->find->all;
     is @repo_cis, 1;
@@ -484,8 +474,6 @@ subtest 'git: creates rev ci when does not exist' => sub {
 
     my $repo_dir = TestGit->create_repo;
     my $sha      = TestGit->commit($repo_dir);
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
     my $controller = _build_controller();
 
@@ -507,7 +495,7 @@ subtest 'git: creates rev ci when does not exist' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @rev_cis = ci->GitRevision->find->all;
     is @rev_cis, 1;
@@ -521,8 +509,6 @@ subtest 'git: does not create rev ci when exists' => sub {
 
     TestUtils->create_ci( 'GitRevision', sha => $sha );
 
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
-
     my $controller = _build_controller();
 
     my $stash = {
@@ -543,7 +529,7 @@ subtest 'git: does not create rev ci when exists' => sub {
         stash    => $stash
     );
 
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @rev_cis = ci->GitRevision->find->all;
     is @rev_cis, 1;
@@ -556,8 +542,6 @@ subtest 'git: if pre-online event fails return an error' => sub {
     my $sha      = TestGit->commit($repo_dir);
 
     TestUtils->create_ci( 'GitRevision', sha => $sha );
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
     my $stash = {
         git_config => {
@@ -587,13 +571,13 @@ subtest 'git: if pre-online event fails return an error' => sub {
     );
 
     my $controller = _build_controller();
-    $controller->git( $c, '.git' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
-    is $c->res->status, 500;
-    like $c->res->body, qr/CLARIVE: GIT ERROR: \(rule 1\): here/;
+    #is $c->res->status, 500;
+    like $c->res->body, qr/CLARIVE ERROR: GIT ERROR\n\(rule 1\): here/;
 };
 
-subtest 'git: if cgi wrapper fails returns an error' => sub {
+subtest 'git: when forcing authorization fail' => sub {
     _setup();
 
     my $repo_dir = TestGit->create_repo;
@@ -605,8 +589,57 @@ subtest 'git: if cgi wrapper fails returns an error' => sub {
 
     my $stash = {
         git_config => {
-            gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   => $repo_dir
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => {
+            params     => {},
+            user_agent => 'git/2.8.6',
+        },
+        stash => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    is $c->res->status, 401;
+    like $c->res->body, qr/CLARIVE: invalid repository: Invalid or unauthorized git repository path \.git/;
+};
+
+subtest 'git: when forcing authorization' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $sha = TestGit->commit($repo);
+
+    TestUtils->create_ci( 'GitRevision', sha => $sha );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
         }
     };
 
@@ -616,44 +649,292 @@ subtest 'git: if cgi wrapper fails returns an error' => sub {
     open my $fh, '<', \$body;
 
     my $c = mock_catalyst_c(
-        username => 'foo',
+        username => $user->username,
         req      => {
             params     => {},
             user_agent => 'git/2.8.6',
-            body       => $fh
+            body       => $fh,
         },
         stash => $stash
     );
 
-    my $cgi_wrapper = _mock_cgi_wrapper( run => sub { { is_success => 0, error => 'Some error' } } );
+    my $controller = _build_controller();
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
 
-    my $controller = _build_controller( cgi_wrapper => $cgi_wrapper );
-    $controller->git( $c, '.git' );
+    is $controller->mocked_called('cgi_to_response'), 1;
+};
 
-    is $c->res->status, 500;
-    like $c->res->body, qr/CLARIVE: GIT ERROR: Some error/;
+subtest 'git: return error when wrong path' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git($c);
+
+    is $c->res->status, 401;
+    like $c->res->body, qr/CLARIVE: internal error: Unknown request/;
+};
+
+subtest 'git: return error when unknown project' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, 'Unknown', 'Repo', 'info', 'refs' );
+
+    is $c->res->status, 404;
+    like $c->res->body, qr/CLARIVE ERROR: internal error\nProject `Unknown` not found/;
+};
+
+subtest 'git: return error when user has no access to project' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+
+    is $c->res->status, 401;
+    like $c->res->body, qr/CLARIVE: User: foo does not have access to the project Project/;
+};
+
+subtest 'git: return error when unknown repository' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, 'Project', 'Unknown', 'info', 'refs' );
+
+    is $c->res->status, 404;
+    like $c->res->body, qr/CLARIVE ERROR: internal error\nRepository `Unknown` not found for project `Project`/;
+};
+
+subtest 'git: return error when user does not have access to repository' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            force_authorization => 1,
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+
+    is $c->res->status, 401;
+    like $c->res->body, qr/CLARIVE: User: developer does not have access to the project Project/;
+};
+
+subtest 'git: calls git with correct parameters when raw git' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => realpath( $repo->repo_dir . '/../' )
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my ($cgi) = $controller->mocked_call_args('_system');
+    my ($env) = $controller->mocked_return_args('_system');
+
+    is $cgi, '../local/libexec/git-core/git-http-backend';
+
+    is $env->{GIT_HTTP_EXPORT_ALL}, 1;
+    is $env->{GIT_PROJECT_ROOT},    realpath( $repo->repo_dir . '/../' );
+
+    is $env->{REMOTE_USER}, 'developer';
+    is $env->{REMOTE_ADDR}, 'localhost';
+    is $env->{PATH_INFO},   '/.git/info/refs';
+};
+
+subtest 'git: calls git with correct parameters when project git' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => realpath( $repo->repo_dir . '/../' )
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+
+    my ($cgi) = $controller->mocked_call_args('_system');
+    my ($env) = $controller->mocked_return_args('_system');
+
+    is $cgi, '../local/libexec/git-core/git-http-backend';
+
+    is $env->{GIT_HTTP_EXPORT_ALL}, 1;
+    is $env->{GIT_PROJECT_ROOT},    realpath( $repo->repo_dir . '/../' );
+
+    is $env->{REMOTE_USER}, 'developer';
+    is $env->{REMOTE_ADDR}, 'localhost';
+    is $env->{PATH_INFO},   '/.git/info/refs';
 };
 
 done_testing;
 
-sub _mock_cgi_wrapper {
-    my (%params) = @_;
-
-    my $cgi_wrapper = Test::MonkeyMock->new;
-    $cgi_wrapper->mock( run => $params{run} || sub { { is_success => 1 } } );
-
-    return $cgi_wrapper;
-}
-
 sub _build_controller {
     my (%params) = @_;
-
-    my $cgi_wrapper = $params{cgi_wrapper} || _mock_cgi_wrapper();
 
     my $controller = Baseliner::Controller::GitSmart->new( application => '' );
     $controller = Test::MonkeyMock->new($controller);
 
-    $controller->mock( _build_cgi_wrapper => sub { $cgi_wrapper } );
+    $controller->mock(
+        cgi_to_response => sub {
+            my $self = shift;
+            my ( $c, $cb ) = @_;
+
+            $cb->();
+        }
+    );
+    $controller->mock(
+        _system => sub {
+            my $env = Storable::dclone( \%ENV );
+
+            return $env;
+        }
+    );
 
     return $controller;
 }
@@ -710,9 +991,9 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
-    mdb->event->drop;
     mdb->role->drop;
     mdb->rule->drop;
+    mdb->event->drop;
 
-    TestUtils->create_ci( 'user', name => 'foo', username => 'foo' );
+    TestUtils->create_ci( 'user', name => 'foo' );
 }

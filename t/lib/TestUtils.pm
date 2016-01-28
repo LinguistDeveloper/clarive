@@ -180,7 +180,7 @@ sub new {
 
     $self->{uri}        = $params{uri};
     $self->{method}     = $params{method} || 'GET';
-    $self->{params}     = $params{params};
+    $self->{params}     = $params{params} || {};
     $self->{headers}    = $params{headers} || {};
     $self->{path}       = $params{path} || '/';
     $self->{body}       = $params{body} || '';

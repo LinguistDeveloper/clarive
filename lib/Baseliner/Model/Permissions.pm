@@ -583,7 +583,7 @@ sub user_projects_with_action {
         return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
     }
     my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
-    my @id_roles = keys $user->{project_security};
+    my @id_roles = keys %{ $user->{project_security} || {}};
     @id_roles = map { $_ } @id_roles;
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
     my @res;
