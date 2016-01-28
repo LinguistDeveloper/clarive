@@ -2005,23 +2005,27 @@ sub data_to_aggreate {
     my $self = shift;
     my (%params) = @_;
     my $result = {'$sum' => 1 };
-    if($params{result_type} ne 'count' && $params{numberfield_group}){
-        $result = {'$'.$params{result_type} => '$'.$params{numberfield_group}};
+
+    my $total;
+    if ($params{result_type} eq 'count' || !$params{numberfield_group}){
+        $total = {'$sum' => 1};
+    }else {
+        $params{where}->{$params{numberfield_group}} = {'$exists' => 1, '$ne' => undef, '$ne' => ''};
+        $total = {'$'.$params{result_type} => {'$'.$params{numberfield_group}=>{'$abs'=> 1}}};
     }
-    return _array(mdb->topic->aggregate( [
-        { '$match' => $params{where} },
+    my $aggregate_query =  [{ '$match' => $params{where} },
         $params{unwind} ? ( { '$unwind' => $params{unwind}  } ) : (),
         { '$group' => {
             _id => '$'.$params{group_by},
             'field' => {'$max' => '$'.$params{group_by}},
             'category_color' => {'$max' => '$category.color'},
             'status_color' => {'$max' => '$category_status.color'},
-            'total' => $result,
+            'total' => $total,
             'topics_list' => { '$push' => '$mid'}
           }
         },
-        { '$sort' => { total => -1}}
-    ]));
+        { '$sort' => { total => -1}}];
+    return _array(mdb->topic->aggregate($aggregate_query));
 }
 
 no Moose;

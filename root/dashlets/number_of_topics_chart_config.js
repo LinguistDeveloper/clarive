@@ -33,8 +33,8 @@
                     ['modified_by']
                   ] 
                 }),
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Number field to group by'), name: 'numberfield_group', value: data.numberfield_group || ''},
-                new Baseliner.ComboDouble({ fieldLabel: _('Show grouping field number as...'), name:'result_type', value: data.result_type || 'count', data: [
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('Number field to display'), name: 'numberfield_group', value: data.numberfield_group || ''},
+                new Baseliner.ComboDouble({ fieldLabel: _('Agregate display field by...'), name:'result_type', value: data.result_type || 'count', data: [
                     ['count', _('Count')],
                     ['avg', _('Average')],
                     ['sum', _('Sum Total')],
