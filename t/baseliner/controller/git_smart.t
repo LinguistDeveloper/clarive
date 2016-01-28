@@ -206,6 +206,45 @@ subtest 'git: creates correct event on push several references' => sub {
     is $controller->mocked_called('cgi_to_response'), 1;
 };
 
+subtest 'git: does not craete an event when removing a reference' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $master_sha = TestGit->commit($repo);
+
+    TestGit->create_branch($repo);
+    my $new_sha = TestGit->commit($repo);
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $body =
+        "0094"
+      . "$master_sha 0000000000000000000000000000000000000000 refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, '.git' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is scalar @events, 0;
+
+    is $controller->mocked_called('cgi_to_response'), 1;
+};
+
 subtest 'git: creates correct event on push tag' => sub {
     _setup();
 

@@ -171,16 +171,18 @@ sub git : Path('/git/') {
     my $g = Girl::Repo->new( path => "$fullpath" );
 
     foreach my $change (@changes) {
-        my $sha       = $change->{new};
-        my $ref_prev  = $change->{old};
+        my $new_sha   = $change->{new};
+        my $old_sha   = $change->{old};
         my $ref       = $change->{ref};
         my $ref_short = [ split '/', $ref ]->[-1];
 
-        my $commit    = $g->commit($sha);
-        my $diff      = $self->_diff( $g, $ref_prev, $sha );
-        my $title     = $commit->message;
+        next if $new_sha eq ('0' x 40);
 
-        my $rev_mid = $self->_create_or_find_rev( $sha, $repo_id, $commit, $ref_short );
+        my $commit = $g->commit($new_sha);
+        my $diff   = $self->_diff( $g, $old_sha, $new_sha );
+        my $title  = $commit->message;
+
+        my $rev_mid = $self->_create_or_find_rev( $new_sha, $repo_id, $commit, $ref_short );
 
         event_new 'event.repository.update' => {
             username   => $c->username,
@@ -189,7 +191,7 @@ sub git : Path('/git/') {
             diff       => $diff,
             branch     => $ref_short,
             ref        => $ref,
-            sha        => $sha,
+            sha        => $new_sha,
             _steps     => ['POST'],
           } => sub {
             return { mid => $rev_mid, title => $title };
@@ -253,7 +255,7 @@ sub access_granted {
         my $id_project = $project->{mid};
         my @project_ids = Baseliner::Model::Permissions->new->user_projects_ids(username=>$c->username);
 
-        my $is_user_project = (grep { $_ eq $id_project } @project_ids) ? 1 : 0;
+        my $is_user_project = (grep { $_ && $_ eq $id_project } @project_ids) ? 1 : 0;
         my $user_has_action =
           $project->user_has_action( username => $c->username, action => 'action.git.repository_access' );
 
@@ -283,6 +285,7 @@ sub _extract_repo {
 
 sub process_error {
     my ($self,$c,$type,$err) = @_;
+    $err //= '';
     my $msg = _loc( "CLARIVE: %1: %2", $type, "$err\n" );
 
     # client version parse
@@ -291,7 +294,7 @@ sub process_error {
     $git_ver =~ s/\.$//g if $git_ver; # ie. 2.1.0.GIT => 2.1.0.
     $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
 
-    my $service = $c->stash->{git_service}; 
+    my $service = $c->stash->{git_service} // ''; 
     _debug ">>> GIT VERSION=$git_ver";
     _error( $msg );
     if( $c->stash->{git_lastarg} eq 'git-receive-pack' ) {
@@ -385,9 +388,10 @@ sub _diff {
     my $self = shift;
     my ($git, $ref_prev, $sha) = @_;
 
-    # ref_prev == 0 when it's a new repository
-    my $diff = $ref_prev eq ('0' x 40)
-        ? _format_diff(  join "\n", $git->exec( 'show', $sha ) )
+    my $zero_sha = '0' x 40;
+
+    my $diff = ($ref_prev eq $zero_sha || $sha eq $zero_sha)
+        ? _format_diff( join "\n", $git->exec( 'show', $sha ) )
         : _format_diff( join "\n", $git->exec( 'log', '-p', '--full-diff', "$ref_prev..$sha" ) );
 
     return $diff;
