@@ -27,7 +27,22 @@ sub begin : Private {  #TODO control auth here
 sub git : Path('/git/') {
     my ($self,$c, @args ) = @_;
 
-    my $original_path = join '/', @args;
+    return unless $self->access_granted($c);
+
+    my $path = join '/', @args;
+
+    my $git_service;
+    my @git_services = ( '/info/refs', '/git-receive-pack', '/git-upload-pack', '/multi-ack', '/multi-ack-detailed' );
+    my $git_services_re = join '|', @git_services;
+    if ($path =~ s{($git_services_re)$}{}) {
+        $git_service = $1;
+        $c->stash->{git_service} = $git_service;
+    }
+    else {
+        $self->process_error( $c, 'internal error', 'Unknown request' );
+        $c->response->status( 401 );
+        return;
+    }
 
     my $config = $c->stash->{git_config};
 
@@ -40,93 +55,49 @@ sub git : Path('/git/') {
         $self->process_error( $c, 'internal error', 'Missing config.git.repo' );   
         return;
     };
-    my $path_info;
-
-    my $project;
-    my $repo;
-    my $fullpath;
 
     $c->{stash}->{git_lastarg} = $args[-1] // '';
+    $c->session->{git_last_service} //= $git_service;
 
-    if( !$config->{force_authorization} && $original_path =~ m{\.git} ) {
-        my $repo_name = $self->_extract_repo(@args);
-        $fullpath = _file( $home, $repo_name ); # simulate it's a file
-        $home = $fullpath->dir->absolute;
+    my $repo = $self->_resolve_repo($c, $path);
+    return unless $repo;
 
-        $path_info = "/$original_path";
-    }
-    else {
-        my $project_name = $args[0] // '';
-        my $repo_name = $args[1] // '';
+    my $changes = $self->_parse_changes($c);
+    return unless $changes;
 
-        unless ($project_name && $repo_name) {
-            $self->process_error(
-                $c,
-                'invalid repository',
-                _loc( "Invalid or unauthorized git repository path %1", join( '/', @args ) )
-            );
-            $c->response->status( 401 );
-            return;
-        }
+    return unless $self->_run_pre_event($c, $repo, $changes);
 
-        $project = ci->search_ci(
-            '$or'      => [ { name => $project_name }, { moniker => $project_name } ],
-            collection => 'project'
-        );
-        unless( $project ) {
-            $self->git_error( $c, 'internal error', _loc('Project `%1` not found', $project_name) );
-            $c->response->status( 404 );
-            return;
-        }
+    my $path_info = $repo->repo_dir;
+    $path_info =~ s{^$home}{};
+    $path_info .= $git_service;
+    $path_info = "/$path_info" unless $path_info =~ m{^/};
 
-        $repo = ci->search_ci(
-            '$or' => [
-                { name => $repo_name }, { moniker => $repo_name }, { moniker => lc($project_name) . "_" . $repo_name }
-            ],
-            collection => 'GitRepository'
-        );
-        unless ($repo) {
-            $self->git_error(
-                $c,
-                'internal error',
-                _loc( 'Repository `%1` not found for project `%2`', $repo_name, $project_name )
-            );
-            $c->response->status(404);
-            return;
-        }
+    $self->_proxy_to_git_http($c, $cgi, $home, $path_info);
 
-        $fullpath = $repo->repo_dir;
-        my $repo_dir = _dir( $repo->repo_dir );
-        $home = $repo_dir->parent;
+    $self->_run_post_event($c, $repo, $changes);
 
-        shift @args;
-        shift @args;
-        $path_info = join('/', $repo_dir, @args);
-        $path_info =~ s{^$home}{};
-    }
+    return;
+}
 
-    return unless $self->access_granted($c, $project);
+sub _parse_changes {
+    my $self = shift;
+    my ($c) = @_;
 
-    # TODO - check if the user has "action.git.repo_new" :
-    # $c->model('Git')->setup_new_repo( service=>$p->{service}, repo=>$repo, home=>$home );
-
-    # get git service 
-    my $lastarg = $c->stash->{git_lastarg};
-    my $service = $c->req->params->{service};
-    $service=$lastarg if !$service && $lastarg =~ /^git-/;  # last arg is service then? ie. git/prj/repo/git-upload-pack
-    $service //= $c->session->{git_last_service} // 'git-upload-pack';
-    $c->session->{git_last_service} //= $service;
-    $c->stash->{git_service} = $service;
-    #_debug ">>> GIT SERVICE=$service";
-    
     my $fh = $c->req->body;
 
     my @changes = $self->_build_parser()->parse_fh($fh);
 
     return unless $self->bl_change_granted($c, \@changes);
 
+    return \@changes;
+}
+
+sub _run_pre_event {
+    my $self = shift;
+    my ($c, $repo, $changes) = @_;
+
     my $error;
-    foreach my $change (@changes) {
+    foreach my $change (@$changes) {
         my $sha = $change->{new};
         my $ref = $change->{ref};
 
@@ -149,33 +120,27 @@ sub git : Path('/git/') {
     }
 
     if ($error) {
-        $self->process_error( $c, 'GIT ERROR', $error );
+        $self->git_error( $c, 'GIT ERROR', $error );
         return;
     }
 
-    $self->cgi_to_response(
-        $c,
-        sub {
-            local $ENV{GIT_HTTP_EXPORT_ALL} = 1;
-            local $ENV{GIT_PROJECT_ROOT}    = "$home";
+    return 1;
+}
 
-            local $ENV{REMOTE_USER} ||= $c->username;
-            local $ENV{REMOTE_ADDR} ||= 'localhost';
-            local $ENV{PATH_INFO} = $path_info;
+sub _run_post_event {
+    my $self = shift;
+    my ($c, $repo, $changes) = @_;
 
-            system($cgi);
-        }
-    );
+    my $repo_id = $repo->mid;
+    my $g = Girl::Repo->new( path => $repo->repo_dir );
 
-    my $repo_id = $self->_create_or_find_repo("$fullpath");
-    my $g = Girl::Repo->new( path => "$fullpath" );
-
-    foreach my $change (@changes) {
+    foreach my $change (@$changes) {
         my $new_sha   = $change->{new};
         my $old_sha   = $change->{old};
         my $ref       = $change->{ref};
         my $ref_short = [ split '/', $ref ]->[-1];
 
+        # Skip removed references
         next if $new_sha eq ('0' x 40);
 
         my $commit = $g->commit($new_sha);
@@ -197,6 +162,114 @@ sub git : Path('/git/') {
             return { mid => $rev_mid, title => $title };
           };
     }
+}
+
+sub _resolve_repo {
+    my $self = shift;
+    my ($c, $path) = @_;
+
+    my $config = $c->stash->{git_config};
+    my $home   = $config->{home};
+
+    my $repo;
+    if ( !$config->{force_authorization} && $path =~ m{\.git$} ) {
+        $repo = $self->_resolve_repo_raw($home, $path);
+        return unless $repo;
+    }
+    else {
+        $repo = $self->_resolve_repo_project($c, $home, $path);
+        return unless $repo;
+    }
+
+    return $repo;
+}
+
+sub _resolve_repo_raw {
+    my $self = shift;
+    my ($home, $path) = @_;
+
+    my $fullpath = _file( $home, $path );
+    $fullpath = realpath($fullpath);
+
+    my $repo_id = $self->_create_or_find_repo("$fullpath");
+    return ci->new($repo_id);
+}
+
+sub _resolve_repo_project {
+    my $self= shift;
+    my ($c, $home, $path) = @_;
+
+    my ($project_name, $repo_name) = split '/', $path;
+
+    unless ($project_name && $repo_name) {
+        $self->process_error(
+            $c,
+            'invalid repository',
+            _loc( "Invalid or unauthorized git repository path %1", $path )
+        );
+        $c->response->status( 401 );
+        return;
+    }
+
+    my $project = ci->search_ci(
+        '$or'      => [ { name => $project_name }, { moniker => $project_name } ],
+        collection => 'project'
+    );
+    unless( $project ) {
+        $self->git_error( $c, 'internal error', _loc('Project `%1` not found', $project_name) );
+        $c->response->status( 404 );
+        return;
+    }
+
+    my $id_project = $project->{mid};
+    my @project_ids = Baseliner::Model::Permissions->new->user_projects_ids(username=>$c->username);
+
+    my $is_user_project = (grep { $_ && $_ eq $id_project } @project_ids) ? 1 : 0;
+    my $user_has_action =
+      $project->user_has_action( username => $c->username, action => 'action.git.repository_access' );
+
+    unless ($is_user_project && $user_has_action) {
+        $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project->name ) );
+        $c->response->status( 401 );
+        return;
+    } 
+
+    my $repo = ci->search_ci(
+        '$or' => [
+            { name => $repo_name }, { moniker => $repo_name }, { moniker => lc($project_name) . "_" . $repo_name }
+        ],
+        collection => 'GitRepository'
+    );
+    unless ($repo) {
+        $self->git_error(
+            $c,
+            'internal error',
+            _loc( 'Repository `%1` not found for project `%2`', $repo_name, $project_name )
+        );
+        $c->response->status(404);
+        return;
+    }
+
+    return $repo;
+}
+
+sub _proxy_to_git_http {
+    my $self= shift;
+    my ($c, $cgi, $home, $path_info) = @_;
+
+    $self->cgi_to_response(
+        $c,
+        sub {
+            local $ENV{GIT_HTTP_EXPORT_ALL} = 1;
+            local $ENV{GIT_PROJECT_ROOT}    = "$home";
+
+            local $ENV{REMOTE_USER} ||= $c->username;
+            local $ENV{REMOTE_ADDR} ||= 'localhost';
+            local $ENV{PATH_INFO} = $path_info;
+
+            $self->_system($cgi);
+        }
+    );
 }
 
 sub bl_change_granted {
@@ -228,7 +301,7 @@ sub bl_change_granted {
 
 sub access_granted {
     my $self = shift;
-    my ($c, $project) = @_;
+    my ($c) = @_;
 
     # Check permissions
     if( ! length $c->username ) {
@@ -251,36 +324,9 @@ sub access_granted {
             $c->response->status( 401 );
             return;
         }
-    } elsif( $project ) {
-        my $id_project = $project->{mid};
-        my @project_ids = Baseliner::Model::Permissions->new->user_projects_ids(username=>$c->username);
-
-        my $is_user_project = (grep { $_ && $_ eq $id_project } @project_ids) ? 1 : 0;
-        my $user_has_action =
-          $project->user_has_action( username => $c->username, action => 'action.git.repository_access' );
-
-        unless ($is_user_project && $user_has_action) {
-            $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project->name ) );
-            $c->response->status( 401 );
-            return;
-        } 
     }
 
     return 1;
-}
-
-sub _extract_repo {
-    my $self = shift;
-    my (@parts) = @_;
-
-    my @repo;
-    foreach my $part (@parts) {
-        push @repo, $part;
-
-        last if $part =~ m/\.git$/;
-    }
-
-    return "". _dir( @repo );
 }
 
 sub process_error {
@@ -294,10 +340,10 @@ sub process_error {
     $git_ver =~ s/\.$//g if $git_ver; # ie. 2.1.0.GIT => 2.1.0.
     $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
 
-    my $service = $c->stash->{git_service} // ''; 
+    my $git_service = $c->stash->{git_service} // ''; 
     _debug ">>> GIT VERSION=$git_ver";
     _error( $msg );
-    if( $c->stash->{git_lastarg} eq 'git-receive-pack' ) {
+    if( $git_service eq 'git-receive-pack' ) {
         #my $m2 = 'refs/tags/CERT hook declined';
         $msg = sprintf 
         "%04x\002%s".
@@ -316,11 +362,11 @@ sub process_error {
         $c->res->body( '' );
     } 
     elsif( !length($git_ver) || $git_ver < version->parse('1.8.3') ) {
-        my $servtxt = sprintf "# service=%s\n",$service;
+        my $servtxt = sprintf "# service=%s\n",$git_service;
         my $errtxt = sprintf "ERR %s\n",$msg;
         $msg = sprintf "%04x%s0000%04x%s",4+length($servtxt),$servtxt,4+length($errtxt),$errtxt; #  "0036# service=git-receive-pack0000ERR This is a test\n";
         $c->res->status( 200 );
-        $c->res->content_type( "application/x-$service-advertisement" );
+        $c->res->content_type( "application/x-$git_service-advertisement" );
         $c->res->body( $msg );
         return;
     } else {
@@ -338,21 +384,19 @@ sub _create_or_find_repo {
 
     $fullpath = realpath $fullpath;
 
-    my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
+    my $repo_row = ci->GitRepository->find_one( { repo_dir => "$fullpath" } );
     my $repo_id;
     if ($repo_row) {
         $repo_id = $repo_row->{mid};
-    } else {
+    }
+    else {
         master_new 'GitRepository' => {
-            name    => "$fullpath",
-            moniker => "$fullpath",
-            data    => {
-                repo_dir   => "$fullpath",
-                rel_path   => "/",
-            }
-            } => sub {
-                $repo_id = shift;
-            };
+            name     => "$fullpath",
+            moniker  => "$fullpath",
+            repo_dir => "$fullpath",
+          } => sub {
+            $repo_id = shift;
+          };
     }
 
     return $repo_id;
@@ -403,32 +447,42 @@ sub _format_diff {
     _html_escape( $diff );
 }
 
-sub res_msg {
-    my $self = shift;
-    my $msg = join("\n", @_) || "(no message)";
-    $msg = $msg . "\n";
-    my $s;
-    # 0005 + length
-    $s .= sprintf "%04x\x2", 5 + length( $msg );
-    $s .= $msg;
-    $s .= pack 'H*', '30303336026572726f723a20686f6f6b206465636c696e656420746f2075706461746520726566732f68656164732f6d61737465720a303033650130303065756e7061636b206f6b0a303032376e6720726566732f68656164732f6d617374657220686f6f6b206465636c696e65640a3030303030303030';
-    return $s;
-}
-
 # git_error deprecated, use process_error
 sub git_error {
     my ($self, $c, $msg, $err ) = @_;
     _error( _loc('Git error: %1 %2 (user=%3)', $msg, $err, $c->username ) );
+    $c->res->status(200);
     $c->res->content_type( 'application/x-git-upload-pack-result' );
     $c->res->body(
         $self->res_msg( sprintf("\nCLARIVE ERROR: %s",$msg), $err)
     );
 }
 
+sub res_msg {
+    my $self = shift;
+
+    my $msg = join( "\n", @_ ) || "(no message)";
+
+    # 0005 + length
+    my $s;
+    $s .= sprintf "%04x\x2", 5 + length($msg);
+    $s .= $msg;
+    $s .= "0000";
+    $s .= "0000";
+    return $s;
+}
+
 sub _build_parser {
     my $self = shift;
 
     return Baseliner::GitSmartParser->new;
+}
+
+sub _system {
+    my $self = shift;
+    my ($command) = @_;
+
+    return system($command);
 }
 
 no Moose;
