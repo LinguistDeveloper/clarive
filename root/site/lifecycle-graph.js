@@ -20,24 +20,24 @@ var blue = "#0066CC";
 //Create the checkitems to the option menu.
 var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
 var general_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_general){general_source=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
-var general_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
+var general_statuses_color = new Ext.menu.CheckItem({text: _('Colored state'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
 
 var rol_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_rol){rol_text=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
 var rol_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_rol){rol_source=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
-var rol_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
+var rol_statuses_color = new Ext.menu.CheckItem({text: _('Colored state'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
 
 //Create menus
 var iid = Ext.id();
 
 //General Button
-var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, toggleGroup: 'process-'+iid, handler: function(){
+var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.show();
     menu_role.hide();
     cardpanel.getLayout().setActiveItem(general_container);
 }});
 
 //Role Button
-var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, toggleGroup: 'process-'+iid, handler: function(){
+var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.hide();
     menu_role.show();
     cardpanel.getLayout().setActiveItem(role_container);
@@ -62,7 +62,7 @@ var menu_general = new Ext.Button({
         items: [
             general_labels, general_icons, general_statuses_color,
             '-',{
-                text: 'Select All',
+                text: _('Select All'),
                     handler: function() {
                         var bool = true;
                         checked_general=true;
@@ -78,7 +78,7 @@ var menu_general = new Ext.Button({
                         checked_general=false;
                     }
                 },{
-                text: 'Unselect All',
+                text: _('Unselect All'),
                     handler: function() {
                         var bool = false;
                         checked_general=true;
@@ -104,7 +104,7 @@ var menu_role = new Ext.Button({
       items: [
         rol_labels, rol_icons, rol_statuses_color,
         '-',{
-            text: 'Select All',
+            text: _('Select All'),
             handler: function() {
                 var bool = true;
                 checked_rol=true;
@@ -121,7 +121,7 @@ var menu_role = new Ext.Button({
                 }
             },
         {
-            text: 'Unselect All',
+            text: _('Unselect All'),
             handler: function() {
             var bool = false;                      
             checked_rol=true;
@@ -396,6 +396,12 @@ var menu_role = new Ext.Button({
                   if(general_color){
                     node_background_color = res.data[i].status_color;
                     node_text_color = change_color(res.data[i].status_color);
+                    if (node_background_color == ''){
+                        node_background_color = "#FFFFFF";
+                    }
+                    if (node_text_color == ''){
+                        node_text_color = "#000000";
+                    }
                   }
                   if (object_node.length==0){
                     if(res.data[i].status_type == "I"){
@@ -433,6 +439,12 @@ var menu_role = new Ext.Button({
                       if(general_color){
                         node_background_color = res.data[i].status_color;
                         node_text_color = change_color(res.data[i].status_color);
+                        if (node_background_color == ''){
+                            node_background_color = "#FFFFFF";
+                        }
+                        if (node_text_color == ''){
+                            node_text_color = "#000000";
+                        }
                       }
                       if (object_node.length==0){
                         if(res.data[i].statuses_to_type[k] == 'F'){
@@ -695,6 +707,12 @@ var menu_role = new Ext.Button({
                   if(rol_color){
                     node_background_color = res.data[i].status_color;
                     node_text_color = change_color(res.data[i].status_color);
+                    if (node_background_color == ''){
+                        node_background_color = "#FFFFFF";
+                    }
+                    if (node_text_color == ''){
+                        node_text_color = "#000000";
+                    }
                   }
                   if (object_node.length==0){
                     if(res.data[i].status_type == "I"){
@@ -732,6 +750,12 @@ var menu_role = new Ext.Button({
                       if(rol_color){
                         node_background_color = res.data[i].status_color;
                         node_text_color = change_color(res.data[i].status_color);
+                        if (node_background_color == ''){
+                            node_background_color = "#FFFFFF";
+                        }
+                        if (node_text_color == ''){
+                            node_text_color = "#000000";
+                        }
                       }
                       if (object_node.length==0){
                         if(res.data[i].statuses_to_type[k] == 'F'){

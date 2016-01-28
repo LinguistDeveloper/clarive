@@ -8391,3 +8391,29 @@ msgstr "Ocultar modo edición"
 msgid "Show Help Index"
 msgstr "Mostrar Índice"
 
+msgid "Plain"
+msgstr "Simple"
+
+msgid "Rol"
+msgstr "Rol"
+
+msgid "With Labels"
+msgstr "Con Etiquetas"
+
+msgid "Icons"
+msgstr "Iconos"
+
+msgid "Colored state"
+msgstr "Estado con Color"
+
+msgid "Select All"
+msgstr "Seleccionar Todo"
+
+msgid "Unselect All"
+msgstr "Deseleccionar Todo"
+
+msgid "Zoom +"
+msgstr "Acercar +"
+
+msgid "Zoom -"
+msgstr "Alejar -"
