@@ -29,10 +29,15 @@ sub dashboard {
 
         $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 23;
     }
-    elsif ( $group_by_period eq 'day' ) {
+    elsif ( $group_by_period eq 'day_of_week' ) {
         $group_by = { '$substr' => [ '$ts', 8, 2 ] };
 
         $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 6;
+    }
+    elsif ( $group_by_period eq 'month' ) {
+        $group_by = { '$substr' => [ '$ts', 5, 2 ] };
+
+        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 11;
     }
     elsif ( $group_by_period eq 'date' ) {
         $group_by = { '$substr' => [ '$ts', 0, 10 ] };

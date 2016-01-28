@@ -7,11 +7,13 @@ use Scalar::Util qw(looks_like_number);
 use v5.10;
 use experimental 'switch', 'autoderef';
 
+use Baseliner::DateRange;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
+use Baseliner::Dashboard::TopicsBurndown;
 
 with 'Baseliner::Role::ControllerValidator';
 
@@ -1390,8 +1392,29 @@ sub topics_burndown2 : Local {
 
     my $p = $c->req->params;
 
-    my $model = Baseliner::Model::Topic->new;
-    my $burndown = $model->burndown(username => $c->username);
+    my $selection_method = $p->{selection_method} // 'period_selection';
+
+    my $from;
+    my $to;
+    if ( $selection_method eq 'period_selection' ) {
+        $from = $p->{select_by_period_from} || substr( _now(), 0, 10 ) . ' 00:00:00';
+        $to = $p->{select_by_period_to} || _now();
+    }
+    else {
+        my $date_range = Baseliner::DateRange->new;
+
+        ( $from, $to ) = $date_range->build_pair( $p->{select_by_duration_range}, $p->{select_by_duration_offset} );
+    }
+
+    my $dashboard = Baseliner::Dashboard::TopicsBurndown->new;
+    my $burndown  = $dashboard->dashboard(
+        username        => $c->username,
+        from            => $from,
+        to              => $to,
+        group_by_period => $p->{group_by_period},
+        date_field      => $p->{date_field},
+        categories      => [ _array $p->{categories} ]
+    );
 
     my @topics;
     my @dates;
@@ -1400,7 +1423,17 @@ sub topics_burndown2 : Local {
     push @dates,  map { $_->[0] } @$burndown;
     push @topics, map { $_->[1] } @$burndown;
 
-    @reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
+    if ($p->{group_by_period} eq 'day_of_week') {
+        @dates = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', );
+    }
+    elsif ($p->{group_by_period} eq 'month') {
+        @dates = (
+            'January', 'February', 'March',     'April',   'May',      'June',
+            'July',    'August',   'September', 'October', 'November', 'December'
+        );
+    }
+
+    #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
 
     unshift @topics,   'Topics';
     unshift @dates,    'x';

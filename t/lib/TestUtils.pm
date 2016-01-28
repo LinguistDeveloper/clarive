@@ -139,11 +139,11 @@ sub mock_time {
 
     set_absolute_time($epoch);
 
-    my $retval = $cb->();
+    my @retval = $cb->();
 
     restore_time();
 
-    return $retval;
+    return wantarray ? @retval : $retval[0];
 }
 
 sub write_file {

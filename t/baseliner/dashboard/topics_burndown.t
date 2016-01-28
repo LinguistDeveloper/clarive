@@ -161,7 +161,7 @@ subtest 'burndown: group by day period' => sub {
         username        => $user->username,
         from            => '2015-01-02',
         to              => '2015-01-05',
-        group_by_period => 'day'
+        group_by_period => 'day_of_week'
     );
 
     is_deeply $burndown,
@@ -238,6 +238,88 @@ subtest 'burndown: group by date period' => sub {
         ['2015-01-03', 2],
         ['2015-01-04', 3],
     ];
+};
+
+subtest 'burndown: group by month period' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $dashboard = _build_dashboard();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-02-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_finished = mock_time '2015-03-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    mock_time '2015-01-04T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+    };
+
+    mock_time '2015-01-05T01:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_finished->mid
+        );
+    };
+
+    my $topic_during = mock_time '2015-01-06T03:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $burndown = $dashboard->dashboard(
+        username        => $user->username,
+        from            => '2015-01-02',
+        to              => '2015-06-07',
+        group_by_period => 'month'
+    );
+
+    is_deeply $burndown,
+      [
+        [ '00', 1 ],
+        [ '01', 1 ],
+        [ '02', 2 ],
+        [ '03', 3 ],
+        [ '04', 3 ],
+        [ '05', 3 ],
+        [ '06', 3 ],
+        [ '07', 3 ],
+        [ '08', 3 ],
+        [ '09', 3 ],
+        [ '10', 3 ],
+        [ '11', 3 ]
+      ];
 };
 
 subtest 'burndown: by default show for today' => sub {
@@ -480,7 +562,7 @@ subtest 'burndown: filters out categories that user has no access to' => sub {
         username        => $user->username,
         from            => '2015-01-02',
         to              => '2015-01-05',
-        group_by_period => 'day'
+        group_by_period => 'day_of_week'
     );
 
     is_deeply $burndown,
@@ -545,7 +627,7 @@ subtest 'burndown: filters out topics that user has no access to project' => sub
         username        => $user->username,
         from            => '2015-01-02',
         to              => '2015-01-05',
-        group_by_period => 'day'
+        group_by_period => 'day_of_week'
     );
 
     is_deeply $burndown,
@@ -599,7 +681,7 @@ subtest 'burndown: filters by category' => sub {
         username        => $user->username,
         from            => '2015-01-02',
         to              => '2015-01-05',
-        group_by_period => 'day',
+        group_by_period => 'day_of_week',
         categories      => [$id_category]
     );
 
