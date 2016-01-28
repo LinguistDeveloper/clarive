@@ -508,6 +508,9 @@ msgstr "Datos"
 msgid "Back"
 msgstr "Atrás"
 
+msgid "Forward"
+msgstr "Adelante"
+
 msgid "Text"
 msgstr "Texto"
 
@@ -8379,3 +8382,7 @@ msgstr "Ocultar en modo vista"
 
 msgid "Hide from edit view"
 msgstr "Ocultar modo edición"
+
+msgid "Show Help Index"
+msgstr "Mostrar Índice"
+

@@ -147,18 +147,18 @@ Cla.help_show = function(params) {
         //docs_tree.refresh();
     }});
 
-    var btn_refresh = new Ext.Button({ icon: IC('refresh'), handler: function(){
+    var btn_refresh = new Ext.Button({ icon: IC('refresh'), tooltip: _('Refresh'), handler: function(){
         docs_tree.refresh();
     }});
 
-    var btn_left = new Ext.Button({ icon: IC('arrow_left.gif'), disabled: true, handler: function(){
+    var btn_left = new Ext.Button({ icon: IC('arrow_left.gif'), tooltip: _('Back'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr <= 0 )  return;
         var path = help_win.history[ --help_win.history_curr ];
         if( path ) goto_doc( path, { from_hist : true } ); 
         check_btns();
     }});
-    var btn_right = new Ext.Button({ icon: IC('arrow_right.gif'), disabled: true, handler: function(){
+    var btn_right = new Ext.Button({ icon: IC('arrow_right.gif'), tooltip: _('Forward'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr >= help_win.history.length ) return;
         var path = help_win.history[ ++help_win.history_curr ];
