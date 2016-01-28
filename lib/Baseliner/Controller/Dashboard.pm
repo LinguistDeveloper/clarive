@@ -2011,7 +2011,7 @@ sub data_to_aggreate {
         $total = {'$sum' => 1};
     }else {
         $params{where}->{$params{numberfield_group}} = {'$exists' => 1, '$ne' => undef, '$ne' => ''};
-        $total = {'$'.$params{result_type} => {'$'.$params{numberfield_group}=>{'$abs'=> 1}}};
+        $total = {'$'.$params{result_type} => '$'.$params{numberfield_group}};
     }
     my $aggregate_query =  [{ '$match' => $params{where} },
         $params{unwind} ? ( { '$unwind' => $params{unwind}  } ) : (),
