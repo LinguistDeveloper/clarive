@@ -689,6 +689,49 @@ subtest 'burndown: filters by category' => sub {
       [ [ '00' => 0 ], [ '01' => 0 ], [ '02' => 0 ], [ '03' => 0 ], [ '04' => 0 ], [ '05' => 0 ], [ '06' => 0 ], ];
 };
 
+subtest 'burndown: filters by custom filter' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $dashboard = _build_dashboard();
+
+    my $topic = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( title => 'Hello', status => $status_new, project => $project, id_category => $id_category ) };
+    my $topic2 = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( title => 'Bye', status => $status_new, project => $project, id_category => $id_category ) };
+
+    my $burndown = $dashboard->dashboard(
+        username        => $user->username,
+        from            => '2015-01-02',
+        to              => '2015-01-05',
+        group_by_period => 'day_of_week',
+        query           => q/{"title":"Hello"}/
+    );
+
+    is_deeply $burndown,
+      [ [ '00' => 1 ], [ '01' => 1 ], [ '02' => 1 ], [ '03' => 1 ], [ '04' => 1 ], [ '05' => 1 ], [ '06' => 1 ], ];
+};
+
 done_testing();
 
 sub _setup {

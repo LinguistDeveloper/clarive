@@ -1413,6 +1413,8 @@ sub topics_burndown2 : Local {
         to              => $to,
         group_by_period => $p->{group_by_period},
         date_field      => $p->{date_field},
+        closed_statuses => $p->{closed_statuses},
+        query           => $p->{query},
         categories      => [ _array $p->{categories} ]
     );
 
@@ -1433,7 +1435,7 @@ sub topics_burndown2 : Local {
         );
     }
 
-    #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
+    @reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
 
     unshift @topics,   'Topics';
     unshift @dates,    'x';
@@ -1441,7 +1443,6 @@ sub topics_burndown2 : Local {
 
     $c->stash->{json} = {
         success => \1,
-        date    => 'today',
         data    => [\@dates, \@topics, \@reg_line]
     };
     $c->forward('View::JSON');

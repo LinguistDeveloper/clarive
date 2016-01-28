@@ -26,6 +26,9 @@
             select_by_period_from: params.data.select_by_period_from,
             select_by_period_to: params.data.select_by_period_to,
 
+            query: params.data.query,
+            closed_statuses: params.data.closed_statuses,
+
             date: date,
 
             group_by_period: group_by_period,
@@ -66,6 +69,7 @@
                     x: {
                         type: 'category',
                         tick: {
+                            rotate: 90,
                             multiline: false
                         },
                         label: {

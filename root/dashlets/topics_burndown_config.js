@@ -96,6 +96,18 @@
         }]
     });
 
+    var query = new Ext.form.TextField({
+        fieldLabel: _('Custom JSON query'),
+        name: 'query',
+        value: data.query,
+        anchor: '100%'
+    });
+    var closed_statuses = new Baseliner.StatusBox({
+        name: 'closed_statuses',
+        fieldLabel: _('Close statuses'),
+        value: data.closed_statuses || ''
+    });
+
     var ccategory = new Baseliner.CategoryBox({
         name: 'categories',
         fieldLabel: _('Select topics in categories'),
@@ -185,7 +197,9 @@
             columnWidth: 1,
             bodyStyle: 'background:transparent;',
             items: [
-                ccategory
+                ccategory,
+                closed_statuses,
+                query
             ]
         }]
     }]);

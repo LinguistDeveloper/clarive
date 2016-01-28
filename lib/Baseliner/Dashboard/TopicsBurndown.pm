@@ -2,6 +2,7 @@ package Baseliner::Dashboard::TopicsBurndown;
 use Moose;
 
 use Array::Utils qw(intersect);
+use JSON ();
 use Baseliner::Model::Topic;
 use Baseliner::Utils qw(_now _array);
 
@@ -16,12 +17,28 @@ sub dashboard {
     my $group_by_period = $params{group_by_period} || 'hour';
     my $date_field      = $params{date_field}      || 'created_on';
     my $categories      = $params{categories}      || [];
+    my $query           = $params{query};
+    my @closed_statuses = _array $params{closed_statuses};
+
+    if (@closed_statuses) {
+        @closed_statuses = map { $_->{name} }
+          ci->status->find( { id_status => mdb->in(@closed_statuses) } )->fields( { _id => 0, name => 1 } )->all;
+    }
+
+    if (!@closed_statuses) {
+        @closed_statuses = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
+    }
 
     my $date_query_before_period = { '$lt' => $from };
     my $date_query_during_period = { '$gte' => $from, '$lt' => $to };
 
     my $group_by;
     my $where = {};
+
+    if ($query) {
+        $query = JSON::decode_json($query);
+        $where = {%$query};
+    }
 
     my %burndown = ();
     if ( $group_by_period eq 'hour' ) {
@@ -69,12 +86,10 @@ sub dashboard {
         $perm->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    my @closed_status = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
-
     my @backlog_remaining = map { $_->{mid} } mdb->topic->find(
         {
             'category.id'          => mdb->in(@user_categories),
-            'category_status.name' => mdb->nin(@closed_status),
+            'category_status.name' => mdb->nin(@closed_statuses),
             $date_field            => $date_query_before_period,
             %$where,
         }
@@ -97,7 +112,7 @@ sub dashboard {
         {
             'mid'         => mdb->in(@topics_created_before),
             'event_key'   => 'event.topic.change_status',
-            'vars.status' => mdb->in(@closed_status),
+            'vars.status' => mdb->in(@closed_statuses),
             'ts'          => $date_query_during_period,
         },
     )->fields( { _id => 0, mid => 1 } )->all;
@@ -112,7 +127,7 @@ sub dashboard {
                 '$match' => {
                     'event_key'   => 'event.topic.change_status',
                     'mid'         => mdb->in( @topics_created_during, @topics_created_before ),
-                    'vars.status' => mdb->in(@closed_status),
+                    'vars.status' => mdb->in(@closed_statuses),
                     'ts'          => $date_query_during_period,
                 }
             },
@@ -151,8 +166,6 @@ sub _update_burndown {
         my $total = $topic->{total};
 
         foreach my $by ( sort { $a cmp $b } keys %$burndown ) {
-            #$by = sprintf( '%02d', $by );
-
             next if $by lt $from;
 
             $burndown->{$by} += $total * $sign;
