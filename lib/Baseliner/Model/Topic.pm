@@ -3225,21 +3225,6 @@ sub status_changes {
     return @status_changes;
 }
 
-sub list_status_changes {
-
-            push @status_changes,
-              {
-                old_status => $ed->{old_status},
-                status     => $ed->{status},
-                username   => $ed->{username},
-                when       => Class::Date->new( $ev->{ts} )
-              };
-        }
-        catch {};
-    }
-    return @status_changes;
-}
-
 sub get_users_friend {
     my ( $self, %p ) = @_;
 
