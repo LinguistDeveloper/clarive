@@ -1021,7 +1021,7 @@ sub avatar : Local {
             my $identicon_generator
                 = Baseliner::IdenticonGenerator->new( default_icon =>
                     $c->path_to("/root/static/images/icons/user.png") );
-            my $png = $identicon_generator->identicon( $c, $username );
+            my $png = $identicon_generator->identicon( $username );
             my $fh = $file->openw or _fail $!;
             binmode $fh;
             print $fh $png;
