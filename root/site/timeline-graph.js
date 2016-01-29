@@ -237,7 +237,7 @@
               //init_overview(panel.diagram, panel.overview);
             }        
           }
-        }
+        };
         // define the Lifeline Node template.
         diagram.groupTemplate =
             go_api(go.Group, "Vertical",
