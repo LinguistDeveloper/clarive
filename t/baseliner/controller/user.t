@@ -1,23 +1,22 @@
 use strict;
 use warnings;
-
 use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+use Test::MonkeyMock;
+use Test::TempDir::Tiny;
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
-
-BEGIN {
-    TestEnv->setup;
-}
 
 use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
 use Baseliner::Controller::User;
 use Baseliner::Model::Permissions;
+use Baseliner::Utils qw(_file _dir);
 
 subtest
     'infoactions: non admin user is not allowed to query other users action'
@@ -116,6 +115,74 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
     );
     $controller->infodetail($c);
     cmp_deeply $c->stash, { json => { data => ignore() } };
+};
+
+subtest 'avatar: generates user avatar if it doesnt exit' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $c = _build_c( username => 'root', path_to => $tempdir );
+    $c = Test::MonkeyMock->new($c);
+    $c->mock('serve_static_file');
+
+    my $controller = _build_controller();
+    $controller->avatar($c);
+
+    my ($file) = $c->mocked_call_args('serve_static_file');
+
+    ok -d "$tempdir/root/identicon";
+    ok -f "$tempdir/root/identicon/root.png";
+
+    like $file, qr{$tempdir/root/identicon/root.png};
+    like _file($file)->slurp, qr/^.PNG/;
+};
+
+subtest 'avatar: returns avatar if exists' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    _dir("$tempdir/root/identicon")->mkpath;
+    TestUtils->write_file("HELLO", "$tempdir/root/identicon/root.png");
+
+    my $c = _build_c( username => 'root', path_to => $tempdir );
+    $c = Test::MonkeyMock->new($c);
+    $c->mock('serve_static_file');
+
+    my $controller = _build_controller();
+    $controller->avatar($c);
+
+    my ($file) = $c->mocked_call_args('serve_static_file');
+
+    like $file, qr{$tempdir/root/identicon/root.png};
+    is _file($file)->slurp, 'HELLO';
+};
+
+subtest 'avatar: returns default avatar when generation fails' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    _dir("$tempdir/root/static/images/icons/")->mkpath;
+    TestUtils->write_file( "DEFAULT", "$tempdir/root/static/images/icons/user.png" );
+
+    my $c = _build_c( username => 'root', path_to => $tempdir );
+    $c = Test::MonkeyMock->new($c);
+    $c->mock('serve_static_file');
+
+    my $identicon_generator = Test::MonkeyMock->new;
+    $identicon_generator->mock( generate => sub { die 'some error' } );
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock( _build_identicon_generator => sub { $identicon_generator } );
+    $controller->avatar($c);
+
+    my ($file) = $c->mocked_call_args('serve_static_file');
+
+    like $file, qr{$tempdir/root/static/images/icons/user.png};
+    is _file($file)->slurp, 'DEFAULT';
 };
 
 sub _build_c {

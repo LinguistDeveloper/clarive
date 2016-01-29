@@ -5,7 +5,7 @@ use Try::Tiny;
 use v5.10;
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
+use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
 use Baseliner::Sugar;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -1006,47 +1006,46 @@ sub change_dashboard : Local {
 }
 
 sub avatar : Local {
-    my ( $self, $c, $username, $dummy_filename ) = @_;
-    my ( $file, $body, $filename, $extension );
-    if ( !$dummy_filename ) {
-        $dummy_filename = $username;
-        $username       = $c->username;
-    }
-    $filename = "$username.png";
-    try {
-        $file = _dir( $c->path_to("/root/identicon") );
+    my ( $self, $c ) = @_;
+
+    my $default_icon = "root/static/images/icons/user.png";
+
+    my $file = try {
+        my $file = _dir( $c->path_to("/root/identicon") );
         $file->mkpath unless -d $file;
-        $file = _file( $file, $username . ".png" );
-        unless ( -e $file ) {    # generate identicon
+
+        $file = _file( $file, $c->username . ".png" );
+        unless ( -e $file ) {
             my $identicon_generator
-                = Baseliner::IdenticonGenerator->new( default_icon =>
-                    $c->path_to("/root/static/images/icons/user.png") );
-            my $png = $identicon_generator->identicon( $username );
+                = $self->_build_identicon_generator( default_icon => $c->path_to($default_icon) );
+            my $png = $identicon_generator->identicon( $c->username );
+
             my $fh = $file->openw or _fail $!;
             binmode $fh;
             print $fh $png;
             close $fh;
         }
+
+        return $file;
     }
     catch {
         my $err = shift;
+
         _log "Identicon failed: $err";
-        $file = $c->path_to("/root/static/images/icons/user.png");
+
+        return $c->path_to($default_icon);
     };
+
     if ( defined $file ) {
         $c->serve_static_file($file);
     }
-    elsif ( defined $body ) {
-        $c->res->body($body);
-    }
     else {
-        _throw 'Missing serve_file or serve_body on stash';
+        _throw 'Avatar generation failed badly';
     }
 
-  #$c->res->headers->remove_header('Cache-Control');
-  #$c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
-  #$c->res->headers->remove_header('Pragma');
     $c->res->content_type('image/png');
+
+    return;
 }
 
 sub avatar_refresh : Local {
@@ -1266,6 +1265,12 @@ ecarrion:
     - CRM (285)
 }
     );
+}
+
+sub _build_identicon_generator {
+    my $self = shift;
+
+    return Baseliner::IdenticonGenerator->new(@_);
 }
 
 no Moose;
