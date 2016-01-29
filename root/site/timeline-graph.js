@@ -331,7 +331,6 @@
                          ),
                    go_api(go.TextBlock,
                           {
-
                               segmentIndex: 0,
                               segmentOffset: new go.Point(110, 20),
                               stroke: "black",
@@ -339,7 +338,6 @@
                               editable: false
                           },
                           new go.Binding("text", "text").makeTwoWay()),
-
                    go_api(go.Picture, { width: 28, height: 28, segmentIndex: 0, segmentOffset: new go.Point(NaN, 20) },
                           new go.Binding("source", "source")),
                    go_api(go.TextBlock,{
@@ -606,6 +604,7 @@
 
                 sum_duration = sum_duration + duration[i];
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length), "text": text});
+
               }
               i++;
 
@@ -616,6 +615,7 @@
             duration.splice(duration.indexOf(duration[0]),1);
             text.push("");
             text.splice(text.indexOf(text[0]),1);
+
 
             var i=0;
             var j=0;
@@ -664,7 +664,7 @@
         items:[pn_diagram,pn_overview]
     }
     );
-    
     return container;    
 }
 );
+

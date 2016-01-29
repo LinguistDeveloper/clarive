@@ -1217,7 +1217,26 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     create_toolbar : function(){
         var self = this;
-        var tb;
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            items: [
+                self.btn_detail,
+                self.btn_edit,
+                //'-',
+                ' ',
+                self.btn_delete_form,
+                self.btn_comment,
+                self.btn_save_form,
+                '->',
+                self.btn_deploy,
+               // '-',
+                self.btn_change_status,
+                self.btn_docgen,
+                self.btn_graph,
+                self.btn_kanban,
+                self.btn_life_cicle,
+                self.btn_timeline
+            ]
 
         if ( self.topic_mid ) {
             tb = new Ext.Toolbar({
