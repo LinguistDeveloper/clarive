@@ -286,8 +286,15 @@ sub new {
     $self->{config}       = $params{config} || {};
     $self->{authenticate} = $params{authenticate};
     $self->{is_root}      = 0;
+    $self->{path_to}      = $params{path_to} || '';
 
     return $self;
+}
+
+sub path_to {
+    my $self = shift;
+
+    return join '/', $self->{path_to}, @_;
 }
 
 sub user_languages { ('en') }
@@ -376,6 +383,8 @@ sub user_ci {
 }
 
 sub is_root { shift->{is_root} }
+
+sub serve_static_file { }
 
 package FakeHeaders;
 

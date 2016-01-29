@@ -5,7 +5,9 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
     is_logged_in: true,
     toolbar_height: 28,
     constructor: function(config){
-        if( !config ) config = {};
+        if( !config )  {
+            config = {};
+        }
         // site options
         config.site = Ext.apply({
             show_menu: true,
@@ -47,7 +49,9 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
         });
     }, 
     open_editor : function(opts) {
-        if( !opts ) opts={};
+        if( !opts ) {
+            opts={};
+        }
         var upload = new Ext.Container();
         var username = opts.username;
         var avatar_username = username || Prefs.username;
@@ -55,7 +59,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             var uploader = new qq.FileUploader({
                 element: upload.el.dom,
                 action: '/user/avatar_upload/' + avatar_username,
-                allowedExtensions: ['png'],
+                allowedExtensions: ['png', 'jpg', 'jpeg', 'gif'],
                 template: '<div class="qq-uploader">' + 
                     '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
                     '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
@@ -131,7 +135,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     Baseliner.message( _('API Key'), res.msg );
                 });
             };
-            var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
+            var api_key_field = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
             // language combo
             var language_pref = res.data.language_pref;
             var installed_languages = res.languages;
@@ -140,7 +144,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 var lang_name = installed_languages[ln];
                 lang_arr.push([ ln, _(lang_name)||_(ln) ]);
             }
-            lang_arr = lang_arr.sort(function(a,b){ return a[1].toUpperCase() > b[1].toUpperCase() ? 1 : b[1].toUpperCase() > a[1].toUpperCase() ? -1 : 0 });
+            lang_arr = lang_arr.sort(function(a,b){ return a[1].toUpperCase() > b[1].toUpperCase() ? 1 : b[1].toUpperCase() > a[1].toUpperCase() ? -1 : 0; });
             var language = new Baseliner.ComboDouble({
                 fieldLabel: _('Interface Language'), 
                 name: 'language_pref', 
@@ -208,7 +212,8 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     ['browser_timezone', _('My Browser Timezone (now is %1)', moment(Date().now).format('h:mma') )]
                 ].concat( Cla.timezone_list.map(function(tz){ 
                     tz[1]=String.format("{0} (now is {1})", tz[0], moment(Date().now).tz(tz[0]).format('h:mma')); 
-                    return tz}) )
+                    return tz;
+                }) )
             });
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
@@ -281,7 +286,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     { title: _('API'), layout:'form', frame: false, border: false, 
                         bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
                         items: [
-                            api_key,
+                            api_key_field,
                             { xtype:'button',  fieldLabel: _('Generate API Key'), width: 150, scale:'large', text:_('Generate API Key'), handler: gen_apikey },
                             { xtype:'button',  fieldLabel: _('Save API Key'), width: 150, scale:'large', text:_('Save Current API Key'), handler: save_apikey }
                         ]
