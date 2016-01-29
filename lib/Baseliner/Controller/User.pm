@@ -1019,7 +1019,7 @@ sub avatar : Local {
         unless ( -e $file ) {
             my $identicon_generator
                 = $self->_build_identicon_generator( default_icon => $c->path_to($default_icon) );
-            my $png = $identicon_generator->identicon( $c->username );
+            my $png = $identicon_generator->identicon;
 
             my $fh = $file->openw or _fail $!;
             binmode $fh;

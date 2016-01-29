@@ -3,34 +3,11 @@ use Moose;
 
 use Try::Tiny;
 use Image::Identicon;
-use Baseliner::Utils qw(_debug _file);
+use Baseliner::Utils qw(_file);
 
 has default_icon => qw(is ro required 1);
 
 sub identicon {
-    my $self = shift;
-    my ($username) = @_;
-
-    my $user = ci->user->find_one( { username => $username } );
-
-    if ($user) {
-        _debug "Generating and saving avatar";
-
-        my $png = $self->_generate_or_default;
-
-        my $user_ci = ci->new( $user->{mid} );
-        $user_ci->update( avatar => $png );
-
-        return $png;
-    }
-    else {
-        _debug "User not found, avatar generated anyway";
-
-        return $self->_generate_or_default;
-    }
-}
-
-sub _generate_or_default {
     my $self = shift;
 
     return try {
