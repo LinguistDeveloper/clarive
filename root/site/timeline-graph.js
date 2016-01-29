@@ -97,11 +97,15 @@
 
     };
 
-    var init_overview = function(diagram,overview){   
+    init_overview = function(diagram,overview){   
+
         this.diagram = diagram;
         this.overview = overview;
 
+        var i = 0;
+        j = 0;
         var go_api = go.GraphObject.make;
+
 
         function MessageLink() {
             go.Link.call(this);
@@ -113,13 +117,13 @@
         function ensureLifelineHeights(e) {
             var arr = diagram.model.nodeDataArray;
             var max = -1;
-            for (var i = 0; i < arr.length; i++) {
+            for (i = 0; i < arr.length; i++) {
                 var act = arr[i];
                 if (act.isGroup) continue;
                 max = Math.max(max, act.start + act.duration);
             }
             if (max > 0) {
-                for (var i = 0; i < arr.length; i++) {
+                for (i = 0; i < arr.length; i++) {
                     var gr = arr[i];
                     if (!gr.isGroup) continue;
                     if (max > gr.duration) {
@@ -238,30 +242,31 @@
         diagram.groupTemplate =
             go_api(go.Group, "Vertical",
                    {
-                       locationSpot: go.Spot.Bottom,
-                       locationObjectName: "HEADER",
-                       minLocation: new go.Point(0, 0),
-                       maxLocation: new go.Point(9999, 0),
-                       selectionObjectName: "HEADER",
-                       movable: false
-                   }
-                   ,
+                      locationSpot: go.Spot.Bottom,
+                      locationObjectName: "HEADER",
+                      minLocation: new go.Point(0, 0),
+                      maxLocation: new go.Point(9999, 0),
+                      selectionObjectName: "HEADER",
+                      movable: false
+                   },
                    new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
                    go_api(go.Panel, "Auto",
                           {
-                              name: "HEADER" }
-                          ,
+                              name: "HEADER" 
+                          },
                           go_api(go.Shape, "Rectangle",
-                                 {
-                                     fill: color, stroke: "white" }
-                                ),
+                            {
+                               fill: color, stroke: "white" 
+                            }
+                          ),
                           go_api(go.TextBlock,
-                                 {
-                                     margin: 10, stroke: "white" }
-                                 ,
-                                 new go.Binding("text", "text"))
-                         ),
-                   go_api(go.Shape,
+                            {
+                               margin: 10, stroke: "white" 
+                            },
+                           new go.Binding("text", "text")
+                          )
+                    ),
+                    go_api(go.Shape,
                           {
                               figure: "LineV",
                               fill: null,
@@ -275,9 +280,9 @@
                               toLinkable: false,
                               toLinkableDuplicates: false,
                               cursor: "pointer"
-                          }
-                          ,
-                          new go.Binding("height", "duration", computeLifelineHeight))
+                          },
+                          new go.Binding("height", "duration", computeLifelineHeight)
+                    )
                   );
         
         // define the Activity Node template
@@ -290,11 +295,9 @@
                        selectionObjectName: "SHAPE",
                        resizable: false,
                        movable: false
-                   }
-                   ,
+                   },
                    new go.Binding("location", "", computeActivityLocation).makeTwoWay(backComputeActivityLocation),
                    go_api(go.Panel, "Auto",
-
                       go_api(go.Shape, "Rectangle",
                             {
                                 name: "SHAPE",
@@ -303,13 +306,14 @@
                                 // allow Activities to be resized down to 1/4 of a time unit
                                 minSize: new go.Size(ActivityWidth, computeActivityHeight(0.50))
                             },
-                            new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)),
+                            new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)
+                      ),
                       go_api(go.TextBlock, { angle: 90, font: "bold 11px sans-serif", stroke: "black"  },
                           new go.Binding("text", "text"),
                           new go.Binding("stroke","black")
                       )
                     )
-                  );
+            );
         
         // define the Message Link template.
         diagram.linkTemplate =
@@ -354,11 +358,14 @@
         // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
         Baseliner.ajaxEval( '/topic/list_status_changes', {mid: mid}, function(res) {
 
+          var date;
+          var date2;
+
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
-                     var date = new Date(res.data[j].when);
-                     var date2 = new Date(res.data[j+1].when);
+                     date = new Date(res.data[j].when);
+                     date2 = new Date(res.data[j+1].when);
                       if(date>date2){
                             //save the max number in aux
                            aux=res.data[j];
@@ -375,8 +382,8 @@
               var datas = res.data[i];
               var datas2 = res.data[i+1];
               if(datas.old_status == datas2.old_status && datas.status == datas2.status && datas.username == datas2.username){
-                var date = new Date(res.data[i].when);
-                var date2 = new Date(res.data[i+1].when);
+                date = new Date(res.data[i].when);
+                date2 = new Date(res.data[i+1].when);
                 if (date.getFullYear() == date2.getFullYear() && date.getMonth() == date2.getMonth() && date.getDate() == date2.getDate() && date.getHours() == date2.getHours()){
                   res.data.splice(res.data.indexOf(res.data[i]),1);
                 }
@@ -387,7 +394,7 @@
             var object_node = [];          
 
             //Create group of nodes for status
-            var i=0;
+            i=0;
             var locx=200;
             var local =0;
             while (i < res.data.length){
@@ -396,7 +403,7 @@
                   object_node.push({ "key" : res.data[i].old_status, "text"  : res.data[i].old_status, "isGroup":true, "loc": "0 0", "duration":"change"});
                   object_node.push({ "key" : res.data[i].status, "text"  : res.data[i].status, "isGroup":true, "loc": "200 0", "duration":"change"});
                 }else{
-                  var j=0;
+                  j=0;
                   var equal = 1;
                   while(j < object_node.length){
 
@@ -417,7 +424,7 @@
             }
 
             //create nodes timeline for user and status
-            var i=0;
+            i=0;
             var start = [];
             var duration = [];
             var text = [];
@@ -433,8 +440,8 @@
                 object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], "key": -(i+res.data.length)});
               }else{
                 start[i] = start[i-1] + duration[i-1];
-                var date = new Date(res.data[i].when);
-                var date2 = new Date(res.data[i-1].when);
+                date = new Date(res.data[i].when);
+                date2 = new Date(res.data[i-1].when);
 
                 // CALCULATE THE VALUE OF DURATION TO NODES.
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -444,7 +451,7 @@
                 // HOURS        DURATION 2 - 9.2 
 
                 var sum_date = date.getTime() - date2.getTime();
-                var date_compare = date.getFullYear() - date2.getFullYear();
+                date_compare = date.getFullYear() - date2.getFullYear();
                 var leap_calculate = date_compare % 4; 
                 var number_text = 0;
                 var leap_year = 31622400000;
@@ -456,6 +463,8 @@
                 var day = 86400000;
                 var hours = 3600000; 
                 var min = 60000;
+                var hour = 0;
+                var minutes = 0;
 
                 //leap-year
                 if (leap_calculate == 0 && sum_date >= leap_year){
@@ -488,10 +497,10 @@
 
                       duration[i]=(number_text*0.1)+18.4;
                       number_text = new Date(sum_date);  
-                      var hour = (number_text.getHours()-1);      
-                      if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                      var minutes = number_text.getMinutes();
-                      if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                      hour = (number_text.getHours()-1);      
+                      if (hour < 10){ hour = "0"+(number_text.getHours()-1);} 
+                      minutes = number_text.getMinutes();
+                      if (minutes < 10){ minutes = "0"+number_text.getMinutes();}   
                       text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                     }else {
@@ -500,14 +509,19 @@
 
                         number_text = sum_date / thirty_month;
                         number_text = Math.round(number_text);
-                        if(number_text == 0){ number_text = 1;}   
-                                             
+                        if(number_text == 0){ 
+                          number_text = 1;
+                        }                                                
                         duration[i]=(number_text*0.1)+18.4;
                         number_text = new Date(sum_date);  
-                        var hour = (number_text.getHours()-1);      
-                        if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                        var minutes = number_text.getMinutes();
-                        if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                        hour = (number_text.getHours()-1);      
+                        if (hour < 10){ 
+                          hour = "0"+(number_text.getHours()-1);
+                        } 
+                        minutes = number_text.getMinutes();
+                        if (minutes < 10){ 
+                          minutes = "0"+number_text.getMinutes();
+                        }   
                         text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                       }else{
@@ -520,10 +534,14 @@
 
                           duration[i]=(number_text*0.1)+18.4;
                           number_text = new Date(sum_date);  
-                          var hour = (number_text.getHours()-1);      
-                          if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                          var minutes = number_text.getMinutes();
-                          if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                          hour = (number_text.getHours()-1);      
+                          if (hour < 10){ 
+                            hour = "0"+(number_text.getHours()-1);
+                          } 
+                          minutes = number_text.getMinutes();
+                          if (minutes < 10){ 
+                            minutes = "0"+number_text.getMinutes();
+                          }   
                           text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
 
                         }else{
@@ -536,10 +554,14 @@
 
                             duration[i]=(number_text*0.1)+18.4;
                             number_text = new Date(sum_date);  
-                            var hour = (number_text.getHours()-1);      
-                            if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                            var minutes = number_text.getMinutes();
-                            if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                            hour = (number_text.getHours()-1);      
+                            if (hour < 10){ 
+                              hour = "0"+(number_text.getHours()-1);
+                            } 
+                            minutes = number_text.getMinutes();
+                            if (minutes < 10){ 
+                              minutes = "0"+number_text.getMinutes();
+                            }   
                             text[i] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
                           }else{
                             //Days
@@ -547,14 +569,20 @@
 
                               number_text = sum_date / day;
                               number_text = Math.round(number_text);
-                              if(number_text == 0){ number_text = 1;}
+                              if(number_text == 0){ 
+                                number_text = 1;
+                              }
 
                               duration[i]=(number_text*0.2)+12.2;
                               number_text = new Date(sum_date);  
-                              var hour = (number_text.getHours()-1);      
-                              if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                              var minutes = number_text.getMinutes();
-                              if (minutes < 10){ minutes = "0"+number_text.getMinutes()}   
+                              hour = (number_text.getHours()-1);      
+                              if (hour < 10){ 
+                                hour = "0"+(number_text.getHours()-1);
+                              } 
+                              minutes = number_text.getMinutes();
+                              if (minutes < 10){ 
+                                minutes = "0"+number_text.getMinutes();
+                              }   
                               text[i] = (number_text.getDate()-1) +" "+_('Days')+" " + hour+":"+minutes+" H ";
 
                             }else{
@@ -567,10 +595,14 @@
 
                                 duration[i]= (number_text*0.3)+4;
                                 number_text = new Date(sum_date);  
-                                var hour = (number_text.getHours()-1);      
-                                if (hour < 10){ hour = "0"+(number_text.getHours()-1)} 
-                                var minutes = number_text.getMinutes();
-                                if (minutes < 10){ minutes = "0"+number_text.getMinutes()}     
+                                hour = (number_text.getHours()-1);      
+                                if (hour < 10){ 
+                                  hour = "0"+(number_text.getHours()-1);
+                                } 
+                                minutes = number_text.getMinutes();
+                                if (minutes < 10){ 
+                                  minutes = "0" +number_text.getMinutes();
+                                }     
                                 text[i] = hour+":"+minutes+" H ";
 
                               //Minutes
@@ -581,10 +613,14 @@
                                 if(number_text == 0){ number_text = 1;}
                                 duration[i] = 3;
                                 number_text = new Date(sum_date);    
-                                var minutes = number_text.getMinutes();
-                                if (minutes < 10){ minutes = "0"+number_text.getMinutes()}
+                                minutes = number_text.getMinutes();
+                                if (minutes < 10){ 
+                                  minutes = "0"+number_text.getMinutes();
+                                }
                                 var seconds = number_text.getSeconds();      
-                                if (seconds < 10){ seconds = "0"+number_text.getSeconds()}                
+                                if (seconds < 10){ 
+                                  seconds = "0"+number_text.getSeconds();
+                                }                
                                 text[i] = minutes+":"+ seconds +" Min ";
 
                               }
@@ -633,7 +669,7 @@
             }
 
             //create links
-            var i=0;
+            i=0;
             var object_link = [];
             var source;
             while (i < res.data.length){
@@ -655,5 +691,4 @@
     }
     );
     return container;    
-}
-);
+});
