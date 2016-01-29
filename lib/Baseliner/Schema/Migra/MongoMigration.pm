@@ -201,7 +201,7 @@ sub topic_categories_to_rules {
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
                 $attributes->{key} = 'fieldlet.ci_grid';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'){
-                $attributes->{key} = 'fieldlet.milestones';
+                $attributes->{key} = 'fieldlet.grid_editor';
             }else{
                 $attributes->{key} = $registers->{$reg_key};
             }
