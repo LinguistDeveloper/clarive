@@ -26,25 +26,34 @@
               columnWidth: .5, 
               bodyStyle: 'background:transparent;',
               items: [
-                new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'donut', data: [
-                    ['pie', _('Pie')],
-                    ['donut', _('Donut')],
-                    ['bar', _('Bar')]
-                  ] 
-                }),
                 new Baseliner.ComboSingle({ forceSelection: false, allowBlank: false, fieldLabel: _('Select or type the grouping field'), editable: true, name: 'group_by', value: data.group_by || 'category.name', data: [
                     ['category.name'],
                     ['category_status.name'],
                     ['created_by'],
                     ['modified_by']
                   ] 
+                }),
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('Number field to display'), name: 'numberfield_group', value: data.numberfield_group || ''},
+                new Baseliner.ComboDouble({ fieldLabel: _('Agregate display field by...'), name:'result_type', value: data.result_type || 'count', data: [
+                    ['count', _('Count')],
+                    ['avg', _('Average')],
+                    ['sum', _('Sum Total')],
+                    ['min', _('MIN')],
+                    ['max', _('MAX')]
+                  ]
                 })
               ]
             },
-            { layout:'form', 
-              columnWidth: .5, 
+            { layout:'form',
+              columnWidth: .5,
               bodyStyle: 'background:transparent;',
               items: [
+                new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'donut', data: [
+                    ['pie', _('Pie')],
+                    ['donut', _('Donut')],
+                    ['bar', _('Bar')]
+                  ]
+                }),
                 { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5}
               ]
             }

@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-
 use lib 't/lib';
 
 use Test::More;
@@ -13,8 +12,8 @@ use TestSetup;
 
 use Clarive::ci;
 use Clarive::mdb;
-use Baseliner::Controller::Dashboard;
 use Class::Date;
+use Baseliner::Controller::Dashboard;
 
 our $SECS_IN_DAY = 3600 * 24;
 
@@ -499,6 +498,49 @@ subtest 'list_topics: sorts topics' => sub {
 
     is $data->[0]->{title}, 'My Topic';
     is $data->[1]->{title}, 'My Topic2';
+};
+
+subtest 'topics_by_field: counts topics by status' => sub {
+    _setup();
+
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic', status => $status_new);
+    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2', status => $status_in_progress);
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => { group_by => 'topics_by_status'} } );
+
+    $controller->topics_by_field($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'success'     => \1,
+            'topics_list' => {
+                'New'         => [ ignore() ],
+                'In Progress' => [ ignore() ]
+            },
+            'data' => [ [ 'In Progress', 1 ], [ 'New', 1 ] ],
+            'colors' => {
+                'New'         => undef,
+                'In Progress' => undef
+            }
+        }
+      };
 };
 
 sub _build_c {
