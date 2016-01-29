@@ -157,6 +157,23 @@ msgstr "Datos de Registro"
     is $text, qq{"" : "",\n"Site Information" : "Datos de Registro"};
 };
 
+subtest 'validates po files' => sub {
+    my $root = "lib/Baseliner/I18N";
+
+    opendir my $dir, $root or die $!;
+    my @files = readdir $dir;
+    closedir $dir;
+
+    foreach my $file (@files) {
+        next unless $file =~ m/\.po$/;
+
+        my $output = `msgfmt -c $root/$file`;
+
+        unlike $output, qr/fatal errors/;
+
+    }    
+};
+
 done_testing;
 
 sub _write_file {
