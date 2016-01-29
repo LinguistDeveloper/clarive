@@ -8,7 +8,7 @@ use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -124,6 +124,11 @@ subtest '_to_camel_case: camelize strings' => sub {
     is _to_camel_case('foo_bar_'), 'fooBar_';
     is _to_camel_case('_foo_bar'), '_fooBar';
     is _to_camel_case('____foo_____bar____'), '_fooBar_';
+};
+
+subtest 'parse_vars: parses vars' => sub {
+    is parse_vars('foo'), 'foo';
+    is parse_vars('${foo}', {foo => 'bar'}), 'bar';
 };
 
 done_testing;
