@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Try::Tiny;
 use v5.10;
 use File::Copy ();
+use GD::Image;
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
@@ -1100,6 +1101,19 @@ sub avatar_upload : Local {
         _debug "Avatar file=$avatar";
 
         File::Copy::copy( $fh, "$avatar" ) or _fail "Error saving uploaded avatar: $!";
+
+        my $image = GD::Image->new("$avatar") or _fail "Error initializing GD object: $!";
+
+        # TODO: this probably should be configurable in global config
+        my $width  = 32;
+        my $height = 32;
+
+        my $image_resized = GD::Image->new( $width, $height );
+        $image_resized->copyResampled( $image, 0, 0, 0, 0, $width, $height, $image->width, $image->height );
+
+        open my $fh, '>', "$avatar" or _fail "Error resizing avatar: $!";
+        print $fh $image_resized->png;
+        close $fh;
 
         $c->stash->{json} =
           { success => \1, msg => _loc('Changed user avatar') };

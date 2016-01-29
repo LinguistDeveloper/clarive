@@ -55,7 +55,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             var uploader = new qq.FileUploader({
                 element: upload.el.dom,
                 action: '/user/avatar_upload/' + avatar_username,
-                allowedExtensions: ['png'],
+                allowedExtensions: ['png', 'jpg', 'jpeg', 'gif'],
                 template: '<div class="qq-uploader">' + 
                     '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
                     '<div class="qq-upload-button">' + _('Upload File') + '</div>' +

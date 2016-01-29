@@ -292,16 +292,12 @@ subtest 'avatar_upload: returns an error when upload fails' => sub {
       };
 };
 
-subtest 'avatar_upload: replaces avatar with existing one' => sub {
+subtest 'avatar_upload: saves avatar' => sub {
     _setup();
 
     my $tempdir = tempdir();
 
-    _dir("$tempdir/root/identicon")->mkpath;
-
-    TestUtils->write_file( "HELLO", "$tempdir/some-file.png" );
-
-    open my $fh, '<', "$tempdir/some-file.png";
+    open my $fh, '<', 'root/static/images/icons/user.png';
 
     my $c = _build_c( username => 'root', path_to => $tempdir, req => { body => $fh } );
 
@@ -335,10 +331,7 @@ subtest 'avatar_upload: uploads avatar for another when root' => sub {
 
     my $tempdir = tempdir();
 
-    _dir("$tempdir/root/identicon")->mkpath;
-    TestUtils->write_file( "HELLO", "$tempdir/some-file.png" );
-
-    open my $fh, '<', "$tempdir/some-file.png";
+    open my $fh, '<', 'root/static/images/icons/user.png';
 
     my $c = _build_c( username => 'root', path_to => $tempdir, req => { body => $fh } );
 
