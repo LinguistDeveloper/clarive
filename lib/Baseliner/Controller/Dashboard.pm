@@ -163,8 +163,8 @@ sub user_dashboards {
     my $where = {};
     my @dashboard_ids = ($user_ci->default_dashboard->{dashboard}) || ();
 
-    if ( !Baseliner->model('Permissions')->is_root( $username ) ) {
-        my @roles = map { $_->{id} } Baseliner->model('Permissions')->user_roles( $username );
+    if ( !Baseliner::Model::Permissions->new->is_root( $username ) ) {
+        my @roles = map { $_->{id} } Baseliner::Model::Permissions->new->user_roles( $username );
         $where = { id => mdb->in(@roles) };
         push @dashboard_ids, map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
 
@@ -193,7 +193,7 @@ sub user_dashboards {
 
 sub list_jobs: Local { 
     my ( $self, $c ) = @_;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $p = $c->req->params;
 
     my $id_project = $p->{project_id};
@@ -389,7 +389,7 @@ sub topics_by_category: Local {
 
     my $where = $condition;
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     if ( $statuses ) {
         if ( $not_in_status ) {
@@ -399,11 +399,11 @@ sub topics_by_category: Local {
         }
     }
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
     if ( $categories ) {
         use Array::Utils qw(:all);
@@ -413,7 +413,7 @@ sub topics_by_category: Local {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
@@ -460,21 +460,19 @@ sub topics_by_category: Local {
     $c->forward('View::JSON'); 
 }
 
-sub topics_by_field: Local {
+sub topics_by_field : Local {
     my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
 
     my (@topics_by_category, $colors, @data );
-    my $group_threshold = $p->{group_threshold};
-    my $group_by = $p->{group_by};
+    my $group_threshold = $p->{group_threshold} // 5;
+    my $group_by = $p->{group_by} or _fail 'group_by required';
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
     my $numberfield_group = $p->{numberfield_group};
-    my $result_type = $p->{result_type};
-
-    my $id_project = $p->{project_id};
-    my $topic_mid = $p->{topic_mid};
+    my $result_type = $p->{result_type} // 'count';
 
     my $condition = {};
 
@@ -501,11 +499,11 @@ sub topics_by_field: Local {
         }
     }
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
     if ( $categories ) {
         use Array::Utils qw(:all);
@@ -515,21 +513,20 @@ sub topics_by_field: Local {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
     try {
-        @topics_by_category = $self->data_to_aggreate(where => $where,
+        @topics_by_category = $self->_data_to_aggregate(where => $where,
             numberfield_group => $numberfield_group,
             result_type => $result_type,
             unwind => $group_by,
             group_by => $group_by
             );
     } catch {
-        @topics_by_category = $self->data_to_aggreate(where => $where,
+        @topics_by_category = $self->_data_to_aggregate(where => $where,
             numberfield_group => $numberfield_group,
             result_type => $result_type,
             group_by => $group_by
@@ -540,7 +537,6 @@ sub topics_by_field: Local {
     map { $total += $_->{total} } @topics_by_category;
     my $others = 0;
     my @other_topics = ();
-    my $ci_colors = cache->get('ci::colors');
 
     foreach my $topic (@topics_by_category){
 
@@ -575,14 +571,6 @@ sub topics_by_field: Local {
             $color = $topic->{category_color};
         } elsif ( $group_by eq 'category_status.name' ) {
             $color = $topic->{status_color};
-        } else {
-            if ( $ci_colors->{$name} ) {
-                # $color = $ci_colors->{$name};
-            } else {
-                # $color = sprintf "#%06X", rand(0xffffff);
-                # $ci_colors->{$name} = $color;
-                # cache->set('ci::colors',$ci_colors);
-            }
         }
         $colors->{$name} = $color;
     }
@@ -626,11 +614,11 @@ sub topics_by_status: Local {
         }
     }
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
     if ( $categories ) {
         use Array::Utils qw(:all);
@@ -640,7 +628,7 @@ sub topics_by_status: Local {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
@@ -723,11 +711,11 @@ sub topics_by_date: Local {
         }
     }
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
     if ( _array($categories) ) {
         use Array::Utils qw(:all);
@@ -738,7 +726,7 @@ sub topics_by_date: Local {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     my $date_end = Class::Date->now();
@@ -765,7 +753,7 @@ sub topics_by_date: Local {
         $where->{$date_field} = {'$lte' => "$until"};        
     }
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid ); 
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid ); 
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
@@ -908,7 +896,7 @@ sub roadmap : Local {
     my %cats = map{ $$_{id}=>$_ } mdb->category->find({ id=>mdb->in($categories) })->fields({ workflow=>0, fieldlets=>0 })->all;
     my $where = { 'category.id'=>mdb->in(keys %cats), %$condition };
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
     my %master_cal;
@@ -1034,11 +1022,11 @@ sub gauge_data {
         }
     }
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
     if ( _array($categories) ) {
         use Array::Utils qw(:all);
@@ -1049,7 +1037,7 @@ sub gauge_data {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     my $date_condition = 'created_on';
@@ -1076,7 +1064,7 @@ sub gauge_data {
     my $rs_topics;
     my $field_mode = 0;
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     if ( $numeric_field ) {
         $field_mode = 1;
@@ -1283,7 +1271,7 @@ sub topics_burndown : Local {
     my $date_field = $p->{date_field};
     my $categories = $p->{categories};
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $where = {};
 
     my $id_project = $p->{project_id};
@@ -1292,7 +1280,7 @@ sub topics_burndown : Local {
 
     my @user_categories
         = map { $_->{id}; }
-        $c->model('Topic')
+        Baseliner::Model::Topic->new
         ->get_categories_permissions( username => $username, type => 'view' );
 
     if ( _array($categories) ) {
@@ -1303,7 +1291,7 @@ sub topics_burndown : Local {
 
     my $is_root = $perm->is_root($username);
     if ( $username && !$is_root ) {
-        Baseliner->model('Permissions')
+        Baseliner::Model::Permissions->new
             ->build_project_security( $where, $username, $is_root,
             @user_categories );
     }
@@ -1315,7 +1303,7 @@ sub topics_burndown : Local {
         mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
         ->fields( { mid => 1 } )->all;
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my $remaining_backlog = mdb->topic->find(
         {   'category.id' => mdb->in(@user_categories),
@@ -1405,7 +1393,7 @@ sub topics_period_burndown : Local {
     my $categories = $p->{categories};
     my $group = $p->{group} // 'day';
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $where = {};
 
     my $id_project = $p->{project_id};
@@ -1414,7 +1402,7 @@ sub topics_period_burndown : Local {
 
     my @user_categories
         = map { $_->{id}; }
-        $c->model('Topic')
+        Baseliner::Model::Topic->new
         ->get_categories_permissions( username => $username, type => 'view' );
 
     if ( _array($categories) ) {
@@ -1425,14 +1413,14 @@ sub topics_period_burndown : Local {
 
     my $is_root = $perm->is_root($username);
     if ( $username && !$is_root ) {
-        Baseliner->model('Permissions')
+        Baseliner::Model::Permissions->new
             ->build_project_security( $where, $username, $is_root,
             @user_categories );
     } else {
         $where->{category_id} = mdb->in(@user_categories);
     }
 
-    model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my %dates;
 
@@ -1719,7 +1707,7 @@ sub viewjobs : Local {
 
 sub list_pending_jobs: Private{
     my ( $self, $c, $dashboard_id, $params ) = @_;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     #######################################################################################################
     #CONFIGURATION DASHLET
@@ -1791,7 +1779,7 @@ sub list_filtered_topics_old: Private{
     
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username };
-    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = Baseliner::Model::Topic->new->topics_for_user( $p );
     $c->stash->{topics} = \@rows ;
 }
 
@@ -1830,7 +1818,7 @@ sub list_filtered_topics: Private{
         $p->{categories} = \@categories_ids;
     }
 
-    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = Baseliner::Model::Topic->new->topics_for_user( $p );
     $c->stash->{filtered_topics} = \@rows ;
 }
 
@@ -1870,7 +1858,7 @@ sub list_releases: Private{
         $p->{categories} = \@categories_ids;
     }
 
-    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = Baseliner::Model::Topic->new->topics_for_user( $p );
     $c->stash->{list_releases} = \@rows ;
 }
 
@@ -1906,7 +1894,7 @@ sub list_my_topics: Private{
 
     $p->{assigned_to_me} = 1;
 
-    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = Baseliner::Model::Topic->new->topics_for_user( $p );
     $c->stash->{my_topics} = \@rows ;
 }
 
@@ -1918,16 +1906,16 @@ sub topics_open_by_category: Local{
 
     my $where = {};
     my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
 
     my @user_categories =  map {
                 $_->{id};
-            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+            } Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
@@ -1968,7 +1956,7 @@ sub list_status_changed: Local{
         ts          => { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
     };
     
-    #my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    #my @user_categories =  map { $_->{id} } Baseliner::Model::Topic->new->get_categories_permissions( username => $c->username, type => 'view' );
     #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
     
     my %my_topics;
@@ -2001,9 +1989,10 @@ sub list_status_changed: Local{
     $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
 };
 
-sub data_to_aggreate {
+sub _data_to_aggregate {
     my $self = shift;
     my (%params) = @_;
+
     my $result = {'$sum' => 1 };
 
     my $total;
