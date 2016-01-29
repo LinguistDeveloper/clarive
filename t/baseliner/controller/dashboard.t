@@ -500,7 +500,7 @@ subtest 'list_topics: sorts topics' => sub {
     is $data->[1]->{title}, 'My Topic2';
 };
 
-subtest 'topics_by_field: 123' => sub {
+subtest 'topics_by_field: counts topics by status' => sub {
     _setup();
 
     my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -522,7 +522,7 @@ subtest 'topics_by_field: 123' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c( username => 'root', req => { params => { group_by => 'topics_by_status'} } );
+    my $c = _build_c( username => $developer->username, req => { params => { group_by => 'topics_by_status'} } );
 
     $controller->topics_by_field($c);
 

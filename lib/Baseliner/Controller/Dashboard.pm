@@ -1993,28 +1993,40 @@ sub _data_to_aggregate {
     my $self = shift;
     my (%params) = @_;
 
-    my $result = {'$sum' => 1 };
+    my $group_by          = $params{group_by};
+    my $unwind            = $params{unwind};
+    my $where             = $params{where};
+    my $result_type       = $params{result_type};
+    my $numberfield_group = $params{numberfield_group};
 
-    my $total;
-    if ($params{result_type} eq 'count' || !$params{numberfield_group}){
-        $total = {'$sum' => 1};
-    }else {
-        $params{where}->{$params{numberfield_group}} = {'$exists' => 1, '$ne' => undef, '$ne' => ''};
-        $total = {'$'.$params{result_type} => '$'.$params{numberfield_group}};
+    my $result = { '$sum' => 1 };
+
+    my $total_query;
+    if ( $result_type eq 'count' || !$numberfield_group ) {
+        $total_query = { '$sum' => 1 };
     }
-    my $aggregate_query =  [{ '$match' => $params{where} },
-        $params{unwind} ? ( { '$unwind' => $params{unwind}  } ) : (),
-        { '$group' => {
-            _id => '$'.$params{group_by},
-            'field' => {'$max' => '$'.$params{group_by}},
-            'category_color' => {'$max' => '$category.color'},
-            'status_color' => {'$max' => '$category_status.color'},
-            'total' => $total,
-            'topics_list' => { '$push' => '$mid'}
-          }
+    else {
+        $where->{$numberfield_group} = { '$exists' => 1, '$ne' => undef, '$ne' => '' };
+        $total_query = { '$' . $result_type => '$' . $numberfield_group };
+    }
+
+    my $aggregate_query = [
+        { '$match' => $where },
+        $unwind ? ( { '$unwind' => $unwind } ) : (),
+        {
+            '$group' => {
+                _id              => '$' . $group_by,
+                'field'          => { '$max' => '$' . $group_by },
+                'category_color' => { '$max' => '$category.color' },
+                'status_color'   => { '$max' => '$category_status.color' },
+                'total'          => $total_query,
+                'topics_list'    => { '$push' => '$mid' }
+            }
         },
-        { '$sort' => { total => -1}}];
-    return _array(mdb->topic->aggregate($aggregate_query));
+        { '$sort' => { total => -1 } }
+    ];
+
+    return _array( mdb->topic->aggregate($aggregate_query) );
 }
 
 no Moose;
