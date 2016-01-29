@@ -1,14 +1,15 @@
 package Baseliner::Controller::User;
 use Moose;
+BEGIN { extends 'Catalyst::Controller' }
 
 use Try::Tiny;
 use v5.10;
+use File::Copy ();
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
 use Baseliner::Sugar;
 
-BEGIN { extends 'Catalyst::Controller' }
 use experimental 'autoderef', 'switch';
 
 register 'config.user.global' => {
@@ -1076,33 +1077,44 @@ sub avatar_refresh : Local {
 
 sub avatar_upload : Local {
     my ( $self, $c, $username ) = @_;
-    my $p           = $c->req->params;
-    my $filename    = $p->{qqfile};
-    my ($extension) = $filename =~ /\.(\S+)$/;
-    $extension //= '';
-    my $f = _file( $c->req->body );
-    _log "Uploading avatar " . $filename;
-    if ( $username ne $c->username && !$c->has_action('action.admin.users') )
-    {
+
+    my $p  = $c->req->params;
+    my $fh = $c->req->body;
+
+    $username //= $c->username;
+
+    _log "Uploading avatar";
+
+    if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
         _fail _loc
-            'Cannot change avatar for user %1: user %2 not administrator',
-            $username, $c->username;
+          'Cannot change avatar for user %1: user %2 not administrator',
+          $username, $c->username;
     }
+
     try {
-        require File::Copy;
-        my $avatar
-            = _file( $c->path_to("/root/identicon"), $username . '.png' );
+        my $dir = _dir( $c->path_to("/root/identicon") );
+        $dir->mkpath;
+
+        my $avatar = _file( $dir, $username . '.png' );
+
         _debug "Avatar file=$avatar";
-        File::Copy::copy( "$f", "$avatar" );
-        $c->stash->{json}
-            = { success => \1, msg => _loc('Changed user avatar') };
+
+        File::Copy::copy( $fh, "$avatar" ) or _fail "Error saving uploaded avatar: $!";
+
+        $c->stash->{json} =
+          { success => \1, msg => _loc('Changed user avatar') };
     }
     catch {
         my $err = shift;
+
         _error "Error uploading avatar: " . $err;
+
         $c->stash->{json} = { success => \0, msg => $err };
     };
+
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub _user_has_action {

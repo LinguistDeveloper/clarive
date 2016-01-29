@@ -15,9 +15,10 @@ use TestSetup;
 use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
-use Baseliner::Controller::User;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_file _dir);
+
+use_ok 'Baseliner::Controller::User';
 
 subtest
     'infoactions: non admin user is not allowed to query other users action'
@@ -145,7 +146,7 @@ subtest 'avatar: returns avatar if exists' => sub {
     my $tempdir = tempdir();
 
     _dir("$tempdir/root/identicon")->mkpath;
-    TestUtils->write_file("HELLO", "$tempdir/root/identicon/root.png");
+    TestUtils->write_file( "HELLO", "$tempdir/root/identicon/root.png" );
 
     my $c = _build_c( username => 'root', path_to => $tempdir );
     $c = Test::MonkeyMock->new($c);
@@ -192,7 +193,7 @@ subtest 'avatar_refresh: removes existing avatar' => sub {
     my $tempdir = tempdir();
 
     _dir("$tempdir/root/identicon")->mkpath;
-    TestUtils->write_file("HELLO", "$tempdir/root/identicon/root.png");
+    TestUtils->write_file( "HELLO", "$tempdir/root/identicon/root.png" );
 
     my $c = _build_c( username => 'root', path_to => $tempdir );
 
@@ -200,7 +201,7 @@ subtest 'avatar_refresh: removes existing avatar' => sub {
     $controller->avatar_refresh($c);
 
     ok !-e "$tempdir/root/identicon/root.png";
-    cmp_deeply $c->stash, {json => {success => \1, msg => 'Avatar refreshed'}};
+    cmp_deeply $c->stash, { json => { success => \1, msg => 'Avatar refreshed' } };
 };
 
 subtest 'avatar_refresh: shows error when no avatar was present' => sub {
@@ -220,7 +221,7 @@ subtest 'avatar_refresh: shows error when no avatar was present' => sub {
 subtest 'avatar_refresh: throws when refreshing avatar for another user' => sub {
     _setup();
 
-    my $c = _build_c( username => 'test');
+    my $c = _build_c( username => 'test' );
 
     my $controller = _build_controller();
 
@@ -234,9 +235,9 @@ subtest 'avatar_refresh: removes avatar for another when root' => sub {
     my $tempdir = tempdir();
 
     _dir("$tempdir/root/identicon")->mkpath;
-    TestUtils->write_file("HELLO", "$tempdir/root/identicon/otheruser.png");
+    TestUtils->write_file( "HELLO", "$tempdir/root/identicon/otheruser.png" );
 
-    my $c = _build_c( username => 'root', path_to => $tempdir);
+    my $c = _build_c( username => 'root', path_to => $tempdir );
 
     my $controller = _build_controller();
 
@@ -261,15 +262,120 @@ subtest 'avatar_refresh: removes avatar for another user has admin action' => su
     my $tempdir = tempdir();
 
     _dir("$tempdir/root/identicon")->mkpath;
-    TestUtils->write_file("HELLO", "$tempdir/root/identicon/otheruser.png");
+    TestUtils->write_file( "HELLO", "$tempdir/root/identicon/otheruser.png" );
 
-    my $c = _build_c( username => $user->username, path_to => $tempdir);
+    my $c = _build_c( username => $user->username, path_to => $tempdir );
 
     my $controller = _build_controller();
 
     $controller->avatar_refresh( $c, 'otheruser' );
 
     ok !-e "$tempdir/root/identicon/otheruser.png";
+};
+
+subtest 'avatar_upload: returns an error when upload fails' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $c = _build_c( username => 'root', path_to => $tempdir, req => { body => 'wrong file handle' } );
+
+    my $controller = _build_controller();
+    $controller->avatar_upload($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => re(qr/Error saving uploaded avatar: /),
+            'success' => \0
+        }
+      };
+};
+
+subtest 'avatar_upload: replaces avatar with existing one' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    _dir("$tempdir/root/identicon")->mkpath;
+
+    TestUtils->write_file( "HELLO", "$tempdir/some-file.png" );
+
+    open my $fh, '<', "$tempdir/some-file.png";
+
+    my $c = _build_c( username => 'root', path_to => $tempdir, req => { body => $fh } );
+
+    my $controller = _build_controller();
+    $controller->avatar_upload($c);
+
+    ok -e "$tempdir/root/identicon/root.png";
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'Changed user avatar',
+            'success' => \1
+        }
+      };
+};
+
+subtest 'avatar_upload: throws when uploading avatar for another user' => sub {
+    _setup();
+
+    my $c = _build_c( username => 'test' );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->avatar_upload( $c, 'otheruser' ) },
+      qr/Cannot change avatar for user otheruser: user test not administrator/;
+};
+
+subtest 'avatar_upload: uploads avatar for another when root' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    _dir("$tempdir/root/identicon")->mkpath;
+    TestUtils->write_file( "HELLO", "$tempdir/some-file.png" );
+
+    open my $fh, '<', "$tempdir/some-file.png";
+
+    my $c = _build_c( username => 'root', path_to => $tempdir, req => { body => $fh } );
+
+    my $controller = _build_controller();
+
+    $controller->avatar_upload( $c, 'otheruser' );
+
+    ok -e "$tempdir/root/identicon/otheruser.png";
+};
+
+subtest 'avatar_upload: upload avatar for another user has admin action' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.admin.users',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+
+    my $tempdir = tempdir();
+
+    _dir("$tempdir/root/identicon")->mkpath;
+    TestUtils->write_file( "HELLO", "$tempdir/some-file.png" );
+
+    open my $fh, '<', "$tempdir/some-file.png";
+
+    my $c = _build_c( username => $user->username, path_to => $tempdir, req => { body => $fh } );
+
+    my $controller = _build_controller();
+
+    $controller->avatar_upload( $c, 'otheruser' );
+
+    ok -e "$tempdir/root/identicon/otheruser.png";
 };
 
 sub _build_c {
