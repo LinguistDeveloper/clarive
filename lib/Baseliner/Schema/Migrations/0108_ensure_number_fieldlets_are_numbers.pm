@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0106_ensure_ci_seq_are_numeric;
+package Baseliner::Schema::Migrations::0108_ensure_ci_seq_are_numeric;
 use Moose;
 use Baseliner::Utils;
 
