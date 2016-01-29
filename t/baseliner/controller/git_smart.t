@@ -4,6 +4,8 @@ use lib 't/lib';
 
 use Test::More;
 use Test::MonkeyMock;
+use Test::Deep;
+use Test::TempDir::Tiny;
 use TestEnv;
 use TestSetup;
 use TestUtils ':catalyst';
@@ -105,14 +107,19 @@ subtest 'git: creates correct event on first push' => sub {
     is @events, 1;
 
     my $event = $events[0];
-    my $data  = _load $event->{event_data};
+    my $event_data  = _load $event->{event_data};
 
-    is $data->{branch},    'master';
-    is $data->{username},  'foo';
-    like $data->{message}, qr/update/;
-    like $data->{diff},    qr/\+\+\+ b\/README/;
-    is $data->{ref},       'refs/heads/master';
-    is $data->{sha},       $sha;
+    cmp_deeply $event_data,
+      {
+        branch     => 'master',
+        username   => 'foo',
+        message    => re(qr/update/),
+        diff       => re(qr/\+\+\+ b\/README/),
+        ref        => 'refs/heads/master',
+        sha        => $sha,
+        repository => 'Repo',
+        rules_exec => ignore(),
+      };
 };
 
 subtest 'git: creates correct event on push' => sub {
@@ -535,6 +542,60 @@ subtest 'git: does not create rev ci when exists' => sub {
     is @rev_cis, 1;
 };
 
+subtest 'git: calls pre-online event with correct params' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $sha      = TestGit->commit($repo->repo_dir);
+
+    TestUtils->create_ci( 'GitRevision', sha => $sha );
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => {
+            params     => {},
+            user_agent => 'git/2.8.6',
+            body       => $fh
+        },
+        stash => $stash
+    );
+
+    my $tempdir = tempdir();
+
+    _create_run_rule(
+        rule_when => 'pre-online',
+        code      => qq{
+            use Data::Dumper;
+            open my \$fh, '>', '$tempdir/file'; print \$fh Dumper(\$stash);
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my $event_data = do { local $/; open my $fh, '<', "$tempdir/file"; <$fh> };
+    $event_data =~ s{\$VAR1 = }{};
+    $event_data = eval $event_data;
+
+    is $event_data->{branch},     'master';
+    is $event_data->{username},   'foo';
+    is $event_data->{ref},        'refs/heads/master';
+    is $event_data->{sha},        $sha;
+    is $event_data->{repository}, 'Repo';
+};
+
 subtest 'git: if pre-online event fails return an error' => sub {
     _setup();
 
@@ -944,7 +1005,7 @@ sub _create_run_rule {
 
     my $code = delete $params{code} // '';
 
-    _create_rule(
+    return _create_rule(
         rule_tree => [
             {
                 "attributes" => {
@@ -967,7 +1028,7 @@ sub _create_rule {
         $rule_tree = JSON::encode_json($rule_tree);
     }
 
-    mdb->rule->insert(
+    return mdb->rule->insert(
         {
             id            => '1',
             "rule_active" => "1",
@@ -990,6 +1051,13 @@ sub _setup {
     );
 
     TestUtils->cleanup_cis;
+
+    my @rules = mdb->rule->find->all;
+
+    foreach my $rule (@rules) {
+        my $rule = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
+        $rule->unload;
+    }
 
     mdb->role->drop;
     mdb->rule->drop;

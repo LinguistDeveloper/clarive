@@ -106,7 +106,7 @@ sub _run_pre_event {
         event_new
           'event.repository.update' => {
             username   => $c->username,
-            repository => $repo,
+            repository => $repo->name,
             branch     => $ref_short,
             ref        => $ref,
             sha        => $sha,
@@ -151,7 +151,7 @@ sub _run_post_event {
 
         event_new 'event.repository.update' => {
             username   => $c->username,
-            repository => $repo,
+            repository => $repo->name,
             message    => $title,
             diff       => $diff,
             branch     => $ref_short,
