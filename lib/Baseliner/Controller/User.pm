@@ -3,15 +3,13 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 
 use Try::Tiny;
-use v5.10;
 use File::Copy ();
 use GD::Image;
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
-use Baseliner::Sugar;
 
-use experimental 'autoderef', 'switch';
+use experimental 'switch';
 
 register 'config.user.global' => {
     preference => 1,
@@ -1197,116 +1195,6 @@ sub duplicate : Local {
     };
 
     $c->forward('View::JSON');
-}
-
-sub dump_users {
-    use warnings;
-    no warnings;
-
-    my $projects = {};
-
-    #Cargamos los cis con role project (esto habría que hacerlo dinámico)
-    my @colls = map { Util->to_base_class($_) }
-        packages_that_do('Baseliner::Role::CI::Project');
-    map {
-        map { $projects->{ $_->mid } = $_->{name} }
-            ci->search_cis( collection => $_ )
-    } @colls;
-
-    #carga el hash de roles
-    my $roles = {};
-    map { $roles->{ $_->{id} } = $_->{role} } mdb->role->find->all;
-
-    #Bucle por usuarios
-    my @usuarios = map { $_->{username} }
-        ci->user->find()->fields( { username => 1 } )->all;
-    my $security_names;
-
-    for my $username (@usuarios) {
-
-        my $security
-            = Baseliner->model('Permissions')
-            ->user_projects_ids_with_collection(
-            username  => $username,
-            with_role => 1
-            );
-
-        for my $role ( keys %{$security} ) {
-            for my $coll ( keys %{ $security->{$role} } ) {
-                my @projs;
-                for my $proj ( keys %{ $security->{$role}->{$coll} } ) {
-                    push @projs, $projects->{$proj} . " ($proj)";
-                }
-                $security_names->{$username}
-                    ->{ $roles->{$role} . " ($role)" }->{$coll} = \@projs;
-            }
-        }
-    }
-
-    $security_names;
-}
-
-sub load_users {
-    my ( $self, $users ) = @_;
-
-    #my $users = users_file_example();
-
-    for my $username ( keys %$users ) {
-        if ( !Baseliner->model('Permissions')->is_root($username) ) {
-            _log $username;
-            my $ci_user_ps = ci->user->find( { username => $username } )
-                ->next->{project_security};
-            $ci_user_ps = undef;
-            my $user = $users->{$username};
-            for my $rolename ( keys %{$user} ) {
-                my ($id_role) = $rolename =~ /^.*\((.*)\)$/;
-                my $role = $user->{$rolename};
-                for my $collectionname ( keys %{$role} ) {
-                    my $collection = $role->{$collectionname};
-                    for my $projectname ( _array $collection ) {
-                        my ($id_project) = $projectname =~ /^.*\((.*)\)$/;
-                        push @{ $ci_user_ps->{$id_role}->{$collectionname} },
-                            $id_project;
-                    }
-                }
-            }
-            my $ci = ci->user->search_ci( name => $username );
-            $ci->update( project_security => $ci_user_ps );
-        }
-    }
-}
-
-sub users_file_example {
-    return _load(
-        q{---
-acarrilm:
-  Desarrollador (41):
-    project:
-    - CRM (285)
-  Estimador (61):
-    project:
-    - CRM (285)
-  No OIM (121):
-    project:
-    - Clarive (6859)
-  Responsable de desarrollo (24):
-    project:
-    - CRM (285)
-ecarrion:
-  Desarrollador (41):
-    project:
-    - CRM (285)
-  Estimador (61):
-    project:
-    - CRM (285)
-  No OIM (121):
-    project:
-    - Clarive (6859)
-  Responsable de desarrollo (24):
-    project:
-    - CRM (285)
-}
-    );
 }
 
 sub _build_identicon_generator {
