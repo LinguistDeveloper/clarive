@@ -1050,25 +1050,27 @@ sub avatar : Local {
 
 sub avatar_refresh : Local {
     my ( $self, $c, $username ) = @_;
-    my $p = $c->req->params;
-    if ( $username ne $c->username && !$c->has_action('action.admin.users') )
-    {
+
+    $username ||= $c->username;
+
+    if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
         _fail _loc
-            'Cannot change avatar for user %1: user %2 not administrator',
-            $username, $c->username;
+          'Cannot change avatar for user %1: user %2 not administrator',
+          $username, $c->username;
     }
+
     try {
-        my $avatar
-            = _file( $c->path_to("/root/identicon"), $username . '.png' );
-        unlink $avatar or _fail $!;
-        $c->stash->{json}
-            = { success => \1, msg => _loc('Avatar refreshed') };
+        my $avatar = _file( $c->path_to("/root/identicon"), $username . '.png' );
+        unlink $avatar or _fail "Error removing previous avatar '$avatar': $!";
+        $c->stash->{json} =
+          { success => \1, msg => _loc('Avatar refreshed') };
     }
     catch {
         my $err = shift;
         _error "Error refreshing avatar: " . $err;
         $c->stash->{json} = { success => \0, msg => $err };
     };
+
     $c->forward('View::JSON');
 }
 
@@ -1101,6 +1103,20 @@ sub avatar_upload : Local {
         $c->stash->{json} = { success => \0, msg => $err };
     };
     $c->forward('View::JSON');
+}
+
+sub _user_has_action {
+    my $self = shift;
+    my ( $username, $action ) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    if ( $action =~ /%/ ) {
+        return $permissions->user_has_any_action( action => $action, username => $username );
+    }
+    else {
+        return $permissions->user_has_action( action => $action, username => $username );
+    }
 }
 
 sub duplicate : Local {
