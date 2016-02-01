@@ -2351,6 +2351,17 @@ sub topic_drop : Local {
     $c->forward('View::JSON');
 }
 
+sub list_status_changes : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my @status_changes = Baseliner::Model::Topic->new->status_changes( $p->{mid} );
+
+    $c->stash->{json} = { data => \@status_changes };
+    $c->forward('View::JSON');
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

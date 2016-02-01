@@ -780,6 +780,40 @@ subtest 'build_in_and_nin_query: builds correct condition' => sub {
     is_deeply $model->build_in_and_nin_query( [ 1, 2, 3, '!1', '!2' ] ), { '$in' => [ 1, 2, 3 ], '$nin' => [ 1, 2 ] };
 };
 
+subtest 'status_changes: returns all the status changes' => sub {
+    my $model = _build_model();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $topic_mid = TestSetup->create_topic(
+        status => $status,
+        title  => "Topic"
+    );
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
+    $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => 'user' );
+
+    my $status2 = TestUtils->create_ci( 'status', name => 'Change2', type => 'I' );
+    $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
+
+    my @changes = $model->status_changes($topic_mid);
+
+    is scalar @changes, 2;
+    cmp_deeply $changes[0],
+      {
+        old_status => 'New',
+        status     => 'Change1',
+        username   => 'user',
+        when       => ignore()
+      };
+    cmp_deeply $changes[1],
+      {
+        old_status => 'Change1',
+        status     => 'Change2',
+        username   => 'user',
+        when       => ignore()
+      };
+};
+
 done_testing();
 
 sub _setup {
@@ -794,6 +828,7 @@ sub _setup {
     TestUtils->cleanup_cis;
 
     mdb->event->drop;
+    mdb->activity->drop;
     mdb->rule->drop;
     mdb->role->drop;
     mdb->category->drop;

@@ -20,24 +20,24 @@ var blue = "#0066CC";
 //Create the checkitems to the option menu.
 var general_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_general){general_text=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
 var general_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_general){general_source=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
-var general_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
+var general_statuses_color = new Ext.menu.CheckItem({text: _('Colored state'), checked: false, checkHandler: function(){if(!checked_general){general_color=this.checked;var panel = cardpanel.getLayout().activeItem;general(panel.diagram,panel.overview);}}});
 
 var rol_labels = new Ext.menu.CheckItem({text: _('With Labels'), checked: false, checkHandler: function(){if(!checked_rol){rol_text=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
 var rol_icons = new Ext.menu.CheckItem({text: _('Icons'), checked: false, checkHandler: function(){if(!checked_rol){rol_source=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
-var rol_statuses_color = new Ext.menu.CheckItem({text: _('Color Statuses'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
+var rol_statuses_color = new Ext.menu.CheckItem({text: _('Colored state'), checked: false, checkHandler: function(){if(!checked_rol){rol_color=this.checked;var panel = cardpanel.getLayout().activeItem;rol(panel.diagram,panel.overview);}}});
 
 //Create menus
-var iid = Ext.id();
+iid = Ext.id();
 
 //General Button
-var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, toggleGroup: 'process-'+iid, handler: function(){
+var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.show();
     menu_role.hide();
     cardpanel.getLayout().setActiveItem(general_container);
 }});
 
 //Role Button
-var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, toggleGroup: 'process-'+iid, handler: function(){
+var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.hide();
     menu_role.show();
     cardpanel.getLayout().setActiveItem(role_container);
@@ -62,7 +62,7 @@ var menu_general = new Ext.Button({
         items: [
             general_labels, general_icons, general_statuses_color,
             '-',{
-                text: 'Select All',
+                text: _('Select All'),
                     handler: function() {
                         var bool = true;
                         checked_general=true;
@@ -78,7 +78,7 @@ var menu_general = new Ext.Button({
                         checked_general=false;
                     }
                 },{
-                text: 'Unselect All',
+                text: _('Unselect All'),
                     handler: function() {
                         var bool = false;
                         checked_general=true;
@@ -104,7 +104,7 @@ var menu_role = new Ext.Button({
       items: [
         rol_labels, rol_icons, rol_statuses_color,
         '-',{
-            text: 'Select All',
+            text: _('Select All'),
             handler: function() {
                 var bool = true;
                 checked_rol=true;
@@ -121,7 +121,7 @@ var menu_role = new Ext.Button({
                 }
             },
         {
-            text: 'Unselect All',
+            text: _('Unselect All'),
             handler: function() {
             var bool = false;                      
             checked_rol=true;
@@ -188,7 +188,7 @@ var menu_role = new Ext.Button({
         pn_rol_overview.setPosition(left,0);
     });
 
-    var init_general_overview = function(){
+    init_general_overview = function(){
 
         var go_api = go.GraphObject.make;
  
@@ -207,7 +207,7 @@ var menu_role = new Ext.Button({
         general(diagram,overview);
     };
 
-    var init_role_overview = function(){
+    init_role_overview = function(){
 
         var go_api = go.GraphObject.make;
  
@@ -301,6 +301,12 @@ var menu_role = new Ext.Button({
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
+        	var i = 0;
+        	var j = 0;
+        	var k = 0;
+        	var z = 0;
+        	var equal = 0;
+
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
@@ -318,10 +324,10 @@ var menu_role = new Ext.Button({
             }
 
             //Order data for initial type
-            for(var i=0;i<res.data.length-1;i++){
+            for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
-                     var initial_type = res.data[j].status_type;
-                     var initial_type2 = res.data[j+1].status_type;
+                     initial_type = res.data[j].status_type;
+                     initial_type2 = res.data[j+1].status_type;
                       if(initial_type!= 'I' && initial_type2=='I'){
                             //save the max number in aux
                            aux=res.data[j];
@@ -334,8 +340,8 @@ var menu_role = new Ext.Button({
             }
 
 			//Order data for final type
-            for(var i=0;i<res.data.length-1;i++){
-            	var k = 0;
+            for(i=0; i<res.data.length-1; i++){
+            	k = 0;
             	while (k < res.data[i].statuses_to.length){
 	                 for(j=0;j<res.data.length-1;j++){
 	                     var final_type = res.data[i].statuses_to_type[k];
@@ -355,11 +361,11 @@ var menu_role = new Ext.Button({
 
 
             //In the statuses_to delete the text after to []                 
-            var i=0;
+            i=0;
             while (i < res.data.length){
-                var k = 0;
+                k = 0;
                 while(k < res.data[i].statuses_to.length){
-                  var z = res.data[i].statuses_to[k];
+                  z = res.data[i].statuses_to[k];
                   res.data[i].statuses_to[k] = String(z.split(" [", 1));
                 k++;
                 }
@@ -367,19 +373,19 @@ var menu_role = new Ext.Button({
             }
 
             //In the status_from delete the text after to []  
-            var i=0;     
+            i=0;     
             while (i < res.data.length){
-                var z = res.data[i].status_from;
+                z = res.data[i].status_from;
                 res.data[i].status_from = String(z.split(" [", 1));
               i++;
             }
 
             //In the statuses_to_type delete the text after to []                  
-            var i=0;
+            i=0;
             while (i < res.data.length){
-                var k = 0;
+                k = 0;
                 while(k < res.data[i].statuses_to_type.length){
-                  var z = res.data[i].statuses_to_type[k];
+                  z = res.data[i].statuses_to_type[k];
                   res.data[i].statuses_to_type[k] = String(z.split(" [", 1));
                 k++;
                 }
@@ -390,12 +396,18 @@ var menu_role = new Ext.Button({
             var node_background_color = "#FFFFFF";
             var node_text_color = "#000000";
 
-              var i=0;
+              i=0;
               while (i < res.data.length){
 
                   if(general_color){
                     node_background_color = res.data[i].status_color;
                     node_text_color = change_color(res.data[i].status_color);
+                    if (node_background_color == ''){
+                        node_background_color = "#FFFFFF";
+                    }
+                    if (node_text_color == ''){
+                        node_text_color = "#000000";
+                    }
                   }
                   if (object_node.length==0){
                     if(res.data[i].status_type == "I"){
@@ -404,8 +416,8 @@ var menu_role = new Ext.Button({
                       object_node.push({ "key" : res.data[i].status_from, "color"  : node_background_color, "text_color": node_text_color ,  "figure"  : "RoundedRectangle", group: res.data[i].role});
                     }
                   }else{
-                    var j=0;
-                    var equal = 1;
+                    j=0;
+                    equal = 1;
                     while(j < object_node.length){
 
                       if(object_node[j].key == res.data[i].status_from){
@@ -426,13 +438,19 @@ var menu_role = new Ext.Button({
               i++;
               }
 
-              var i=0;
+              i=0;
               while (i < res.data.length){
-                  var k = 0;
+                  k = 0;
                   while(k < res.data[i].statuses_to.length){
                       if(general_color){
                         node_background_color = res.data[i].status_color;
                         node_text_color = change_color(res.data[i].status_color);
+                        if (node_background_color == ''){
+                            node_background_color = "#FFFFFF";
+                        }
+                        if (node_text_color == ''){
+                            node_text_color = "#000000";
+                        }
                       }
                       if (object_node.length==0){
                         if(res.data[i].statuses_to_type[k] == 'F'){
@@ -444,8 +462,8 @@ var menu_role = new Ext.Button({
                           object_node.push({ "key" : res.data[i].statuses_to[k], "color"  : node_background_color, "text_color": node_text_color, "figure"  : "Ellipse", group: res.data[i].role});
                         }
                       }else{
-                        var j=0;
-                        var equal = 1;
+                        j=0;
+                        equal = 1;
                         while(j < object_node.length){
 
                           if(object_node[j].key == res.data[i].statuses_to[k]){
@@ -576,8 +594,14 @@ var menu_role = new Ext.Button({
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
+        	var i = 0; 
+        	var j = 0;
+        	var k = 0;
+        	var z = 0;
+        	var equal = 0;
+        	
             //Order data for creation date.
-            for(var i=0;i<res.data.length-1;i++){
+            for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
                      var date = new Date(res.data[j].status_time);
                      var date2 = new Date(res.data[j+1].status_time);
@@ -593,10 +617,10 @@ var menu_role = new Ext.Button({
             }
 
             //Order data for initial type
-            for(var i=0;i<res.data.length-1;i++){
+            for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
-                     var initial_type = res.data[j].status_type;
-                     var initial_type2 = res.data[j+1].status_type;
+                     initial_type = res.data[j].status_type;
+                     initial_type2 = res.data[j+1].status_type;
                       if(initial_type!= 'I' && initial_type2=='I'){
                             //save the max number in aux
                            aux=res.data[j];
@@ -609,8 +633,8 @@ var menu_role = new Ext.Button({
             }
 
 			//Order data for final type
-            for(var i=0;i<res.data.length-1;i++){
-              var k = 0;
+            for(i=0;i<res.data.length-1;i++){
+              k = 0;
               while (k < res.data[i].statuses_to.length){
                    for(j=0;j<res.data.length-1;j++){
                        var final_type = res.data[i].statuses_to_type[k];
@@ -629,11 +653,11 @@ var menu_role = new Ext.Button({
             }
 
             //In the statuses_to delete the text after to []                 
-            var i=0;
+            i=0;
             while (i < res.data.length){
-                var k = 0;
+                k = 0;
                 while(k < res.data[i].statuses_to.length){
-                  var z = res.data[i].statuses_to[k];
+                  z = res.data[i].statuses_to[k];
                   res.data[i].statuses_to[k] = String(z.split(" [", 1));
                 k++;
                 }
@@ -641,19 +665,19 @@ var menu_role = new Ext.Button({
             }
 
             //In the status_from delete the text after to []  
-            var i=0;     
+            i=0;     
             while (i < res.data.length){
-                var z = res.data[i].status_from;
+                z = res.data[i].status_from;
                 res.data[i].status_from = String(z.split(" [", 1));
               i++;
             }
 
             //In the statuses_to_type delete the text after to []                  
-            var i=0;
+            i=0;
             while (i < res.data.length){
-                var k = 0;
+                k = 0;
                 while(k < res.data[i].statuses_to_type.length){
-                  var z = res.data[i].statuses_to_type[k];
+                  z = res.data[i].statuses_to_type[k];
                   res.data[i].statuses_to_type[k] = String(z.split(" [", 1));
                 k++;
                 }
@@ -666,14 +690,14 @@ var menu_role = new Ext.Button({
             var node_text_color = "#000000";
 
               //CREATE THE PRINCIPAL NODES FOR CREATE THE GROUPS OF ROLES
-              var i=0;
+              i=0;
               while (i < res.data.length){
 
                   if (object_node.length==0){
                     object_node.push({ "key" : res.data[i].role, "color"  : bluegrad, "figure"  : "RoundedRectangle", isGroup: true });
                   }else{
-                    var j=0;
-                    var equal = 1;
+                    j=0;
+                    equal = 1;
                     while(j < object_node.length){
 
                       if(object_node[j].key == res.data[i].role){
@@ -690,11 +714,17 @@ var menu_role = new Ext.Button({
               i++;
               }
 
-              var i=0;
+              i=0;
               while (i < res.data.length){
                   if(rol_color){
                     node_background_color = res.data[i].status_color;
                     node_text_color = change_color(res.data[i].status_color);
+                    if (node_background_color == ''){
+                        node_background_color = "#FFFFFF";
+                    }
+                    if (node_text_color == ''){
+                        node_text_color = "#000000";
+                    }
                   }
                   if (object_node.length==0){
                     if(res.data[i].status_type == "I"){
@@ -703,8 +733,8 @@ var menu_role = new Ext.Button({
                       object_node.push({ "key" : res.data[i].role+res.data[i].status_from, "text": res.data[i].status_from, "color"  : node_background_color, "text_color": node_text_color,  "figure"  : "RoundedRectangle", group: res.data[i].role});
                     }
                   }else{
-                    var j=0;
-                    var equal = 1;
+                    j=0;
+                    equal = 1;
                     while(j < object_node.length){
 
                       if(object_node[j].key == res.data[i].role+res.data[i].status_from){
@@ -725,13 +755,19 @@ var menu_role = new Ext.Button({
               i++;
               }
 
-              var i=0;
+              i=0;
               while (i < res.data.length){
-                  var k = 0;
+                  k = 0;
                   while(k < res.data[i].statuses_to.length){
                       if(rol_color){
                         node_background_color = res.data[i].status_color;
                         node_text_color = change_color(res.data[i].status_color);
+                        if (node_background_color == ''){
+                            node_background_color = "#FFFFFF";
+                        }
+                        if (node_text_color == ''){
+                            node_text_color = "#000000";
+                        }
                       }
                       if (object_node.length==0){
                         if(res.data[i].statuses_to_type[k] == 'F'){
@@ -743,8 +779,8 @@ var menu_role = new Ext.Button({
                           object_node.push({ "key" : res.data[i].role+res.data[i].statuses_to[k], "text": res.data[i].statuses_to[k], "color"  : node_background_color, "text_color": node_text_color, "figure"  : "Ellipse", group: res.data[i].role});
                         }
                       }else{
-                        var j=0;
-                        var equal = 1;
+                        j=0;
+                        equal = 1;
                         while(j < object_node.length){
 
                           if(object_node[j].key == res.data[i].role+res.data[i].statuses_to[k]){
@@ -772,14 +808,14 @@ var menu_role = new Ext.Button({
             
               var object_link = []; 
               var texto = "";
-              var isource = [];
+              isource = [];
               if(rol_source){
                 isource = ["/static/gojs/static.png","/static/gojs/promote.png","/static/gojs/demote.png"];
               }
-              var i=0;
+              i=0;
               while (i < res.data.length){
 
-                    var j=0;
+                    j=0;
                     while(j < res.data[i].statuses_to.length){
                       if(rol_text){
                         texto = res.data[i].role;
@@ -799,10 +835,10 @@ var menu_role = new Ext.Button({
               }
 
               //Delete duplicate links
-              var i=0;
+              i=0;
               var aux = object_link;
               while (i < object_link.length){
-                var j = 0;
+                j= 0;
                 var count = 0;
                   while (j < object_link.length){
                     if(aux[i].from == object_link[j].from && aux[i].to == object_link[j].to){
@@ -825,9 +861,9 @@ var menu_role = new Ext.Button({
                 i++;
               }
               //Insert text in links
-              var i=0;
+              i=0;
               while (i < object_link.length){
-                var j = 0;
+                j= 0;
                   while (j < object_link.length){
                     if(aux[i].from == object_link[j].from && aux[i].to == object_link[j].to){
                         object_link[j].text = aux[i].text;
@@ -860,22 +896,25 @@ var menu_role = new Ext.Button({
 
     };
 
-    var insert_links = function(res,general_text, general_source){
+    insert_links = function(res,general_text, general_source){
+
       var object_link = [];
       this.res = res;
       this.general_text = general_text;
       this.general_source =  general_source;
       var texto = "";
-      var isource = [];
+      isource = [];
+      var j = 0;
+      var i = 0;
 
       if(general_source){
         isource = ["/static/gojs/static.png","/static/gojs/promote.png","/static/gojs/demote.png"];
       }
 
-      var i=0;
+      i=0;
       while (i < res.data.length){
             //object_link.push({ from: res.data[i].role, to: res.data[i].status_from });
-            var j=0;
+            j=0;
             while(j < res.data[i].statuses_to.length){
               if(general_text){
                 texto = res.data[i].role;
@@ -897,10 +936,10 @@ var menu_role = new Ext.Button({
       }
 
       //Delete duplicate links
-      var i=0;
+      i=0;
       var aux = object_link;
       while (i < object_link.length){
-        var j = 0;
+        j= 0;
         var count = 0;
           while (j < object_link.length){
             if(aux[i].from == object_link[j].from && aux[i].to == object_link[j].to){
@@ -923,9 +962,9 @@ var menu_role = new Ext.Button({
         i++;
       }
       //Insert text in links
-      var i=0;
+      i=0;
       while (i < object_link.length){
-        var j = 0;
+        j= 0;
           while (j < object_link.length){
             if(aux[i].from == object_link[j].from && aux[i].to == object_link[j].to){
                 object_link[j].text = aux[i].text;

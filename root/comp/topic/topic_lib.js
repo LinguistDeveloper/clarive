@@ -950,15 +950,23 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
             
-        self.btn_diagram = new Ext.Toolbar.Button({
+        self.btn_life_cicle = new Ext.Toolbar.Button({
             icon: IC('diagram'),
             cls: 'x-btn-icon',
-            enableToggle: false, 
-            tooltip: _('Open life cicle'),
-            handler: function(){ self.show_diagram() },
+            enableToggle: true, 
+            tooltip: _('Open life cycle'),
+            handler: function(){ self.show_life_cicle() },
             //hidden: self.viewKanban==undefined?true:!self.viewKanban,
-            //allowDepress: false, 
-            toggleGroup: self.toggle_group
+            allowDepress: false, toggleGroup: self.toggle_group
+        });
+
+        self.btn_timeline = new Ext.Toolbar.Button({
+            icon: IC('timeline'),
+            cls: 'x-btn-icon',
+            enableToggle: true, 
+            tooltip: _('Open timeline'),
+            handler: function(){ self.show_timeline() },
+            allowDepress: false, toggleGroup: self.toggle_group
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
@@ -1227,9 +1235,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    // '-',
                     self.btn_change_status,
                     self.btn_docgen,
-                    self.btn_graph,
                     self.btn_kanban,
-                    self.btn_diagram
+                    self.btn_graph,
+                    self.btn_timeline,
+                    self.btn_life_cicle,
                 ]
             });
         } else {
@@ -1253,7 +1262,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
         var win = window.open( url, '_blank' );
     },
-    show_diagram : function(){
+    show_life_cicle : function(){
         var self = this;
 
         Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){
@@ -1271,6 +1280,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 //}
             });
 
+        });
+
+    },
+    show_timeline: function(){
+        var self = this;
+
+        Cla.use(['/static/gojs/go-debug.js'], function(){
+            Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title}, function(res){
+                self.w = new Ext.Panel({
+                    layout: 'card',
+                    activeItem: 0,
+                    items: [res]
+                });
+                
+                //self.on('afterrender', function() {
+                    self.add(self.w);
+                    self.getLayout().setActiveItem( self.w );
+                //}
+            });
         });
 
     },

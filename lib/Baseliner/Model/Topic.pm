@@ -3170,7 +3170,7 @@ sub change_status {
             if( $p{change} ) {
                 _fail( _loc('Id not found: %1', $mid) ) unless $doc;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status 
-                    if $doc->{category_status}{id} != $id_old_status;
+                    if $doc->{category_status}{id} ne $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
                 #my $modified_on = $doc->{modified_on};
@@ -3199,21 +3199,28 @@ sub change_status {
         };                    
 }
 
-# fieldlet status_changes
 sub status_changes {
-    my ($self, $data) = @_;
+    my $self = shift;
+    my ( $topic_mid, $limit ) = @_;
+
+    $limit //= 100;
     my @status_changes;
-    my $cont = 0;
-    for my $ev ( mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(100)->all ) {
+
+    my $rs =
+      mdb->activity->find( { event_key => 'event.topic.change_status', mid => "$topic_mid" } )->sort( { ts => -1 } )
+      ->limit($limit);
+    for my $ev ( $rs->all ) {
         try {
             my $ed = $ev->{vars};
-            push @status_changes, {
+            push @status_changes,
+              {
                 old_status => $ed->{old_status},
                 status     => $ed->{status},
                 username   => $ed->{username},
                 when       => Class::Date->new( $ev->{ts} )
-            };
-        } catch {};
+              };
+        }
+        catch {};
     }
     return @status_changes;
 }
