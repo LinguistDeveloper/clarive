@@ -41,7 +41,10 @@ sub upgrade {
     my @forms = map{$_->{default_form}}mdb->category->find->all;
     foreach my $form (@forms){
         my $default_rule = mdb->rule->find_one({rule_type=>'form', id=>$form});
-        my $json= _decode_json($default_rule->{rule_tree});
+        my $json= eval {_decode_json($default_rule->{rule_tree})} or do {
+            warn "Cannot decode $default_rule->{id} rule_tree: $!. Skipped";
+            next;
+        };
         foreach my $el (@$json) {
             my $attributes = $el->{attributes};
             my $data = $attributes->{data};
