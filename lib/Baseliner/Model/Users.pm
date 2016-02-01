@@ -4,6 +4,7 @@ use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use experimental 'smartmatch', 'autoderef';
+use Baseliner::Model::Permissions;
 
 sub get {
     my ($self, $username ) = @_;
@@ -87,7 +88,7 @@ sub get_users_from_actions {
     
     my @projects = _array $p{projects};
 
-    my @users = Baseliner->model('Permissions')->users_with_actions( actions => \@actions, projects => \@projects, include_root => 0);
+    my @users = Baseliner::Model::Permissions->new->users_with_actions( actions => \@actions, projects => \@projects, include_root => 0);
 
     return wantarray ? @users : \@users; 
 }
@@ -97,7 +98,7 @@ sub get_users_from_mid_roles {
     my @roles = _array $p{roles} or _throw 'Missing parameter roles';
     my @projects = _array $p{projects};
 
-    my @users = Baseliner->model('Permissions')->users_with_roles( roles => \@roles, projects => \@projects, include_root => 0);
+    my @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, projects => \@projects, include_root => 0);
 
     return wantarray ? @users : \@users; 
 }
@@ -134,7 +135,7 @@ sub get_categories_fields_meta_by_user {
             my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';  
 
             if (!($view_action ~~ @user_read_actions_for_topic)){
-            #if (!Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $view_action )){
+            #if (!Baseliner::Model::Permissions->new->user_has_read_action( username=> $username, action => $view_action )){
                 $fields_perm{$field->{id_field}} = $field;
             };
         }
@@ -197,7 +198,7 @@ sub get_users_from_mid_roles_topic {
         $mega_where->{'$or'} = \@mega_ors;
         @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
     } else {
-        @users = Baseliner->model('Permissions')->users_with_roles( roles => \@roles, include_root => 0);        
+        @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, include_root => 0);        
     }
     return wantarray ? @users : \@users; 
 }
@@ -265,7 +266,7 @@ sub get_projects_from_user{
 sub get_projectnames_and_descriptions_from_user{
     my ($self, $username, $collection, $query, $roles) = @_;
     $collection ||='project';
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my $where;
     my @roles_filter_names = Util->_array_or_commas($roles);
     if ($is_root){
