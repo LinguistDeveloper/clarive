@@ -8417,3 +8417,9 @@ msgstr "Acercar +"
 
 msgid "Zoom -"
 msgstr "Alejar -"
+
+msgid "Open life cycle"
+msgstr "Abrir Ciclo de vida"
+
+msgid "Open timeline"
+msgstr "Abrir linea temporal"
