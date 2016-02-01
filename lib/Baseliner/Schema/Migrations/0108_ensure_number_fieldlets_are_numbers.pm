@@ -6,7 +6,10 @@ sub upgrade {
     my @forms = map{$_->{id}}mdb->rule->find({rule_type=>'form'})->all;
     foreach my $form (@forms){
         my $rule = mdb->rule->find_one({rule_type=>'form', id=>$form});
-        my $json= _decode_json($rule->{rule_tree});
+        my $json= eval {_decode_json($rule->{rule_tree})} or do {
+            warn "Cannot decode $rule->{id} rule_tree: $!. Skipped";
+            next;
+        };
         my @numbers_id;
         foreach my $el (@$json) {
             my $attributes = $el->{attributes};
