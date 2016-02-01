@@ -67,17 +67,18 @@ sub tree_topic_get_files : Local {
 sub tree_project_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
-    
+
     my $p = $c->req->params;
     my $id_project = $p->{id_project};
     my $query = $p->{query};
-    my ( $info, @rels ) = model->Topic->topics_for_user({
+    my ( $info, @rels ) = Baseliner::Model::Topic->new->topics_for_user({
         username     => $c->username,
         id_project   => $id_project,
         is_release => 1,
         clear_filter => 1,
         ( $query ? ( query => $query ) : () )
     });
+
     #my @topics = map { $$_{from_mid} } mdb->master_rel->find({ to_mid=>"$id_project", rel_type=>'topic_project' })->all;
     #my @rels = mdb->topic->find({ is_release=>'1', mid=>mdb->in(@topics) })->all;
 
@@ -97,6 +98,9 @@ sub tree_project_releases : Local {
             data => {
                 topic_mid    => $_->{mid},
                 click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
+                'on_drop' => {
+                       'url' => '/comp/topic/topic_drop.js',
+                 },
             },
             menu => \@menu_related
        }

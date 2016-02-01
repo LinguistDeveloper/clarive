@@ -8,6 +8,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils qw(:catalyst);
+use TestSetup;
 
 use JSON ();
 
@@ -247,6 +248,128 @@ subtest 'favorite_add_to_folder: updates user favorites' => sub {
       };
 };
 
+subtest 'tree_project_releases: build releases tree' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type => 'project',
+                        collection => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $status_new      = TestUtils->create_ci( 'status', name => 'New',      type => 'I' );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.release.view',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user(name => 'developer', id_role => $id_role, project => $project);
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        id_rule    => $id_rule,
+        id_status  => [ $status_new->mid, $status_finished->mid ],
+        is_release => '1'
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_new
+    );
+
+    my $controller = _build_controller();
+
+    my $stash = {};
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => {
+            params => {
+                id_project => $project->mid
+            }
+        },
+        stash => $stash
+    );
+
+    $controller->tree_project_releases($c);
+
+    cmp_deeply $c->stash, {
+        'json' => [
+            {
+                'icon' => '/static/images/icons/release.png',
+                'text' => 'New Topic',
+                'menu' => [
+                    {
+                        'icon' => '/static/images/icons/topic.png',
+                        'text' => 'Related',
+                        'eval' => {
+                            'handler' => 'Baseliner.open_topic_grid_from_release'
+                        }
+                    },
+                    {
+                        'icon' => '/static/images/icons/topic.png',
+                        'text' => 'Apply filter',
+                        'eval' => {
+                            'handler' => 'Baseliner.open_apply_filter_from_release'
+                        }
+                    }
+                ],
+                'url'  => '/lifecycle/topic_contents',
+                'data' => {
+                    'click' => {
+                        'icon'  => '/static/images/icons/topic.png',
+                        'url'   => re(qr{/topic/view\?topic_mid=$topic_mid}),
+                        'title' => "Release #$topic_mid",
+                        'type'  => 'comp'
+                    },
+                    'topic_mid' => $topic_mid,
+                    'on_drop'   => {
+                        'url' => '/comp/topic/topic_drop.js'
+                    }
+                },
+                'topic_name' => {
+                    'mid'             => $topic_mid,
+                    'is_release'      => 1,
+                    'category_status' => '<b>(New)</b>',
+                    'category_name'   => 'Release',
+                    'category_color'  => undef
+                }
+            }
+        ]
+      };
+
+};
+
 done_testing;
 
 sub _build_controller {
@@ -254,7 +377,17 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Events' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Events', 'BaselinerX::Type::Fieldlet',
+          'Baseliner::Model::Topic',
+          'BaselinerX::Fieldlets'
+    );
 
     TestUtils->cleanup_cis;
+
+    mdb->category->drop;
+    mdb->topic->drop;
+    mdb->event->drop;
+    mdb->rule->drop;
+    mdb->role->drop;
 }

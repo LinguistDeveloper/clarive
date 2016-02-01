@@ -13,6 +13,7 @@ use JSON ();
 use Baseliner::CI;
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
+use Baseliner::Model::Topic;
 use BaselinerX::Type::Fieldlet;
 
 sub _setup_clear {
@@ -104,6 +105,7 @@ sub create_topic {
         'status'          => $status->mid,
         'id_rule'         => $id_form,
         'category_status' => { id => $status->mid },
+        'id_category_status' =>  $status->mid ,
     };
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
