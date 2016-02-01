@@ -814,6 +814,105 @@ subtest 'status_changes: returns all the status changes' => sub {
       };
 };
 
+subtest 'get_users_friend: returns users with same rights for this category and status' => sub {
+    _setup();
+
+    my $status_new      = TestUtils->create_ci( 'status', name => 'New',      type => 'I' );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
+    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+
+    my $id_role_other = TestSetup->create_role();
+    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->mid,
+            id_status_to   => $status_finished->mid,
+            job_type       => undef
+        }
+    ];
+    my $id_category = TestSetup->create_category(
+        name      => 'Category',
+        id_status => [ $status_new->mid, $status_finished->mid ],
+        workflow  => $workflow
+    );
+
+    my $model = _build_model();
+
+    my @friends =
+      $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
+
+    is_deeply \@friends, [qw/user1 user2/];
+};
+
+subtest 'get_users_friend: returns empty when no category found' => sub {
+    _setup();
+
+    my $status_new      = TestUtils->create_ci( 'status', name => 'New',      type => 'I' );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
+    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+
+    my $id_role_other = TestSetup->create_role();
+    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->mid,
+            id_status_to   => $status_finished->mid,
+            job_type       => undef
+        }
+    ];
+    my $id_category = TestSetup->create_category(
+        name      => 'Category',
+        id_status => [ $status_new->mid, $status_finished->mid ],
+        workflow  => $workflow
+    );
+
+    my $model = _build_model();
+
+    my @friends =
+      $model->get_users_friend( id_category => 'unknown-123', id_status => $status_new->mid );
+
+    is_deeply \@friends, [];
+};
+
+subtest 'get_users_friend: returns empty when no role found' => sub {
+    _setup();
+
+    my $status_new      = TestUtils->create_ci( 'status', name => 'New',      type => 'I' );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
+    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+
+    my $id_role_other = TestSetup->create_role();
+    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+
+    my $id_category = TestSetup->create_category(
+        name      => 'Category',
+        id_status => [ $status_new->mid, $status_finished->mid ],
+    );
+
+    my $model = _build_model();
+
+    my @friends =
+      $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
+
+    is_deeply \@friends, [];
+};
+
 done_testing();
 
 sub _setup {

@@ -715,7 +715,7 @@ sub update {
                     $meta = \@meta_filter;
 
                     if ($p->{title}) {
-                        $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/);
+                        $p->{title} =~ s/-->/->/;
                         $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
                     }
 
@@ -772,7 +772,7 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
-                $p->{title} =~ s/-->/->/ if ($p->{title} =~ /-->/); #fix close comments in html templates
+                $p->{title} =~ s/-->/->/ if $p->{title}; #fix close comments in html templates
                 $p->{title} = _strip_html($p->{title}) if ($p->{title});
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
@@ -3110,7 +3110,7 @@ sub cache_topic_remove {
     if ($topic_mid && $topic_mid ne -1) {    
         cache->remove({ mid=>"$topic_mid" }); #qr/:$topic_mid:/;
         for my $rel_mid ( 
-            map { $_->{from_mid} == $topic_mid ? $_->{to_mid} : $_->{from_mid} }
+            map { $_->{from_mid} eq $topic_mid ? $_->{to_mid} : $_->{from_mid} }
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] })->all
             )
         {
@@ -3228,7 +3228,6 @@ sub status_changes {
 sub get_users_friend {
     my ( $self, %p ) = @_;
 
-    my $mid         = $p{mid}         or _throw 'Missing parameter mid';
     my $id_category = $p{id_category} or _throw 'Missing parameter id_category';
     my $id_status   = $p{id_status}   or _throw 'Missing parameter id_status';
 
@@ -3236,11 +3235,11 @@ sub get_users_friend {
     return () unless $category;
 
     my @roles =
-      _unique map { $_->{id_role} } grep { $_->{id_status_from} == $id_status } _array( $category->{workflow} );
+      _unique map { $_->{id_role} } grep { $_->{id_status_from} eq $id_status } _array( $category->{workflow} );
 
     my @users;
     if (@roles) {
-        @users = Baseliner::Model::Users->new->get_users_from_mid_roles( mid => $mid, roles => \@roles );
+        @users = Baseliner::Model::Users->new->get_users_from_mid_roles( roles => \@roles );
         @users = _unique @users;
     }
 

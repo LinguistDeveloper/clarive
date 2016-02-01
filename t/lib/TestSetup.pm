@@ -74,7 +74,7 @@ sub create_category {
         {
             id       => "$id_cat",
             name     => 'Category',
-            statuses => [$id_status],
+            statuses => ref $id_status eq 'ARRAY' ? $id_status : [$id_status],
             $id_rule ? ( default_form => "$id_rule" ) : (),
             %params
         }
