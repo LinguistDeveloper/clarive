@@ -418,6 +418,29 @@ subtest 'load: sets CI when user has admin permissions' => sub {
       };
 };
 
+subtest 'new_ci: loads ci when admin rights' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    $controller->new_ci($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            msg     => re(qr/CI .*? loaded ok/),
+            rec     => ignore()
+        }
+      };
+};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }

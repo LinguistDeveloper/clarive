@@ -1040,7 +1040,7 @@ sub new_ci : Local {
     my $collection = $p->{collection} || _throw 'Missing parameter collection';
     try {
         _fail(_loc('User %1 not authorized to view CI of class %2', $c->username, $collection) )
-            unless $c->has_action("action.ci.view.%.$collection");
+            unless $self->user_can_admin_ci($c->username, $collection);
         my $obj = ci->$collection;
         my $rec = {};
         my $attrib = $obj->attribute_default_values;
