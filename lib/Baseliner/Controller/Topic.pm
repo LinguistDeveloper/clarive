@@ -2297,33 +2297,37 @@ sub topic_drop : Local {
                 my @ids = map { $_=>1 } grep { defined } map { $$_{id_field} } @$meta;
                 my $data = mdb->topic->find_one({ mid => $to_mid },{ category=>1, category_status=>1, id_status=>1, @ids });
                 $meta = model->Topic->get_meta_permissions( username => $c->username, meta => $meta, data=>$data );
-                my @mids;
 
                 META: for my $fm (@$meta) {
                     my $dt = $fm->{drop_target};
                     next META unless !length($dt) || $dt;# if not defined, it's a drop target; if defined then it depends
                     next META if $$fm{meta_type} !~ /(release)/;
-                    $kmatches++;
                     next META if !$$fm{editable};
                     # if filter, test if filter matches and avoid later errors
                     next META if !model->Topic->test_field_match( field_meta=>$fm, mids=>$from_mid );
 
+                    $kmatches++;
+
                     my $id_field = $$fm{id_field};
                     if ( ref $$fm{readonly} eq 'SCALAR' && ${ $$fm{readonly} } ) {
-                        $c->stash->{json} = { success => \0, msg=> _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$fm{name_field} )) };
+                        $c->stash->{json} = { success => \0, msg=> _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$fm{name_field} || $$fm{id_field} )) };
                         last META;
                     }
-                    if ( !$fm->{single_mode} ) {
+
+                    my @mids;
+                    # single_mode is for backwards compatibility
+                    if ( !$fm->{single_mode} && (!$fm->{value_type} || $fm->{value_type} ne 'single')) {
                         push @mids, _array( $$data{$id_field} );
                     }
                     push @mids, $from_mid;
+
                     # save operation for later
                     push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
                         Baseliner::Model::Topic->new->update(
                             {
                                 action    => 'update',
                                 topic_mid => $to_mid,
-                                $id_field => \@mids,
+                                $id_field => [@mids],
                                 username  => $c->username
                             }
                         );
