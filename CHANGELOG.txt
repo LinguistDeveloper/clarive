@@ -4,10 +4,10 @@
 - #31500 Topic lifecycle & timeline graph
 - #31705 Update Help docs v1
 - #31797 JS Core API
-- #31812 Actualización de iconos y tooltips
-- #31824 Traducción esp configuración de categorías
+- #31812 Update icons and tooltips
+- #31824 Translate category configurations
 - #31931 Show available OSes in bootstrap
-- #31954 Add a new parameter to event.file.create
+- #31954 Add a new parameter to event.file.create (#31930)
 - #31968 Profile command
 - #31972 Telco weekend
 - #31979 Add --reset option to bootstrap
@@ -18,10 +18,10 @@
 - #32024 Totals row in list topics dashlet
 - #32036 Update copyright license in cla output
 - #32040 Remove tests and docs when packing the sources
-- #32065 [Ayuda Clarive]. Mejoras en los botones
+- #32065 [Clarive Help]. Enhancements in buttons
 - #32072 Write unit tests for avatar controller
-- #32089 Añadir la posibilidad de especificar el tipo de moneda en los dashlets
-- #32106 Permitir en las gráficas de tópicos que se pueda filtrar por count, average, min, max, etc
+- #32089 Add currency type in dashlets
+- #32106 Filter in topic graphs also by count, average, min, max, etc
 - #32136 Make sure GitSmart honors pre-online events
 - #32153 Test .po files
 - #32173 Update product licence
@@ -29,10 +29,10 @@
 
 [FIXES]
 
-- #31895 En el CI DBDest el tipo SQLServer no está contemplado
+- #31895 In CI DBDest type SQLServer is not existing (#30937)
 - #31951 Fix event.topic.create
 - #31956 Fix recipients list when empty email is present
-- #31963 Campo list_topic_filter no funciona poniendo como filtro el campo pills
+- #31963 Fieldlet list_topic_filter is not working filtering by pills
 - #32033 Wrong icon in list_topic checboxes
 - #32042 Fix topic dropping
 - #32075 Make sure there are no phantom spaces in diff view
@@ -41,11 +41,11 @@
 - #32111 Fix Baseliner::CI instantiation
 - #32125 Dragging stopped working
 - #32130 New migration to fix not numeric _seq in CIs
-- #32148 No coge el default value en un checkbox.
-- #32150 Fix mid warnings in Topic
+- #32148 Default value in checkbox is not working. (#32133)
+- #32150 Fix mid warnings in Topic (#32074)
 - #32154 Git fixes
-- #32163 Corregir migración 6.4
-- #32176 Migración de los fieldlet.number a numbers en mongo
+- #32163 Fix migrations 6.4 (#32085, #32090)
+- #32176 Migreate fieldlet.number to numbers in MongoDB
 - #32178 Fix git event
 - #32193 Make sure we detect invalid JSON when migrating rules
 - #32205 Fix visibility of packages_that_do
