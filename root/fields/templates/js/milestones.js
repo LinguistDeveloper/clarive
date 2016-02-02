@@ -30,8 +30,7 @@ params:
     } else {
         var arr_columns = columns.split(';');
         var found = false;
-        for (var column = 0; i < arr_columns.length - 1; column++) {
-alert(arr_columns[column]);
+        for (var column = 0; column < arr_columns.length; column++) {
             if ( arr_columns[column].indexOf('[slotname]') ) {
                 found = true;
             }
