@@ -319,7 +319,6 @@ register 'fieldlet.system.moniker' => {
 
 register 'fieldlet.system.title' => {
     name        => _loc('Title'),
-    name_field  => _loc('Title'),
     id_field    => 'title',
     bd_field    => 'title',
     html        => '/fields/system/html/field_title.html',
