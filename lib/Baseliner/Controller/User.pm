@@ -152,7 +152,7 @@ sub infodetail : Local {
 
             my @user_projects;
             my @colls = map { Util->to_base_class($_) }
-                packages_that_do('Baseliner::Role::CI::Project');
+                Util->packages_that_do('Baseliner::Role::CI::Project');
             foreach my $col (@colls) {
                 @user_projects = (
                     @user_projects,
@@ -582,7 +582,7 @@ sub update : Local {
                 my $rs;
 
                 my @colls = map { Util->to_base_class($_) }
-                    packages_that_do('Baseliner::Role::CI::Project');
+                    Util->packages_that_do('Baseliner::Role::CI::Project');
                 my $orig_ps = ci->user->find( { username => $user_name } )
                     ->next->{project_security};
 
@@ -853,7 +853,7 @@ sub projects_list : Local {
     my $parent_checked = $c->req->params->{parent_checked} || 0;
 
     my @colls = map { Util->to_base_class($_) }
-        packages_that_do('Baseliner::Role::CI::Project');
+        Util->packages_that_do('Baseliner::Role::CI::Project');
     my @datas
         = mdb->master_doc->find( { collection => mdb->in(@colls) } )
         ->fields( { name => 1, description => 1, mid => 1 } )
