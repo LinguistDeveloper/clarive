@@ -143,7 +143,7 @@ sub parse_body {
     close $ff;
 
     # parse
-    my ( $yaml, $body ) = $contents =~ /(---.+?)---\n(.*)/s;
+    my ( $yaml, $body ) = $contents =~ /(---.+?)---\r?\n(.*)/s;
 
     # convert
     my $html =
