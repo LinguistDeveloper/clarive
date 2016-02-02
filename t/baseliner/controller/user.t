@@ -140,6 +140,27 @@ subtest 'avatar: generates user avatar if it doesnt exit' => sub {
     like _file($file)->slurp, qr/^.PNG/;
 };
 
+subtest 'avatar: generates avatar for specific user' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $c = _build_c( username => 'user', path_to => $tempdir );
+    $c = Test::MonkeyMock->new($c);
+    $c->mock('serve_static_file');
+
+    my $controller = _build_controller();
+    $controller->avatar($c, 'user', 'foo.png');
+
+    my ($file) = $c->mocked_call_args('serve_static_file');
+
+    ok -d "$tempdir/root/identicon";
+    ok -f "$tempdir/root/identicon/user.png";
+
+    like $file, qr{$tempdir/root/identicon/user.png};
+    like _file($file)->slurp, qr/^.PNG/;
+};
+
 subtest 'avatar: returns avatar if exists' => sub {
     _setup();
 

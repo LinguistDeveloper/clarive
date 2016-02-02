@@ -1006,7 +1006,12 @@ sub change_dashboard : Local {
 }
 
 sub avatar : Local {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $username, $dummy_filename ) = @_;
+
+    if ( !$dummy_filename ) {
+        $dummy_filename = $username;
+        $username       = $c->username;
+    }
 
     my $default_icon = "root/static/images/icons/user.png";
 
@@ -1014,7 +1019,7 @@ sub avatar : Local {
         my $file = _dir( $c->path_to("/root/identicon") );
         $file->mkpath unless -d $file;
 
-        $file = _file( $file, $c->username . ".png" );
+        $file = _file( $file, $username . ".png" );
         unless ( -e $file ) {
             my $identicon_generator
                 = $self->_build_identicon_generator( default_icon => $c->path_to($default_icon) );
