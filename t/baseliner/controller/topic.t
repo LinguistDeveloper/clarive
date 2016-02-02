@@ -355,7 +355,8 @@ sub _setup {
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic' );
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules' );
 
     mdb->activity->drop;
     mdb->topic->drop;
