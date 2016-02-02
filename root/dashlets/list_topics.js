@@ -43,6 +43,12 @@ my $iid = Util->_md5;
           if ( col_tokens[4] ) {
               column['total'] = col_tokens[4];
           }
+          if ( col_tokens[5] ) {
+              column['type_number'] = col_tokens[5];
+          }
+          if ( col_tokens[6] ) {
+              column['symbol'] = col_tokens[6];
+          }
 
           columns.push(column);
        })
@@ -128,11 +134,20 @@ my $iid = Util->_md5;
                 if ( topic[col.name] ) {
                   var regExp = /^number\((.*?)\)/;
                   var match = regExp.exec(col.type);
-
                   if ( match ) {
                     precision = match[1];
                   }
-                  html = html + parseFloat(topic[col.name]).toFixed(precision);
+
+                  var colNameFixedPrecision = parseFloat(topic[col.name]).toFixed(precision);
+                  if(col.type_number && col.type_number === 'currency'){
+                    html = html + new NumberFormat(colNameFixedPrecision).toFormatted();
+                  }else{
+                    html = html + colNameFixedPrecision;
+                  }
+
+                  if(col.symbol){
+                    html = html + " <b>" + col.symbol +"</b>"
+                  }
                 } else {
                   html = html + '';
                 }
@@ -140,6 +155,9 @@ my $iid = Util->_md5;
                   if ( totals[col.name] ) {
                     totals[col.name].sum = (parseFloat(totals[col.name].sum) + parseFloat(topic[col.name])).toFixed(precision);
                     totals[col.name].count = parseFloat(totals[col.name].count) + 1;
+                    if(col.symbol){
+                      totals[col.name].symbol = col.symbol;
+                    }
                     if ( parseFloat(topic[col.name]).toFixed(precision) < totals[col.name].min) totals[col.name].min = parseFloat(topic[col.name]).toFixed(precision);
                     if ( parseFloat(topic[col.name]).toFixed(precision) > totals[col.name].max) totals[col.name].max = parseFloat(topic[col.name]).toFixed(precision);
                     totals[col.name].precision = precision;
@@ -169,12 +187,19 @@ my $iid = Util->_md5;
                 if ( !totals[col.name] ) {
                   html = html + '<th></th>';
                 } else {
+                  var dataShown = totals[col.name][col.total];
                   if ( col.total == 'avg' ) {
-                    var avg = (parseFloat(totals[col.name].sum) / parseFloat(totals[col.name].count)).toFixed(totals[col.name].precision);
-                    html = html + '<th style="white-space:nowrap;">'+ avg +'</th>';
-                  } else {
-                    html = html + '<th style="white-space:nowrap;">'+ totals[col.name][col.total] +'</th>';
+                    dataShown = (parseFloat(totals[col.name].sum) / parseFloat(totals[col.name].count)).toFixed(totals[col.name].precision);
                   }
+                  if(col.type_number && col.type_number === 'currency'){
+                    html = html + '<th style="white-space:nowrap;">' + new NumberFormat(dataShown).toFormatted();
+                  }else{
+                    html = html + '<th style="white-space:nowrap;">'+ dataShown;
+                  }
+                  if(col.symbol){
+                    html = html + " "+ col.symbol;
+                  }
+                   html = html + '</th>'
                 }
             } 
           });
