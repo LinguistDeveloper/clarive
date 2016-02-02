@@ -3,14 +3,8 @@ title: Separador de campos
 index: 400
 icon: separator
 ---
-
-    
-<br />
-
 * Añade una linea horizontal de manera que separa las diferentes secciones de un formulario.
-
 * Si se quiere una línea separadora sin nombre, basta con dejar un espacio en blanco en el titulo del fieldlet.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -32,7 +26,6 @@ icon: separator
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

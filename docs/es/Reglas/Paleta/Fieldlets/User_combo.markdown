@@ -3,13 +3,7 @@ title: User combo
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Permite introducir un combo donde las opciones son los usuarios existentes en la herramienta.
-
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -21,7 +15,6 @@ icon: combo_box
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -38,7 +31,7 @@ icon: combo_box
 
 <br />
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico: <br />
+* Permite definir la apariencia de la tabla en el tópico:
 
 &nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
 
@@ -50,12 +43,11 @@ icon: combo_box
 <br />
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-
 * Por defecto, es el titulo lo que se muestra.
 
 <br />
 ### Filtro avanzado JSON
-* Permite añadir un filtro avanzado JSON
+Permite añadir un filtro avanzado JSON
 
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 

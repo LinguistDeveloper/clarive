@@ -3,11 +3,8 @@ title: Mensajes del sistema
 icon: sms
 ---
 
-
 * Los mensajes del sistema son notificaciones globales que se publican a todos los usuarios registrados en Clarive
-
 * Son útiles para notificar a los usuarios eventos como puedan ser una inoperatividad del sistema a causa de mantenimiento, un cambio de comportamiento o un aviso de mejora en el ciclo de vida.
-
 * Se puede acceder a los mensajes del sistema a través del menú de Adminitración → Mensajes de sistema
 
 
@@ -16,26 +13,20 @@ icon: sms
 
 <br />
 #### ID
-
 * Muestra el identificador único del mensaje creado.
 
 <br />
 #### Mensaje
-
 * Muestra el mensaje que se ha emitido.
 
 <br />
 #### Fecha de caducidad
-
 * Aparece la fecha en la que el mensaje desaparecerá. Se configura dentro del mensaje.
 
 <br />
 #### Leido
-
 * Una vez el mensaje se ha publicado, los mensajes pueden ser leidos por parte de los usuarios. 
-
 * Los mensajes leidos por parte de un único usuario se contabilizarán en esta columna, es decir, si un usuario lee el mensaje dos o más veces, se contabilizará unicamente una. 
-
 * Pulsando en el valor de la columna, se abre la lista de usuarios que han leido y descartado el mensaje. Al ser un mensaje intrusivo, que limita el acceso al menú superior se espera que los usuarios, una vez leido el mensaje, lo cierre. <br />
 
 <br />
@@ -43,7 +34,6 @@ icon: sms
 
 <br />
 ### <img src="/static/images/icons/edit.gif" /> Componer
-
 * Para crear una nueva alerta, hay que componer el mensaje que se emitirá. Para ello, hay que completar los siguientes campos: <br />
 
 &nbsp; &nbsp;• **Título**: El título del mensaje aparecerá en la barra superior. es recomendable que sea breve como 'Nueva release 5.X.X' o 'Mantenimiento planificado'.  <br />
@@ -63,26 +53,20 @@ icon: sms
 &nbsp; &nbsp;• **Más Información**: *Campo Opcional*. Campo válido para escribir un texto mas concreto en relación con el aviso. Este campo acepta imágenes, enlaces, etc..para poder explicar mas detalladamente el aviso lanzado. <br />
 
 <br />
-
 * Para publicarlo, pulsar `Publicar` en la parte superior derecha de la ventana. El aviso se emitirá de inmediato. 
 
 <br />
-#### <img src="/static/images/icons/copy.gif" /> Clonar
-* Permite clonar el mensaje seleccionado haciendo más rápida la difusión de un nuevo aviso. 
+#### <img src="/static/images/icons/copy.gif" /> Clonar* Permite clonar el mensaje seleccionado haciendo más rápida la difusión de un nuevo aviso. 
 
 <br />
 #### <img src="/static/images/icons/delete_.png" /> Borrar
-
 * Elimina el mensaje. La difusión del mismo también pararía.
 
 <br />
 #### <img src="/static/images/icons/close.png" /> Cancelar
-
 * Cierra la ventana de mensajes del sistema.
 
 <br />
 ## Probar un mensaje
-
 * Para probar un mensaje antes de hacerlo publico, se recomienda poner al propio usuario como único destinario del aviso. De esta manera, en caso de que se quiera hacer algún cambio se podrá realizar sin que afecte al resto de usuarios. 
-
 * Una vez que esté listo, pulsar en `Clonar` y cambiar los receptores del aviso.

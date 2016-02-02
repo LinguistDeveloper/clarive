@@ -2,34 +2,27 @@
 title: Run a Remote Script
 icon: cog_java
 ---
-
 * Ejecuta un script remoto y realiza el [rollback](Conceptos/rollback) si es necesario.
-
 * Los elementos configurables son los siguientes.
 
 <br />
 ### Servidor
-
 * Especifica desde que servidor se quiere recuperar el script.
 
 <br />
 ### Usuario
-
 * Usuario permitido para conectarse al servidor configurado en la opción anterior.
 
 <br />
 ### Ruta remota
-
 * Indica la ruta donde está el script que se quiere ejecutar.
 
 <br />
 ### Argumentos 
-
 * Lista de los diferentes parámetros que el script espera recibir. 
 
 <br />
 ### Errores
-
 * Sirve para gestionar los errores que se pueden generar al ejecutar el script. Las opciones son: <br />
 
 

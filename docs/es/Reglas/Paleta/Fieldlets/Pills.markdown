@@ -3,12 +3,7 @@ title: Pills
 index: 400
 icon: pills
 ---
-
-    
-<br />
-
 * Añade un indicador donde escoger uno de los elementos de las opciones. Parecido a una serie de checkbox pero permitiendo solo una única opción
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -20,7 +15,6 @@ icon: pills
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -39,7 +33,6 @@ icon: pills
 <br />
 ### Opciones disponibles
 * Personaliza las opciones entre las que el usuario podrá escoger.
-
 * Todas las opciones tienen que estar separadas por ;
 
 <br />

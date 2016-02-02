@@ -2,14 +2,9 @@
 title: Notificaciones
 icon: email
 ---
-
 * Para acceder es necesario tener permisos de administración de la herramienta. 
-
 * Para la configuración de las notificaciones se accede a través de Administración → <img class = "bali-topic-editor-image" src = "/static/images/icons/email.png" /> Notificaciones. 
-
 * Esta ventana muestra una lista con las notificaciones existentes y un menú de acciones.
-
-
 * La información se presenta de la siguiente manera:
 
 <br />
@@ -17,9 +12,7 @@ icon: email
 
 <br />
 #### Eventos
-
 * Describe el evento y su acción asociada. 
-
 * En Clarive, las notificaciones se configuran a través de eventos. 
 
 
@@ -29,8 +22,7 @@ icon: email
 
 <br />
 #### Ámbitos
-
-* Describe más propiedades de la notificación. Estas propiedades son: <br />
+* Describe más propiedades de la notificación. Estas propiedades son:
     
     &nbsp; &nbsp;• *Proyecto*: Indica el proyecto definido al crear la notificación. Esto permite enviar notificaciones en función al proyecto donde ocurra el evento. <br />
     
@@ -41,15 +33,11 @@ icon: email
     &nbsp; &nbsp;• *Categoría / Estado*: Define los estados de las categorias para la notificación.
 
 <br />
-#### Acción
-* Indica el tipo de acción de la notificación.
+#### Acción* Indica el tipo de acción de la notificación.
 
 <br />
 #### Activado
-
 * Todas las notificaciones pueden ser activadas o desactivadas. Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.png" /> o <img src ="/static/images/icons/stop.png "/>.
-
-
 * Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](Primeros_pasos/search-syntax).
 
 <br />
@@ -58,7 +46,6 @@ icon: email
 
 <br />
 #### <img src = "/static/images/icons/add.gif" /> Crear
-
 * Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros: <br />
 
 &nbsp; &nbsp;• `Evento` - Indica el tipo de evento, los nombres son intuitivos y vienen definidos por una regla nemotécnica:
@@ -186,32 +173,23 @@ config.notificacions.exclude_default si esta
 
 <br />
 #### <img src = "/static/images/icons/edit.gif" /> Editar
-
 * Para habilitar la opción de editar una notificación, es necesario seleccionar una notificación ya existente.
-
 * La ventana que se abre para la edición es la misma que para la creación.
 
 <br />
 #### <img src = "/static/images/icons/delete_.png" /> Borrar
-
 * Permite eliminar una o varias notificaciones.
 
 <br />
 #### <img src = "/static/images/icons/start.png" /> Activar / <img src = "/static/images/icons/stop.png" /> Desactivar
-
 * Permite activar o desactactivar una o varias notificaciones.
 
 <br />
 #### <img src = "/static/images/icons/import.png" /> Importar / <img src = "/static/images/icons/export.png" /> Exportar
-
 * Dentro de las opciones del icono <img src = "/static/images/icons/wrench.gif" /> se encuentran las opciones para importar o exportar notificaciones.
-
 * Para la **exportación**, es necesario seleccionar al menos una fila, una vez seleccionadas las notificaciones que se deseen exportar, el sistema generará un fichero YAML con los datos del evento.
-
 * La opción de **importar** abrirá una ventana donde añadir el YAML de la notificación. Una vez añadido el código es necesario importarlo a través del botón <img src = "/static/images/icons/import.png" /> Importar que aparece en la parte superior de la ventana activa. Debajo, aparecerá el resultado de la importación.
-
 * Si ha ido de manera correcta el sistema informará con un mensaje:
-
             
         ----------------| Notify:  |----------------
         Creado notificacion 

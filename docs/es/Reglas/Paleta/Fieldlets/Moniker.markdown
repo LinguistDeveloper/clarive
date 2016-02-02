@@ -3,12 +3,7 @@ title: Nemonico
 index: 400
 icon: lock_small
 ---
-
-    
-<br />
-
 * Permite añadir un alias en el tópico para poder ser localizado más facilmente.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -28,7 +23,6 @@ icon: lock_small
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

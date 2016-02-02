@@ -3,12 +3,7 @@ title: Revision box
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Permite añadir una caja donde arrastrar ramas del repositorio.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -22,7 +17,6 @@ icon: combo_box
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

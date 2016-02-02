@@ -2,18 +2,14 @@
 title: Conceptos de regla
 icon: rule
 ---
-
 * Una vez que las diferentes necesidades se registran y se gestionan a tavés de los distintos estados que componen su ciclo de vida, estos deben de ser desplegados y entregados como operación final del ciclo. 
-
 * La gestión de reglas permite automatizar el despligue entre sistemas.
-
 * La automatización se realiza a través de ejecuciones de reglas; estas son creadas utilizando la definición de los procesos de Clarive, la cual además, suministra todas las herramientas necesarias para su gestión. 
 
 
   
 <br /> 
 ### Tipos de reglas
-
 * Existen seis tipos de reglas: <br />
 
 &nbsp; &nbsp;• **Eventos** - Lanzadores desencadenantes basados en acciones realizadas por el sistema. Hay tres tipos de reglas de evento: <br />
@@ -35,7 +31,6 @@ icon: rule
 
 <br />
 #### Pasos de un job
-
 * Cuando se crea una regla de tipo cadena de pase, se muestran cinco pasos: <br />
 
 &nbsp; &nbsp;• **CHECK** - Comprueba antes de crear el job, el objeto del job no está disponible todavía. <br />
@@ -50,7 +45,6 @@ icon: rule
 
 <br />
 ### Tipos de tareas
-
 * La regla se puede dividir en tres tipos de tareas: <br />
 
 
@@ -85,5 +79,4 @@ icon: rule
 
 <br />
 ### Stash
-
 *  El [stash](Conceptos/stash) de las reglas en el sistema de CLarive mantienen el estao de los pases entre ejecuciones. Las variables stash son utilizadas para comunicar diferentes tareas.

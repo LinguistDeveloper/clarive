@@ -3,14 +3,8 @@ title: Campo de texto
 index: 400
 icon: field
 ---
-
-    
-<br />
-
 * Permite añadir un texto en el tópico.
-
 * El tamaño de esta caja es igual que el del [titulo](Reglas/Paleta/Fieldlets/Title). 
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -26,7 +20,6 @@ icon: field
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

@@ -2,11 +2,8 @@
 title: cla start - Inicia todos los procesos del servidor
 icon: console
 ---
-
 * `cla start`: Comienza todas las tareas de servidor. 
-
 * Intenta iniciar todos los sistemas que Clarive necesita para operar.
-
 * Estos son: <br />
 
 &nbsp; &nbsp;• *mongo*: Inicia el servidor de Mongo con la configuración alojada en el fichero: `$CLARIVE_BASE/config/mongod.conf`.
@@ -18,7 +15,6 @@ icon: console
 &nbsp; &nbsp;• *Clarive dispatcher*: El servicio del Dispatcher se inicia en modo demonio.
 
 <br/> 
-
 * Este comando permite las dos siguientes opciones: <br/> 
 
 &nbsp; &nbsp;•  `--no_mongo`: Indica a Clarive que no inicie el servidor de Mongo. <br/> 

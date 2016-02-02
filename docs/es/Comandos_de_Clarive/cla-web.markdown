@@ -3,11 +3,8 @@ title: cla web - Administracion de servidores Web
 index: 10
 icon: console
 ---
-
 * `cla web`: Realiza operaciones relacionadas con el servicio web Clarive.
-
 * Por sí mismo se inicia servicio web Clarive.
-
 * Soporta las siguientes opciones: <br />
 
 &nbsp; &nbsp;• `--env <entorno>`: Se utiliza para configurar los parámetros. <br />
@@ -40,9 +37,6 @@ icon: console
 &nbsp; &nbsp;• `--log_keep <lognumber>`: Número de logs que se pueden almacenar en la carpeta de logs. <br />
 
 &nbsp; &nbsp;• `--log_file <logfile>`: Nombre del fichero de log. <br />
-
-<br />
-
 * Este comando dispone de subcomandos que pueden ser consultados a través de la ayuda:
             
         > cla help web

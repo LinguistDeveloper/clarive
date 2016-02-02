@@ -4,11 +4,7 @@ index: 400
 icon: calendar
 ---
 
-    
-<br />
-
 * Permite añadir un campo fecha en el tópico.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -20,7 +16,6 @@ icon: calendar
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -39,7 +34,6 @@ icon: calendar
 <br />
 ### Formato de fecha
 * Permite personalizar el formato en el que se mostrará la fecha. 
-
 * Si el usuario deja el campo en blanco el formato por defecto es *y-m-d* <br />
 
 &nbsp; &nbsp;• *Ejemplo*: d/m/y mostrará 13/06/2013 <br />

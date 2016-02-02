@@ -3,12 +3,7 @@ title: Estado
 index: 400
 icon: lock_small
 ---
-
-    
-<br />
-
 * Define el estado del tópico.
-
 * Este fieldlet es **obligatorio**.
 
 <br />
@@ -28,7 +23,6 @@ icon: lock_small
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

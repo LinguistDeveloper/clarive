@@ -2,9 +2,7 @@
 title: cla stop - Detiene todos los procesos
 icon: console
 ---
-
 * `cla stop`: Detiene todos los procesos del servidor. Esto es, intentará detener todos los sistemas que Clarive necesita para operar.
-
 * Estos son: <br />
 
 &nbsp; &nbsp;• *mongo*: Detiene el servidor de Mongo.  <br />
@@ -17,7 +15,6 @@ icon: console
 
 
 <br/>
-
 * El comando admite los siguientes parámetros: <br />
 
 

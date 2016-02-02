@@ -3,24 +3,17 @@ title: Swarm
 index: 400
 icon: swarm
 ---
-
-    
-<br />
-
 * Muestra un gráfico animado la evolución de una categoria.
-
 * Los elementos que se pueden configurar son:
 
 <br />
 ### Altura en canvas
 * Define la altura en numero de filas que se le da al dashlet.
-
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el dashboard.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br/>

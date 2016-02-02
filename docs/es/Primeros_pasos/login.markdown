@@ -3,9 +3,7 @@ title: Login
 index: 30
 icon: user.gif
 ---
-
 * Antes de poder acceder a la herramienta, el Administrador de Clarive debe de registrar al usuario desde la [Administración de usuarios](Administracion/user)
-
 * El administrador tiene que suministrar al usuario la siguiente información: <br />
 
 &nbsp; &nbsp;• **Usuario** – El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive. <br />
@@ -19,7 +17,6 @@ icon: user.gif
 
 <br />
 ### Login externo
-
 * Si se quiere realizar el login a Clarive directamente desde otra ubicación (portal web por ejemplo), se puede utilizar este código HTML como plantilla para crear el formulario:
 
 <br />

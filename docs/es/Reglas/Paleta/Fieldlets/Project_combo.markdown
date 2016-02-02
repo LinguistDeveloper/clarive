@@ -3,15 +3,8 @@ title: Project combo
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Añade al tópico una lista desplegable de proyectos.
-
 * There are a list of elements can be configured in the fieldlet:
-
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -23,7 +16,6 @@ icon: combo_box
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -52,13 +44,11 @@ icon: combo_box
 <br />
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-
 * Por defecto, es el titulo lo que se muestra.
 
 <br />
 ### Filtro avanzado JSON
-* Permite añadir un filtro avanzado JSON
-
+Permite añadir un filtro avanzado JSON
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
@@ -69,16 +59,12 @@ icon: combo_box
 
 <br />
 ### Clase CI
-
 * Especifica la clase de CI que se va a mostrar en las opciones. 
-
 * En este combo, lo comun es que aparezcan los CI de tipo *proyecto*.
 
 <br />
 ### Valor por defecto
-
 * Permite mostrar un valor por defecto en el combo.
-
 * El o los proyectos que se quieran poner por defecto tienen que estar especficados por el ID del CI.
 
 <br />

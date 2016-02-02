@@ -3,14 +3,8 @@ title: Campo numerico
 index: 400
 icon: number
 ---
-
-    
-<br />
-
 * Permite añadir un campo que se completa con números.
-
 * La herramienta permite interactuar entre ellos gracias al fieldlet **Calculated numberfield**
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -22,7 +16,6 @@ icon: number
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

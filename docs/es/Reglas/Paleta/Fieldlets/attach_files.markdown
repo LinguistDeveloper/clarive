@@ -3,11 +3,7 @@ title: Adjuntar ficheros
 index: 400
 icon: file.gif
 ---
-
-<br />
-
 * Permite adjuntar archivos a un tópico.
-
 * Existe una lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -21,7 +17,6 @@ icon: file.gif
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

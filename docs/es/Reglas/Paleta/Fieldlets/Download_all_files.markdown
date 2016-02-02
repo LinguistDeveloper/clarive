@@ -3,12 +3,7 @@ title: Download all files
 index: 400
 icon: download
 ---
-
-    
-<br />
-
 * Añade una opción en el tópioco para que el usuario se pueda descargar todos los ficheros adjuntos al tópico en un archivo comprimido.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -20,7 +15,6 @@ icon: download
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

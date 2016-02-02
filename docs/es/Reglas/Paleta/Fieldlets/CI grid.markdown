@@ -3,12 +3,7 @@ title: CI Grid
 index: 400
 icon: grid
 ---
-
-    
-<br />
-
 * Permite añadir una tabla de CIs en el formulario.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -23,7 +18,6 @@ icon: grid
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -53,13 +47,11 @@ icon: grid
 <br />
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-
 * Por defecto, es el titulo lo que se muestra.
 
 <br />
 ### Filtro avanzado JSON
-* Permite añadir un filtro avanzado JSON
-
+Permite añadir un filtro avanzado JSON
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
@@ -78,20 +70,15 @@ icon: grid
 
 <br />
 ### Roles
-
 * Se muestra una lista con los roles.
-
 * Si la opción *Selección por clase* está activada, el valor de este campo tiene que ser **CI**
 
 
 <br />
 ### Clase CI
-
 * La selección de este campo solo está disponible si está activado la *selección por clase*
-
 * Especifica la clase de CI que se va a mostrar en las opciones.
 
 <br />
 ### Mostrar clase
-
 * Indica si se quiere mostrar la clase de elemento en el formulario.

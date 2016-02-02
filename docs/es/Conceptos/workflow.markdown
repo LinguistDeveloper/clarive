@@ -2,9 +2,7 @@
 title: Flujo de trabajo
 icon: workflow
 ---
-
 * Un flujo de trabajo en Clarive se define como un conjunto de [estados](Conceptos/status) y transiciones por las que un [tópico](Conceptos/topic) puede transitar durante su ciclo de vida.
-
 * Existen dos tipos de flujos: <br />
 
 &nbsp; &nbsp;• Basados en tópicos. <br />
@@ -13,16 +11,12 @@ icon: workflow
 
 <br />
 ### Flujos de trabajo en tópicos
-
 * Son flujos sencillos que se aplican en la [configuración de la categoría](Administracion/topics)
-
 * Dependiendo del rol de usuario podrá transitar un tópico entre diferentes estados. 
 
 <br />
 ### Flujos de trabajo en reglas
-
 * Por lo general, la mayoría de las categorías tendrán un flujo de trabajo en tópicos como el explicado en el apartado anterior.
-
 * Los *workflows* de reglas deberias ser utilizados donde se requiera una sistema de transiciones complejo. <br />
 
 &nbsp; &nbsp;• Flujos específicos del proyecto. <br />
@@ -41,5 +35,4 @@ Transiciones Campo-dependientes, es decir. si "urgencia" valor fieldset es "urge
 
 <br />
 ### Reusabilidad
-
 * Además, el flujo de trabajo de regla pueden ser utilizados en diferentes categorias de tópicos.

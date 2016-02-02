@@ -3,12 +3,7 @@ title: Progress bar
 index: 400
 icon: progressbar
 ---
-
-    
-<br />
-
 * Muestra una barra de progreso en el tópico.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -23,7 +18,6 @@ icon: progressbar
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

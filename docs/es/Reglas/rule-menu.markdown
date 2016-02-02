@@ -2,22 +2,18 @@
 title: Menu de reglas
 icon: rule
 ---
-
 * La ruta para acceder a las reglas es a través del menú de administración. 
-
 * Seleccionando  **Admin → Reglas** se abre una nueva pestaña con tres áreas de trabajo diferentes. 
 
 
 
 <br />
 ## Área con el listado de reglas
-
 * Área con dos columnas que muestra el id de la regla, el nombre y el tipo. Además, en la columna contigua se muestra la fecha de la última modificación.
 
 
 <br />
 #### Acciones
-
 * Las acciones que se pueden realizar son: <br />
 
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" />**Cuadro de búsqueda**: Para buscar reglas por nombre o, en caso de buscar, por ejemplo un componente de la paleta, muestra en que reglas ese componente está siendo utilizado. <br />
@@ -39,7 +35,6 @@ static/images/icons/export.png" /> Exporta la regla seleccionada en formato YAML
 
 <br />
 ### Árbol de regla
-
 * Se trata del área donde se muestra la estructra de la regla como un árbol. En la barra de herramientas existen varias opciones: <br />
  
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Cuadro de búsqueda** - Busca los campos que coinciden con la búsqueda. <br />
@@ -73,9 +68,7 @@ static/images/icons/export.png" /> Exporta la regla seleccionada en formato YAML
 <br />
 
 ### Paleta
-
 *  Contiene todas las operaciones que pueden ser utilizadas para componer una regla.
-
 * En esta sección se dispone de dos opciones: <br />
 
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Búsqueda** - Permite buscar entre los compenentes de la palenta <br />

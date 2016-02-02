@@ -4,10 +4,9 @@ icon: users.gif
 ---
 
 ## Configuración
+* Para configurar el mecanismo que permita acceder al entorno de Clarive a través de un sistema LDAP, es necesario modificar algunos ficheros de configuración. 
 
-* Para configurar el mecanismo que permita acceder al entorno de Clarive a través de un sistema LDAP, es necesario modificar algunos ficheros de configuración
-
-* Bajo la variable `baseliner: authentication: ldap:` se configuran las credenciales LDAP y la información del servidor:
+Bajo la variable `baseliner: authentication: ldap:` se configuran las credenciales LDAP y la información del servidor:
             
         baseliner:
         authentication:

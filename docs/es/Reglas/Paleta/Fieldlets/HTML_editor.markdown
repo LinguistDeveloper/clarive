@@ -3,12 +3,7 @@ title: HTML Editor
 index: 400
 icon: html
 ---
-
-    
-<br />
-
 * Permite añadir código HTML en un tópico.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -22,7 +17,6 @@ icon: html
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />

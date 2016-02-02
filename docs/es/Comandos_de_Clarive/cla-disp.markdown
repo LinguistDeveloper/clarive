@@ -3,12 +3,8 @@ title: cla disp - Gestion del Dispatcher
 index: 20
 icon: console
 ---
-
 * `cla disp`: Realiza operaciones relacionadas con el dispatcher.
-
-* Ejecutandolo sin ningún argumento, se inicia el servicio del dispatcher, encargado de iniciar todos los demonios. La manera en la que se inicie, esté duplicado o no, es utilizando la configuración de servicio.
-
-
+* Ejecutandolo sin ningún argumento, se inicia el servicio del dispatcher, encargado de iniciar todos los demonios.La manera en la que se inicie, esté duplicado o no, es utilizando la configuración de servicio.
 * El Dispatcher se comporta de la siguiente manera en función al estado de los demonios. <br />
 
 &nbsp; &nbsp;• Si un demonio ha sido desactivado desde la herramienta, el dispatcher para el demonio <br />
@@ -16,9 +12,7 @@ icon: console
 &nbsp; &nbsp;• Si el demonio ha sido activado, el dispatcher arranca el servicio. <br />
 
 &nbsp; &nbsp;• Si un demonio está activo, el dispatcher comprueba si se está ejecutando o no, si no lo está intentará rearrancar el servicio de nuevo.
-
 * La frecuencia que el dispatcher comprueba el estado de un demonio es un parametro configurable llamado `frecuency`. Este valor, por defecto, son 30 segundos.
-
 * Este comando soporta dos opciones diferentes:
 
 &nbsp; &nbsp;• `-h`: Muestra una breve ayuda en la pantalla: <br />

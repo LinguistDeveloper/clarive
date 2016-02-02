@@ -3,24 +3,17 @@ title: Calendario
 index: 400
 icon: calendar
 ---
-
-    
-<br />
-
 * Muestra un calendario en el dashboard.
-
 * En la configuración del dashlet existen varias opciones para personalizarlo:
 
 <br />
 ### Altura en canvas
 * Define la altura en numero de filas que se le da al dashlet.
-
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el dashboard.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br/>
@@ -36,7 +29,8 @@ icon: calendar
 
 &nbsp; &nbsp;• **Open topics** - Muestra los topicos abiertos desde su creación hasta sus estados finales<br />
 
-&nbsp; &nbsp;• **Planificador** *(eg: Hitos or Planificador de pases)* - Visualiza las planificaciones realizadas para las ventanas de pases o de hitos especificos.<br />
+&nbsp; &nbsp;• **Planificador** *(eg: Hitos or Planificador de pases)
+* - Visualiza las planificaciones realizadas para las ventanas de pases o de hitos especificos.<br />
 
 &nbsp; &nbsp;• **Campos propios** - Personaliza los campos que se van a mostrar, por ejemplo si se quieren de determinados rangos de fecha. Para ello hay que configurar los dos campos que aparecen: <br />
 
@@ -88,5 +82,4 @@ icon: calendar
 <br />
 ### Máscara de etiqueta de tópicos
 * Permite personalizar la etiqueta de los tópicos.
-
 * *Ejemplo*: ${category.acronym}#${topic.mid} ${topic.title}

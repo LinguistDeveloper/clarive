@@ -2,32 +2,26 @@
 title: Load files/items
 icon: file
 ---
-
 * Assigns to a user configured stash variable all found files/items according to the options introduced by the 
 user from the configuration form window. 
 
 
 Asigna a una variable alijo configurado por el usuario toda encontraron archivos / elementos de acuerdo a las opciones introducidas por el
 usuario de la ventana del formulario de configuración.
-
 * Asigna a una variable [stash](Conceptos/stash) configurada por el usuario, todos los ficheros y elementos encontrados de acuerdo a las opciones que el usuario introduzca en la configuración de este elemento.
-
 * El elemento se configura mediante los siguientes campos
 
 
 <br />
 ### Variable
-
 * Variable que se añadirña el stash con todas los elementos y archivo encontrados.
 
 <br />
 ### Ruta
-
 * Ruta base donde encontrar los ficheros o elementos de acuerdo al criterio que ponga el usuario.
 
 <br />
 ### Modo de ruta
-
 * Modo en el que se buscarán los ficheros y/o elementos. Por defecto está establecido a 'Ficheros, no recursivo'. Las opciones son: <br />
       
 &nbsp; &nbsp;&nbsp; &nbsp; • *Ficheros, no recursivo* - Solo se busca en el directorio actual. <br />
@@ -39,7 +33,6 @@ usuario de la ventana del formulario de configuración.
 
 <br />
 ### Modo directorio
-
 * Opción que establece donde el usuario busca archivos o elementos. Por defecto está configurado en 'Sólo ficheros'. Las opciones son: <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp; • *Sólo fichero*: Solo busca en ficheros, no en directorios. <br />
@@ -53,7 +46,6 @@ usuario de la ventana del formulario de configuración.
 
 <br />
 ### Filtros
-
 * Permite añadir filtros para incluir o excluir determinadas rutas de la búsqueda.  <br />
       
 &nbsp; &nbsp;&nbsp; &nbsp; • *Incluir rutas*: Patrones de ruta (ya sean directorios o ficheros) para buscar los archivos o elementos que coinciden con los criterios del usuario. <br />

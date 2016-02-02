@@ -2,16 +2,12 @@
 title: Administracion de estados
 icon: status
 ---
-
 * Clarive soporta un gran número de estados que pueden ser usados por una gran cantidad de tópicos.
-
 * Para la administración de estados, hay que acceder a través del menú de la izquierda y la opcion de `Elementos de configuración`.
-
 * Se mostrará la lista de Estados creados. 
 
 <br />
 ## Columnas
-
 * Las columnas, al igual que el resto de tablas de Clarive, permiten cambiar el orden ascendente/descendente haciendo click en la columna que se quiera ordenar asi como mostrar u ocultar las columnas deseadas.<br />
 
 &nbsp; &nbsp;• `Estado`: El nombre del estado. Pulsando sobre el estado se abre la ventana para **editar** el **estado** <br />
@@ -35,12 +31,10 @@ icon: status
 
 <br />
 #### Búsqueda
-
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
 #### <img src="/static/images/icons/add.gif" /> Crear
-
 * Pulsando en Crear, se abre una nueva ventana con las opciones necesarias para configurarlo: <br />
 
 &nbsp; &nbsp;• **Nombre**: El nombre que define el estado.<br />
@@ -96,19 +90,14 @@ icon: status
 
 <br />
 #### <img src="/static/images/icons/delete_.png" /> Borrar
-
 * Elimina uno o varios estados seleccionados.
 
 <br />
 #### <img src="/static/images/icons/export.png" /> Exportar
-
 * Permite exportar uno o varios estados. 
-
 * Se pueden exportar en **YAML, JSON, HTML o CSV**.
 
 <br />
 #### <img src="/static/images/icons/import.png" /> Importar
-
 * Permite importar uno o varios estados desde distintan fuentes. 
-
 * Se pueden importar estados que estén en alguno de los siguientes formatos **YAML, JSON, HTML o CSV**.

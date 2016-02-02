@@ -3,24 +3,17 @@ title: Roadmap de topicos
 index: 400
 icon: roadmap
 ---
-
-    
-<br />
-
 * Muestra en una tabla los tópicos en función de la fecha de resolución.
-
 * La lista de elementos para personalizar el dashlet son:
 
 <br />
 ### Altura en canvas
 * Define la altura en numero de filas que se le da al dashlet.
-
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el dashboard.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br/>
@@ -68,5 +61,4 @@ icon: roadmap
 <br />
 ### Máscara de etiqueta de tópicos
 * Permite personalizar la etiqueta de los tópicos.
-
 * *Ejemplo*: ${category.acronym}#${topic.mid} ${topic.title}

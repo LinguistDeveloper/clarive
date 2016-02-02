@@ -2,11 +2,8 @@
 title: Administracion de demonios
 icon: daemon.gif
 ---
-
 * Un demonio es un programa informático que se ejecuta como un proceso en segundo plano, en lugar de estar bajo el control directo de un usuario interactivo.
-
 * En Clarive, los demonios son especiales, los procesos independientes los inicia el [Dispatcher](Administracion/dispatcher). 
-
 * Realizan operaciones criticas para el correcto funcionamiento de la herramienta. Entre las funciones que poseen destacan: <br />
 
 &nbsp; &nbsp;• Ejecución de pases. <br />
@@ -18,13 +15,9 @@ icon: daemon.gif
 &nbsp; &nbsp;• Ejecuciones [planificadas](Administracion/scheduler). <br />
 
 &nbsp; &nbsp;• Control de semáforos.
-
 * Para poder ver y administrar los demonios es necesario tener permisos de Administración. 
-
 * A la lista de demonios se accede a través del menú de Administración → <img src="/static/images/daemon.gif" /> Demonios
-
 * En este panel, el usuario puede ver que demonios se están ejecutando y cuales están parados.
-
 
 
 * A continuación se describen los procesos estandar, demonios que deberian estar arrancandos tras realizar una instalación de Clarive. <br />

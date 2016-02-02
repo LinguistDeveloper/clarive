@@ -4,23 +4,17 @@ index: 400
 icon: chart_curve
 ---
 
-    
-<br />
-
 * Muestra el número de tópicos creados de una o varias categorias a lo largo de un determinado espacio de tiempo.
-
 * El dashlet es configurable a través de las siguientes opciones:
 
 <br />
 ### Altura en canvas
 * Define la altura en numero de filas que se le da al dashlet.
-
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el dashboard.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br/>
@@ -58,8 +52,7 @@ icon: chart_curve
 * Permite establecer un margen de manera que el día actual no es el último que se visualizará. 
 
 <br />
-### Campo de fecha en tópicos para el eje X:
-* Establece la fecha inicial de manera que solo se mostrarán los tópicos creadas posterior a la fecha indicada
+### Campo de fecha en tópicos para el eje X:* Establece la fecha inicial de manera que solo se mostrarán los tópicos creadas posterior a la fecha indicada
 
 <br />
 ### El gráfico se mostrará como
@@ -76,5 +69,5 @@ Muestra los diferentes tipos de gráficos que pueden ser utilizados: <br />
 &nbsp; &nbsp;• **Scatter**
 
 <br />
-### Los datos se agruparan por
+### Los datos se agruparan por:
 * Se pueden mostrar el número de tópicos agrupados por día, semana, mes, trimestre o año.

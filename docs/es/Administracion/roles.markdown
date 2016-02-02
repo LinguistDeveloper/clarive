@@ -2,24 +2,16 @@
 title: Administracion de roles
 icon: role
 ---
-
-<br />
-
 * La seguridad de Clarive se gestiona a través del [sistema de roles](concepts/roles).
-
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
-
 * Los usuarios pueden tener uno o mas roles definidos. Esto hace que el acceso a Clarive por parte de un usuario esté limitado y controlado. 
 
 &nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](Administracion/topics), [administración de notificaciones](Administracion/notifications), [acceso al planificador](Administracion/scheduler), [gestión de usuarios](Administracion/user), etc...Un gestor de incidencias puede estar defenido por ejemplo con acceso completo a la categoria Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
-
 * Un usuario puede tener mas de un rol de tal manera que pueda acceder a más temas donde trabajar.
-
 * La administración de roles se realiza a través de la ruta Administración → Roles. Esto mostrará un listado con todos los roles creados y una barra de acciones. 
 
 <br />
 ## Columnas
-
 * Las columnas, al igual que el resto de tablas de Clarive, permiten cambiar el orden ascendente/descendente haciendo click en la columna que se quiera ordenar asi como mostrar u ocultar las columnas deseadas.<br />
 
 &nbsp; &nbsp;• `Rol`: El nombre del rol <br />
@@ -36,12 +28,10 @@ icon: role
 
 <br />
 #### Búsqueda
-
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
 #### <img src="/static/images/icons/add.gif" /> Crear
-
 * Pulsando en crear, se abre una nueva ventana con las opciones necesarias para configurarlo:<br />
 
 &nbsp; &nbsp;• **Nombre del rol**: El nombre que define el rol, por ejemplo, *desarrollador*, *Release manager*, etc...<br />
@@ -53,7 +43,6 @@ icon: role
 
 <br />
 #### Acciones
-
 * **Panel izquierdo** - Compuesto de tres pestañas:
 
 &nbsp; &nbsp;• *Acciones disponibles* - Muestra todas las acciones que ofrece Clarive. Éstas están agrupadas de manera que sea más fácil e intuitivo localizar una acción en concreto:<br />
@@ -103,8 +92,6 @@ icon: role
 
 &nbsp; &nbsp;• *Ámbitos* - Es una vista pivotal de la pestaña anterior. Permite ver los usuarios que tienen el rol.<br />
 
-<br />
-
 * **Panel derecho** - Indica las acciones que el rol tiene asignadas. Se puede borrar con los dos botones que hay  en la parte derecha del panel: <br />
  
  &nbsp; &nbsp;• <img src="/static/images/icons/delete_red.png" /> *Descartar selección* - Elimina las acciones seleccionadas. </br>
@@ -116,23 +103,16 @@ icon: role
 
 <br />
 #### <img src="/static/images/icons/edit.gif" /> Editar
-
 * Permite editar el rol selecionado. Una vez realizados los cambios, seleccionar `Aceptar`.
-
 * Si no desea guardar tras editar un rol, seleccione `Cerrar`.
 
 <br />
 #### <img src="/static/images/icons/copy.gif" /> Duplicar
-
 * Permite duplicar el rol seleccionado. 
-
 * Se creará un nuevo rol con los mismos valores que el original. Es decir, mismas acciones y dashboards asi como la descripción. El nombre es el mismo pero con un número entero concatenado al final del nombre. 
-
 * Tras duplicar un rol es **recomendable** cambiar el nombre y la descripción del mismo.
 
 <br />
 #### <img src="/static/images/icons/delete_.png" /> Eliminar
-
 * Elimina uno o varios roles seleccionados. El sistema pedirá confirmación de ello antes de eliminarlo. 
-
 * Si se borrar un rol que está asignado a un usuario, el rol también se eliminará del usuario.

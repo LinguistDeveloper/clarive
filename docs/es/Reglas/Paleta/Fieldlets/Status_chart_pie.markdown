@@ -3,12 +3,7 @@ title: Status chart pie
 index: 400
 icon: chart_pie
 ---
-
-    
-<br />
-
 * Muestra en modo vista en un gráfico circular el estado de los tópicos indicados en la configuración del fieldlet.
-
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -20,7 +15,6 @@ icon: chart_pie
 <br />
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
-
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
@@ -38,7 +32,6 @@ icon: chart_pie
 <br />
 ### Categoría
 * Selecciona la categoría de los tópicos a mostrar.
-
 * Si se deja en blanco, saldrá el gráfico con los tópicos dependientes del tópico creado.
 
 <br />

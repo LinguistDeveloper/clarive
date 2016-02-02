@@ -2,26 +2,20 @@
 title: Invoke CI methods
 icon: ci
 ---
-
 * Invoca el método [CI](Conceptos/ci) seleccionado con los argumentos dados desde el formulario
-
-
 * El elemento se configura mediante los siguientes campos
 
 <br />
 ### Clase CI
-
 * Combo con todos los CIs que existen en Clarive
 
 
 <br />
 ### MID
-
 * Especifica el MID del CI.
 
 <br />
 ### Argumentos
-
 * Argumentos que se pasan al método CI. Estos son: <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp; • Nombrado: <br />

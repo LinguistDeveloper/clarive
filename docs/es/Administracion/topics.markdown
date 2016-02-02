@@ -2,9 +2,7 @@
 title: Administracion de topicos
 icon: topic
 ---
-
 * La administración de tópicos se ubica dentro de las opciones de **Administración → Tópicos**.
-
 * Dentro de la ventana de Administración de tópicos, se mostrarán dos partes diferenciadas. La primera está orientada para los tópicos, con el listado de las categorias existentes. En la segunda, en la parte inferior, se muestran las etiquetas y sus diferentes opciones.
 
 <br />
@@ -15,27 +13,22 @@ icon: topic
 
 <br />
 #### Categoría
-
 * Indica el nombre de la categoría y el color de la misma tal y como se mostrará en los tópicos. 
 
 <br />
 #### ID
-
 * Muestra el identificador único de cada categoría. 
 
 <br />
 #### Acrónimo
-
 * Indica el sobrenombre de la categoría. Configurable dentro de las opciones de cada categoría.
 
 <br />
 #### Descripción
-
 * Descripción de la categoría. 
 
 <br />
 #### Tipo
-
 * Indica el tipo de categoría.
 
 <br />
@@ -43,9 +36,7 @@ icon: topic
 
 <br />
 #### <img src = "/static/images/icons/add.gif" alt='Nueva categoría' /> Crear
-
 * Permite crear una nueva categoría. 
-
 * Al pulsar en `Crear` se abre una nueva ventana con todas las opciones para crear una categoría a medida.
 
 &nbsp; &nbsp;• `Categoría`: Especifica el nombre de la nueva categoría. <br />
@@ -77,15 +68,12 @@ icon: topic
 
 &nbsp; &nbsp;• `Lista de estados`: Permite seleccionar los [estados](Administracion/status) que estarán disponibles en los tópicos de la categoria. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorias tengan al menos un estado inicial y otro final.
 
-
 * Una vez guardado, la categoría aparecerá en la lista de categorías
 
 
 <br/>
 #### <img src = "/static/images/icons/edit.gif" alt='Editar categoría' /> Editar
-
 * Permite editar la categoría seleccionada.
-
 * En modo Editar, aparece una nueva pestaña `Flujo de trabajo`. En ella se especifica el flujo de estados que el tópico podrá transitar siempre en función de los roles.
 
 &nbsp; &nbsp;•**Flujo de trabajo** - En esta pestaña aparecen los roles disponibles y los estados disponibles.<br/>
@@ -106,32 +94,21 @@ icon: topic
 
 <br/>
 ### <img src = "/static/images/icons/delete_.png" alt='Borrar categoría' /> Borrar
-
 * Permite eliminar todas las categorías que están seleccionadas.
-
 * El sistema alertará de la acción y pedirá confirmación para seguir con el borrado evitando asi borrados accidentales.
-
 * Las categorias no se puede eliminar si hay instancias de ésta en la base de datos. Estos casos deben ser revisados primero y eliminados despues antes de borrar la categoría. De esta manera se garantiza la integridad de la base de datos
 
 
 <br/>
 ### <img src = "/static/images/icons/copy.gif" alt='Duplicar categoría' /> Duplicar
-
 * Permite duplicar la categoría seleccionada. 
-
 * Esta nueva categoria tendrá las mismas propiedades que la origina, nombre, color, formulario, estados disponibles, flujos de trabajo etc..
-
 * Solo va a tener diferente el nombre que será el nombre de la categoria original seguido del ID generado para esta nueva categoría.
-
 * Tras duplicar una categoría es **recomendable** editarla y cambiar el nombre, descripción y demás elementos que pueden provocar confusión entre la categoría original y la duplicada.
 
 <br/>
 ### <img src = "/static/images/icons/wrench.gif" alt='Import_export' /> Importar/Exportar
-
 * El sistema permite importar y exportar los tópicos seleccionados en caso de que querer copiar las categorías existentes de un sistema a otro.
-
 * Al pulsar en  <img src = "/static/images/icons/export.png" alt='Exportar' /> Exportar, se abrirá una nueva ventana con el código YAML de las categorías seleccionadas.
-
 * Al pulsar en <img src = "/static/images/icons/import.png" alt='Import' /> Importar, se abrirá una nueva ventana donde pegar el código generado durante la exportación. 
-
 * Una vez pulsado en `Importar` se podrá ver el progreso y estado de la importación en la parte inferior de la ventana.
