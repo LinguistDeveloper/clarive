@@ -3,7 +3,7 @@ title: Request Approval
 icon: user_green
 ---
 
-* El trabajo que ha sido [pausado](es/Reglas/Paleta/Job/pause-job) necesitan aprobación de los usuarios con permisos para ello o de roles.
+* El trabajo que ha sido [pausado](Reglas/Paleta/Job/pause-job) necesitan aprobación de los usuarios con permisos para ello o de roles.
 
 * Los usuarios o roles serán notificados via e-mail.
 

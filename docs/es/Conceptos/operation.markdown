@@ -2,7 +2,7 @@
 title: Operacion
 ---
 
-* Las operaciones (o "ops") son los diferentes pasos o tareas que son ejecutadas mediante una [regla](es/Conceptos/rule).
+* Las operaciones (o "ops") son los diferentes pasos o tareas que son ejecutadas mediante una [regla](Conceptos/rule).
 
 <br />
 

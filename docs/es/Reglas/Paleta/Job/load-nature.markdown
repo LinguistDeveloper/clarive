@@ -3,7 +3,7 @@ title: Load Nature Items
 icon: changesets
 ---
 
-* Comrpueba para cada elemento de tipo [proyecto](es/Conceptos/project) a que naturaleza pertenece.
+* Comrpueba para cada elemento de tipo [proyecto](Conceptos/project) a que naturaleza pertenece.
 
 * Elementos de configuración
 

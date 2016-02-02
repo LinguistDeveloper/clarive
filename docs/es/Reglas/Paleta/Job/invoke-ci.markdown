@@ -3,7 +3,7 @@ title: Invoke CI methods
 icon: ci
 ---
 
-* Invoca el método [CI](es/Conceptos/ci) seleccionado con los argumentos dados desde el formulario
+* Invoca el método [CI](Conceptos/ci) seleccionado con los argumentos dados desde el formulario
 
 
 * El elemento se configura mediante los siguientes campos

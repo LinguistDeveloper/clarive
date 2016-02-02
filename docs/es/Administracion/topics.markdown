@@ -3,7 +3,7 @@ title: Administracion de topicos
 icon: topic
 ---
 
-* La administración de tópicos se ubica dentro de las opciones de Administración → Tópicos.
+* La administración de tópicos se ubica dentro de las opciones de **Administración → Tópicos**.
 
 * Dentro de la ventana de Administración de tópicos, se mostrarán dos partes diferenciadas. La primera está orientada para los tópicos, con el listado de las categorias existentes. En la segunda, en la parte inferior, se muestran las etiquetas y sus diferentes opciones.
 
@@ -21,7 +21,7 @@ icon: topic
 <br />
 #### ID
 
-* Muestra el identificador único de cada categoria. 
+* Muestra el identificador único de cada categoría. 
 
 <br />
 #### Acrónimo
@@ -67,7 +67,7 @@ icon: topic
 
 &nbsp; &nbsp;• `Grid por defecto`<br />
 
-&nbsp; &nbsp;• `Formulario`: Selecciona el [formulario](es/rules/rule-concepts) con el que se completará la información de un tópico. <br />
+&nbsp; &nbsp;• `Formulario`: Selecciona el [formulario](Reglas/rule-concepts) con el que se completará la información de un tópico. <br />
 
 &nbsp; &nbsp;• `Dashboard`<br />
 
@@ -75,7 +75,7 @@ icon: topic
 
 &nbsp; &nbsp;• `Opciones`: Permite crear tópicos de solo lectura. Usado en las integraciones para evitar sobreescribir información. <br />
 
-&nbsp; &nbsp;• `Lista de estados`: Permite seleccionar los [estados](es/admin/status) que estarán disponibles en los tópicos de la categoria. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorias tengan al menos un estado inicial y otro final.
+&nbsp; &nbsp;• `Lista de estados`: Permite seleccionar los [estados](Administracion/status) que estarán disponibles en los tópicos de la categoria. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorias tengan al menos un estado inicial y otro final.
 
 
 * Una vez guardado, la categoría aparecerá en la lista de categorías

@@ -3,9 +3,9 @@ title: Proyecto
 icon: project
 ---
 
-* Un proyecto es el [grupo de seguridad](es/Conceptos/scope) más común de Clarive.
+* Un proyecto es el [grupo de seguridad](Conceptos/scope) más común de Clarive.
 
-* En Clarive, un proyecto es una colección de [tópicos](es/Conceptos/topic), y se define en base a los requierimientos de cada cliente. Por ejemplo, un proyecto de Clarive puede ser: <br />
+* En Clarive, un proyecto es una colección de [tópicos](Conceptos/topic), y se define en base a los requierimientos de cada cliente. Por ejemplo, un proyecto de Clarive puede ser: <br />
 
 
 &nbsp; &nbsp;• Un proyecto de desarrollo de software. <br />

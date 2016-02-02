@@ -10,7 +10,7 @@ user from the configuration form window.
 Asigna a una variable alijo configurado por el usuario toda encontraron archivos / elementos de acuerdo a las opciones introducidas por el
 usuario de la ventana del formulario de configuración.
 
-* Asigna a una variable [stash](es/Conceptos/stash) configurada por el usuario, todos los ficheros y elementos encontrados de acuerdo a las opciones que el usuario introduzca en la configuración de este elemento.
+* Asigna a una variable [stash](Conceptos/stash) configurada por el usuario, todos los ficheros y elementos encontrados de acuerdo a las opciones que el usuario introduzca en la configuración de este elemento.
 
 * El elemento se configura mediante los siguientes campos
 

@@ -3,7 +3,7 @@ title: Run a Local Script
 icon: cog_java
 ---
 
-* Ejecuta un script local y realiza el [rollback](es/Conceptos/rollback) si es necesario.
+* Ejecuta un script local y realiza el [rollback](Conceptos/rollback) si es necesario.
 
 * Los elementos configurables son los siguientes.
 

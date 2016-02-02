@@ -64,7 +64,7 @@ icon: grid
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
 
-&nbsp;&nbsp;• Donde id es el [MID](es/Conceptos/mid) de la categoría.
+&nbsp;&nbsp;• Donde id es el [MID](Conceptos/mid) de la categoría.
 
 
 <br />

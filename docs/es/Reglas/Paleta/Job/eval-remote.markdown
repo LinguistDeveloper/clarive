@@ -3,7 +3,7 @@ title: Eval Remote
 icon: cog_java
 ---
 
-* Agente relacionado con el [CI](es/Conceptos/ci) servidor que evalúa el código dado, mostrando un mensaje de error en caso de fallo durante la ejecución o devolviendo el código y su resultado en caso de que haya ido de manera correcta.
+* Agente relacionado con el [CI](Conceptos/ci) servidor que evalúa el código dado, mostrando un mensaje de error en caso de fallo durante la ejecución o devolviendo el código y su resultado en caso de que haya ido de manera correcta.
 
 
 * La lista de configuración del elemento incluye las siguientes opciones: <br />

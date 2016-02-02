@@ -25,7 +25,7 @@ icon: rule
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Post offline* - La regla se ejecuta tras producirse el evento. <br />
 
 
-&nbsp; &nbsp;• **Cadena de pase**: Referentes a las cadenas de pase, para desplegar o realizar [rollback](es/Conceptos/rollback). Tres posibles pasos finales: <br />
+&nbsp; &nbsp;• **Cadena de pase**: Referentes a las cadenas de pase, para desplegar o realizar [rollback](Conceptos/rollback). Tres posibles pasos finales: <br />
     
 &nbsp; &nbsp;&nbsp; &nbsp; • *Promote* - Despliega a otro entorno, conceptualmente otro superior, por ejemplo de pre-producción a producción. <br />
     
@@ -64,9 +64,9 @@ icon: rule
 
 &nbsp; &nbsp;• **Reglas** - Permite incluir reglas dentro de otras reglas para simplicar el flujo. Estas reglas tiene que ser de tipo independiente.
 
-&nbsp; &nbsp;• **Dashlets** - Componentes que sirven para construir los [dashboards](es/Conceptos/dashboards) 
+&nbsp; &nbsp;• **Dashlets** - Componentes que sirven para construir los [dashboards](Conceptos/dashboards) 
 
-&nbsp; &nbsp;• **Fieldlets** - Elementos que dan forma a los formularios de los [tópicos](es/Conceptos/topic) 
+&nbsp; &nbsp;• **Fieldlets** - Elementos que dan forma a los formularios de los [tópicos](Conceptos/topic) 
 
 
 ### Otras reglas
@@ -86,4 +86,4 @@ icon: rule
 <br />
 ### Stash
 
-*  El [stash](es/Conceptos/stash) de las reglas en el sistema de CLarive mantienen el estao de los pases entre ejecuciones. Las variables stash son utilizadas para comunicar diferentes tareas.
+*  El [stash](Conceptos/stash) de las reglas en el sistema de CLarive mantienen el estao de los pases entre ejecuciones. Las variables stash son utilizadas para comunicar diferentes tareas.

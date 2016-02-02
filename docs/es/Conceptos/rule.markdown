@@ -20,4 +20,4 @@ icon: rule
 &nbsp; &nbsp;• **Informe** <br />
 
 
-* Para conocer en detalle el funcionamiento de las reglas, se puede consultar la ayuda relacionada con [las reglas](es/Reglas/rule-concepts).
+* Para conocer en detalle el funcionamiento de las reglas, se puede consultar la ayuda relacionada con [las reglas](Reglas/rule-concepts).

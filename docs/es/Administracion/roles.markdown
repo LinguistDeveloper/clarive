@@ -5,13 +5,13 @@ icon: role
 
 <br />
 
-* La seguridad de Clarive se gestiona a través del [sistema de roles](es/concepts/roles).
+* La seguridad de Clarive se gestiona a través del [sistema de roles](concepts/roles).
 
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
 
 * Los usuarios pueden tener uno o mas roles definidos. Esto hace que el acceso a Clarive por parte de un usuario esté limitado y controlado. 
 
-&nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](es/admin/topics), [administración de notificaciones](es/admin/notifications), [acceso al planificador](es/admin/scheduler), [gestión de usuarios](es/admin/user), etc...Un gestor de incidencias puede estar defenido por ejemplo con acceso completo a la categoria Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
+&nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](Administracion/topics), [administración de notificaciones](Administracion/notifications), [acceso al planificador](Administracion/scheduler), [gestión de usuarios](Administracion/user), etc...Un gestor de incidencias puede estar defenido por ejemplo con acceso completo a la categoria Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
 
 * Un usuario puede tener mas de un rol de tal manera que pueda acceder a más temas donde trabajar.
 
@@ -26,7 +26,7 @@ icon: role
 
 &nbsp; &nbsp;• `Descripción`: La descripción del rol. <br />
 
-&nbsp; &nbsp;• `Buzón`: Buzón al que pertenece el rol. Util para las [notificaciones](es/admin/notifications). <br />
+&nbsp; &nbsp;• `Buzón`: Buzón al que pertenece el rol. Util para las [notificaciones](Administracion/notifications). <br />
 
 &nbsp; &nbsp;• `Opciones`: Resumen de las acciones del rol.
 
@@ -37,7 +37,7 @@ icon: role
 <br />
 #### Búsqueda
 
-* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](es/getting-started/search-syntax)
+* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
 #### <img src="/static/images/icons/add.gif" /> Crear
@@ -48,7 +48,7 @@ icon: role
 
 &nbsp; &nbsp;• **Descripción**: Una breve descripción del papel que desempeña el rol. <br />
 
-&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](es/concepts/dashboards). Aqui se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](es/getting-started/prefs) solo aparecerán los dashboards que estén asociados sus roles. EL primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
+&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](concepts/dashboards). Aqui se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](Primeros_pasos/prefs) solo aparecerán los dashboards que estén asociados sus roles. EL primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
 
 
 <br />
@@ -99,7 +99,7 @@ icon: role
 &nbsp; &nbsp;&nbsp; &nbsp;• `Campos de un tópico`: Por cada campo de un tópico en un estado específico, la acción puede ser permitir al rol editar un tópico que esté en un determinado estado pero solo visualizarlo cuando está en otro estado. <br />
 
 
-&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](es/concepts/scope) está asignado. <br />
+&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](concepts/scope) está asignado. <br />
 
 &nbsp; &nbsp;• *Ámbitos* - Es una vista pivotal de la pestaña anterior. Permite ver los usuarios que tienen el rol.<br />
 

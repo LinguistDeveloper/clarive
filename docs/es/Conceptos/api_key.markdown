@@ -37,5 +37,5 @@ Global API Key access setup
 * ***api-key authentication is not enabled for this url*** <br />
 
 
-&nbsp; &nbsp;• Este mensaje de error indica que la URL a la que se intenta acceder no permite el acceso a través de claves API. De manera alternativa es posible crear una regla de tipo [webservice](es/Conceptos/webservice) o habilitar el acceso global a través de claves API.
+&nbsp; &nbsp;• Este mensaje de error indica que la URL a la que se intenta acceder no permite el acceso a través de claves API. De manera alternativa es posible crear una regla de tipo [webservice](Conceptos/webservice) o habilitar el acceso global a través de claves API.
 

@@ -23,7 +23,7 @@ icon: lock_small
 <br />
 ### Crear nueva clave
 
-* Para crear una nueva clave, el usuario tiene que acceder a sus [preferencias](es/getting-started/prefs) o, en caso de ser administrador a través de las preferencias del usuario, opción situada en Administración → Usuarios
+* Para crear una nueva clave, el usuario tiene que acceder a sus [preferencias](Primeros_pasos/prefs) o, en caso de ser administrador a través de las preferencias del usuario, opción situada en Administración → Usuarios
 
 * Una vez en la pestaña `API` hay que pulsar el botón `Generar clave API` o insertar una en el cuadro superior. Por último, es necesario guardar la clave.
 

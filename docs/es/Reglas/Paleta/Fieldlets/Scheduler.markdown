@@ -9,7 +9,7 @@ icon: clock
 
 * Permite añadir una tabla como planificadora de eventos.
 
-* Su funcionamiento es similar a los [hitos](es/Reglas/Paleta/Fieldlets/Milestones)
+* Su funcionamiento es similar a los [hitos](Reglas/Paleta/Fieldlets/Milestones)
 
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 

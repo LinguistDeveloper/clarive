@@ -51,7 +51,7 @@ Considere también el uso del elemento de la paleta `Mensaje de error en el logi
 
 * En caso de que ni se permita ni se niegue de manera explicita la autenticación a un usuario, Clarive seguirá los pasos establecidos en el sistema para ello.
 
-* Esta regla invoca la clave de autenticación [Clave API](es/Conceptos/api_key).
+* Esta regla invoca la clave de autenticación [Clave API](Conceptos/api_key).
 
 <br />
 ### Ejemplo

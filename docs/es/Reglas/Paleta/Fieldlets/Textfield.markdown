@@ -9,7 +9,7 @@ icon: field
 
 * Permite añadir un texto en el tópico.
 
-* El tamaño de esta caja es igual que el del [titulo](es/Reglas/Paleta/Fieldlets/Title). 
+* El tamaño de esta caja es igual que el del [titulo](Reglas/Paleta/Fieldlets/Title). 
 
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 

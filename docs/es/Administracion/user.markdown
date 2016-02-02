@@ -37,7 +37,7 @@ icon: user.gif
 <br />
 #### Búsqueda
 
-* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](es/getting-started/search-syntax)
+* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
 #### <img src="/static/images/icons/add.gif" /> Crear
@@ -118,7 +118,7 @@ icon: user.gif
 
 * Permite al administrador cambiar las preferencias del usuario tales como el idioma o el avatar.
 
-* El menu de acceso es el que el usuario tiene a su disposición. Para saber más sobre este menú, puede consultar [la ayuda](es/getting-started/prefs)
+* El menu de acceso es el que el usuario tiene a su disposición. Para saber más sobre este menú, puede consultar [la ayuda](Primeros_pasos/prefs)
 
 
 * The administrator can change user preferences, such as language or avatar by selecting a user and clicking on the Preferences button.

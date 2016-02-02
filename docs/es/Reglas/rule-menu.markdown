@@ -48,7 +48,7 @@ static/images/icons/export.png" /> Exporta la regla seleccionada en formato YAML
 
 &nbsp; &nbsp;• <img src="/static/images/icons/save.png" /> **Guardar** - Guarda la regla. <br />
 
-&nbsp; &nbsp;• <img src="/static/images/icons/edit.gif" /> **DSL** - Se abre una nueva ventana con el código DSL de la regla seleccionada. Este código puede ser ejecutado. <!--  El funcionamiento de esta opción está descrito en la [Paleta de reglas](es/Reglas/rule-menu.markdown).--> <br />
+&nbsp; &nbsp;• <img src="/static/images/icons/edit.gif" /> **DSL** - Se abre una nueva ventana con el código DSL de la regla seleccionada. Este código puede ser ejecutado. <!--  El funcionamiento de esta opción está descrito en la [Paleta de reglas](Reglas/rule-menu.markdown).--> <br />
 
 &nbsp; &nbsp;• <img src="/static/images/icons/wrench.gif" /> **Herramientas** - Mas opciones acerca de la regla: <br />
 

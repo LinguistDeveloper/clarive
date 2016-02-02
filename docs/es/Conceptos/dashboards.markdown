@@ -14,4 +14,3 @@ icon: dashboard.png
 * Todos estos componentes forman una regla de tipo dashboard que luego podrá ser utilizada por los roles. 
 
 * El resultado final es una ventana donde aparecen todos los dashlets incluidos en la regla para mostrar lo que el usuario requiera.
-

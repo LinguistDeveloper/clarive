@@ -9,4 +9,4 @@ icon: class.gif
 
 * Clarive supervisa la vida de los CI a través de una combinación de procesos y herramientas mediante la implementación y la habilitación de elementos fundamentales de la seguridad, gestión del cambio y auditorias.
 
-* Todos los CIs tienen un identificador [Master ID](es/Conceptos/mid) en Clarive.
+* Todos los CIs tienen un identificador [Master ID](Conceptos/mid) en Clarive.

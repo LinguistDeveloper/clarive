@@ -3,7 +3,7 @@ title: APPLY NATURE
 icon: loop.gif
 ---
 
-* Si se aplica una naturaleza a un cambio, se cargan las variables de configuración del CI al [stash](es/Conceptos/stash)
+* Si se aplica una naturaleza a un cambio, se cargan las variables de configuración del CI al [stash](Conceptos/stash)
 
 If nature applies to changeset, load config variables from the ci nature to the stash. 
 

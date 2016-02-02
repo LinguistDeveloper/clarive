@@ -50,7 +50,7 @@ icon: email
 * Todas las notificaciones pueden ser activadas o desactivadas. Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.png" /> o <img src ="/static/images/icons/stop.png "/>.
 
 
-* Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](es/getting-started/search-syntax).
+* Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](Primeros_pasos/search-syntax).
 
 <br />
 

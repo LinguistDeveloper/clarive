@@ -5,7 +5,7 @@ icon: daemon.gif
 
 * Un demonio es un programa informático que se ejecuta como un proceso en segundo plano, en lugar de estar bajo el control directo de un usuario interactivo.
 
-* En Clarive, los demonios son especiales, los procesos independientes los inicia el [Dispatcher](es/admin/dispatcher). 
+* En Clarive, los demonios son especiales, los procesos independientes los inicia el [Dispatcher](Administracion/dispatcher). 
 
 * Realizan operaciones criticas para el correcto funcionamiento de la herramienta. Entre las funciones que poseen destacan: <br />
 
@@ -13,9 +13,9 @@ icon: daemon.gif
 
 &nbsp; &nbsp;• Procesamiento de eventos. <br />
 
-&nbsp; &nbsp;• [Notificaciones](es/admin/notifications). <br />
+&nbsp; &nbsp;• [Notificaciones](Administracion/notifications). <br />
 
-&nbsp; &nbsp;• Ejecuciones [planificadas](es/admin/scheduler). <br />
+&nbsp; &nbsp;• Ejecuciones [planificadas](Administracion/scheduler). <br />
 
 &nbsp; &nbsp;• Control de semáforos.
 
@@ -47,7 +47,7 @@ icon: daemon.gif
 
 Las acciones disponibles dentro de la ventana de Demonios son las siguientes: <br />
 
-<img src="/static/images/icons/add.gif" /> **Crear**: Crear un nuevo demonio asociado al [dispatcher](es/admin/dispatcher).<br />
+<img src="/static/images/icons/add.gif" /> **Crear**: Crear un nuevo demonio asociado al [dispatcher](Administracion/dispatcher).<br />
 
 <img src="/static/images/icons/edit.gif" /> **Editar**: Permite modificar la configuración el demonio seleccionado. <br />
 

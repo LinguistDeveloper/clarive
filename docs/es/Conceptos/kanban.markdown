@@ -8,12 +8,12 @@ icon: kanban
 
 * El método Kanban es un conjunto de principios y prácticas para la gestión y mejora del flujo de trabajo.
 
-* Los usuarios que utilicen este tablero, aunque no estén al tanto de las [reglas](es/Conceptos/rule) del Kanban o del estado del proyecto o de las tareas, tendrán una visión más clara de la progresión del trabajo dentro de un [proyecto](es/Conceptos/project) o de otros trabajos.
+* Los usuarios que utilicen este tablero, aunque no estén al tanto de las [reglas](Conceptos/rule) del Kanban o del estado del proyecto o de las tareas, tendrán una visión más clara de la progresión del trabajo dentro de un [proyecto](Conceptos/project) o de otros trabajos.
 
 * Hay varias formas de visualizar el tablero Kanban dentro de la aplicación. Generalmente la opción está disponible en: <br />
 
 
-&nbsp; &nbsp;• Desde la tabla de [tópicos](es/Conceptos/topic) se podrá acceder al tablero a través del botón <img src="/static/images/icons/kanban.png" /> situado arriba a la derecha de la tabla. <br />
+&nbsp; &nbsp;• Desde la tabla de [tópicos](Conceptos/topic) se podrá acceder al tablero a través del botón <img src="/static/images/icons/kanban.png" /> situado arriba a la derecha de la tabla. <br />
 
 &nbsp; &nbsp;• Desde un tópico que pertenezca a una categoría de tipo Release
 

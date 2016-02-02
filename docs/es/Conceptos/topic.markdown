@@ -5,9 +5,9 @@ icon: topic
 
 * El tópico representa la entidad central del ciclo de vida en Clarive
 
-* Una **categoría de tópico** es una instancia que define la organización que tiene asociado un [flujo de trabajo](es/Conceptos/workflow).
+* Una **categoría de tópico** es una instancia que define la organización que tiene asociado un [flujo de trabajo](Conceptos/workflow).
 
-* Un **tópico** es una instancia de una categoría de tópioc, que lleva asignado un [mid](es/Conceptos/mid).
+* Un **tópico** es una instancia de una categoría de tópioc, que lleva asignado un [mid](Conceptos/mid).
 
 
 <br />
@@ -19,7 +19,7 @@ icon: topic
 
 &nbsp; &nbsp;• Un flujo de trabajo. <br />
 
-&nbsp; &nbsp;• Una [regla](es/Conceptos/rule) de tipo formulario donde se define el formulario que se utilizará para rellenar la información del tópico. <br />
+&nbsp; &nbsp;• Una [regla](Conceptos/rule) de tipo formulario donde se define el formulario que se utilizará para rellenar la información del tópico. <br />
 
 
 &nbsp; &nbsp;• Seguridad a nivel de flujos: Establece que usuarios/roles puede transitar un tópico de un estado a otro pudiendo establecerse flujos distintos en función del rol y del proyecto.<br />

@@ -3,7 +3,7 @@ title: Change Topic Status
 icon: topic
 ---
 
-* Servicio para cambiar el estado de un [tópico](es/Conceptos/topic). 
+* Servicio para cambiar el estado de un [tópico](Conceptos/topic). 
 
 * La lista de configuración del elemento incluye las siguientes opciones: <br />
 
