@@ -787,6 +787,49 @@ subtest 'upload: fails to upload not allowed extension' => sub {
     cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: jpg/) }};
 };
 
+subtest 'list_users: doesnt fail if role is not found and returns 0' => sub {
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { 
+            roles => 'TestRole'
+        } } 
+    );
+    $c->{username} = 'root'; # change context to root
+    $controller->list_users($c);
+    my $stash = $c->stash;
+
+    cmp_deeply $stash, { json => { totalCount => 0, data => [] } };
+};
+
+# subtest 'list_users: returns role' => sub {
+#     TestSetup->_setup_clear();
+#     my $controller = _build_controller();
+#     my $project = TestUtils->create_ci_project;
+#     my $id_role = TestSetup->create_role(
+#         role => 'TestRole',
+#         actions => [
+#             {
+#                 action => 'action.topics.category.view',
+#             }
+#         ]
+#     );
+
+#     my $user = TestSetup->create_user( username => 'test_user', id_role => $id_role, project => $project );
+#     my $user2 = TestSetup->create_user( username => 'test_user2', id_role => $id_role, project => $project );
+
+# my @roles = mdb->role->find()->all;
+# warn Data::Dumper::Dumper( \@roles );
+
+#     my $c = _build_c( req => { params => { 
+#             roles => 'TestRole'
+#         } } 
+#     );
+#     $c->{username} = 'test_user'; # change context to root
+#     $controller->list_users($c);
+#     my $stash = $c->stash;
+
+#     is $stash->{json}{totalCount}, 1;
+# };
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 

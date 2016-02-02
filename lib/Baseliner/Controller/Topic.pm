@@ -1726,7 +1726,7 @@ sub list_users : Local {
     my $limit = $p->{limit} // 9999;
     $row->skip($start);
     $row->limit($limit);
-    my $cnt = $row->count;
+    my $cnt = $row->count || 0;
     if($row){
         while( my $r = $row->next ) {
             push @rows,
