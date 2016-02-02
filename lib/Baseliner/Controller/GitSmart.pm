@@ -10,6 +10,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
+use URI::Escape 'uri_unescape';
 
 sub begin : Private {  #TODO control auth here
      my ($self,$c) = @_;
@@ -28,6 +29,10 @@ sub git : Path('/git/') {
     my ($self,$c, @args ) = @_;
 
     return unless $self->access_granted($c);
+
+    foreach my $arg (@args){
+        $arg = uri_unescape($arg);
+    }
 
     my $path = join '/', @args;
 
