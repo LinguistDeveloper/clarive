@@ -13,6 +13,7 @@ use JSON ();
 use Baseliner::CI;
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
+use Baseliner::Model::Topic;
 use BaselinerX::Type::Fieldlet;
 
 sub _setup_clear {
@@ -47,6 +48,9 @@ sub create_label {
 
 sub create_rule_form {
     my $class = shift;
+    my (%params) = @_;
+
+    $params{rule_tree} = JSON::encode_json( $params{rule_tree} ) if $params{rule_tree} && ref $params{rule_tree};
 
     my $id_rule = mdb->seq('id');
     mdb->rule->insert(
@@ -55,6 +59,7 @@ sub create_rule_form {
             ts        => '2015-08-06 09:44:30',
             rule_type => "form",
             rule_seq  => $id_rule,
+            %params
             #rule_tree => JSON::encode_json(_fieldlets())
         }
     );
@@ -100,6 +105,7 @@ sub create_topic {
         'status'          => $status->mid,
         'id_rule'         => $id_form,
         'category_status' => { id => $status->mid },
+        'id_category_status' =>  $status->mid ,
     };
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(

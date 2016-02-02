@@ -24,10 +24,11 @@ use BaselinerX::Type::Event;
 use BaselinerX::Fieldlets;
 use Baseliner::Queue;
 
-use Baseliner::Controller::Topic;
 use Baseliner::Model::Topic;
 use Clarive::mdb;
 use Class::Date;
+
+use_ok 'Baseliner::Controller::Topic';
 
 subtest 'kanban config save' => sub {
     TestSetup->_setup_clear();
@@ -349,18 +350,402 @@ subtest 'list_status_changes: returns status changes' => sub {
     };
 };
 
-sub _setup {
-    TestUtils->cleanup_cis;
-    TestUtils->setup_registry( 'BaselinerX::CI',
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules' );
+subtest 'topic_drop: set error when no drop fields found' => sub {
+    _setup();
 
-    mdb->activity->drop;
-    mdb->topic->drop;
-}
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $release_mid = TestSetup->create_topic(project => $project);
+    my $changeset_mid = TestSetup->create_topic(project => $project);
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { node1 => { topic_mid => $changeset_mid }, node2 => { topic_mid => $release_mid } } }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "No drop fields available in topics $changeset_mid or $release_mid",
+            'success' => \0
+        }
+      };
+};
+
+subtest 'topic_drop: drops child to parent' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+            {
+                action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.topicsfield.release.changesets.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { node1 => { topic_mid => $changeset_mid }, node2 => { topic_mid => $release_mid } } }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Topic #$release_mid added to #$changeset_mid in field `release`",
+            'success' => \1
+        }
+      };
+
+    my $changeset_doc = mdb->topic->find_one({mid => $changeset_mid});
+    my $release_doc = mdb->topic->find_one({mid => $release_mid});
+
+    is_deeply $changeset_doc->{release}, [$release_mid];
+};
+
+subtest 'topic_drop: asks user if several variants possible' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+            {
+                action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.topicsfield.release.changesets.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Sprint',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { node1 => { topic_mid => $changeset_mid }, node2 => { topic_mid => $release_mid } } }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'targets' => [ ignore(), ignore() ],
+            'success' => \1
+        }
+      };
+
+    is $c->stash->{json}->{targets}->[0]->{meta}->{name}, 'Release';
+    is $c->stash->{json}->{targets}->[1]->{meta}->{name}, 'Sprint';
+};
+
+subtest 'topic_drop: uses selected by user variant' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+            {
+                action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.topicsfield.release.changesets.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Sprint',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                selected_id_field => 'release',
+                selected_mid => $changeset_mid,
+                node1             => { topic_mid => $changeset_mid },
+                node2             => { topic_mid => $release_mid }
+            }
+        }
+    );
+
+    $controller->topic_drop($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Topic #$release_mid added to #$changeset_mid in field `release`",
+            'success' => \1
+        }
+      };
+};
 
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
@@ -368,6 +753,25 @@ sub _build_c {
 
 sub _build_controller {
     Baseliner::Controller::Topic->new( application => '' );
+}
+
+sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
+    );
+
+    mdb->master->drop;
+    mdb->master_rel->drop;
+    mdb->master_doc->drop;
+
+    mdb->category->drop;
+    mdb->role->drop;
+    mdb->rule->drop;
 }
 
 done_testing;

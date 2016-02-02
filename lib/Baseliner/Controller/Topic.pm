@@ -1,5 +1,7 @@
 package Baseliner::Controller::Topic;
 use Moose;
+BEGIN {  extends 'Catalyst::Controller' }
+
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -10,8 +12,6 @@ use Try::Tiny;
 use Text::Unaccent::PurePerl;
 use v5.10;
 use experimental 'smartmatch', 'autoderef', 'switch';
-
-BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
@@ -2276,12 +2276,15 @@ node2:
 =cut
 
 sub topic_drop : Local {
-    my ($self,$c) = @_;
+    my ($self, $c) = @_;
+
     my $p = $c->request->parameters;
+
     my $n1 = delete $p->{node1};
     my $n2 = delete $p->{node2};
     my $mid1 = $n1->{topic_mid};
     my $mid2 = $n2->{topic_mid};
+
     my ($from_mid,$to_mid);
     my $kmatches = 0;
     my @targets;
@@ -2316,8 +2319,21 @@ sub topic_drop : Local {
                     push @mids, $from_mid;
                     # save operation for later
                     push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
-                        model->Topic->update({ action=>'update', topic_mid=>$to_mid, $id_field=>\@mids, username=>$c->username });
-                        $c->stash->{json} = { success => \1, msg => _loc( 'Topic #%1 added to #%2 in field `%3`', $from_mid, $to_mid, _loc( $$fm{name_field} ) ) };
+                        Baseliner::Model::Topic->new->update(
+                            {
+                                action    => 'update',
+                                topic_mid => $to_mid,
+                                $id_field => \@mids,
+                                username  => $c->username
+                            }
+                        );
+                        $c->stash->{json} = {
+                            success => \1,
+                            msg     => _loc(
+                                'Topic #%1 added to #%2 in field `%3`', $from_mid,
+                                $to_mid, _loc( $fm->{name_field} || $fm->{id_field} )
+                            )
+                        };
                     } };
                 }
             }

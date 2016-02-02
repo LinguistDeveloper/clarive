@@ -913,6 +913,86 @@ subtest 'get_users_friend: returns empty when no role found' => sub {
     is_deeply \@friends, [];
 };
 
+subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $topic_meta = Baseliner::Model::Topic->new->get_meta($changeset_mid, $id_changeset_category, $user->username);
+
+    my $meta = $model->get_meta_permissions(
+        'data' => {
+            'topic_mid' => $changeset_mid,
+            'category' => {
+                'id'   => $id_changeset_category,
+                'name' => 'Changeset',
+            },
+            'category_status' => {
+                'mid'  => $status->mid,
+                'name' => 'New',
+            },
+        },
+        meta => $topic_meta,
+        username => $user->username
+    );
+
+    my ($status_field) = grep { $_->{name} && $_->{name} eq 'Status' } @$meta;
+    cmp_deeply $status_field->{readonly}, \1;
+
+    my ($release_field) = grep { $_->{name} && $_->{name} eq 'Release Combo' } @$meta;
+    cmp_deeply $release_field->{readonly}, \0;
+};
+
 done_testing();
 
 sub _setup {
@@ -933,6 +1013,7 @@ sub _setup {
     mdb->role->drop;
     mdb->category->drop;
     mdb->label->drop;
+    mdb->topic->drop;
 }
 
 sub _create_file {
