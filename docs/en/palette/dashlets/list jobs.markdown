@@ -7,10 +7,7 @@ icon: report_default
     
 <br />
 
-<img src="/static/images/icons/report_default.png" />  Lists the jobs and their status in a ordered list
-
-
-<br />
+* Lists the jobs and their status in a ordered list
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -22,7 +19,6 @@ icon: report_default
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-
 <br />
 ###  Select jobs in states
 * Allows to filter the grid by state(s)
@@ -30,7 +26,6 @@ icon: report_default
 <br />
 ### Which environment do you want to see
 * Select one o more environments to configure the table.
-
 
 <br />
 ### Maximum number of jobs to list

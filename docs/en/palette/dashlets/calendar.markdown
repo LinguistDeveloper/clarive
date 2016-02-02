@@ -7,9 +7,8 @@ icon: calendar
     
 <br />
 
-<img src="/static/images/icons/calendar.png" /> Shows the calendar in the dashboard.
+* Shows the calendar in the dashboard.
 
-<br />
 * There are a list of elements can be configured in the dashlet:
 
 <br />
@@ -60,6 +59,6 @@ icon: calendar
 ### Advanced JSON/MongoDB condition for filter
 * Allows to use a JSON format o MongoDB query to add a condition. 
 
-
 <br />
+### Label mask
 * Allows to personalize the information will show in the topic mask.

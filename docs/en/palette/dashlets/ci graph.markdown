@@ -7,9 +7,7 @@ icon: ci-grey
     
 <br />
 
-<img src="/static/images/icons/ci-grey.png" /> Shows a CI Graph in the dashboard.
-
-<br />
+* Shows a CI Graph in the dashboard.
 
 * There are a list of elements can be configured in the dashlet:
 

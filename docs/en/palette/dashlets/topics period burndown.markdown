@@ -7,10 +7,7 @@ icon: chart_line
     
 <br />
 
-<img src="/static/images/icons/chart_line.png" /> Shows a chart line with the real and the expected trends of the topics in a timeline.
-
-
-<br />
+* Shows a chart line with the real and the expected trends of the topics in a timeline.
 
 * There are a list of elements can be configured in the dashlet:
 

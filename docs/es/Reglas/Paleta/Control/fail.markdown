@@ -1,0 +1,12 @@
+---
+title: FAIL
+icon: log_e
+---
+
+* El flujo se detiene y se muestra un mensaje.
+
+* Este mensaje se configura dentro de las opciones del elemento: <br />
+
+&nbsp; &nbsp;• **msg**: En la columna *value* indicar el mensaje que se desea mostrar. El valor por defecto es *abort here*.
+
+

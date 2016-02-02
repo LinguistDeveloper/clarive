@@ -7,10 +7,7 @@ icon: report_default
     
 <br />
 
-<img src="/static/images/icons/report_default.png" /> Shows the last jobs ordered by application
-
-
-<br />
+* Shows the last jobs ordered by application
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -21,7 +18,6 @@ icon: report_default
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ### Which environment do you want to see

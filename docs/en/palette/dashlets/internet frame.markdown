@@ -7,10 +7,7 @@ icon: webservice
     
 <br />
 
-<img src="/static/images/icons/webservice.png" /> Shows a webpage inside the dashlet.
-
-
-<br />
+* Shows a webpage inside the dashlet.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -21,7 +18,6 @@ icon: webservice
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ### URL

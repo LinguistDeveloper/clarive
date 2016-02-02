@@ -7,10 +7,7 @@ icon: chart_pie
     
 <br />
 
-<img src="/static/images/icons/chart_pie.png" /> Shows the status of a job in a configurable chart
-
-
-<br />
+* Shows the status of a job in a configurable chart
 
 * There are a list of elements can be configured in the dashlet:
 

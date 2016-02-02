@@ -7,9 +7,7 @@ icon: roadmap
     
 <br />
 
-<img src="/static/images/icons/roadmap.png" height="16px" width="16px" /> Shows a grid with the topic roadmap.
-
-<br />
+* Shows a grid with the topic roadmap.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -20,7 +18,6 @@ icon: roadmap
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ###  First weekday  

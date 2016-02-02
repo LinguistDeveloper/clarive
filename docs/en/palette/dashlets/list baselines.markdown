@@ -7,10 +7,7 @@ icon: report_default
     
 <br />
 
-<img src="/static/images/icons/report_default.png" />  Lists the baselines
-
-
-<br />
+* Lists the baselines
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -22,11 +19,9 @@ icon: report_default
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-
 <br />
 ### Which environment do you want to see
 * Select one o more environments to configure the dashlet.
-
 
 <br />
 ### Number of days before today to list jobs

@@ -7,9 +7,7 @@ icon: chart_pie
     
 <br />
 
-<img src="/static/images/icons/chart_pie.png" height="16px" width="16px" /> Shows a pie with the status of the topics.
-
-<br />
+* Shows a pie with the status of the topics.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -21,11 +19,9 @@ icon: chart_pie
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-
 <br />
 ### Chart will be shown as...
 * Can show a different views of the chart <br />
-
 
 &nbsp; &nbsp;• **Pie** <br />
 

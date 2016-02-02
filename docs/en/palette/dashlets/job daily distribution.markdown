@@ -7,10 +7,7 @@ icon: chart_line
     
 <br />
 
-<img src="/static/images/icons/chart_line.png" /> Shows the jobs distribution in a chart line
-
-
-<br />
+* Shows the jobs distribution in a chart line
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -50,4 +47,4 @@ icon: chart_line
 
 <br />
 ### Which environmets do you want to see
-* Allows to select one o more environments
+* Allows to select one o more environments.

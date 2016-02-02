@@ -7,9 +7,7 @@ icon: swarm
     
 <br />
 
-<img src="/static/images/icons/swarm.png" /> Shows an animated swarm with the options configured in the dashlet.
-
-<br />
+* Shows an animated swarm with the options configured in the dashlet.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -20,7 +18,6 @@ icon: swarm
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ###  Background color

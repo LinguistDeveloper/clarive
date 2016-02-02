@@ -7,10 +7,7 @@ icon: html
     
 <br />
 
-<img src="/static/images/icons/html.png" /> Shows an HTML code you can configure in dashlet settings.
-
-
-<br />
+* Shows an HTML code you can configure in dashlet settings.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -22,16 +19,14 @@ icon: html
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-
 <br />
 ### Sample snippers
 * Some examples of code to add to the dashlet.
 
-
 <br />
 ### Data URL
 
-
 <br />
 ### HTML/JS code
+
 * An powerful editor to create a personalized dashlet with HTML/JS code.

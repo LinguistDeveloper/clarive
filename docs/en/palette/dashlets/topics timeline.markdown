@@ -7,10 +7,7 @@ icon: chart_curve
     
 <br />
 
-<img src="/static/images/icons/chart_curve.png" /> Shows a timeline with the number of topics.
-
-
-<br />
+* Shows a timeline with the number of topics.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -21,7 +18,6 @@ icon: chart_curve
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ### Select topics in categories

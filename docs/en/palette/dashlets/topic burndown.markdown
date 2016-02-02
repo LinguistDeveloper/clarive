@@ -7,9 +7,7 @@ icon: chart_line
     
 <br />
 
-<img src="/static/images/icons/chart_line.png" /> Shows a chronogram with a list of topics from a specific date.
-
-<br />
+* Shows a chronogram with a list of topics from a specific date.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -32,7 +30,6 @@ icon: chart_line
 <br />
 ### Chart will be shown as...
 * Indicate what type of chart will be shown. <br />
-
 
 &nbsp; &nbsp;• **Area** <br />
 

@@ -7,11 +7,11 @@ icon: gauge
     
 <br />
 
-<img src="/static/images/icons/gauge.png" /> Shows a gauge with the status of the topics.
+* Shows a gauge with the status of the topics.
 
-<br />
+* The gauge is defined by three colors, red, yellow and green. Can be defined the vaules reachers inside the configuration.
 
-* The gauge is defined by three colors, red, yellow and green. Can be defined the vaules reachers inside the configuration.There are a list of elements can be configured in the dashlet:
+* There are a list of elements can be configured in the dashlet:
 
 <br />
 ### Dimensions of the dashlet

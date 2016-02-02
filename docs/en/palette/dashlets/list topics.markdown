@@ -7,9 +7,7 @@ icon: report_default
     
 <br />
 
-<img src="/static/images/icons/report_default.png" /> Lists the selected topics and their status in a ordered list.
-
-<br />
+* Lists the selected topics and their status in a ordered list.
 
 * There are a list of elements can be configured in the dashlet:
 
@@ -20,7 +18,6 @@ icon: report_default
 <br />
 ### Autorefresh
 * Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
-
 
 <br />
 ###  List of fields to view in grid
@@ -34,11 +31,9 @@ icon: report_default
 ### Select topics in categories
 * Select one o more categories to show in the grid.
 
-
 <br />
 ### Select topics in statuses
 * Select one o more status to configure the table.
-
 
 <br />
 ### User assigned to topics
