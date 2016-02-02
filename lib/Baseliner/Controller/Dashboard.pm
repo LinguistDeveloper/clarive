@@ -474,6 +474,9 @@ sub topics_by_field : Local {
     my $numberfield_group = $p->{numberfield_group};
     my $result_type = $p->{result_type} // 'count';
 
+    my $id_project = $p->{project_id};
+    my $topic_mid = $p->{topic_mid};
+
     my $condition = {};
 
     if ( $group_by eq 'topics_by_category') {
