@@ -19,6 +19,7 @@ my $iid = Util->_md5;
     var column_list = params.data.fields || '';
     var names = { name: 'ID', title: 'Title', assignee: 'Assignee', name_status: 'Status', created_by: 'Created By', created_on: 'Created On', modified_by: 'Modified By', modified_on: 'Modified On' };
     var columns = [{name:'name'}, {name:'title'}, {name:'name_status'}, {name:'created_by'}, {name:'created_on'}];//, {name:'modified_by'}, {name:'modified_on'}];
+    var show_totals = params.data.show_totals || '';
 
     if ( column_list ) {
        var columns = [{name:'name'}];
@@ -39,6 +40,9 @@ my $iid = Util->_md5;
           if ( col_tokens[3] ) {
               column['width'] = col_tokens[3];
           }
+          if ( col_tokens[4] ) {
+              column['total'] = col_tokens[4];
+          }
 
           columns.push(column);
        })
@@ -55,10 +59,12 @@ my $iid = Util->_md5;
         not_in_status: not_in_status,
         categories: categories,
         statuses: statuses,
+        show_totals: show_totals,
         _ignore_conn_errors: true
     }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
+        var totals = {};
 
         html = html + '<table class="table display stripe order-column compact" style="font-size: 85%;width: 100%" id="<% $iid %>"><thead><tr>';
 
@@ -117,13 +123,66 @@ my $iid = Util->_md5;
                 } else {
                   html = html + '<div style="text-align:center;"><img src="/static/images/icons/save.png"></div>'
                 }
+              } else if ( col.type.match(/^number/) ) {
+                var precision = 0;
+                if ( topic[col.name] ) {
+                  var regExp = /^number\((.*?)\)/;
+                  var match = regExp.exec(col.type);
+
+                  if ( match ) {
+                    precision = match[1];
+                  }
+                  html = html + parseFloat(topic[col.name]).toFixed(precision);
+                } else {
+                  html = html + '';
+                }
+                if ( col.total && topic[col.name] && !jQuery.isArray( topic[col.name] ) && ( parseFloat( topic[col.name] ) - parseFloat( topic[col.name] ) + 1) >= 0) {
+                  if ( totals[col.name] ) {
+                    totals[col.name].sum = (parseFloat(totals[col.name].sum) + parseFloat(topic[col.name])).toFixed(precision);
+                    totals[col.name].count = parseFloat(totals[col.name].count) + 1;
+                    if ( parseFloat(topic[col.name]).toFixed(precision) < totals[col.name].min) totals[col.name].min = parseFloat(topic[col.name]).toFixed(precision);
+                    if ( parseFloat(topic[col.name]).toFixed(precision) > totals[col.name].max) totals[col.name].max = parseFloat(topic[col.name]).toFixed(precision);
+                    totals[col.name].precision = precision;
+                  } else {
+                    totals[col.name] = { precision: precision, sum: parseFloat(topic[col.name]).toFixed(precision), count: 1, min: parseFloat(topic[col.name]).toFixed(precision), max: parseFloat(topic[col.name]).toFixed(precision) };
+                  }
+                } else if (col.total && !topic[col.name]) {
+                  if ( totals[col.name] ) {
+                    totals[col.name].count = parseFloat(totals[col.name].count) + 1;
+                  } else {
+                    totals[col.name] = { sum: 0, count: 1, min: 0, max: 0 };
+                  }
+                }
               }
             }
             html = html + '</td>';
           });
           html = html + '</tr>';
         });
+        if ( show_totals ) {
+          html = html + '<tfoot><tr>';
+          var cont = 0;
+          Ext.each( columns, function(col) {
+            if ( cont++ == 0 ) {
+              html = html + '<th>' + _('Totals') + '</th>';
+            } else {
+                if ( !totals[col.name] ) {
+                  html = html + '<th></th>';
+                } else {
+                  if ( col.total == 'avg' ) {
+                    var avg = (parseFloat(totals[col.name].sum) / parseFloat(totals[col.name].count)).toFixed(totals[col.name].precision);
+                    html = html + '<th style="white-space:nowrap;">'+ avg +'</th>';
+                  } else {
+                    html = html + '<th style="white-space:nowrap;">'+ totals[col.name][col.total] +'</th>';
+                  }
+                }
+            } 
+          });
+          html = html + '</tr></tfoot>';
+        }
+
         html = html + '</tbody>';
+
         if(div) div.innerHTML = html;
         Baseliner.datatable("#<% $iid %>",{
           "scrollY": (parseInt(rows)*260),
