@@ -9,7 +9,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup qw(_topic_setup _setup_clear _setup_user);
-use TestUtils;
+use TestUtils qw(mock_time);
 
 use List::MoreUtils qw(pairwise);
 use Baseliner::Role::CI;
@@ -790,27 +790,31 @@ subtest 'status_changes: returns all the status changes' => sub {
     );
 
     my $status1 = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
-    $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => 'user' );
+    mock_time '2016-01-01T00:00:00', sub {
+        $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => 'user' );
+    };
 
     my $status2 = TestUtils->create_ci( 'status', name => 'Change2', type => 'I' );
-    $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
+    mock_time '2016-01-02T00:00:00', sub {
+        $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
+    };
 
-    my @changes = $model->status_changes($topic_mid);
+    my @changes = $model->status_changes({mid => $topic_mid});
 
     is scalar @changes, 2;
-    cmp_deeply $changes[0],
-      {
-        old_status => 'New',
-        status     => 'Change1',
-        username   => 'user',
-        when       => ignore()
-      };
-    cmp_deeply $changes[1],
+    is_deeply $changes[0],
       {
         old_status => 'Change1',
         status     => 'Change2',
         username   => 'user',
-        when       => ignore()
+        when       => '2016-01-02 00:00:00'
+      };
+    is_deeply $changes[1],
+      {
+        old_status => 'New',
+        status     => 'Change1',
+        username   => 'user',
+        when       => '2016-01-01 00:00:00'
       };
 };
 

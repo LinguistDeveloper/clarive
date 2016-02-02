@@ -3235,6 +3235,8 @@ sub status_changes {
     my $self = shift;
     my ( $topic_mid, $limit ) = @_;
 
+    $topic_mid = $topic_mid->{mid} if ref $topic_mid;
+
     $limit //= 100;
     my @status_changes;
 
