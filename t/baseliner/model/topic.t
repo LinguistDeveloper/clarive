@@ -795,7 +795,7 @@ subtest 'status_changes: returns all the status changes' => sub {
     my $status2 = TestUtils->create_ci( 'status', name => 'Change2', type => 'I' );
     $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
 
-    my @changes = $model->status_changes($topic_mid);
+    my @changes = $model->status_changes({mid => $topic_mid});
 
     is scalar @changes, 2;
     cmp_deeply $changes[0],
