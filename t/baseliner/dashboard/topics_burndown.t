@@ -237,6 +237,7 @@ subtest 'burndown: group by date period' => sub {
         ['2015-01-02', 2],
         ['2015-01-03', 2],
         ['2015-01-04', 3],
+        ['2015-01-05', 3],
     ];
 };
 
@@ -805,6 +806,47 @@ subtest 'burndown: filters by topic_mid' => sub {
         from            => '2016-01-01',
         to              => '2016-01-03',
         topic_mid       => $sprint2_mid
+    );
+
+    is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1], ['2016-01-03' => 1]];
+};
+
+subtest 'burndown: selects dates with including' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my ($status_new, $status_in_progress, $status_finished) = _create_statuses();
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status_new->mid );
+
+    my $changeset_mid = mock_time '2016-01-02 23:59:59', sub {
+        TestSetup->create_topic(
+            project     => $project,
+            id_category => $id_changeset_category,
+            title       => 'Fix everything',
+            status      => $status_new
+        );
+    };
+
+    my $dashboard = _build_dashboard();
+
+    my $burndown = $dashboard->dashboard(
+        username        => $user->username,
+        group_by_period => 'date',
+        from            => '2016-01-01',
+        to              => '2016-01-02',
     );
 
     is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1]];

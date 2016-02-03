@@ -17,6 +17,10 @@ sub dashboard {
 
     my $to = $params{to} || _now();
     my $from = $params{from} || do { my $copy = $to; $copy =~ s/ \d\d:\d\d:\d\d/ 00:00:00/; $copy };
+
+    $from = "$from 00:00:00" unless $to =~ m/ \d\d:\d\d:\d\d/;
+    $to   = "$to 23:59:59"   unless $to =~ m/ \d\d:\d\d:\d\d/;
+
     my $group_by_period = $params{group_by_period} || 'hour';
     my $date_field      = $params{date_field}      || 'created_on';
     my $categories      = $params{categories}      || [];
@@ -33,7 +37,7 @@ sub dashboard {
     }
 
     my $date_query_before_period = { '$lt' => $from };
-    my $date_query_during_period = { '$gte' => $from, '$lt' => $to };
+    my $date_query_during_period = { '$gte' => $from, '$lte' => $to };
 
     my $group_by;
     my $where = {};
