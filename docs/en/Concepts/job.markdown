@@ -9,7 +9,7 @@ they always have a schedule and are run by the job daemon.
 * Unlike Jenkins, jobs are not a statically scheduled entity. You cannot schedule
 repeateable jobs. Jobs are *schedule-once* and *run-once* (even though you may manually
 reschedule or rerun them as many times as you like). 
-* If you wish to schedule a job to run frequently (ie. nightly), use the [Scheduler](Concepts/scheduler) facility.
+* If you wish to schedule a job to run frequently (ie. nightly), use the [Scheduler](Administration/scheduler) facility.
 
 <br />
 ## Job are CIs
