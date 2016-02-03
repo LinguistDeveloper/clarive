@@ -32,9 +32,10 @@ sub check_links {
         my $content = join '', <$fh>;
         close $fh;
 
-        my @links = $content =~ m/\[.*?\]\((.*?)\)/ms;
+        my @links = $content =~ m/\[.*?\]\((.*?)\)/msg;
 
         foreach my $link (@links) {
+
             my $link_to = $ROOT . "/$link.markdown";
             ok( -e $link_to, "Link '$link' is broken in '$file'" );
 
