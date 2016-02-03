@@ -1,145 +1,155 @@
+---------------------------------------------- 6.4.3 February 2016 ----------------------------------------------
+- Topic lifecycle & timeline graph
+- Sorting options for dashlet list topics
+- Improve Role permissions interface
+- Various dashlets improvements: totals row, currency, filtering topics by count, average, min, max etc
+- Clarive Help
+- JavaScript support in rules
+- Control of rule deletion
+- Improved top revision calculation
+
 ---------------------------------------------- 6.2.5 April 2015 ----------------------------------------------
-· Added GIT security functionalities
-· Added SOAP functionality to web requests
-· New dynamic workflow improvements
-· Global port for ssh connections
-· New category acronym
-· Enhancement exclude notifications configuration
-· Enhancement in fieldlets
-· Superfast parse_vars
-· Docgen refactored
-· New service to update cis
-· New job dashlets
-· Enhancements in purge daemon
-· Better error messaging for web request
-· Added filter capabilities to topic status pie dashlet
-· Added properties files to parse file service
-· Filter parameter on category for topics by status pie
-· Order jobs in reverse order in topic jobs
-· Purge events in purge daemon
-· Import/export rule as file
-· Add projects to notification scope in change_status
-· Advanced functionality in report rules
-· Markdown now supports self referencing of images in a topic
+- Added GIT security functionalities
+- Added SOAP functionality to web requests
+- New dynamic workflow improvements
+- Global port for ssh connections
+- New category acronym
+- Enhancement exclude notifications configuration
+- Enhancement in fieldlets
+- Superfast parse_vars
+- Docgen refactored
+- New service to update cis
+- New job dashlets
+- Enhancements in purge daemon
+- Better error messaging for web request
+- Added filter capabilities to topic status pie dashlet
+- Added properties files to parse file service
+- Filter parameter on category for topics by status pie
+- Order jobs in reverse order in topic jobs
+- Purge events in purge daemon
+- Import/export rule as file
+- Add projects to notification scope in change_status
+- Advanced functionality in report rules
+- Markdown now supports self referencing of images in a topic
 
 ---------------------------------------------- 6.2.4 December 2014 ----------------------------------------------
-· Huge performance improvements
-· Git viewer renewed
-· New tasks in task bar (Create git tag & load topic data)
-· Search in explorer nodes
-· Drag&Drop of topics to explorer releases
-· New service in task bar (Create job)
-· Order statuses alphabeticaly
-· Performance in new job panel
-· Unique keys in CIs
-· Security for Docs gen
-· Security for Project Reports
-· Search in role panel (actions and tree)
-· Performance in action tree for role panel
-· Change name of variable CIs in projects and rules
-· Performance opening topics
-· Performance in topic grid
-· Hide commits when already added to changeset
-· Monitor refresh improved
-· Fixed job pause skipped
-· Resume paused job from job log
-· Force status to be shown in project LC
-· Performance in daemons mongo related
-· Document generator from topics and views
-· Performance improved in graph searches (children, parents & related). For filters and related menus
-· Dashboard for roles and user preferences
-· Added approval expiration with delay after job schedule time and job expiration time improved
-· Rule tree search
-· Isolate precompiled code in rules.  Improves performance in rule execution
-· Semaphores refactored
-· Performance in topic history
-· Topic create limited to current category on grid; made all topic new tabs the same; new filter: Modified Today
-· SET EXPR rule palette statement added
-· Job reschedule refactored
-· New menu Topic grid by status, status now has icon and color edit fields
-· Cache improvements
-· Cla ps now shows all processes
-· Report separate, secondary connection supported
-· New trap action: Pause
-· Many minor fixes
+- Huge performance improvements
+- Git viewer renewed
+- New tasks in task bar (Create git tag & load topic data)
+- Search in explorer nodes
+- Drag&Drop of topics to explorer releases
+- New service in task bar (Create job)
+- Order statuses alphabeticaly
+- Performance in new job panel
+- Unique keys in CIs
+- Security for Docs gen
+- Security for Project Reports
+- Search in role panel (actions and tree)
+- Performance in action tree for role panel
+- Change name of variable CIs in projects and rules
+- Performance opening topics
+- Performance in topic grid
+- Hide commits when already added to changeset
+- Monitor refresh improved
+- Fixed job pause skipped
+- Resume paused job from job log
+- Force status to be shown in project LC
+- Performance in daemons mongo related
+- Document generator from topics and views
+- Performance improved in graph searches (children, parents & related). For filters and related menus
+- Dashboard for roles and user preferences
+- Added approval expiration with delay after job schedule time and job expiration time improved
+- Rule tree search
+- Isolate precompiled code in rules.  Improves performance in rule execution
+- Semaphores refactored
+- Performance in topic history
+- Topic create limited to current category on grid; made all topic new tabs the same; new filter: Modified Today
+- SET EXPR rule palette statement added
+- Job reschedule refactored
+- New menu Topic grid by status, status now has icon and color edit fields
+- Cache improvements
+- Cla ps now shows all processes
+- Report separate, secondary connection supported
+- New trap action: Pause
+- Many minor fixes
 
 ---------------------------------------------- 6.2.3 September 2014 ----------------------------------------------
-· Masive deletion of all inbox message
-· Generic repository navigation interfaz (SVN, PlasticSCM and Git)
-· New version of interface warning for users (refresh needed)
-· Datatables in topic grids with pagination, sort and search
-· Improved SVN support
-· Job affinity for balanced job daemons
-· Daemons ready for load balancing.  Active/.../Active dispatcher ready
-· Performance improved in semaphores
-· Many minor fixes
+- Masive deletion of all inbox message
+- Generic repository navigation interfaz (SVN, PlasticSCM and Git)
+- New version of interface warning for users (refresh needed)
+- Datatables in topic grids with pagination, sort and search
+- Improved SVN support
+- Job affinity for balanced job daemons
+- Daemons ready for load balancing.  Active/.../Active dispatcher ready
+- Performance improved in semaphores
+- Many minor fixes
 
 ---------------------------------------------- 6.2.2 August 2014 -----------------------------------------------------
-· Tag filter in git tag service
-· Topic history from activity instead of events
-· Semphores in daemons and job host persistance
-· Added mention event (@user in comments)
-· #mid in search opens topic
-· Improved performance when expanding state in lc
-· Many minor fixes
+- Tag filter in git tag service
+- Topic history from activity instead of events
+- Semphores in daemons and job host persistance
+- Added mention event (@user in comments)
+- #mid in search opens topic
+- Improved performance when expanding state in lc
+- Many minor fixes
 
 ---------------------------------------------- 6.2.1 June 2014 ----------------------------------------------
-· Git Smart improved
-· Added try-catch rules
-· Git revision_mode system now allows for checkout of individual commits
-· Mongo cache is now on -cache database
-· New semaphore admin interface
-· Improved cache
-· Better debug for rule execution
-· Some fixes for IE
-· New service to attach asset/file to topic in rules
-· New job from topic menu with available transitions
-· New job panel refactored
-· Added release status to release name in tree_releases
-· Hide passwords in $data
-· New job system, pending jobs from releases
-· Added bls for project
-· MVS refactored balix
-· Sorting of CI grids
-· About panel refactored
-· Dashboard improvements
-· New field types for topics
-· Many minor fixes
+- Git Smart improved
+- Added try-catch rules
+- Git revision_mode system now allows for checkout of individual commits
+- Mongo cache is now on -cache database
+- New semaphore admin interface
+- Improved cache
+- Better debug for rule execution
+- Some fixes for IE
+- New service to attach asset/file to topic in rules
+- New job from topic menu with available transitions
+- New job panel refactored
+- Added release status to release name in tree_releases
+- Hide passwords in $data
+- New job system, pending jobs from releases
+- Added bls for project
+- MVS refactored balix
+- Sorting of CI grids
+- About panel refactored
+- Dashboard improvements
+- New field types for topics
+- Many minor fixes
 
 ---------------------------------------------- 6.2.0 May 2014 ----------------------------------------------
-· Job creation ordering on save, now split in 2 parts, create before and after new_ci with no saving within saving
-· Fixes for IE8
-· Mongo connection rationalized
-· Surrogate to existing user
-· Sorted statuses filter in topics
-· Better cache use for topic data and meta
-· VERSION identifier moved to Clarive->version
-· New cla db-update
-· Job daemon now monitors owned jobs
-· Log for start processing file
-· Log for daemon restarts
-· Added zip services to file management library
-· Parse vars in subject notification
-· Public reports visibility by role/user
-· Remove Oracle complete
-· Many minor fixes
+- Job creation ordering on save, now split in 2 parts, create before and after new_ci with no saving within saving
+- Fixes for IE8
+- Mongo connection rationalized
+- Surrogate to existing user
+- Sorted statuses filter in topics
+- Better cache use for topic data and meta
+- VERSION identifier moved to Clarive->version
+- New cla db-update
+- Job daemon now monitors owned jobs
+- Log for start processing file
+- Log for daemon restarts
+- Added zip services to file management library
+- Parse vars in subject notification
+- Public reports visibility by role/user
+- Remove Oracle complete
+- Many minor fixes
 
 ---------------------------------------------- 6.2.0b April 2014 ----------------------------------------------
-· Oracle to MongoDB
-· Git is now core, not a feature anymore, not optional
-· New Clarive install procedure
-· Update licencing in file
-· Application server CIs as core (web_cluster and web_instance)
-· web-start Starman parameters added: max_requests, backlog, max_servers, etc...
-· web-start --listen array type "Starting server" fixed
-· Allow sed in job items only
-· Allow recursive copy files in ship remote service
-· CLEditor upgrade to 1.4.4 to solve IE10, 11 problems
-· Performance a depth in topic search
-· MVS comm refactored
-· New email templates
-· Rules as WS (REST/SOAP)
-· Estimated job duration in new job panel refactored
-· Purge daemon refactored
-· Login and logout (auth) events
-· Many minor fixes
+- Oracle to MongoDB
+- Git is now core, not a feature anymore, not optional
+- New Clarive install procedure
+- Update licencing in file
+- Application server CIs as core (web_cluster and web_instance)
+- web-start Starman parameters added: max_requests, backlog, max_servers, etc...
+- web-start --listen array type "Starting server" fixed
+- Allow sed in job items only
+- Allow recursive copy files in ship remote service
+- CLEditor upgrade to 1.4.4 to solve IE10, 11 problems
+- Performance a depth in topic search
+- MVS comm refactored
+- New email templates
+- Rules as WS (REST/SOAP)
+- Estimated job duration in new job panel refactored
+- Purge daemon refactored
+- Login and logout (auth) events
+- Many minor fixes

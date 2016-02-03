@@ -1,3 +1,59 @@
+---------------------------------------------- 6.4.3 ----------------------------------------------
+[ENHANCEMENTS]
+
+- #31500 Topic lifecycle & timeline graph
+- #31705 Update Help docs v1
+- #31797 JS Core API
+- #31812 Update icons and tooltips
+- #31824 Translate category configurations
+- #31931 Show available OSes in bootstrap
+- #31954 Add a new parameter to event.file.create (#31930)
+- #31968 Profile command
+- #31972 Telco weekend
+- #31979 Add --reset option to bootstrap
+- #31981 Sorting and user options for dashlet list topics
+- #31988 New mids used in dashboard graphs instead of names
+- #32001 Improve Role permissions interface
+- #32002 Control of rule deletion
+- #32024 Totals row in list topics dashlet
+- #32036 Update copyright license in cla output
+- #32040 Remove tests and docs when packing the sources
+- #32065 [Clarive Help]. Enhancements in buttons
+- #32072 Write unit tests for avatar controller
+- #32089 Add currency type in dashlets
+- #32106 Filter in topic graphs also by count, average, min, max, etc
+- #32136 Make sure GitSmart honors pre-online events
+- #32153 Test .po files
+- #32173 Update product licence
+- #32182 Spanish docs for Clarive Help
+
+[FIXES]
+
+- #31895 In CI DBDest type SQLServer is not existing (#30937)
+- #31951 Fix event.topic.create
+- #31956 Fix recipients list when empty email is present
+- #31963 Fieldlet list_topic_filter is not working filtering by pills
+- #32033 Wrong icon in list_topic checboxes
+- #32042 Fix topic dropping
+- #32075 Make sure there are no phantom spaces in diff view
+- #32091 Parse_vars recursion
+- #32098 FIx top_revision
+- #32111 Fix Baseliner::CI instantiation
+- #32125 Dragging stopped working
+- #32130 New migration to fix not numeric _seq in CIs
+- #32148 Default value in checkbox is not working. (#32133)
+- #32150 Fix mid warnings in Topic (#32074)
+- #32154 Git fixes
+- #32163 Fix migrations 6.4 (#32085, #32090)
+- #32176 Migreate fieldlet.number to numbers in MongoDB
+- #32178 Fix git event
+- #32193 Make sure we detect invalid JSON when migrating rules
+- #32205 Fix visibility of packages_that_do
+- #32211 Infinite loop loading milestones
+- #32212 Fix topic dropping when multiple fields
+- #32213 Fix status_changes
+- #32216 Fix showing avatars for other users
+
 ---------------------------------------------- HEAD (f373e1) ----------------------------------------------
 [FIXES]
 
