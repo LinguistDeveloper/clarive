@@ -7,11 +7,13 @@ use Scalar::Util qw(looks_like_number);
 use v5.10;
 use experimental 'switch', 'autoderef';
 
+use Baseliner::DateRange;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
+use Baseliner::Dashboard::TopicsBurndown;
 
 with 'Baseliner::Role::ControllerValidator';
 
@@ -1268,11 +1270,17 @@ sub topics_burndown : Local {
     my $days_from = $p->{days_from} || 0;
 
     my $date;
+    my $today;
+    my $days_from_format_date = $p->{days_from_format_date};
 
     $date = Class::Date->now();
     $date = $date + ($days_from .'D');
-
-    my $today    = substr( $date,        0, 10 );
+  if ($days_from_format_date != 0)
+  {
+    $today = $days_from_format_date;
+  }else {
+     $today    = substr( $date,        0, 10 );
+  }
     my $tomorrow = substr( $date + "1D", 0, 10 );
     my %hours = map { $_ => 0 } 0 .. 23;
     my $date_field = $p->{date_field};
@@ -1283,7 +1291,6 @@ sub topics_burndown : Local {
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
-
 
     my @user_categories
         = map { $_->{id}; }
@@ -1380,19 +1387,91 @@ sub topics_burndown : Local {
     $c->forward('View::JSON');
 }
 
+sub topics_burndown_ng : Local {
+    my ($self, $c) = @_;
+
+    my $p = $c->req->params;
+
+    my $selection_method = $p->{selection_method} || 'period';
+    my $group_by_period  = $p->{group_by_period}  || 'hour';
+
+    my $from;
+    my $to;
+    if ( $selection_method eq 'period' ) {
+        $from = $p->{select_by_period_from} || substr( _now(), 0, 10 ) . ' 00:00:00';
+        $to = $p->{select_by_period_to} || _now();
+    }
+    elsif ($p->{topic_mid} && $selection_method eq 'topic_filter') {
+        my $topic = mdb->topic->find_one({mid => $p->{topic_mid}});
+
+        if ($topic) {
+            $from = $topic->{ $p->{select_by_topic_filter_from} };
+            $to   = $topic->{ $p->{select_by_topic_filter_to} };
+        }
+    }
+    else {
+        my $date_range = Baseliner::DateRange->new;
+
+        ( $from, $to ) = $date_range->build_pair( $p->{select_by_duration_range}, $p->{select_by_duration_offset} );
+    }
+
+    my $dashboard = $self->_build_dashboard_topics_burndown();
+    my $burndown  = $dashboard->dashboard(
+        username        => $c->username,
+        topic_mid       => $p->{topic_mid},
+        id_project      => $p->{id_project},
+        from            => $from,
+        to              => $to,
+        group_by_period => $group_by_period,
+        date_field      => $p->{date_field},
+        closed_statuses => $p->{closed_statuses},
+        query           => $p->{query},
+        categories      => [ _array $p->{categories} ]
+    );
+
+    my @topics;
+    my @dates;
+    my @reg_line;
+
+    push @dates,  map { $_->[0] } @$burndown;
+    push @topics, map { $_->[1] } @$burndown;
+
+    if ($group_by_period eq 'day_of_week') {
+        @dates = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', );
+    }
+    elsif ($group_by_period eq 'month') {
+        @dates = (
+            'January', 'February', 'March',     'April',   'May',      'June',
+            'July',    'August',   'September', 'October', 'November', 'December'
+        );
+    }
+
+    @reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
+
+    unshift @topics,   'Topics';
+    unshift @dates,    'x';
+    unshift @reg_line, 'Trend';
+
+    $c->stash->{json} = {
+        success => \1,
+        data    => [\@dates, \@topics, \@reg_line]
+    };
+    $c->forward('View::JSON');
+}
+
 sub topics_period_burndown : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
     my $days_before = $p->{days_before} || -10;
     my $days_after = $p->{days_after} || 10;
-
+    my $days_before_format_date = $p->{days_before_format_date};
+    my $days_after_format_date = $p->{days_after_format_date};
     my $start;
     my $end;
 
     $start = Class::Date->now();
     $start = $start + ($days_before .'D');
-
     $end = Class::Date->now();
     $end = $end + ($days_after .'D');
 
@@ -1488,14 +1567,27 @@ sub topics_period_burndown : Local {
     unshift @real_data,     'Real';
     unshift @expected_data, 'Expected';
 
-    $c->stash->{json} = {
-        success => \1,
-        date_from    => substr($start,0,10),
-        date_to    => substr($end,0,10),
-        future_start => substr($today,0,10),
-        data    => [ \@data_dates, \@real_data, \@expected_data ]
-    };
-    $c->forward('View::JSON');
+    if ($days_before_format_date != 0)
+    {
+        $c->stash->{json} = {
+            success => \1,
+            date_from    => $days_before_format_date,
+            date_to    => $days_after_format_date,
+            future_start => substr($today,0,10),
+            data    => [ \@data_dates, \@real_data, \@expected_data ]
+        };
+    }else{
+
+            $c->stash->{json} = {
+            success => \1,
+            date_from    => substr($start,0,10),
+            date_to    => substr($end,0,10),
+            future_start => substr($today,0,10),
+            data    => [ \@data_dates, \@real_data, \@expected_data ]
+        };
+  
+    }
+      $c->forward('View::JSON');
 }
 
 sub list_emails: Local {
@@ -2034,6 +2126,12 @@ sub _data_to_aggregate {
     ];
 
     return _array( mdb->topic->aggregate($aggregate_query) );
+}
+
+sub _build_dashboard_topics_burndown {
+    my $self = shift;
+
+    return Baseliner::Dashboard::TopicsBurndown->new;
 }
 
 no Moose;

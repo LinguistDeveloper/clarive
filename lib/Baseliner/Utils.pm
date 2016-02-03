@@ -2181,11 +2181,11 @@ sub _reg_line {
         $y_res_sq[$i] = (abs($y[$i] - ($sum_y/$n)))**2; #needed for summa+tions in y-sigma and r2 calcs
         $x_res_sq[$i] = (abs($x[$i] - ($sum_y/$n)))**2; #needed for summa+tions in x-sigma and r2 calcs
         }       
-    my $y_sigma = sqrt(Sum(@y_res_sq)/($#y)); #calculate the sigma of data in+ y-array
-    my $x_sigma = sqrt(Sum(@x_res_sq)/($#x)); #calculate the sigma of data in+ x-array
+    my $y_sigma = $#y ? sqrt(Sum(@y_res_sq)/($#y)) : 0; #calculate the sigma of data in+ y-array
+    my $x_sigma = $#x ? sqrt(Sum(@x_res_sq)/($#x)) : 0; #calculate the sigma of data in+ x-array
     $d = ($n*Sum(@x2)) - (Sum(@x)*Sum(@x)); #calculate the deviation
-    $m = (($n*Sum(@xy))-(Sum(@x)*Sum(@y)))/$d; #calculate the slope
-    $b = ((Sum(@x2)*Sum(@y)) - (Sum(@xy)*Sum(@x)))/$d; #calculate the inte+rcept
+    $m = $d ? (($n*Sum(@xy))-(Sum(@x)*Sum(@y)))/$d : 0; #calculate the slope
+    $b = $d ? ((Sum(@x2)*Sum(@y)) - (Sum(@xy)*Sum(@x)))/$d : 0; #calculate the inte+rcept
     _debug "Slope = $m,  Intercept = $b";
     
     my @line = map { sprintf("%.2f",$b+$m*$x[$_]) } 0..scalar(@x)-1;

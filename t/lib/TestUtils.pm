@@ -131,6 +131,11 @@ sub mock_catalyst_c {
 sub mock_time {
     my ($time, $cb) = @_;
 
+    if ($time !~ m/^\d+$/) {
+        $time =~ s{ }{T};
+        $time .= 'T00:00:00' unless $time =~ m/T\d\d:\d\d:\d\d$/;
+    }
+
     my @t = localtime(time);
     my $gmt_offset_in_seconds = timegm(@t) - timelocal(@t);
 
@@ -139,9 +144,11 @@ sub mock_time {
 
     set_absolute_time($epoch);
 
-    $cb->();
+    my @retval = $cb->();
 
     restore_time();
+
+    return wantarray ? @retval : $retval[0];
 }
 
 sub write_file {

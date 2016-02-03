@@ -1,12 +1,62 @@
 (function(params){
     var data = params.data || {};
 
-    var days_from = new Ext.ux.form.SpinnerField({ 
+    var days_from_format_date = new Ext.form.DateField({
+      fieldLabel: _('Shift in days from today to show in chart.'),
+      name: 'days_from_format_date',
+      value: data.days_from_format_date, 
+      format: 'Y-m-d',
+      width: 165,
+      hidden: true
+    });
+
+      var days_from = new Ext.ux.form.SpinnerField({ 
         value: data.days_from, 
         name: "days_from",
         anchor:'100%',
-        fieldLabel: _("Shift in days from today to show in chart. 0 or blank means today")
+        fieldLabel: _("Shift in days before today to show in chart. 0 or blank means today"),
+        hidden: true,
+        height : 100,
+        autoWidth: true
     });
+
+
+         
+    var selector = new  Ext.Container({
+          id: 'selection_method',
+          layout: 'hbox',
+          fieldLabel: _('Selection method to introduce the date'),
+          value: data.selection_method,
+          items: [
+              {
+                  xtype: 'radiogroup',
+                  id: 'rdogrpMethod',
+                  items: [
+                      { id: 'dateselection', boxLabel: _('Date'), name: 'rdoMethod', inputValue: 'dateselection'},
+                      { id: 'numberselection', boxLabel: 'Number', name: 'rdoMethod', width: 20, inputValue: 'numberSelection' }
+                     
+                  ],
+                  listeners: {
+                      'change': function(rg,checked){
+                           
+                            if(checked.id == 'dateselection'){
+            
+                                days_from.hide();
+                                days_from_format_date.show();
+                                days_from.setValue('');
+
+                            }else if (checked.id == 'numberselection'){
+                                
+                                days_from.show();
+                                days_from_format_date.hide();
+                                days_from_format_date.setValue('');
+
+                            }
+                       }
+                   }
+              }
+          ]
+        });
 
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
     var date_type =  new Baseliner.ComboDouble({ allowBlank: false, fieldLabel: _('Date to be shown'), name:'date_type', value: data.date_type || 'today', data: [
@@ -52,6 +102,8 @@
               columnWidth: .5, 
               bodyStyle: 'background:transparent;',
               items: [
+                selector,
+                days_from_format_date,
                 days_from
               ]
             }

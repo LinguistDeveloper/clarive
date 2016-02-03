@@ -1018,6 +1018,7 @@ sub _setup {
     mdb->category->drop;
     mdb->label->drop;
     mdb->topic->drop;
+    mdb->activity->drop;
 }
 
 sub _create_file {

@@ -8441,3 +8441,6 @@ msgstr "Abrir gráfico CI"
 
 msgid "Import/Export"
 msgstr "Importar/Exportar"
+
+msgid "Selection method to introduce the date"
+msgstr "Metodo de seleccion para introducir la fecha"

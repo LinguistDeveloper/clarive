@@ -10,6 +10,7 @@ use TestUtils ':catalyst', 'mock_time';
 BEGIN { TestEnv->setup }
 use TestSetup;
 
+use Test::MonkeyMock;
 use Clarive::ci;
 use Clarive::mdb;
 use Class::Date;
@@ -590,6 +591,170 @@ subtest 'topics_by_field: groups topics by field' => sub {
     is_deeply $data, [ [ Category1 => 2 ], [Category2 => 1] ];
 };
 
+subtest 'topics_burndown_ng: sends correct default args to dashboard' => sub {
+    _setup();
+
+    my $dashboard = Test::MonkeyMock->new;
+    $dashboard->mock(dashboard => sub {});
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock(_build_dashboard_topics_burndown => sub {$dashboard});
+
+    my $c = _build_c(
+        username => 'root',
+        req      => {
+            params => {
+            }
+        }
+    );
+
+    mock_time '2016-01-01 12:00:00', sub {
+        $controller->topics_burndown_ng($c);
+    };
+
+    my %params = $dashboard->mocked_call_args('dashboard');
+    is_deeply \%params,
+      {
+        'query'           => undef,
+        'id_project'      => undef,
+        'categories'      => [],
+        'topic_mid'       => undef,
+        'username'        => 'root',
+        'from'            => '2016-01-01 00:00:00',
+        'to'              => '2016-01-01 12:00:00',
+        'date_field'      => undef,
+        'group_by_period' => 'hour',
+        'closed_statuses' => undef
+      };
+};
+
+subtest 'topics_burndown_ng: sends correct args to dashboard when period' => sub {
+    _setup();
+
+    my $dashboard = Test::MonkeyMock->new;
+    $dashboard->mock( dashboard => sub { } );
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock( _build_dashboard_topics_burndown => sub { $dashboard } );
+
+    my $c = _build_c(
+        username => 'root',
+        req      => {
+            params => {
+                selection_method      => 'period',
+                select_by_period_from => '2016-01-01',
+                select_by_period_to   => '2016-02-01',
+            }
+        }
+    );
+
+    $controller->topics_burndown_ng($c);
+
+    my %params = $dashboard->mocked_call_args('dashboard');
+    is_deeply \%params,
+      {
+        'query'           => undef,
+        'id_project'      => undef,
+        'categories'      => [],
+        'topic_mid'       => undef,
+        'username'        => 'root',
+        'from'            => '2016-01-01',
+        'to'              => '2016-02-01',
+        'date_field'      => undef,
+        'group_by_period' => 'hour',
+        'closed_statuses' => undef
+      };
+};
+
+subtest 'topics_burndown_ng: sends correct args to dashboard when duration' => sub {
+    _setup();
+
+    my $dashboard = Test::MonkeyMock->new;
+    $dashboard->mock( dashboard => sub { } );
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock( _build_dashboard_topics_burndown => sub { $dashboard } );
+
+    my $c = _build_c(
+        username => 'root',
+        req      => {
+            params => {
+                selection_method          => 'duration',
+                select_by_duration_range  => 'day',
+                select_by_duration_offset => '1',
+            }
+        }
+    );
+
+    mock_time '2016-01-01 12:00:00', sub {
+        $controller->topics_burndown_ng($c);
+    };
+
+    my %params = $dashboard->mocked_call_args('dashboard');
+    is_deeply \%params,
+      {
+        'query'           => undef,
+        'id_project'      => undef,
+        'categories'      => [],
+        'topic_mid'       => undef,
+        'username'        => 'root',
+        'from'            => '2015-12-31 00:00:00',
+        'to'              => '2015-12-31 23:59:59',
+        'date_field'      => undef,
+        'group_by_period' => 'hour',
+        'closed_statuses' => undef
+      };
+};
+
+subtest 'topics_burndown_ng: sends correct args to dashboard when topic and fields' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+
+    my $topic_mid =
+      TestSetup->create_topic( id_category => $id_topic_category, from => '2016-01-01', to => '2016-02-02' );
+
+    my $dashboard = Test::MonkeyMock->new;
+    $dashboard->mock( dashboard => sub { } );
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock( _build_dashboard_topics_burndown => sub { $dashboard } );
+
+    my $c = _build_c(
+        username => 'root',
+        req      => {
+            params => {
+                topic_mid                   => $topic_mid,
+                selection_method            => 'topic_filter',
+                select_by_topic_filter_from => 'from',
+                select_by_topic_filter_to   => 'to',
+            }
+        }
+    );
+
+    $controller->topics_burndown_ng($c);
+
+    my %params = $dashboard->mocked_call_args('dashboard');
+    is_deeply \%params,
+      {
+        'query'           => undef,
+        'id_project'      => undef,
+        'categories'      => [],
+        'topic_mid'       => $topic_mid,
+        'username'        => 'root',
+        'from'            => '2016-01-01',
+        'to'              => '2016-02-02',
+        'date_field'      => undef,
+        'group_by_period' => 'hour',
+        'closed_statuses' => undef
+      };
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }
@@ -609,11 +774,53 @@ sub _setup {
     mdb->master_doc->drop;
 
     mdb->category->drop;
+    mdb->topic->drop;
     mdb->role->drop;
     mdb->rule->drop;
 
     my $user = ci->user->new( name => 'test' );
     $user->save;
+}
+
+sub _create_topic_form {
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'from',
+                        "fieldletType" => "fieldlet.datetime",
+                    },
+                    "key" => "fieldlet.datetime",
+                    name  => 'From',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'to',
+                        "fieldletType" => "fieldlet.datetime",
+                    },
+                    "key" => "fieldlet.datetime",
+                    name  => 'To',
+                }
+            },
+        ],
+    );
 }
 
 sub _build_controller {
