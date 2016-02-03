@@ -2,10 +2,10 @@
 title: Preferencias de usuario
 icon: prefs
 ---
-* Las preferencias de usuario contiene las configuración de la cuenta, el acceso y la sesión asi como información de uso de Clarive y como otros usuarios interactuan con usted.
-* Estas preferencias se pueden modificar en cualquier momento, incluidos los cambios en las preferencias de la sesión, la información de acceso y el área de trabajo por defecto
+* Las preferencias de usuario contiene las configuración de la cuenta, el acceso y la sesión así como información de uso de Clarive y como otros usuarios interactuan con usted.
+* Estas preferencias se pueden modificar en cualquier momento, incluidos los cambios en las preferencias de la sesión, la información de acceso y el área de trabajo por defecto.
 * La configuración de las preferencias de los usuarios anulan los ajustes que se han aplicado a la totalidad del espacio de trabajo.
-* Para acceder a estas preferencias, hay que hacer click en el usuario localizado arriba a la derecha de la aplicación y seleccionar la opcion de `Preferencias`
+* Para acceder a estas preferencias, hay que hacer click en el usuario localizado arriba a la derecha de la aplicación y seleccionar la opción de `Preferencias`
 * Estas son las propiedades que se pueden ver o modificar:
 
 <br />

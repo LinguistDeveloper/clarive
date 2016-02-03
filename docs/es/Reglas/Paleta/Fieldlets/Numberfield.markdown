@@ -4,7 +4,7 @@ index: 400
 icon: number
 ---
 * Permite añadir un campo que se completa con números.
-* La herramienta permite interactuar entre ellos gracias al fieldlet **Calculated numberfield**
+* La herramienta permite interactuar entre ellos gracias al fieldlet **Calculated numberfield**.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />

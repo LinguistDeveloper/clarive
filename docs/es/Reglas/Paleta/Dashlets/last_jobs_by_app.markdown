@@ -9,7 +9,7 @@ icon: report_default
 
 <br />
 ### Altura en canvas
-* Define la altura en numero de filas que se le da al dashlet.
+* Define la altura en número de filas que se le da al dashlet.
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />

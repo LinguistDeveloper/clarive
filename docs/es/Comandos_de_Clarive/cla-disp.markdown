@@ -12,6 +12,7 @@ icon: console
 &nbsp; &nbsp;• Si el demonio ha sido activado, el dispatcher arranca el servicio. <br />
 
 &nbsp; &nbsp;• Si un demonio está activo, el dispatcher comprueba si se está ejecutando o no, si no lo está intentará rearrancar el servicio de nuevo.
+
 * La frecuencia que el dispatcher comprueba el estado de un demonio es un parametro configurable llamado `frecuency`. Este valor, por defecto, son 30 segundos.
 * Este comando soporta dos opciones diferentes:
 
@@ -45,7 +46,7 @@ icon: console
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-start`: Igual que el `cla disp`, descrito arriba.  <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-stop`:  Para el dispatcher y sus servicios. A su vez, este comando dispone de dos opciones más <br />
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-stop`:  Para el dispatcher y sus servicios. A su vez, este comando dispone de dos opciones más. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• *no_wait_kill* - El dispatcher se elimina sin esperas. si está opción se está indicada, el dispatcher esperará 30 segundos antes de pararse. <br />
 

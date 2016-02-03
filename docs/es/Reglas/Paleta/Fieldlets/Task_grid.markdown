@@ -52,7 +52,7 @@ icon: grid
 <br />
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-* Por defecto, es el titulo lo que se muestra.
+* Por defecto, es el título lo que se muestra.
 
 <br />
 ### Filtro avanzado JSON

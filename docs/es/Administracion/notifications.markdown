@@ -26,14 +26,13 @@ icon: email
     
     &nbsp; &nbsp;• *Proyecto*: Indica el proyecto definido al crear la notificación. Esto permite enviar notificaciones en función al proyecto donde ocurra el evento. <br />
     
-    &nbsp; &nbsp;• *Categoria*: Indica las categorias por las que el evento podrá activarse. 
-
-    Category topics. <br />
+    &nbsp; &nbsp;• *Categoría*: Indica las categorías por las que el evento podrá activarse.  <br />
     
-    &nbsp; &nbsp;• *Categoría / Estado*: Define los estados de las categorias para la notificación.
+    &nbsp; &nbsp;• *Categoría / Estado*: Define los estados de las categorías para la notificación.
 
 <br />
-#### Acción* Indica el tipo de acción de la notificación.
+#### Acción
+* Indica el tipo de acción de la notificación.
 
 <br />
 #### Activado
@@ -48,10 +47,10 @@ icon: email
 #### <img src = "/static/images/icons/add.gif" /> Crear
 * Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros: <br />
 
-&nbsp; &nbsp;• `Evento` - Indica el tipo de evento, los nombres son intuitivos y vienen definidos por una regla nemotécnica:
+&nbsp; &nbsp;• `Evento` - Indica el tipo de evento, los nombres son intuitivos y vienen definidos por una regla nemotécnica: <br />
 &nbsp; &nbsp;&nbsp;&nbsp;• Ejemplo: event.topic.create <br />
 &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *event* - Indica el tipo de notificación (en este caso todos será de tipo **evento**). <br />
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *topic* - Indica la categoria de la notificación. <br />
+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *topic* - Indica la categoría de la notificación. <br />
 &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *create* - Indica la acción a realizar. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Como regla general, se describen los siguientes eventos: <br />
@@ -76,7 +75,7 @@ icon: email
 
 excluior_ excluir de la notificacion 
 
-por defecto hay noitis automaticas para cualquier evento de topicos 
+por defecto hay noitis automáticas para cualquier evento de tópicos 
 
 pirmero se sacan las notificacion, luego la excluison y luego se envian
 
@@ -88,7 +87,7 @@ config.notificacions.exclude_default si esta
 
 &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;• Las notificaciones puede ser configuradas para ser enviadas o excluidas. <br />
 
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;• Por defecto Clarive tiene algunas notificaciones activadas como por ejemplo enviar una notificaciones al propietario del estado del tópico o al responsable de una categoria determinada. Esta notificacion se puede evitar añadiendo una notificación de tipo Exclusión
+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;• Por defecto Clarive tiene algunas notificaciones activadas como por ejemplo enviar una notificaciones al propietario del estado del tópico o al responsable de una categoría determinada. Esta notificacion se puede evitar añadiendo una notificación de tipo Exclusión.
 
 &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;• En el orden de las notificaciones para ser ejecutadas, primero se ejecutan las notificaciones de tipo exclusión y luego las de tipo enviar.
 
@@ -101,7 +100,7 @@ config.notificacions.exclude_default si esta
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;• Es necesario seleccionar las opciones que comienzan por "generic". <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;• La plantillas *generic.html* es la más sencilla compuesta por un titulo y un cuerpo. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;• La plantillas *generic.html* es la más sencilla compuesta por un título y un cuerpo. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;• El resto de plantillas contienen elementos más concretos: <br />
 

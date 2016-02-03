@@ -33,7 +33,7 @@ icon: pills
 <br />
 ### Opciones disponibles
 * Personaliza las opciones entre las que el usuario podrá escoger.
-* Todas las opciones tienen que estar separadas por ;
+* Todas las opciones tienen que estar separadas por **;**
 
 <br />
 ### Valor por defecto

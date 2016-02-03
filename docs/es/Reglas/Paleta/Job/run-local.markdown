@@ -3,7 +3,7 @@ title: Run a Local Script
 icon: cog_java
 ---
 * Ejecuta un script local y realiza el [rollback](Conceptos/rollback) si es necesario.
-* Los elementos configurables son los siguientes.
+* Los elementos configurables son los siguientes:
 
 <br />
 ### Ruta 
@@ -39,7 +39,7 @@ Búsqueda de patrón de error configurado en salida del script. Si lo encuentra,
 
 &nbsp; &nbsp;&nbsp; &nbsp; • *Advertir* - Busca el patrón de las advertencias en la salida del script. Si lo encuentra, se muestra un mensaje de advertencia en el monitor. <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp; • *OK* - Busca el patrón para el OK configurado en la salida del script. Si lo encuentra, se muestra un mensaje de error en el monitor. Los posibles errorres se ingnoran. <br />
+&nbsp; &nbsp;&nbsp; &nbsp; • *OK* - Busca el patrón para el OK configurado en la salida del script. Si lo encuentra, se muestra un mensaje de error en el monitor. Los posibles errorres se ignoran. <br />
 
 
-&nbsp; &nbsp;&nbsp; &nbsp; • *Captura* - Busca el patrón definido en la salida del script. si lo encuentra, la expresión se añade al stash mostrandro un mensaje.
+&nbsp; &nbsp;&nbsp; &nbsp; • *Captura* - Busca el patrón definido en la salida del script. si lo encuentra, la expresión se añade al stash mostrando un mensaje.

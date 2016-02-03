@@ -3,11 +3,11 @@ title: Invoke CI methods
 icon: ci
 ---
 * Invoca el método [CI](Conceptos/ci) seleccionado con los argumentos dados desde el formulario
-* El elemento se configura mediante los siguientes campos
+* El elemento se configura mediante los siguientes campos.
 
 <br />
 ### Clase CI
-* Combo con todos los CIs que existen en Clarive
+* Combo con todos los CIs que existen en Clarive.
 
 
 <br />
@@ -24,7 +24,7 @@ icon: ci
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Valor* - Valor de la clave que se pasa al método CI.
 
-&nbsp; &nbsp;&nbsp; &nbsp; • Posicional br />
+&nbsp; &nbsp;&nbsp; &nbsp; • Posicional: <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Nombre* - Nombre de la variable. <br />
 

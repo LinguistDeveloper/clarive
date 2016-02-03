@@ -46,4 +46,4 @@ icon: chart_line
 
 <br />
 ### Seleccionar tópicos en categorías
-* Selecciona la categoria o categorias a mostrar en la animación
+* Selecciona la categoría o categorías a mostrar en la animación.

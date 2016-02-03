@@ -24,6 +24,7 @@ icon: console
   
  
 <br/>
+
 * `cla trans-password`: <br />
 
 Nombre de usuario para ser encriptada contraseña es un parámetro requerido, puede ser definido como un parámetro de entrada:
@@ -35,9 +36,11 @@ Nombre de usuario para ser encriptada contraseña es un parámetro requerido, pu
 &nbsp; &nbsp;&nbsp; &nbsp;• Escrita desde el teclado cuando el comando lo pida. <br />
 
 <br />
+
 * El cifrado se realiza mediante el parámetro decrypt_key o dec_key del archivo de configuración. <br />
 
 <br/>
+
 * `cla trans-md5`: Encripta la contraseña utilizando el algoritmo MD5. Se puede generar de dos maneras: <br />
 
       &nbsp; &nbsp;• *–s <\string>*: Cadena de caracteres a encriptar. <br />
@@ -45,6 +48,7 @@ Nombre de usuario para ser encriptada contraseña es un parámetro requerido, pu
       &nbsp; &nbsp;• Escribir la contraseña desde el teclado cuando el comando lo pida. <br />
 
 <br/>
+
 * `cla trans-encrypt`: Encripta la contraseña utilizando el algoritmo Blowfish. El cifrado se realiza utilizando: <br />
 
       &nbsp; &nbsp;• *--key <\key_name>*: Clave para encriptar. <br />

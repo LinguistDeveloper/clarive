@@ -5,11 +5,13 @@ icon: combo_box
 ---
     
 <br />
+
 * Permite añadir tópicos al formulario con más filtros que el grid de tópicos estandar.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
-### Ubicación del fieldlet* Indica en que parte de la vista se pondrá el fieldlet. <br />
+### Ubicación del fieldlet
+* Indica en que parte de la vista se pondrá el fieldlet. <br />
 
 &nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario. <br />
 
@@ -18,20 +20,25 @@ icon: combo_box
 &nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.<br />
 
 <br />
-### Anchura en canvas* Establece el ancho que ocupará el elemento en el formulario.
+### Anchura en canvas
+* Establece el ancho que ocupará el elemento en el formulario.
 * El valor máximo permitido es de 12 (100% de anchura).
 
 <br />
-### Ocultar en el modo lectura* Indica si el campo se quiere ocultar en modo lectura.
+### Ocultar en el modo lectura
+* Indica si el campo se quiere ocultar en modo lectura.
 
 <br />
-### Ocultar en el modo edición* Indica si el campo se quiere ocultar en modo edición.
+### Ocultar en el modo edición
+* Indica si el campo se quiere ocultar en modo edición.
 
 <br />
-### Campo obligatorio* Indica si el campo tiene que ser completado obligatoriamente.
+### Campo obligatorio
+* Indica si el campo tiene que ser completado obligatoriamente.
 
 <br />
-### Tipo* Permite definir la apariencia de la tabla en el tópico: <br />
+### Tipo
+* Permite definir la apariencia de la tabla en el tópico: <br />
 
 &nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
 
@@ -41,12 +48,11 @@ icon: combo_box
 
 
 <br />
-### Campo visible* En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
+### Campo visible
+* En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
 * Por defecto, es el titulo lo que se muestra.
 
-
-<br />
-### Filtro avanzado JSON* Permite añadir un filtro avanzado JSON
+* Permite añadir un filtro avanzado JSON.
 
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
@@ -59,7 +65,7 @@ icon: combo_box
 ### Lista de columnas para mostrar en el grid
 * Permite seleccionar las columnas que serán mostradas en el grid.
 * Por defecto las columnas que se muestran son las de Nombre del tópico (muestra la categoria y el ID) y Título del tópico.
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet.
 
 
 <br />
@@ -69,14 +75,16 @@ icon: combo_box
 <br />
 ### Tamaño de la página
 * Define el número de elementos que aparecerán en la lista de selección de tópico.
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet.
 
 
 <br />
-### Campo padre* Permite seleccionar los tópicos disponibles indicando el id de un fieldlet de otra regla de tipo formulario.
+### Campo padre
+* Permite seleccionar los tópicos disponibles indicando el id de un fieldlet de otra regla de tipo formulario.
 
 <br />
-### Campo para filtrar* Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario. 
+### Campo para filtrar
+* Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario. 
 * En el campo se completa con el ID del elemento que se quiere usar de filtro.
 * Por ejemplo, si en el formulario existen [opciones](Reglas/Paleta/Fieldlets/Pills) de categorías, la herramienta listará solo los tópicos de la categoría seleccionada en las opciones. Si el usuario cambia de opción, la lista también cambia a los tópicos de la otra categoría. 
 

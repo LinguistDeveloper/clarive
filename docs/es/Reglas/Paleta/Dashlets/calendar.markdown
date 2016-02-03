@@ -8,7 +8,7 @@ icon: calendar
 
 <br />
 ### Altura en canvas
-* Define la altura en numero de filas que se le da al dashlet.
+* Define la altura en número de filas que se le da al dashlet.
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
@@ -25,9 +25,9 @@ icon: calendar
 * El usuario decidirá qué tipo de consulta desea ver en el calendario. Las opciones son: <br />
 
 
-&nbsp; &nbsp;• **Actividad del tópico** - Permite ver las actividades de los topicos seleccionados desde su creación hasta su modificación.<br />
+&nbsp; &nbsp;• **Actividad del tópico** - Permite ver las actividades de los tópicos seleccionados desde su creación hasta su modificación.<br />
 
-&nbsp; &nbsp;• **Open topics** - Muestra los topicos abiertos desde su creación hasta sus estados finales<br />
+&nbsp; &nbsp;• **Open topics** - Muestra los tópicos abiertos desde su creación hasta sus estados finales.<br />
 
 &nbsp; &nbsp;• **Planificador** *(eg: Hitos or Planificador de pases)
 * - Visualiza las planificaciones realizadas para las ventanas de pases o de hitos especificos.<br />
@@ -45,7 +45,7 @@ icon: calendar
 
 &nbsp; &nbsp;• **Mes** - Se muestra una visión del mes actual.<br />
 
-&nbsp; &nbsp;• **Semana** - Muestra todos los dias de la semana  (de lunes a domingo) <br />
+&nbsp; &nbsp;• **Semana** - Muestra todos los dias de la semana  (de lunes a domingo). <br />
 
 &nbsp; &nbsp;• **Semana por horas** - Muestra la semana actual completa dividida por horas. <br />
 
@@ -59,11 +59,11 @@ icon: calendar
 
 <br />
 ### Seleccionar tópicos en categorías
-* Selecciona las categorias para la vista del calendario.
+* Selecciona las categorías para la vista del calendario.
 
 <br />
 ### Excluir categorías seleccionadas?
-* Permite hacer excluyente la opción superior mostrando solo las categorias **no** seleccionadas.
+* Permite hacer excluyente la opción superior mostrando solo las categorías **no** seleccionadas.
 
 <br />
 ### Mostrar jobs?
@@ -71,12 +71,12 @@ icon: calendar
 
 <br />
 ### Condición avanzada JSON/MongoDB
-* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar
+* Permite añadir un filtro para las filtrar los topicos y/o categorías a mostrar.
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
 
-&nbsp;&nbsp;• Donde *id* es la clave una de la categoria. Dicho id se puede consultar a través del REPL.
+&nbsp;&nbsp;• Donde *id* es la clave una de la categoría. Dicho id se puede consultar a través del REPL.
 
 
 <br />

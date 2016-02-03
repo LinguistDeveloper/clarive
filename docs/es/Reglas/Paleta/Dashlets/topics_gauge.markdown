@@ -4,7 +4,7 @@ index: 400
 icon: gauge
 ---
 * Muestra un medidor dividido en tres partes donde muestran los tópicos y su 'urgencia'.
-* Dicha urgencia viene definida en un medidor de tres colores, verde, amarillo y rojo. La configuración del dashlet permite personalizar los umbrales asi como la selección de topicos a mostrar o el criterio final.
+* Dicha urgencia viene definida en un medidor de tres colores, verde, amarillo y rojo. La configuración del dashlet permite personalizar los umbrales así como la selección de tópicos a mostrar o el criterio final.
 
 <br />
 ### Altura en canvas
@@ -21,28 +21,28 @@ icon: gauge
 * Establece el intervalo de tiempo el cual el elemento se autorrefrescará.
 
 <br />
-### General gauge
-* In this section the user can configure the gauge, the limits to change de color value and the data collection.
+### Medidor general
+* En esta sección el usuario puede configurar el medidor, los limites para cambiar el valor del color y la recopilación de datos.
 
 <br />
-### Select topics in categories
-* Select one o more categories to show in the dashlet.
-
-
-<br />
-### Select topics in statuses
-* Select one o more status to configure the gauge.
+### Seleccionar tópicos en categorías
+* Selecciona una o más categorías para mostrarlas en el dashlet.
 
 
 <br />
-### Advanced JSON/MongoDB condition for filter
-* Allows to use a JSON format o MongoDB query to add a condition. 
+### Seleccionar tópicos en los estados
+* Selecciona uno o más estados para configurar el medidor.
 
 
 <br />
-### End value selection criteria
-* Select the end values to show in the gauge.
+### Filtro a través de JSON/MongoDB
+* Permite usar el formato JSON o MongoDB para añadir una condición. 
+
 
 <br />
-### Data collection
-* Use this fields to configure additional elements of the data collection for the dashlet.
+### Criterio de selección
+* Selecciona los valores finales a mostrar en el medidor.
+
+<br />
+### Colección de datos
+* Use este campo para configurar elementos adicionales de la colección de datos del dashlet.

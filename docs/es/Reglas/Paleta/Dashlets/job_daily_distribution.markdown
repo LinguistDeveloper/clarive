@@ -3,7 +3,7 @@ title: Linea temporal de jobs
 index: 400
 icon: chart_line
 ---
-* Muestra los trabajos en una linea temporal de distribución.
+* Muestra los trabajos en una línea temporal de distribución.
 * La lista de elementos que se pueden configurar dentro del dashlet son las siguientes:
 
 <br />

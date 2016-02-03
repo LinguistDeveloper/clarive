@@ -2,7 +2,7 @@
 title: FOR eval
 icon: loop.gif
 ---
-   * Repite las operaciones anindadas tantas veces como se indica en una lista; el valor del stash se define para cada elemento de la lista.
+   * Repite las operaciones anidadas tantas veces como se indica en una lista; el valor del stash se define para cada elemento de la lista.
 * Conceptualmente, este `for` iterativo es igual al que se puede encontrar en cualquier lenguaje de programación.
 * Es necesario configurar los siguientes campos: <br />
 

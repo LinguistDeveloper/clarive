@@ -2,18 +2,18 @@
 title: Tabla de topicos
 icon: topic
 ---
-* La tabla de tópicos es la lista de topicos que el usuario puede visualizar. El concepto está basado como si fuera una bandeja de entrada de e-mail.
+* La tabla de tópicos es la lista de tópicos que el usuario puede visualizar. El concepto está basado como si fuera una bandeja de entrada de e-mail.
 * La tabla puede ser vista desde tres modos diferentes: <br />
 
 &nbsp; &nbsp;• **Todos los tópicos** - Se abre seleccionando `Todos` dentro del menú de tópicos en la parte superior de la página.  <br />
 
 &nbsp; &nbsp;• **Por categoría** - Acceso a través de selecionar una categoría dentro del menú de tópicos. <br />
 
-&nbsp; &nbsp;• **Por proyecto** - Por último tambien se puede acceder a través del explorador de proyectos <img src="/static/images/icons/project.png" /> situado en el panel de la izquierda.
+&nbsp; &nbsp;• **Por proyecto** - Por último también se puede acceder a través del explorador de proyectos <img src="/static/images/icons/project.png" /> situado en el panel de la izquierda.
 
 <br />
 ### Ordenación 
-* Por defecto, la lista aparece ordenada por fecha de modificación, del mas reciente al elemento más antiguo.
+* Por defecto, la lista aparece ordenada por fecha de modificación, del más reciente al elemento más antiguo.
 * Se puede cambiar la ordenación pinchando en la columna por la que se quiere ordenar la lista. Con cada click, se cambiará el tipo de ordenación (ascendiente/descendiente).
 
 <br />
@@ -22,7 +22,8 @@ icon: topic
 * Para filtrar los resultados, existe unos filtros definidos en la parte derecha de la lista.
 
 <br />
-#### Uso* Cada uno de los filtros existen 3 estados diferentes. <br />
+#### Uso
+* Cada uno de los filtros existen 3 estados diferentes. <br />
 
 
 &nbsp; &nbsp;• **Seleccionado** - Muestra los tópicos que estén en ese estado. <br />
@@ -31,7 +32,7 @@ icon: topic
 
 &nbsp; &nbsp;• **Sin seleccionar** - Esconde los tópicos que estén en ese estado si hay ningún otro estado seleccionado. En caso de no haberlo, muestra los tópicos con su estado.
 
-* Como regla general, si no hay ningun estado seleccionado o no seleccionado, se muestran todos los tópicos.
+* Como regla general, si no hay ningún estado seleccionado o no seleccionado, se muestran todos los tópicos.
 
 <br />
 #### Filtros
@@ -39,7 +40,7 @@ icon: topic
 
 <br />
 #### Categorías
-* Filtra por la categoria que el usuario quiera ver. Si no hay ninguna seleccionado, muestra todas las categorias siempre que el usuario tenga los permisos necesarios.
+* Filtra por la categoría que el usuario quiera ver. Si no hay ninguna seleccionado, muestra todas las categorías siempre que el usuario tenga los permisos necesarios.
 
 <br />
 #### Estados
@@ -49,10 +50,11 @@ icon: topic
 <br />
 <br />
 ## Opciones
-* A continuación se detallan las distintas opciones que ofrece el menu superior de la lista de tópicos. Estas opciones variarán en funcion de los permisos que disponga el usuario:
+* A continuación se detallan las distintas opciones que ofrece el menu superior de la lista de tópicos. Estas opciones variarán en función de los permisos que disponga el usuario:
 
 <br />
-#### Búsquedas* En el grid de tópicos tambien se puede buscar resultados utilizando el [buscador](Primeros_pasos/search-syntax).
+#### Búsquedas
+* En el grid de tópicos tambien se puede buscar resultados utilizando el [buscador](Primeros_pasos/search-syntax).
 
 <br /> 
 #### <img src = "/static/images/icons/add.gif" alt='Nuevo tópico' /> Crear
@@ -73,7 +75,7 @@ icon: topic
 <br />
 #### <img src = "/static/images/icons/state.gif" alt='Cambiar estado' /> Cambiar estado
 * Permite transitar el tópico entre estados sin necesidad de acceder al detalle del mismo.
-* Es posible modificar el estado de varios tópicos siempre y cuando tengan estados futuros comunes, independientemente de la categoria de los mismos. En caso contrario, el botón aparacerá deshabilitado indicando que no hay estados comunes.
+* Es posible modificar el estado de varios tópicos siempre y cuando tengan estados futuros comunes, independientemente de la categoría de los mismos. En caso contrario, el botón aparacerá deshabilitado indicando que no hay estados comunes.
 
 <br />
 #### <img src = "/static/images/icons/reset-grey.png" alt='Resetear columnas' /> Resetear columnas del grid

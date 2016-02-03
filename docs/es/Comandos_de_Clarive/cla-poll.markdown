@@ -4,16 +4,18 @@ icon: console
 ---
 * `cla poll`: Herramienta de monitorización.  Monitoring tool. Without any option checks.
 * Ejecutando `cla poll` sin ningun argumento se comprueba:
+
 &nbsp; &nbsp;• Los procesos que se están ejecutando. <br />
 
-&nbsp; &nbsp;• La conexión al servicio web de Clarive <br />
+&nbsp; &nbsp;• La conexión al servicio web de Clarive. <br />
 
 &nbsp; &nbsp;• La conexión a *nginx*. <br />
 
-&nbsp; &nbsp;• La conexión a Mongo. 
+&nbsp; &nbsp;• La conexión a Mongo.
+
 * Las opciones del comando son las siguientes:
 
-&nbsp; &nbsp;• `-h` - Muestra la ayuda del comando especifico.
+&nbsp; &nbsp;• `-h` - Muestra la ayuda del comando específico.
 
     >cla poll -h
 

@@ -12,7 +12,7 @@ icon: grid
 
 &nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario. <br />
 
-&nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico
+&nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
 
 
 <br />
@@ -71,7 +71,7 @@ Permite añadir un filtro avanzado JSON
 <br />
 ### Roles
 * Se muestra una lista con los roles.
-* Si la opción *Selección por clase* está activada, el valor de este campo tiene que ser **CI**
+* Si la opción *Selección por clase* está activada, el valor de este campo tiene que ser **CI**.
 
 
 <br />

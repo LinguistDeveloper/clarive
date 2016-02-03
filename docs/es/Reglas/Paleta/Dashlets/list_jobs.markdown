@@ -28,7 +28,7 @@ icon: report_default
 
 <br />
 ### Excluir estados seleccionados?
-* Permite hacer excluyente la opción superior mostrando solo los estados **no** seleccionadoRs.
+* Permite hacer excluyente la opción superior mostrando solo los estados **no** seleccionados.
 
 <br />
 ### ¿Que entornos quieres ver?

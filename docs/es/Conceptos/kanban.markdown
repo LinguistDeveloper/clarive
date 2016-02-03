@@ -3,7 +3,7 @@ title: Tablero Kanban
 index: 5000
 icon: kanban
 ---
-* El tablero Kanban es basicamente una tabla donde visualizar el flujo de trabajo. Tambien puede definirse como un tablero donde situar las cartas.
+* El tablero Kanban es basicamente una tabla donde visualizar el flujo de trabajo. También puede definirse como un tablero donde situar las cartas.
 * El método Kanban es un conjunto de principios y prácticas para la gestión y mejora del flujo de trabajo.
 * Los usuarios que utilicen este tablero, aunque no estén al tanto de las [reglas](Conceptos/rule) del Kanban o del estado del proyecto o de las tareas, tendrán una visión más clara de la progresión del trabajo dentro de un [proyecto](Conceptos/project) o de otros trabajos.
 * Hay varias formas de visualizar el tablero Kanban dentro de la aplicación. Generalmente la opción está disponible en: <br />
@@ -11,7 +11,8 @@ icon: kanban
 
 &nbsp; &nbsp;• Desde la tabla de [tópicos](Conceptos/topic) se podrá acceder al tablero a través del botón <img src="/static/images/icons/kanban.png" /> situado arriba a la derecha de la tabla. <br />
 
-&nbsp; &nbsp;• Desde un tópico que pertenezca a una categoría de tipo Release
+&nbsp; &nbsp;• Desde un tópico que pertenezca a una categoría de tipo Release.
+
 * Los tópicos que se muestran en el tablero fluyen de izquierda a derecha a través de columas que representan estados. 
 * El objetivo de disponen de una herramienta como esta es tener más fluidez desde el principio hasta el final del proyecto sin bajar el rendimiento o incluso pararlo.
 * Los equipos que trabajan con Kanban limitan el número de elementos con los que pueden trabajar al mismo tiempo (WIP) con la finalidad de reducir el tiempo que necesita un usuario desde que comienza a realizar una tarea hasta su completa finalización.
@@ -55,7 +56,7 @@ en ellos como grupo y aplican métodos de resolución de problemas para llegar a
 
 <br />
 ### Etiquetado en las vistas
-* Para mejorar la visibildad y el uso de Kanban, la herramienta permite ver las etiquetas delos tópicos en el tablero.
+* Para mejorar la visibildad y el uso de Kanban, la herramienta permite ver las etiquetas de los tópicos en el tablero.
 
 
 <br />

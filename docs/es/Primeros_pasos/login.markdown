@@ -8,11 +8,11 @@ icon: user.gif
 
 &nbsp; &nbsp;• **Usuario** – El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive. <br />
 
-&nbsp; &nbsp;• **Contraseña** – Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas <br />
+&nbsp; &nbsp;• **Contraseña** – Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas. <br />
 
-&nbsp;* *El usuario podrá modificar la contraseña desde las preferencias de usuario* <br />
+&nbsp;* *El usuario podrá modificar la contraseña desde las preferencias de usuario.* <br />
 
-**Nota**: Por lo general, los administradores deshabilitan los privilegios de poder cambiar la contraseña cuando se trata de un inicio único de sesión o la autenticación LDAP / SAML está habilitada
+**Nota**: Por lo general, los administradores deshabilitan los privilegios de poder cambiar la contraseña cuando se trata de un inicio único de sesión o la autenticación LDAP / SAML está habilitada.
 
 
 <br />

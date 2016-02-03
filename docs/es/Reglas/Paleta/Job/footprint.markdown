@@ -11,4 +11,4 @@ Lista todos los archivos actualizados con los siguientes datos:
 * **Ver ruta**: Ruta del archivo.
 * **Usuario**: Nombre de usuario.
 * **Trabajo**: Nombre del trabajo.
-* **Fecha del Trabajo**: Fecha de la operación *footprint*
+* **Fecha del Trabajo**: Fecha de la operación *footprint*.
