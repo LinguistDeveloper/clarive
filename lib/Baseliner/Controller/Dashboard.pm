@@ -1387,7 +1387,7 @@ sub topics_burndown : Local {
     $c->forward('View::JSON');
 }
 
-sub topics_burndown2 : Local {
+sub topics_burndown_ng : Local {
     my ($self, $c) = @_;
 
     my $p = $c->req->params;
