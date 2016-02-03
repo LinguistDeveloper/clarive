@@ -1,0 +1,11 @@
+---
+title: Delete Local Directory
+icon: file.gif
+---
+* Elimina de manera recursivo el directorio dado en la configuración del elemento
+* La lista de configuración del elemento incluye las siguientes opciones: <br />
+
+<br />
+### Directorio
+* El valor en la clave *Directory* tiene que estar especificado el directorio a eliminar.
+

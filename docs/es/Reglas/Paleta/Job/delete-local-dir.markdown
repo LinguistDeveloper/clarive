@@ -1,0 +1,11 @@
+---
+title: Delete Local File
+icon: file.gif
+---
+* Elimina el fichero especificado en la configuración del elemento.
+* La lista de configuración del elemento incluye las siguientes opciones: <br />
+
+<br />
+### Fichero
+* El valor en la clave *File* tiene que estar especificado el fichero a eliminar.
+
