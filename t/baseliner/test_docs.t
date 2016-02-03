@@ -18,9 +18,7 @@ subtest 'links in markdown files work' => sub {
     foreach my $language (@languages) {
         local $ROOT = "$root/$language";
         find( { wanted => \&check_links, no_chdir => 1 }, "$root/$language" );
-
     }
-
 };
 done_testing;
 
@@ -32,13 +30,14 @@ sub check_links {
         my $content = join '', <$fh>;
         close $fh;
 
+        $content =~ m/<!--.*?-->/msg;
+
         my @links = $content =~ m/\[.*?\]\((.*?)\)/msg;
 
         foreach my $link (@links) {
 
             my $link_to = $ROOT . "/$link.markdown";
             ok( -e $link_to, "Link '$link' is broken in '$file'" );
-
         }
     }
 }
