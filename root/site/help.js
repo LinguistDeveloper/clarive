@@ -195,7 +195,7 @@ Cla.help_show = function(params) {
         items: [ docs_tree, doc_reader ]
     });
     help_win.mask = function(){
-        help_win.body.mask( String.format('<img src="{0}" />', '/static/images/loading.gif' ) ).setHeight(9999);
+        help_win.body.mask( String.format('<img style="height:52px;width:52px;" src="{0}" />', '/static/images/loading.gif' ) ).setHeight(9999);
     }
     help_win.unmask = function(){
         help_win.body.unmask();

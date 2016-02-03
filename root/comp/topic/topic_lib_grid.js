@@ -1069,13 +1069,13 @@ Cla.topic_grid = function(params){
         }
         if(rec.data.numcomment){
             swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
             actions_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
             actions_html.push("</span>");           
         }

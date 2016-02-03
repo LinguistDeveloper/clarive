@@ -8423,3 +8423,21 @@ msgstr "Abrir Ciclo de vida"
 
 msgid "Open timeline"
 msgstr "Abrir linea temporal"
+
+msgid "Duplicate active tab"
+msgstr "Duplicar pestaña activa"
+
+msgid "Open Kanban"
+msgstr "Abrir Kanban"
+
+msgid "Open life cicle"
+msgstr "Abrir ciclo de vida"
+
+msgid "Tree view"
+msgstr "Vista árbol"
+
+msgid "Show CI Graph"
+msgstr "Abrir gráfico CI"
+
+msgid "Import/Export"
+msgstr "Importar/Exportar"
