@@ -13,7 +13,7 @@
         ],
         autoWidth: true,
 
-        hidden: data.selection_method === 'duration_selection' ? false : true
+        hidden: !data.selection_method || data.selection_method === 'duration' ? false : true
     });
 
     var select_by_duration_offset = new Ext.form.TextField({
@@ -23,7 +23,7 @@
 
         width: 165,
 
-        hidden: data.selection_method === 'duration_selection' ? false : true
+        hidden: !data.selection_method || data.selection_method === 'duration' ? false : true
     });
 
     var select_by_period_from = new Ext.form.DateField({
@@ -36,7 +36,7 @@
         height: 100,
         autoWidth: true,
 
-        hidden: data.selection_method === 'period_selection' ? false : true
+        hidden: data.selection_method === 'period' ? false : true
     });
 
     var select_by_period_to = new Ext.form.DateField({
@@ -49,51 +49,71 @@
         height: 100,
         autoWidth: true,
 
-        hidden: data.selection_method === 'period_selection' ? false : true
+        hidden: data.selection_method === 'period' ? false : true
     });
 
-    var selector = new Ext.Container({
+    var select_by_topic_filter_from = new Ext.form.TextField({
+        fieldLabel: _('From field'),
+        name: 'select_by_topic_filter_from',
+        value: data.select_by_topic_filter_from,
+
+        width: 165,
+
+        hidden: data.selection_method === 'topic_filter' ? false : true
+    });
+
+    var select_by_topic_filter_to = new Ext.form.TextField({
+        fieldLabel: _('To field'),
+        name: 'select_by_topic_filter_to',
+        value: data.select_by_topic_filter_to,
+
+        width: 165,
+
+        hidden: data.selection_method === 'topic_filter' ? false : true
+    });
+
+    var selector = new Baseliner.ComboDouble({
         fieldLabel: _('Date selection method'),
-        value: data.selection_method,
-        id: 'selection_method',
-        layout: 'hbox',
-        items: [{
-            xtype: 'radiogroup',
-            id: 'rdogrpMethod',
-            items: [{
-                    id: 'duration_selection',
-                    boxLabel: _('Duration'),
-                    name: 'selection_method',
-                    inputValue: 'duration_selection',
-                    checked: data.selection_method === 'duration_selection' ? true : false
-                }, {
-                    id: 'period_selection',
-                    boxLabel: 'Period',
-                    name: 'selection_method',
-                    width: 20,
-                    inputValue: 'period_selection',
-                    checked: data.selection_method === 'period_selection' ? true : false
-                }
+        name: 'selection_method',
+        value: data.selection_method || 'duration',
+        data: [
+            ['duration', _('Duration')],
+            ['period', _('Period')],
+            ['topic_filter', _('Topic Filter')]
+        ],
+        listeners: {
+            'select': function(ev, comp) {
+                var value = ev.value;
+                if (value === 'period') {
+                    select_by_duration_range.hide();
+                    select_by_duration_offset.hide();
 
-            ],
-            listeners: {
-                'change': function(rg, checked) {
-                    if (checked.id === 'period_selection') {
-                        select_by_duration_range.hide();
-                        select_by_duration_offset.hide();
+                    select_by_topic_filter_from.hide();
+                    select_by_topic_filter_to.hide();
 
-                        select_by_period_from.show();
-                        select_by_period_to.show();
-                    } else if (checked.id === 'duration_selection') {
-                        select_by_duration_range.show();
-                        select_by_duration_offset.show();
+                    select_by_period_from.show();
+                    select_by_period_to.show();
+                } else if (value === 'duration') {
+                    select_by_period_from.hide();
+                    select_by_period_to.hide();
 
-                        select_by_period_from.hide();
-                        select_by_period_to.hide();
-                    }
+                    select_by_topic_filter_from.hide();
+                    select_by_topic_filter_to.hide();
+
+                    select_by_duration_range.show();
+                    select_by_duration_offset.show();
+                } else if (value === 'topic_filter') {
+                    select_by_period_from.hide();
+                    select_by_period_to.hide();
+
+                    select_by_duration_range.hide();
+                    select_by_duration_offset.hide();
+
+                    select_by_topic_filter_from.show();
+                    select_by_topic_filter_to.show();
                 }
             }
-        }]
+        }
     });
 
     var query = new Ext.form.TextField({
@@ -177,6 +197,8 @@
                 select_by_duration_offset,
                 select_by_period_from,
                 select_by_period_to,
+                select_by_topic_filter_from,
+                select_by_topic_filter_to
             ]
         }]
     }, {

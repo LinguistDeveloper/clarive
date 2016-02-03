@@ -14,7 +14,7 @@
     var group_by_period = params.data.group_by_period;
     var graph_type = params.data.type || 'area';
 
-    Cla.ajax_json('/dashboard/topics_burndown', {
+    Cla.ajax_json('/dashboard/topics_burndown_ng', {
             topic_mid: topic_mid,
             project_id: project_id,
 
@@ -25,6 +25,9 @@
 
             select_by_period_from: params.data.select_by_period_from,
             select_by_period_to: params.data.select_by_period_to,
+
+            select_by_topic_filter_from: params.data.select_by_topic_filter_from,
+            select_by_topic_filter_to: params.data.select_by_topic_filter_to,
 
             query: params.data.query,
             closed_statuses: params.data.closed_statuses,

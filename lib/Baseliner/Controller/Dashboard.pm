@@ -1392,13 +1392,22 @@ sub topics_burndown_ng : Local {
 
     my $p = $c->req->params;
 
-    my $selection_method = $p->{selection_method} // 'period_selection';
+    my $selection_method = $p->{selection_method} || 'period';
+    my $group_by_period  = $p->{group_by_period}  || 'hour';
 
     my $from;
     my $to;
-    if ( $selection_method eq 'period_selection' ) {
+    if ( $selection_method eq 'period' ) {
         $from = $p->{select_by_period_from} || substr( _now(), 0, 10 ) . ' 00:00:00';
         $to = $p->{select_by_period_to} || _now();
+    }
+    elsif ($p->{topic_mid} && $selection_method eq 'topic_filter') {
+        my $topic = mdb->topic->find_one({mid => $p->{topic_mid}});
+
+        if ($topic) {
+            $from = $topic->{ $p->{select_by_topic_filter_from} };
+            $to   = $topic->{ $p->{select_by_topic_filter_to} };
+        }
     }
     else {
         my $date_range = Baseliner::DateRange->new;
@@ -1406,12 +1415,14 @@ sub topics_burndown_ng : Local {
         ( $from, $to ) = $date_range->build_pair( $p->{select_by_duration_range}, $p->{select_by_duration_offset} );
     }
 
-    my $dashboard = Baseliner::Dashboard::TopicsBurndown->new;
+    my $dashboard = $self->_build_dashboard_topics_burndown();
     my $burndown  = $dashboard->dashboard(
         username        => $c->username,
+        topic_mid       => $p->{topic_mid},
+        id_project      => $p->{id_project},
         from            => $from,
         to              => $to,
-        group_by_period => $p->{group_by_period},
+        group_by_period => $group_by_period,
         date_field      => $p->{date_field},
         closed_statuses => $p->{closed_statuses},
         query           => $p->{query},
@@ -1425,10 +1436,10 @@ sub topics_burndown_ng : Local {
     push @dates,  map { $_->[0] } @$burndown;
     push @topics, map { $_->[1] } @$burndown;
 
-    if ($p->{group_by_period} eq 'day_of_week') {
+    if ($group_by_period eq 'day_of_week') {
         @dates = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', );
     }
-    elsif ($p->{group_by_period} eq 'month') {
+    elsif ($group_by_period eq 'month') {
         @dates = (
             'January', 'February', 'March',     'April',   'May',      'June',
             'July',    'August',   'September', 'October', 'November', 'December'
@@ -2115,6 +2126,12 @@ sub _data_to_aggregate {
     ];
 
     return _array( mdb->topic->aggregate($aggregate_query) );
+}
+
+sub _build_dashboard_topics_burndown {
+    my $self = shift;
+
+    return Baseliner::Dashboard::TopicsBurndown->new;
 }
 
 no Moose;

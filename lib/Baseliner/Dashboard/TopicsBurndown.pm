@@ -10,6 +10,9 @@ sub dashboard {
     my $self = shift;
     my (%params) = @_;
 
+    my $id_project = $params{id_project};
+    my $topic_mid  = $params{topic_mid};
+
     my $username = $params{username} or die 'username required';
 
     my $to = $params{to} || _now();
@@ -25,7 +28,7 @@ sub dashboard {
           ci->status->find( { id_status => mdb->in(@closed_statuses) } )->fields( { _id => 0, name => 1 } )->all;
     }
 
-    if (!@closed_statuses) {
+    if ( !@closed_statuses ) {
         @closed_statuses = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
     }
 
@@ -60,10 +63,10 @@ sub dashboard {
         $group_by = { '$substr' => [ '$ts', 0, 10 ] };
 
         my $from_date = Class::Date->new($from);
-        my $to_date = Class::Date->new($to);
+        my $to_date   = Class::Date->new($to);
 
-        while ($from_date < $to_date) {
-            $burndown{ substr $from_date, 0, 10} = 0;
+        while ( $from_date < $to_date ) {
+            $burndown{ substr $from_date, 0, 10 } = 0;
 
             $from_date = $from_date + '1D';
         }
@@ -72,9 +75,12 @@ sub dashboard {
         die 'unknown group_by_period';
     }
 
+    my $topic_group_by = { '$substr' => [ @{ $group_by->{'$substr'} } ] };
+    $topic_group_by->{'$substr'}->[0] = "\$${date_field}";
+
     my @user_categories = map { $_->{id} }
       Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
-    if ( @$categories ) {
+    if (@$categories) {
         my @categories_ids = _array($categories);
         @user_categories = intersect( @categories_ids, @user_categories );
     }
@@ -85,6 +91,8 @@ sub dashboard {
     if ( $username && !$is_root ) {
         $perm->build_project_security( $where, $username, $is_root, @user_categories );
     }
+
+    Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
     my @backlog_remaining = map { $_->{mid} } mdb->topic->find(
         {
@@ -144,7 +152,7 @@ sub dashboard {
                     %$where,
                 }
             },
-            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+            { '$group' => { _id => $topic_group_by, total => { '$sum' => 1 } } }
         ]
     );
 

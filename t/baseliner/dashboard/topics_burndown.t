@@ -732,13 +732,162 @@ subtest 'burndown: filters by custom filter' => sub {
       [ [ '00' => 1 ], [ '01' => 1 ], [ '02' => 1 ], [ '03' => 1 ], [ '04' => 1 ], [ '05' => 1 ], [ '06' => 1 ], ];
 };
 
+subtest 'burndown: filters by topic_mid' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topics.sprint.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my ($status_new, $status_in_progress, $status_finished) = _create_statuses();
+
+    my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status_new->mid );
+
+    my $id_sprint_rule = _create_sprint_form();
+    my $id_sprint_category =
+      TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status_new->mid );
+
+    my $sprint1_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_sprint_category,
+        title       => 'Sprint #1',
+        status      => $status_new
+    );
+
+    my $changeset1_mid = mock_time '2016-01-02', sub {
+        TestSetup->create_topic(
+            project     => $project,
+            id_category => $id_changeset_category,
+            title       => 'Fix everything',
+            status      => $status_new
+        );
+    };
+
+    Baseliner::Model::Topic->new->update(
+        { action => 'update', topic_mid => $changeset1_mid, sprint => [$sprint1_mid] } );
+
+    my $sprint2_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_sprint_category,
+        title       => 'Sprint #2',
+        status      => $status_new
+    );
+
+    my $changeset2_mid = mock_time '2016-01-02', sub {
+        TestSetup->create_topic(
+            project     => $project,
+            id_category => $id_changeset_category,
+            title       => 'Fix everything',
+            status      => $status_new
+        );
+    };
+
+    Baseliner::Model::Topic->new->update(
+        { action => 'update', topic_mid => $changeset2_mid, sprint => [$sprint2_mid] } );
+
+    my $dashboard = _build_dashboard();
+
+    my $burndown = $dashboard->dashboard(
+        username        => $user->username,
+        group_by_period => 'date',
+        from            => '2016-01-01',
+        to              => '2016-01-03',
+        topic_mid       => $sprint2_mid
+    );
+
+    is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1]];
+};
+
 done_testing();
+
+sub _create_statuses {
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+
+    return ( $status_new, $status_in_progress, $status_finished )
+}
+
+sub _create_sprint_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+}
+
+sub _create_changeset_form {
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            $params{with_sprint}
+            ? (
+                {
+                    "attributes" => {
+                        "data" => {
+                            id_field      => 'sprint',
+                            release_field => 'changesets'
+                        },
+                        "key" => "fieldlet.system.release",
+                        name  => 'Sprint',
+                    }
+                }
+              )
+            : (),
+        ],
+    );
+}
 
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic'
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;
