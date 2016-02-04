@@ -6,6 +6,10 @@
     color = color.substring(position+17);
     color = color.substring(0,7);
 
+    if(color=="undefin"){
+      color = "#000000" ;
+    }
+
     var diagram;
     var overview;
 
