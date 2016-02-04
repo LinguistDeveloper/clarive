@@ -3,12 +3,7 @@ title: Job daily distribution
 index: 400
 icon: chart_line
 ---
-
-    
-<br />
-
 * Shows the jobs distribution in a chart line
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

@@ -3,12 +3,7 @@ title: Topic grid
 index: 400
 icon: grid
 ---
-
-    
-<br />
-
 * Allows to add topics into a grid to the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

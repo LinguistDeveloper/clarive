@@ -3,12 +3,7 @@ title: Datefield
 index: 400
 icon: calendar
 ---
-
-    
-<br />
-
 * Allows to introduce a datefield in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

@@ -1,7 +1,6 @@
 ---
 title: Operation
 ---
-
 * Operations (or "ops") are the different steps or tasks to be executed by a [rule](Concepts/rule).
 
 <br />

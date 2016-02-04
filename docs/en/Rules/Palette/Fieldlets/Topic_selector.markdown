@@ -3,12 +3,7 @@ title: Topic selector
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Allows to add topics to the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -50,7 +45,6 @@ icon: combo_box
 <br />
 ### Advanced filter JSON
 * Allows to use a JSON format to add a condition. 
-
 * For example, to show only a category user can use the filter:
 
             
@@ -92,7 +86,6 @@ icon: combo_box
 
 <br />
 ### Show grid controls?
-
 * Allows the user to configured when the grid controls will appear. The options are: <br />
 
 &nbsp; &nbsp;• **Only if paging** <br />

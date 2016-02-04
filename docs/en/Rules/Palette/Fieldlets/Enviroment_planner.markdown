@@ -3,12 +3,7 @@ title: Environment planner
 index: 400
 icon: milestone
 ---
-
-    
-<br />
-
 * Allows to add a table with the environments, planned start date and planned end date.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

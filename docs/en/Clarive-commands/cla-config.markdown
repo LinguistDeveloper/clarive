@@ -2,21 +2,15 @@
 title: cla config - Configuration tool
 icon: console
 ---
-
-<img src="/static/images/icons/console.png" /> `cla config`:  Tool for generate a custom config file or display the config and opts parameters. 
-
+* `cla config`:  Tool for generate a custom config file or display the config and opts parameters. 
 * Running alone, this command **asks the user to generate a custom configuration file** through a template.
-
 * This template can be defined:  <br />
      
 &nbsp; &nbsp; • As an argument passed through the command line as following: `--template <template file>`. <br />
 
-&nbsp; &nbsp; • If no argument is passed, the template is located in `$CLARIVE_HOME/config/clarive.yml.template`.
-
- <br/>
+&nbsp; &nbsp; • If no argument is passed, the template is located in `$CLARIVE_HOME/config/clarive.yml.template`. <br/>
 
 * After executing, it asks **some questions about some configuration parameters**, these are: <br />
-
 
 &nbsp; &nbsp;• `host`: Name of the instance that identifies the server. <br />
 
@@ -30,17 +24,13 @@ icon: console
 
 &nbsp; &nbsp;•  `time_zone_offset`: To establish time zone.
 
-
 <br/>
-
 
 * After answering all these questions **a configuration file is created** in `$CLARIVE_HOME/config` directory. It is  called: <br />
 
 &nbsp; &nbsp; • `<$env>.yml`: If an option has been passed as an argument in the form: `--env <environment_name>` . <br />
 
-&nbsp; &nbsp; • `<$CLARIVE_ENV>.yml.`:If no env argument is passed.
-
- <br />
+&nbsp; &nbsp; • `<$CLARIVE_ENV>.yml.`:If no env argument is passed. <br />
 
 * This command has three different subcommands that can be displayed through the help option:
             
@@ -65,14 +55,8 @@ icon: console
       &nbsp; &nbsp; • `clarive.yml`. <br />
       &nbsp; &nbsp; • `global.yml`.
 
-<br/>
-
 * File defined in option `--env` passed as argument in the command call with yml extension, or file `$CLARIVE_ENV` with yml extension.
-
-
 * With the option `--key <parameter>`, the output shows only the parameters defined in <parameter> field.    
-
-
 * `cla config-opts`: this command shows: <br />
 
       &nbsp; &nbsp; • All configuration parameters from the config files mentioned above. <br />
@@ -80,8 +64,6 @@ icon: console
       &nbsp; &nbsp; • Some key configuration parameters from the environment. <br />
 
       &nbsp; &nbsp; • Arguments passed through command line.
-
-<br/>
 
 * `cla config-gen`: Same behavior as cla config.
 

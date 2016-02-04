@@ -3,12 +3,7 @@ title: List jobs
 index: 400
 icon: report_default
 ---
-
-    
-<br />
-
 * Lists the jobs and their status in a ordered list
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

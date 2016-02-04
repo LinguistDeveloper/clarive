@@ -26,4 +26,4 @@ icon: prefs
 
 <br />
 ### API
-* Los usuarios con permiso de acceso a la API pueden obtener aqui su clave. Más información sobre las claves API [aqui](concepts/api_key).
+* Los usuarios con permiso de acceso a la API pueden obtener aqui su clave. Más información sobre las claves API [aqui](Conceptos/api_key).

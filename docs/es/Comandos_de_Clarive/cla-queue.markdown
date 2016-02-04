@@ -1,7 +1,8 @@
 ---
 title: cla queue - Herramientas de gestion de colas
 icon: console
----* `cla queue`: Las herramientas de gestión de colas actúa a través de la implementación pub/sub de redis por lo que es necesario que un servidor redis y, al menos, un worker estén funcionando.
+---
+* `cla queue`: Las herramientas de gestión de colas actúa a través de la implementación pub/sub de redis por lo que es necesario que un servidor redis y, al menos, un worker estén funcionando.
 * `cla-queue`: Sin ningún parámetro, se muestra todos los workers registrados. Se puede añadir la opción `-v` para ver además la configuración del worker.
 * Los subcomandos disponibles se pueden consultar a través de la opción de ayuda:
             

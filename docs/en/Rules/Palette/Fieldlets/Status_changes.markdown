@@ -3,12 +3,7 @@ title: Status changes
 index: 400
 icon: chart_pie
 ---
-
-    
-<br />
-
 * Allows to show the change history of the topic
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

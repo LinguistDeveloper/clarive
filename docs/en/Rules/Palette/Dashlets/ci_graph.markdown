@@ -3,12 +3,7 @@ title: CI Graph
 index: 400
 icon: ci-grey
 ---
-
-    
-<br />
-
 * Shows a CI Graph in the dashboard.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

@@ -3,12 +3,7 @@ title: List baselines
 index: 400
 icon: report_default
 ---
-
-    
-<br />
-
 * Lists the baselines
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

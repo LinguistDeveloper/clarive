@@ -1,6 +1,5 @@
 ---
 title: Claves API 
-index: 5000
 icon: lock_small
 ---
 * Las clave API permite al usuario a acceder a sus datos de la cuenta de Clarive sin necesidad de utilizar el nombre y la contraseña. Sin embargo, cualquier aplicación que use la clave API se tendrá acceso a la misma información que habiendo accedido utilizando el usuario/contraseña.

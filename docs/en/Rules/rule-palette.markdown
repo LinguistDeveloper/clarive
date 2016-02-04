@@ -2,20 +2,16 @@
 title: Rule Palette
 icon: rule
 ---
-
 * Operations (ops) from the palette offers the needed mechanisms to create 
 rules for automation. 
-
 * They all have a context menu with the following fields:
 
 <br />
 ### Configuration
-
 * Depending on the op it displays a window with the necessary fields to implement its target. Full information about each field will be described at the time particular op is presented.
 
 <br />
 ### Rename    
-
 * A dialog box is showed with a field to introduce the new name for the op. Its default value is the op name as it appears in the Palette. <br />
 
 &nbsp; &nbsp;• **OK**: Saves any changes made and closes the dialog. <br />
@@ -24,9 +20,7 @@ rules for automation.
 
 <br />
 ### Properties  
-
 * Operation properties are common to all operations used in a rule. After clicking this option menu a new window is raised up with an action tab and three window tabs.
-
 * Action tabs are: <br />
 
 &nbsp; &nbsp;• **Cancel**: To cancel all actions done since last save and close properties window. <br />
@@ -206,23 +200,19 @@ rules for automation.
 * It displays a window including op notes entered by the user or for the user to include.
 
 <br />
-### Copy    
-
+### Copy 
 * Copy op from rule tree area to clipboard.
 
 <br />
-### Cut   
-
+### Cut
 * Drops op from rule tree area to clipboard.
 
 <br />
-### Paste   
-
+### Paste
 * Copy op from clipboard nested to the op selected, if possible.
 
 <br />
-### DSL   
-
+### DSL
 * Displays a window with title DSL: `<rule name>`. An action tab and three different areas are showed in DSL window, the action tab is composed of:<br />
 
 &nbsp; &nbsp;• **Run**: button to run DSL code from DSL area. Areas are: <br /> 

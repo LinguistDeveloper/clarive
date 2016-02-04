@@ -2,10 +2,8 @@
 title: Workflow
 icon: workflow
 ---
-
-<img src="/static/images/icons/workflow.png" /> A Clarive workflow is the set of statuses and transitions that a topic
+* A Clarive workflow is the set of statuses and transitions that a topic
 goes through during its lifecycle. 
-
 * There are 2 types of workflows: <br />
 
 &nbsp; &nbsp;• Topic-based, which are for simple workflows <br />
@@ -14,15 +12,12 @@ goes through during its lifecycle.
 
 <br />
 ### Topic Workflows 
-
 * These are simple workflows that apply to a given topic.
 
 <br />
 ### Rule Workflows
-
 * Typically, most topic categories will do fine
 with just a simple, topic workflow. 
-
 * Rule workflows should be used instead for complex decision transitions: <br />
 
 &nbsp; &nbsp;• Project specific flows <br />
@@ -38,7 +33,6 @@ happen.
 
 <br />
 ### Reusability
-
 * Also, rule workflows are useful as __reusable workflows__. One
 workflow rule may be reused in many different topic 
 categories.

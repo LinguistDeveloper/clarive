@@ -3,12 +3,7 @@ title: Job chart
 index: 400
 icon: chart_pie
 ---
-
-    
-<br />
-
 * Shows the status of a job in a configurable chart
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

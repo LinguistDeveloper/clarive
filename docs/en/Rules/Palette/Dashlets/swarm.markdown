@@ -3,12 +3,7 @@ title: Swarm
 index: 400
 icon: swarm
 ---
-
-    
-<br />
-
 * Shows an animated swarm with the options configured in the dashlet.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

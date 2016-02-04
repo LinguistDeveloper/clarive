@@ -3,12 +3,7 @@ title: Topic burndown
 index: 400
 icon: chart_line
 ---
-
-    
-<br />
-
 * Shows a chronogram with a list of topics from a specific date.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

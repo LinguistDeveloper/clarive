@@ -3,12 +3,7 @@ title: Download all files
 index: 400
 icon: download
 ---
-
-    
-<br />
-
 * Allows to download all the files attached in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

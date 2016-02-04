@@ -2,13 +2,10 @@
 title: Rule Concepts
 icon: rule
 ---
-
-
 * Once the different needs are recorded and managed through the 
 various states that make up their lifecycle, they must be deployed and delivered for final operation. 
 It is highly related to Change set Management.
 Rule Management is in charge of automation and deployment among systems.
-
 * Automation is done through rules executions; they must be 
 created first using Clarive process definition, also Clarive supplies 
 all needed tools to manage rules. For rule management, a number of 
@@ -16,7 +13,6 @@ Clarive concepts are describe here.
   
 <br /> 
 ### Types of rules
-
 * There are six types of rules:
 
 &nbsp; &nbsp;• **Event** - Triggers or triggers based on actions performed on the system. Three types of rules: <br />
@@ -39,7 +35,6 @@ Clarive concepts are describe here.
 
 <br />
 ### Job Steps
-
 * When a rule is created, 5 steps are displayed, these are: <br />
 
 &nbsp; &nbsp;• **CHECK**: Check before creating the job, job object not yet available. <br />
@@ -54,7 +49,6 @@ Clarive concepts are describe here.
 
 <br />
 ### Types of Tasks  
-
 * It is divided in three types of tasks: <br />
 
 
@@ -71,7 +65,6 @@ Clarive concepts are describe here.
 
 ### Other rules
 
-
 &nbsp; &nbsp;• **Report** - Create a report with Perl code. <br />
 
 &nbsp; &nbsp;• **Webservice** - Allows to integrate webservices in rules.<br />
@@ -85,7 +78,6 @@ Clarive concepts are describe here.
 
 <br />
 ### Stash
-
 * The stash of the rules is Clarive system that keeps the state of the pass between runs. Stash variables are used to communicate between tasks and it is used to replace the variables in the different configurations.
 
 

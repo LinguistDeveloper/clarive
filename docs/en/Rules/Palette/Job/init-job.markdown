@@ -2,10 +2,8 @@
 title: Init Job Home
 icon: job
 ---
-
-<img src="/static/images/icons/job.png" /> This service is required for a correct job startup. Create or 
+* This service is required for a correct job startup. Create or 
 clean job directory depending if it exits or not.
-
 * Job directory is formed using the path: 
 
 `$ENV{CLARIVE_JOBDIR}/` 

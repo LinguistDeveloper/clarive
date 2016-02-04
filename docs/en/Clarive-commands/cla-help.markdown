@@ -3,22 +3,15 @@ title: cla help - Help on cla commands
 index: 10
 icon: console
 ---
-
-<img src="/static/images/icons/console.png" /> `cla help`: Clarive has a number of command lines that can be executed to manage the application. 
-
+* `cla help`: Clarive has a number of command lines that can be executed to manage the application. 
 * These commands are called through the command cla as follow: `cla <command><command-args>`. 
-
-
 * Cla command itself has two options: <br />
 
 &nbsp; &nbsp;• `version`: displays Clarive version. <br />
 
-&nbsp; &nbsp;• `help`: shows the available command. Help output can be accessed through the option `–h` as well.
-
-<br/>
+&nbsp; &nbsp;• `help`: shows the available command. Help output can be accessed through the option `–h` as well. <br/>
 
 * Cla command is in charge of collecting all configuration data from config files, environment and arguments passed through the command line before running the command call itself.
- 
 * In order to describe every command, let’s show the output of cla help:
             
         > cla help

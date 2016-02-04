@@ -3,12 +3,7 @@ title: Task grid
 index: 400
 icon: grid
 ---
-
-    
-<br />
-
 * Allows to add a tasks in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -48,7 +43,6 @@ icon: grid
 <br />
 ### Advanced filter JSON
 * Allows to use a JSON format to add a condition. 
-
 * For example, to show only a category user can use the filter:
 
             

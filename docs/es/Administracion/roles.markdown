@@ -2,7 +2,7 @@
 title: Administracion de roles
 icon: role
 ---
-* La seguridad de Clarive se gestiona a través del [sistema de roles](concepts/roles).
+* La seguridad de Clarive se gestiona a través del [sistema de roles](Conceptos/roles).
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
 * Los usuarios pueden tener uno o mas roles definidos. Esto hace que el acceso a Clarive por parte de un usuario esté limitado y controlado. 
 
@@ -39,7 +39,7 @@ icon: role
 
 &nbsp; &nbsp;• **Descripción**: Una breve descripción del papel que desempeña el rol. <br />
 
-&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](concepts/dashboards). Aquí se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](Primeros_pasos/prefs) solo aparecerán los dashboards que estén asociados sus roles. El primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
+&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](Conceptos/dashboards). Aquí se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](Primeros_pasos/prefs) solo aparecerán los dashboards que estén asociados sus roles. El primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
 
 
 <br />
@@ -89,7 +89,7 @@ icon: role
 &nbsp; &nbsp;&nbsp; &nbsp;• `Campos de un tópico`: Por cada campo de un tópico en un estado específico, la acción puede ser permitir al rol editar un tópico que esté en un determinado estado pero solo visualizarlo cuando está en otro estado. <br />
 
 
-&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](concepts/scope) está asignado. <br />
+&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](Conceptos/scope) está asignado. <br />
 
 &nbsp; &nbsp;• *Ámbitos* - Es una vista pivotal de la pestaña anterior. Permite ver los usuarios que tienen el rol.<br />
 

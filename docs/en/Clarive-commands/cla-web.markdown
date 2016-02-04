@@ -3,11 +3,8 @@ title: cla web - Web server management
 index: 10
 icon: console
 ---
-
-<img src="/static/images/icons/console.png" />  `cla web`: Performs operations related to Clarive web service. 
-
+* `cla web`: Performs operations related to Clarive web service. 
 * By itself it starts Clarive web service. 
-
 * Supports the following options: <br />
 
 &nbsp; &nbsp;• `--env <environment>`: Used to configure parameters. <br />
@@ -21,7 +18,6 @@ icon: console
 &nbsp; &nbsp;&nbsp;&nbsp;• *features/\*/lib*, excepts changes in files located in features/#* directory. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp; Its default value is 0.
-
 
 &nbsp; &nbsp;• `--R <location>`: Server restarts if there is any change in `<location>`. <br />
 
@@ -40,7 +36,6 @@ icon: console
 &nbsp; &nbsp;• `--log_keep <lognumber>`: Number of logs to keep in log directory. <br />
 
 &nbsp; &nbsp;• `--log_file <logfile>`: Name of log file. <br />
-
 * Subcommands supported can be displayed with the help option:
             
         > cla help web

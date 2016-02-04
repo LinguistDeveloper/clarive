@@ -3,14 +3,8 @@ title: Topic gauge
 index: 400
 icon: gauge
 ---
-
-    
-<br />
-
 * Shows a gauge with the status of the topics.
-
 * The gauge is defined by three colors, red, yellow and green. Can be defined the vaules reachers inside the configuration.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

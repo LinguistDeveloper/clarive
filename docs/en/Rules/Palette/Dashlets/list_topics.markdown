@@ -3,12 +3,7 @@ title: List topics
 index: 400
 icon: report_default
 ---
-
-    
-<br />
-
 * Lists the selected topics and their status in a ordered list.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

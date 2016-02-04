@@ -2,13 +2,9 @@
 title: Status Administration
 icon: status
 ---
-
 * Clarive can support any number of states, and states can be used by any number of topics.
-
 * Status administration is be performed by selecting the Configuration items button from the left explorer window.
-
 * This will display the configuration items tree structure in the left pane.
-
 * The following actions buttons are available above the list of Status: <br />
 
 &nbsp; &nbsp;• Search for all states containing the search string entered <br />
@@ -19,12 +15,10 @@ icon: status
 
 * When clicking on the export button, low-level configuration data can be exported in YAML, JSON, HTML and CSV formats
 by clicking on the symbol YAML and CSV formatted data can be imported. 
-
 * This is handy for sharing and exchanging of states information.
 
 <br />
 ### <img src="/static/images/icons/add.gif" /> Create a new Status 
-
 * The following information needs to be provided for creation: <br />
 
 &nbsp; &nbsp;• `Name`: Name of the status <br />

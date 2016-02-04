@@ -2,9 +2,7 @@
 title: Ship File Remotely
 icon: file.gif
 ---
-
-<img src="/static/images/icons/file.gif" />  Get files from a remote site according to user options from the configuration window. 
-
+* Get files from a remote site according to user options from the configuration window. 
 * Form to configure has the following fields: <br />
 
 &nbsp; &nbsp;• **Server**: Server that holds the remote file, server to connect to. <br />
@@ -19,8 +17,6 @@ icon: file.gif
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Nature items: Files involved in current nature. <br />
 
-
-
 &nbsp; &nbsp;• **Rel mode**: Relative path to place files in local server. Options are: <br />
     
 &nbsp; &nbsp;&nbsp; &nbsp;• File only: To take only file names. <br />
@@ -28,8 +24,6 @@ icon: file.gif
 &nbsp; &nbsp;&nbsp; &nbsp;• Rel path job: Files path relative to job dir. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Rel path anchor: Files path relative to a path configured by the user. <br />
-
-    
 
 &nbsp; &nbsp;• **Anchor path**: Path to anchor files relative path.<br />
 

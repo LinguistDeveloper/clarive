@@ -3,12 +3,7 @@ title: Combo
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Allows to introduce a combo box in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

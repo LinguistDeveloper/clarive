@@ -3,12 +3,7 @@ title: Description
 index: 400
 icon: textfield
 ---
-
-    
-<br />
-
 * Allows to introduce a description in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
