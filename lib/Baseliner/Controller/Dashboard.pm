@@ -475,6 +475,7 @@ sub topics_by_field : Local {
     my $not_in_status = $p->{not_in_status};
     my $numberfield_group = $p->{numberfield_group};
     my $result_type = $p->{result_type} // 'count';
+    my $sort_by_labels = $p->{sort_by_labels} && $p->{sort_by_labels} eq 'on';
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
@@ -589,6 +590,11 @@ sub topics_by_field : Local {
         $topics_list->{_loc('Other')} = \@other_topics;
         $colors->{_loc('Other')} = "#DDDDDD";
     }
+
+    if ($sort_by_labels) {
+        @data = sort { $a->[0] cmp $b->[0] } @data;
+    }
+
     $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
     $c->forward('View::JSON'); 
 }
