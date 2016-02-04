@@ -8,12 +8,13 @@ icon: kanban
 &nbsp; &nbsp;• El grid de tópicos. <br />
 
 &nbsp; &nbsp;• Dentro de un tópico que tiene dependencias con otros tópicos.
-* La tabla Kanban se abre pulsando el icono <img src="/static/images/icons/kanban.png" />
+
+* La tabla Kanban se abre pulsando el icono <img src="/static/images/icons/kanban.png" />.
 
 
 <br />
 ### ¿Como funciona?
-* La tabla Kanban siempre comienza de una lista de tópicos, o del grid, o de tópicos relacionados entre si.
+* La tabla Kanban siempre comienza de una lista de tópicos, o del grid, o de tópicos relacionados entre sí.
 * De esa lista se genera las tablas donde muestran todos los estados disponibles en los que el tópico o tópicos puede estar.
 * Los estados a los que el usuario no tenga permiso no se mostrarán
 * Para cambiar el estado de un tópico, basta con arrastrar y soltar al nuevo estado. Cuando se arrastra el tópico se habilitan solo los estados a los que el tópico puede transitar.

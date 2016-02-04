@@ -26,11 +26,11 @@ icon: roadmap
 
 <br />
 ### Escala
-* Se puede definir la escala para mejor visualización de los tópicos. Dicha escala puede ser por día, semana o mes
+* Se puede definir la escala para mejor visualización de los tópicos. Dicha escala puede ser por día, semana o mes.
 
 <br />
 ### Entornos
-* Añade un filtro para poder visualizar topicos que se encuentren en uno o varios entornos determinados
+* Añade un filtro para poder visualizar topicos que se encuentren en uno o varios entornos determinados.
 
 <br />
 ### Excluir entornos seleccionadas
@@ -50,7 +50,7 @@ icon: roadmap
 
 <br />
 ### Condición avanzada JSON/MongoDB
-* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar
+* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar.
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 

@@ -3,12 +3,7 @@ title: Topics period burndown
 index: 400
 icon: chart_line
 ---
-
-    
-<br />
-
 * Shows a chart line with the real and the expected trends of the topics in a timeline.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

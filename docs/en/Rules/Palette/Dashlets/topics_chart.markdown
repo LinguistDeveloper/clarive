@@ -3,12 +3,7 @@ title: Topic charts
 index: 400
 icon: chart_pie
 ---
-
-    
-<br />
-
 * Shows a pie with the status of the topics.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

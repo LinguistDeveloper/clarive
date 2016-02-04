@@ -3,12 +3,7 @@ title: Schedule
 index: 400
 icon: clock
 ---
-
-    
-<br />
-
 * Allows to introduce a schedule in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -34,7 +29,6 @@ icon: clock
 <br />
 ### Columns
 * Set the columns to show in the schedule
-
 * The first literal indicate de name of the column and the second the type. The separator between columns are ;
 
 

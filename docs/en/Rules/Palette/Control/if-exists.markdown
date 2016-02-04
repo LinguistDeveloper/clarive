@@ -2,9 +2,7 @@
 title: IF EXISTS nature THEN
 icon: if.gif
 ---
-
 * Checks if changeset meets defined nature and if so process nested op. 
-
 * Following variables are included into stash: <br />
 
 &nbsp; &nbsp;• **nature_items**: CIs affected by defined natured. <br />

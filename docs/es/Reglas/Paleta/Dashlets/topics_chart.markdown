@@ -23,7 +23,7 @@ icon: chart_pie
 
 <br />
 ### El gráfico se mostrará como...
-* Permite cambiar el tipo de gráfico para mostrar en el dashboard <br />
+* Permite cambiar el tipo de gráfico para mostrar en el dashboard. <br />
 
 &nbsp; &nbsp;• **Circular** <br />
 
@@ -33,11 +33,11 @@ icon: chart_pie
 
 <br />
 ### Minimo % para mostrar serie en el grupo 'Otro'
-* Establece el valor minimo para que una categoria que no llegue a un porcentaje significativo se muestre en el grupo 'Otro' del gráfico.
+* Establece el valor mínimo para que una categoría que no llegue a un porcentaje significativo se muestre en el grupo 'Otro' del gráfico.
 
 <br />
 ### Selecciona o teclea el campo de agrupación
-* Selecciona de que manera agrupar las categorias. Puede ser por nombre, status, el usuario que ha creado el tópico o el último usuario que lo ha modificado.
+* Selecciona de que manera agrupar las categorías. Puede ser por nombre, status, el usuario que ha creado el tópico o el último usuario que lo ha modificado.
 
 <br />
 ### Seleccionar tópicos en estados
@@ -50,10 +50,10 @@ icon: chart_pie
 
 <br />
 ### Condición avanzada JSON/MongoDB
-* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar
+* Permite añadir un filtro para las filtrar los topicos y/o categorías a mostrar
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
 
-&nbsp;&nbsp;• Donde *id* es la clave una de la categoria. Dicho id se puede consultar a través del REPL.
+&nbsp;&nbsp;• Donde *id* es la clave una de la categoría. Dicho id se puede consultar a través del REPL.
 

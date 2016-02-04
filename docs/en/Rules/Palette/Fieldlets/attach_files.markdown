@@ -3,12 +3,7 @@ title: Attach files
 index: 400
 icon: file.gif
 ---
-
-    
-<br />
-
 * Allows to attach files in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

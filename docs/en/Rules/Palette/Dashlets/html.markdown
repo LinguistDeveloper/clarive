@@ -3,12 +3,7 @@ title: HTML
 index: 400
 icon: html
 ---
-
-    
-<br />
-
 * Shows an HTML code you can configure in dashlet settings.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

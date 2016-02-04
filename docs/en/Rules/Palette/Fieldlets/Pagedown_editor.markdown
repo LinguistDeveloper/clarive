@@ -3,12 +3,7 @@ title: Pagedown editor
 index: 400
 icon: html
 ---
-
-    
-<br />
-
 * Allows to add elements in Markdown language.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

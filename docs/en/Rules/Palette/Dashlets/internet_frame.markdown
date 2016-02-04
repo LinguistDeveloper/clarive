@@ -3,12 +3,7 @@ title: Internet frame
 index: 400
 icon: webservice
 ---
-
-    
-<br />
-
 * Shows a webpage inside the dashlet.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

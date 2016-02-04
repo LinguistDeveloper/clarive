@@ -3,12 +3,7 @@ title: Email messages
 index: 400
 icon: envelope
 ---
-
-    
-<br />
-
 * Shows the inbox email messages in the dashboard.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

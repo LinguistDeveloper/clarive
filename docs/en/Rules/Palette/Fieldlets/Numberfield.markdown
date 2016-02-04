@@ -3,12 +3,7 @@ title: Number field
 index: 400
 icon: number
 ---
-
-    
-<br />
-
 * Add a number field in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

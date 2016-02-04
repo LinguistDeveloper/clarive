@@ -2,23 +2,18 @@
 title: Rule Menu
 icon: rule
 ---
-
 * The way to access rule stuff is through admin menu. Selecting **Admin → Rules** a new tab appears with three different areas. From left to right:
 
 <br />
 ### Rules grid area
-
 * Area with two columns and an action tab: <br />
 
 &nbsp; &nbsp;• **Rule**: Rule id, rule name and rule type. <br />
 
 &nbsp; &nbsp;• **Time**: Last modification time.
 
-
-
 <br />
 ### Actions
-
 * Actions defined are: <br />
 
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" />**Search field**: To find rules names according to the mask typed in search field, it list till 30 rules. <br />
@@ -71,12 +66,9 @@ icon: rule
 
 &nbsp; &nbsp;• <img src="/static/images/icons/html.png" /> **HTML** - Displays in another navigator tab, op properties values and configuration from every op included in the selected rule. Every op is indented as it is built in rules.
 
-
 <br />
-
 ### Palette
 * Contains all operations (ops) that can be used for rule composition. 
-
 * It has an action tab with two action: <br />
 
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Search** - To find a rule with a mask as input. <br />

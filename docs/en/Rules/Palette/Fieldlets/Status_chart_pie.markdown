@@ -3,12 +3,7 @@ title: Status chart pie
 index: 400
 icon: chart_pie
 ---
-
-    
-<br />
-
 * Allows to show a status chart pie
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

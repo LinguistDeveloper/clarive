@@ -2,9 +2,7 @@
 title: Invoke CI methods
 icon: ci
 ---
-
-<img src="/static/images/icons/ci.png" /> Invoke the selected ci method with the given arguments from the form. 
-
+* Invoke the selected ci method with the given arguments from the form. 
 * Form to configure has the following fields: <br />
 
 &nbsp; &nbsp; • **CI class**: Combo box with all clarive CIs. <br />

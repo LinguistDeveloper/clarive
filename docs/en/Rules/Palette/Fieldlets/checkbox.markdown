@@ -3,12 +3,7 @@ title: Checkbox
 index: 400
 icon: admin_request
 ---
-
-    
-<br />
-
 * Allows to introduce a checkbox in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

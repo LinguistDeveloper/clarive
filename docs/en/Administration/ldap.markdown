@@ -1,13 +1,11 @@
 ---
 title: LDAP Authentication
+index: 5
 icon: users.gif
 ---
-
 ## Setup
-
 * To setup the LDAP authentication mechanism access to Clarive environment
-configuration files is necessary. 
-
+configuration files is necessary.<br /> 
 * Under the key `baseliner: authentication: ldap:` we configure the LDAP binding credentials and server information:
             
         baseliner:

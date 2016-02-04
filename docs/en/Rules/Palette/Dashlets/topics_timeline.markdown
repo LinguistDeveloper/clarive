@@ -3,12 +3,7 @@ title: Topics timeline
 index: 400
 icon: chart_curve
 ---
-
-    
-<br />
-
 * Shows a timeline with the number of topics.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

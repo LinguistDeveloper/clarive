@@ -20,7 +20,7 @@ icon: workflow
 * Los *workflows* de reglas deberias ser utilizados donde se requiera una sistema de transiciones complejo. <br />
 
 &nbsp; &nbsp;• Flujos específicos del proyecto. <br />
-Transiciones Campo-dependientes, es decir. si "urgencia" valor fieldset es "urgente" omita "promover al control de calidad"
+Transiciones Campo-dependientes, es decir, si "urgencia" valor fieldset es "urgente" omita "promover al control de calidad".
 
 &nbsp; &nbsp;• Transiciones que dependan de un campo, por ejemplo: Si el campo 'Urgencia' de un formulario tiene el valor "Urgente", entonces que se despliegue automaticamente al entorno de Preproducción. <br />
 

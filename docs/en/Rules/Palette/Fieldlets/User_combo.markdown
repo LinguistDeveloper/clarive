@@ -3,12 +3,7 @@ title: User combo
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Allows to introduce a combo with the existing users.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -47,6 +42,5 @@ icon: combo_box
 <br />
 ### Advanced filter JSON
 * Allows to use a JSON format to add a condition. 
-
 * Also the user can filter by role. `Developer` : Only shows the users with that specific role.
 

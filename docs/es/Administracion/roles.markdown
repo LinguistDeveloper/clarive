@@ -2,23 +2,24 @@
 title: Administracion de roles
 icon: role
 ---
-* La seguridad de Clarive se gestiona a través del [sistema de roles](concepts/roles).
+* La seguridad de Clarive se gestiona a través del [sistema de roles](Conceptos/roles).
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
 * Los usuarios pueden tener uno o mas roles definidos. Esto hace que el acceso a Clarive por parte de un usuario esté limitado y controlado. 
 
-&nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](Administracion/topics), [administración de notificaciones](Administracion/notifications), [acceso al planificador](Administracion/scheduler), [gestión de usuarios](Administracion/user), etc...Un gestor de incidencias puede estar defenido por ejemplo con acceso completo a la categoria Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
+&nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](Administracion/topics), [administración de notificaciones](Administracion/notifications), [acceso al planificador](Administracion/scheduler), [gestión de usuarios](Administracion/user), etc...Un gestor de incidencias puede estar definido por ejemplo con acceso completo a la categoría Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
+
 * Un usuario puede tener mas de un rol de tal manera que pueda acceder a más temas donde trabajar.
-* La administración de roles se realiza a través de la ruta Administración → Roles. Esto mostrará un listado con todos los roles creados y una barra de acciones. 
+* La administración de roles se realiza a través de la ruta Administración → <img src="/static/images/icons/role.png" /> Roles. Esto mostrará un listado con todos los roles creados y una barra de acciones. 
 
 <br />
 ## Columnas
-* Las columnas, al igual que el resto de tablas de Clarive, permiten cambiar el orden ascendente/descendente haciendo click en la columna que se quiera ordenar asi como mostrar u ocultar las columnas deseadas.<br />
+* Las columnas, al igual que el resto de tablas de Clarive, permiten cambiar el orden ascendente/descendente haciendo click en la columna que se quiera ordenar así como mostrar u ocultar las columnas deseadas.<br />
 
-&nbsp; &nbsp;• `Rol`: El nombre del rol <br />
+&nbsp; &nbsp;• `Rol`: El nombre del rol. <br />
 
 &nbsp; &nbsp;• `Descripción`: La descripción del rol. <br />
 
-&nbsp; &nbsp;• `Buzón`: Buzón al que pertenece el rol. Util para las [notificaciones](Administracion/notifications). <br />
+&nbsp; &nbsp;• `Buzón`: Buzón al que pertenece el rol. Útil para las [notificaciones](Administracion/notifications). <br />
 
 &nbsp; &nbsp;• `Opciones`: Resumen de las acciones del rol.
 
@@ -38,7 +39,7 @@ icon: role
 
 &nbsp; &nbsp;• **Descripción**: Una breve descripción del papel que desempeña el rol. <br />
 
-&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](concepts/dashboards). Aqui se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](Primeros_pasos/prefs) solo aparecerán los dashboards que estén asociados sus roles. EL primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
+&nbsp; &nbsp;• **Dashboard**: Clarive dispone de un sistema de [dashboards](Conceptos/dashboards). Aquí se pueden asociar los dashboards con roles de tal manera que en las [preferencias de usuario](Primeros_pasos/prefs) solo aparecerán los dashboards que estén asociados sus roles. El primer dashboard que se añada, será el dashboard por defecto. Cada usuario podrá cambiar su dashboard por defecto en las preferencias del usuario.
 
 
 <br />
@@ -53,7 +54,7 @@ icon: role
 
 &nbsp; &nbsp;&nbsp; &nbsp;• `Calendario`: Agrupan todas las acciones relacionadas con el planificador de despliegues. <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;• `CI`: Todas las acciones relacionadas con los elementos de configuración. Estas acciones están divididos en dos grupos:<br />
+&nbsp; &nbsp;&nbsp; &nbsp;• `CI`: Todas las acciones relacionadas con los elementos de configuración. Estas acciones están divididas en dos grupos:<br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `admin` - Se muestran todos las acciones relacionadas con la administración de CIs. <br />
 
@@ -88,7 +89,7 @@ icon: role
 &nbsp; &nbsp;&nbsp; &nbsp;• `Campos de un tópico`: Por cada campo de un tópico en un estado específico, la acción puede ser permitir al rol editar un tópico que esté en un determinado estado pero solo visualizarlo cuando está en otro estado. <br />
 
 
-&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](concepts/scope) está asignado. <br />
+&nbsp; &nbsp;• *Usuarios* - Permite ver los usuarios que tienen el rol actual (en caso de estar en modo edición de rol) y en que [ámbito](Conceptos/scope) está asignado. <br />
 
 &nbsp; &nbsp;• *Ámbitos* - Es una vista pivotal de la pestaña anterior. Permite ver los usuarios que tienen el rol.<br />
 

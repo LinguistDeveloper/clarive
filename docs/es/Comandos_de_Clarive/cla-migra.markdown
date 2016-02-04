@@ -19,14 +19,14 @@ Actualiza o desactualiza las migraciones. Las opciones son:
 
 <br />
 #### migra-set
-Establece manualmente la versión más reciente de las migraciones
+Establece manualmente la versión más reciente de las migraciones.
             
         --version La versión que se quiere establecer
 
 <br />
 #### migra-fix
 Elimina el error de la última migración. Use *SOLO* cuando el tema es realmente
-fijo
+fijo.
 
 
 #### migra-specific

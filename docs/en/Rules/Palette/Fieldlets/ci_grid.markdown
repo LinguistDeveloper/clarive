@@ -3,12 +3,7 @@ title: CI Grid
 index: 400
 icon: grid
 ---
-
-    
-<br />
-
 * Allows to introduce a CI grid in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

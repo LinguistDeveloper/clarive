@@ -2,9 +2,7 @@
 title: Run a Local Script
 icon: cog_java
 ---
-
-<img src="/static/images/icons/cog_java.png" /> Execute a local script and rollback if needed. 
-
+* Execute a local script and rollback if needed. 
 * Form to configure has the following fields: <br />
 
 &nbsp; &nbsp;• **Path**: Path where script to run is located.<br />

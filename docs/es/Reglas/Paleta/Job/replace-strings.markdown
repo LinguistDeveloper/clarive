@@ -3,7 +3,7 @@ title: Replace Strings
 icon: rename_items
 ---
 * Convierte los ficheros especificos desde una ruta dada. Los ficheros parseados pueden ser procesados de diferentes maneras de acuerdo con los criterios de usuario desde la ventana de configuración.
-* Los elementos configurables son los siguientes
+* Los elementos configurables son los siguientes:
 
 <br />
 ### Ruta

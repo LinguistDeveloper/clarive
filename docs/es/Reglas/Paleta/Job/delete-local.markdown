@@ -2,7 +2,7 @@
 title: Delete Local Directory
 icon: file.gif
 ---
-* Elimina de manera recursivo el directorio dado en la configuración del elemento
+* Elimina de manera recursivo el directorio dado en la configuración del elemento.
 * La lista de configuración del elemento incluye las siguientes opciones: <br />
 
 <br />

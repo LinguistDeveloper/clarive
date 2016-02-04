@@ -3,12 +3,7 @@ title: Calculated numberfield
 index: 400
 icon: number.png
 ---
-
-    
-<br />
-
 * Allows to calculate a value with operations between fields
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

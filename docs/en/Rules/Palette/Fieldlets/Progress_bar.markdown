@@ -3,12 +3,7 @@ title: Progress bar
 index: 400
 icon: progressbar
 ---
-
-    
-<br />
-
 * Shows a progress bar in the form.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

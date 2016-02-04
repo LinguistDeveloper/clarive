@@ -4,7 +4,7 @@ index: 400
 icon: lock_small
 ---
 * Añade el título a un tópico.
-* Al igual que el fieldlet [estado](Reglas/Paleta/Fieldlets/State) este fieldlet es **obligatorio**
+* Al igual que el fieldlet [estado](Reglas/Paleta/Fieldlets/State) este fieldlet es **obligatorio**.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />

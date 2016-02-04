@@ -3,12 +3,7 @@ title: Revision box
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Allows to introduce a revision box into the topic form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

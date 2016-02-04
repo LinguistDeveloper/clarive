@@ -29,6 +29,7 @@ icon: console
 &nbsp; &nbsp; • `<$env>.yml`: Si una opción se ha pasado como argumento de la forma: `--env <nombre_entorno>`. <br />
 
 &nbsp; &nbsp; • `<$CLARIVE_ENV>.yml.`: Si no se ha pasado ningún argumento.
+
 * El comando tiene que subcomandos diferentes que pueden ser consultados a través de la ayuda:
             
         > cla help config
@@ -44,12 +45,12 @@ icon: console
 
         cla help <comando> para obtener todos los subcomandos.
         cla <comando> -h para ver las opciones del comando.
-* `cla config-show`: Este comando muestra todos los parámetros de configuración defnidos en los siguientes ficheros: <br />
+* `cla config-show`: Este comando muestra todos los parámetros de configuración definidos en los siguientes ficheros: <br />
 
       &nbsp; &nbsp; • `clarive.yml`. <br />
 
       &nbsp; &nbsp; • `global.yml`.
-* Con la opción `--key <parameter>`, la salida solo muestra los parámetros definidos en el campo <parameter>.
+* Con la opción `--key <parameter>`, la salida solo muestra los parámetros definidos en el campo `<parameter>`.
 * `cla config-opts`: Este comando muestra: <br />
 
       &nbsp; &nbsp; • Todos los parámetros de configuración de los ficheros de configuración de Clarive mencionados arriba. <br />

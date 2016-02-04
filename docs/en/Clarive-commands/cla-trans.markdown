@@ -2,9 +2,7 @@
 title: cla trans - Conversion tool
 icon: console
 ---
-
-<img src="/static/images/icons/console.png" /> `cla trans`: Conversion tool, password encryption. 
-
+* `cla trans`: Conversion tool, password encryption. 
 * Subcommands supported can be displayed with the help option:
 
 <br/>
@@ -35,19 +33,12 @@ icon: console
 
       &nbsp; &nbsp;• Typed from the keyboard when command asked for it. <br />
 
-<br />
-
 * Encryption is done using parameter decrypt_key or dec_key from config file. <br />
-
-<br/>
-
 * `cla trans-md5`: Encrypt following MD5 algoritm. The input string can be defined: <br />
 
       &nbsp; &nbsp;• *–s <\string>*: String to encrypt. <br />
 
       &nbsp; &nbsp;• Typed from the keyboard when command asks for it. <br />
-
-<br/>
 
 * `cla trans-encrypt`: Encrypt following Blowfish algorithm. Encryption is done using: <br />
 
@@ -56,10 +47,7 @@ icon: console
 
       &nbsp; &nbsp;• parameter *decrypt_key* or *dec_key* from config file. <br />
 
-<br/>
-
 * The input string can be defined: <br />
-
 
       &nbsp; &nbsp;• *–s <\string>*: String to encrypt. <br />
 

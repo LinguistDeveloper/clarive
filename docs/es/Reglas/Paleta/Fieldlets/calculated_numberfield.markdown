@@ -3,7 +3,7 @@ title: Calculated numberfield
 index: 400
 icon: number.png
 ---
-* Permite realizar una operación de cálculo recibiendo los valores a operar de fieldets de tipo [numerico](Reglas/Paleta/Fieldlets/Numberfield).
+* Permite realizar una operación de cálculo recibiendo los valores a operar de fieldets de tipo [numérico](Reglas/Paleta/Fieldlets/Numberfield).
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 
@@ -32,7 +32,7 @@ icon: number.png
 
 <br />
 ### Operación
-* Especifica, con los parámetros necesarios la operación matemática a realizar
+* Especifica, con los parámetros necesarios la operación matemática a realizar.
 * *Ejemplo:* $1+$2 - Hace la suma de los dos elementos indicandos en el siguiente campo.
 
 <br />

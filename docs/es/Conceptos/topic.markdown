@@ -2,7 +2,7 @@
 title: Topico
 icon: topic
 ---
-* El tópico representa la entidad central del ciclo de vida en Clarive
+* El tópico representa la entidad central del ciclo de vida en Clarive.
 * Una **categoría de tópico** es una instancia que define la organización que tiene asociado un [flujo de trabajo](Conceptos/workflow).
 * Un **tópico** es una instancia de una categoría de tópioc, que lleva asignado un [mid](Conceptos/mid).
 * Una categoría de tópico llega asociado las siguientes propiedades: <br />
@@ -41,7 +41,7 @@ icon: topic
 
 <br />
 ### ¿Por qué usar tópicos?
-* En Clarive creemos que con cada instalación se debe de tener el completo control sobre los procesos definidos. Asi que para tener una buena trazabilidad de todo lo que ocurre en un sistema, se ha creado una herramienta para controlar todo el ciclo de vida de la entrega de un producto.
+* En Clarive creemos que con cada instalación se debe de tener el completo control sobre los procesos definidos. Así que para tener una buena trazabilidad de todo lo que ocurre en un sistema, se ha creado una herramienta para controlar todo el ciclo de vida de la entrega de un producto.
 * Los tópicos son excelentes tanto para desarrollos de tipo *brownfield* como implementaciones *greenfield* ya que no solo pueden ajustarse y adaptarse a los procesos existentes sino que además ayuda a definir nuevos procesos sin restricciones que pueden representar mejor lo que una empresa necesita.
 
  

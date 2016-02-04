@@ -2,23 +2,19 @@
 title: Writing Custom Authentication Rules
 icon: rule
 ---
-
 * It's possible to write custom authentication rules
 using the Clarive Rule editor. 
-
 * To create your own, customized authentication rule, 
 do the following:
 
 <br />
 ### Create an Event Rule for a Login Attempt
-
 * From the Rule editor, create a new rule of type 
 `event` associated to the event `User Login Attempt`
 (`event.auth.attempt`).
 
 <br />
 ### Write your rule specifics
-
 * Do your own authentication routines within 
 the rule, for instance, calling a web-service 
 or looking-up a user through a command.
@@ -36,29 +32,24 @@ or looking-up a user through a command.
 
 <br />
 ### Allow the user to authenticate
-
 * Drag and drop an `Authorize User Login` task from the palette
 into your rule to authorize the user. 
 
 <br />
 ### Deny the user authentication
-
 * Drag and drop an `Deny User Login` task from the palette
 into your rule to deny the user login. 
-
 * Consider also using the palette task `Login Error Message`
 to publish an error message back to the user letting her know 
 why the login was denied. 
 
 <br />
 ### Notes
-
 * If you neither allow nor deny the user authentication, Clarive will follow its normal authentication checks.
 * This rule is now invoked for auth_key (api) authentication.
 
 <br />
 ### Example
-
 * This rule snippet  is an example of the basic structure for validating a user in a 
 rule. 
 * Use the right-click `Import here` option in the rule editor to import this snippet. <br />

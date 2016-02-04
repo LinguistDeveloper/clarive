@@ -24,15 +24,15 @@ icon: report_default
 ###  Lista de campos a visualizar en el grid
 * Permite personalizar las columnas que se muestras en la tabla.
 * Para añadir una columna a la tabla basta con incluir su ID en este campo. El ID vinen dado en la regla del formulario.
-* Para separar las columnas se utiliza el ;
+* Para separar las columnas se utiliza el **;**
 
 <br />
 ### Número máximo de tópicos a listar
-* Establece el número máximo de tópicos que se van a mostrar en la tabla
+* Establece el número máximo de tópicos que se van a mostrar en la tabla.
 
 <br />
-### Seleccionar tópicos en categorias
-* Selecciona las categorias que se quieren mostrar en la tabla
+### Seleccionar tópicos en categorías
+* Selecciona las categorías que se quieren mostrar en la tabla.
 
 <br />
 ### Excluir las clases seleccionadas
@@ -40,14 +40,14 @@ icon: report_default
 
 <br />
 ### Usuario asignado a los tópicos
-* Permite añadir el filtro el cual solo muestra tópicos asignados a un usuario existente en la herramienta
+* Permite añadir el filtro el cual solo muestra tópicos asignados a un usuario existente en la herramienta.
 
 <br />
 ### Condición avanzada JSON/MongoDB
-* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar
+* Permite añadir un filtro para las filtrar los topicos y/o categorías a mostrar.
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
 
-&nbsp;&nbsp;• Donde *id* es la clave una de la categoria. Dicho id se puede consultar a través del REPL.
+&nbsp;&nbsp;• Donde *id* es la clave una de la categoría. Dicho id se puede consultar a través del REPL.
 

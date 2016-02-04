@@ -2,16 +2,13 @@
 title: cla ps - Process monitoring
 icon: console
 ---
+* `cla ps`: List processes directly related to Clarive services (pid files), classified depending on the type of process, it can be processes of: 
 
-<img src="/static/images/icons/console.png" /> `cla ps`: List processes directly related to Clarive services (pid files), classified depending on the type of process, it can be processes of: 
-
-* Jobs
-* Dispatcher
-* Server
-
+&nbsp; &nbsp;• Jobs <br />
+&nbsp; &nbsp;• Dispatcher <br />
+&nbsp; &nbsp;• Server <br />
 
 * The output displayed has the following columns: PID, PPID, CPU, MEM, STAT, START, COMMAND.
-
 * This command has a subcommand that can be displayed through the help option:
             
         >cla help ps

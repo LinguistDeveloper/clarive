@@ -3,12 +3,7 @@ title: Calendar
 index: 400
 icon: calendar
 ---
-
-    
-<br />
-
 * Shows the calendar in the dashboard.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

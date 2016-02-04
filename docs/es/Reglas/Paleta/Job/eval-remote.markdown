@@ -11,7 +11,7 @@ icon: cog_java
 
 <br />
 ### Usuario
-* Usuario necesario para conectar al servidor
+* Usuario necesario para conectar al servidor.
 
 <br />
 ### Código

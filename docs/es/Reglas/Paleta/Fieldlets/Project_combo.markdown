@@ -4,7 +4,6 @@ index: 400
 icon: combo_box
 ---
 * Añade al tópico una lista desplegable de proyectos.
-* There are a list of elements can be configured in the fieldlet:
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />

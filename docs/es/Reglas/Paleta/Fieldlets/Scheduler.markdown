@@ -35,9 +35,9 @@ icon: clock
 <br />
 ### Columnas
 * Indica las columnas que se muestran en la tabla.
-* Su funcionamiento es el mismo que el explicado en el Editor de tablas
+* Su funcionamiento es el mismo que el explicado en el Editor de tablas.
 * Establece los campos y el formato de la tabla.
-* Los nombres de las columnas van separados por ;.
+* Los nombres de las columnas van separados por **;**.
 * Después del nombre de la columna, hay que indicar el tipo de columna (si se omite, es un área de texto), o, en caso de querer un menú desplegable, las opciones.
 * *Ejemplo* - Sub-Tarea,,250;Estado,combo_dbl,,Nuevo,Nuevo#En Progreso#Hecho;Fecha,,datefield <br />
 

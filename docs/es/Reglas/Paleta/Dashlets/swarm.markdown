@@ -3,12 +3,12 @@ title: Swarm
 index: 400
 icon: swarm
 ---
-* Muestra un gráfico animado la evolución de una categoria.
+* Muestra un gráfico animado la evolución de una categoría.
 * Los elementos que se pueden configurar son:
 
 <br />
 ### Altura en canvas
-* Define la altura en numero de filas que se le da al dashlet.
+* Define la altura en número de filas que se le da al dashlet.
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
@@ -26,7 +26,7 @@ icon: swarm
 
 <br />
 ### Modo de inicio de la animación
-* Selecciona si se quiere que la animación se inicie de forma automática al cargar el dashlet o de forma manual a trávés de los botos de control situados en la parte inferior del dashlet.
+* Selecciona si se quiere que la animación se inicie de forma automática al cargar el dashlet o de forma manual a tráves de los botones de control situados en la parte inferior del dashlet.
 
 <br />
 ### Fecha de inicio / Fecha de fin
@@ -42,7 +42,7 @@ icon: swarm
 
 <br />
 ### Agrupación de nodos
-* Permite agrupar los nodos por categoria o por estado.
+* Permite agrupar los nodos por categoría o por estado.
 
 <br />
 ### Seleccionar tópicos en categorías

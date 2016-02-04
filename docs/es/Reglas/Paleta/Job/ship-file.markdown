@@ -15,7 +15,7 @@ icon: file.gif
 
 <br />
 ### Recursivo
-* Obtiene los archivos de forma recursiva a través de los directorios que hay bajo la ruta base
+* Obtiene los archivos de forma recursiva a través de los directorios que hay bajo la ruta base.
 
 <br />
 ### Modo Local
@@ -32,7 +32,7 @@ icon: file.gif
     
 &nbsp; &nbsp;&nbsp; &nbsp;• Sólo ficheros, no rutas: Solo coge los nombres de archivo. <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;• Mantenenga la ruta relativa desde el directorio de trabajo <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• Mantenenga la ruta relativa desde el directorio de trabajo. <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Especificar la ruta de anclaje:  Establece la ruta de anclaje de los ficheros, por defecto: `${job_dir}/${project}` <br />
 

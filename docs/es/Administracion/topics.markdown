@@ -2,11 +2,11 @@
 title: Administracion de topicos
 icon: topic
 ---
-* La administración de tópicos se ubica dentro de las opciones de **Administración → Tópicos**.
-* Dentro de la ventana de Administración de tópicos, se mostrarán dos partes diferenciadas. La primera está orientada para los tópicos, con el listado de las categorias existentes. En la segunda, en la parte inferior, se muestran las etiquetas y sus diferentes opciones.
+* La administración de tópicos se ubica dentro de las opciones de **Administración → <img src="/static/images/icons/topic.png" /> Tópicos**.
+* Dentro de la ventana de Administración de tópicos, se mostrarán dos partes diferenciadas. La primera está orientada para los tópicos, con el listado de las categorías existentes. En la segunda, en la parte inferior, se muestran las etiquetas y sus diferentes opciones.
 
 <br />
-## Categorias
+## Categorías
 
 <br />
 ### Columnas
@@ -47,7 +47,7 @@ icon: topic
 
 &nbsp; &nbsp;• `Tipo`: Indica el tipo de categoría. Los tipos disponibles son: <br />.
 
-&nbsp; &nbsp;&nbsp; &nbsp;• *Normal*: Se trata de una categoría estandar, utilizado para las colaboraciones en un proceso de entrega continua. Por ejemplo, son categorias de tipo normal Requerimientos, Incidencia, Tarea, Consulta, etc... <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• *Normal*: Se trata de una categoría estandar, utilizado para las colaboraciones en un proceso de entrega continua. Por ejemplo, son categorías de tipo normal Requerimientos, Incidencia, Tarea, Consulta, etc... <br />
 
 &nbsp; &nbsp;&nbsp; &nbsp;• *Cambio*: Un tópico de esta categoría se utiliza para realizar un seguimiento de los cambios a nivel de código que forman parte del proceso. <br />
 
@@ -62,11 +62,11 @@ icon: topic
 
 &nbsp; &nbsp;• `Dashboard`<br />
 
-&nbsp; &nbsp;• `Proveedores`: Especifica el proveedor de la categoria. Éste puede ser creado de manera interna o se puede utilizar cualquiera de las integraciones permitidas por Clarive como Bugzilla, Basecamp, Trac, Redmine, BMC Remedy, Jira, etc...<br />
+&nbsp; &nbsp;• `Proveedores`: Especifica el proveedor de la categoría. Éste puede ser creado de manera interna o se puede utilizar cualquiera de las integraciones permitidas por Clarive como Bugzilla, Basecamp, Trac, Redmine, BMC Remedy, Jira, etc...<br />
 
 &nbsp; &nbsp;• `Opciones`: Permite crear tópicos de solo lectura. Usado en las integraciones para evitar sobreescribir información. <br />
 
-&nbsp; &nbsp;• `Lista de estados`: Permite seleccionar los [estados](Administracion/status) que estarán disponibles en los tópicos de la categoria. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorias tengan al menos un estado inicial y otro final.
+&nbsp; &nbsp;• `Lista de estados`: Permite seleccionar los [estados](Administracion/status) que estarán disponibles en los tópicos de la categoría. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorías tengan al menos un estado inicial y otro final.
 
 * Una vez guardado, la categoría aparecerá en la lista de categorías
 
@@ -80,7 +80,7 @@ icon: topic
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Para crear una transición en función de un rol, primero se selecciona el rol y a continuación, en el menú desplegable, el estado desde el cual comenzará la transición.<br/>
 
-&nbsp; &nbsp;&nbsp; &nbsp;• Tras ello, aparecerá en la lista los estados de la categoria disponibles y donde se elegirán los destinos de la transición.<br/> 
+&nbsp; &nbsp;&nbsp; &nbsp;• Tras ello, aparecerá en la lista los estados de la categoría disponibles y donde se elegirán los destinos de la transición.<br/> 
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Para confirmar el flujo, pulsar <img src = "/static/images/icons/down.png"/>.<br/>
 
@@ -88,22 +88,22 @@ icon: topic
 
 &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• Para eliminar una transición, se selecciona la transición a borrar y se pulsa en <img src = "/static/images/icons/delete_.png"/> Borrar fila. <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/remove.png"/> 
+&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/remove.png"/>.
 
 
 
 <br/>
 ### <img src = "/static/images/icons/delete_.png" alt='Borrar categoría' /> Borrar
 * Permite eliminar todas las categorías que están seleccionadas.
-* El sistema alertará de la acción y pedirá confirmación para seguir con el borrado evitando asi borrados accidentales.
-* Las categorias no se puede eliminar si hay instancias de ésta en la base de datos. Estos casos deben ser revisados primero y eliminados despues antes de borrar la categoría. De esta manera se garantiza la integridad de la base de datos
+* El sistema alertará de la acción y pedirá confirmación para seguir con el borrado evitando así borrados accidentales.
+* Las categorías no se puede eliminar si hay instancias de ésta en la base de datos. Estos casos deben ser revisados primero y eliminados despues antes de borrar la categoría. De esta manera se garantiza la integridad de la base de datos
 
 
 <br/>
 ### <img src = "/static/images/icons/copy.gif" alt='Duplicar categoría' /> Duplicar
 * Permite duplicar la categoría seleccionada. 
-* Esta nueva categoria tendrá las mismas propiedades que la origina, nombre, color, formulario, estados disponibles, flujos de trabajo etc..
-* Solo va a tener diferente el nombre que será el nombre de la categoria original seguido del ID generado para esta nueva categoría.
+* Esta nueva categoría tendrá las mismas propiedades que la original, nombre, color, formulario, estados disponibles, flujos de trabajo etc..
+* Solo va a tener diferente el nombre que será el nombre de la categoría original seguido del ID generado para esta nueva categoría.
 * Tras duplicar una categoría es **recomendable** editarla y cambiar el nombre, descripción y demás elementos que pueden provocar confusión entre la categoría original y la duplicada.
 
 <br/>

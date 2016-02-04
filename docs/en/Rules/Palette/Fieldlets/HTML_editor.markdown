@@ -3,12 +3,7 @@ title: HTML Editor
 index: 400
 icon: html
 ---
-
-    
-<br />
-
 * Allows to introduce a HTML code in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

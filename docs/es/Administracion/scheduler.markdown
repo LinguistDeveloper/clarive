@@ -25,9 +25,9 @@ icon: calendar
 
 &nbsp; &nbsp;• `PID` - El PID asignado durante la última ejecución. <br />
 
-&nbsp; &nbsp;• `Description` - Breve descripción de la tarea <br />
+&nbsp; &nbsp;• `Description` - Breve descripción de la tarea. <br />
 
-&nbsp; &nbsp;• `Frequency` - Indica la frecuencia con la que la tarea se ejecuta <br />
+&nbsp; &nbsp;• `Frequency` - Indica la frecuencia con la que la tarea se ejecuta. <br />
 
 &nbsp; &nbsp;• `Día` - Indica si la tarea se ejecuta solo los días de diario (indicado con un 1) o todos los dias (indicado con un 0). <br />
 
@@ -39,7 +39,7 @@ icon: calendar
 
 <br />
 #### Búsqueda
-* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
+* Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax).
 
 <br />
 #### <img src="/static/images/icons/add.gif" /> Crear

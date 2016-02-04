@@ -2,11 +2,8 @@
 title: cla prove - Run internal testing
 icon: console
 ---
-
-<img src="/static/images/icons/console.png" /> `cla prove`: run system tests and check. 
-
+* `cla prove`: run system tests and check. 
 * This command executes test files located in the directory and throws results to the screen. 
-
 * Each test case starts with 
 
 `[start] <test case name>`  
@@ -15,10 +12,7 @@ icon: console
 
 `[end] <test case name> [<duration of the test>]`
 
-
 * In case of error the output shows the error message in red.
-
-
 * This command accepts the following options: <br />
 
 &nbsp; &nbsp;• `-- type <directory>` - Passed as an argument to the command, executes only the tests defined under …/t/< directory >. <br />

@@ -15,6 +15,7 @@ icon: console
 &nbsp; &nbsp;• *Clarive dispatcher*: El servicio del Dispatcher se inicia en modo demonio.
 
 <br/> 
+
 * Este comando permite las dos siguientes opciones: <br/> 
 
 &nbsp; &nbsp;•  `--no_mongo`: Indica a Clarive que no inicie el servidor de Mongo. <br/> 

@@ -2,8 +2,7 @@
 title: Replace Strings
 icon: rename_items
 ---
-
-<img src="/static/images/icons/rename_items.png" /> Parse specified files from a given path. Parsed files can be processed in different ways according to the user criteria from the configuration window.  Form to configure has the following fields:<br />
+* Parse specified files from a given path. Parsed files can be processed in different ways according to the user criteria from the configuration window.  Form to configure has the following fields:<br />
 
 &nbsp; &nbsp;• **Path**: Path to search for files to be processed.
 
@@ -14,8 +13,6 @@ icon: rename_items
 &nbsp; &nbsp;&nbsp; &nbsp; • *All files*: All files from path will be processed.<br />
 
 &nbsp; &nbsp;&nbsp; &nbsp; • *Only job items*: Only files from nature will be parsed.<br />
-
-
 
 &nbsp; &nbsp;• **Output dir**: Directory where parsed files will be left.
 

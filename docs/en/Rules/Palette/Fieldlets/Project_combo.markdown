@@ -3,12 +3,7 @@ title: Project combo
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Allows to introduce a combo box with the projects in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -64,7 +59,6 @@ icon: combo_box
 <br />
 ### Default value
 * To show a default project in the box. 
-
 * The value indicated will be the ID of the CI.
 
 <br />

@@ -3,7 +3,7 @@ title: Casilla de verificacion
 index: 400
 icon: admin_request
 ---
-* Añade una casilla de verificación al formulario
+* Añade una casilla de verificación al formulario.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />

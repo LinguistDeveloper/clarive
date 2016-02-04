@@ -2,9 +2,7 @@
 title: Rule
 icon: rule
 ---
-
 * A Clarive rule is a decision tree used for customizing most critical aspects of Clarive.
-
 * A rule can be of various types: <br />
 
 &nbsp; &nbsp;• **Event** <br />
@@ -19,4 +17,4 @@ icon: rule
 
 &nbsp; &nbsp;• **Report** <br />
 
-More details in [rule concepts](Rules/rule-concepts) section.
+* More details in [rule concepts](Rules/rule-concepts) section.

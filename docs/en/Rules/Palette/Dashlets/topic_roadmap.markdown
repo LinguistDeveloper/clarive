@@ -3,12 +3,7 @@ title: Topic roadmap
 index: 400
 icon: roadmap
 ---
-
-    
-<br />
-
 * Shows a grid with the topic roadmap.
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

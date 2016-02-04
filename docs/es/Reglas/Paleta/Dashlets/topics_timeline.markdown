@@ -9,7 +9,7 @@ icon: chart_curve
 
 <br />
 ### Altura en canvas
-* Define la altura en numero de filas que se le da al dashlet.
+* Define la altura en número de filas que se le da al dashlet.
 * El valor de la altura oscilará entre 1 y 4. Donde con 4 ocupará el 100% de la página.
 
 <br />
@@ -23,7 +23,7 @@ icon: chart_curve
 
 <br />
 ### Seleccionar tópicos en categorias
-* Selecciona las categorias que se quieren mostrar en la tabla.
+* Selecciona las categorías que se quieren mostrar en la tabla.
 
 <br />
 ### Seleccionar tópicos en estados
@@ -35,7 +35,7 @@ icon: chart_curve
 
 <br />
 ### Condición avanzada JSON/MongoDB
-* Permite añadir un filtro para las filtrar los topicos y/o categorias a mostrar
+* Permite añadir un filtro para las filtrar los topicos y/o categorías a mostrar.
             
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
@@ -52,7 +52,8 @@ icon: chart_curve
 * Permite establecer un margen de manera que el día actual no es el último que se visualizará. 
 
 <br />
-### Campo de fecha en tópicos para el eje X:* Establece la fecha inicial de manera que solo se mostrarán los tópicos creadas posterior a la fecha indicada
+### Campo de fecha en tópicos para el eje X:
+* Establece la fecha inicial de manera que solo se mostrarán los tópicos creadas posterior a la fecha indicada.
 
 <br />
 ### El gráfico se mostrará como

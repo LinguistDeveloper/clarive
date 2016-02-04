@@ -3,12 +3,7 @@ title: Milestones
 index: 400
 icon: milestone
 ---
-
-    
-<br />
-
 * Allows to add a plan with dates to follow the project status.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -34,7 +29,6 @@ icon: milestone
 <br />
 ### Columns
 * Set the columns to show in the table
-
 * The first literal indicate de name of the column and the second the type. The separator between columns are ;
 
 

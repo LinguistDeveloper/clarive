@@ -3,12 +3,7 @@ title: Grid editor
 index: 400
 icon: grid
 ---
-
-    
-<br />
-
 * Allows to introduce a grid in the form with a column for a description.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

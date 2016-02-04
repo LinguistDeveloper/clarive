@@ -16,7 +16,7 @@ icon: job
 
 &nbsp; &nbsp; • `<N|B>` - Dependiendo del tipo de trabajo, N para desplegar o trabajos estáticos o B para volver hacia atrás (rollback). <br />
 
-&nbsp; &nbsp; • `<bl>` -  Enotrno. <br />
+&nbsp; &nbsp; • `<bl>` -  Entorno. <br />
 
 &nbsp; &nbsp; • `<job_id>` - ID único dado por mongo.
 

@@ -1,22 +1,16 @@
 ---
 title: Email Notifications
+index: 4
 icon: email
 ---
-
 * In the menu bar, "Administration" menu we select the 
 <img class = "bali-topic-editor-image" src = "/static/images/icons/email.png" /> Notifications options. 
-
 * This shows in the main panel of the grid Clarive notification and the top bar with the available actions (buttons).
-
-<br />
-
 * The information is presented in the form of columns with the following order: 
 
 <br />
 ### Events
-
 * It is based on the procedure for creating notifications. In Clarive notifications are configured by events. 
-
 * Check the "Event ..." for further information on the classification of events in Clarive.
 
 <br />
@@ -25,7 +19,6 @@ icon: email
 
 <br />
 ### Scopes
-
 * Three subcategories with whom you can relate the field (see "<img src ="/static/images/icons/edit.gif "/> Edit"). <br />
     
     &nbsp; &nbsp;• *Project*: Project defined.<br />
@@ -41,18 +34,11 @@ icon: email
 <br />
 ### Active
 * All notifications can be enabled or not created. This column shows the state through a <img  src = "/static/images/icons/start.png" /> or <img src ="/static/images/icons/stop.png "/>.
-
 * All column headers have the same functionality as in the rest of the panels Clarive. By clicking the button we can arrange additional information and select the columns you want to see on the panel.
 
 <br />
-
-
-<br />
 ### <img src = "/static/images/icons/add.gif" /> Create
-
 * To create a new notification click on create button.
-
-
 * There are a several options to configure:
 
 &nbsp; &nbsp;• `Event` - The range of events is extensive yet intuitive, because its syntax follows a definite rule: <br />
@@ -171,31 +157,22 @@ icon: email
 
 * Once complete all fields is the OK button is selected to create the new notification.
 
-
-
 <br />
 ### <img src = "/static/images/icons/edit.gif" /> Edit
-
 * The issue of notification option is activated when you select one from the list (by checking the checkbox to the left of each row in the "Event" column).
-
 * Access the same window with the same fields as the Create menu.
 
 <br />
 ### <img src = "/static/images/icons/start.png" /> Activate / <img src = "/static/images/icons/stop.png" /> Deactivate
-
 * To enable or disable one or more notifications, select the checkbox to the left of each row.
 
 <br />
 ### <img src = "/static/images/icons/delete_.png" /> Delete
-
 * Erasing notifications.
 
 <br />
 ### <img src = "/static/images/icons/import.png" /> Import / <img src = "/static/images/icons/export.png" /> Export
-
 * In the button bar, press <img src = "/static/images/icons/wrench.gif" />.
-
 * Selecting/notifications, and clicking the Export button, the system generates a YAML file with the data/the notification/s.
-
 * The import option activates the same window, empty, where you can enter text.
 

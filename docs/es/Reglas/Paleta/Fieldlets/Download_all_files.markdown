@@ -3,7 +3,7 @@ title: Download all files
 index: 400
 icon: download
 ---
-* Añade una opción en el tópioco para que el usuario se pueda descargar todos los ficheros adjuntos al tópico en un archivo comprimido.
+* Añade una opción en el tópico para que el usuario se pueda descargar todos los ficheros adjuntos al tópico en un archivo comprimido.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />

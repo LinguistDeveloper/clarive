@@ -2,10 +2,8 @@
 title: Run a Remote Script
 icon: cog_java
 ---
-
-<img src="/static/images/icons/cog_java.png" /> Execute a remote script and rollback if needed. 
+* Execute a remote script and rollback if needed. 
 * Associate server agent will execute the script.
-
 * Form to configure has the following fields: <br />
 
  &nbsp; &nbsp;• **Server**: Server that holds the remote file, server to connect to. <br />

@@ -3,12 +3,7 @@ title: Moniker
 index: 400
 icon: lock_small
 ---
-
-    
-<br />
-
 * Allows to add a moniker (alias) in the form
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

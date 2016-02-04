@@ -3,12 +3,7 @@ title: Pills
 index: 400
 icon: pills
 ---
-
-    
-<br />
-
 * Shows pills with the options are defined in the configuration of the dashlet
-
 * There are a list of elements can be configured in the dashlet:
 
 <br />

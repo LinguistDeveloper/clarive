@@ -3,12 +3,7 @@ title: Time field
 index: 400
 icon: time
 ---
-
-    
-<br />
-
 * Allows to add a time (hour, minutes) field in the form. If user wants to use a date, can use [Date time](Rules/Palette/Fieldlets/Datefield) field.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />
@@ -34,5 +29,4 @@ icon: time
 <br />
 ### Time format
 * Field allows you to select a specific time
-
 * By default the value is H:i (Hours in 24h format and minutes). Use h to 12h format.

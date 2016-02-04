@@ -2,7 +2,7 @@
 title: IF EXISTS nature THEN
 icon: if.gif
 ---
-* Comprueba si existe la naturaleza indicada y de ser asi continua la regla por los procesos anindados a este componente.
+* Comprueba si existe la naturaleza indicada y de ser así, continua la regla por los procesos anidados a este componente.
 * Las siguientes variables se incluyen dentro del stash: <br />
 
 &nbsp; &nbsp;• **nature_items**: Lista de CIs afectados por la naturaleza definida. <br />

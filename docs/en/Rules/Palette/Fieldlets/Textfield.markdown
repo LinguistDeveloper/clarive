@@ -3,12 +3,7 @@ title: Text field
 index: 400
 icon: field
 ---
-
-    
-<br />
-
 * Allows to add a text field in the form.
-
 * There are a list of elements can be configured in the fieldlet:
 
 <br />

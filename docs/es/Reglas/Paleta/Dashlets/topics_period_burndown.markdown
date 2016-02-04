@@ -49,4 +49,4 @@ Muestra los diferentes tipos de gráficos que pueden ser utilizados: <br />
 
 <br />
 ### Seleccionar tópicos en categorias
-* Selecciona las categorias que se quieren mostrar en la tabla.
+* Selecciona las categorías que se quieren mostrar en la tabla.

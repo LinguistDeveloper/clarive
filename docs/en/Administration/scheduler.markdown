@@ -2,12 +2,9 @@
 title: Scheduler
 icon: calendar
 ---
-
 * The Scheduler is an administrator facility for scheduling the execution rules in set intervals. 
-
 * Allows to you to plan, enable, disable or run independent rules in the background,
 at given frequencies or times. 
-
 * The Scheduler has the following information: <br />
 
 &nbsp; &nbsp;• *Name* - Name of the task along with the log output.  <br />
@@ -30,11 +27,8 @@ at given frequencies or times.
 
 <br />
 ### Creating Scheduled Tasks
-
 * To create a new scheduled task, select the `New` button. 
-
 * The following fields are required: <br />
-
 
 &nbsp; &nbsp;• *Name*: Name of the task. <br />
 
@@ -48,9 +42,7 @@ at given frequencies or times.
 
 &nbsp; &nbsp;• *Only weekdays*: Checkbox to select if you want to run only on weekdays.
 
-
 <br />
 ### Running Tasks On Demand
-
 * If you press the `Run Now` button, the service execution will force immediately, 
 regardless of the date of planning.

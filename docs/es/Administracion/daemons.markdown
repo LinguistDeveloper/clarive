@@ -15,11 +15,10 @@ icon: daemon.gif
 &nbsp; &nbsp;• Ejecuciones [planificadas](Administracion/scheduler). <br />
 
 &nbsp; &nbsp;• Control de semáforos.
-* Para poder ver y administrar los demonios es necesario tener permisos de Administración. 
-* A la lista de demonios se accede a través del menú de Administración → <img src="/static/images/daemon.gif" /> Demonios
+
+* Para poder ver y administrar los demonios es necesario tener permisos de Administración.
+* A la lista de demonios se accede a través del menú de Administración → <img src="/static/images/icons/daemon.gif" /> Demonios
 * En este panel, el usuario puede ver que demonios se están ejecutando y cuales están parados.
-
-
 * A continuación se describen los procesos estandar, demonios que deberian estar arrancandos tras realizar una instalación de Clarive. <br />
 
 &nbsp; &nbsp;• `service.daemon.email` - Demonio responsable del envío de notificaciones. <br />

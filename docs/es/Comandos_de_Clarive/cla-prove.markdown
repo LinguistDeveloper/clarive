@@ -4,13 +4,14 @@ icon: console
 ---
 * `cla prove`: Ejecuta un test interno y comprueba el resultado. 
 * Este comando ejecuta fichero de test localizados en el directorio y muestra los resultados en pantalla.
-* Cada caso de rpueba comienza con:
+* Cada caso de prueba comienza con:
 
 `[start] <nombre_caso_prueba>`  
 
 * Y finaliza con: 
 
 `[end] <nombre_caso_prueba> [<duracion_del_test>]`
+
 * En caso de error, se mostrará un mensaje de error en rojo.
 * El comando acepta las siguientes opciones:
 
