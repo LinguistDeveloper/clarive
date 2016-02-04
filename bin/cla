@@ -46,6 +46,10 @@ elif [ "$1" == "bootstrap" ]; then
     shift
 
     cla-bootstrap "$@"
+elif [ "$1" == "prove" ]; then
+    shift
+
+    prove -Ilib -It/lib -r "$@"
 else
     $PERL $BINDIR/cla-cmd "$@"
 fi
