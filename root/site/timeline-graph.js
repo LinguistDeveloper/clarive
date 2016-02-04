@@ -1,10 +1,19 @@
 (function(params) {
 
     mid = params.mid;
-    color = params.title;
-    var position = color.indexOf("background-color");
-    color = color.substring(position+17);
-    color = color.substring(0,7);
+
+    var color = "#000000" ;
+    var color_position = params.title.indexOf("background-color:");
+    if (color_position > 0) {
+        var color_substring = params.title.substring(color_position + 17, color_position + 17 + 7);
+
+        var color_regex = /^(#[0-9a-f]{3,6})/i;
+        var matches = color_regex.exec(color_substring);
+
+        if (matches && matches.length == 2) {
+            color = matches[1];
+        }
+    }
 
     var diagram;
     var overview;
