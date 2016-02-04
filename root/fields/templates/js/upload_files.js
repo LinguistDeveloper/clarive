@@ -16,7 +16,6 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var form = params.form;
-	
     var allow = Baseliner.eval_boolean(meta.allowBlank, true);
     var readonly = Baseliner.eval_boolean(meta.readonly, false);   
     var editable = Baseliner.eval_boolean(meta.editable, true);	
@@ -30,7 +29,8 @@ params:
         hidden: !editable, 
 		disabled: readonly,
         id_field    : meta.id_field,
-        form : form
+        form : form,
+        ext_fich : meta.extension
     });
     return [
         up

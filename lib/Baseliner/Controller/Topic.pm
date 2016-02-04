@@ -1540,23 +1540,34 @@ sub upload : Local {
     my ( $self, $c ) = @_;
     my $p      = $c->req->params;
     my $filename = $p->{qqfile};
+    my $name_filter = $p->{extension};
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
     my $f;   
-    if( $c->req->body eq ''){
-        my $x = $c->req->upload('qqfile');
-        $f =  _file( $x->tempname );
-    }else{
-        $f =  _file( ''. $c->req->body );
+    _log "Extension solicitada: " . _dump $name_filter;
+    _log "Extension del fichero seleccionado: " . _dump $extension;
+    my $posicion = index($name_filter,$extension);
+    _log "posicion " . _dump $posicion;
+    if ($posicion ==-1)
+    {
+        $c->stash->{ json } = { success => \0, msg => _loc("This type of file is not allowed: %1", $extension) };    
     }
-    my %response = Baseliner->model("Topic")->upload( f => $f, p => $p, username => $c->username );
-    my $body;
-    if ($response{status} ne '200') {
-        $c->stash->{ json } = { success => \0, msg => _loc($response{msg}) };
-    } else {
-        $c->stash->{ json } = { success => \1, msg => _loc($response{msg}) };
-        $c->res->body($body);
-    }
+    else{
+        if( $c->req->body eq ''){
+            my $x = $c->req->upload('qqfile');
+            $f =  _file( $x->tempname );
+        }else{
+            $f =  _file( ''. $c->req->body );
+        }
+        my %response = Baseliner::Model::Topic->new->upload( f => $f, p => $p, username => $c->username );
+        my $body;
+        if ($response{status} ne '200') {
+            $c->stash->{ json } = { success => \0, msg => _loc($response{msg}) };
+        } else {
+            $c->stash->{ json } = { success => \1, msg => _loc($response{msg}) };
+            $c->res->body($body);
+        }
+    }    
     $c->forward( 'View::JSON' );
 }
 
