@@ -49,7 +49,7 @@ elif [ "$1" == "bootstrap" ]; then
 elif [ "$1" == "prove" ]; then
     shift
 
-    prove -Ilib -It/lib -r "$@"
+    prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
 else
     $PERL $BINDIR/cla-cmd "$@"
 fi
