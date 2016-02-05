@@ -54,13 +54,16 @@ sub create_rule_form {
         $params{rule_tree} = JSON::encode_json( $params{rule_tree} );
     }
 
-    my $id_rule = mdb->seq('id');
+    my $id_rule  = mdb->seq('rule');
+    my $seq_rule = 0 + mdb->seq('rule_seq');
     mdb->rule->insert(
         {
-            id        => "$id_rule",
-            ts        => '2015-08-06 09:44:30',
-            rule_type => "form",
-            rule_seq  => $id_rule,
+            id          => "$id_rule",
+            rule_active => 1,
+            rule_name   => 'Form',
+            rule_type   => "form",
+            rule_when   => 'post-offline',
+            rule_seq    => $seq_rule,
             %params,
         }
     );
@@ -150,10 +153,14 @@ sub create_user {
     my $project = delete $params{project} or die 'project required';
     my $username = delete $params{username} || 'developer';
 
+    my $username = delete $params{username} || 'developer';
+    my $password = delete $params{password} || 'password';
+
     return TestUtils->create_ci(
         'user',
         name             => $username,
         username         => $username,
+        password         => ci->user->encrypt_password($username, $password),
         project_security => {
             $id_role => {
                 project => [ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ]
