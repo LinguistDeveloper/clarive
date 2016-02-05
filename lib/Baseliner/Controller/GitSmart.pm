@@ -5,12 +5,12 @@ BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 use Cwd qw(realpath);
 use Try::Tiny;
 use Path::Class;
+use URI::Escape 'uri_unescape';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
-use URI::Escape 'uri_unescape';
 
 sub begin : Private {  #TODO control auth here
      my ($self,$c) = @_;
