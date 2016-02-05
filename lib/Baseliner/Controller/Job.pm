@@ -1,15 +1,18 @@
 package Baseliner::Controller::Job;
-use v5.10;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
+BEGIN { extends 'Catalyst::Controller' }
+
+use v5.10;
 use DateTime;
 use JSON::XS;
 use Try::Tiny;
 use List::Util qw(max);
 use experimental 'autoderef';
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::Jobs;
+use Baseliner::Model::Permissions;
+use Baseliner::Utils;
 
-BEGIN { extends 'Catalyst::Controller' }
 BEGIN { 
     ## Oracle needs this
     $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
@@ -58,7 +61,7 @@ sub pipelines : Local {
     
     try {
         my $where;
-        if ( !Baseliner->model('Permissions')->is_root($c->username) ) {
+        if ( !Baseliner::Model::Permissions->new->is_root($c->username) ) {
             $where = { rule_type=>'pipeline', rule_active => mdb->true, rule_when => $type };
         } else {
             $where = { rule_type=>'pipeline', rule_active => mdb->true };
@@ -273,17 +276,26 @@ our %CACHE_ICON;
 
 sub monitor_json : Path('/job/monitor_json') {
     my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    $p->{username} = $c->username;
-    $p->{language} = $c->languages->[0];
-    
-    my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor($p);
 
-    $c->stash->{json} = { 
-        totalCount=> $cnt,
-        #next_start => $results->{next_start},
-        data => \@rows,
-     };
+    my $p = $c->request->parameters;
+
+    my ( $count, @rows ) = Baseliner::Model::Jobs->new->monitor(
+        {
+            start    => $p->{start},
+            limit    => $p->{limit},
+            sort     => $p->{sort},
+            dir      => $p->{dir},
+            query    => $p->{query},
+            query_id => $p->{query_id},
+            groupBy  => $p->{groupBy},
+            groupDir => $p->{groupDir},
+
+            username => $c->username,
+            language => $c->languages->[0],
+        }
+    );
+
+    $c->stash->{json} = { totalCount => $count, data => \@rows, };
     $c->forward('View::JSON');
 }
 

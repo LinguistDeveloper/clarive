@@ -294,6 +294,7 @@ sub new {
     $self->{authenticate} = $params{authenticate};
     $self->{is_root}      = 0;
     $self->{path_to}      = $params{path_to} || '';
+    $self->{languages}    = $params{languages} || ['en'];
 
     return $self;
 }
@@ -305,7 +306,7 @@ sub path_to {
 }
 
 sub user_languages { ('en') }
-sub languages {}
+sub languages      { shift->{languages} }
 
 sub config { shift->{config} }
 
