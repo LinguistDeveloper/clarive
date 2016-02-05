@@ -34,14 +34,15 @@
                   ] 
                 }),
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('Number field to display'), name: 'numberfield_group', value: data.numberfield_group || ''},
-                new Baseliner.ComboDouble({ fieldLabel: _('Agregate display field by...'), name:'result_type', value: data.result_type || 'count', data: [
+                new Baseliner.ComboDouble({ fieldLabel: _('Agregate display field by'), name:'result_type', value: data.result_type || 'count', data: [
                     ['count', _('Count')],
                     ['avg', _('Average')],
                     ['sum', _('Sum Total')],
                     ['min', _('MIN')],
                     ['max', _('MAX')]
                   ]
-                })
+                }),
+                { xtype : "checkbox", name : "sort_by_labels", checked: data.sort_by_labels=='on' ? true : false, boxLabel : _('Sort by labels') }
               ]
             },
             { layout:'form',

@@ -591,6 +591,54 @@ subtest 'topics_by_field: groups topics by field' => sub {
     is_deeply $data, [ [ Category1 => 2 ], [Category2 => 1] ];
 };
 
+subtest 'topics_by_field: sorts by label' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 = TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 = TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $topic_mid = TestSetup->create_topic(project => $project, id_category => $id_category1, title => 'My Topic');
+    my $topic_mid2 = TestSetup->create_topic(project => $project, id_category => $id_category2, title => 'My Topic2');
+    my $topic_mid3 = TestSetup->create_topic(project => $project, id_category => $id_category2, title => 'My Topic3');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $developer->username,
+        req      => {
+            params => {
+                'group_threshold' => '1',
+                'group_by'        => 'topics_by_category',
+                'sort_by_labels'  => 'on'
+            }
+        }
+    );
+
+    $controller->topics_by_field($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is_deeply $data, [ [ Category1 => 1 ], [Category2 => 2] ];
+};
+
 subtest 'topics_burndown_ng: sends correct default args to dashboard' => sub {
     _setup();
 
