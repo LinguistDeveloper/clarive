@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 use Cwd qw(realpath);
 use Try::Tiny;
 use Path::Class;
+use URI::Escape 'uri_unescape';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
@@ -28,6 +29,10 @@ sub git : Path('/git/') {
     my ($self,$c, @args ) = @_;
 
     return unless $self->access_granted($c);
+
+    foreach my $arg (@args){
+        $arg = uri_unescape($arg);
+    }
 
     my $path = join '/', @args;
 

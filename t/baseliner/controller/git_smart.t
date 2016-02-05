@@ -973,6 +973,46 @@ subtest 'git: calls git with correct parameters when project git' => sub {
     is $env->{PATH_INFO},   '/.git/info/refs';
 };
 
+subtest 'git: finds project with special symbols' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'My Repo' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'My Project',
+        repositories => [ $repo->mid ]
+    );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => realpath( $repo->repo_dir . '/../' )
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, 'My%20Project', 'My%20Repo', 'info', 'refs' );
+
+    ok $controller->mocked_called('_system');
+};
+
 done_testing;
 
 sub _build_controller {
