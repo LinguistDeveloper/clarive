@@ -22,15 +22,14 @@ sub setup {
         'Baseliner::Model::Topic',   'Baseliner::Model::Rules'
     );
 
-    TestUtils->create_ci('bl', name => '*',    bl => 'Common');
-    TestUtils->create_ci('bl', name => 'QA',   bl => 'QA');
-    TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');
+    TestUtils->create_ci('bl', name => 'Common', bl => '*');
+    TestUtils->create_ci('bl', name => 'QA',     bl => 'QA');
+    TestUtils->create_ci('bl', name => 'PROD',   bl => 'PROD');
 
     my $repo_dir = '/tmp/repo.git';
     system("rm -rf $repo_dir");
 
     TestGit->create_repo(dir => $repo_dir, bare => 1);
-    TestGit->commit($repo_dir);
 
     my $repo = TestUtils->create_ci(
         'GitRepository',
@@ -106,6 +105,10 @@ sub setup {
             },
             {
                 action => 'action.topics.release.view',
+            },
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
             },
             @actions
         ]
