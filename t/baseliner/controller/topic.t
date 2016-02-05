@@ -8,6 +8,7 @@ use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
 use Test::MockSleep;
+use Test::TempDir::Tiny;
 
 use TestEnv;
 use TestUtils ':catalyst';
@@ -744,6 +745,46 @@ subtest 'topic_drop: correctly replaces existing release when value_type is sing
 
     my $changeset_doc = mdb->topic->find_one( { mid => $changeset_mid } );
     cmp_deeply $changeset_doc->{release}, [$release_mid2];
+};
+
+subtest 'upload: uploads file to topic' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.jpg");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => 'jpg', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+};
+
+subtest 'upload: fails to upload not allowed extension' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.jpg");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => 'sql,txt', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: jpg/) }};
 };
 
 sub _create_user_with_drop_rules {

@@ -3838,7 +3838,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                 onSubmit: function(id, filename){
                     try {
                     var mid = self.get_mid(); // data && data.topic_mid ? data.topic_mid : self.get_mid();
-                    var config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: self.id_field }); };
+                    var config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: self.id_field, extension: self.ext_fich }); };
                     if( mid == undefined || mid<0 ) {
                         Ext.Msg.confirm( _('Confirmation'), _('To upload files, the form needs to be created. Save form before submitting?'),
                             function(btn){ 
