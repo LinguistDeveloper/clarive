@@ -141,6 +141,7 @@ sub setup {
 
     my $release_mid = TestSetup->create_topic(
         project     => $project,
+        id_rule     => $id_release_rule,
         id_category => $id_release_category,
         title       => 'Release 0.1',
         status      => $status_new
@@ -148,6 +149,7 @@ sub setup {
 
     my $changeset_mid = TestSetup->create_topic(
         project     => $project,
+        id_rule     => $id_changeset_rule,
         id_category => $id_changeset_category,
         title       => 'Fix everything',
         status      => $status_new

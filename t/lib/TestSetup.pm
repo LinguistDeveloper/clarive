@@ -96,7 +96,7 @@ sub create_topic {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_form = delete $params{form} || TestSetup->create_rule_form;
+    my $id_form = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $id_category =
       delete $params{id_category}
