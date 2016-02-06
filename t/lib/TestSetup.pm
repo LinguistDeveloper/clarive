@@ -46,7 +46,7 @@ sub create_label {
     return "$id_label";
 }
 
-sub create_rule_form {
+sub create_rule {
     my $class = shift;
     my (%params) = @_;
 
@@ -60,15 +60,25 @@ sub create_rule_form {
         {
             id          => "$id_rule",
             rule_active => 1,
-            rule_name   => 'Form',
-            rule_type   => "form",
-            rule_when   => 'post-offline',
+            rule_name   => 'Rule',
             rule_seq    => $seq_rule,
             %params,
         }
     );
 
     return "$id_rule";
+}
+
+sub create_rule_form {
+    my $class = shift;
+    my (%params) = @_;
+
+    return $class->create_rule(
+        rule_name => 'Form',
+        rule_type => "form",
+        rule_when => 'post-offline',
+        %params
+    );
 }
 
 sub create_category {

@@ -22,9 +22,9 @@ sub setup {
         'Baseliner::Model::Topic',   'Baseliner::Model::Rules'
     );
 
-    TestUtils->create_ci('bl', name => 'Common', bl => '*');
-    TestUtils->create_ci('bl', name => 'QA',     bl => 'QA');
-    TestUtils->create_ci('bl', name => 'PROD',   bl => 'PROD');
+    my $bl_common = TestUtils->create_ci('bl', name => 'Common', bl => '*');
+    my $bl_qa     = TestUtils->create_ci('bl', name => 'QA',     bl => 'QA');
+    my $bl_prod   = TestUtils->create_ci('bl', name => 'PROD',   bl => 'PROD');
 
     my $repo_dir = '/tmp/repo.git';
     system("rm -rf $repo_dir");
@@ -52,11 +52,24 @@ sub setup {
         value => "$ENV{CLARIVE_BASE}/local/bin/git"
     );
 
-    my $status_new = TestUtils->create_ci('status', name => 'New', type => 'I');
-    my $status_in_progress =
-      TestUtils->create_ci('status', name => 'In Progress', type => 'G');
-    my $status_finished =
-      TestUtils->create_ci('status', name => 'Finished', type => 'G');
+    my $status_new = TestUtils->create_ci(
+        'status',
+        name => 'New',
+        type => 'I',
+        bls  => [$bl_common->mid]
+    );
+    my $status_in_progress = TestUtils->create_ci(
+        'status',
+        name => 'In Progress',
+        type => 'G',
+        bls  => [$bl_common->mid]
+    );
+    my $status_finished = TestUtils->create_ci(
+        'status',
+        name => 'Finished',
+        type => 'D',
+        bls  => [$bl_qa->mid]
+    );
     my $status_closed =
       TestUtils->create_ci('status', name => 'Closed', type => 'F');
 
@@ -98,6 +111,9 @@ sub setup {
                 action => 'action.job.no_cal',
             },
             {
+                action => 'action.topics.changeset.jobs',
+            },
+            {
                 action => 'action.topics.changeset.create',
             },
             {
@@ -130,6 +146,28 @@ sub setup {
           [$status_new->mid, $status_in_progress->mid, $status_finished->mid]
     );
 
+    my $changeset_workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->mid,
+            id_status_to   => $status_in_progress->mid,
+            job_type       => undef
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->mid,
+            id_status_to   => $status_finished->mid,
+            job_type       => 'promote'
+        }
+    ];
+    mdb->category->update(
+        {id => $id_changeset_category},
+        {
+            '$set'  => {workflow => $changeset_workflow},
+            '$push' => {statuses => [$status_in_progress->mid, $status_finished->mid]}
+        }
+    );
+
     my $id_release_rule     = _create_release_form();
     my $id_release_category = TestSetup->create_category(
         name       => 'Release',
@@ -153,6 +191,12 @@ sub setup {
         id_category => $id_changeset_category,
         title       => 'Fix everything',
         status      => $status_new
+    );
+
+    TestSetup->create_rule(
+        rule_name => 'Pipeline',
+        rule_when => 'promote',
+        rule_type => 'pipeline'
     );
 }
 
