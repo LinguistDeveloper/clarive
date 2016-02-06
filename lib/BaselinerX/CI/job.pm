@@ -1189,9 +1189,11 @@ sub write_pid {
 
 # called from dsl_run in Rules
 sub start_task {
-    my ($self,$stmt_name) = @_;
-    $self->current_service( $stmt_name );
-    $self->logger->debug( "$stmt_name", milestone=>2 );
+    my $self = shift;
+    my ($stmt_name, $level) = @_;
+
+    $self->current_service($stmt_name);
+    $self->logger->debug("$stmt_name", stmt_level => $level, milestone => 2);
 }
 
 sub back_to_core {

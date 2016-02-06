@@ -108,6 +108,7 @@ sub common_log {
         $doc->{data_length} = length( $p{data} ) if $p{data};
         $doc->{prefix} = $p{prefix} if $p{prefix};
         $doc->{milestone} = "$p{milestone}" if $p{milestone};
+        $doc->{stmt_level} = int($p{stmt_level} // 0);
         $doc->{service_key} = $self->current_service;
         $doc->{rule} =  $self->job->{id_rule} if defined $self->job->{id_rule};
         if( $p{data} ) {

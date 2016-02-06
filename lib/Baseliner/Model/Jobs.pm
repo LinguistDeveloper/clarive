@@ -289,11 +289,47 @@ sub monitor {
             can_restart    => $can_restart,
             can_cancel    => $can_cancel,
             can_delete    => $can_delete,
+            progress      => $self->_calculate_progress($job),
 
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     return ( $cnt, @rows );
+}
+
+sub _calculate_progress {
+    my $self = shift;
+    my ($job) = @_;
+
+    return '100%' if $job->{status} eq 'FINISHED';
+
+    my $progress = 'n/a';
+
+    my $rule = mdb->rule->find_one({id => "$job->{id_rule}"});
+    if ($rule) {
+        my $rule_tree_json = $rule->{rule_tree};
+        my $rule_tree = Util->_decode_json( $rule_tree_json );
+
+        my $total = 0;
+        foreach my $step (@$rule_tree) {
+            $total += @{ $step->{children} };
+        }
+
+        my $now = mdb->job_log->find(
+            {
+                mid        => $job->{mid},
+                lev        => 'debug',
+                stmt_level => 1,
+            }
+        )->count;
+
+        if ($total) {
+            my $percentage = int(($now / $total) * 100);
+            $progress = " $percentage% ($now/$total)";
+        }
+    }
+
+    return $progress;
 }
 
 

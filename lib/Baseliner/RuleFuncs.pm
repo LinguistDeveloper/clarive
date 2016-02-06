@@ -291,7 +291,13 @@ sub project_changes {
 }
 
 sub current_task {
-    my ( $stash, $id_rule, $rule_name, $name, $code ) = @_;
+    my ( $stash, %params ) = @_;
+
+    my $id_rule   = $params{id_rule};
+    my $rule_name = $params{rule_name};
+    my $name      = $params{name};
+    my $code      = $params{code};
+    my $level     = $params{level};
 
     $name = parse_vars( $name, $stash );   # so we can have vars in task names
 
@@ -317,7 +323,7 @@ sub current_task {
                 $is_job_canceled->{username} );
         }
         else {
-            $job->start_task($name);
+            $job->start_task($name, $level);
         }
     }
 

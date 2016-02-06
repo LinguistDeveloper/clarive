@@ -419,10 +419,124 @@ subtest 'restore_rule: actually restores the rule' => sub {
     ok $rule;
 };
 
+subtest 'dsl_build: builds empty dsl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build;
+
+    is $dsl, '';
+};
+
+subtest 'dsl_build: builds dsl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "palette"        => 0,
+                "disabled"       => 0,
+                "on_drop_js"     => undef,
+                "key"            => "statement.code.server",
+                "who"            => "root",
+                "text"           => "Server CODE",
+                "expanded"       => 1,
+                "run_sub"        => 1,
+                "leaf"           => 1,
+                "active"         => 1,
+                "name"           => "Server CODE",
+                "holds_children" => 0,
+                "data"           => {"lang" => "perl", "code" => "foo();"},
+                "nested"         => "0",
+                "on_drop"        => ""
+            },
+            "children" => []
+        }
+    );
+
+    is $dsl, <<'EOF';
+# task: Server CODE
+
+current_task($stash, id_rule => q{}, rule_name => q{}, name => q{Server CODE}, level => 0);
+
+foo();
+
+EOF
+};
+
+subtest 'dsl_build: builds dsl with correct nested level' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "palette"        => 0,
+                "disabled"       => 0,
+                "on_drop_js"     => undef,
+                "key"            => "statement.if.var",
+                "text"           => "IF var THEN",
+                "expanded"       => 1,
+                "run_sub"        => 1,
+                "leaf"           => 0,
+                "name"           => "IF var THEN",
+                "active"         => 1,
+                "holds_children" => 1,
+                "data"           => {variable => 'foo', value => 'bar'},
+                "nested"         => "0",
+                "on_drop"        => ""
+            },
+            "children" => [
+                {
+                    "attributes" => {
+                        "palette"        => 0,
+                        "disabled"       => 0,
+                        "on_drop_js"     => undef,
+                        "key"            => "statement.code.server",
+                        "text"           => "INSIDE IF",
+                        "expanded"       => 1,
+                        "run_sub"        => 1,
+                        "leaf"           => 1,
+                        "name"           => "Server CODE",
+                        "active"         => 1,
+                        "holds_children" => 0,
+                        "data"           => {},
+                        "nested"         => "0",
+                        "on_drop"        => ""
+                    },
+                    "children" => []
+                }
+            ]
+        }
+    );
+
+    is $dsl, <<'EOF';
+# task: IF var THEN
+
+current_task($stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0);
+
+if ($stash->{'foo'} eq 'bar') {
+
+    # task: INSIDE IF
+
+    current_task($stash, id_rule => q{}, rule_name => q{}, name => q{INSIDE IF}, level => 1);
+
+}
+
+EOF
+};
+
 sub _setup {
     my (%params) = @_;
 
-    TestUtils->setup_registry('BaselinerX::Type::Event','BaselinerX::Events','BaselinerX::Type::Statement', 'Baseliner::Model::Rules');
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',     'BaselinerX::Events',
+        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules'
+    );
 
     my $code = $params{code} || q%return 'hi there';%;
     my $ts = $params{ts} || ''.Class::Date->now();
