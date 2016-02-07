@@ -1,8 +1,9 @@
-package BaselinerX::CI::job_log;
-use Baseliner::Moose;
-use Baseliner::Utils;
-use Compress::Zlib;
+package Baseliner::JobLogger;
+use Moose;
+
 use Try::Tiny;
+use Compress::Zlib;
+use Baseliner::Utils;
 
 with 'Baseliner::Role::Logger';
 

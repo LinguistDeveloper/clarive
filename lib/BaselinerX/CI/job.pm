@@ -3,7 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
-use BaselinerX::CI::job_log;
+use Baseliner::JobLogger;
 use Try::Tiny;
 use v5.10;
 use utf8;
@@ -420,7 +420,7 @@ sub is_running {
 
 sub logger { 
     my ($self)=@_;
-    return BaselinerX::CI::job_log->new(
+    return Baseliner::JobLogger->new(
         step            => $self->step,
         exec            => $self->exec,
         jobid           => $self->jobid,
