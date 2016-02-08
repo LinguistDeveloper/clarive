@@ -460,7 +460,7 @@ subtest 'dsl_build: builds dsl' => sub {
     is $dsl, <<'EOF';
 # task: Server CODE
 
-current_task($stash, id_rule => q{}, rule_name => q{}, name => q{Server CODE}, level => 0);
+current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{Server CODE}, level => 0 );
 
 foo();
 
@@ -517,13 +517,13 @@ subtest 'dsl_build: builds dsl with correct nested level' => sub {
     is $dsl, <<'EOF';
 # task: IF var THEN
 
-current_task($stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0);
+current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0 );
 
-if ($stash->{'foo'} eq 'bar') {
+if ( $stash->{'foo'} eq 'bar' ) {
 
     # task: INSIDE IF
 
-    current_task($stash, id_rule => q{}, rule_name => q{}, name => q{INSIDE IF}, level => 1);
+    current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{INSIDE IF}, level => 1 );
 
 }
 

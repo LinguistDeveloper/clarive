@@ -2,6 +2,7 @@ package Baseliner::Model::Rules;
 use Moose;
 BEGIN { extends 'Catalyst::Model' }
 
+use Perl::Tidy ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -304,15 +305,19 @@ sub dsl_build {
     }
 
     my $dsl = join "\n", @dsl;
+
     # WTF? $self can be class name
-    if(ref $self && $self->tidy_up && !$p{no_tidy} ) {
-        require Perl::Tidy;
+    if ( ref $self && $self->tidy_up && !$p{no_tidy} ) {
         my $tidied = '';
-        Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
-        return $tidied;
-    } else {
-        return $dsl;
+        Perl::Tidy::perltidy(
+            argv        => '-npro --maximum-line-length=160 --quiet --no-log',
+            source      => \$dsl,
+            destination => \$tidied
+        );
+        $dsl = $tidied;
     }
+
+    return $dsl;
 }
 
 sub dsl_run {
