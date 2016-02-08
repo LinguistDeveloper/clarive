@@ -267,6 +267,7 @@ sub _fieldlets {
                     "name_field"   => "Status",
                 },
                 "key" => "fieldlet.system.status_new",
+                text => 'Status',
             }
         },
         {
@@ -278,6 +279,7 @@ sub _fieldlets {
                     "name_field"   => "Project",
                 },
                 "key" => "fieldlet.system.projects",
+                text => 'Project',
             }
         },
         {
@@ -291,6 +293,7 @@ sub _fieldlets {
                     "editable"      => "1",
                 },
                 "key" => "fieldlet.system.list_topics",
+                text => 'Parent topics',
             }
         },
         {
@@ -303,6 +306,7 @@ sub _fieldlets {
                     "editable"      => "1",
                 },
                 "key" => "fieldlet.system.list_topics",
+                text => 'Child topics',
             }
         },
         {
@@ -315,6 +319,7 @@ sub _fieldlets {
                    "editable"      => "1",
                },
                "key" => "fieldlet.attach_file",
+                text => 'Files',
            }
         }
     ];
