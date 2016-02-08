@@ -2358,8 +2358,16 @@ sub list_status_changes : Local {
     $c->forward('View::JSON');
 }
 
-sub _build_data_view {
-    return Baseliner::DataView::Topic->new;
+
+sub timeline_list_status_changes : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my @status_changes = Baseliner::Model::Topic->new->timeline_status_changes( $p->{mid} );
+
+    $c->stash->{json} = { data => \@status_changes };
+    $c->forward('View::JSON');
 }
 
 no Moose;

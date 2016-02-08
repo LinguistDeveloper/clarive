@@ -3269,6 +3269,23 @@ sub status_changes {
     my @status_changes;
 
     my $rs =
+        mdb->activity->find( { event_key => qr/^event.topic.create/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                old_status => "Create",
+                status     => "New",
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }
+
+    my $rs =
       mdb->activity->find( { event_key => 'event.topic.change_status', mid => "$topic_mid" } )->sort( { ts => -1 } )
       ->limit($limit);
     for my $ev ( $rs->all ) {
@@ -3278,6 +3295,109 @@ sub status_changes {
               {
                 old_status => $ed->{old_status},
                 status     => $ed->{status},
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }
+    return @status_changes;
+}
+
+sub timeline_status_changes {
+    my $self = shift;
+    my ( $topic_mid, $limit ) = @_;
+
+    $topic_mid = $topic_mid->{mid} if ref $topic_mid;
+
+    $limit //= 100;
+    my @status_changes;
+    
+    my $rs =
+        mdb->activity->find( { event_key => qr/^event.topic.create/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                data_type => "create",
+                old_status => "Create",
+                status     => "New",
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }
+    
+    $rs =
+        mdb->activity->find( { event_key => qr/^event.topic.change_status/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                data_type => "change_status",
+                old_status => $ed->{old_status},
+                status     => $ed->{status},
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }
+    
+    $rs = 
+        mdb->activity->find( { event_key => qr/^event.topic.modify/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                data_type  => "topic_modify",
+                text       => $ev->{text},
+                new_value  => $ed->{new_value},
+                old_value  => $ed->{old_value},
+                username   => $ed->{username},
+                field      => $ed->{field},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }    
+
+    $rs = 
+        mdb->activity->find( { event_key => qr/^event.post/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                data_type  => "event_post",
+                text       => $ev->{text},
+                post       => $ed->{post},
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+              };
+        }
+        catch {};
+    }
+    
+    $rs = 
+        mdb->activity->find( { event_key => qr/^event.file/, mid => "$topic_mid" } )->sort( { ts => -1 } )
+        ->limit($limit);
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            push @status_changes,
+              {
+                data_type  => "event_file",
+                text       => $ev->{text},
+                filename   => $ed->{filename},
                 username   => $ed->{username},
                 when       => Class::Date->new( $ev->{ts} )
               };
