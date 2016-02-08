@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
+use Baseliner::Model::Users;
 use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
@@ -1693,51 +1694,66 @@ sub file_tree : Local {
 }
 
 sub list_users : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
-    my (@rows, $users_friends);
+
+    my $projects  = $p->{projects};
+    my $topic_mid = $p->{topic_mid};
+    my $roles     = $p->{roles};
+    my $start     = $p->{start};
+    my $limit     = $p->{limit};
+    my $query     = $p->{query};
+
     my $username = $c->username;
 
-    if($p->{projects}){
-        my @projects = _array $p->{projects};
-        $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
-    }else{
-        my $topic_row;
+    my $users_friends;
+    if ($projects) {
+        my @projects = _array $projects;
+        $users_friends = Baseliner::Model::Users->new->get_users_friends_by_projects( \@projects );
+    }
+    else {
         my @topic_projects;
-        if ( $p->{topic_mid}) {
-            @topic_projects = ci->new($$p{topic_mid})->projects;
+        if ($topic_mid) {
+            @topic_projects = ci->new($topic_mid)->projects;
         }
-        if($p->{roles} && $p->{roles} ne 'none'){
-            my @name_roles = map {lc ($_)} split /,/, $p->{roles};
-            my @id_roles = map { $_->{id} } grep { $_->{id} } mdb->role->find({ role=> mdb->in(@name_roles) });
 
-            if (@id_roles){
-                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects); 
+        if ( $roles && $roles ne 'none' ) {
+            my @name_roles = _array $roles;
+            my @id_roles = map { $_->{id} } mdb->role->find( { role => mdb->in(@name_roles) } )->all;
+
+            if (@id_roles) {
+                $users_friends = Baseliner::Model::Users->new->get_users_from_mid_roles(
+                    roles    => \@id_roles,
+                    projects => \@topic_projects
+                );
             }
-        }else{
-            $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
+        }
+        else {
+            $users_friends = Baseliner::Model::Users->new->get_users_friends_by_username($username);
         }
     }
-    if ($p->{query}){
-        $users_friends = [grep { $_ =~ /$p->{query}/ } _array $users_friends];
+
+    if ($query) {
+        $users_friends = [ grep { m/\Q$query\E/i } _array $users_friends];
     }
-    my $row = ci->user->find({username => mdb->in($users_friends)})->sort({realname => 1});
-    my $start = $p->{start} // 0;
-    my $limit = $p->{limit} // 9999;
-    $row->skip($start);
-    $row->limit($limit);
-    my $cnt = $row->count || 0;
-    if($row){
-        while( my $r = $row->next ) {
-            push @rows,
-              {
-                id 		=> $r->{mid},
-                username	=> $r->{username},
-                realname	=> $r->{realname}
-              };
-        }  
+
+    my $users_cursor = ci->user->find( { username => mdb->in($users_friends) } );
+    $users_cursor->sort( { realname => 1 } );
+    $users_cursor->skip($start)  if $start;
+    $users_cursor->limit($limit) if $limit;
+
+    my @rows;
+    while ( my $user = $users_cursor->next ) {
+        push @rows,
+          {
+            id       => $user->{mid},
+            username => $user->{username},
+            realname => $user->{realname}
+          };
     }
-    $c->stash->{json} = { totalCount => $cnt, data=>\@rows };
+
+    $c->stash->{json} = { totalCount => scalar(@rows), data => \@rows };
     $c->forward('View::JSON');
 }
 
