@@ -1206,7 +1206,8 @@ sub list_topics : Local {
         username => $c->username,
         limit    => $limit,
         sort     => $sort,
-        dir      => $dir
+        dir      => $dir,
+        where    => {}
     };
 
     if ( $condition ) {
