@@ -501,6 +501,40 @@ subtest 'list_topics: sorts topics' => sub {
     is $data->[1]->{title}, 'My Topic2';
 };
 
+subtest 'list_topics: filters topics by project' => sub {
+    _setup();
+
+    my $project1 = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+    my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => { project_id => $project1->mid } } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is @$data, 1;
+    is $data->[0]->{title}, 'My Topic';
+};
+
 subtest 'topics_by_field: counts topics by status' => sub {
     _setup();
 

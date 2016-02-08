@@ -151,7 +151,7 @@ sub create_user {
         username         => 'developer',
         project_security => {
             $id_role => {
-                project => [$project->mid]
+                project => [ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ]
             }
         },
         %params
