@@ -1,8 +1,9 @@
-package BaselinerX::CI::job_log;
-use Baseliner::Moose;
-use Baseliner::Utils;
-use Compress::Zlib;
+package Baseliner::JobLogger;
+use Moose;
+
 use Try::Tiny;
+use Compress::Zlib;
+use Baseliner::Utils;
 
 with 'Baseliner::Role::Logger';
 
@@ -108,6 +109,7 @@ sub common_log {
         $doc->{data_length} = length( $p{data} ) if $p{data};
         $doc->{prefix} = $p{prefix} if $p{prefix};
         $doc->{milestone} = "$p{milestone}" if $p{milestone};
+        $doc->{stmt_level} = int($p{stmt_level} // 0);
         $doc->{service_key} = $self->current_service;
         $doc->{rule} =  $self->job->{id_rule} if defined $self->job->{id_rule};
         if( $p{data} ) {

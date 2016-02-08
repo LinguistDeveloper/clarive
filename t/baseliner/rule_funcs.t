@@ -7,11 +7,9 @@ use Test::Deep;
 use Test::MonkeyMock;
 use Test::MockSleep;
 
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestUtils;
-
-TestEnv->setup;
 
 use POSIX ":sys_wait_h";
 use JSON ();
@@ -60,7 +58,13 @@ subtest 'current_task' => sub {
     my $run_me;
     my $stash = { var => 'surprise' };
 
-    current_task( $stash, 1, 'some rule', 'some task with ${var}', sub { $run_me++ } );
+    current_task(
+        $stash,
+        id_rule   => 1,
+        rule_name => 'some rule',
+        name      => 'some task with ${var}',
+        code      => sub { $run_me++ }
+    );
 
     is $stash->{current_rule_id},   1;
     is $stash->{current_rule_name}, 'some rule';
@@ -76,7 +80,12 @@ subtest 'current_task: starts task' => sub {
 
     my $stash = { job => $job };
 
-    current_task( $stash, 1, 'some rule', 'some task with ${var}' );
+    current_task(
+        $stash,
+        id_rule   => 1,
+        rule_name => 'some rule',
+        name      => 'some task with ${var}'
+    );
 
     ok $job->mocked_called('start_task');
 };
@@ -99,7 +108,7 @@ subtest 'current_task: cancel job in steps check or init' => sub {
         }
     );
     like exception {
-        current_task( $stash, 9, 'some rule', 'some task with ${var}' );
+        current_task( $stash, id_rule => 9, rule_name => 'some rule', name => 'some task with ${var}' );
     }, qr/Job cancelled by user test/;
 };
 
@@ -119,47 +128,6 @@ subtest 'launch' => sub {
 
 subtest 'changeset_projects from data' => sub {
     _setup();
-
-    mdb->topic->drop;
-    mdb->master->drop;
-    mdb->master_doc->drop;
-    mdb->master_rel->drop;
-    mdb->category->drop;
-    mdb->rule->drop;
-
-    Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
-    Baseliner::Core::Registry->add_class( undef, 'fieldlet' => 'BaselinerX::Type::Fieldlet' );
-
-    Baseliner::Core::Registry->add( 'caller', 'event.topic.create', {} );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.status_new' => {
-            bd_field  => 'id_category_status',
-            id_field  => 'status_new',
-            origin    => 'system',
-            meta_type => 'status'
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.required.category' => {
-            id_field => 'category',
-            bd_field => 'id_category',
-            origin   => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.projects' => {
-            get_method => 'get_projects',
-            set_method => 'set_projects',
-            meta_type  => 'project',
-            relation   => 'system',
-        }
-    );
 
     my $status_id = ci->status->new( type => 'I' )->save;
 
@@ -277,9 +245,6 @@ subtest 'error_trap: returns undef on ignore' => sub {
 
 subtest 'error_trap: creates event' => sub {
     _setup();
-
-    Baseliner::Core::Registry->add_class( 'main', 'event', 'BaselinerX::Type::Event' );
-    Baseliner::Core::Registry->add( 'main', 'event.rule.trap', {} );
 
     my $job_logger = _mock_job_logger();
 
@@ -423,12 +388,24 @@ sub _mock_job_logger {
 }
 
 sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Service::Scripting',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
+    );
+
+    TestUtils->cleanup_cis;
+
+    mdb->category->drop;
     mdb->event->drop;
-
     mdb->queue->drop;
-
-    Baseliner::Core::Registry->clear();
-    TestUtils->register_ci_events();
+    mdb->rule->drop;
+    mdb->topic->drop;
 }
 
 package TestService;

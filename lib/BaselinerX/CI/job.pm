@@ -3,7 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
-use BaselinerX::CI::job_log;
+use Baseliner::JobLogger;
 use Try::Tiny;
 use v5.10;
 use utf8;
@@ -420,7 +420,7 @@ sub is_running {
 
 sub logger { 
     my ($self)=@_;
-    return BaselinerX::CI::job_log->new(
+    return Baseliner::JobLogger->new(
         step            => $self->step,
         exec            => $self->exec,
         jobid           => $self->jobid,
@@ -1189,9 +1189,11 @@ sub write_pid {
 
 # called from dsl_run in Rules
 sub start_task {
-    my ($self,$stmt_name) = @_;
-    $self->current_service( $stmt_name );
-    $self->logger->debug( "$stmt_name", milestone=>2 );
+    my $self = shift;
+    my ($stmt_name, $level) = @_;
+
+    $self->current_service($stmt_name);
+    $self->logger->debug("$stmt_name", stmt_level => $level, milestone => 2);
 }
 
 sub back_to_core {

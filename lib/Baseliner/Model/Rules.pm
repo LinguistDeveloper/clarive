@@ -2,6 +2,7 @@ package Baseliner::Model::Rules;
 use Moose;
 BEGIN { extends 'Catalyst::Model' }
 
+use Perl::Tidy ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -183,15 +184,15 @@ sub dsl_build {
     #_debug $stmts;
     my @dsl;
     require Data::Dumper;
-    my $spaces = sub { '   ' x $_[0] };
-    my $level = 0;
     local $Data::Dumper::Terse = 1;
     local $Data::Dumper::Deparse = 1;
     local $Data::Dumper::Deepcopy = 1;
     
     for my $s ( _array $stmts ) {
+        my $level = $s->{level} // 0;
+
         local $p{no_tidy} = 1; # just one tidy is enough
-        my $children = $s->{children} || {};
+        my $children = $s->{children} || [];
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
         # is active ?
         next if defined $attr->{active} && !$attr->{active}; 
@@ -253,9 +254,9 @@ sub dsl_build {
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name // '') . "\n"; 
         if( $closure ) {
-            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s}, sub{', $id_rule, $rule_name, $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, id_rule => q{%s}, rule_name => q{%s}, name => q{%s}, level => %s, cb => sub{', $id_rule, $rule_name, $name, $level )."\n";
         } elsif( ! $attr->{nested} ) {
-            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name // '')."\n";
+            push @dsl, sprintf( 'current_task($stash, id_rule => q{%s}, rule_name => q{%s}, name => q{%s}, level => %s);', $id_rule, $rule_name, $name // '', $level)."\n";
         }
         push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';  
         if( length $timeout && $timeout > 0 ) {
@@ -271,19 +272,20 @@ sub dsl_build {
             my $reg = Baseliner::Model::Registry->get( $key );
             _fail _loc 'Could not find rule key `%1`', $key unless blessed $reg;
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
-                push @dsl, $spaces->($level) . '{';
+                push @dsl, '{';
                 if( length $attr->{sub_name} ) {
-                    push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars +{ %{ %s || {} }, %{ delete($$stash{shortcut_config}) // {}} }, $stash;}, Data::Dumper::Dumper( $data ) );
+                    push @dsl, sprintf(q{   my $config = parse_vars +{ %{ %s || {} }, %{ delete($$stash{shortcut_config}) // {}} }, $stash;}, Data::Dumper::Dumper( $data ) );
                 } else {
                     if($key eq 'service.web.request'){
                         $data->{body} = Util->_fix_utf8_to_xml_entities($data->{body});
                     }
-                    push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
+                    push @dsl, sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
                 }
-                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );
-                push @dsl, $spaces->($level) . '}';
+                push @dsl, sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );
+                push @dsl, '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
+                $children = [map { {%{$_ || {}}, level => $level + 1}} _array $children];
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
             push @dsl, '});' if $error_trap; # current_task close
@@ -303,15 +305,19 @@ sub dsl_build {
     }
 
     my $dsl = join "\n", @dsl;
+
     # WTF? $self can be class name
-    if(ref $self && $self->tidy_up && !$p{no_tidy} ) {
-        require Perl::Tidy;
+    if ( ref $self && $self->tidy_up && !$p{no_tidy} ) {
         my $tidied = '';
-        Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
-        return $tidied;
-    } else {
-        return $dsl;
+        Perl::Tidy::perltidy(
+            argv        => '-npro --maximum-line-length=160 --quiet --no-log',
+            source      => \$dsl,
+            destination => \$tidied
+        );
+        $dsl = $tidied;
     }
+
+    return $dsl;
 }
 
 sub dsl_run {
@@ -1036,22 +1042,27 @@ register 'statement.perl.for' => {
 };
 
 register 'statement.code.server' => {
-    text => 'Server CODE', data => { code=>'' },
-    type => 'loop',
-    icon => '/static/images/icons/cog_perl.png',
+    text           => 'Server CODE',
+    data           => {code => ''},
+    type           => 'loop',
+    icon           => '/static/images/icons/cog_perl.png',
     holds_children => 0,
-    form => '/forms/server_code.js', 
-    dsl => sub { 
-        my ($self, $n, %p ) = @_;
-        if( $n->{lang} eq 'js' ) {
-            sprintf(q{
-                eval_code('js', q{%s}, $stash);
-            }, $n->{code} // '' );
-        } else {
-            sprintf(q{
-                %s;
-            }, $n->{code} // '' );
+    form           => '/forms/server_code.js',
+    dsl            => sub {
+        my ($self, $n, %p) = @_;
+
+        my $code = $n->{code} // '';
+        my $lang = $n->{lang} // '';
+
+        my $dsl;
+        if ($lang eq 'js') {
+            $dsl = sprintf(q{eval_code('js', q{%s}, $stash);}, $code);
         }
+        else {
+            $dsl = sprintf(q{%s;}, $code);
+        }
+
+        return $dsl . "\n\n";
     },
 };
 

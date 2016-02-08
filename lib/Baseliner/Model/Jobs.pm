@@ -1,10 +1,8 @@
 package Baseliner::Model::Jobs;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-extends qw/Catalyst::Model/;
+BEGIN { extends 'Catalyst::Model' }
+
 use namespace::clean;
-use Baseliner::Utils;
-use Baseliner::Sugar;
 use Compress::Zlib;
 use Archive::Tar;
 use Path::Class;
@@ -12,6 +10,11 @@ use Try::Tiny;
 use Data::Dumper;
 use Class::Date;
 use experimental 'autoderef';
+
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Utils;
 
 register 'action.search.job' => { name => 'Search jobs' };
 
@@ -60,7 +63,7 @@ our $group_keys = {
 
 sub monitor {
     my ($self,$p) = @_;
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new;
     my $username = $p->{username};
 
     my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
@@ -106,12 +109,13 @@ sub monitor {
             push @mid_filters, { mid=>mdb->in(@mids_query) };
         }
     }
+
+    my $is_root = Baseliner::Model::Permissions->new->is_root($username);
     
-    if( !Baseliner->is_root($username) ) {
-        my @bl;
+    if( !$is_root ) {
         my $user = ci->user->find_one({ name=>$username });
         my @roles = keys $user->{project_security};
-        @bl = map { map { $_->{bl} } grep { $_->{bl} if($_->{action} eq 'action.job.viewall') } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
+        my @bl = map { map { $_->{bl} } grep { $_->{bl} if($_->{action} eq 'action.job.viewall') } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
         my @ids_project = $perm->user_projects_with_action(username => $username, action => 'action.job.viewall', level => 1, bl=>\@bl);
 
         $where->{bl} = mdb->in(@bl) if(@bl && !('*' ~~ @bl));
@@ -224,9 +228,15 @@ sub monitor {
           :                      [ 0,  _loc('Upcoming') ];
         $when = $day->[0];
         my ($last_exec) = sort { $b cmp $a } keys %{$job->{milestones}};
-        my $can_restart = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.restart', bl=>$job->{bl} );
-        my $can_cancel = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.cancel', bl=>$job->{bl} );
-        my $can_delete = Baseliner->model('Permissions')->user_has_action( username=>$username, action=>'action.job.delete', bl=>$job->{bl} );
+
+        my $permissions = Baseliner::Model::Permissions->new;
+
+        my $can_restart =
+          $permissions->user_has_action( username => $username, action => 'action.job.restart', bl => $job->{bl} );
+        my $can_cancel =
+          $permissions->user_has_action( username => $username, action => 'action.job.cancel', bl => $job->{bl} );
+        my $can_delete =
+          $permissions->user_has_action( username => $username, action => 'action.job.delete', bl => $job->{bl} );
 
         push @rows, {
             id           => $job->{jobid},
@@ -279,11 +289,47 @@ sub monitor {
             can_restart    => $can_restart,
             can_cancel    => $can_cancel,
             can_delete    => $can_delete,
+            progress      => $self->_calculate_progress($job),
 
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     return ( $cnt, @rows );
+}
+
+sub _calculate_progress {
+    my $self = shift;
+    my ($job) = @_;
+
+    return '100%' if $job->{status} eq 'FINISHED';
+
+    my $progress = 'n/a';
+
+    my $rule = mdb->rule->find_one({id => "$job->{id_rule}"});
+    if ($rule) {
+        my $rule_tree_json = $rule->{rule_tree};
+        my $rule_tree = Util->_decode_json( $rule_tree_json );
+
+        my $total = 0;
+        foreach my $step (@$rule_tree) {
+            $total += @{ $step->{children} };
+        }
+
+        my $now = mdb->job_log->find(
+            {
+                mid        => $job->{mid},
+                lev        => 'debug',
+                stmt_level => 1,
+            }
+        )->count;
+
+        if ($total) {
+            my $percentage = int(($now / $total) * 100);
+            $progress = " $percentage% ($now/$total)";
+        }
+    }
+
+    return $progress;
 }
 
 

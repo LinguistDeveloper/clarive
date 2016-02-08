@@ -149,6 +149,7 @@
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
+            {  name: 'progress' },
             {  name: 'job_family' },
             {  name: 'natures' }, 
             {  name: 'subapps' },
@@ -1203,6 +1204,7 @@
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
+                { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
@@ -1234,7 +1236,7 @@
                 { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true }, 
                 { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true }, 
                 { header: _('RUN Start Date'), width: 130, dataIndex: 'run_start', sortable: true , hidden: true }, 
-                { header: _('RUN End Date'), width: 130, dataIndex: 'run_end', sortable: true , hidden: true } 
+                { header: _('RUN End Date'), width: 130, dataIndex: 'run_end', sortable: true , hidden: true }
 
             ],
         bbar: paging,        
