@@ -611,7 +611,7 @@ sub TO_JSON {
 sub ci_form {
     my ($self) = @_;
     my $component = $self->can('form') ? $self->form : sprintf( "/ci/%s.js", $self->collection );
-    my $fullpath = Baseliner->path_to( 'root', $component );
+    my $fullpath = Clarive->path_to( 'root', $component );
     return -e $fullpath  ? $component : '';
 }
 

@@ -151,7 +151,7 @@
     };
 
     var ci_import = function(format, ci_type){
-       new Baseliner.ImportWindow({ url:'/ci/import', format: format, ci_type: ci_type }).show();
+       new Baseliner.ImportWindow({ url:'/ci/import_all', format: format, ci_type: ci_type }).show();
     };
 
     var ci_export = function(format, mode){
