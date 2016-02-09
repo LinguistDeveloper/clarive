@@ -277,6 +277,54 @@ subtest 'related: returns 2 (self and related) related topics' => sub {
     is $c->stash->{json}->{totalCount}, 2;
 };
 
+subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    $base_params->{parent} = [$topic_mid];
+
+    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { valuesqry=>'true', query=>"$topic_mid $topic_mid_2" } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+
+    my $topics = $c->stash->{json}->{data};
+
+    is scalar @$topics, 2;
+    is $c->stash->{json}->{totalCount}, 2;
+};
+
+subtest 'related: valuesqry returns data for SuperBox in array mode' => sub {
+    TestSetup->_setup_clear();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    $base_params->{parent} = [$topic_mid];
+
+    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { valuesqry=>'true', query=>[$topic_mid, $topic_mid_2] } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+
+    my $topics = $c->stash->{json}->{data};
+
+    is scalar @$topics, 2;
+    is $c->stash->{json}->{totalCount}, 2;
+};
+
 subtest 'create a topic' => sub {
     _setup();
     TestSetup->_setup_user();

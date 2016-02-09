@@ -2311,30 +2311,33 @@ sub set_topics {
             mdb->master_rel->find({ from_mid=>$mid, rel_type=>'topic_topic', rel_field=>$rel_field, })->fields({ to_mid=>1})->all); 
 
         if ($child_mid) {
-            my ($category_id) = _array ( map { $_ ->{category}->{id} } mdb->topic->find_one({mid => $child_mid}));
-            my @fieldlets = map {
-                my $params = $_->{params};
-                {name_field =>$params->{name_field}, parent_field=> $params->{parent_field}};
-                }
-                grep {
-                    my $params = $_->{params};
-                    $params->{parent_field};
-                } _array( mdb->category->find_one({ id => $category_id })->{fieldlets} );
+            if( my $child_topic = mdb->topic->find_one({mid => $child_mid},{ category=>1 }) ) {
+                my $child_category_id = $child_topic->{category}{id};
+                my $child_meta = Baseliner::Model::Topic->new->get_meta(undef, $child_category_id);
 
-            if (scalar @fieldlets) {
-                my $rel_topics = mdb->topic->find_one({mid => $child_mid})->{ $fieldlets[0]->{name_field}};
-                my @related_topics = (ref $rel_topics eq 'ARRAY') ?  @{$rel_topics} : split /,/, $rel_topics if $rel_topics;
-                my @related;
-                for ( @related_topics ) {
-                    if ($_ ne "$mid") {
-                        push @related, $_
-                     }
-                } 
-                my $related = (ref $rel_topics ne 'ARRAY') ? join(',', @related) : \@related;
-                my $d = {
-                    $fieldlets[0]->{name_field} => $related || undef
-                    };
-                 mdb->topic->update({ mid=> $child_mid},{ '$set'=> $d});
+                my @fieldlets = 
+                    map {
+                        {name_field =>$_->{name_field}, parent_field=> $_->{parent_field}};
+                    } grep {
+                        $_->{parent_field};
+                    } _array( $child_meta );
+
+                for my $field (@fieldlets) {
+                    my $name_field = $field->{name_field};
+                    my $doc = mdb->topic->find_one({mid => $child_mid},{ $name_field=>1 });
+                    $doc or next;
+                    my $rel_topics = $doc->{$name_field};
+                    my @related_topics = (ref $rel_topics eq 'ARRAY') ?  @$rel_topics : split /,/, $rel_topics if $rel_topics;
+                    my @related;
+                    for ( @related_topics ) {
+                        if ($_ ne "$mid") {
+                            push @related, $_
+                         }
+                    } 
+                    my $related = (ref $rel_topics ne 'ARRAY') ? join(',', @related) : \@related;
+                    my $new_doc = { $name_field => $related || undef };
+                    mdb->topic->update({ mid=> $child_mid},{ '$set'=> $new_doc });
+                }
             }
         }
         my $rdoc = {$topic_direction=>$mid, rel_field=>$rel_field, rel_type => $rel_type };

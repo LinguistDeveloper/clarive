@@ -300,7 +300,8 @@ sub related : Local {
     
     my $where = {};
     if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
-        $where->{mid} = [ delete $p->{query} ];
+        my $qry = delete $p->{query};  # rgo: usually SuperBox will send "mid1 mid2 mid3 etc" with spaces
+        $where->{mid} = ref $qry ne 'ARRAY' ? [ split /\s+/, $qry ] : $qry;
     }
     $where->{query} = $p->{query} if length $p->{query};
 

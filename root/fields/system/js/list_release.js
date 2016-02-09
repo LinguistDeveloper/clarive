@@ -43,11 +43,11 @@ params:
 		allowBlank: Baseliner.eval_boolean(meta.allowBlank),          
 		store: release_box_store,
 		disabled: Baseliner.eval_boolean(meta.readonly),
-		singleMode: Baseliner.eval_boolean(meta.single_mode),
+		singleMode: true,
 		hidden: Baseliner.eval_boolean(meta.hidden),
         display_field: display_field,
         tpl_cfg: tpl_cfg,
-        hidden_value : data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : ''
+        hidden_value: row_mids 
 	});	
  	release_box.value = data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : '';
 

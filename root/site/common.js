@@ -4246,8 +4246,9 @@ Baseliner.eval_boolean = function(d, default_value){
 };
 
 
-Baseliner.generic_list_fields = function(params){
+Baseliner.generic_list_fields = function(params,opts){
     var data = params || {};
+    opts = opts || {};
     var list_type = new Ext.form.Hidden({ name:'list_type', value: data.list_type });
 
     var store_values = new Ext.data.SimpleStore({
@@ -4262,11 +4263,12 @@ Baseliner.generic_list_fields = function(params){
     var value_combo = new Ext.form.ComboBox({
         store: store_values,
         displayField: 'name',
-        value: data.list_type || 'single',
+        value: opts.list_type || data.list_type || 'single',
         valueField: 'value_type',
         hiddenName: 'value_type',
         name: 'value_type',
         editable: false,
+        readOnly: !!opts.list_type,
         mode: 'local',
         allowBlank: false,
         forceSelection: true,
