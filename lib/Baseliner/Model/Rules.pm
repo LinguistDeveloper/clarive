@@ -115,6 +115,25 @@ sub tree_format {
     return @tree_out;
 }
 
+sub load_tree {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $rule = $params{rule};
+
+    if (!$rule) {
+        my $id_rule = $params{id_rule};
+
+        my $rule = mdb->rule->find_one(
+            {'$or' => [{id => "$id_rule"}, {rule_name => "$id_rule"}]});
+        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+    }
+
+    my $tree = try { Util->_decode_json( $rule->{rule_tree} ) } catch { +{} };
+
+    return $self->tree_format(@$tree);
+}
+
 sub build_tree {
     my ($self, $id_rule, $parent, %p) = @_;
     # TODO run query just once and work with a hash ->hash_for( id_parent )

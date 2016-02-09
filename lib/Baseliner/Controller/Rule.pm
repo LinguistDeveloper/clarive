@@ -699,8 +699,8 @@ sub stmts_load : Local {
             );
 
             while ( my $rv = $rs->next ) {
-                my $ver_tree = try { Util->_decode_json( $rv->{rule_tree} ) } catch { +{} };
-                my @ver_tree = Baseliner::Model::Rules->new->tree_format(@$ver_tree);
+                my @ver_tree = Baseliner::Model::Rules->new->load_tree(rule => $rv);
+
                 my $text     = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
                 $text .= ' was: ' . $rv->{was} if $rv->{was};
                 push @tree,
@@ -780,14 +780,18 @@ sub edit_key : Local {
 }
 
 sub dsl : Local {
-    my ($self,$c)=@_;
+    my ($self, $c)=@_;
+
     my $p = $c->req->params;
-    #_debug "\n\n" . $p->{stmts} . "\n\n";;
-    my $stmts = _decode_json( $p->{stmts} ) if $p->{stmts};
+
+    my $id_rule   = $p->{id_rule};
+    my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
+    my $stmts     = $p->{stmts};
+
+    $stmts = _decode_json( $stmts ) if $stmts;
+
     try {
-        my $id_rule = $p->{id_rule};
         my $doc = mdb->rule->find_one({ id=>$id_rule },{ rule_tree=>0 }) // {};
-        my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
         my $data;
         if( $rule_type eq 'pipeline' ) {
             $data = {
@@ -804,7 +808,7 @@ sub dsl : Local {
             # loose rule 
             $data = {};
         }
-        my $dsl = $c->model('Rules')->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
+        my $dsl = Baseliner::Model::Rules->new->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
         $c->stash->{json} = { success=>\1, dsl=>$dsl, data_yaml => _dump( $data ) };
     } catch {
         my $err = shift; _error $err;

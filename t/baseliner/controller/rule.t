@@ -122,7 +122,8 @@ subtest 'stmts_load: returns rule tree with versions' => sub {
         );
     };
 
-    my $c = mock_catalyst_c( req => { params => { id_rule => $id_rule, load_versions => 1 } } );
+    my $c = mock_catalyst_c(
+        req => { params => { id_rule => $id_rule, load_versions => 1 } } );
 
     my $controller = _build_controller();
 
@@ -205,9 +206,11 @@ subtest 'rollback_version: rolls back to previous version' => sub {
         );
     };
 
-    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
 
-    my $c = mock_catalyst_c( req => { params => { version_id => $version_id } } );
+    my $c =
+      mock_catalyst_c( req => { params => { version_id => $version_id } } );
 
     my $controller = _build_controller();
 
@@ -223,15 +226,17 @@ subtest 'rollback_version: rolls back to previous version' => sub {
         }
       };
 
-    $c = mock_catalyst_c( req => { params => { id_rule => $id_rule, load_versions => 1 } } );
+    $c = mock_catalyst_c(
+        req => { params => { id_rule => $id_rule, load_versions => 1 } } );
     $controller->stmts_load($c);
 
     cmp_deeply $c->stash->{json}->[0],
       {
         'icon'       => '/static/images/icons/history.png',
         'is_current' => \1,
-        'text'       => 'Current: 2016-01-03 12:15:00 (someuser) was: 2016-01-01 12:15:00',
-        'children'   => [
+        'text' =>
+          'Current: 2016-01-03 12:15:00 (someuser) was: 2016-01-01 12:15:00',
+        'children' => [
             {
                 'disabled' => \0,
                 'text'     => 'CHECK',
@@ -246,13 +251,58 @@ subtest 'rollback_version: rolls back to previous version' => sub {
       };
 };
 
+subtest 'dsl: returns rule dsl' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    my $stmts = mdb->rule->find_one( { id => "$id_rule" } )->{rule_tree};
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                stmts     => $stmts,
+                id_rule   => $id_rule,
+                rule_type => 'independent'
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success   => \1,
+            data_yaml => "--- {}\n",
+            dsl       => re(qr/current_task\(/)
+        }
+      };
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement', 'BaselinerX::CI',
+        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     mdb->rule->drop;
