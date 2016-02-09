@@ -295,6 +295,139 @@ subtest 'dsl: returns rule dsl' => sub {
       };
 };
 
+subtest 'dsl_try: runs dsl' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                dsl   => 'do { print "hello"; $stash->{foo} = "bar"; };',
+                stash => ''
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl_try($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success    => \1,
+            msg        => 'ok',
+            output     => 'hello',
+            stash_yaml => re(qr/foo: bar/),
+        }
+      };
+};
+
+subtest 'dsl_try: returns compile error' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                dsl   => 'abc',
+                stash => ''
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl_try($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success    => \0,
+            msg        => re(qr/Bareword "abc" not allowed/),
+            stash_yaml => re(qr/---/),
+            output     => ''
+        }
+      };
+};
+
+subtest 'dsl_try: returns runtime error' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                dsl   => 'die "error";',
+                stash => ''
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl_try($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success    => \0,
+            msg        => re(qr/error at/),
+            stash_yaml => re(qr/---/),
+            output     => ''
+        }
+      };
+};
+
+subtest 'dsl_try: merges default vars' => sub {
+    _setup();
+
+    TestUtils->create_ci(
+        'variable',
+        name      => 'foo',
+        var_type  => 'value',
+        variables => { '*' => 'bar' }
+    );
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                dsl   => 'print $stash->{foo}',
+                stash => ''
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl_try($c);
+
+    is $c->stash->{json}->{output}, 'bar';
+};
+
+subtest 'dsl_try: default vars do not overwrite existing ones' => sub {
+    _setup();
+
+    TestUtils->create_ci(
+        'variable',
+        name      => 'foo',
+        var_type  => 'value',
+        variables => { '*' => 'bar' }
+    );
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                dsl   => 'print $stash->{foo}',
+                stash => "---\nfoo: baz"
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->dsl_try($c);
+
+    is $c->stash->{json}->{output}, 'baz';
+};
+
 done_testing;
 
 sub _setup {
@@ -304,6 +437,8 @@ sub _setup {
         'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
         'Baseliner::Model::Rules'
     );
+
+    TestUtils->cleanup_cis;
 
     mdb->rule->drop;
     mdb->rule_version->drop;

@@ -1,17 +1,18 @@
 package Baseliner::Controller::Rule;
 use Moose;
-use Baseliner::Utils;
-use Baseliner::Sugar;
-use DateTime;
+BEGIN {  extends 'Catalyst::Controller' }
+
+use Capture::Tiny ();
 use Try::Tiny;
 use Time::HiRes qw(time);
 use v5.10;
+use BaselinerX::CI::variable;
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::CompiledRule;
 use Baseliner::Model::Rules;
+use Baseliner::Utils;
+use Baseliner::Sugar;
 
-
-BEGIN {  extends 'Catalyst::Controller' }
-BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
@@ -830,41 +831,50 @@ sub run_rule : Local {
 }
 
 sub dsl_try : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
     my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
-    $c->stash->{json} = $self->dsl_run($dsl,$stash);
-    $c->forward("View::JSON");
-}
 
-sub dsl_run {
-    my ($self,$dsl,$stash) = @_;
-    my $output;
-    local $Baseliner::no_log_color = 1;
-    return try {
-        my $dslerr;
-        require Capture::Tiny;
-        _log "============================ DSL TRY START ============================";
-        ($output) = Capture::Tiny::tee_merged(sub{
-            try {
-                $stash = Baseliner->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
-            } catch {
-               $dslerr = shift;   
-            };
-        });
-        _log "============================ DSL TRY END   ============================";
-        my $stash_yaml = _dump( $stash );
-        if( $dslerr ) {
-            _fail "ERROR DSL TRY: $dslerr";
+    my $success = \1;
+    my $msg     = 'ok';
+    my $output  = '';
+
+    my $default_vars = BaselinerX::CI::variable->default_hash;
+    foreach my $default_var ( keys %$default_vars ) {
+        $stash->{$default_var} = $default_vars->{$default_var}
+          unless exists $stash->{$default_var};
+    }
+
+    try {
+        my $rule = Baseliner::CompiledRule->new( dsl => $dsl );
+        $rule->compile;
+
+        local $Baseliner::no_log_color = 1;
+        ($output) =
+          Capture::Tiny::tee_merged( sub { $rule->run( stash => $stash ) } );
+
+        if ( my $err = $rule->errors ) {
+            _fail $err;
         }
-        #$stash = Util->_unbless( $stash );
-        return { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
     } catch {
-        my $err = shift; _error $err;
-        my $stash_yaml = _dump( $stash );
-        return { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
+        my $error = $_;
+
+        $success = \0;
+        $msg = $error;
     };
+
+    my $stash_yaml = _dump( $stash );
+
+    $c->stash->{json} = {
+        success    => $success,
+        msg        => $msg,
+        output     => $output,
+        stash_yaml => $stash_yaml
+    };
+    $c->forward("View::JSON");
 }
 
 =head2 default
