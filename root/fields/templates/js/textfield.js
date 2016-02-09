@@ -19,6 +19,7 @@ params:
     var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
+    var maxLength = meta.maxLength ?(meta.maxLength == "" ? 255: meta.maxLength) : 255;
     if( Ext.isIE ) style['margin-top'] = '1px';    
     return [
         {
@@ -31,8 +32,8 @@ params:
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
             allowBlank: allowBlank,
-            readOnly: meta ? meta.readonly : true,
-            maxLength: meta ? meta.maxLength : undefined,
+            readOnly: Baseliner.eval_boolean(meta.readonly, true),
+            maxLength: maxLength,
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
