@@ -616,6 +616,25 @@ subtest 'export: throws when user has no permission' => sub {
     like exception { $controller->export($c) }, qr/User developer not authorized to export CI variable/;
 };
 
+subtest 'import_all: throws when user has no permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req      => { params => { ci_type => 'variable', format => 'csv', mids => [ $variable->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->import_all($c) }, qr/User developer not authorized to import CIs/;
+};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }

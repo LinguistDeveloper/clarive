@@ -1458,6 +1458,10 @@ sub edit : Local {
 sub import_all : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+
+    my $permissions = $self->_build_permissions;
+    _fail( _loc( 'User %1 not authorized to import CIs', $c->username ) )
+      unless $permissions->user_can_admin_ci( $c->username );
     
     my $text = $p->{text};
     my $format = $p->{format};
