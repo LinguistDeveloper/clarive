@@ -207,11 +207,9 @@ Cla.topic_grid = function(params){
     };
 
     var init_buttons = function(action) {
-        alert("aa");
-
+            
         btn_edit[ action ]();
-        btn_delete[ action ]();
-         alert("bbb");
+        btn_delete[ action ]();         
 
         // change status button:
         var sm = grid_topics.getSelectionModel();
