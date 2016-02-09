@@ -236,7 +236,7 @@
         hideHeaders: true,
         collapsible: true,
         split: true,
-        stripeRows: true,
+        stripeRows: false,
         autoScroll: true,
         autoWidth: true,
         store: store_sem,
@@ -312,7 +312,7 @@
     var grid_queue = new Ext.grid.GridPanel({
         region: 'center',
         header: false,
-        stripeRows: true,
+        stripeRows: false,
         autoScroll: true,
         autoWidth: true,
         store: store_queue,
