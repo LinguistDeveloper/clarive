@@ -1396,7 +1396,7 @@ sub write_rule {
             mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
         };
 
-    { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
+    return { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
 }
 
 sub delete_rule {
