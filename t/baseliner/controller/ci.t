@@ -477,6 +477,145 @@ subtest 'new_ci: loads ci when admin rights' => sub {
       };
 };
 
+subtest 'delete: deletes ci' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c( req => { params => { collection => 'variable', mids => [$variable->mid] } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    like exception { ci->new( $variable->mid ) }, qr/not found/;
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'CIs deleted ok',
+            'success' => \1
+        }
+      };
+};
+
+subtest 'delete: throws error when no permission to delete ci' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c( req => { params => { collection => 'variable', mids => [$variable->mid] } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->delete($c) }, qr/User developer not authorized to delete CI variable/;
+};
+
+subtest 'export: exports ci to yaml' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c( req => { params => { mids => [ $variable->mid ] } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    $controller->export($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            msg     => 'CIs exported ok',
+            data    => re(qr/---\n.*name: variable/ms)
+        }
+      };
+};
+
+subtest 'export: exports ci to json' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c( req => { params => { format => 'json', mids => [ $variable->mid ] } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    $controller->export($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            msg     => 'CIs exported ok',
+            data    => code( sub { JSON::decode_json( $_[0] ) } )
+        }
+      };
+};
+
+subtest 'export: exports ci to csv' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req      => { params => { ci_type => 'variable', format => 'csv', mids => [ $variable->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->export($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            msg     => 'CIs exported ok',
+            data    => re(qr/bl;description;/)
+        }
+      };
+};
+
+subtest 'export: throws when user has no permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req      => { params => { ci_type => 'variable', format => 'csv', mids => [ $variable->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->export($c) }, qr/User developer not authorized to export CI variable/;
+};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }

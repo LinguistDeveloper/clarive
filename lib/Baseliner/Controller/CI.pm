@@ -1035,7 +1035,7 @@ sub new_ci : Local {
     my $permissions = $self->_build_permissions;
 
     try {
-        _fail(_loc('User %1 not authorized to view CI of class %2', $c->username, $collection) )
+        _fail(_loc('User %1 not authorized to admin CI of class %2', $c->username, $collection) )
             unless $permissions->user_can_admin_ci($c->username, $collection);
         my $obj = ci->$collection;
         my $rec = {};
@@ -1063,6 +1063,11 @@ sub delete : Local {
     my $mids = delete $p->{mids};
     my $collection = delete $p->{collection};
     my $remove_data = delete $p->{remove_data} // 0;
+
+    my $permissions = $self->_build_permissions;
+    _fail( _loc( 'User %1 not authorized to delete CI %2', $c->username, $collection ) )
+      unless $permissions->user_can_admin_ci( $c->username, $collection );
+
     try {
         if ($collection eq 'project' && !$remove_data){
             my @all_users = grep { values $_->{project_security} } ci->user->find->fields({ mid=>1,name=>1,project_security=>1,_id=>0 })->all;
@@ -1132,6 +1137,10 @@ sub export : Local {
     my $p = $c->req->params;
     my $mids = delete $p->{mids};
     my $format = $p->{format} || 'yaml';
+
+    my $permissions = $self->_build_permissions;
+    _fail( _loc( 'User %1 not authorized to export CI %2', $c->username, $p->{ci_type} ) )
+      unless $permissions->user_can_view_ci( $c->username, $p->{ci_type} );
 
     try {
         my @cis = map { ci->new( $_ ) } _array $mids;
