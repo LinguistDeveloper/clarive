@@ -121,7 +121,11 @@ subtest 'tree_classes: returns roles when user has all admin permissions' => sub
 subtest 'grid: set save to false when no collection' => sub {
     _setup();
 
-    my $c = _build_c();
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c(username => $user->username);
 
     my $controller = _build_controller();
 
@@ -194,14 +198,20 @@ subtest 'grid: set save to true when has admin permissions' => sub {
       };
 };
 
-subtest 'edit: sets save to false when no mid' => sub {
+subtest 'edit: cannot save when not admin' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.view.%.variable',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $c = _build_c( req => { params => {} }, username => $user->username );
+    my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
 
     my $controller = _build_controller();
 
@@ -210,6 +220,32 @@ subtest 'edit: sets save to false when no mid' => sub {
     is_deeply $c->stash,
       {
         'save'     => 'false',
+        'template' => '/comp/ci-editor.js'
+      };
+};
+
+subtest 'edit: can save when admin' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin.%.variable',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
+
+    my $controller = _build_controller();
+
+    $controller->edit($c);
+
+    is_deeply $c->stash,
+      {
+        'save'     => 'true',
         'template' => '/comp/ci-editor.js'
       };
 };
@@ -228,7 +264,7 @@ subtest 'edit: throws when unknown ci' => sub {
     like exception { $controller->edit($c) }, qr/Could not find CI 1 in database/;
 };
 
-subtest 'edit: throws when no permissions to view' => sub {
+subtest 'edit: throws when no permissions to view ci' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
@@ -266,12 +302,12 @@ subtest 'edit: sets save to false when no permission to admin' => sub {
       };
 };
 
-subtest 'edit: sets save to true when has permission' => sub {
+subtest 'edit: sets save to true when has admin permission' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
     my $id_role = TestSetup->create_role( actions =>
-          [ { action => 'action.ci.view.Variable.variable' }, { action => 'action.ci.admin.Variable.variable' } ] );
+          [ { action => 'action.ci.admin.Variable.variable' } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');

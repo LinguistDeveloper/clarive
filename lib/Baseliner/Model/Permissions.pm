@@ -815,6 +815,75 @@ sub users_with_roles {
     return @users, @root_users;
 }
 
+sub user_can_search_ci {
+    my $self = shift;
+    my ($username) = @_;
+
+    return $self->user_has_action( username => $username, action => 'action.search.ci' );
+}
+
+sub user_is_ci_admin {
+    my $self = shift;
+    my ($username) = @_;
+
+    return 1 if $self->is_root($username);
+
+    return $self->user_has_action( action => 'action.ci.admin', username => $username );
+}
+
+sub user_can_view_ci {
+    my $self = shift;
+    my ( $username, $collection ) = @_;
+
+    return 1 if $self->user_is_ci_admin($username);
+
+    if ($collection) {
+        return 1 if $self->user_has_any_action(
+            action   => 'action.ci.admin.%.' . $collection,
+            username => $username
+        );
+
+        return 1 if $self->user_has_any_action(
+            action   => 'action.ci.view.%.' . $collection,
+            username => $username
+        );
+    }
+
+    return 0;
+}
+
+sub user_can_admin_ci {
+    my $self = shift;
+    my ( $username, $collection ) = @_;
+
+    return 1 if $self->user_is_ci_admin($username);
+
+    if ($collection) {
+        return 1 if $self->user_has_any_action(
+            action   => 'action.ci.admin.%.' . $collection,
+            username => $username
+        );
+    }
+
+    return 0;
+}
+
+sub user_can_view_ci_group {
+    my $self = shift;
+    my ( $username, $collection ) = @_;
+
+    return 1 if $self->user_is_ci_admin($username);
+
+    if ($collection) {
+        return 1 if $self->user_has_any_action(
+            action   => 'action.ci.%.' . $collection . '.%',
+            username => $username
+        );
+    }
+
+    return 0;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

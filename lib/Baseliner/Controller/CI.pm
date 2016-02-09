@@ -135,35 +135,33 @@ sub tree_roles {
 
     my $user = $p{user} or _fail 'user required';
 
-    my $permissions = Baseliner::Model::Permissions->new;
-    my $is_ci_admin = $self->user_is_admin_ci($user);
+    my $permissions = _build_permissions();
 
     my $cnt = 1;
     my @tree;
     for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
         my $role = $_->{role};
         my $name = $_->{name};
-        if (   $is_ci_admin
-            || $permissions->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%' ) )
-        {
-            $role = 'Generic' if $name eq '';
-            push @tree,
-              {
-                _id        => $cnt++,
-                _parent    => undef,
-                _is_leaf   => \0,
-                type       => 'role',
-                mid        => $cnt,
-                item       => $name,
-                class      => $role,
-                classname  => $role,
-                icon       => '/static/images/icons/class.gif',
-                versionid  => 1,
-                ts         => '-',
-                tags       => [],
-                properties => undef,
-              };
-        }
+
+        next unless $permissions->user_can_view_ci_group($user, $name);
+
+        $role = 'Generic' if $name eq '';
+        push @tree,
+          {
+            _id        => $cnt++,
+            _parent    => undef,
+            _is_leaf   => \0,
+            type       => 'role',
+            mid        => $cnt,
+            item       => $name,
+            class      => $role,
+            classname  => $role,
+            icon       => '/static/images/icons/class.gif',
+            versionid  => 1,
+            ts         => '-',
+            tags       => [],
+            properties => undef,
+          };
     }
 
     return @tree;
@@ -179,9 +177,7 @@ sub tree_classes {
 
     my $cnt = substr( _nowstamp(), -6 ) . ( $parent * 1 );
 
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    my $is_ci_admin = $self->user_is_admin_ci($user);
+    my $permissions = $self->_build_permissions;
 
     my @tree;
 
@@ -192,10 +188,8 @@ sub tree_classes {
         my $ci_form    = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
 
-        if ( $is_ci_admin
-            || $permissions->user_has_any_action( username => $user,
-                action => 'action.ci.%.' . $role_name . '.' . $item ) )
-        {
+        next unless $permissions->user_can_view_ci($user, $item);
+
             $cnt++;
             push @tree,
               {
@@ -215,7 +209,6 @@ sub tree_classes {
                 ts              => '-',
                 properties      => '',
               };
-        }
     }
 
     return sort { lc $a->{class} cmp lc $b->{class} } @tree;
@@ -915,7 +908,7 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
-_warn $p;
+
     my $form_data = $p->{form_data};
     _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
     # cleanup
@@ -995,7 +988,7 @@ sub load : Local {
     }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
-        my $permissions = Baseliner::Model::Permissions->new;
+        my $permissions = $self->_build_permissions;
 
         local $Baseliner::CI::use_empty_ci = 1;
         my $obj        = Baseliner::CI->new($mid);
@@ -1003,7 +996,7 @@ sub load : Local {
         my $collection = Util->to_base_class($class);
 
         _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
-          unless $self->user_can_view_ci($c->username, $collection);
+          unless $permissions->user_can_view_ci($c->username, $collection);
 
         my $rec;
 
@@ -1038,9 +1031,12 @@ sub new_ci : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $collection = $p->{collection} || _throw 'Missing parameter collection';
+
+    my $permissions = $self->_build_permissions;
+
     try {
         _fail(_loc('User %1 not authorized to view CI of class %2', $c->username, $collection) )
-            unless $self->user_can_admin_ci($c->username, $collection);
+            unless $permissions->user_can_admin_ci($c->username, $collection);
         my $obj = ci->$collection;
         my $rec = {};
         my $attrib = $obj->attribute_default_values;
@@ -1424,25 +1420,29 @@ sub edit : Local {
 
     my $p = $c->req->params;
 
+    my $mid        = $p->{mid};
+    my $collection = $p->{collection};
+
     local $Baseliner::CI::get_form = 1;
 
-    my $has_permission;
-    if ( my $mid = $p->{mid} ) {
+    my $permissions = $self->_build_permissions;
+    if ($mid) {
         my $doc = mdb->master->find_one( { mid => "$mid" } );
         _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
 
-        my $collection = $doc->{collection};
+        $collection = $doc->{collection};
 
         _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
-          unless $self->user_can_view_ci($c->username, $collection);
-
-        $has_permission = $self->user_can_admin_ci($c->username, $collection);
+          unless $permissions->user_can_view_ci( $c->username, $collection );
     }
     else {
-        $has_permission = 0;
+        _fail( _loc( 'User %1 not authorized to view CI class %2', $c->username, $collection ) )
+          unless $permissions->user_can_view_ci( $c->username, $collection );
     }
 
-    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    my $has_permission_to_save = $permissions->user_can_admin_ci( $c->username, $collection );
+
+    $c->stash->{save} = $has_permission_to_save ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
 }
 
@@ -1581,16 +1581,11 @@ sub grid : Local {
 
     my $collection = $p->{collection};
 
-    my $has_permission;
+    my $permissions = $self->_build_permissions;
 
-    if ( $collection ) {
-        $has_permission = $self->user_can_admin_ci($c->username, $collection);
-    }
-    else {
-        $has_permission = 0;
-    }
+    my $has_permission_to_save = $permissions->user_can_admin_ci($c->username, $collection);
 
-    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{save} = $has_permission_to_save ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-gridtree.js';
 }
 
@@ -1756,52 +1751,14 @@ sub default : Path Args(2) {
 
 sub user_can_search {
     my $self = shift;
-    my ($username) = @_;
 
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    return $permissions->user_has_action( username => $username, action => 'action.search.ci' );
+    return $self->_build_permissions->user_can_search_ci;
 }
 
-sub user_is_admin_ci {
+sub _build_permissions {
     my $self = shift;
-    my ($username) = @_;
 
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    return $permissions->user_has_action( action => 'action.ci.admin', username => $username );
-}
-
-sub user_can_view_ci {
-    my $self = shift;
-    my ( $username, $collection ) = @_;
-
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    return 1 if $self->user_is_admin_ci($username);
-
-    return 1 if $permissions->user_has_any_action(
-        action   => 'action.ci.view.%.' . $collection,
-        username => $username
-    );
-
-    return 0;
-}
-
-sub user_can_admin_ci {
-    my $self = shift;
-    my ( $username, $collection ) = @_;
-
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    return 1 if $self->user_is_admin_ci($username);
-
-    return 1 if $permissions->user_has_any_action(
-        action   => 'action.ci.admin.%.' . $collection,
-        username => $username
-    );
-
-    return 0;
+    return Baseliner::Model::Permissions->new;
 }
 
 no Moose;
