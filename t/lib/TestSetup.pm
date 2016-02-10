@@ -142,7 +142,7 @@ sub create_role {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_role = mdb->seq('id');
+    my $id_role = mdb->seq('role');
     mdb->role->insert(
         {
             id      => "$id_role",
