@@ -506,6 +506,11 @@ subtest 'git: creates rev ci when does not exist' => sub {
 
     my @rev_cis = ci->GitRevision->find->all;
     is @rev_cis, 1;
+
+    ok $rev_cis[0]->{name};
+    ok $rev_cis[0]->{moniker};
+    like $rev_cis[0]->{repo}, qr/GitRepository-\d+/;
+    is $rev_cis[0]->{sha}, $sha;
 };
 
 subtest 'git: does not create rev ci when exists' => sub {

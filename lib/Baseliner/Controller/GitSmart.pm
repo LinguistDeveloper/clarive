@@ -413,18 +413,19 @@ sub _create_or_find_rev {
 
     my $mid;
 
-    my $rev = ci->GitRevision->find_one( { sha => "$sha" } );
+    my $rev = ci->GitRevision->find_one({sha => "$sha"});
     if ($rev) {
         $mid = $rev->{mid};
     }
     else {
-        my $title     = $commit->message;
-        my $commit2 = substr( $sha,             0, 7 );
-        my $msg     = substr( $commit->message, 0, 15 );
+        my $title   = $commit->message;
+        my $commit2 = substr($sha, 0, 7);
+        my $msg     = substr($commit->message, 0, 15);
         master_new 'GitRevision' => {
-            name    => "[$commit2] $title",
+            name    => "[$commit2] $msg",
             moniker => $commit2,
-            data    => { sha => $sha, repo => $repo_id, branch => $ref_short }
+            sha     => $sha,
+            repo    => $repo_id,
           } => sub {
             $mid = shift;
           };
