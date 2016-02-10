@@ -234,6 +234,7 @@ sub tree_objects {
     
     my $class = $p{class};
     my $collection = $p{collection};
+    my $json_filter = $p{filter};
     my %class_coll;
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
@@ -281,6 +282,12 @@ sub tree_objects {
          $limit->{skip} = $p{start};
     }
     my $where = {};
+    if($json_filter){
+        my $filter_js = _decode_json($json_filter);
+        for my $other_filter ( keys %$filter_js ) {
+            $where->{$other_filter} = $filter_js->{$other_filter};
+        }
+    }
     
     if( length $p{query} ) {
         my $filter = {};
@@ -657,7 +664,7 @@ sub store : Local : Does('Ajax') {
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
 
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -668,10 +675,10 @@ sub store : Local : Does('Ajax') {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 

@@ -35,6 +35,7 @@ params:
         //style: 'margin-top: 20px', 
         height: ( meta.height ? parseInt(meta.height) : 200 ),
         value: value, 
+        filter: meta.filter ? meta.filter : '',
         name: meta.id_field 
     });
 	return [
