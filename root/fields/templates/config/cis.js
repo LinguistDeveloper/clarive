@@ -161,7 +161,7 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
-        { xtype:'textfield', name:'show_class', fieldLabel: _('Show class'), value: data.show_class }
+        { xtype:'checkbox', name:'show_class', fieldLabel:_('Show class'), value: data.show_class, checked: data.show_class ? true : false }
     ]);
 
     return ret;
