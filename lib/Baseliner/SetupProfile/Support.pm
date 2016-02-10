@@ -91,36 +91,47 @@ sub setup {
         actions => [
             {
                 action => 'action.home.show_lifecycle',
+                bl     => '*'
             },
             {
                 action => 'action.home.show_menu',
+                bl     => '*'
             },
             {
                 action => 'action.home.view_releases',
+                bl     => '*'
             },
             {
                 action => 'action.job.create',
+                bl     => '*'
             },
             {
                 action => 'action.job.view_monitor',
+                bl     => '*'
             },
             {
                 action => 'action.job.viewall',
+                bl     => '*'
             },
             {
                 action => 'action.job.no_cal',
+                bl     => '*'
             },
             {
                 action => 'action.topics.changeset.jobs',
+                bl     => '*'
             },
             {
                 action => 'action.topics.changeset.create',
+                bl     => '*'
             },
             {
                 action => 'action.topics.changeset.view',
+                bl     => '*'
             },
             {
                 action => 'action.topics.release.view',
+                bl     => '*'
             },
             {
                 action => 'action.git.repository_access',
