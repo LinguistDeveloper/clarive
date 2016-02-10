@@ -997,6 +997,101 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
     cmp_deeply $release_field->{readonly}, \0;
 };
 
+subtest 'get_users: returns users filtering by role' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+            rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'asignada',
+                    },
+                    "key" => "fieldlet.system.users",
+                    name  => 'Asiganada',
+                }
+            }
+        ],);
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic',
+        asignada    => $user->mid
+    );
+
+    my $model = _build_model();
+    my $users = $model->get_users($topic_mid, 'asignada', undef, {});
+
+    is scalar @$users, 1;
+    is $users->[0]->{username}, $user->username;
+};
+
+
+subtest 'get_users: adds username field to the data' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+            rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'asignada',
+                    },
+                    "key" => "fieldlet.system.users",
+                    name  => 'Asiganada',
+                }
+            }
+        ],);
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic',
+        asignada    => $user->mid
+    );
+    my $data = {};
+    my $model = _build_model();
+    my $users = $model->get_users($topic_mid, 'asignada', undef, $data);
+
+    is $data->{"asignada._user_name"}, $user->username;
+};
 done_testing();
 
 sub _setup {
