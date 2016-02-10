@@ -17,7 +17,7 @@
                tabSize: 4,
                electricChars: false,  // allow editor to reindent according to certain chars
                matchBrackets: true,
-            }, Baseliner.editor_defaults ));
+            }, Baseliner.AceEditor ));
             var hlLine = editor.setLineClass(0, "activeline");
             //editor.setSize( '100%', code.getEl().getHeight() );
             editor.setOption('mode', 'perl');

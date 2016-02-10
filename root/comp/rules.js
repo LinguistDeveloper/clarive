@@ -1581,7 +1581,7 @@
                                lineNumbers: true,
                                tabMode: "indent", smartIndent: true,
                                matchBrackets: true
-                            }, Baseliner.editor_defaults )
+                            }, Baseliner.AceEditor )
                         );
                     });
                     win.show();
