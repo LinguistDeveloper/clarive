@@ -26,6 +26,12 @@ params:
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
+    var rows = data[ meta.id_field ];
+    var row_mids;
+    if(rows){
+        row_mids = Ext.isArray(rows) ? rows.map(function(row){ return row.mid }) : rows.mid;
+    }
+
     var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field, tpl_cfg: tpl_cfg });
 
 	var release_box = new Baseliner.TopicBox({
