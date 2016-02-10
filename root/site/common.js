@@ -2668,17 +2668,19 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 if( bg && self.value == v ) anchor.style['backgroundColor'] = bg;
                 anchor.href = '#'; 
                 anchor.onclick = function(){
-                    for( var i=0; i<self.list.length; i++) {
-                        self.list[i].className = '';
+                    if(!(self.readOnly)){
+                        for( var i=0; i<self.list.length; i++) {
+                            self.list[i].className = '';
+                        }
+                        for( var i=0; i<self.anchors.length; i++) {
+                            self.anchors[i].style['backgroundColor'] = '';
+                        }
+                        li.className = 'active';
+                        if( bg ) anchor.style['backgroundColor'] = bg;
+                        self.value = v;
+                        self.$field.value = v;
+                        self.change(v);
                     }
-                    for( var i=0; i<self.anchors.length; i++) {
-                        self.anchors[i].style['backgroundColor'] = '';
-                    }
-                    li.className = 'active'; 
-                    if( bg ) anchor.style['backgroundColor'] = bg;
-                    self.value = v;
-                    self.$field.value = v;
-                    self.change(v);
                     return false;
                 }
                 anchor.innerHTML = v;
