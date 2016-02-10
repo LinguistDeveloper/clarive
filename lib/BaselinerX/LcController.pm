@@ -788,7 +788,7 @@ sub status_list {
     my $username = $params{username} || _fail 'username required';
     my $dir      = $params{dir}      || _fail 'dir required';
     my $status   = $params{status}   || $topic->{category_status}->{id};
-    my %statuses = %{ $params{statuses} || {} } || ci->status->statuses;
+    my %statuses = $params{statuses} && ref $params{statuses} eq 'HASH' ? %{ $params{statuses} } : ci->status->statuses;
 
     my @user_roles;
     if ( Baseliner::Model::Permissions->new->is_root($username) ) {
