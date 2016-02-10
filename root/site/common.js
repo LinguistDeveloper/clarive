@@ -2665,18 +2665,23 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 li.className = self.value == v ? 'active' : '';
                 li.style['marginTop'] = '0px';
                 var anchor = document.createElement('a');
-                if( bg && self.value == v ) anchor.style['backgroundColor'] = bg;
+                if( bg && self.value == v ){
+                    anchor.style['backgroundColor'] = bg;
+                }
                 anchor.href = '#'; 
                 anchor.onclick = function(){
-                    if(!(self.readOnly)){
-                        for( var i=0; i<self.list.length; i++) {
+                    if ( !self.readOnly ){
+                        var i;
+                        for ( i=0; i<self.list.length; i++ ) {
                             self.list[i].className = '';
                         }
-                        for( var i=0; i<self.anchors.length; i++) {
+                        for ( i=0; i<self.anchors.length; i++ ) {
                             self.anchors[i].style['backgroundColor'] = '';
                         }
                         li.className = 'active';
-                        if( bg ) anchor.style['backgroundColor'] = bg;
+                        if ( bg ){
+                            anchor.style['backgroundColor'] = bg;
+                        }
                         self.value = v;
                         self.$field.value = v;
                         self.change(v);
@@ -2701,7 +2706,9 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
         // the main navbar
         var ul = document.createElement('ul');
         ul.className = "nav nav-pills";
-        for( var i=0; i<self.list.length; i++) ul.appendChild( self.list[i] );
+        for( var i=0; i<self.list.length; i++){
+            ul.appendChild( self.list[i] );
+        }
         boot.appendChild( ul );
         
         // the hidden field
