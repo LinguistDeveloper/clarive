@@ -1536,12 +1536,10 @@ Cla.topic_grid = function(params){
     var deferred_count = function(st,r,o){
         var lq = st.reader.jsonData.last_query;
         if( !lq ) return;
-        var query = st.reader.jsonData.query;
-        if (!query) query = "";
         var username = st.reader.jsonData.username;
         if (!username) username = "";
         var tg_id = grid_topics.id;
-        Cla.ajax_json('/topic/grid_count', { lq: lq, query: query, username: username }, function(res){
+        Cla.ajax_json('/topic/grid_count', { lq: lq, query: search_field.currentSearch(), username: username }, function(res){
             if( !Ext.getCmp(tg_id) ) return;  // maybe topic grid is gone by then
             if( st.totalLength != res.count ) {
                 st.totalLength = res.count;

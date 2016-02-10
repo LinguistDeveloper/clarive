@@ -890,6 +890,10 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
         this.store.reload({params:o});
         this.hasSearch = true;
         this.triggers[0].show();
+    },
+
+    currentSearch : function() {
+        return this.getRawValue();
     }
 });
     

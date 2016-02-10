@@ -147,7 +147,7 @@ sub list : Local {
     } elsif( my $id = $p->{id_report_rule} ) {
         $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}};
     } else {
-        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query}, query=>$data->{query}, username=>$p->{username} };
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query}, query=>$p->{query}, username=>$p->{username} };
     }
    $c->forward('View::JSON');
 }
@@ -213,7 +213,6 @@ sub get_items {
             data=>\@rows, 
             totalCount=>$$info{count}, 
             last_query=>$$info{last_query},
-            query=>$$info{query}
         };
         #_log "data  "._dump $data;
 
