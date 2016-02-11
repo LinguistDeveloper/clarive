@@ -177,7 +177,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         {
                             text: name.join(':'),
                             url: node.attributes.url,
-                            icon: node.attributes.icon,
+                            iconCls: 'default_folders',
                             data: Ext.encode( node.attributes.data ),
                             menu: Ext.encode( node.attributes.menu )
                         },

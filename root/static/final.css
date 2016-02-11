@@ -537,11 +537,22 @@ a {
     background-image: none;
 }
 
+ .x-tree-node-expanded .default_folders {
+    background-image:url('/static/images/icons/folder-expanded.png');
+}
+
+ .x-tree-node-collapsed .default_folders {
+    background-image:url('/static/images/icons/folder-collapsed.png');
+}
+
 .x-tree-node-loading .x-tree-node-icon {
     background-image:url('/static/images/loading-fast.gif') !important;
 }
 
-.x-tree-node .x-tree-node-inline-icon {
+.x-tree-node .x-tree-node-inline-icon  {
     background-image: none;
 }
+
+
+
 
