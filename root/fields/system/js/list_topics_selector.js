@@ -79,7 +79,7 @@ params:
             value: data[ meta.id_field ],
             enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
             readOnly:  readonly,
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            hidden: Baseliner.eval_boolean(meta.hidden),
             allowBlank: readonly ? true : meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
         });
         
@@ -96,7 +96,7 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            hidden: Baseliner.eval_boolean(meta.hidden),
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });

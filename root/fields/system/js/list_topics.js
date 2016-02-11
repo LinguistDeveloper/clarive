@@ -98,7 +98,7 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: single_mode,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+			hidden: Baseliner.eval_boolean(meta.hidden),
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });
