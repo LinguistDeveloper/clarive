@@ -228,13 +228,21 @@ sub form_for_ci {
 sub tree_objects {
     my ($self, %p)=@_;
 
-    if($p{order_by}){
-        $p{sort} = $p{order_by};
-    }
-    
-    my $class = $p{class};
-    my $collection = $p{collection};
+    $p{sort} = $p{order_by} if $p{order_by};
+
+    my $class       = $p{class};
+    my $collection  = $p{collection};
     my $json_filter = $p{filter};
+    my $mids        = $p{mids};
+
+    my $dir = $p{dir};
+    if ( $dir && $dir =~ /desc/i ) {
+        $dir = -1;
+    }
+    else {
+        $dir = 1;
+    }
+
     my %class_coll;
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
@@ -256,13 +264,6 @@ sub tree_objects {
     }
     my $opts;
     
-    my $dir = $p{dir};
-    if( $dir && $dir =~ /desc/i){
-        $dir = -1;
-    }else{
-        $dir = 1;
-    }
-
     if ($p{sort}) {
         my $sort = $p{sort};
         if ($sort eq 'mid'){
@@ -306,7 +307,6 @@ sub tree_objects {
     }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
-    my $mids = $p{mids};
     # search for variables in mids 
     if( defined $p{mids} && @$mids ) {
         my @where_mids;
@@ -368,7 +368,8 @@ sub tree_objects {
             versionid         => $row->{versionid},
         }
     } $rs->all;
-    ( $total, @tree );
+
+    return ( $total, @tree );
 }
 
 sub tree_object_depend {
