@@ -1,6 +1,7 @@
 ---
 title: Include Into
-icon:detail.png
+index: 400
+icon: detail.png
 ---
 * This fieldlet shows a list of topics that contain the current topic.
 * The list is useful to allow jumping from one topic to the next. 

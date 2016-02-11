@@ -1,5 +1,6 @@
 ---
 title: Conceptos de regla
+index: 200
 icon: rule
 ---
 * Una vez que las diferentes necesidades se registran y se gestionan a tavés de los distintos estados que componen su ciclo de vida, estos deben de ser desplegados y entregados como operación final del ciclo. 

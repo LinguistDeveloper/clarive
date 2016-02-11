@@ -1,5 +1,6 @@
 ---
 title: Tabla de topicos
+index: 5000
 icon: topic
 ---
 * La tabla de tópicos es la lista de tópicos que el usuario puede visualizar. El concepto está basado como si fuera una bandeja de entrada de e-mail.

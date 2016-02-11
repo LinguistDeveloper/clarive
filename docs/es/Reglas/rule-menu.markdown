@@ -1,5 +1,6 @@
 ---
 title: Menu de reglas
+index: 200
 icon: rule
 ---
 * La ruta para acceder a las reglas es a través del menú de administración. 

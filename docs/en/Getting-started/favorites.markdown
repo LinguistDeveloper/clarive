@@ -1,6 +1,6 @@
 ---
 title: Favorites
-index: 30
+index: 1000
 icon: favorite
 ---
 

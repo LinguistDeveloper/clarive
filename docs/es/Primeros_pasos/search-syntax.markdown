@@ -1,6 +1,6 @@
 ---
 title: Busquedas avanzadas
-index: 2000
+index: 1000
 icon: search-small
 ---
 * Existen dos vias para buscar elementos dentro de la herramienta Clarive. La primera es a través del búscador general, situado en la parte superior derecha el cual sirve para buscar (Pases)[ ], Tópicos o CIs. 

@@ -1,5 +1,6 @@
 ---
 title: Setup Your Preferences
+index: 3000
 icon: prefs
 ---
 * Your user preferences page contains the default 
