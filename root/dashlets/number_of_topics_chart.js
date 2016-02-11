@@ -13,7 +13,17 @@
     var numberfield_group = params.data.numberfield_group || '';
     var group_by = params.data.group_by || 'category.name';
     var sort_by_labels = params.data.sort_by_labels || 'off';
+    var symbol = params.data.symbol || '';
+    var number_type = params.data.number_type || 'number';
     var graph_title;
+    var x_axis_label;
+    if (number_type === 'currency'){
+      x_axis_label = _('Currency');
+    }else if (number_type === 'percentage'){
+      x_axis_label = _('Percentage');
+    }else{
+      x_axis_label = _('Topics');
+    }
 
     Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, numberfield_group: numberfield_group, result_type: result_type, _ignore_conn_errors: true, sort_by_labels: sort_by_labels  }, function(res){
               c3.generate({
@@ -34,7 +44,7 @@
                   },
                   y: {
                     label: {
-                      text: '# ' + _('Topics'),
+                      text: '# ' + x_axis_label,
                       position: 'outer-middle',
                       format: function (value, ratio, id) {
                           return d3.format('')(value);
@@ -64,12 +74,23 @@
 
                            text += "<tr class='" + $$.CLASS.tooltipName + "-" + d[i].id + "'>";
                            text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>&nbsp;" + name + "</td>";
-                           if ( isNaN(d[i].ratio) ) {
-                            text += "<td class='value'>&nbsp;" + d[i].value + "</td>";
-                           } else {
-                            text += "<td class='value'>&nbsp;" + d[i].value + ' (' + Math.round(d[i].ratio*100) + "%)</td>";
+                           text += "<td class='value'>&nbsp;"
+                           if(number_type === 'currency'){
+                              text += new NumberFormat(d[i].value ).toFormatted();
+                              if(!(symbol === '')){
+                                text += " " + symbol;
+                              }
+                              text += "</td>";
+                           }else if (number_type === 'percentage'){
+                              text += d[i].value + "%</td>"
+                           }else{
+                              text += d[i].value + "</td>";
                            }
-                           text += "</tr>";
+                           var currencyValue = d[i].value
+                           if ( !(isNaN(d[i].ratio)) ) {
+                               text += ' (' + Math.round(d[i].ratio*100) + "%)";
+                           }
+                           text += "</td></tr>";
                        }
                        return text + "</table>";
                    }
@@ -77,17 +98,38 @@
                 pie: {
                     label: {
                         format: function (value, ratio, id) {
-                          return value + ' (' + Math.round(ratio*100) + '%)';
+                          var adaptedValue = value;
+                          if (number_type === 'percentage'){
+                                adaptedValue += " %";
+                          }
+                          if(number_type === 'currency'){
+                              adaptedValue = new NumberFormat(value).toFormatted();
+                              if(!(symbol === '')){
+                                adaptedValue += " " + symbol;
+                              }
+                          }
+                          return adaptedValue + ' (' + Math.round(ratio*100) + '%)';
                         }
                     }
                 },
                 donut: {
                     label: {
                         format: function (value, ratio, id) {
-                          return value + ' (' + Math.round(ratio*100) + '%)';
+                          var adaptedValue = value;
+                          if (number_type === 'percentage'){
+                                adaptedValue += " %";
+                          }
+                          if(number_type === 'currency'){
+                              adaptedValue = new NumberFormat(value).toFormatted();
+                              if(!(symbol === '')){
+                                adaptedValue += " " + symbol;
+                              }
+                          }
+                          return adaptedValue + ' (' + Math.round(ratio*100) + '%)';
                         }
                     }
                 },
+
 
             });
     });

@@ -3288,6 +3288,33 @@ msgstr "Categorías"
 msgid "Topics"
 msgstr "Tópicos"
 
+msgid "Currency"
+msgstr "Moneda"
+
+msgid "Percentage"
+msgstr "Porcentaje"
+
+msgid "Average"
+msgstr "Media"
+
+msgid "Sum Total"
+msgstr "Suma Total"
+
+msgid "Sort by labels"
+msgstr "Ordenar por leyenda"
+
+msgid "Type of number"
+msgstr "Tipo de valor numérico"
+
+msgid "Currency symbol to be shown"
+msgstr "Símbolo monetario a mostrar"
+
+msgid "Grouper number field"
+msgstr "Campo numérico agrupador"
+
+msgid "Agregate grouper field by"
+msgstr "Agregar el campo agrupador por"
+
 msgid "Label added"
 msgstr "Etiqueta añadida"
 

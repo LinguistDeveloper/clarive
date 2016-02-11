@@ -33,8 +33,15 @@
                     ['modified_by']
                   ] 
                 }),
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Number field to display'), name: 'numberfield_group', value: data.numberfield_group || ''},
-                new Baseliner.ComboDouble({ fieldLabel: _('Agregate display field by'), name:'result_type', value: data.result_type || 'count', data: [
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('Grouper number field'), name: 'numberfield_group', value: data.numberfield_group || ''},
+
+                new Baseliner.ComboDouble({ fieldLabel: _('Type of number'), name:'number_type', value: data.number_type || 'number', data: [
+                    ['number', _('Number')],
+                    ['currency', _('Currency')],
+                    ['percentage', _('Percentage')]
+                  ]
+                }),
+                new Baseliner.ComboDouble({ fieldLabel: _('Agregate grouper field by'), name:'result_type', value: data.result_type || 'count', data: [
                     ['count', _('Count')],
                     ['avg', _('Average')],
                     ['sum', _('Sum Total')],
@@ -55,7 +62,8 @@
                     ['bar', _('Bar')]
                   ]
                 }),
-                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5}
+                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5},
+                { xtype:'textfield', anchor:'100%', fieldLabel: _('Currency symbol to be shown'), name: 'symbol', value: data.symbol || ''}
               ]
             }
           ]
