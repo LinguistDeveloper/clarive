@@ -17,10 +17,11 @@
     var number_type = params.data.number_type || 'number';
     var graph_title;
     var x_axis_label;
+
     if (number_type === 'currency'){
-      x_axis_label = _('Currency');
+      x_axis_label = numberfield_group + ' ' + symbol + ' ('+ result_type +')';
     }else if (number_type === 'percentage'){
-      x_axis_label = _('Percentage');
+      x_axis_label = numberfield_group + '% ('+ result_type +')';
     }else{
       x_axis_label = _('Topics');
     }
@@ -77,16 +78,12 @@
                            text += "<td class='value'>&nbsp;"
                            if(number_type === 'currency'){
                               text += new NumberFormat(d[i].value ).toFormatted();
-                              if(!(symbol === '')){
-                                text += " " + symbol;
-                              }
-                              text += "</td>";
-                           }else if (number_type === 'percentage'){
-                              text += d[i].value + "%</td>"
+                              if(!(symbol === '')){text += " " + symbol;}
                            }else{
-                              text += d[i].value + "</td>";
+                              text += d[i].value;
+                              if (number_type === 'percentage'){text += "%";}
                            }
-                           var currencyValue = d[i].value
+                           text += "</td>";
                            if ( !(isNaN(d[i].ratio)) ) {
                                text += ' (' + Math.round(d[i].ratio*100) + "%)";
                            }
@@ -101,12 +98,9 @@
                           var adaptedValue = value;
                           if (number_type === 'percentage'){
                                 adaptedValue += " %";
-                          }
-                          if(number_type === 'currency'){
+                          }else if(number_type === 'currency'){
                               adaptedValue = new NumberFormat(value).toFormatted();
-                              if(!(symbol === '')){
-                                adaptedValue += " " + symbol;
-                              }
+                              if(!(symbol === '')){adaptedValue += " " + symbol;}
                           }
                           return adaptedValue + ' (' + Math.round(ratio*100) + '%)';
                         }
@@ -118,12 +112,9 @@
                           var adaptedValue = value;
                           if (number_type === 'percentage'){
                                 adaptedValue += " %";
-                          }
-                          if(number_type === 'currency'){
+                          }else if(number_type === 'currency'){
                               adaptedValue = new NumberFormat(value).toFormatted();
-                              if(!(symbol === '')){
-                                adaptedValue += " " + symbol;
-                              }
+                              if(!(symbol === '')){adaptedValue += " " + symbol;}
                           }
                           return adaptedValue + ' (' + Math.round(ratio*100) + '%)';
                         }

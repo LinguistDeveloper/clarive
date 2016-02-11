@@ -3288,12 +3288,6 @@ msgstr "Categorías"
 msgid "Topics"
 msgstr "Tópicos"
 
-msgid "Currency"
-msgstr "Moneda"
-
-msgid "Percentage"
-msgstr "Porcentaje"
-
 msgid "Average"
 msgstr "Media"
 
