@@ -1,7 +1,5 @@
 (function(params){
     var data = params.data || {};
-
-
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
 
@@ -64,7 +62,7 @@
                 }),
                 { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5},
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('Currency symbol to be shown'), name: 'symbol', value: data.symbol || ''},
-                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Max characters in legend (0 = no limit)'), name: 'max_legend', value: data.max_legend || 0},
+                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Max characters in legend (0 = no limit)'), name: 'max_length_legend', value: data.max_length_legend || 0},
 
               ]
             }
