@@ -272,8 +272,8 @@ subtest 'tree_project_releases: build releases tree' => sub {
                         "fieldletType" => "fieldlet.system.projects",
                         "id_field"     => "project",
                         "name_field"   => "project",
-                        meta_type => 'project',
-                        collection => 'project',
+                        meta_type      => 'project',
+                        collection     => 'project',
                     },
                     "key" => "fieldlet.system.projects",
                 }
@@ -292,7 +292,7 @@ subtest 'tree_project_releases: build releases tree' => sub {
             }
         ]
     );
-    my $user = TestSetup->create_user(name => 'developer', id_role => $id_role, project => $project);
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category(
         name       => 'Release',
@@ -323,7 +323,8 @@ subtest 'tree_project_releases: build releases tree' => sub {
 
     $controller->tree_project_releases($c);
 
-    cmp_deeply $c->stash, {
+    cmp_deeply $c->stash,
+      {
         'json' => [
             {
                 'icon' => '/static/images/icons/release.png',
@@ -370,6 +371,293 @@ subtest 'tree_project_releases: build releases tree' => sub {
 
 };
 
+subtest 'status_list: no statuses when no promotion' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Changeset',
+        id_rule    => $id_rule,
+        id_status  => [ $status_new->mid, $status_finished->mid ],
+        is_release => '1',
+        workflow   => [
+            {
+                id_role        => $id_role,
+                id_status_from => $status_new->mid,
+                id_status_to   => $status_in_progress->mid,
+                job_type       => undef
+            },
+            {
+                id_role        => $id_role,
+                id_status_from => $status_in_progress->mid,
+                id_status_to   => $status_finished->mid,
+                job_type       => 'promote'
+            }
+        ]
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_new
+    );
+
+    my $controller = _build_controller();
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    my @statuses = $controller->status_list( dir => 'promote', topic => $topic, username => 'developer' );
+
+    is_deeply \@statuses, [];
+};
+
+subtest 'status_list: returns correct statuses' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'F' );
+    my $status_closed      = TestUtils->create_ci( 'status', name => 'Closed',      type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $id_role2 = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Changeset',
+        id_rule    => $id_rule,
+        id_status  => [ $status_new->mid, $status_finished->mid ],
+        is_release => '1',
+        workflow   => [
+            {
+                id_role        => $id_role,
+                id_status_from => $status_new->mid,
+                id_status_to   => $status_in_progress->mid,
+                job_type       => undef
+            },
+            {
+                id_role        => $id_role,
+                id_status_from => $status_in_progress->mid,
+                id_status_to   => $status_finished->mid,
+                job_type       => 'promote'
+            },
+            {
+                id_role        => $id_role2,
+                id_status_from => $status_finished->mid,
+                id_status_to   => $status_closed->mid,
+                job_type       => 'promote'
+            }
+        ]
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_in_progress
+    );
+
+    my $controller = _build_controller();
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    my @statuses = $controller->status_list( dir => 'promote', topic => $topic, username => 'developer' );
+
+    is @statuses, 1;
+    is $statuses[0]->{mid}, $status_finished->mid;
+};
+
+subtest 'status_list: use statuses passed' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'F' );
+    my $status_closed      = TestUtils->create_ci( 'status', name => 'Closed',      type => 'F' );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $id_role2 = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Changeset',
+        id_rule    => $id_rule,
+        id_status  => [ $status_new->mid, $status_finished->mid ],
+        is_release => '1',
+        workflow   => [
+            {
+                id_role        => $id_role,
+                id_status_from => $status_new->mid,
+                id_status_to   => $status_in_progress->mid,
+                job_type       => undef
+            },
+            {
+                id_role        => $id_role,
+                id_status_from => $status_in_progress->mid,
+                id_status_to   => $status_finished->mid,
+                job_type       => 'promote'
+            },
+            {
+                id_role        => $id_role2,
+                id_status_from => $status_finished->mid,
+                id_status_to   => $status_closed->mid,
+                job_type       => 'promote'
+            }
+        ]
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+    );
+
+    my $controller = _build_controller();
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    my @statuses = $controller->status_list(
+        dir      => 'promote',
+        topic    => $topic,
+        username => 'developer',
+        status   => $status_in_progress->mid,
+        statuses => {
+            $status_in_progress->mid => {%$status_in_progress},
+            $status_finished->mid    => {%$status_finished},
+        }
+    );
+
+    is @statuses, 1;
+    is $statuses[0]->{mid}, $status_finished->mid;
+};
+
 done_testing;
 
 sub _build_controller {
@@ -378,9 +666,9 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Events', 'BaselinerX::Type::Fieldlet',
-          'Baseliner::Model::Topic',
-          'BaselinerX::Fieldlets'
+        'BaselinerX::Type::Event', 'BaselinerX::CI',
+        'BaselinerX::Events',      'BaselinerX::Type::Fieldlet',
+        'Baseliner::Model::Topic', 'BaselinerX::Fieldlets'
     );
 
     TestUtils->cleanup_cis;

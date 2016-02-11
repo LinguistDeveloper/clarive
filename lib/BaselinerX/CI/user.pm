@@ -1,6 +1,7 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Permissions;
 use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
@@ -170,7 +171,7 @@ method has_action( $action ) {
 
 method roles( $username=undef ) {
     return grep { defined } map { $$_{id} } 
-        Baseliner->model('Permissions')->user_roles( ref $self ? $self->username : $username );
+    Baseliner::Model::Permissions->new->user_roles( ref $self ? $self->username : $username );
 }
 
 method save_dashlet_config ( :$username=undef, :$data, :$id_dashlet) {

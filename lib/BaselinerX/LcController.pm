@@ -1,13 +1,15 @@
 package BaselinerX::LcController;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
-use Baseliner::Sugar;
+BEGIN { extends 'Catalyst::Controller' }
+
 use Try::Tiny;
 use experimental 'autoderef', 'smartmatch';
 require Girl;
-
-BEGIN { extends 'Catalyst::Controller' };
+use Baseliner::Model::Topic;
+use Baseliner::Model::Permissions;
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Utils;
+use Baseliner::Sugar;
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
@@ -779,49 +781,50 @@ sub changeset : Local {
 }
 
 sub status_list {
-    my ( $self, %p ) = @_;
-    my ($dir, $topic, $username, $status, $all_statuses) = @p{ qw/dir topic username status statuses/ };
+    my $self = shift;
+    my (%params) = @_;
+
+    my $topic    = $params{topic}    || _fail 'topic required';
+    my $username = $params{username} || _fail 'username required';
+    my $dir      = $params{dir}      || _fail 'dir required';
+    my $status   = $params{status}   || $topic->{category_status}->{id};
+    my %statuses = $params{statuses} && ref $params{statuses} eq 'HASH' ? %{ $params{statuses} } : ci->status->statuses;
+
+    my @user_roles;
+    if ( Baseliner::Model::Permissions->new->is_root($username) ) {
+        @user_roles = map { $_->{id} } mdb->role->find->fields({_id => 0, id => 1})->all;
+    }
+    else {
+        @user_roles = ci->user->roles($username);
+    }
+
+    my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
+
+    my $category = mdb->category->find_one( { id => '' . $topic->{category}->{id} }, { workflow => 1 } );
+    _fail _loc( 'Category %1 not found for topic %2', $topic->{category}->{id}, $topic->{mid} ) unless $category;
+
+    my @workflow = _array $category->{workflow};
+
     my %seen;
 
-    my %statuses;
-    if ( ref $all_statuses ) {
-        %statuses = %$all_statuses;
-    } else {
-        %statuses =  ci->status->statuses;
-    }
-    $status //= $topic->{category_status}{id};
-    my @user_roles;
-    if ( model->Permissions->is_root($username) ) {
-        @user_roles = map {$_->{id}} mdb->role->find({ })->all;
-    } else {
-        @user_roles = ci->user->roles( $username );
-    }
-    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
-    my $cat = mdb->category->find_one({ id=>''.$topic->{category}{id} },{ workflow=>1 });
-    
-    _fail _loc( 'Category %1 not found for topic %2', $topic->{category}{id}, $topic->{mid} ) unless $cat;
+    my @available_statuses;
+    foreach my $workflow (@workflow) {
+        next unless $workflow->{job_type} && $workflow->{job_type} eq $dir;
 
-    return sort { $$a{seq} <=> $$b{seq} }
-        map { 
-            my $st = $statuses{ $$_{id_status_to} };
-            $st;
-        }
-        grep {
-           my $k = join',', ( map{ $_ // '' } $$_{id_status_from},$$_{id_status_to} );
-           my $flag = exists $seen{$k};
-           $seen{$k} = 1;
-           !$flag;
-        } 
-        grep {
-           $$_{id_role} ~~ @user_roles
-           && $$_{id_status_to} ~~ @user_workflow
-           && $$_{id_status_from} == $status
-        } 
-        grep {
-           ( $$_{job_type} // '' ) eq $dir  # static,promote,demote
-        }
-        _array( $$cat{workflow} );
-};
+        next unless grep { $workflow->{id_role} eq $_ } @user_roles;
+
+        next unless $workflow->{id_status_from} eq $status;
+
+        next unless grep { $workflow->{id_status_to} eq $_ } @user_workflow;
+
+        my $transition = join ',', ( map { $_ // '' } $workflow->{id_status_from}, $workflow->{id_status_to} );
+        next if $seen{$transition}++;
+
+        push @available_statuses, $statuses{ $workflow->{id_status_to} };
+    }
+
+    return sort { $a->{seq} <=> $b->{seq} } @available_statuses;
+}
 
 sub promotes_and_demotes {
     my ($self, %p ) = @_; 
