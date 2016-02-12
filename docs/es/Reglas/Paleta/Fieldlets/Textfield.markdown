@@ -42,3 +42,4 @@ icon: field
 <br />
 ###  Límite de caracteres
 * Permite establecer un limite de caracteres.
+* Por defecto, este limite son 255 caracteres. En caso de que se quede en blanco, también se limitará a 255.

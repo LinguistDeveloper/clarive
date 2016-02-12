@@ -20,6 +20,9 @@ icon: chart_pie
 ### Frecuencia de autorefresco
 * Establece el intervalo de tiempo el cual el elemento se autorrefrescará.
 
+<br />
+### Selecciona o teclea el campo de agrupación
+* Selecciona el campo por el que se agruparán los datos
 
 <br />
 ### El gráfico se mostrará como...
@@ -34,10 +37,6 @@ icon: chart_pie
 <br />
 ### Minimo % para mostrar serie en el grupo 'Otro'
 * Establece el valor mínimo para que una categoría que no llegue a un porcentaje significativo se muestre en el grupo 'Otro' del gráfico.
-
-<br />
-### Selecciona o teclea el campo de agrupación
-* Selecciona de que manera agrupar las categorías. Puede ser por nombre, status, el usuario que ha creado el tópico o el último usuario que lo ha modificado.
 
 <br />
 ### Seleccionar tópicos en estados

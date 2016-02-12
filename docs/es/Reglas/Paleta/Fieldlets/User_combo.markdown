@@ -47,10 +47,5 @@ icon: combo_box
 
 <br />
 ### Filtro avanzado JSON
-Permite añadir un filtro avanzado JSON
-
-            
-        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
-
-
-&nbsp;&nbsp;• Donde id es el [MID](Conceptos/mid) de la categoría.
+* Permite añadir un filtro adicional que permite mostrar solo los usuarios de determinados roles.
+* Los roles han de estar separados por ;. Solo se mostrarán los usuarios que tengan todos los roles indicados.
