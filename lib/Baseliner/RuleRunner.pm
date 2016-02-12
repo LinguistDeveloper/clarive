@@ -186,6 +186,21 @@ sub run_dsl {
     return { output => $output };
 }
 
+sub dsl_build_and_test {
+    my ($self,$stmts, %p )=@_;
+
+    my $rules_model = Baseliner::Model::Rules->new;
+
+    my $dsl = $rules_model->dsl_build( $stmts, id_rule=>$p{id_rule}, %p ); 
+
+    my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
+    $rule->compile;
+
+    die $rule->errors if $rule->errors;
+
+    return $dsl;
+}
+
 sub dsl_run {
     my ( $self, %p ) = @_;
     my $id_rule = $p{id_rule};

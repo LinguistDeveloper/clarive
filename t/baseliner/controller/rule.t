@@ -413,6 +413,105 @@ subtest 'webservice: returns result' => sub {
     is_deeply $stash->{ws_params}, { username => 'user' };
 };
 
+subtest 'stmts_save: saves statements' => sub {
+    _setup();
+
+    my $id_rule = _create_rule(
+        rule_active => 1,
+        rule_type => 'independent',
+        rule_name => 'Rule',
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => {
+            params => {
+                id_rule           => $id_rule,
+                ignore_dsl_errors => 0,
+                stmts             => JSON::encode_json(
+                    [
+                        {
+                            "attributes" => {
+                                "disabled" => 0,
+                                "active"   => 1,
+                                "key"      => "statement.step",
+                                "text"     => "CHECK",
+                                "expanded" => 1,
+                                "leaf"     => \0,
+                            },
+                            "children" => []
+                        },
+                    ]
+                )
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->stmts_save($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'detected_errors' => '',
+            'actual_ts'       => ignore(),
+            'old_ts'          => ignore(),
+            'msg'             => 'Rule statements saved ok',
+            'success'         => \1,
+            'username'        => 'user'
+        }
+      };
+};
+
+subtest 'stmts_save: returns error when cannot compile dsl' => sub {
+    _setup();
+
+    my $id_rule = _create_rule(
+        rule_active => 1,
+        rule_type => 'independent',
+        rule_name => 'Rule',
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => {
+            params => {
+                id_rule           => $id_rule,
+                ignore_dsl_errors => 0,
+                stmts             => JSON::encode_json(
+                    [
+                        {
+                            "attributes" => {
+                                "disabled" => 0,
+                                "active"   => 1,
+                                "key"      => "statement.code",
+                                "text"     => "abc",
+                                "expanded" => 1,
+                                "leaf"     => \0,
+                            },
+                            "children" => []
+                        },
+                    ]
+                )
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->stmts_save($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'                => re(qr/Error testing DSL build: /),
+            'success'            => \0,
+            'error_checking_dsl' => 0
+        }
+      };
+};
+
 done_testing;
 
 sub _setup {

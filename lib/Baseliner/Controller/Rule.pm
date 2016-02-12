@@ -535,8 +535,11 @@ sub palette : Local {
 
 sub stmts_save : Local {
     my ($self,$c)=@_;
+
     my $p = $c->req->params;
+
     $p->{username} = $c->username;
+
     my $error_checking_dsl = 0;
     try {
         my ($detected_errors,$returned_ts);
@@ -582,9 +585,9 @@ sub local_stmts_save {
     my $ts = mdb->ts;
     #_debug $stmts;
     # check if DSL is buildable
+    my $rule_runner = Baseliner::RuleRunner->new;
     my $detected_errors = try { 
-        use Baseliner::Model::Rules;
-        my $dsl = Baseliner::Model::Rules->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
+        my $dsl = $rule_runner->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
         _debug "Caching rule $id_rule for further use";
         mdb->grid->remove({id_rule=> "$id_rule"});
         mdb->grid_insert( $dsl ,id_rule => $id_rule );
