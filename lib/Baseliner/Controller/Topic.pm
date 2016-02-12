@@ -1544,35 +1544,69 @@ sub upload : Local {
 
     my $filename    = $p->{qqfile};
     my $name_filter = $p->{extension};
-
-    my ($extension) =  $filename =~ /\.(\S+)$/;
+    my $match = 0;
+    my $status;
+    my $match;
+    my $message ;
+    my ($extension) = $filename =~ /\.(\S+)$/;
     $extension //= '';
 
-    my @allowed_extensions = _array $name_filter;
+    $extension =  lc($extension)   if ($extension);
 
-    if (!grep { $extension eq $_ } @allowed_extensions) {
-        $c->stash->{ json } = { success => \0, msg => _loc("This type of file is not allowed: %1", $extension) };    
+    if ($name_filter){
+
+        $name_filter =lc($name_filter); 
+
+        my @split_filter = split /,|\s+/, $name_filter;
+        @split_filter = grep { $_ ne ''} @split_filter;
+        @split_filter = map { $_ =~ s/^\.//; $_} @split_filter;
+
+        $match =grep { $_ eq $extension} @split_filter;
+
     }
-    else {
-        my $f;   
+    $match = 1 if ( !$name_filter );
 
-        if ( $c->req->body eq '') {
+    if ($match) {
+
+        my $f;
+
+        if ( $c->req->body eq '' ) {
             my $x = $c->req->upload('qqfile');
-            $f =  _file( $x->tempname );
-        } else {
-            $f =  _file( ''. $c->req->body );
+            $f = _file( $x->tempname );
+        }
+        else {
+            $f = _file( '' . $c->req->body );
         }
 
         my %response = Baseliner::Model::Topic->new->upload( f => $f, p => $p, username => $c->username );
-        if ($response{status} ne '200') {
-            $c->stash->{ json } = { success => \0, msg => _loc($response{msg}) };
-        } else {
-            $c->stash->{ json } = { success => \1, msg => _loc($response{msg}) };
+        if ( $response{status} ne '200' ) {
+             $status = \0;
+             $message = _loc( $response{msg});
         }
-    }
+        else {
+            $status = \1;
+            $message = _loc( $response{msg});
+        }
 
-    $c->forward( 'View::JSON' );
+    }
+    else {
+        if (!$extension) {
+
+            $status = \0;
+            $message = _loc( "The file you want to upload do not have extension");
+        }
+        else {
+
+            $status = \0;
+            $message = _loc( "This type of file is not allowed: %1 ", $extension )
+        };
+    }
+    
+    $c->stash->{json} = {success =>  $status, msg => $message};
+
+    $c->forward('View::JSON');
 }
+
 
 sub file : Local {
     my ( $self, $c, $action ) = @_;

@@ -784,6 +784,129 @@ subtest 'upload: fails to upload not allowed extension' => sub {
     cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: jpg/) }};
 };
 
+
+subtest 'upload: file without extension is not  allowed' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => 'sql,txt,JPG,PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename'}, body => "$tempdir/filename"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/The file you want to upload do not have extension/) }};
+};
+
+subtest 'upload: accepts extension list with spaces' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.jpg");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => '.sql txt .jpg, TXT', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+ #dump mdb->master_seq->find_one({_id=>"mid-asset"})->{seq};
+    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/)}};
+};
+
+subtest 'upload: accepts extension list with dots' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.jpg");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => '.sql,.txt,.JPG,.PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+};
+
+subtest 'upload: correctly checks double extensions' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.tar.gz', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.tar.gz");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => 'txt .jpg .tar.gz tgz .foo.bar.baz', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.tar.gz'}, body => "$tempdir/filename.tar.gz"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.tar.gz/) }};
+};
+
+subtest 'upload: correctly checks double extensions the the file have one extension' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.tar', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.tar");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => 'txt .jpg .tar.gz tgz .foo.bar.baz', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.tar'}, body => "$tempdir/filename.tar"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: tar/) }};
+};
+
+subtest 'upload: does not check extension when none specified' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+
+    my $tempdir = tempdir();
+    TestUtils->write_file('content', "$tempdir/filename.jpg");
+
+    my $c = _build_c(username => 'user', req => {params => {extension => '', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+
+    my $controller = _build_controller();
+
+    $controller->upload($c);
+
+    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+};
+
+
+
 subtest 'list_users: doesnt fail if role is not found and returns 0' => sub {
     my $controller = _build_controller();
     my $c = _build_c( req => { params => { 
