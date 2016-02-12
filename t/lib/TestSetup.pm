@@ -88,7 +88,7 @@ sub create_category {
     my $id_status = delete $params{id_status} || ci->status->new( name => 'New', type => 'I' )->save;
     my $id_rule = delete $params{id_rule};
 
-    my $id_cat = mdb->seq('id');
+    my $id_cat = mdb->seq('category');
     mdb->category->insert(
         {
             id       => "$id_cat",
