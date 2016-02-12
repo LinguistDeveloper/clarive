@@ -59,6 +59,7 @@ sub create_rule {
     mdb->rule->insert(
         {
             id          => "$id_rule",
+            ts          => '2016-01-01 00:00:00',
             rule_active => 1,
             rule_name   => 'Rule',
             rule_seq    => $seq_rule,

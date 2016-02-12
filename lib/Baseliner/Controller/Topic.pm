@@ -297,7 +297,6 @@ sub related : Local {
     my $p = $c->request->parameters;
     my @topics = ();
     my $cnt = 0;
-    
     my $where = {};
     if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
         my $qry = delete $p->{query};  # rgo: usually SuperBox will send "mid1 mid2 mid3 etc" with spaces
@@ -345,7 +344,7 @@ sub related : Local {
     my @result_topics = ();
 
     ($cnt, @result_topics) = Baseliner::Model::Topic->new->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
-            fields=>{ _txt=>0 });
+            fields=>{ _txt=>0 }, order_by => $p->{sort_field}, sort_by =>$p->{dir});
             # fields=>{ category=>1, mid=>1, title=>1, });
     @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};

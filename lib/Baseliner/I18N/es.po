@@ -8552,3 +8552,9 @@ msgstr "Error: El rol ya existe"
 
 msgid "'Preformatted Text'"
 msgstr "Texto con Preformato"
+
+msgid "Sort By"
+msgstr "Ordenar por"
+
+msgid "Sort Order"
+msgstr "Forma de ordenar"

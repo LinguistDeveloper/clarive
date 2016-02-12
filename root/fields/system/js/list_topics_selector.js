@@ -24,6 +24,7 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var form = params.form.getForm();
+    // console.log(data);
 
     var topics = new Array();
     var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
@@ -41,7 +42,9 @@ params:
     var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
-
+    if (meta.dir == 'ASC') 
+        {order_sort =1} 
+    else {order_sort = -1}
     var topic_box;
     var topic_box_store = new Baseliner.store.Topics({
         baseParams: { 
@@ -49,7 +52,9 @@ params:
             topic_child_data: true, 
             mid: data ? data.topic_mid : '', 
             show_release: 0, 
-            filter: meta.filter ? meta.filter : ''
+            filter: meta.filter ? meta.filter : '',
+            sort_field: meta.sort,
+            dir: order_sort,
         },
         display_field: display_field,
         tpl_cfg: tpl_cfg
@@ -100,7 +105,7 @@ params:
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });
-        
+
         if( meta.copy_fields ) {
             topic_box.on( 'additem', function(sb,val,rec){
                 if( topic_box.getValue() == topics ) return;

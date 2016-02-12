@@ -22,7 +22,13 @@
         { xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field },
         { xtype:'textfield', name:'filter_field', fieldLabel: _('Filter field'), value: data.filter_field },
     	{ xtype:'textfield', name:'filter_data', fieldLabel: _('Filter data'), value: data.filter_data },
-        combo_datatable
+        combo_datatable,
+             { xtype:'textfield', fieldLabel: _('Sort By'), name: 'sort', value:data.sort},
+        new Baseliner.ComboSingle({ forceSelection: true, allowBlank: false, fieldLabel: _('Sort Order'), editable: false, name: 'dir', value: data.dir || '', data: [
+                    [_('DESC')],
+                    [_('ASC')]
+                  ] 
+        })
     ]);
     return ret;
 })
