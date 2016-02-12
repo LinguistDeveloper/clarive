@@ -7,6 +7,7 @@ use Try::Tiny;
 use Time::HiRes qw(time);
 use v5.10;
 use BaselinerX::CI::variable;
+use Baseliner::RuleRunner;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::CompiledRule;
 use Baseliner::Model::Rules;
@@ -823,8 +824,9 @@ sub run_rule : Local {
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule} // _fail('Missing id_rule');
     my $stash = $p->{stash};
-    
-    my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+    my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash );
 
     $c->stash->{json} = { stash=>$stash, ret=>$ret_rule };
     $c->forward("View::JSON");
@@ -840,31 +842,24 @@ sub dsl_try : Local {
 
     my $success = \1;
     my $msg     = 'ok';
-    my $output  = '';
 
-    my $default_vars = BaselinerX::CI::variable->default_hash;
-    foreach my $default_var ( keys %$default_vars ) {
-        $stash->{$default_var} = $default_vars->{$default_var}
-          unless exists $stash->{$default_var};
+    local $Baseliner::no_log_color = 1;
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+
+    my $ret_rule = try {
+        $rule_runner->run_dsl( dsl => $dsl, stash => $stash );
     }
-
-    try {
-        my $rule = Baseliner::CompiledRule->new( dsl => $dsl );
-        $rule->compile;
-
-        local $Baseliner::no_log_color = 1;
-        ($output) =
-          Capture::Tiny::tee_merged( sub { $rule->run( stash => $stash ) } );
-
-        if ( my $err = $rule->errors ) {
-            _fail $err;
-        }
-    } catch {
+    catch {
         my $error = $_;
 
         $success = \0;
         $msg = $error;
+
+        return;
     };
+
+    my $output = $ret_rule ? $ret_rule->{output} : '';
 
     my $stash_yaml = _dump( $stash );
 
@@ -915,7 +910,9 @@ sub default : Path {
         try {
             my $rule = $self->rule_from_url( $id_rule );
             _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
-            my $ret_rule = Baseliner::Model::Rules->new->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
+
+            my $rule_runner = Baseliner::RuleRunner->new;
+            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response} 
                 ? $stash->{ws_response} 

@@ -376,58 +376,6 @@ subtest 'dsl_try: returns runtime error' => sub {
       };
 };
 
-subtest 'dsl_try: merges default vars' => sub {
-    _setup();
-
-    TestUtils->create_ci(
-        'variable',
-        name      => 'foo',
-        var_type  => 'value',
-        variables => { '*' => 'bar' }
-    );
-
-    my $c = mock_catalyst_c(
-        req => {
-            params => {
-                dsl   => 'print $stash->{foo}',
-                stash => ''
-            }
-        }
-    );
-
-    my $controller = _build_controller();
-
-    $controller->dsl_try($c);
-
-    is $c->stash->{json}->{output}, 'bar';
-};
-
-subtest 'dsl_try: default vars do not overwrite existing ones' => sub {
-    _setup();
-
-    TestUtils->create_ci(
-        'variable',
-        name      => 'foo',
-        var_type  => 'value',
-        variables => { '*' => 'bar' }
-    );
-
-    my $c = mock_catalyst_c(
-        req => {
-            params => {
-                dsl   => 'print $stash->{foo}',
-                stash => "---\nfoo: baz"
-            }
-        }
-    );
-
-    my $controller = _build_controller();
-
-    $controller->dsl_try($c);
-
-    is $c->stash->{json}->{output}, 'baz';
-};
-
 subtest 'webservice: returns result' => sub {
     _setup();
 

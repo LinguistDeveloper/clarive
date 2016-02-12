@@ -4,6 +4,7 @@ use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
+use Baseliner::RuleRunner;
 use Try::Tiny;
 use v5.10;
 use utf8;
@@ -1090,7 +1091,8 @@ sub run {
         if ( $self->last_finish_status eq 'REJECTED' ) {
             _fail(_loc("Job rejected.  Treated as failed"));
         }
-        my $ret = Baseliner::Model::Rules->run_single_rule( 
+        my $rule_runner = Baseliner::RuleRunner->new;
+        my $ret = $rule_runner->run_single_rule( 
             id_rule => $self->id_rule, 
             logging => 1,
             stash   => $stash,

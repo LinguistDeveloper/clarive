@@ -4,8 +4,8 @@ use Moose;
 use Try::Tiny;
 use Capture::Tiny qw(tee_merged);
 use Clarive::mdb;
+use Baseliner::RuleRunner;
 use Baseliner::Model::SchedulerCalendar;
-use Baseliner::Model::Rules;
 use Baseliner::Utils qw(_log _loc _fail);
 
 sub search_tasks {
@@ -296,7 +296,9 @@ sub _run_rule {
 
     my $stash = $task->{parameters} || {};
 
-    return Baseliner::Model::Rules->run_single_rule(
+    my $rule_runner = Baseliner::RuleRunner->new;
+
+    return $rule_runner->run_single_rule(
         id_rule => $task->{id_rule},
         logging => 1,
         stash   => $stash,

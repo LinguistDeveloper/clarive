@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Model::Rules;
+use Baseliner::RuleRunner;
 with 'Baseliner::Role::Registrable';
 
 register_class 'event' => __PACKAGE__;
@@ -52,7 +53,9 @@ sub after_hooks { $_[0]->_hooks( 'after' ) }
 sub run_rules {
     my ($self, $when, $stash) = @_;
 
-    return Baseliner::Model::Rules->run_rules(
+    my $rule_runner = Baseliner::RuleRunner->new;
+
+    return $rule_runner->run_rules(
         event         => $self->key,
         when          => $when,
         stash         => $stash,
