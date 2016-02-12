@@ -118,6 +118,94 @@ subtest 'action_tree: searches through actions' => sub {
       };
 };
 
+subtest 'update: creates new role' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+
+    $controller->update($c);
+
+    my $role = mdb->role->find_one();
+    ok($role);
+    is( $role->{role}, 'Developer' );
+
+    is_deeply(
+        $c->stash,
+        {   json => {
+                success => \1,
+                msg     => ("Role created")
+            }
+        }
+    );
+};
+
+subtest 'update: create new role with the same name as another' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c (req => {params => {id => '-1', name => 'Developer', role_actions => '[]'} } );
+    $controller->update($c);
+    
+     $c = _build_c (req => {params => {id => '-1', name => 'Developer', role_actions => '[]'} } );
+     $controller->update($c);
+     
+     is(mdb->role->find->count,1);
+
+     is_deeply($c->stash, {
+        json => {
+            success => \0,
+            msg => "Error: role exists"
+        }
+    })
+};
+
+subtest 'update: update role that exists ' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c (req => {params => {id => '-1', name => 'Developer', role_actions => '[]'} } );
+    $controller->update($c);
+    my $role = mdb->role->find_one({role => 'Developer'});
+
+    $c = _build_c (req => {params => {id => $role->{id} , name => 'Developer_new', role_actions => '[]'} } );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one({id => $role->{id}});
+
+    is ($role_updated->{role}, 'Developer_new');
+
+    is_deeply($c->stash, {
+        json => {
+            success => \1, 
+            msg => "Role modified" 
+        }
+    }) 
+};
+
+subtest 'update: update role with same name as another' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c (req => {params => {id => '-1', name => 'Developer', role_actions => '[]'} } );
+    $controller->update($c);
+    
+    $c = _build_c (req => {params => {id => '-1', name => 'Manager', role_actions => '[]'} } );
+    $controller->update($c);
+    
+    my $role = mdb->role->find_one({role => 'Developer'});
+
+    $c = _build_c (req => {params => {id => $role->{id} , name => 'Manager', role_actions => '[]'} } );
+    $controller->update($c);
+
+    is_deeply($c->stash, {
+        json => {
+            success => \0, msg => "Error: another role exists with same name"
+             }
+        }) 
+};
+
 sub _setup {
     mdb->master->drop;
     mdb->master_rel->drop;
