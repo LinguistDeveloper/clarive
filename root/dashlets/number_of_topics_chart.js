@@ -15,7 +15,7 @@
     var sort_by_labels = params.data.sort_by_labels || 'off';
     var symbol = params.data.symbol || '';
     var number_type = params.data.number_type || 'number';
-    var max_length_legend = params.data.max_length_legend || 0;
+    var max_legend_length = params.data.max_legend_length || 0;
 
     var x_axis_label;
     if ( number_type === 'currency' ){
@@ -30,7 +30,7 @@
                   condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, 
                   categories: categories, statuses: statuses, numberfield_group: numberfield_group, 
                   result_type: result_type, _ignore_conn_errors: true, sort_by_labels: sort_by_labels, 
-                  max_length_legend: max_length_legend }, function(res){
+                  max_legend_length: max_legend_length }, function(res){
 
             c3.generate({
               bindto: '#'+id,

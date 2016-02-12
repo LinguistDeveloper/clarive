@@ -476,7 +476,7 @@ sub topics_by_field : Local {
     my $numberfield_group = $p->{numberfield_group};
     my $result_type = $p->{result_type} // 'count';
     my $sort_by_labels = $p->{sort_by_labels} && $p->{sort_by_labels} eq 'on';
-    my $max_length_legend = $p->{max_length_legend};
+    my $max_legend_length = $p->{max_legend_length};
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
@@ -571,8 +571,8 @@ sub topics_by_field : Local {
             };
 
             my $legend_name = $name;
-            if ( $max_length_legend ) {
-                $legend_name = substr( $name, 0, $max_length_legend );
+            if ( $max_legend_length ) {
+                $legend_name = substr( $name, 0, $max_legend_length );
             }
             push @data, [ $legend_name, $topic->{total} ];
 

@@ -705,10 +705,10 @@ subtest 'topics_by_field: truncates labels' => sub {
         username => $developer->username,
         req      => {
             params => {
-                'group_threshold' => '1',
-                'group_by'        => 'topics_by_category',
-                'sort_by_labels'  => 'on',
-                'max_legend'      => 5,
+                'group_threshold'   => '1',
+                'group_by'          => 'topics_by_category',
+                'sort_by_labels'    => 'on',
+                'max_legend_length' => 5,
             }
         }
     );
