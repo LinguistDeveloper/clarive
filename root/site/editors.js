@@ -330,8 +330,6 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
         if( this.editor ) 
             this.editor.focus();
     },
-    editor_focus: function(){ this.editor.focus() },
-    // cross compatibility with Ace:
     setTheme: function(theme) {   
         this.editor.setOption('theme', theme );
     },
