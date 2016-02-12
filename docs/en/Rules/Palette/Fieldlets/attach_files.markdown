@@ -32,5 +32,4 @@ icon: file.gif
 
 <br />
 ### Extension
-* The extensions allowed to be upload into the form.
-* Example: jpg,.png.,TXT, etc...
+* The extensions allowed to be upload into the form

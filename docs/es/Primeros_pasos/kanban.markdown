@@ -1,6 +1,6 @@
 ---
 title: Tablero Kanban de topicos
-index: 6000
+index: 1200
 icon: kanban
 ---
 * Clarive dispone de tableros Kanban los cuales están disponibles en dos escenarios: <br />

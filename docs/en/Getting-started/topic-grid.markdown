@@ -1,6 +1,5 @@
 ---
 title: Topic Grid
-index: 4000
 icon: topic
 ---
 

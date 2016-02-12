@@ -1,6 +1,6 @@
 ---
 title: Login
-index: 2000
+index: 30
 icon: user.gif
 ---
 
