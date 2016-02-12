@@ -1269,7 +1269,7 @@ sub get_rules_info {
             } @rules;
             push $folder_structure, $temp_structure;
         }
-        my $custom_folder_node = {text=>_loc('Custom Folders'),  iconCls => 'default_folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
+     my $custom_folder_node = {text=>_loc('Custom Folders'),  iconCls => 'default_folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
                 is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
         my $rs = mdb->rule_folder->find;
         while( my $rule_folder = $rs->next ) {
@@ -1299,6 +1299,7 @@ sub get_rules_info {
                   rule_name=>$_->{rule_name},
                   event_name=>$_->{event_name},
                   username=>$_->{username}
+
                 } if $rule_folder->{id} ~~ $_->{folders};
             } @rules;
             push $custom_folder_node->{children}, $temp_structure;
