@@ -15,9 +15,8 @@
     var sort_by_labels = params.data.sort_by_labels || 'off';
     var symbol = params.data.symbol || '';
     var number_type = params.data.number_type || 'number';
-    var graph_title;
+    var max_legend = params.data.max_legend || 0;
     var x_axis_label;
-
     if (number_type === 'currency'){
       x_axis_label = numberfield_group + ' ' + symbol + ' ('+ result_type +')';
     }else if (number_type === 'percentage'){
@@ -26,7 +25,7 @@
       x_axis_label = _('Topics');
     }
 
-    Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, numberfield_group: numberfield_group, result_type: result_type, _ignore_conn_errors: true, sort_by_labels: sort_by_labels  }, function(res){
+    Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by, condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses, numberfield_group: numberfield_group, result_type: result_type, _ignore_conn_errors: true, sort_by_labels: sort_by_labels, max_legend: max_legend }, function(res){
               c3.generate({
                 bindto: '#'+id,
                 data: {
@@ -76,12 +75,16 @@
                            text += "<tr class='" + $$.CLASS.tooltipName + "-" + d[i].id + "'>";
                            text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>&nbsp;" + name + "</td>";
                            text += "<td class='value'>&nbsp;"
-                           if(number_type === 'currency'){
-                              text += new NumberFormat(d[i].value ).toFormatted();
-                              if(!(symbol === '')){text += " " + symbol;}
-                           }else{
+                           if(result_type === 'count'){
                               text += d[i].value;
-                              if (number_type === 'percentage'){text += "%";}
+                           }else{
+                              if(number_type === 'currency'){
+                                  text += new NumberFormat(d[i].value ).toFormatted();
+                                  if(!(symbol === '')){text += " " + symbol;}
+                              }else{
+                                  text += d[i].value;
+                                  if (number_type === 'percentage'){text += "%";}
+                              }
                            }
                            text += "</td>";
                            if ( !(isNaN(d[i].ratio)) ) {
@@ -96,9 +99,9 @@
                     label: {
                         format: function (value, ratio, id) {
                           var adaptedValue = value;
-                          if (number_type === 'percentage'){
+                          if (number_type === 'percentage' && result_type != 'count'){
                                 adaptedValue += " %";
-                          }else if(number_type === 'currency'){
+                          }else if(number_type === 'currency' && result_type != 'count'){
                               adaptedValue = new NumberFormat(value).toFormatted();
                               if(!(symbol === '')){adaptedValue += " " + symbol;}
                           }
@@ -110,9 +113,9 @@
                     label: {
                         format: function (value, ratio, id) {
                           var adaptedValue = value;
-                          if (number_type === 'percentage'){
+                          if (number_type === 'percentage' && result_type != 'count'){
                                 adaptedValue += " %";
-                          }else if(number_type === 'currency'){
+                          }else if(number_type === 'currency' && result_type != 'count'){
                               adaptedValue = new NumberFormat(value).toFormatted();
                               if(!(symbol === '')){adaptedValue += " " + symbol;}
                           }

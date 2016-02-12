@@ -476,12 +476,12 @@ sub topics_by_field : Local {
     my $numberfield_group = $p->{numberfield_group};
     my $result_type = $p->{result_type} // 'count';
     my $sort_by_labels = $p->{sort_by_labels} && $p->{sort_by_labels} eq 'on';
+    my $max_legend = $p->{max_legend};
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
 
     my $condition = {};
-
     if ( $group_by eq 'topics_by_category') {
         $group_by = 'category.name';
     } elsif ( $group_by eq 'topics_by_status') {
@@ -546,7 +546,7 @@ sub topics_by_field : Local {
     map { $total += $_->{total} } @topics_by_category;
     my $others = 0;
     my @other_topics = ();
-
+    my $legend_name;
     foreach my $topic (@topics_by_category){
 
         my $name = $topic->{field};
@@ -570,8 +570,12 @@ sub topics_by_field : Local {
 
                 };                
             };
+            $legend_name  = $name;
+            if($max_legend && $max_legend != 0){
+                $legend_name = substr($name, 0, $max_legend);
+            }
             push @data, [
-                $name,$topic->{total}
+                $legend_name,$topic->{total}
             ];
             $topics_list->{$name} = $topic->{topics_list};
         }
