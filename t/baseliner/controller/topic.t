@@ -787,6 +787,276 @@ subtest 'upload: fails to upload not allowed extension' => sub {
     cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: jpg/) }};
 };
 
+subtest 'list_users: doesnt fail if role is not found and returns 0' => sub {
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { 
+            roles => 'TestRole'
+        } } 
+    );
+    $c->{username} = 'root'; # change context to root
+    $controller->list_users($c);
+    my $stash = $c->stash;
+
+    cmp_deeply $stash, { json => { totalCount => 0, data => [] } };
+};
+
+subtest 'list_users: returns users by roles' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+    my $id_role2   = TestSetup->create_role( role => 'TestRole2' );
+
+    my $user = TestSetup->create_user(
+        username => 'test_user',
+        realname => 'Test User',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'test_user2',
+        realname => 'Test User2',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'test_user3',
+        realname => 'Test User3',
+        id_role  => $id_role2,
+        project  => $project
+    );
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => 'TestRole'
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 2,
+            data       => [
+                { id => ignore(), realname => 'Test User',  username => 'test_user' },
+                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+            ]
+        }
+      };
+};
+
+subtest 'list_users: returns users by roles and topic projects' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $project2   = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+    my $id_role2   = TestSetup->create_role( role => 'TestRole2' );
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $topic_mid = TestSetup->create_topic(id_category => $id_changeset_category, project => $project);
+
+    my $user = TestSetup->create_user(
+        username => 'test_user',
+        realname => 'Test User',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'test_user2',
+        realname => 'Test User2',
+        id_role  => $id_role,
+        project  => $project2
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'test_user3',
+        realname => 'Test User3',
+        id_role  => $id_role2,
+        project  => $project2
+    );
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => 'TestRole'
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 2,
+            data       => [
+                { id => ignore(), realname => 'Test User',  username => 'test_user' },
+                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+            ]
+        }
+      };
+};
+
+subtest 'list_users: returns users by projects' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $project2   = TestUtils->create_ci_project;
+    my $project3   = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+
+    my $user = TestSetup->create_user(
+        username => 'test_user',
+        realname => 'Test User',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'test_user2',
+        realname => 'Test User2',
+        id_role  => $id_role,
+        project  => $project2
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'test_user3',
+        realname => 'Test User3',
+        id_role  => $id_role,
+        project  => $project3
+    );
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                projects => [$project->mid, $project2->mid]
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 2,
+            data       => [
+                { id => ignore(), realname => 'Test User',  username => 'test_user' },
+                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+            ]
+        }
+      };
+};
+
+subtest 'list_users: returns users filtered by query' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+
+    my $user = TestSetup->create_user(
+        username => 'bill',
+        realname => 'Bill',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'harry',
+        realname => 'Harry',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'john',
+        realname => 'John',
+        id_role  => $id_role,
+        project  => $project
+    );
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => 'TestRole',
+                query => 'h'
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 2,
+            data       => [
+                { id => ignore(), realname => 'Harry', username => 'harry' },
+                { id => ignore(), realname => 'John',  username => 'john' },
+            ]
+        }
+      };
+};
+
+subtest 'list_users: returns users paged' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+
+    my $user = TestSetup->create_user(
+        username => 'bill',
+        realname => 'Bill',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'harry',
+        realname => 'Harry',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'john',
+        realname => 'John',
+        id_role  => $id_role,
+        project  => $project
+    );
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => 'TestRole',
+                start => 1,
+                limit => 1,
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 1,
+            data       => [
+                { id => ignore(), realname => 'Harry', username => 'harry' },
+            ]
+        }
+      };
+};
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 

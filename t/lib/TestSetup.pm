@@ -144,11 +144,12 @@ sub create_user {
 
     my $id_role = delete $params{id_role} or die 'id_role required';
     my $project = delete $params{project} or die 'project required';
+    my $username = delete $params{username} || 'developer';
 
     return TestUtils->create_ci(
         'user',
-        name             => 'developer',
-        username         => 'developer',
+        name             => $username,
+        username         => $username,
         project_security => {
             $id_role => {
                 project => [ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ]
