@@ -546,7 +546,6 @@ sub topics_by_field : Local {
     map { $total += $_->{total} } @topics_by_category;
     my $others = 0;
     my @other_topics = ();
-    my $legend_name;
     foreach my $topic (@topics_by_category){
 
         my $name = $topic->{field};
@@ -570,13 +569,13 @@ sub topics_by_field : Local {
 
                 };                
             };
-            $legend_name  = $name;
-            if($max_legend && $max_legend != 0){
-                $legend_name = substr($name, 0, $max_legend);
+
+            my $legend_name = $name;
+            if ( $max_legend ) {
+                $legend_name = substr( $name, 0, $max_legend );
             }
-            push @data, [
-                $legend_name,$topic->{total}
-            ];
+            push @data, [ $legend_name, $topic->{total} ];
+
             $topics_list->{$name} = $topic->{topics_list};
         }
         my $color;
