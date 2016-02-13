@@ -304,6 +304,14 @@ sub checkout {
     if ( $self->tags_mode eq 'project' ) {
         $tag = $self->bl_to_tag( $bl, $p{project} );
     }
+    elsif ($self->tags_mode eq 'release,project') {
+        my $revisions = $p{revisions} or _fail 'Missing parameter revisions';
+
+        my $prefix = $self->_find_release_version_by_revisions($revisions);
+        $prefix //= $p{project};
+
+        $tag = $self->bl_to_tag( $bl, $prefix );
+    }
 
     my $git = $self->git;
 
@@ -313,8 +321,15 @@ sub checkout {
           unless -d $dir;
     }
 
+    my $tag_sha = try {
+        $git->exec( 'rev-parse', $tag )
+    }
+    catch {
+        _fail _loc( "Error: tag `%1` not found in repository %2", $tag, $self->name )
+    };
+
     # get dir listing
-    my @ls = $git->exec( qw/ls-tree -r -t -l --abbrev=7/, $tag );
+    my @ls = $git->exec( qw/ls-tree -r -t -l --abbrev=7/, $tag_sha );
     if ( !@ls ) {
         return { ls => [], output => Util->_loc( 'No files for ref %1 in repository. Skipping', $tag ) };
     }

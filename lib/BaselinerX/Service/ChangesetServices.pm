@@ -439,10 +439,11 @@ sub checkout_bl {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
 
             $self->_checkout_repo(
-                job     => $job,
-                project => $project,
-                repo    => $repo,
-                bl      => $bl,
+                job       => $job,
+                project   => $project,
+                repo      => $repo,
+                bl        => $bl,
+                revisions => $revisions,
             );
         }
     }
@@ -478,10 +479,11 @@ sub _checkout_repo {
     my $self = shift;
     my (%params) = @_;
 
-    my $job     = $params{job};
-    my $project = $params{project};
-    my $repo    = $params{repo};
-    my $bl      = $params{bl};
+    my $job       = $params{job};
+    my $project   = $params{project};
+    my $repo      = $params{repo};
+    my $bl        = $params{bl};
+    my $revisions = $params{revisions};
 
     my $log     = $job->logger;
     my $job_dir = $job->job_dir;
@@ -494,7 +496,7 @@ sub _checkout_repo {
         )
     );
 
-    my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project );
+    my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project, revisions => $revisions );
 
     my @ls = _array( $co_info->{ls} );
     $log->info( _loc( 'Baseline checkout of %1 item(s) completed', scalar(@ls) ), join( "\n", @ls ) );
