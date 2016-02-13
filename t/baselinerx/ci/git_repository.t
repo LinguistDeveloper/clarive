@@ -272,8 +272,14 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
 
-    $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines(
+        job  => {},
+        bl   => 'TEST',
+        type => 'promote',
+        revisions => [ $sha_rev ]
+    );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -294,7 +300,12 @@ subtest 'update_baselines: returns refs' => sub {
     my $top_sha = TestGit->commit($repo);
     my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
 
-    my $retval = $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $top_sha } ] );
+    my $retval = $repo->update_baselines(
+        job  => {},
+        bl   => 'TEST',
+        type => 'promote',
+        revisions => [ $top_rev ]
+    );
 
     cmp_deeply $retval,
       {
@@ -319,10 +330,12 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
     my $old_sha  = TestGit->commit($repo);
     my $old_sha2 = TestGit->commit($repo);
 
+    my $old_sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $old_sha2);
+
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( bl => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 } ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'demote', revisions => [ $old_sha2_rev ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -340,8 +353,9 @@ subtest 'update_baselines: moves baselines up in static' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [ $sha_rev ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -360,7 +374,7 @@ subtest 'update_baselines: moves baselines to specific ref' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -377,7 +391,7 @@ subtest 'update_baselines: does nothing when already there' => sub {
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -394,7 +408,7 @@ subtest 'update_baselines: throws when tags_mode is project but no projects' => 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    like exception { $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+    like exception { $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
       qr/Projects are required/;
 };
 
@@ -421,6 +435,63 @@ subtest 'update_baselines: updates tags for every project' => sub {
     );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'project-with-dashes-TEST' );
+
+    is $tag_sha, $new_sha;
+};
+
+subtest 'update_baselines: updates tags for every release' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( moniker => 'project', repositories => [ $repo->mid ] );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+
+    my $new_sha = TestGit->commit($repo);
+    my $new_sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $new_sha);
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => $release_mid,
+        revisions   => [ $new_sha_rev->mid ]
+    );
+
+    $repo->update_baselines(
+        job       => { projects => [ $project ] },
+        bl        => 'TEST',
+        type      => 'promote',
+        revisions => [$new_sha_rev],
+    );
+
+    my $tag_sha = TestGit->rev_parse( $repo, '1.0-TEST' );
 
     is $tag_sha, $new_sha;
 };
@@ -963,6 +1034,7 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
         release     => $release_mid,
         revisions   => [ $sha_rev->mid, $sha2_rev->mid ]
     );
+
     my $dir = tempdir();
 
     $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [$sha_rev, $sha2_rev] );

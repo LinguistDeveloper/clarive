@@ -421,7 +421,7 @@ sub list_elements {
     return @elems;
 } ## end sub list_elements
 
-method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
+method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
     my $git = $self->git;
 
     my @projects;
@@ -443,11 +443,13 @@ method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
         @projects = ('*');
     }
 
+    my $release_version = $self->_find_release_version_by_revisions($revisions);
+
     my %retval;
     for my $project ( @projects ) {
-        my $retval_key = $project eq '*' ? '*' : $project->mid;
+        my $retval_key = $project eq '*' ? '*' : ($release_version || $project->mid);
 
-        my $tag = $self->bl_to_tag($bl, $project);
+        my $tag = $self->bl_to_tag($bl, $release_version || $project);
 
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
@@ -707,6 +709,8 @@ sub _find_release_versions_by_projects {
 sub _find_release_version_by_revisions {
     my $self = shift;
     my ($revisions) = @_;
+
+    return unless $revisions && @$revisions;
 
     my $changeset_rel;
     foreach my $revision (@$revisions) {
