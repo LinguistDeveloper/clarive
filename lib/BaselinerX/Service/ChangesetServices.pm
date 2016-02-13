@@ -437,11 +437,13 @@ sub checkout_bl {
         next unless ref $repo_revisions_items eq 'ARRAY';
         for my $rri ( @$repo_revisions_items ) {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
-            my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
-            $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( bl=>$bl, dir=>$dir_prefixed, project=>$project );
-            my @ls = _array( $co_info->{ls} );
-            $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
+
+            $self->_checkout_repo(
+                job     => $job,
+                project => $project,
+                repo    => $repo,
+                bl      => $bl,
+            );
         }
     }
 }
@@ -462,13 +464,42 @@ sub checkout_bl_all_repos {
         my ($project) = @{ $pc }{ qw/project/ };
         my @repos = grep { $_->bl =~ /(\*|$bl)/} _array $project->repositories;
         for my $repo ( @repos ) {
-            my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
-            $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project);
-            my @ls = _array( $co_info->{ls} );
-            $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
+            $self->_checkout_repo(
+                job     => $job,
+                project => $project,
+                repo    => $repo,
+                bl      => $bl,
+            );
         }
     }
+}
+
+sub _checkout_repo {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $job     = $params{job};
+    my $project = $params{project};
+    my $repo    = $params{repo};
+    my $bl      = $params{bl};
+
+    my $log     = $job->logger;
+    my $job_dir = $job->job_dir;
+
+    my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
+    $log->info(
+        _loc(
+            'Checking out baseline %1 for project %2, repository %3: %4',
+            $bl, $project->name, $repo->name, $dir_prefixed
+        )
+    );
+
+    my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project );
+
+    my @ls = _array( $co_info->{ls} );
+    $log->info( _loc( 'Baseline checkout of %1 item(s) completed', scalar(@ls) ), join( "\n", @ls ) );
+
+    return $self;
 }
 
 sub checkout {
