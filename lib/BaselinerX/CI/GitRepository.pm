@@ -1,14 +1,15 @@
 package BaselinerX::CI::GitRepository;
 use Baseliner::Moose;
-use Baseliner::Utils;
-use BaselinerX::CI::bl;
-use BaselinerX::CI::GitRevision;
-use BaselinerX::GitBranch;
+
 use Git;
 use Try::Tiny;
 use experimental 'smartmatch';
-
-require Girl;
+use Girl;
+use Baseliner::Utils;
+use Baseliner::Model::Topic;
+use BaselinerX::CI::bl;
+use BaselinerX::CI::GitRevision;
+use BaselinerX::GitBranch;
 
 with 'Baseliner::Role::CI::Repository';
 
@@ -49,16 +50,63 @@ sub create_tags_handler {
     my @tags;
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
 
-    if ( $self->tags_mode eq 'project' ) {
-        my @projects =
-          map { ci->new($_->{mid}) }
-          $self->related( where => { collection => 'project' }, docs_only => 1 );
+    my @tags_modes = $self->tags_mode ? (split /,/, $self->tags_mode) : ();
 
-        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+    if ( grep { $_ eq 'project' } @tags_modes ) {
+        my @projects =
+          map { ci->new( $_->{mid} ) } $self->related(
+            where     => { collection => 'project' },
+            docs_only => 1
+          );
+
+        _fail _loc('Projects are required when creating baselines '
+          . 'for repositories with tags_mode project')
           unless @projects;
 
         foreach my $bl (@bls) {
-            push @tags, map { $self->bl_to_tag($bl, $_) } @projects;
+            push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
+        }
+
+        my @id_statuses =
+          map { $_->{id_status} }
+          ci->status->find( { type => { '$not' => qr/I|F|FC/ } } )
+          ->fields( {id_status => 1} )->all;
+        if ( grep { $_ eq 'release' } @tags_modes ) {
+            my @release_categories =
+              mdb->category->find( { is_release => '1' } )->fields({id => 1})->all;
+
+            my $topics_model = Baseliner::Model::Topic->new;
+            foreach my $release_category (@release_categories) {
+                my $meta =
+                  $topics_model->get_meta( undef, $release_category->{id} );
+
+                my ($release_version_field) = map { $_->{id_field} }
+                  grep { $_->{key} eq 'fieldlet.system.release_version' }
+                  @$meta;
+                next unless $release_version_field;
+
+                my ($project_field) = map { $_->{id_field} }
+                  grep { $_->{key} eq 'fieldlet.system.projects' }
+                  @$meta;
+                next unless $project_field;
+
+                my @releases = mdb->topic->find(
+                    {
+                        is_release         => '1',
+                        id_category_status => mdb->in(@id_statuses),
+                        $project_field => mdb->in( map { $_->{mid} } @projects )
+                    }
+                )->all;
+
+                foreach my $release (@releases) {
+                    my $version = $release->{$release_version_field};
+                    next unless $version;
+
+                    foreach my $bl (@bls) {
+                        push @tags, $self->bl_to_tag( $bl, $version );
+                    }
+                }
+            }
         }
     }
     else {
@@ -557,17 +605,20 @@ method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     return @rev_list;
 }
 
-method bl_to_tag(Maybe[Str] $bl = undef, Any $project = undef) {
+method bl_to_tag(Maybe[Str] $bl = undef, Any $prefix = undef) {
     my ($bl, $project) = @_;
 
     return unless $bl;
 
-    return $bl unless $self->tags_mode eq 'project';
+    return $bl if $self->tags_mode eq 'bl';
 
-    _fail 'project is required' unless $project;
-    _fail 'project has to have moniker' unless my $moniker = $project->moniker;
+    _fail 'prefix is required' unless $prefix;
 
-    return sprintf( '%s-%s', $moniker, $bl);
+    if (ref $prefix) {
+        $prefix = $prefix->moniker or _fail 'prefix has to have moniker';
+    }
+
+    return sprintf( '%s-%s', $prefix, $bl);
 }
 
 sub _order_revisions {

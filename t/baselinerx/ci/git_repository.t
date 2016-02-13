@@ -9,9 +9,9 @@ use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup; }
-
 use TestUtils;
 use TestGit;
+use TestSetup;
 
 use Capture::Tiny qw(capture_merged);
 use BaselinerX::CI::project;
@@ -198,6 +198,104 @@ subtest 'create_tags_service_handler: filters by tags when projects' => sub {
     my @tags = TestGit->tags($repo);
 
     is_deeply [ sort @tags ], [qw/project-TEST/];
+};
+
+subtest 'create_tags_service_handler: creates release and project tags' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
+    TestGit->commit($repo);
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $project2 = _create_ci_project(moniker => 'project2');
+
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_not_final =
+      TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_final =
+      TestUtils->create_ci( 'status', name => 'Closed', type => 'F' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release_version",
+                        "fieldletType" => "fieldlet.system.release_version",
+                        "name_field"   => "Version",
+                    },
+                    "key" => "fieldlet.system.release_version",
+                    text  => 'Version',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
+    );
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_rule,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'New Release',
+        status          => $status_new,
+        release_version => '1.0',
+        project         => $project,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Release',
+        status          => $status_not_final,
+        release_version => '1.1',
+        project         => [$project, $project2],
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Release From Another Project',
+        status          => $status_not_final,
+        release_version => '9.9',
+        project         => $project2,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Closed Release',
+        status          => $status_final,
+        release_version => '0.9',
+        project         => $project,
+    );
+
+    $repo->create_tags_handler( undef, {} );
+
+    my @tags = TestGit->tags($repo);
+
+    is_deeply [ sort @tags ], [qw/1.1-PROD 1.1-TEST project-PROD project-TEST/];
 };
 
 subtest 'update_baselines: moves baselines up in promote' => sub {
@@ -684,7 +782,7 @@ subtest 'group_items_for_revisions: throws when no project in project tags_mode'
     my $sha2 = TestGit->commit($repo);
 
     like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
-      qr/project is required/;
+      qr/prefix is required/;
 };
 
 subtest 'group_items_for_revisions: returns top revision items in project mode' => sub {
@@ -764,7 +862,7 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
     TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->checkout( dir => $dir, tag => 'project-TEST' ) }, qr/project is required/;
+    like exception { $repo->checkout( dir => $dir, tag => 'project-TEST' ) }, qr/prefix is required/;
 };
 
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
@@ -897,5 +995,15 @@ sub _create_ci_project {
 sub _setup {
     TestUtils->cleanup_cis;
 
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+    );
+
+    mdb->rule->drop;
+    mdb->topic->drop;
+    mdb->category->drop;
 }
