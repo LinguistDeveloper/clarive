@@ -600,9 +600,10 @@ sub close_branch {
     }
 }
 
-method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
+method commits_for_branch( :$branch, :$project ) {
     my $git = $self->git;
-    $tag //= [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
+
+    my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
 
     $tag = $self->bl_to_tag($tag, $project);
 

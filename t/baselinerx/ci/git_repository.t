@@ -1091,25 +1091,7 @@ subtest 'list_branches: includes branch names' => sub {
     is $branches[0]->name, 'new2';
 };
 
-subtest 'commits_for_branch: returns commits by tag' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository();
-    TestGit->commit( $repo, message => 'initial' );
-    TestGit->commit( $repo, message => 'first' );
-    TestGit->tag( $repo, tag => 'TEST' );
-
-    TestGit->commit( $repo, message => 'second' );
-    TestGit->commit( $repo, message => 'third' );
-
-    my @commits = $repo->commits_for_branch( tag => 'TEST', branch => 'master' );
-    is scalar @commits, 3;
-    like $commits[0], qr/^[a-z0-9]{40} third$/;
-    like $commits[1], qr/^[a-z0-9]{40} second$/;
-    like $commits[2], qr/^[a-z0-9]{40} first$/;
-};
-
-subtest 'commits_for_branch: get tag from bl when not present' => sub {
+subtest 'commits_for_branch: gets tag from bl' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
@@ -1122,27 +1104,11 @@ subtest 'commits_for_branch: get tag from bl when not present' => sub {
 
     TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my @commits = $repo->commits_for_branch( branch => 'master' );
+    my @commits = $repo->commits_for_branch( branch => 'master', project => '' );
     is scalar @commits, 3;
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
     like $commits[2], qr/^[a-z0-9]{40} first$/;
-};
-
-subtest 'commits_for_branch: throws when unknown tag' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-
-    like exception { $repo->commits_for_branch( tag => 'UNKNOWN', branch => 'master' ) }, qr/could not find tag/;
-};
-
-subtest 'commits_for_branch: throws when no tags present' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-
-    like exception { $repo->commits_for_branch( branch => 'master' ) }, qr/could not find tag/;
 };
 
 done_testing;
