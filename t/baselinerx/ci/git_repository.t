@@ -218,44 +218,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
     my $status_final =
       TestUtils->create_ci( 'status', name => 'Closed', type => 'F' );
 
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {
-                "attributes" => {
-                    "data" => {
-                        "id_field"     => "status_new",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "name_field"   => "Status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                    text  => 'Status',
-                }
-            },
-            {
-                "attributes" => {
-                    "data" => {
-                        "id_field"     => "release_version",
-                        "fieldletType" => "fieldlet.system.release_version",
-                        "name_field"   => "Version",
-                    },
-                    "key" => "fieldlet.system.release_version",
-                    text  => 'Version',
-                }
-            },
-            {
-                "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "Project",
-                    },
-                    "key" => "fieldlet.system.projects",
-                    text  => 'Project',
-                }
-            },
-        ]
-    );
+    my $id_rule = _create_release_form();
 
     my $id_category = TestSetup->create_category(
         name       => 'Release',
@@ -811,6 +774,62 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
     is $item->path,   '/README';
 };
 
+subtest 'group_items_for_revisions: returns top revision items in release and project mode' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+    my $sha2 = TestGit->commit($repo);
+
+    $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
+    $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => $release_mid,
+        revisions   => [ $sha->mid, $sha2->mid ]
+    );
+
+    my $ci = TestUtils->create_ci('topic');
+    mdb->master_rel->insert(
+        { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST', project => $project );
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'M';
+    is $item->path,   '/README';
+};
+
 subtest 'checkout: checkouts items into directory' => sub {
     _setup();
 
@@ -990,6 +1009,99 @@ done_testing;
 
 sub _create_ci_project {
     return TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', @_ );
+}
+
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release_version",
+                        "fieldletType" => "fieldlet.system.release_version",
+                        "name_field"   => "Version",
+                    },
+                    "key" => "fieldlet.system.release_version",
+                    text  => 'Version',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
+    );
+}
+
+sub _create_changeset_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release",
+                        "fieldletType" => "fieldlet.system.release",
+                        "name_field"   => "Release",
+                    },
+                    "key" => "fieldlet.system.release",
+                    text  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "revisions",
+                        "fieldletType" => "fieldlet.system.revisions",
+                        "name_field"   => "Revisions",
+                    },
+                    "key" => "fieldlet.system.revisions",
+                    text  => 'Revisions',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
+    );
 }
 
 sub _setup {

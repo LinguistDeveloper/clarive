@@ -3741,6 +3741,18 @@ sub get_downloadable_files {
     return $available_docs;
 }
 
+sub get_meta_fields_by_key {
+    my $self = shift;
+    my ( $topic_mid, $key ) = @_;
+
+    my $meta = $self->get_meta($topic_mid);
+
+    my (@fields) = map { $_->{id_field} }
+      grep { $_->{key} eq $key } @$meta;
+
+    return @fields;
+}
+
 sub getCategoryAcronyms {
     my ($self, $p) = @_;
     my $acronyms = cache->get('category:acronyms');

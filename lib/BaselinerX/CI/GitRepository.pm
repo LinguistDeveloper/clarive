@@ -67,44 +67,12 @@ sub create_tags_handler {
             push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
         }
 
-        my @id_statuses =
-          map { $_->{id_status} }
-          ci->status->find( { type => { '$not' => qr/I|F|FC/ } } )
-          ->fields( {id_status => 1} )->all;
         if ( grep { $_ eq 'release' } @tags_modes ) {
-            my @release_categories =
-              mdb->category->find( { is_release => '1' } )->fields({id => 1})->all;
+            my @release_versions = $self->_find_release_versions_by_projects(\@projects);
 
-            my $topics_model = Baseliner::Model::Topic->new;
-            foreach my $release_category (@release_categories) {
-                my $meta =
-                  $topics_model->get_meta( undef, $release_category->{id} );
-
-                my ($release_version_field) = map { $_->{id_field} }
-                  grep { $_->{key} eq 'fieldlet.system.release_version' }
-                  @$meta;
-                next unless $release_version_field;
-
-                my ($project_field) = map { $_->{id_field} }
-                  grep { $_->{key} eq 'fieldlet.system.projects' }
-                  @$meta;
-                next unless $project_field;
-
-                my @releases = mdb->topic->find(
-                    {
-                        is_release         => '1',
-                        id_category_status => mdb->in(@id_statuses),
-                        $project_field => mdb->in( map { $_->{mid} } @projects )
-                    }
-                )->all;
-
-                foreach my $release (@releases) {
-                    my $version = $release->{$release_version_field};
-                    next unless $version;
-
-                    foreach my $bl (@bls) {
-                        push @tags, $self->bl_to_tag( $bl, $version );
-                    }
+            foreach my $release_version (@release_versions) {
+                foreach my $bl (@bls) {
+                    push @tags, $self->bl_to_tag( $bl, $release_version );
                 }
             }
         }
@@ -166,7 +134,19 @@ sub group_items_for_revisions {
     } else {
         my $bl = $p{bl} or _fail _loc('Missing parameter bl needed for top revision');
 
-        my $tag = $self->bl_to_tag($bl, $p{project});
+        my $prefix;
+        if ($self->tags_mode eq 'project') {
+            $prefix = $p{project};
+        }
+        elsif ($self->tags_mode eq 'release,project') {
+            $prefix = $self->_find_release_version_by_revisions($revisions);
+
+            if (!$prefix) {
+                $prefix = $p{project};
+            }
+        }
+
+        my $tag = $self->bl_to_tag($bl, $prefix);
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {
@@ -650,6 +630,75 @@ sub _order_revisions {
     }
 
     return @sorted;
+}
+
+sub _find_release_versions_by_projects {
+    my $self = shift;
+    my ($projects) = @_;
+
+    my @release_versions;
+
+    my @release_categories =
+      mdb->category->find( { is_release => '1' } )->fields( { id => 1 } )->all;
+
+    my @id_statuses = map { $_->{id_status} }
+      ci->status->find( { type => { '$not' => qr/I|F|FC/ } } )->fields( { id_status => 1 } )->all;
+
+    my $topics_model = Baseliner::Model::Topic->new;
+    foreach my $release_category (@release_categories) {
+        my $meta = $topics_model->get_meta( undef, $release_category->{id} );
+
+        my ($release_version_field) = map { $_->{id_field} }
+          grep { $_->{key} eq 'fieldlet.system.release_version' } @$meta;
+        next unless $release_version_field;
+
+        my ($project_field) = map { $_->{id_field} }
+          grep { $_->{key} eq 'fieldlet.system.projects' } @$meta;
+        next unless $project_field;
+
+        my @releases = mdb->topic->find(
+            {
+                is_release         => '1',
+                id_category_status => mdb->in(@id_statuses),
+                $project_field => mdb->in( map { $_->{mid} } @$projects )
+            }
+        )->all;
+
+        foreach my $release (@releases) {
+            my $version = $release->{$release_version_field};
+            next unless $version;
+
+            push @release_versions, $version;
+        }
+    }
+
+    return @release_versions;
+}
+
+sub _find_release_version_by_revisions {
+    my $self = shift;
+    my ($revisions) = @_;
+
+    my $changeset_rel;
+    foreach my $revision (@$revisions) {
+        ($changeset_rel) = $revision->parents( where => { collection => 'topic' }, mids_only => 1 );
+        last if $changeset_rel;
+    }
+
+    my $changeset = mdb->topic->find_one({mid => $changeset_rel->{mid}});
+    return unless $changeset;
+
+    my $topics_model = Baseliner::Model::Topic->new;
+    return unless my ($release_field) =
+      $topics_model->get_meta_fields_by_key( $changeset->{mid}, 'fieldlet.system.release' );
+    return unless my $release_mid = $changeset->{$release_field};
+
+    my $release = mdb->topic->find_one({mid => $release_mid});
+    return unless $release;
+
+    return unless my ($release_version_field) =
+      $topics_model->get_meta_fields_by_key( $release->{mid}, 'fieldlet.system.release_version' );
+    return $release->{$release_version_field};
 }
 
 1;
