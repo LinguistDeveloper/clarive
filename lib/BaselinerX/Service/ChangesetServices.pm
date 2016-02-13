@@ -375,7 +375,7 @@ sub job_items {
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
             $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
-            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl, project=>$project );
+            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, bl=>$bl, project=>$project );
             push @items, map {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;

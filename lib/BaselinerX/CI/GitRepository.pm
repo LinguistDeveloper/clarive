@@ -164,10 +164,9 @@ sub group_items_for_revisions {
         # TODO --- in demote, blob is empty for deleted items status=D, which in demote are changed to status=A
         @items = values %items_uniq;
     } else {
-        my $bl = $p{tag};
-        my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
+        my $bl = $p{bl} or _fail _loc('Missing parameter bl needed for top revision');
 
-        $tag = $self->bl_to_tag($tag, $p{project});
+        my $tag = $self->bl_to_tag($bl, $p{project});
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {

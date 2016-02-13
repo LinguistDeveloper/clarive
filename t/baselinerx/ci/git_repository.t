@@ -764,7 +764,7 @@ subtest 'group_items_for_revisions: returns top revision items' => sub {
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' );
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -781,7 +781,7 @@ subtest 'group_items_for_revisions: throws when no project in project tags_mode'
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
+    like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST' ) },
       qr/prefix is required/;
 };
 
@@ -803,7 +803,7 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST', project => $project );
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST', project => $project );
     is scalar @items, 1;
 
     my $item = $items[0];
