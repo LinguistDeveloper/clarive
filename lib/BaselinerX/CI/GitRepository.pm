@@ -426,17 +426,16 @@ method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
 
     my @projects;
 
-    if ( $self->tags_mode eq 'project' ) {
-        if ($job) {
-            foreach my $project ( _array( $job->{projects} ) ) {
-                next
-                  unless $project->{repositories}
-                  && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
+    if ( $self->tags_mode eq 'project' || $self->tags_mode eq 'release,project' ) {
+        foreach my $project ( _array( $job->{projects} ) ) {
+            next
+              unless $project->{repositories}
+              && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
 
-                push @projects, $project;
-            }
+            push @projects, $project;
         }
-        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+
+        _fail _loc( 'Projects are required when moving baselines for repositories with tags_mode project' )
           unless @projects;
     }
     else {
