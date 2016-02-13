@@ -439,7 +439,7 @@ sub checkout_bl {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed, project=>$project );
+            my $co_info = $repo->checkout( bl=>$bl, dir=>$dir_prefixed, project=>$project );
             my @ls = _array( $co_info->{ls} );
             $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }

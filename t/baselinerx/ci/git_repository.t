@@ -841,7 +841,7 @@ subtest 'checkout: checkouts items into directory' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    $repo->checkout( dir => $dir, tag => 'TEST' );
+    $repo->checkout( dir => $dir, bl => 'TEST' );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -861,7 +861,7 @@ subtest 'checkout: returns checked out items' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    my $retval = $repo->checkout( dir => $dir, tag => 'TEST' );
+    my $retval = $repo->checkout( dir => $dir, bl => 'TEST' );
 
     cmp_deeply $retval,
       {
@@ -881,7 +881,7 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
     TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->checkout( dir => $dir, tag => 'project-TEST' ) }, qr/prefix is required/;
+    like exception { $repo->checkout( dir => $dir, bl => 'project-TEST' ) }, qr/prefix is required/;
 };
 
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
@@ -897,7 +897,7 @@ subtest 'checkout: checkouts items into directory with project tag_mode' => sub 
 
     my $dir = tempdir();
 
-    $repo->checkout( dir => $dir, tag => 'TEST', project => $project );
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);

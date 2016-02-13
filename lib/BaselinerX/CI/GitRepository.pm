@@ -296,34 +296,48 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
 
 sub checkout {
     my ( $self, %p ) = @_;
-    
-    my $dir  = $p{dir} // _fail 'Missing parameter dir'; 
-    my $tag  = $p{tag} // _fail 'Missing parameter tag';
 
-    if ($self->tags_mode eq 'project') {
-        $tag = $self->bl_to_tag($tag, $p{project});
+    my $dir = $p{dir} // _fail 'Missing parameter dir';
+    my $bl  = $p{bl}  // _fail 'Missing parameter bl';
+
+    my $tag = $bl;
+    if ( $self->tags_mode eq 'project' ) {
+        $tag = $self->bl_to_tag( $bl, $p{project} );
     }
 
-    #my $path = $self->path;
     my $git = $self->git;
 
-    if( !-e $dir ) {
+    if ( !-d $dir ) {
         _mkpath $dir;
-        _fail _loc "Could not find or create directory %1: %2", $dir, $!
-            unless -e $dir;
+        _fail _loc( "Could not find or create directory %1: %2", $dir, $! )
+          unless -d $dir;
     }
+
     # get dir listing
-    my @ls = $git->exec(qw/ls-tree -r -t -l --abbrev=7/, $tag );
-    if( !@ls ) {
-        return { ls=>[], output=>Util->_loc('No files for ref %1 in repository. Skipping', $tag) };
+    my @ls = $git->exec( qw/ls-tree -r -t -l --abbrev=7/, $tag );
+    if ( !@ls ) {
+        return { ls => [], output => Util->_loc( 'No files for ref %1 in repository. Skipping', $tag ) };
     }
+
     # save curr dir, chdir to repo, archive only works from within (?)
     my $cwd = Cwd::cwd;
-    chdir $dir;  
-    my $out = $git->exec( "archive '$tag' | tar x", { cmd_unquoted=>1 } );
-    _log _loc "*Git*: checkout of repository %1 (%2) into `%3`", $self->repo_dir, $tag, $dir;
-    chdir $cwd;
-    { ls=>\@ls, output=>$out }
+    chdir $dir;
+
+    my $out;
+    try {
+        $out = $git->exec( "archive '$tag' | tar x", { cmd_unquoted => 1 } );
+        _log _loc("*Git*: checkout of repository %1 (%2) into `%3`", $self->repo_dir, $tag, $dir);
+
+        chdir $cwd;
+    } catch {
+        my $error = shift;
+
+        chdir $cwd;
+
+        die $error;
+    };
+
+    return { ls => \@ls, output => $out };
 }
 
 sub list_elements {

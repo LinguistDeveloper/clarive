@@ -428,7 +428,7 @@ subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     my (%args) = $repo->mocked_call_args('checkout');
     cmp_deeply \%args,
       {
-        'tag'     => 'TEST',
+        'bl'      => 'TEST',
         'dir'     => '/job/dir/Project/path/to/rel',
         'project' => $project
       };
