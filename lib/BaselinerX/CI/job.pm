@@ -69,6 +69,7 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
         _fail _loc 'Could not find a default %1 job chain rule', $type;
     }
 };
+has rule_version => qw(is ro isa Any);
 
 has_cis 'releases';
 has_cis 'changesets';
@@ -1094,6 +1095,7 @@ sub run {
         my $rule_runner = Baseliner::RuleRunner->new;
         my $ret = $rule_runner->run_single_rule( 
             id_rule => $self->id_rule, 
+            rule_version => $self->rule_version,
             logging => 1,
             stash   => $stash,
             simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error

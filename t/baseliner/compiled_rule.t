@@ -2,30 +2,37 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Deep;
 
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 
-TestEnv->setup;
-
+use JSON ();
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Statement;
 
 use_ok 'Baseliner::CompiledRule';
 
-subtest 'returns default values' => sub {
-    my $cr = Baseliner::CompiledRule->new();
+subtest 'compile: compiles temp rule' => sub {
+    _setup();
 
-    ok !$cr->is_loaded;
-    ok !$cr->is_compiled;
-    is $cr->errors,   '';
-    is $cr->warnings, '';
+    my $cr = _build_compiled_rule(id_rule => undef, dsl => 'do { return "hello"; }');
+
     ok $cr->is_temp_rule;
-    ok !defined $cr->doc;
+
+    $cr->compile;
+
+    my $package = $cr->package;
+
+    like $package, qr/Clarive::RULE_[a-f0-9]+/;
+
+    is $package->run, 'hello';
+
+    $cr->unload;
 };
 
-subtest 'compiles rule' => sub {
+subtest 'compile: compiles rule' => sub {
     _setup();
 
     my $cr = _build_compiled_rule();
@@ -36,35 +43,147 @@ subtest 'compiles rule' => sub {
     ok $cr->is_loaded;
 
     my $package = $cr->package;
-    ok $package->can('isa');
+
+    is $package, 'Clarive::RULE_1';
+
+    is $package->run({job_step => 'RUN'}), 'hi there';
 
     $cr->unload;
 };
 
-subtest 'builds package name' => sub {
+subtest 'compile: returns info' => sub {
     _setup();
 
     my $cr = _build_compiled_rule();
 
-    is $cr->package, 'Clarive::RULE_1';
+    my $ret = $cr->compile;
+
+    cmp_deeply $ret, { err => '', t => re(qr/\d+\.\d+/) };
 
     $cr->unload;
 };
 
-subtest 'runs rule' => sub {
+subtest 'compile: recompiles if dsl changed' => sub {
     _setup();
 
     my $cr = _build_compiled_rule();
 
     $cr->compile;
-    $cr->run( stash => { job_step => 'RUN' } );
 
-    is $cr->return_value, 'hi there';
+    is $cr->package->run({job_step => 'RUN'}), 'hi there';
+
+    mdb->rule->update(
+        { id => '1' },
+        {
+            '$set' => {
+                "ts"      => "2016-01-01 13:42:57",
+                rule_tree => JSON::encode_json(
+                    [
+                        {
+                            "attributes" => {
+                                "leaf"           => \1,
+                                "nested"         => 0,
+                                "holds_children" => \0,
+                                "run_sub"        => \1,
+                                "palette"        => \0,
+                                "text"           => "CODE",
+                                "key"            => "statement.perl.code",
+                                "name"           => "CODE",
+                                "data"           => { "code" => "do {return 'new stuff'}" },
+                                "ts"             => "2016-01-01 13:42:57",
+                                "who"            => "root",
+                                "expanded"       => \0
+                            },
+                            "children" => []
+                        }
+                    ]
+                )
+            }
+        }
+    );
+
+    $cr->compile;
+
+    is $cr->package->run, 'new stuff';
 
     $cr->unload;
 };
 
-subtest 'calls another rule' => sub {
+subtest 'compile: do not recompile if nothing changed' => sub {
+    _setup();
+
+    my $cr = _build_compiled_rule();
+
+    $cr->compile;
+
+    my $ret = $cr->compile;
+
+    is_deeply $ret, {err => '', t => ''};
+
+    $cr->unload;
+};
+
+subtest 'compile: compiles rule from another version' => sub {
+    _setup();
+
+    my $version = mdb->rule_version->insert(
+        {
+            id_rule   => '1',
+            rule_tree => JSON::encode_json(
+                [
+                    {
+                        "attributes" => {
+                            "leaf"           => \1,
+                            "nested"         => 0,
+                            "holds_children" => \0,
+                            "run_sub"        => \1,
+                            "palette"        => \0,
+                            "text"           => "CODE",
+                            "key"            => "statement.perl.code",
+                            "name"           => "CODE",
+                            "data"           => { "code" => "do {return 'bye there'}" },
+                            "ts"             => "2015-06-30T13=>42=>57",
+                            "who"            => "root",
+                            "expanded"       => \0
+                        },
+                        "children" => []
+                    }
+                ]
+            )
+        }
+    );
+
+    my $cr = _build_compiled_rule(rule_version => $version);
+
+    $cr->compile;
+
+    my $package = $cr->package;
+
+    like $package, qr/Clarive::RULE_1_[a-f0-9]+/;
+
+    is $package->run, 'bye there';
+
+    $cr->unload;
+};
+
+subtest 'run: runs rule' => sub {
+    _setup();
+
+    my $cr = _build_compiled_rule();
+
+    $cr->compile;
+    my $ret = $cr->run( stash => { job_step => 'RUN' } );
+
+    is $cr->return_value, 'hi there';
+    is $cr->warnings,     '';
+    is $cr->errors,       '';
+
+    is_deeply $ret, {ret => 'hi there', err => ''};
+
+    $cr->unload;
+};
+
+subtest 'run: calls another rule' => sub {
     _setup();
 
     my $code = 'return call(1, $stash);';
@@ -89,7 +208,7 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"s
         }
     );
 
-    my $cr = _build_compiled_rule(id_rule => 2);
+    my $cr = _build_compiled_rule(id_rule => '2');
 
     $cr->compile;
     $cr->run( stash => { job_step => 'RUN' } );
@@ -147,21 +266,10 @@ subtest 'unloads rule' => sub {
     ok !$package->can('meta');
 };
 
-subtest 'creates temp rule' => sub {
-    my $cr = Baseliner::CompiledRule->new();
-
-    # WTF? this has to be called
-    $cr->id_rule;
-
-    ok $cr->is_temp_rule;
-    like $cr->id_rule, qr/^[a-f0-9]+$/;
-};
-
 subtest 'unloads temp rule on DESTROY' => sub {
     _setup();
 
-    my $cr = _build_compiled_rule();
-    $cr->is_temp_rule(1);
+    my $cr = _build_compiled_rule(id_rule => undef, dsl => 'do {}');
 
     $cr->compile;
 
@@ -186,18 +294,13 @@ sub _setup {
         {
             id                => '1',
             "rule_active"     => "1",
-            "wsdl"            => "",
             "rule_type"       => "chain",
             "rule_desc"       => "",
-            "authtype"        => "required",
             "rule_name"       => "test",
             "ts"              => "2015-06-30 13:44:11",
             "username"        => "root",
             "rule_seq"        => 1,
-            "rule_event"      => undef,
             "rule_when"       => "promote",
-            "subtype"         => "-",
-            "detected_errors" => "",
             "rule_tree" =>
 qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.png","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.png","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.png","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.png","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"2015-06-30T13:42:57","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.png","id":"xnode-1027"},"children":[]}]%
         }
@@ -236,7 +339,7 @@ sub _register_statements {
 }
 
 sub _build_compiled_rule {
-    return Baseliner::CompiledRule->new( id_rule => 1, @_ );
+    return Baseliner::CompiledRule->new( id_rule => '1', @_ );
 }
 
 done_testing;

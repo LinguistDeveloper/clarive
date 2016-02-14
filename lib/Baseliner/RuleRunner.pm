@@ -143,15 +143,13 @@ sub run_single_rule {
 
     my $id_rule = $p{id_rule} or _fail 'id_rule required';
     my $stash = $p{stash} // {};
+    my $rule_version = $p{rule_version};
 
     my $rule = $self->_find_rule_by_id_or_name($id_rule);
     _fail _loc 'Rule with id `%1` not found', $id_rule unless $rule;
 
-    my $rules_model = Baseliner::Model::Rules->new;
-    my @tree = $rules_model->build_tree( $rule->{id}, undef );
-
     my $ret = try {
-        $self->dsl_run( id_rule => $rule->{id}, stash => $stash, %p );
+        $self->dsl_run( id_rule => $rule->{id}, rule_version => $rule_version, stash => $stash, %p );
     }
     catch {
         _fail( _loc( "Error running rule '%1': %2", $rule->{rule_name}, shift() ) );
@@ -204,6 +202,7 @@ sub dsl_build_and_test {
 sub dsl_run {
     my ( $self, %p ) = @_;
     my $id_rule = $p{id_rule};
+    my $rule_version = $p{rule_version};
     local $@;
     my $ret;
     my $stash = $p{stash} // {};
@@ -212,7 +211,8 @@ sub dsl_run {
 
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
-    my $rule = Baseliner::CompiledRule->new( ( $id_rule ? ( id_rule => $id_rule ) : () ), dsl => $p{dsl} );
+    my $rule = Baseliner::CompiledRule->new( ( $id_rule ? ( id_rule => $id_rule, rule_version => $rule_version ) : () ),
+        dsl => $p{dsl} );
     $rule->compile;
     $rule->run( stash => $stash );    # if there's a compile error it wont run
     ##############################

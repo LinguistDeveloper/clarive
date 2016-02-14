@@ -403,7 +403,7 @@ sub submit : Local {
     my $runner = $config->{runner};
     my $job_name;
     my $username = $c->username;
-    
+
     #TODO move this whole thing to the Model Jobs
     try {
         use Baseliner::Sugar;
@@ -447,6 +447,7 @@ sub submit : Local {
             my $bl_to    = $p->{bl_to};
             my $state_to    = $p->{state_to};
             my $id_rule = $p->{id_rule};
+            my $rule_version = $p->{rule_version};
             my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { undef };
             
             my $contents = $p->{changesets};
@@ -467,6 +468,7 @@ sub submit : Local {
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,
+                    rule_version => $rule_version,
                     description  => $comments,
                     comments     => $comments,
                     stash_init   => $job_stash, # only used to create the stash

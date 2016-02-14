@@ -136,9 +136,20 @@ sub load_tree {
 
 sub build_tree {
     my ($self, $id_rule, $parent, %p) = @_;
-    # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
-    _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+
+    my $rule;
+
+    # Temporary workaround
+    if (ref $id_rule) {
+        $rule = $id_rule;
+        $id_rule = $rule->{id};
+    }
+    else {
+        # TODO run query just once and work with a hash ->hash_for( id_parent )
+        $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
+        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+    }
+
     my $rule_tree_json = $rule->{rule_tree};
 
     if( $rule_tree_json ) {

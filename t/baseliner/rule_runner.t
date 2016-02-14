@@ -28,7 +28,7 @@ subtest 'run_single_rule: runs rule' => sub {
       {
         ret => {
             stash => ignore(),
-            dsl   => re(qr/print 'hello'/),
+            dsl   => 'Clarive::RULE_1',
         },
         dsl => ''
       };
