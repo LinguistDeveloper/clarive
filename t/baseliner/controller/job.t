@@ -99,6 +99,43 @@ subtest 'monitor_json: returns jobs data' => sub {
     is $c->stash->{json}->{totalCount}, 1;
 };
 
+subtest 'pipeline_versions: returns versions data' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 10:00:00', username => 'foo'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 11:00:00', username => 'bar'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', username => 'baz'} );
+
+    my $c = mock_catalyst_c(username => 'developer', req => {params => {id_rule => $id_rule}});
+
+    my $controller = _build_controller();
+
+    $controller->pipeline_versions($c);
+
+    cmp_deeply $c->stash, {
+        json => {
+            success => \1,
+            data => [
+                {
+                    id => ignore(),
+                    rule_version => 'Latest (baz)',
+                },
+                {
+                    id => ignore(),
+                    rule_version => '2015-01-01 11:00:00 (bar)',
+                },
+                {
+                    id => ignore(),
+                    rule_version => '2015-01-01 10:00:00 (foo)',
+                },
+            ],
+            totalCount => 3,
+        }
+    };
+};
+
 done_testing;
 
 sub _setup {
@@ -115,6 +152,7 @@ sub _setup {
     TestUtils->cleanup_cis;
 
     mdb->rule->drop;
+    mdb->rule_version->drop;
 
     TestUtils->create_ci('bl', name => 'Common', bl => '*');
     TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');

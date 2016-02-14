@@ -185,11 +185,44 @@
         anchor: '100%'
     });
 
+    var store_versions = new Baseliner.JsonStore({
+        url: '/job/pipeline_versions',
+        root: 'data',
+        totalProperty: 'totalCount',
+        id: 'id',
+        autoLoad: false,
+        fields: ['id','rule_version']
+    });
+    store_versions.on('load', function(){
+        var row = this.getAt(0);
+        if( row ) {
+            combo_versions.setValue( row.data.id );
+        }
+    });
+
+    var combo_versions = new Ext.form.ComboBox({
+        fieldLabel: _('Version'),
+        name: 'rule_version',
+        displayField:'rule_version',
+        hiddenName:'rule_version', 
+        valueField: 'id',
+        store: store_versions,
+        //singleMode: true,
+        mode: 'remote',
+        minChars: 0, //min_chars ,
+        loadingText: _('Searching...'),
+        allowBlank: false,
+        editable: false,
+        lazyRender: true,
+        hidden: <% $has_chain_perm ? 'false':'true' %>
+    });
+
     var store_chain = new Baseliner.JsonStore({
         url: '/job/pipelines', root: 'data', totalProperty: 'totalCount', id: 'id',
         autoLoad: false,
         fields:['id','rule_name','rule_type']
     });
+
     var combo_chain = new Ext.form.ComboBox({ //new Baseliner.SuperBox({
         fieldLabel: _('Pipeline'),
             name: 'id_rule',
@@ -213,6 +246,9 @@
         var row = store_chain.getAt(0);
         if( row ) {
             combo_chain.setValue( row.data.id );
+
+            store_versions.baseParams.id_rule = row.data.id;
+            store_versions.load();
         } else {
             Baseliner.error(_('Job'), _('No job pipelines available') );
         }
@@ -986,7 +1022,8 @@
                     hidden_baseline_to,
                     hidden_state_to,
                     combo_transitions,
-                    combo_chain
+                    combo_chain,
+                    combo_versions
                 ]},
                 { columnWidth:.5, style: { 'margin-left': '20px' }, 
                     defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[

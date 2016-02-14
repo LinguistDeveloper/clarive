@@ -81,6 +81,35 @@ sub pipelines : Local {
     $c->forward('View::JSON');
 }
 
+sub pipeline_versions : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->req->params;
+
+    my $id_rule = $p->{id_rule};
+
+    my @rule_versions = mdb->rule_version->find( { id_rule => $id_rule } )->sort( { ts => -1 } )->all;
+
+    my @data;
+    foreach my $rule_version (@rule_versions) {
+        my $version = @data ? $rule_version->{ts} : _loc('Latest');
+
+        if ($rule_version->{username}) {
+            $version .= sprintf ' (%s)', $rule_version->{username};
+        }
+
+        push @data,
+          {
+            id           => $rule_version->{_id} . '',
+            rule_version => $version
+          };
+    }
+
+    $c->stash->{json} = { success => \1, data => \@data, totalCount => scalar(@data) };
+
+    $c->forward('View::JSON');
+}
+
 sub rollback : Local {
     my ( $self, $c ) = @_;
     # local $Baseliner::_no_cache = 1;
