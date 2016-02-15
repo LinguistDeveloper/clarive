@@ -351,6 +351,7 @@ subtest 'topics_for_user: returns topics' => sub {
                 '$in' => [$id_category]
             }
         },
+        'query' => undef,
         'sort'  => { 'modified_on' => -1 },
         'count' => 2
       };
@@ -406,6 +407,7 @@ subtest 'topics_for_user: returns topics' => sub {
                 '$in' => [$id_category]
             }
         },
+        'query' => undef,
         'sort'  => { 'modified_on' => -1 },
         'count' => 2
       };
