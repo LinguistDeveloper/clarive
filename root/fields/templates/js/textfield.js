@@ -31,8 +31,8 @@ params:
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
             allowBlank: allowBlank,
-            readOnly: meta ? meta.readonly : true,
-            maxLength: meta ? meta.maxLength : undefined,
+            readOnly: Baseliner.eval_boolean(meta.readonly, true),
+            maxLength: meta.maxLength ? meta.maxLength : 255,
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
