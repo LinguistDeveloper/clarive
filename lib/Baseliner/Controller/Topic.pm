@@ -147,7 +147,7 @@ sub list : Local {
     } elsif( my $id = $p->{id_report_rule} ) {
         $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}};
     } else {
-        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query} };
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query}, query=>$p->{query}, username=>$p->{username} };
     }
    $c->forward('View::JSON');
 }
@@ -212,7 +212,7 @@ sub get_items {
         $data = {
             data=>\@rows, 
             totalCount=>$$info{count}, 
-            last_query=>$$info{last_query} 
+            last_query=>$$info{last_query},
         };
         #_log "data  "._dump $data;
 
@@ -2173,7 +2173,12 @@ sub change_status : Local {
 
 sub grid_count : Local {
     my ($self,$c)=@_;
-    if( my $lq = $c->req->params->{lq} ) {
+    my $p = $c->req->params;
+    if( my $lq = $p->{lq} ) {
+        if($lq->{'$and'}){  
+            my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username});
+            $lq->{'$and'} = $where->{'$and'};
+        }
         my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
         $c->stash->{json} = { count=>$cnt };
     } else {
