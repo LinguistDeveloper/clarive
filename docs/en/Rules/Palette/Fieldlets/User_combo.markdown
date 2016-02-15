@@ -41,6 +41,5 @@ icon: combo_box
 
 <br />
 ### Advanced filter JSON
-* Allows to use a JSON format to add a condition. 
-* Also the user can filter by role. `Developer` : Only shows the users with that specific role.
+* The user can filter by role. `Developer` : Only shows the users with that specific role.
 

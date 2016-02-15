@@ -1,6 +1,6 @@
 ---
 title: Topic Kanban Board
-index: 1200
+index: 6000
 icon: kanban
 ---
 
