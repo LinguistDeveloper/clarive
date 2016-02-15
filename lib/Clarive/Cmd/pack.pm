@@ -101,9 +101,16 @@ sub run_dist {
     );
     my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
-    `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
+    if (-d '.git') {
+        `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
+    }
+    else {
+        `find $base/clarive -type f | sed -e 's#^$base/##' > MANIFEST`;
+    }
+
     `find $base/local -type f | sed -e 's#^$base/##' >> MANIFEST`;
     `echo 'stew.snapshot' >> MANIFEST`;
+    `echo 'clarive/VERSION' >> MANIFEST`;
 
     my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
       $exclude_str, $archive_path;
