@@ -2651,6 +2651,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     },
     defaultAutoCreate : {tag: 'div', 'class':'', style:'margin-top: 0px; height: 30px;' },
     onRender : function(){
+        var i;
         Baseliner.Pills.superclass.onRender.apply(this, arguments);
         this.list = [];
         var self = this;
@@ -2671,7 +2672,6 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 anchor.href = '#'; 
                 anchor.onclick = function(){
                     if ( !self.readOnly ){
-                        var i;
                         for ( i=0; i<self.list.length; i++ ) {
                             self.list[i].className = '';
                         }
@@ -2706,7 +2706,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
         // the main navbar
         var ul = document.createElement('ul');
         ul.className = "nav nav-pills";
-        for( var i=0; i<self.list.length; i++){
+        for( i=0; i<self.list.length; i++){
             ul.appendChild( self.list[i] );
         }
         boot.appendChild( ul );
