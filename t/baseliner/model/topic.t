@@ -294,11 +294,11 @@ subtest 'upload: creates correct event.file.create event' => sub {
 
     my $asset = ci->asset->find_one;
 
-    is $event_data->{username}, 'clarive';
-    is $event_data->{mid},      $topic_mid;
-    is $event_data->{id_file},  $asset->{mid};
-    is $event_data->{id_field_asset},  'test_file';
-    is $event_data->{filename}, $filename;
+    is $event_data->{username},       'clarive';
+    is $event_data->{mid},            $topic_mid;
+    is $event_data->{id_file},        $asset->{mid};
+    is $event_data->{id_field_asset}, 'test_file';
+    is $event_data->{filename},       $filename;
     is_deeply $event_data->{notify_default}, [];
     like $event_data->{subject}, qr/Created file $filename to topic \[\d+\]/;
 };
@@ -326,7 +326,7 @@ subtest 'topics_for_user: returns topics' => sub {
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
 
     cmp_deeply $data,
       {
@@ -337,7 +337,7 @@ subtest 'topics_for_user: returns topics' => sub {
             '$or' => [
                 {
                     '_project_security.project' => {
-                        '$in' => [$project->mid]
+                        '$in' => [ $project->mid ]
                     },
                     'category.id' => {
                         '$in' => [$id_category]
@@ -381,7 +381,7 @@ subtest 'topics_for_user: returns topics' => sub {
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
 
     cmp_deeply $data,
       {
@@ -392,7 +392,7 @@ subtest 'topics_for_user: returns topics' => sub {
             '$or' => [
                 {
                     '_project_security.project' => {
-                        '$in' => [$project->mid]
+                        '$in' => [ $project->mid ]
                     },
                     'category.id' => {
                         '$in' => [$id_category]
@@ -436,7 +436,7 @@ subtest 'topics_for_user: returns topics limited' => sub {
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, limit => 5});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, limit => 5 } );
 
     is scalar @rows, 5;
 };
@@ -464,14 +464,14 @@ subtest 'topics_for_user: returns topics sorted' => sub {
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, sort => 'topic_name'});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, sort => 'topic_name' } );
 
     my ($topic_number)  = $rows[0]->{topic_name} =~ m/#(\d+)/;
     my ($topic_number2) = $rows[1]->{topic_name} =~ m/#(\d+)/;
 
     ok $topic_number > $topic_number2;
 
-    ($data, @rows) = $model->topics_for_user({username => $user->username, sort => 'topic_name', dir => -1});
+    ( $data, @rows ) = $model->topics_for_user( { username => $user->username, sort => 'topic_name', dir => -1 } );
 
     ($topic_number)  = $rows[0]->{topic_name} =~ m/#(\d+)/;
     ($topic_number2) = $rows[1]->{topic_name} =~ m/#(\d+)/;
@@ -499,14 +499,20 @@ subtest 'topics_for_user: returns topics filtered by category' => sub {
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $id_category2 = TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
-    TestSetup->create_topic( project => $project, id_category => $id_category2, status => $status, title => "Other Topic" );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category2,
+        status      => $status,
+        title       => "Other Topic"
+    );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, categories => [$id_category]});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, categories => [$id_category] } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Topic';
@@ -532,14 +538,20 @@ subtest 'topics_for_user: returns topics filtered by category negative' => sub {
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $id_category2 = TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
-    TestSetup->create_topic( project => $project, id_category => $id_category2, status => $status, title => "Other Topic" );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category2,
+        status      => $status,
+        title       => "Other Topic"
+    );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, categories => ["!$id_category"]});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, categories => ["!$id_category"] } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Other Topic';
@@ -563,12 +575,18 @@ subtest 'topics_for_user: returns topics filtered topic mid' => sub {
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
-    my $mid = TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
-    my $mid2 = TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Other Topic" );
+    my $mid =
+      TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
+    my $mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Other Topic"
+    );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, topic_list => [$mid2]});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, topic_list => [$mid2] } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Other Topic';
@@ -588,7 +606,7 @@ subtest 'topics_for_user: returns topics filtered by assigned to me' => sub {
         ]
     );
 
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
@@ -597,13 +615,17 @@ subtest 'topics_for_user: returns topics filtered by assigned to me' => sub {
       TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
     mdb->master_rel->insert( { from_mid => $topic_mid, to_mid => $user->mid, rel_type => 'topic_users' } );
 
-    my $topic_mid2 =
-      TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Other Topic" );
+    my $topic_mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Other Topic"
+    );
     mdb->master_rel->insert( { from_mid => $topic_mid, to_mid => $user2->mid, rel_type => 'topic_users' } );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, assigned_to_me => 1});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, assigned_to_me => 1 } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Topic';
@@ -612,11 +634,11 @@ subtest 'topics_for_user: returns topics filtered by assigned to me' => sub {
 subtest 'topics_for_user: returns topics filtered by statuses' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule         = TestSetup->create_rule_form();
     my $status_initial  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_finished  = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $project         = TestUtils->create_ci_project;
+    my $id_role         = TestSetup->create_role(
         actions => [
             {
                 action => 'action.topics.category.view',
@@ -624,17 +646,28 @@ subtest 'topics_for_user: returns topics filtered by statuses' => sub {
         ]
     );
 
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
+    my $id_category =
+      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
 
-    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status_initial, title => "Topic" );
-    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status_finished, title => "Finished Topic" );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_initial,
+        title       => "Topic"
+    );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_finished,
+        title       => "Finished Topic"
+    );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Topic';
@@ -643,12 +676,12 @@ subtest 'topics_for_user: returns topics filtered by statuses' => sub {
 subtest 'topics_for_user: returns topics clear filtered' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
-    my $status_initial  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_in_progress  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished  = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_initial     = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $project            = TestUtils->create_ci_project;
+    my $id_role            = TestSetup->create_role(
         actions => [
             {
                 action => 'action.topics.category.view',
@@ -656,18 +689,34 @@ subtest 'topics_for_user: returns topics clear filtered' => sub {
         ]
     );
 
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
+    my $id_category =
+      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
 
-    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status_initial, title => "Topic" );
-    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status_in_progress, title => "In Progress Topic" );
-    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status_finished, title => "Finished Topic" );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_initial,
+        title       => "Topic"
+    );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_in_progress,
+        title       => "In Progress Topic"
+    );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status_finished,
+        title       => "Finished Topic"
+    );
 
     my $model = _build_model();
 
-    my ($data, @rows) = $model->topics_for_user({username => $user->username, clear_filter => 1});
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, clear_filter => 1 } );
 
     is @rows, 3;
 };
@@ -686,12 +735,12 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
         ]
     );
 
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
-    my $id_label_one = TestSetup->create_label(name => 'one');
+    my $id_label_one = TestSetup->create_label( name => 'one' );
     TestSetup->create_topic(
         project     => $project,
         id_category => $id_category,
@@ -700,16 +749,16 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
         title       => "Topic one"
     );
 
-    my $id_label_two = TestSetup->create_label(name => 'two');
+    my $id_label_two = TestSetup->create_label( name => 'two' );
     TestSetup->create_topic(
         project     => $project,
         id_category => $id_category,
         status      => $status,
-        labels       => [$id_label_two],
+        labels      => [$id_label_two],
         title       => "Topic two"
     );
 
-    my $id_label_three = TestSetup->create_label(name => 'three');
+    my $id_label_three = TestSetup->create_label( name => 'three' );
     TestSetup->create_topic(
         project     => $project,
         id_category => $id_category,
@@ -720,8 +769,7 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
 
     my $model = _build_model();
 
-    my ( $data, @rows ) = $model->topics_for_user(
-        { username => $user->username, labels => [$id_label_one]} );
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, labels => [$id_label_one] } );
 
     is @rows, 1;
     is $rows[0]->{title}, 'Topic one';
@@ -730,8 +778,8 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
 subtest 'build_sort: builds correct condition' => sub {
     my $model = _build_model();
 
-    is_deeply $model->build_sort('some_field', 1), {'_sort.some_field' => 1};
-    is_deeply $model->build_sort('some_field', -1), {'_sort.some_field' => -1};
+    is_deeply $model->build_sort( 'some_field', 1 ),  { '_sort.some_field' => 1 };
+    is_deeply $model->build_sort( 'some_field', -1 ), { '_sort.some_field' => -1 };
 
     for (
         qw/
@@ -745,38 +793,38 @@ subtest 'build_sort: builds correct condition' => sub {
         /
       )
     {
-        is_deeply $model->build_sort($_, 1), {$_ => 1};
-        is_deeply $model->build_sort($_, -1), {$_ => -1};
+        is_deeply $model->build_sort( $_, 1 ),  { $_ => 1 };
+        is_deeply $model->build_sort( $_, -1 ), { $_ => -1 };
     }
 
-    is_deeply $model->build_sort('topic_mid', 1), {'_id' => 1};
-    is_deeply $model->build_sort('topic_mid', -1), {'_id' => -1};
+    is_deeply $model->build_sort( 'topic_mid', 1 ),  { '_id' => 1 };
+    is_deeply $model->build_sort( 'topic_mid', -1 ), { '_id' => -1 };
 
-    my $ix_hash = $model->build_sort('topic_name', 1);
-    my @keys = $ix_hash->Keys;
-    my @values = $ix_hash->Values;
+    my $ix_hash = $model->build_sort( 'topic_name', 1 );
+    my @keys    = $ix_hash->Keys;
+    my @values  = $ix_hash->Values;
 
     my %hash = pairwise { no warnings 'once'; ( $a, $b ) } @keys, @values;
 
-    is_deeply \%hash, {created_on => 1, mid => 1};
+    is_deeply \%hash, { created_on => 1, mid => 1 };
 };
 
 subtest 'grep_in_and_nin: builds correct condition' => sub {
     my $model = _build_model();
 
-    is_deeply $model->grep_in_and_nin([1, 2, 3], []), [1, 2, 3];
-    is_deeply $model->grep_in_and_nin([1, 2, 3], [1]), [1];
-    is_deeply $model->grep_in_and_nin([1, 2, 3], ['!2']), [1, 3];
-    is_deeply $model->grep_in_and_nin([1, 2, 3], [1, 2, 3, '!1', '!2']), [3];
-    is_deeply $model->grep_in_and_nin([1, 2, 3, 4], [1, 2, 3, '!1', '!2', '!3']), [];
+    is_deeply $model->grep_in_and_nin( [ 1, 2, 3 ], [] ), [ 1, 2, 3 ];
+    is_deeply $model->grep_in_and_nin( [ 1, 2, 3 ], [1] ), [1];
+    is_deeply $model->grep_in_and_nin( [ 1, 2, 3 ], ['!2'] ), [ 1, 3 ];
+    is_deeply $model->grep_in_and_nin( [ 1, 2, 3 ], [ 1, 2, 3, '!1', '!2' ] ), [3];
+    is_deeply $model->grep_in_and_nin( [ 1, 2, 3, 4 ], [ 1, 2, 3, '!1', '!2', '!3' ] ), [];
 };
 
 subtest 'build_in_and_nin_query: builds correct condition' => sub {
     my $model = _build_model();
 
-    is_deeply $model->build_in_and_nin_query( []), undef;
-    is_deeply $model->build_in_and_nin_query( [1]),  { '$in'  => [1] };
-    is_deeply $model->build_in_and_nin_query( ['!2']), { '$nin' => [2] };
+    is_deeply $model->build_in_and_nin_query( [] ), undef;
+    is_deeply $model->build_in_and_nin_query( [1] ),    { '$in'  => [1] };
+    is_deeply $model->build_in_and_nin_query( ['!2'] ), { '$nin' => [2] };
     is_deeply $model->build_in_and_nin_query( [ 1, 2, 3, '!1', '!2' ] ), { '$in' => [ 1, 2, 3 ], '$nin' => [ 1, 2 ] };
 };
 
@@ -799,7 +847,7 @@ subtest 'status_changes: returns all the status changes' => sub {
         $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
     };
 
-    my @changes = $model->status_changes({mid => $topic_mid});
+    my @changes = $model->status_changes( { mid => $topic_mid } );
 
     is scalar @changes, 2;
     is_deeply $changes[0],
@@ -826,11 +874,11 @@ subtest 'get_users_friend: returns users with same rights for this category and 
 
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role();
-    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
-    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+    my $user1   = TestSetup->create_user( name => 'user1', id_role => $id_role, project => $project );
+    my $user2   = TestSetup->create_user( name => 'user2', id_role => $id_role, project => $project );
 
     my $id_role_other = TestSetup->create_role();
-    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+    my $user3 = TestSetup->create_user( name => 'user3', id_role => $id_role_other, project => $project );
 
     my $workflow = [
         {
@@ -848,8 +896,7 @@ subtest 'get_users_friend: returns users with same rights for this category and 
 
     my $model = _build_model();
 
-    my @friends =
-      $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
+    my @friends = $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
 
     is_deeply \@friends, [qw/user1 user2/];
 };
@@ -862,11 +909,11 @@ subtest 'get_users_friend: returns empty when no category found' => sub {
 
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role();
-    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
-    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+    my $user1   = TestSetup->create_user( name => 'user1', id_role => $id_role, project => $project );
+    my $user2   = TestSetup->create_user( name => 'user2', id_role => $id_role, project => $project );
 
     my $id_role_other = TestSetup->create_role();
-    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+    my $user3 = TestSetup->create_user( name => 'user3', id_role => $id_role_other, project => $project );
 
     my $workflow = [
         {
@@ -884,8 +931,7 @@ subtest 'get_users_friend: returns empty when no category found' => sub {
 
     my $model = _build_model();
 
-    my @friends =
-      $model->get_users_friend( id_category => 'unknown-123', id_status => $status_new->mid );
+    my @friends = $model->get_users_friend( id_category => 'unknown-123', id_status => $status_new->mid );
 
     is_deeply \@friends, [];
 };
@@ -898,11 +944,11 @@ subtest 'get_users_friend: returns empty when no role found' => sub {
 
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role();
-    my $user1 = TestSetup->create_user(name => 'user1', id_role => $id_role, project => $project);
-    my $user2 = TestSetup->create_user(name => 'user2', id_role => $id_role, project => $project);
+    my $user1   = TestSetup->create_user( name => 'user1', id_role => $id_role, project => $project );
+    my $user2   = TestSetup->create_user( name => 'user2', id_role => $id_role, project => $project );
 
     my $id_role_other = TestSetup->create_role();
-    my $user3 = TestSetup->create_user(name => 'user3', id_role => $id_role_other, project => $project);
+    my $user3 = TestSetup->create_user( name => 'user3', id_role => $id_role_other, project => $project );
 
     my $id_category = TestSetup->create_category(
         name      => 'Category',
@@ -911,8 +957,7 @@ subtest 'get_users_friend: returns empty when no role found' => sub {
 
     my $model = _build_model();
 
-    my @friends =
-      $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
+    my @friends = $model->get_users_friend( id_category => $id_category, id_status => $status_new->mid );
 
     is_deeply \@friends, [];
 };
@@ -934,7 +979,7 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
             },
         ]
     );
-    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_changeset_rule = TestSetup->create_rule_form(
         rule_tree => [
@@ -972,12 +1017,12 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
         status      => $status
     );
 
-    my $topic_meta = Baseliner::Model::Topic->new->get_meta($changeset_mid, $id_changeset_category, $user->username);
+    my $topic_meta = Baseliner::Model::Topic->new->get_meta( $changeset_mid, $id_changeset_category, $user->username );
 
     my $meta = $model->get_meta_permissions(
         'data' => {
             'topic_mid' => $changeset_mid,
-            'category' => {
+            'category'  => {
                 'id'   => $id_changeset_category,
                 'name' => 'Changeset',
             },
@@ -986,7 +1031,7 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
                 'name' => 'New',
             },
         },
-        meta => $topic_meta,
+        meta     => $topic_meta,
         username => $user->username
     );
 
@@ -997,16 +1042,110 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
     cmp_deeply $release_field->{readonly}, \0;
 };
 
+subtest 'get_users: returns users filtering by role' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'asignada',
+                    },
+                    "key" => "fieldlet.system.users",
+                    name  => 'Asiganada',
+                }
+            }
+        ],
+    );
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic',
+        asignada    => $user->mid
+    );
+
+    my $model = _build_model();
+    my $users = $model->get_users( $topic_mid, 'asignada', undef, {} );
+
+    is scalar @$users, 1;
+    is $users->[0]->{username}, $user->username;
+};
+
+subtest 'get_users: adds username field to the data' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => 'asignada',
+                    },
+                    "key" => "fieldlet.system.users",
+                    name  => 'Asiganada',
+                }
+            }
+        ],
+    );
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic',
+        asignada    => $user->mid
+    );
+    my $data  = {};
+    my $model = _build_model();
+    my $users = $model->get_users( $topic_mid, 'asignada', undef, $data );
+
+    is $data->{"asignada._user_name"}, $user->username;
+};
+
 done_testing();
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',
-        'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',          'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;

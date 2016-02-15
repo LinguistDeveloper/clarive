@@ -1528,12 +1528,12 @@ sub get_projects {
 }
 
 sub get_users {
-    my ($self, $topic_mid, $id_field ) = @_;
+    my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my @users = mdb->joins( 
             master_rel=>{ rel_field=>$id_field, from_mid=>"$topic_mid", rel_type=>'topic_users' },
             to_mid=>mid => 
             master_doc =>[{},{ fields=>{ mid=>1, username=>1, realname=>1 } }] );
-
+    $data->{"$id_field._user_name"} = join ', ', sort map { $_->{username} } @users;
     return @users ? \@users : [];
 }
 
