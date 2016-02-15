@@ -3,10 +3,6 @@ title: Topic selector
 index: 400
 icon: combo_box
 ---
-
-    
-<br />
-
 * Permite añadir un tópico existente al nuevo tópico.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
@@ -67,8 +63,19 @@ icon: combo_box
 ### Lista de columnas para mostrar en el grid
 * Permite seleccionar las columnas que serán mostradas en el grid.
 * Por defecto las columnas que se muestran son las de Nombre del tópico (muestra la categoria y el ID) y Título del tópico.
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+* Se indica primero el dato de la columna y posteriormente el nombre de la columna, por ejemplo:
+    *name;title;Proyectos.__project_name_list,**Proyectos**;name_status,**Estado**;Asignada.__user_name,**Asignada**,ci; prioridad,**Prioridad**;complejidad,**Complejidad***.
 
+&nbsp; &nbsp;• Mostrará las siguientes columnas con el siguiente contenido: <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Name** - Muestra el número de tópico en una columna llamada ID. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Title** - Muestra el título del tópico en una columna llamada Título. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Proyectos** - Muestra el nombre de los proyectos a través de la variable: *_project_name_list*. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Estado** - Muestra el nombre del estado. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Asignada** - Muestra el nombre de usuario asignado al tópico. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Prioridad** - Muestra la prioridad del tópico. <br />
+&nbsp; &nbsp;&nbsp; &nbsp;• **Complejidad** - Muestra la complejidad. <br />
+
+* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet.
 
 <br />
 ### Altura del grid en modo edición
