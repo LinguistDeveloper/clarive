@@ -827,9 +827,12 @@ Baseliner.ci_box = function(c) {
     var displayFieldTpl = new Ext.XTemplate( 
         '<tpl for=".">'
        +  '<span id="boot" class="ui-ci_box-' + c.name + '" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong> <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong>'
+       +  '<tpl if="this.showClass">'
+       +  '<span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
+       +  '</tpl>'
        +  '</span>'
-       +'</tpl>'  
+       +'</tpl>', {showClass : show_class}
     );
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
