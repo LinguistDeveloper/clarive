@@ -96,8 +96,6 @@ sub run_dist {
       clarive/t
       clarive/ui-tests
       clarive/rec-tests
-      clarive/features/extjs_3.4.0/root/static/ext/docs
-      clarive/features/extjs_3.4.0/root/static/ext/examples
     );
     my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
