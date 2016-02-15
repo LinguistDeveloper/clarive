@@ -545,6 +545,10 @@ a {
     background-image:url('/static/images/icons/folder-collapsed.png');
 }
 
+.x-tree-node-leaf .default_folders {
+     background-image:url('/static/images/icons/leaf.png');
+}
+
 .x-tree-node-loading .x-tree-node-icon {
     background-image:url('/static/images/loading-fast.gif') !important;
 }
@@ -554,3 +558,5 @@ a {
 
 
 }
+
+

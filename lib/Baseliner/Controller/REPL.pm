@@ -345,7 +345,7 @@ sub tree_saved : Local {
         sort { lc $a->{text} cmp lc $b->{text} }
         map {
             my $id = "$_->{_id}";
-            { _id=>$id, text =>$_->{text},leaf => \1, url_click => '/repl/load', data=>{ _id=>$id, id=>$id } };
+            { _id=>$id, text =>$_->{text},iconCls => 'default_folders',leaf => \1, url_click => '/repl/load', data=>{ _id=>$id, id=>$id } };
         } @docs
     ];
     $c->forward( 'View::JSON' );
@@ -364,6 +364,7 @@ sub tree_hist : Local {
             $code = substr( $code, 0, 30 );
             +{
                 text      => sprintf( '%s (%s): %s', $_->{text}, $_->{lang}, $code ),
+                iconCls => 'default_folders',
                 leaf      => \1,
                 url_click => '/repl/load_hist',
                 data => {text => $_->{text}}
@@ -411,11 +412,12 @@ sub tree_class : Local {
         map {
             {
                 text      => $_,
+                iconCls => 'default_folders',
                 leaf      => \0,
                 url       => '/repl/class_meth',
                 url_click => '/repl/class_pod',
-                data      => {class => $_},
-                iconCls   => 'icon-cmp'
+                data      => {class => $_}
+              
             }
             }
             grep {
@@ -474,10 +476,11 @@ sub class_meth : Local {
     my @attrs = map {
         {
             text      => $_,
+            iconCls   => 'default_folders',
             leaf      => \1,
             url_click => '/repl/attr_pod',
-            data      => {class => $class, attr => $_},
-            iconCls   => 'icon-prop'
+            data      => {class => $class, attr => $_}
+
         }
         } grep {
         $query ? /$query/ : 1
@@ -485,10 +488,11 @@ sub class_meth : Local {
     my @meths = map {
         {
             text      => $_,
+            iconCls   => 'default_folders',
             leaf      => \1,
             url_click => '/repl/meth_pod',
-            data      => {class => $class, meth => $_},
-            iconCls   => 'icon-method'
+            data      => {class => $class, meth => $_}
+
         }
         } grep {
         $query ? /$query/ : 1
@@ -501,11 +505,12 @@ sub tree_main : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
     $c->stash->{json} = [
-        {text => 'History', url => '/repl/tree_hist', leaf => \0, expandable => \1, expanded => \0},
+        {text => 'History', url => '/repl/tree_hist', leaf => \0, expandable => \1, expanded => \0, iconCls => 'default_folders'},
         {
             text       => 'Baseliner Classes',
             url        => '/repl/tree_class',
             leaf       => \0,
+            iconCls => 'default_folders',
             expandable => \1,
             expanded   => \0,
             data       => {filter => '^Baseliner'}
@@ -513,12 +518,13 @@ sub tree_main : Local {
         {
             text       => 'Other Classes',
             url        => '/repl/tree_class',
+            iconCls => 'default_folders',
             leaf       => \0,
             expandable => \1,
             expanded   => \0,
             data       => {filter => '^(?!Baseliner)'}
         },
-        {text => 'Saved', url => '/repl/tree_saved', leaf => \0, expandable => \1, expanded => \0},
+        {text => 'Saved', url => '/repl/tree_saved', leaf => \0, expandable => \1, expanded => \0, iconCls => 'default_folders'},
     ];
     $c->forward( 'View::JSON' );
 } ## end sub tree_main :
@@ -580,7 +586,7 @@ sub push_to_history {
             delete $hist->{$oldest} if $oldest;
         }
         my $key = _now();
-        $hist->{$key} = {text => $key, code => $code, lang => $lang, output => $output};
+        $hist->{$key} = {text => $key, iconCls => 'default_folders', code => $code, lang => $lang, output => $output};
 
         #$session->{repl_hist} = \@hist;
         $session->{repl_md5} = $md5;
