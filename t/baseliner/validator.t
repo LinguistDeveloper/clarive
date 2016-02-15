@@ -99,6 +99,21 @@ subtest 'validates against the isa subtype' => sub {
       };
 };
 
+subtest 'validates against the isa alternatives' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Int|ArrayRef' );
+
+    my $vresult = $validator->validate( { foo => 'abc' } );
+    is $vresult->{is_valid}, 0;
+
+    $vresult = $validator->validate( { foo => 1 } );
+    is $vresult->{is_valid}, 1;
+
+    $vresult = $validator->validate( { foo => [1] } );
+    is $vresult->{is_valid}, 1;
+};
+
 subtest 'validates with coersion' => sub {
     my $validator = _build_validator();
 
