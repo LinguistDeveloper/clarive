@@ -14,6 +14,22 @@ use Clarive::mdb;
 
 use_ok 'Baseliner::Controller::Role';
 
+subtest 'action_tree: returns all actions when new role' => sub {
+    _setup();
+
+    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
+
+    my $c = _build_c( req => { params => { } }, authenticate => {} );
+
+    ok $controller->action_tree($c);
+
+    my $actions = $c->stash->{json};
+
+    is scalar @$actions, 1;
+
+    is $actions->[0]->{key}, 'action.topics';
+};
+
 subtest 'action_tree: returns action tree' => sub {
     _setup();
 

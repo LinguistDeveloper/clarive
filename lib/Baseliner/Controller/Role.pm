@@ -133,10 +133,10 @@ sub action_tree : Local {
 
     my $params = $c->req->parameters;
 
-    my $id_role = $params->{id_role};
+    my $id_role = $params->{id_role} // '';
     my $role;
 
-    if ( !$id_role || !( $role = mdb->role->find_one( { id => $id_role } ) ) ) {
+    if ( $id_role && !( $role = mdb->role->find_one( { id => $id_role } ) ) ) {
         $c->stash->{json} = { success => \0 };
         $c->forward("View::JSON");
         return;
@@ -159,7 +159,7 @@ sub action_tree : Local {
             my $txt  = "$key,$name";
             if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
                 my $icon = '/static/images/icons/lock_small.png';
-                if ( $permissions->has_role_action( action => $key, role => $role ) ) {
+                if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
                     $icon = '/static/images/icons/checkbox.png';
                 }
 
@@ -205,7 +205,7 @@ sub action_tree : Local {
             my $icon = '/static/images/icons/lock_small.png';
 
             my $text = $act->{name};
-            if ( $permissions->has_role_action( action => $key, role => $role ) ) {
+            if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
                 if (!$folders{$fkey}->{_modified}) {
                     $folders{$fkey}->{_modified}++;
                     $folders{$fkey}->{icon} = '/static/images/icons/folder.gif';
