@@ -465,23 +465,38 @@ sub topics_by_category: Local {
 sub topics_by_field : Local {
     my ( $self, $c ) = @_;
 
-    my $p = $c->request->parameters;
+    return
+      unless my $p = $self->validate_params(
+        $c,
+        group_threshold     => { isa => 'Percentage', default => 5 },
+        group_by            => { isa => 'Str' },
+        categories          => { isa => 'Str|ArrayRef', default => '' },
+        statuses            => { isa => 'Str|ArrayRef', default => '' },
+        not_in_status       => { isa => 'BoolCheckbox', default => 0 },
+        numberfield_group   => { isa => 'Str', default => '' },
+        result_type         => { isa => 'Str', default => 'count' },
+        sort_by_labels      => { isa => 'BoolCheckbox', default => 0 },
+        max_legend_length   => { isa => 'PositiveInt',  default => 0},
+        project_id          => { isa => 'Str', default => '' },
+        topic_mid           => { isa => 'Str', default => '' },
+        condition           => { isa => 'Str', default => '' }
+      );
 
     my (@topics_by_category, $colors, @data );
-    my $group_threshold = $p->{group_threshold} // 5;
-    my $group_by = $p->{group_by} or _fail 'group_by required';
+    my $group_threshold = $p->{group_threshold};
+    my $group_by = $p->{group_by};
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
     my $numberfield_group = $p->{numberfield_group};
-    my $result_type = $p->{result_type} // 'count';
-    my $sort_by_labels = $p->{sort_by_labels} && $p->{sort_by_labels} eq 'on';
+    my $result_type = $p->{result_type};
+    my $sort_by_labels = $p->{sort_by_labels};
+    my $max_legend_length = $p->{max_legend_length};
 
     my $id_project = $p->{project_id};
     my $topic_mid = $p->{topic_mid};
 
     my $condition = {};
-
     if ( $group_by eq 'topics_by_category') {
         $group_by = 'category.name';
     } elsif ( $group_by eq 'topics_by_status') {
@@ -546,7 +561,6 @@ sub topics_by_field : Local {
     map { $total += $_->{total} } @topics_by_category;
     my $others = 0;
     my @other_topics = ();
-
     foreach my $topic (@topics_by_category){
 
         my $name = $topic->{field};
@@ -570,9 +584,13 @@ sub topics_by_field : Local {
 
                 };                
             };
-            push @data, [
-                $name,$topic->{total}
-            ];
+
+            my $legend_name = $name;
+            if ( $max_legend_length ) {
+                $legend_name = substr( $name, 0, $max_legend_length );
+            }
+            push @data, [ $legend_name, $topic->{total} ];
+
             $topics_list->{$name} = $topic->{topics_list};
         }
         my $color;

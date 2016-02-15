@@ -1,6 +1,6 @@
 package Baseliner::Validator;
 use Moose;
-use Moose::Util::TypeConstraints qw(find_type_constraint);
+use Moose::Util::TypeConstraints qw(find_type_constraint union);
 use Baseliner::Types;
 
 has fields => ( is => 'ro', default => sub { {} } );
@@ -40,6 +40,9 @@ sub validate {
         my $has_errors = 0;
 
         if (my $isa = $field->{isa}) {
+            my @types = split /\|/, $isa;
+            $isa = union([@types]) if @types > 1;
+
             my $type_constraint = find_type_constraint($isa) or die "Can't find type $isa";
 
             if ($type_constraint->coercion) {

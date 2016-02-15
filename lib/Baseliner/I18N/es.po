@@ -3288,6 +3288,27 @@ msgstr "Categorías"
 msgid "Topics"
 msgstr "Tópicos"
 
+msgid "Average"
+msgstr "Media"
+
+msgid "Sum Total"
+msgstr "Suma Total"
+
+msgid "Sort by labels"
+msgstr "Ordenar por leyenda"
+
+msgid "Type of number"
+msgstr "Tipo de valor numérico"
+
+msgid "Currency symbol to be shown"
+msgstr "Símbolo monetario a mostrar"
+
+msgid "Grouper number field"
+msgstr "Campo numérico agrupador"
+
+msgid "Agregate grouper field by"
+msgstr "Agregar el campo agrupador por"
+
 msgid "Label added"
 msgstr "Etiqueta añadida"
 
@@ -8444,3 +8465,6 @@ msgstr "Importar/Exportar"
 
 msgid "Selection method to introduce the date"
 msgstr "Metodo de seleccion para introducir la fecha"
+
+msgid "Max characters in legend (0 = no limit)"
+msgstr "Número max de caracteres en la leyenda (0 = sin limite)"
