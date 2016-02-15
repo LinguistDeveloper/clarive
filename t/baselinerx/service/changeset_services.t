@@ -428,9 +428,10 @@ subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     my (%args) = $repo->mocked_call_args('checkout');
     cmp_deeply \%args,
       {
-        'tag'     => 'TEST',
+        'bl'      => 'TEST',
         'dir'     => '/job/dir/Project/path/to/rel',
-        'project' => $project
+        'project' => $project,
+        revisions => [$rev]
       };
 };
 
@@ -473,17 +474,17 @@ subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub 
     my (%args1) = $repo1->mocked_call_args('checkout');
     cmp_deeply \%args1, {
         'project' => $project,
-        'tag'     => 'TEST',
-        'dir'     => '/job/dir/Project/path/to/repo1.git'
-
+        'bl'      => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo1.git',
+        revisions => undef,
     };
 
     my (%args2) = $repo2->mocked_call_args('checkout');
     cmp_deeply \%args2, {
         'project' => $project,
-        'tag'     => 'TEST',
-        'dir'     => '/job/dir/Project/path/to/repo2.git'
-
+        'bl'      => 'TEST',
+        'dir'     => '/job/dir/Project/path/to/repo2.git',
+        revisions => undef,
     };
 
     is $repo3->mocked_called('checkout'), 0;

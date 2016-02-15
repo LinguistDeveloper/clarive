@@ -100,13 +100,15 @@ sub create_topic {
     my $project = delete $params{project} || TestUtils->create_ci_project;
 
     my $base_params = {
-        'project'         => $project->mid,
-        'category'        => $id_category,
-        'status_new'      => $status->mid,
-        'status'          => $status->mid,
-        'id_rule'         => $id_form,
-        'category_status' => { id => $status->mid },
-        'id_category_status' =>  $status->mid ,
+        'project' => ref $project eq 'ARRAY'
+        ? [ map { $_->mid } @$project ]
+        : $project->mid,
+        'category'           => $id_category,
+        'status_new'         => $status->mid,
+        'status'             => $status->mid,
+        'id_rule'            => $id_form,
+        'category_status'    => { id => $status->mid },
+        'id_category_status' => $status->mid,
     };
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(

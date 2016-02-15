@@ -1,14 +1,15 @@
 package BaselinerX::CI::GitRepository;
 use Baseliner::Moose;
-use Baseliner::Utils;
-use BaselinerX::CI::bl;
-use BaselinerX::CI::GitRevision;
-use BaselinerX::GitBranch;
+
 use Git;
 use Try::Tiny;
 use experimental 'smartmatch';
-
-require Girl;
+use Girl;
+use Baseliner::Utils;
+use Baseliner::Model::Topic;
+use BaselinerX::CI::bl;
+use BaselinerX::CI::GitRevision;
+use BaselinerX::GitBranch;
 
 with 'Baseliner::Role::CI::Repository';
 
@@ -49,16 +50,31 @@ sub create_tags_handler {
     my @tags;
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
 
-    if ( $self->tags_mode eq 'project' ) {
-        my @projects =
-          map { ci->new($_->{mid}) }
-          $self->related( where => { collection => 'project' }, docs_only => 1 );
+    my @tags_modes = $self->tags_mode ? (split /,/, $self->tags_mode) : ();
 
-        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+    if ( grep { $_ eq 'project' } @tags_modes ) {
+        my @projects =
+          map { ci->new( $_->{mid} ) } $self->related(
+            where     => { collection => 'project' },
+            docs_only => 1
+          );
+
+        _fail _loc('Projects are required when creating baselines '
+          . 'for repositories with tags_mode project')
           unless @projects;
 
         foreach my $bl (@bls) {
-            push @tags, map { $self->bl_to_tag($bl, $_) } @projects;
+            push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
+        }
+
+        if ( grep { $_ eq 'release' } @tags_modes ) {
+            my @release_versions = $self->_find_release_versions_by_projects(\@projects);
+
+            foreach my $release_version (@release_versions) {
+                foreach my $bl (@bls) {
+                    push @tags, $self->bl_to_tag( $bl, $release_version );
+                }
+            }
         }
     }
     else {
@@ -116,10 +132,21 @@ sub group_items_for_revisions {
         # TODO --- in demote, blob is empty for deleted items status=D, which in demote are changed to status=A
         @items = values %items_uniq;
     } else {
-        my $bl = $p{tag};
-        my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
+        my $bl = $p{bl} or _fail _loc('Missing parameter bl needed for top revision');
 
-        $tag = $self->bl_to_tag($tag, $p{project});
+        my $prefix;
+        if ($self->tags_mode eq 'project') {
+            $prefix = $p{project};
+        }
+        elsif ($self->tags_mode eq 'release,project') {
+            $prefix = $self->_find_release_version_by_revisions($revisions);
+
+            if (!$prefix) {
+                $prefix = $p{project};
+            }
+        }
+
+        my $tag = $self->bl_to_tag($bl, $prefix);
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {
@@ -269,34 +296,63 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
 
 sub checkout {
     my ( $self, %p ) = @_;
-    
-    my $dir  = $p{dir} // _fail 'Missing parameter dir'; 
-    my $tag  = $p{tag} // _fail 'Missing parameter tag';
 
-    if ($self->tags_mode eq 'project') {
-        $tag = $self->bl_to_tag($tag, $p{project});
+    my $dir = $p{dir} // _fail 'Missing parameter dir';
+    my $bl  = $p{bl}  // _fail 'Missing parameter bl';
+
+    my $tag = $bl;
+    if ( $self->tags_mode eq 'project' ) {
+        $tag = $self->bl_to_tag( $bl, $p{project} );
+    }
+    elsif ($self->tags_mode eq 'release,project') {
+        my $revisions = $p{revisions} or _fail 'Missing parameter revisions';
+
+        my $prefix = $self->_find_release_version_by_revisions($revisions);
+        $prefix //= $p{project};
+
+        $tag = $self->bl_to_tag( $bl, $prefix );
     }
 
-    #my $path = $self->path;
     my $git = $self->git;
 
-    if( !-e $dir ) {
+    if ( !-d $dir ) {
         _mkpath $dir;
-        _fail _loc "Could not find or create directory %1: %2", $dir, $!
-            unless -e $dir;
+        _fail _loc( "Could not find or create directory %1: %2", $dir, $! )
+          unless -d $dir;
     }
+
+    my $tag_sha = try {
+        $git->exec( 'rev-parse', $tag )
+    }
+    catch {
+        _fail _loc( "Error: tag `%1` not found in repository %2", $tag, $self->name )
+    };
+
     # get dir listing
-    my @ls = $git->exec(qw/ls-tree -r -t -l --abbrev=7/, $tag );
-    if( !@ls ) {
-        return { ls=>[], output=>Util->_loc('No files for ref %1 in repository. Skipping', $tag) };
+    my @ls = $git->exec( qw/ls-tree -r -t -l --abbrev=7/, $tag_sha );
+    if ( !@ls ) {
+        return { ls => [], output => Util->_loc( 'No files for ref %1 in repository. Skipping', $tag ) };
     }
+
     # save curr dir, chdir to repo, archive only works from within (?)
     my $cwd = Cwd::cwd;
-    chdir $dir;  
-    my $out = $git->exec( "archive '$tag' | tar x", { cmd_unquoted=>1 } );
-    _log _loc "*Git*: checkout of repository %1 (%2) into `%3`", $self->repo_dir, $tag, $dir;
-    chdir $cwd;
-    { ls=>\@ls, output=>$out }
+    chdir $dir;
+
+    my $out;
+    try {
+        $out = $git->exec( "archive '$tag' | tar x", { cmd_unquoted => 1 } );
+        _log _loc("*Git*: checkout of repository %1 (%2) into `%3`", $self->repo_dir, $tag, $dir);
+
+        chdir $cwd;
+    } catch {
+        my $error = shift;
+
+        chdir $cwd;
+
+        die $error;
+    };
+
+    return { ls => \@ls, output => $out };
 }
 
 sub list_elements {
@@ -365,33 +421,34 @@ sub list_elements {
     return @elems;
 } ## end sub list_elements
 
-method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
+method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
     my $git = $self->git;
 
     my @projects;
 
-    if ( $self->tags_mode eq 'project' ) {
-        if ($job) {
-            foreach my $project ( _array( $job->{projects} ) ) {
-                next
-                  unless $project->{repositories}
-                  && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
+    if ( $self->tags_mode eq 'project' || $self->tags_mode eq 'release,project' ) {
+        foreach my $project ( _array( $job->{projects} ) ) {
+            next
+              unless $project->{repositories}
+              && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
 
-                push @projects, $project;
-            }
+            push @projects, $project;
         }
-        _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
+
+        _fail _loc( 'Projects are required when moving baselines for repositories with tags_mode project' )
           unless @projects;
     }
     else {
         @projects = ('*');
     }
 
+    my $release_version = $self->_find_release_version_by_revisions($revisions);
+
     my %retval;
     for my $project ( @projects ) {
-        my $retval_key = $project eq '*' ? '*' : $project->mid;
+        my $retval_key = $project eq '*' ? '*' : ($release_version || $project->mid);
 
-        my $tag = $self->bl_to_tag($bl, $project);
+        my $tag = $self->bl_to_tag($bl, $release_version || $project);
 
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
@@ -542,9 +599,10 @@ sub close_branch {
     }
 }
 
-method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
+method commits_for_branch( :$branch, :$project ) {
     my $git = $self->git;
-    $tag //= [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
+
+    my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
 
     $tag = $self->bl_to_tag($tag, $project);
 
@@ -557,17 +615,20 @@ method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     return @rev_list;
 }
 
-method bl_to_tag(Maybe[Str] $bl = undef, Any $project = undef) {
+method bl_to_tag(Maybe[Str] $bl = undef, Any $prefix = undef) {
     my ($bl, $project) = @_;
 
     return unless $bl;
 
-    return $bl unless $self->tags_mode eq 'project';
+    return $bl if $self->tags_mode eq 'bl';
 
-    _fail 'project is required' unless $project;
-    _fail 'project has to have moniker' unless my $moniker = $project->moniker;
+    _fail 'prefix is required' unless $prefix;
 
-    return sprintf( '%s-%s', $moniker, $bl);
+    if (ref $prefix) {
+        $prefix = $prefix->moniker or _fail 'prefix has to have moniker';
+    }
+
+    return sprintf( '%s-%s', $prefix, $bl);
 }
 
 sub _order_revisions {
@@ -600,6 +661,77 @@ sub _order_revisions {
     }
 
     return @sorted;
+}
+
+sub _find_release_versions_by_projects {
+    my $self = shift;
+    my ($projects) = @_;
+
+    my @release_versions;
+
+    my @release_categories =
+      mdb->category->find( { is_release => '1' } )->fields( { id => 1 } )->all;
+
+    my @id_statuses = map { $_->{id_status} }
+      ci->status->find( { type => { '$not' => qr/I|F|FC/ } } )->fields( { id_status => 1 } )->all;
+
+    my $topics_model = Baseliner::Model::Topic->new;
+    foreach my $release_category (@release_categories) {
+        my $meta = $topics_model->get_meta( undef, $release_category->{id} );
+
+        my ($release_version_field) = map { $_->{id_field} }
+          grep { $_->{key} eq 'fieldlet.system.release_version' } @$meta;
+        next unless $release_version_field;
+
+        my ($project_field) = map { $_->{id_field} }
+          grep { $_->{key} eq 'fieldlet.system.projects' } @$meta;
+        next unless $project_field;
+
+        my @releases = mdb->topic->find(
+            {
+                is_release         => '1',
+                id_category_status => mdb->in(@id_statuses),
+                $project_field => mdb->in( map { $_->{mid} } @$projects )
+            }
+        )->all;
+
+        foreach my $release (@releases) {
+            my $version = $release->{$release_version_field};
+            next unless $version;
+
+            push @release_versions, $version;
+        }
+    }
+
+    return @release_versions;
+}
+
+sub _find_release_version_by_revisions {
+    my $self = shift;
+    my ($revisions) = @_;
+
+    return unless $revisions && @$revisions;
+
+    my $changeset_rel;
+    foreach my $revision (@$revisions) {
+        ($changeset_rel) = $revision->parents( where => { collection => 'topic' }, mids_only => 1 );
+        last if $changeset_rel;
+    }
+
+    my $changeset = mdb->topic->find_one({mid => $changeset_rel->{mid}});
+    return unless $changeset;
+
+    my $topics_model = Baseliner::Model::Topic->new;
+    return unless my ($release_field) =
+      $topics_model->get_meta_fields_by_key( $changeset->{mid}, 'fieldlet.system.release' );
+    return unless my $release_mid = $changeset->{$release_field};
+
+    my $release = mdb->topic->find_one({mid => $release_mid});
+    return unless $release;
+
+    return unless my ($release_version_field) =
+      $topics_model->get_meta_fields_by_key( $release->{mid}, 'fieldlet.system.release_version' );
+    return $release->{$release_version_field};
 }
 
 1;

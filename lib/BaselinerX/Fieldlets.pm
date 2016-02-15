@@ -383,6 +383,15 @@ register 'fieldlet.system.release' => {
     section_allowed => ['body','head','more']
 };
 
+register 'fieldlet.system.release_version' => {
+    name        => _loc('Release Version'),
+    html        => '/fields/templates/html/row_body.html',
+    js          => '/fields/templates/js/textfield.js',
+    form        => '/fields/templates/config/textfield.js',
+    icon        => '/static/images/icons/field.png',
+    type        => 'textfield',
+    section_allowed => ['head','more','body']
+};
 
 register 'fieldlet.system.projects' => {
     name        => _loc('Project Combo'),

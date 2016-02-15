@@ -9,9 +9,9 @@ use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup; }
-
 use TestUtils;
 use TestGit;
+use TestSetup;
 
 use Capture::Tiny qw(capture_merged);
 use BaselinerX::CI::project;
@@ -200,6 +200,67 @@ subtest 'create_tags_service_handler: filters by tags when projects' => sub {
     is_deeply [ sort @tags ], [qw/project-TEST/];
 };
 
+subtest 'create_tags_service_handler: creates release and project tags' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
+    TestGit->commit($repo);
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $project2 = _create_ci_project(moniker => 'project2');
+
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_not_final =
+      TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_final =
+      TestUtils->create_ci( 'status', name => 'Closed', type => 'F' );
+
+    my $id_rule = _create_release_form();
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_rule,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'New Release',
+        status          => $status_new,
+        release_version => '1.0',
+        project         => $project,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Release',
+        status          => $status_not_final,
+        release_version => '1.1',
+        project         => [$project, $project2],
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Release From Another Project',
+        status          => $status_not_final,
+        release_version => '9.9',
+        project         => $project2,
+    );
+    TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'Closed Release',
+        status          => $status_final,
+        release_version => '0.9',
+        project         => $project,
+    );
+
+    $repo->create_tags_handler( undef, {} );
+
+    my @tags = TestGit->tags($repo);
+
+    is_deeply [ sort @tags ], [qw/1.1-PROD 1.1-TEST project-PROD project-TEST/];
+};
+
 subtest 'update_baselines: moves baselines up in promote' => sub {
     _setup();
 
@@ -211,8 +272,14 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
 
-    $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines(
+        job  => {},
+        bl   => 'TEST',
+        type => 'promote',
+        revisions => [ $sha_rev ]
+    );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -233,7 +300,12 @@ subtest 'update_baselines: returns refs' => sub {
     my $top_sha = TestGit->commit($repo);
     my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
 
-    my $retval = $repo->update_baselines( bl => 'TEST', type => 'promote', revisions => [ { sha => $top_sha } ] );
+    my $retval = $repo->update_baselines(
+        job  => {},
+        bl   => 'TEST',
+        type => 'promote',
+        revisions => [ $top_rev ]
+    );
 
     cmp_deeply $retval,
       {
@@ -258,10 +330,12 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
     my $old_sha  = TestGit->commit($repo);
     my $old_sha2 = TestGit->commit($repo);
 
+    my $old_sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $old_sha2);
+
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( bl => 'TEST', type => 'demote', revisions => [ { sha => $old_sha2 } ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'demote', revisions => [ $old_sha2_rev ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -279,8 +353,9 @@ subtest 'update_baselines: moves baselines up in static' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [ { sha => $sha } ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [ $sha_rev ] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -299,7 +374,7 @@ subtest 'update_baselines: moves baselines to specific ref' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -316,7 +391,7 @@ subtest 'update_baselines: does nothing when already there' => sub {
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -333,7 +408,7 @@ subtest 'update_baselines: throws when tags_mode is project but no projects' => 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    like exception { $repo->update_baselines( bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+    like exception { $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
       qr/Projects are required/;
 };
 
@@ -360,6 +435,63 @@ subtest 'update_baselines: updates tags for every project' => sub {
     );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'project-with-dashes-TEST' );
+
+    is $tag_sha, $new_sha;
+};
+
+subtest 'update_baselines: updates tags for every release' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( moniker => 'project', repositories => [ $repo->mid ] );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+
+    my $new_sha = TestGit->commit($repo);
+    my $new_sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $new_sha);
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => $release_mid,
+        revisions   => [ $new_sha_rev->mid ]
+    );
+
+    $repo->update_baselines(
+        job       => { projects => [ $project ] },
+        bl        => 'TEST',
+        type      => 'promote',
+        revisions => [$new_sha_rev],
+    );
+
+    my $tag_sha = TestGit->rev_parse( $repo, '1.0-TEST' );
 
     is $tag_sha, $new_sha;
 };
@@ -666,7 +798,7 @@ subtest 'group_items_for_revisions: returns top revision items' => sub {
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' );
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -683,8 +815,8 @@ subtest 'group_items_for_revisions: throws when no project in project tags_mode'
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST' ) },
-      qr/project is required/;
+    like exception { $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST' ) },
+      qr/prefix is required/;
 };
 
 subtest 'group_items_for_revisions: returns top revision items in project mode' => sub {
@@ -705,12 +837,82 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST', project => $project );
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST', project => $project );
     is scalar @items, 1;
 
     my $item = $items[0];
     is $item->status, 'M';
     is $item->path,   '/README';
+};
+
+subtest 'group_items_for_revisions: returns top revision items in release,project mode' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+    my $sha2 = TestGit->commit($repo);
+
+    $sha  = TestUtils->create_ci( 'GitRevision', sha => $sha,  repo => $repo );
+    $sha2 = TestUtils->create_ci( 'GitRevision', sha => $sha2, repo => $repo );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => $release_mid,
+        revisions   => [ $sha->mid, $sha2->mid ]
+    );
+
+    my $ci = TestUtils->create_ci('topic');
+    mdb->master_rel->insert(
+        { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
+
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], bl => 'TEST', project => $project );
+    is scalar @items, 1;
+
+    my $item = $items[0];
+    is $item->status, 'M';
+    is $item->path,   '/README';
+};
+
+subtest 'checkout: throws when unknown bl' => sub {
+    _setup();
+
+    my $dir = tempdir();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => 'TEST' );
+    my $sha2 = TestGit->commit($repo);
+
+    like exception { $repo->checkout( dir => $dir, bl => '213' ) }, qr/Error: tag `213` not found in repository/;
 };
 
 subtest 'checkout: checkouts items into directory' => sub {
@@ -724,7 +926,7 @@ subtest 'checkout: checkouts items into directory' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    $repo->checkout( dir => $dir, tag => 'TEST' );
+    $repo->checkout( dir => $dir, bl => 'TEST' );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -744,7 +946,7 @@ subtest 'checkout: returns checked out items' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    my $retval = $repo->checkout( dir => $dir, tag => 'TEST' );
+    my $retval = $repo->checkout( dir => $dir, bl => 'TEST' );
 
     cmp_deeply $retval,
       {
@@ -764,7 +966,7 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
     TestGit->tag( $repo, tag => 'project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->checkout( dir => $dir, tag => 'project-TEST' ) }, qr/project is required/;
+    like exception { $repo->checkout( dir => $dir, bl => 'project-TEST' ) }, qr/prefix is required/;
 };
 
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
@@ -780,7 +982,62 @@ subtest 'checkout: checkouts items into directory with project tag_mode' => sub 
 
     my $dir = tempdir();
 
-    $repo->checkout( dir => $dir, tag => 'TEST', project => $project );
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project );
+
+    opendir( my $dh, $dir ) || die "can't opendir $dir $!";
+    my @files = grep { !/^\./ } readdir($dh);
+    closedir $dh;
+
+    is_deeply \@files, ['README'];
+};
+
+subtest 'checkout: checkouts items into directory with release,project tag_mode' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+    my $sha2 = TestGit->commit($repo);
+
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+    my $sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha2);
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => $release_mid,
+        revisions   => [ $sha_rev->mid, $sha2_rev->mid ]
+    );
+
+    my $dir = tempdir();
+
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [$sha_rev, $sha2_rev] );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -834,25 +1091,7 @@ subtest 'list_branches: includes branch names' => sub {
     is $branches[0]->name, 'new2';
 };
 
-subtest 'commits_for_branch: returns commits by tag' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository();
-    TestGit->commit( $repo, message => 'initial' );
-    TestGit->commit( $repo, message => 'first' );
-    TestGit->tag( $repo, tag => 'TEST' );
-
-    TestGit->commit( $repo, message => 'second' );
-    TestGit->commit( $repo, message => 'third' );
-
-    my @commits = $repo->commits_for_branch( tag => 'TEST', branch => 'master' );
-    is scalar @commits, 3;
-    like $commits[0], qr/^[a-z0-9]{40} third$/;
-    like $commits[1], qr/^[a-z0-9]{40} second$/;
-    like $commits[2], qr/^[a-z0-9]{40} first$/;
-};
-
-subtest 'commits_for_branch: get tag from bl when not present' => sub {
+subtest 'commits_for_branch: gets tag from bl' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
@@ -865,27 +1104,11 @@ subtest 'commits_for_branch: get tag from bl when not present' => sub {
 
     TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my @commits = $repo->commits_for_branch( branch => 'master' );
+    my @commits = $repo->commits_for_branch( branch => 'master', project => '' );
     is scalar @commits, 3;
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
     like $commits[2], qr/^[a-z0-9]{40} first$/;
-};
-
-subtest 'commits_for_branch: throws when unknown tag' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-
-    like exception { $repo->commits_for_branch( tag => 'UNKNOWN', branch => 'master' ) }, qr/could not find tag/;
-};
-
-subtest 'commits_for_branch: throws when no tags present' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
-
-    like exception { $repo->commits_for_branch( branch => 'master' ) }, qr/could not find tag/;
 };
 
 done_testing;
@@ -894,8 +1117,111 @@ sub _create_ci_project {
     return TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', @_ );
 }
 
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release_version",
+                        "fieldletType" => "fieldlet.system.release_version",
+                        "name_field"   => "Version",
+                    },
+                    "key" => "fieldlet.system.release_version",
+                    text  => 'Version',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
+    );
+}
+
+sub _create_changeset_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release",
+                        "fieldletType" => "fieldlet.system.release",
+                        "name_field"   => "Release",
+                    },
+                    "key" => "fieldlet.system.release",
+                    text  => 'Release',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "revisions",
+                        "fieldletType" => "fieldlet.system.revisions",
+                        "name_field"   => "Revisions",
+                    },
+                    "key" => "fieldlet.system.revisions",
+                    text  => 'Revisions',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
+    );
+}
+
 sub _setup {
     TestUtils->cleanup_cis;
 
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+    );
+
+    mdb->rule->drop;
+    mdb->topic->drop;
+    mdb->category->drop;
 }
