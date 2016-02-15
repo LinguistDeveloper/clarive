@@ -163,6 +163,8 @@ subtest '_replace_tags: change < and >' => sub {
 };
 
 subtest '_name_to_id: converts name to id' => sub {
+    is (Util->_name_to_id(undef), undef);
+    is (Util->_name_to_id(''), '');
     is (Util->_name_to_id('ab    foo'), 'ab_foo');
     is (Util->_name_to_id('foo?bar'), 'foo_bar');
     is (Util->_name_to_id('ab_____foo'),'ab_foo');
