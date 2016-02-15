@@ -510,6 +510,13 @@ a {
 
 /*resizing icons for a better definition*/
 
+.x-btn-icon{
+height: 16px;
+width: 16px;
+background-image:'/static/images/icons/project.png';
+background-size:contain;
+}
+
 .x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
     padding-left: 20px;
     background-position: 0 3px;
@@ -559,4 +566,26 @@ a {
 
 }
 
+.x-btn-icon .x-btn-text{
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size:contain;
+    height: 16px;
+    width: 16px;
+}
 
+.x-btn-icon .x-btn-small .x-btn-text{
+    height: 16px;
+    width: 16px;
+}
+
+.x-btn-icon .x-btn-medium .x-btn-text{
+    height: 16px;
+    width: 16px;
+}
+
+.x-btn-icon .x-btn-large .x-btn-text{
+    height: 16px;
+    width: 16px;
+
+>>>>>>> Adding new color set of icons
