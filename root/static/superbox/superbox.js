@@ -1462,27 +1462,11 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
                     if (forceAll) {
                         this.store.clearFilter();
                     } else {
-                        var my_displayField = this.displayField;
-                      var my_store = this.store;
-                      var multi_filter = function(record, id) {
-                        var res_value = false;
-                        var my_regex = new RegExp(q, "i");
-                        if (my_displayField) {
-                          for (var i=0; i < my_displayField.length; i++) {
-                            res_value = record.json[my_displayField[i]].match(my_regex);
-                            if (res_value) {
-                                break;
-                            }
-                          }
+                        // CLARIVE {
+                        if (this.displayField) {
+                            this.$filterResultsByDisplayField(q);
                         }
-                        return res_value;
-                      };
-
-                      if (typeof(this.displayField) === 'object') {
-                          my_store.filterBy(multi_filter);
-                      } else {
-                          this.store.filter(this.displayField, q);
-                      }
+                        // CLARIVE }
                     }
                     this.onLoad();
                 } else {
@@ -1500,6 +1484,31 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
                 this.selectedIndex = -1;
                 this.onLoad();
             }
+        }
+    },
+    $filterResultsByDisplayField : function(q) {
+        var displayField = this.displayField;
+
+        var multiFilter = function(record, id) {
+            var i;
+            var regex = new RegExp(q, "i");
+            var value;
+
+            for (i = 0; i < displayField.length; i++) {
+                if (record.json.hasOwnProperty(displayField[i])) {
+                    if (record.json[displayField[i]].match(regex)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        };
+
+        if (Ext.isArray(displayField)) {
+            this.store.filterBy(multiFilter);
+        } else {
+            this.store.filter(displayField, q);
         }
     }
 });
