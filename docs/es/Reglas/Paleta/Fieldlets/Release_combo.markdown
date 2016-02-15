@@ -35,14 +35,7 @@ icon: combo_box
 
 <br />
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico: <br />
-
-&nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
-
-&nbsp; &nbsp;• **Múltiple** - Permite al usuario añadir tantas opciones como desee. <br />
-
-&nbsp; &nbsp;• **Tabla** - Las opciones seleccionadas se muestran en una tabla.
-
+* Este fieldlet unicamente acepta que se añada una única opción en el formulario del tópico. <br />
 
 <br />
 ### Campo visible
@@ -61,3 +54,5 @@ Permite añadir un filtro avanzado JSON
 
 <br />
 ### Campo Release
+* Establece la dependencia entre este tópico de tipo Release y los tópicos dependientes.
+* Se realiza a través de este campo que se completa con el ID del campo del formulario de dichos tópicos dependientes.
