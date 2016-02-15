@@ -228,12 +228,21 @@ sub form_for_ci {
 sub tree_objects {
     my ($self, %p)=@_;
 
-    if($p{order_by}){
-        $p{sort} = $p{order_by};
+    $p{sort} = $p{order_by} if $p{order_by};
+
+    my $class       = $p{class};
+    my $collection  = $p{collection};
+    my $json_filter = $p{filter};
+    my $mids        = $p{mids};
+
+    my $dir = $p{dir};
+    if ( $dir && $dir =~ /desc/i ) {
+        $dir = -1;
     }
-    
-    my $class = $p{class};
-    my $collection = $p{collection};
+    else {
+        $dir = 1;
+    }
+
     my %class_coll;
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
@@ -255,13 +264,6 @@ sub tree_objects {
     }
     my $opts;
     
-    my $dir = $p{dir};
-    if( $dir && $dir =~ /desc/i){
-        $dir = -1;
-    }else{
-        $dir = 1;
-    }
-
     if ($p{sort}) {
         my $sort = $p{sort};
         if ($sort eq 'mid'){
@@ -281,6 +283,12 @@ sub tree_objects {
          $limit->{skip} = $p{start};
     }
     my $where = {};
+    if($json_filter){
+        my $filter_js = _decode_json($json_filter);
+        for my $other_filter ( keys %$filter_js ) {
+            $where->{$other_filter} = $filter_js->{$other_filter};
+        }
+    }
     
     if( length $p{query} ) {
         my $filter = {};
@@ -299,7 +307,6 @@ sub tree_objects {
     }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
-    my $mids = $p{mids};
     # search for variables in mids 
     if( defined $p{mids} && @$mids ) {
         my @where_mids;
@@ -361,7 +368,8 @@ sub tree_objects {
             versionid         => $row->{versionid},
         }
     } $rs->all;
-    ( $total, @tree );
+
+    return ( $total, @tree );
 }
 
 sub tree_object_depend {
@@ -657,7 +665,7 @@ sub store : Local : Does('Ajax') {
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
 
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -668,10 +676,10 @@ sub store : Local : Does('Ajax') {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 

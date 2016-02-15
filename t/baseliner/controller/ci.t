@@ -635,6 +635,98 @@ subtest 'import_all: throws when user has no permission' => sub {
     like exception { $controller->import_all($c) }, qr/User developer not authorized to import CIs/;
 };
 
+subtest 'tree_objects: returns cis without filtering' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    is $count, 1;
+    is scalar @tree, 1;
+    is $tree[0]->{collection}, 'variable';
+};
+
+subtest 'tree_objects: returns cis with filtering by json condition' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'variable', name => 'My variable' );
+    TestUtils->create_ci( 'variable', name => 'Your variable' );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects(filter => '{"name":"My variable"}');
+
+    is $count, 1;
+    is scalar @tree, 1;
+    is $tree[0]->{name}, 'My variable';
+};
+
+subtest 'tree_objects: sorts by seq by default' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'variable', name => 'My variable' );
+    TestUtils->create_ci( 'variable', name => 'Your variable' );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    is $count, 2;
+    is scalar @tree, 2;
+    is $tree[0]->{name}, 'My variable';
+    is $tree[1]->{name}, 'Your variable';
+};
+
+subtest 'tree_objects: sorts by direction' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'variable', name => 'My variable' );
+    TestUtils->create_ci( 'variable', name => 'Your variable' );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects(dir => 'desc');
+
+    is $count, 2;
+    is scalar @tree, 2;
+    is $tree[0]->{name}, 'Your variable';
+    is $tree[1]->{name}, 'My variable';
+};
+
+subtest 'tree_objects: searches by mids' => sub {
+    _setup();
+
+    my $ci1 = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $ci2 = TestUtils->create_ci( 'variable', name => 'Your variable' );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects(mids => [$ci1->mid]);
+
+    is $count, 1;
+    is scalar @tree, 1;
+    is $tree[0]->{name}, 'My variable';
+};
+
+# Doesn't work :(
+#subtest 'tree_objects: limit/start' => sub {
+#    _setup();
+#
+#    my $ci1 = TestUtils->create_ci( 'variable', name => 'My variable' );
+#    my $ci2 = TestUtils->create_ci( 'variable', name => 'Your variable' );
+#
+#    my $controller = _build_controller();
+#
+#    my ( $count, @tree ) = $controller->tree_objects(start => 1, limit => 1);
+#
+#    is $count, 1;
+#    is scalar @tree, 1;
+#    is $tree[0]->{name}, 'Your variable';
+#};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }
