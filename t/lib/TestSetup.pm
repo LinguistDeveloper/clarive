@@ -276,6 +276,17 @@ sub _fieldlets {
         {
             "attributes" => {
                 "data" => {
+                    "id_field"     => "title",
+                    "name_field"   => "Title",
+                    "fieldletType" => "fieldlet.system.title",
+                },
+                "key" => "fieldlet.system.title",
+                text => 'Title',
+            }
+        },
+        {
+            "attributes" => {
+                "data" => {
                     "bd_field"     => "project",
                     "fieldletType" => "fieldlet.system.projects",
                     "id_field"     => "project",

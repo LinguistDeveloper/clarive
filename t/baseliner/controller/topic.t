@@ -1,8 +1,6 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
@@ -11,10 +9,9 @@ use Test::MockSleep;
 use Test::TempDir::Tiny;
 
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
 use TestSetup;
-
-TestEnv->setup;
 
 use POSIX ":sys_wait_h";
 use Baseliner::Role::CI;
@@ -32,7 +29,7 @@ use Class::Date;
 use_ok 'Baseliner::Controller::Topic';
 
 subtest 'kanban config save' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -48,7 +45,7 @@ subtest 'kanban config save' => sub {
 };
 
 subtest 'kanban no config, default' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -60,7 +57,7 @@ subtest 'kanban no config, default' => sub {
 };
 
 subtest 'next status for topic by root user' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -84,7 +81,7 @@ subtest 'next status for topic by root user' => sub {
 };
 
 subtest 'next status for topics by root user' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -107,7 +104,7 @@ subtest 'next status for topics by root user' => sub {
 };
 
 subtest 'list statuses fieldlet for new topics not yet in database' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -130,7 +127,7 @@ subtest 'list statuses fieldlet for new topics not yet in database' => sub {
 };
 
 subtest 'add label to topic' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -215,7 +212,7 @@ subtest 'grid: replaces category_id if different' => sub {
 };
 
 subtest 'related: returns 1 (proper topic) for new topic before created' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
@@ -231,7 +228,7 @@ subtest 'related: returns 1 (proper topic) for new topic before created' => sub 
 };
 
 subtest 'related: returns self for a newly created topic' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
@@ -251,7 +248,7 @@ subtest 'related: returns self for a newly created topic' => sub {
 };
 
 subtest 'related: returns 2 (self and related) related topics' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
@@ -275,7 +272,7 @@ subtest 'related: returns 2 (self and related) related topics' => sub {
 };
 
 subtest 'create a topic' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
@@ -292,7 +289,7 @@ subtest 'create a topic' => sub {
 };
 
 subtest 'new topics have category_id in stash' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
