@@ -1204,6 +1204,7 @@ sub _setup {
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
+    mdb->topic->drop;
     mdb->category->drop;
     mdb->role->drop;
     mdb->rule->drop;

@@ -162,63 +162,6 @@ sub create_user {
 }
 
 sub _topic_setup {
-    mdb->topic->drop;
-    mdb->category->drop;
-    mdb->rule->drop;
-
-    Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
-    Baseliner::Core::Registry->add_class( undef, 'fieldlet' => 'BaselinerX::Type::Fieldlet' );
-
-    Baseliner::Core::Registry->add( 'caller', 'event.topic.create', {} );
-    Baseliner::Core::Registry->add( 'caller', 'event.file.create', {} );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.status_new' => {
-            bd_field  => 'id_category_status',
-            id_field  => 'status_new',
-            origin    => 'system',
-            meta_type => 'status'
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.required.category' => {
-            id_field => 'category',
-            bd_field => 'id_category',
-            origin   => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.projects' => {
-            get_method => 'get_projects',
-            set_method => 'set_projects',
-            meta_type  => 'project',
-            relation   => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.list_topics' => {
-            get_method  => 'get_topics',
-            set_method  => 'set_topics',
-            meta_type   => 'topic',
-            relation    => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.attach_file' => {
-            get_method  => 'get_files',
-            type        => 'upload_files',
-        }
-    );
-
     my $status_id = ci->status->new( name=>'New', type => 'I' )->save;
 
     my $id_rule = mdb->seq('id');
@@ -240,12 +183,12 @@ sub _topic_setup {
     my $project_mid = $project->save;
 
     return {
-        'project'    => $project_mid,
-        'category'   => "$cat_id",
-        'status_new' => "$status_id",
-        'status'     => "$status_id",
-        id_rule      => "$id_rule",
-        'category_status' => { id=>"$status_id" },
+        'project'         => $project_mid,
+        'category'        => "$cat_id",
+        'status_new'      => "$status_id",
+        'status'          => "$status_id",
+        id_rule           => "$id_rule",
+        'category_status' => { id => "$status_id" },
     };
 }
 

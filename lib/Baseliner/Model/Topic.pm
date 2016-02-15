@@ -743,7 +743,7 @@ sub update {
                         project         => [map { $_->{mid} } $topic->projects]
                     };
                     
-                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, ($topic->title // ''));
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
@@ -792,7 +792,7 @@ sub update {
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
                 $return = 'Topic modified';
-                my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
+                my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, ($topic->title // ''));
                 $rollback = 0;
                 if ( %change_status || $stash->{return_options}{reload}) {
                     $self->change_status( %change_status ) if %change_status;
@@ -828,7 +828,7 @@ sub update {
                         my @users = $self->get_users_friend(mid => $mid, id_category => $topic->{id_category}, id_status => $topic->{id_category_status});
                         
                         $return = 'Topic deleted';
-                        my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, $topic->{title});
+                        my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, ($topic->{title} // ''));
 
                         my $notify = {
                             category => $topic->{id_category}

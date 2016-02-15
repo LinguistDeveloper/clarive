@@ -232,7 +232,7 @@ subtest 'update: creates correct event.topic.create' => sub {
     my $event = mdb->event->find_one( { event_key => 'event.topic.create' } );
     my $event_data = _load $event->{event_data};
 
-    my $topic = mdb->master->find_one( { mid => "$topic_mid" } );
+    my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
     my $category = mdb->category->find_one;
 
     is $event_data->{mid},           $topic_mid;
