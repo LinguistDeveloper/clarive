@@ -1,11 +1,10 @@
 ---
 title: Menu de reglas
+index: 200
 icon: rule
 ---
 * La ruta para acceder a las reglas es a través del menú de administración. 
 * Seleccionando  **Admin → Reglas** se abre una nueva pestaña con tres áreas de trabajo diferentes. 
-
-
 
 <br />
 ## Área con el listado de reglas
@@ -73,4 +72,4 @@ static/images/icons/export.png" /> Exporta la regla seleccionada en formato YAML
 
 &nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Búsqueda** - Permite buscar entre los compenentes de la palenta <br />
 
-&nbsp; &nbsp;• <img src="/static/images/icons/refresh.png" /> **Refrescar** - Refresca la paleta 
+&nbsp; &nbsp;• <img src="/static/images/icons/refresh.png" /> **Refrescar** - Refresca la paleta.

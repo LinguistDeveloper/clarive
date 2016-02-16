@@ -58,6 +58,19 @@ icon: combo_box
 <br />
 ### List of columns to show in grid
 * Select the columns to show in the grid.
+* Default columns displayed are the topic name (shows the category and ID) and title of the topic.
+* To customize the table, first indicate the data of the column and subsequently the column name for example: <br />
+
+    *name;title;Projects.__project_name_list,**Projects**;name_status,**Status**;Assign.__user_name,**Assign**,ci;priority,**Priority**;complex,**Complex***
+
+&nbsp;&nbsp;&nbsp;&nbsp; • **Name** - Displays the number of topic in a column called ID. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **Title** - Displays the title of the topic in a column called Title. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **Projects** - Displays the name of the projects through the variable:  *_project_name_list*. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **State** - Displays the name of the state. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **Assigned** - Displays the user name assigned to the topic. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **Priority** - Displays the priority of the topic. <br />
+&nbsp;&nbsp;&nbsp;&nbsp; • **Complexity** - Sample complexity. <br />
+
 
 &nbsp;&nbsp; *Note - Only works if Grid is set in the type of field.*
 

@@ -1,5 +1,6 @@
 ---
 title: Preferencias de usuario
+index: 4000
 icon: prefs
 ---
 * Las preferencias de usuario contiene las configuración de la cuenta, el acceso y la sesión así como información de uso de Clarive y como otros usuarios interactuan con usted.

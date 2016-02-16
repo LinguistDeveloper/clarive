@@ -1,10 +1,10 @@
 ---
-title: Campo de texto
+title: Include into
 index: 400
-icon: field
+icon: detail.png
 ---
-* Permite añadir un texto en el tópico.
-* El tamaño de esta caja es igual que el del [titulo](Reglas/Paleta/Fieldlets/Title). 
+* Muestra una lista de tópicos que contienen al tópico actual
+* La lista permite saltar de un tópico padre al siguiente.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
 <br />
@@ -14,8 +14,6 @@ icon: field
 &nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario. <br />
 
 &nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.<br />
-
-&nbsp; &nbsp;• **Cuerpo** - Se muestra en la parte derecha del formulario, debajo de la sección de detalles.<br />
 
 <br />
 ### Anchura en canvas
@@ -34,12 +32,11 @@ icon: field
 ### Campo obligatorio
 * Indica si el campo tiene que ser completado obligatoriamente.
 
+### What topics to show
+* Establece los tópicos que se quieren visualizar: <br />
 
-<br />
-### Valor por defecto
-* El gestor de la regla puede definir si quiere incluir al campo un contenido por defecto.
-
-<br />
-###  Límite de caracteres
-* Permite establecer un limite de caracteres.
-* Por defecto, este limite son 255 caracteres. En caso de que se quede en blanco, también se limitará a 255.
+&nbsp; &nbsp;• `No Releases and no Changesets` - No muestra los tópicos de categorias de tipo Release ni de tipo Cambio. <br />
+&nbsp; &nbsp;• `No Releases`  -  No muestra los tópicos de categorias de tipo Release. <br />
+&nbsp; &nbsp;• `No Changesets` -  No muestra los tópicos de categorias de tipo Cambio. <br />
+&nbsp; &nbsp;• `Changesets and Releases` - Muestra solo Cambios y Releases. <br />
+&nbsp; &nbsp;• `All Parent Topics` - Muestra todos los tópicos padres que están incluidos en el tópico actual.

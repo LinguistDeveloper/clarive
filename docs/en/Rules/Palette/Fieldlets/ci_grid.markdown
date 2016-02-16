@@ -45,6 +45,13 @@ icon: grid
 ### Advanced filter JSON
 * Allows to use a JSON format to add a condition. 
 
+* For example, in this filter, only show one project to choose:
+        {"name":"Project_name"} 
+        {"moniker":"Project_moniker"} 
+
+
+&nbsp;&nbsp;• Selectable fields to filter can be found through the REPL. In this case the command would be: `CI> project-> find_one ();`
+
 <br />
 ### Selection method
 * Choose between selections.

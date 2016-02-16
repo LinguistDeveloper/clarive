@@ -38,3 +38,4 @@ icon: file.gif
 <br />
 ### Extensión
 * Indica la o las extensiones permitidas para adjuntar.
+* Ejemplo: jpg,.png.,TXT, etc...

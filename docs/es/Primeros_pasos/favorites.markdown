@@ -1,6 +1,6 @@
 ---
 title: Favoritos
-index: 30
+index: 2000
 icon: favorite
 ---
 * Clarive permite al usuario a almacenar cualquier información que considere relevante en un unico espacio.

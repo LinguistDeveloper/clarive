@@ -53,3 +53,5 @@ icon: combo_box
 
 <br />
 ### Release field
+* It establishes dependence between this Release topics type and dependent topics.
+* It is through this field which should be completed by the ID field in the form of the dependent topics.

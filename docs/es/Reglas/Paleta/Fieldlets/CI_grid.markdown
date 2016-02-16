@@ -51,12 +51,13 @@ icon: grid
 
 <br />
 ### Filtro avanzado JSON
-Permite añadir un filtro avanzado JSON
-            
-        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
+* Permite añadir un filtro avanzado JSON.
+* En este ejemplo solo mostrará un proyecto para mostrar:
+        {"name":"Nombre_proyecto"} 
+        {"moniker":"Alias_del_proyecto"} 
 
 
-&nbsp;&nbsp;• Donde id es el [MID](Conceptos/mid) de la categoría.
+&nbsp;&nbsp;• Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
 
 
 <br />
