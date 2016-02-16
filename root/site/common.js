@@ -2651,6 +2651,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     },
     defaultAutoCreate : {tag: 'div', 'class':'', style:'margin-top: 0px; height: 30px;' },
     onRender : function(){
+        var i;
         Baseliner.Pills.superclass.onRender.apply(this, arguments);
         this.list = [];
         var self = this;
@@ -2665,20 +2666,26 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 li.className = self.value == v ? 'active' : '';
                 li.style['marginTop'] = '0px';
                 var anchor = document.createElement('a');
-                if( bg && self.value == v ) anchor.style['backgroundColor'] = bg;
+                if( bg && self.value == v ){
+                    anchor.style['backgroundColor'] = bg;
+                }
                 anchor.href = '#'; 
                 anchor.onclick = function(){
-                    for( var i=0; i<self.list.length; i++) {
-                        self.list[i].className = '';
+                    if ( !self.readOnly ){
+                        for ( i=0; i<self.list.length; i++ ) {
+                            self.list[i].className = '';
+                        }
+                        for ( i=0; i<self.anchors.length; i++ ) {
+                            self.anchors[i].style['backgroundColor'] = '';
+                        }
+                        li.className = 'active';
+                        if ( bg ){
+                            anchor.style['backgroundColor'] = bg;
+                        }
+                        self.value = v;
+                        self.$field.value = v;
+                        self.change(v);
                     }
-                    for( var i=0; i<self.anchors.length; i++) {
-                        self.anchors[i].style['backgroundColor'] = '';
-                    }
-                    li.className = 'active'; 
-                    if( bg ) anchor.style['backgroundColor'] = bg;
-                    self.value = v;
-                    self.$field.value = v;
-                    self.change(v);
                     return false;
                 }
                 anchor.innerHTML = v;
@@ -2699,7 +2706,9 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
         // the main navbar
         var ul = document.createElement('ul');
         ul.className = "nav nav-pills";
-        for( var i=0; i<self.list.length; i++) ul.appendChild( self.list[i] );
+        for( i=0; i<self.list.length; i++){
+            ul.appendChild( self.list[i] );
+        }
         boot.appendChild( ul );
         
         // the hidden field

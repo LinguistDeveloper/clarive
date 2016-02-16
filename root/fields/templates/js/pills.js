@@ -24,6 +24,7 @@ params:
         name: meta.id_field,
         anchor: meta.anchor || '100%',
         height: meta.height || 30,
+        readOnly: Baseliner.eval_boolean(meta.readonly),
         options: meta['options'],
         value: value
     });
