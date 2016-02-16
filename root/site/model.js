@@ -142,7 +142,7 @@ Baseliner.model.Users = function(c) {
         fieldLabel: _('Assign to'),
         typeAhead: true,
         name: 'users',
-        displayField: 'username',
+        displayField: ['username', 'realname'],
         hiddenName: 'users',
         valueField: 'id',
         tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>',

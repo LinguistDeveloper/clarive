@@ -1462,7 +1462,11 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
                     if (forceAll) {
                         this.store.clearFilter();
                     } else {
-                        this.store.filter(this.displayField, q);
+                        // CLARIVE {
+                        if (this.displayField) {
+                            this.$filterResultsByDisplayField(q);
+                        }
+                        // CLARIVE }
                     }
                     this.onLoad();
                 } else {
@@ -1480,6 +1484,31 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
                 this.selectedIndex = -1;
                 this.onLoad();
             }
+        }
+    },
+    $filterResultsByDisplayField : function(q) {
+        var displayField = this.displayField;
+
+        var multiFilter = function(record, id) {
+            var i;
+            var regex = new RegExp(q, "i");
+            var value;
+
+            for (i = 0; i < displayField.length; i++) {
+                if (record.json.hasOwnProperty(displayField[i])) {
+                    if (record.json[displayField[i]].match(regex)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        };
+
+        if (Ext.isArray(displayField)) {
+            this.store.filterBy(multiFilter);
+        } else {
+            this.store.filter(displayField, q);
         }
     }
 });
