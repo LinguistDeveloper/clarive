@@ -163,8 +163,7 @@
         role_box_multiselect,
         ci_class_box,
         ci_role_field,
-        ci_class_field,
-        { xtype:'textfield', name:'show_class', fieldLabel: _('Show class'), value: data.show_class }
+        ci_class_field
     ]);
     return ret;
 })
