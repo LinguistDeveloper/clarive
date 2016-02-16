@@ -380,10 +380,23 @@ sub config {
 }
 
 sub path_to {
-   my $self = shift;
-   require Path::Class;
-   my $f = Path::Class::file( $self->home, @_ );
-   return -d $f ? Path::Class::dir("$f") : $f;
+    my $self = shift;
+    my (@args) = @_;
+
+    require Path::Class;
+
+    my $file;
+    foreach my $feature ( $self->features->list ) {
+        my $path_to = $feature->path_to(@args);
+        if (-e $path_to) {
+            $file = $path_to;
+            last;
+        }
+    }
+
+    $file //= Path::Class::file( $self->home, @args );
+
+    return -d "$file" ? Path::Class::dir("$file") : $file;
 }
 
 sub features {
