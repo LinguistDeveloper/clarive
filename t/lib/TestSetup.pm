@@ -169,6 +169,7 @@ sub _topic_setup {
         {
             id        => "$id_rule",
             ts        => '2015-08-06 09:44:30',
+            rule_name => 'Form',
             rule_type => "form",
             rule_seq  => $id_rule,
             rule_tree => JSON::encode_json(_fieldlets())
@@ -189,6 +190,7 @@ sub _topic_setup {
         'status'          => "$status_id",
         id_rule           => "$id_rule",
         'category_status' => { id => "$status_id" },
+        'title'           => 'Topic',
     };
 }
 
