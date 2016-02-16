@@ -756,13 +756,18 @@ sub _rmpath {
 }
 
 sub _name_to_id {
-    my $name = _unac( lc shift );
+    my $name = shift;
+
+    return unless defined $name;
+
+    $name = _unac( lc $name );
     $name =~ s{\s+}{_}g;
     $name =~ s{\W}{_}g;
     $name =~ s{_+}{_}g;
     $name =~ s{_$}{}g;
     $name =~ s{^_}{}g;
     $name =~ s/[^[:ascii:]]+//g;
+
     return $name;
 }
 
@@ -888,7 +893,7 @@ sub _fail {
     } else {
         _error( "FAIL: $cl;$li: @_" ) 
     }
-    _throw( @_ ) if $ENV{BASELINER_THROW} || $ENV{BASELINER_DEBUG} > 1;
+    _throw( @_ ) if $ENV{BASELINER_THROW} || ($ENV{BASELINER_DEBUG} && $ENV{BASELINER_DEBUG} > 1);
     die join(' ',@_) . "\n";
 }
 

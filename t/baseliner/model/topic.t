@@ -22,8 +22,9 @@ use Baseliner::Utils qw(_load _file);
 use_ok 'Baseliner::Model::Topic';
 
 subtest 'get next status for user' => sub {
-    _setup_clear();
+    _setup();
     _setup_user();
+
     my $base_params = _topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -49,6 +50,8 @@ subtest 'get next status for user' => sub {
 };
 
 subtest 'get_short_name: returns same name when no category exists' => sub {
+    _setup();
+
     my $topic = _build_model();
 
     is $topic->get_short_name( name => 'foo' ), 'foo';
@@ -85,8 +88,9 @@ subtest 'get_short_name: returns auto acronym when does not exist removing speci
 };
 
 subtest 'get meta returns meta fields' => sub {
-    TestSetup->_setup_clear();
-    TestSetup->_setup_user();
+    _setup();
+    _setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -94,15 +98,17 @@ subtest 'get meta returns meta fields' => sub {
 
     is ref $meta, 'ARRAY';
 
-    my $fieldlets        = TestSetup->_fieldlets();
-    my @fields           = map { $$_{attributes}{data}{id_field} } @$fieldlets;
+    my $fieldlets = TestSetup->_fieldlets();
+    my @fields = map { $$_{attributes}{data}{id_field} } @$fieldlets;
+    unshift @fields, ( 'created_by', 'modified_by', 'created_on', 'category', 'modified_on' );
     my @fields_from_meta = map { $$_{id_field} } @$meta;
-    is_deeply \@fields_from_meta, [ 'category', @fields ];
+    is_deeply \@fields_from_meta, [@fields];
 };
 
 subtest 'include into fieldlet gets its topic list' => sub {
-    TestSetup->_setup_clear();
-    TestSetup->_setup_user();
+    _setup();
+    _setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -117,8 +123,9 @@ subtest 'include into fieldlet gets its topic list' => sub {
 };
 
 subtest 'include into fieldlet filters out releases' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my $rel_cat = TestSetup->_topic_release_category($base_params);
@@ -135,7 +142,7 @@ subtest 'include into fieldlet filters out releases' => sub {
 };
 
 subtest 'upload: related field NOT exists for upload file' => sub {
-    _setup_clear();
+    _setup();
     _setup_user();
 
     my $base_params = _topic_setup();
@@ -151,7 +158,7 @@ subtest 'upload: related field NOT exists for upload file' => sub {
 };
 
 subtest 'upload: file not exists for upload file' => sub {
-    _setup_clear();
+    _setup();
     _setup_user();
 
     my $base_params = _topic_setup();
@@ -168,7 +175,7 @@ subtest 'upload: file not exists for upload file' => sub {
 };
 
 subtest 'upload: upload file complete' => sub {
-    _setup_clear();
+    _setup();
     _setup_user();
 
     my $base_params = _topic_setup();
@@ -189,8 +196,9 @@ subtest 'upload: upload file complete' => sub {
 };
 
 subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -202,8 +210,9 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => s
 };
 
 subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -214,9 +223,8 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' =>
 
 subtest 'update: creates correct event.topic.create' => sub {
     _setup();
-
-    TestSetup->_setup_clear();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -224,7 +232,7 @@ subtest 'update: creates correct event.topic.create' => sub {
     my $event = mdb->event->find_one( { event_key => 'event.topic.create' } );
     my $event_data = _load $event->{event_data};
 
-    my $topic = mdb->master->find_one( { mid => "$topic_mid" } );
+    my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
     my $category = mdb->category->find_one;
 
     is $event_data->{mid},           $topic_mid;
@@ -245,9 +253,8 @@ subtest 'update: creates correct event.topic.create' => sub {
 
 subtest 'upload: uploads file' => sub {
     _setup();
-
-    TestSetup->_setup_clear();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -272,9 +279,8 @@ subtest 'upload: uploads file' => sub {
 
 subtest 'upload: creates correct event.file.create event' => sub {
     _setup();
-
-    TestSetup->_setup_clear();
     TestSetup->_setup_user();
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );

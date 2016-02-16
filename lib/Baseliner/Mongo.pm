@@ -685,7 +685,7 @@ sub txn {
 }
 
 our $AUTOLOAD;
-our $TRACE_DB = $ENV{CLARIVE_TRACE} =~ /db/;
+our $TRACE_DB = $ENV{CLARIVR_TRACE} && $ENV{CLARIVE_TRACE} =~ /db/;
 
 sub AUTOLOAD {
     my $self = shift;

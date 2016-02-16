@@ -96,7 +96,8 @@ sub create_topic {
     my $id_form = delete $params{form} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $id_category =
-      delete $params{id_category} || TestSetup->create_category( id_rule => $id_form, id_status => $status->mid );
+      delete $params{id_category}
+      || TestSetup->create_category( id_rule => $id_form, name => 'Category', id_status => $status->mid );
     my $project = delete $params{project} || TestUtils->create_ci_project;
 
     my $base_params = {
@@ -114,8 +115,9 @@ sub create_topic {
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
         {
             %$base_params,
-            action => 'add',
-            title  => 'New Topic',
+            action   => 'add',
+            title    => 'New Topic',
+            username => 'developer',
             %params
         }
     );
@@ -162,63 +164,6 @@ sub create_user {
 }
 
 sub _topic_setup {
-    mdb->topic->drop;
-    mdb->category->drop;
-    mdb->rule->drop;
-
-    Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
-    Baseliner::Core::Registry->add_class( undef, 'fieldlet' => 'BaselinerX::Type::Fieldlet' );
-
-    Baseliner::Core::Registry->add( 'caller', 'event.topic.create', {} );
-    Baseliner::Core::Registry->add( 'caller', 'event.file.create', {} );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.status_new' => {
-            bd_field  => 'id_category_status',
-            id_field  => 'status_new',
-            origin    => 'system',
-            meta_type => 'status'
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.required.category' => {
-            id_field => 'category',
-            bd_field => 'id_category',
-            origin   => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.projects' => {
-            get_method => 'get_projects',
-            set_method => 'set_projects',
-            meta_type  => 'project',
-            relation   => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.system.list_topics' => {
-            get_method  => 'get_topics',
-            set_method  => 'set_topics',
-            meta_type   => 'topic',
-            relation    => 'system',
-        }
-    );
-
-    Baseliner::Core::Registry->add(
-        'caller',
-        'fieldlet.attach_file' => {
-            get_method  => 'get_files',
-            type        => 'upload_files',
-        }
-    );
-
     my $status_id = ci->status->new( name=>'New', type => 'I' )->save;
 
     my $id_rule = mdb->seq('id');
@@ -226,6 +171,7 @@ sub _topic_setup {
         {
             id        => "$id_rule",
             ts        => '2015-08-06 09:44:30',
+            rule_name => 'Form',
             rule_type => "form",
             rule_seq  => $id_rule,
             rule_tree => JSON::encode_json(_fieldlets())
@@ -240,12 +186,14 @@ sub _topic_setup {
     my $project_mid = $project->save;
 
     return {
-        'project'    => $project_mid,
-        'category'   => "$cat_id",
-        'status_new' => "$status_id",
-        'status'     => "$status_id",
-        id_rule      => "$id_rule",
-        'category_status' => { id=>"$status_id" },
+        'project'         => $project_mid,
+        'category'        => "$cat_id",
+        'status_new'      => "$status_id",
+        'status'          => "$status_id",
+        id_rule           => "$id_rule",
+        'category_status' => { id => "$status_id" },
+        'title'           => 'Topic',
+        'username'        => 'test',
     };
 }
 
@@ -271,6 +219,17 @@ sub _fieldlets {
                 },
                 "key" => "fieldlet.system.status_new",
                 text => 'Status',
+            }
+        },
+        {
+            "attributes" => {
+                "data" => {
+                    "id_field"     => "title",
+                    "name_field"   => "Title",
+                    "fieldletType" => "fieldlet.system.title",
+                },
+                "key" => "fieldlet.system.title",
+                text => 'Title',
             }
         },
         {
