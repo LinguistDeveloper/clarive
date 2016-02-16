@@ -510,11 +510,10 @@ a {
 
 /*resizing icons for a better definition*/
 
-.x-btn-icon{
-height: 16px;
-width: 16px;
-background-image:'/static/images/icons/project.png';
-background-size:contain;
+.x-btn-icon {
+    height: 16px;
+    width: 16px;
+    background-size:contain;
 }
 
 .x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
