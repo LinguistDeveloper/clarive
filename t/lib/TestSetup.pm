@@ -96,7 +96,8 @@ sub create_topic {
     my $id_form = delete $params{form} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $id_category =
-      delete $params{id_category} || TestSetup->create_category( id_rule => $id_form, id_status => $status->mid );
+      delete $params{id_category}
+      || TestSetup->create_category( id_rule => $id_form, name => 'Category', id_status => $status->mid );
     my $project = delete $params{project} || TestUtils->create_ci_project;
 
     my $base_params = {
@@ -114,8 +115,9 @@ sub create_topic {
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
         {
             %$base_params,
-            action => 'add',
-            title  => 'New Topic',
+            action   => 'add',
+            title    => 'New Topic',
+            username => 'developer',
             %params
         }
     );
@@ -191,6 +193,7 @@ sub _topic_setup {
         id_rule           => "$id_rule",
         'category_status' => { id => "$status_id" },
         'title'           => 'Topic',
+        'username'        => 'test',
     };
 }
 
