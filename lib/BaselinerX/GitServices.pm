@@ -19,7 +19,7 @@ register 'config.git' => {
         { id=>'no_auth', label=>'Allow unauthenticated users to access the repository URL', default=>0 },
         { id=>'force_authorization', label=>'Check Auth Always', default=>1 },
         #{ id=>'gitcgi', label=>'Path to git-http-backend', default=>'/usr/local/Cellar/git/1.7.6/libexec/git-core/git-http-backend' },
-        { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{BASELINER_HOME},'etc','repo')  },
+        { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{CLARIVE_HOME},'etc','repo')  },
         { id=>'path', label=>'Path to git binary', default=>'/usr/bin/git'  },
         { id=>'show_changes_in_tree', label=>'Show tags in the Lifecycle tree', default=>'1' },
         { id=>'hide_used_commits', label=>'Hide commits already added to changeset', default=>'1' },
@@ -86,16 +86,20 @@ sub create_tag {
 }
 
 sub create_branch {
-    my ($self, $c, $p) = @_;
+    my ( $self, $c, $p ) = @_;
 
-    my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
-    my $tag = $p->{branch} // _fail(_loc("Missing tag name"));
-    my $sha = $p->{sha} // _fail(_loc("Missing sha"));
- 
+    my $repo_mid = $p->{repo}   // _fail( _loc("Missing repo mid") );
+    my $tag      = $p->{branch} // _fail( _loc("Missing branch name") );
+    my $sha      = $p->{sha}    // _fail( _loc("Missing sha") );
+
     my $repo = ci->new($repo_mid);
-    my $git = $repo->git;
-    
-    $git->exec( 'branch', $tag, $sha );
+    my $git  = $repo->git;
+
+    if ( $p->{force} ) {
+        $git->exec( 'branch', '-f', $tag, $sha );
+    } else {
+        $git->exec( 'branch', $tag, $sha );
+    }
 }
 
 sub link_revision {
