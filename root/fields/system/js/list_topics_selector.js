@@ -38,7 +38,7 @@ params:
     }else{
         topics = [];
     }
-    
+    var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
@@ -95,7 +95,7 @@ params:
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
             value: topics,
-            singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
+            singleMode: single_mode,
             hidden: Baseliner.eval_boolean(meta.hidden),
             display_field: display_field,
             tpl_cfg: tpl_cfg
