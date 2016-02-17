@@ -35,6 +35,7 @@ sub tree_topic_get_files : Local {
         for my $file ( @files ) {
             push @tree, {
                 text       => $file->{filename} . '(v' . $file->{versionid} . ')',
+                iconCls => 'default_folders',
                 #url        => '/lifecycle/tree_topic_get_files',
                 data       => {
                    id_file => $file->{mid},
@@ -1536,11 +1537,11 @@ sub build_topic_tree {
         moniker => ($p{moniker} || Util->_name_to_id($topic_title)),
         children => [
             {
-                text => _loc('Files'),
-                icon => '/static/images/icons/folder.gif',
-                url  => '/lifecycle/tree_topic_get_files',
-                leaf => \0,
-                data => {
+                text     => _loc('Files'),
+                iconCls  => 'default_folders',
+                url      => '/lifecycle/tree_topic_get_files',
+                leaf     => \0,
+                data     => {
                     id_topic     => $p{mid},
                     sw_get_files => \1
                 },

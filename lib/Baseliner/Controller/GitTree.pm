@@ -242,6 +242,7 @@ sub branch_tree : Local {
                 my $fname = Girl->unquote( $d->basename );
                 +{
                     text => "$fname",
+                    iconCls => 'default_folders',
                     url  => '/gittree/branch_tree',
                     data => {
                         repo_mid => $repo_ci->mid,
@@ -257,6 +258,7 @@ sub branch_tree : Local {
                 my $fname = Girl->unquote( $f->basename );
                 +{
                     text => "$fname",
+                    iconCls => 'default_folders',
                     leaf => \1,
                     data => {
                         click => {

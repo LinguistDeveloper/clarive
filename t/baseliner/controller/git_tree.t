@@ -255,6 +255,7 @@ subtest 'branch_tree: returns tree' => sub {
             {
                 'text' => 'foo',
                 'url'  => '/gittree/branch_tree',
+                'iconCls' => 'default_folders',
                 'data' => {
                     'sha'      => re_sha(),
                     'repo_mid' => $repo_ci->mid,
@@ -280,6 +281,7 @@ subtest 'branch_tree: returns tree' => sub {
                     'rev_num'  => re_sha(),
                     'branch'   => 'HEAD'
                 },
+                'iconCls' => 'default_folders',
                 'leaf' => \1
             }
         ]
@@ -320,6 +322,7 @@ subtest 'branch_tree: returns tree from a subdirectory' => sub {
                     'rev_num'  => re_sha(),
                     'branch'   => 'HEAD'
                 },
+                'iconCls' => 'default_folders',
                 'leaf' => \1
             }
         ]

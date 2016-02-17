@@ -353,6 +353,7 @@
                         rule_folder_id: rule_info.id,
                         is_folder: true,
                         expandable: true,
+                        iconCls: rule_info.iconCls,
                         allowDrop:true
                     });
                     node.appendChild(new_node);

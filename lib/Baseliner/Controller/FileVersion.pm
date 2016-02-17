@@ -95,8 +95,8 @@ sub tree_file_project : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my @tree = $self->gen_tree({ id_project=>$p->{id_project}, id_folder=>$p->{id_folder}, username=>$c->username });
-    
+   my @tree = $self->gen_tree({ iconCls => 'default_folders', id_project=>$p->{id_project}, id_folder=>$p->{id_folder}, username=>$c->username });
+   
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
@@ -186,6 +186,7 @@ sub build_item_directory {
         text    => $folder->{name},
         leaf    =>\0,
         url     => '/fileversion/tree_file_project',
+        iconCls => 'default_folders',
         data    => {
             id_folder => $folder->{mid},
             id_project => $id_project,
@@ -206,6 +207,7 @@ sub build_item_file {
     my ($self,$file,$id_folder) = @_;
     return  {
         text    => $file->{name} . ' <span style="color:#999">(v' . $file->{versionid} . ')</span>',
+        iconCls => 'default_folders',
         leaf    =>\1,
         data    => {
             id_file => $file->{mid},

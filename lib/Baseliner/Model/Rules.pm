@@ -1269,13 +1269,14 @@ sub get_rules_info {
             } @rules;
             push $folder_structure, $temp_structure;
         }
-        my $custom_folder_node = {text=>_loc('Custom Folders'), leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
+     my $custom_folder_node = {text=>_loc('Custom Folders'),  iconCls => 'default_folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
                 is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
         my $rs = mdb->rule_folder->find;
         while( my $rule_folder = $rs->next ) {
             my $temp_structure = {
                 text           => $rule_folder->{name},
                 rule_folder_id => $rule_folder->{id},
+                iconCls => 'default_folders', 
                 is_folder      => \1,
                 leaf           => \0,
                 expandable     => \1,
@@ -1287,6 +1288,7 @@ sub get_rules_info {
             map {
                 push $temp_structure->{children}, 
                 { text=>$_->{rule_name}, 
+                  iconCls => 'default_folders', 
                   leaf=>\1, 
                   rule_id=>$_->{id},
                   rule_ts=>$_->{ts},
@@ -1297,6 +1299,7 @@ sub get_rules_info {
                   rule_name=>$_->{rule_name},
                   event_name=>$_->{event_name},
                   username=>$_->{username}
+
                 } if $rule_folder->{id} ~~ $_->{folders};
             } @rules;
             push $custom_folder_node->{children}, $temp_structure;
@@ -1319,7 +1322,7 @@ sub add_custom_folder {
         mdb->master_seq->insert({_id=>'rule_folder'});
     }
     my $new_id = $rule_folder_seq+1;
-    my $folder_info = { name=>$folder_name, id=>$new_id.'', username=>$p->{username}, ts=>mdb->now().'' };
+    my $folder_info = { name=>$folder_name, id=>$new_id.'', username=>$p->{username}, ts=>mdb->now().'', iconCls => 'default_folders' };
     mdb->rule_folder->insert($folder_info);
     my $ret = mdb->master_seq->update({ _id => 'rule_folder', seq =>$rule_folder_seq }, { '$set' => { seq => $new_id } });
     $folder_info;  
