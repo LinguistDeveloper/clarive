@@ -35,6 +35,7 @@ sub tree_topic_get_files : Local {
         for my $file ( @files ) {
             push @tree, {
                 text       => $file->{filename} . '(v' . $file->{versionid} . ')',
+                iconCls => 'default_folders',
                 #url        => '/lifecycle/tree_topic_get_files',
                 data       => {
                    id_file => $file->{mid},

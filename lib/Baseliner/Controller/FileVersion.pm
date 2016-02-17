@@ -207,6 +207,7 @@ sub build_item_file {
     my ($self,$file,$id_folder) = @_;
     return  {
         text    => $file->{name} . ' <span style="color:#999">(v' . $file->{versionid} . ')</span>',
+        iconCls => 'default_folders',
         leaf    =>\1,
         data    => {
             id_file => $file->{mid},
