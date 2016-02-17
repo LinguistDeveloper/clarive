@@ -54,6 +54,11 @@ elif [ "$1" == "prove" ]; then
     shift
 
     prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
+elif [ "$1" == "cover" ]; then
+    shift
+
+    prove -Ilib -It/lib -e 'perl -MDevel::Cover' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
+    cover
 else
     $PERL $BINDIR/cla-cmd "$@"
 fi
