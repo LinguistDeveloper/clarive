@@ -65,6 +65,13 @@ register 'service.git.create_tag' => {
     handler => \&create_tag,
 };
 
+register 'service.git.create_branch' => {
+    name    => 'Create a branch in the repository',
+    icon    => '/static/images/icons/git.png',
+    form    => '/forms/git_create_branch.js',
+    handler => \&create_branch,
+};
+
 sub create_tag {
     my ($self, $c, $p) = @_;
 
@@ -77,6 +84,20 @@ sub create_tag {
     
     $git->exec( 'tag', '-f', $tag, $sha );
 }
+
+sub create_branch {
+    my ($self, $c, $p) = @_;
+_warn $p;
+    my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
+    my $tag = $p->{branch} // _fail(_loc("Missing tag name"));
+    my $sha = $p->{sha} // _fail(_loc("Missing sha"));
+ 
+    my $repo = ci->new($repo_mid);
+    my $git = $repo->git;
+    
+    $git->exec( 'branch', $tag, $sha );
+}
+
 sub link_revision {
     my ($self, $c, $p) = @_;
 
