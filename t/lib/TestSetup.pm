@@ -161,7 +161,6 @@ sub create_user {
 
     my $id_role = delete $params{id_role} or die 'id_role required';
     my $project = delete $params{project} or die 'project required';
-    my $username = delete $params{username} || 'developer';
 
     my $username = delete $params{username} || 'developer';
     my $password = delete $params{password} || 'password';
