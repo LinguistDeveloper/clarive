@@ -87,7 +87,7 @@ sub create_tag {
 
 sub create_branch {
     my ($self, $c, $p) = @_;
-_warn $p;
+
     my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
     my $tag = $p->{branch} // _fail(_loc("Missing tag name"));
     my $sha = $p->{sha} // _fail(_loc("Missing sha"));
