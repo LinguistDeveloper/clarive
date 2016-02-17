@@ -52,7 +52,7 @@ body {
 .roadmap-grid .x-grid3-header {
     background: #fff;
 }
-.roadmap-grid .x-grid3-hd-inner  {
+.roadmap-grid .x-grid3-hd-inner img  {
     font-weight: bold;
     color: #333;
     background: #fff;
@@ -570,7 +570,7 @@ a {
     background-repeat: no-repeat;
     background-size:contain;
     height: 16px;
-    width: 16px;
+    width: auto;
 }
 
 .x-btn-icon .x-btn-small .x-btn-text{
@@ -586,5 +586,15 @@ a {
 .x-btn-icon .x-btn-large .x-btn-text{
     height: 16px;
     width: 16px;
+}
+
+/*Resizing icons in Rule admin*/ 
+
+.x-grid3-row .x-grid3-row-expanded .x-unselectable, .x-unselectable img{
+    height: 16px;
+    width: 16px;
+}
+
+
 
 >>>>>>> Adding new color set of icons
