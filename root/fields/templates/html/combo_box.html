@@ -1,0 +1,26 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+<%perl>
+    my $hidden = $meta->{hidden} eq '0' ? 0 : 1;
+</%perl>
+
+% if( $meta->{section} eq 'body' && !$hidden ) {  # This is the 'Status' right column field:
+    <tr>
+      <th width="50%"><% _loc($meta->{name_field}) %>:</th>
+      <td class="fieldlet-html"
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" width="50%">
+          <% $meta->{id_field} %></td>
+    </tr>
+% }
+
+% if ($meta->{section} eq 'head' && !$hidden){
+  <tr><td>
+     <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+       <tr><th width="1"><% _loc($meta->{name_field}) %></th></tr>
+       <tr><td colspan="1" class="fieldlet-html"><% $meta->{id_field} %></td></tr>
+     </table>
+  </td></tr>
+% } 

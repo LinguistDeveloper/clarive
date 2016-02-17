@@ -87,7 +87,7 @@ register 'fieldlet.ci_grid' => {
 
 register 'fieldlet.combo' => {
     name        => _loc('Combo'),
-    html        => '/fields/templates/html/row_body.html',
+    html        => '/fields/templates/html/combo_box.html',
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
     icon        => '/static/images/icons/combo_box.png',
