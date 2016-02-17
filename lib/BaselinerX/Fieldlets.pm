@@ -33,6 +33,7 @@ register 'fieldlet.progressbar' => {
     js          => '/fields/templates/js/progress_bar.js',
     form        => '/fields/templates/config/progress_bar.js',
     icon        => '/static/images/icons/progressbar.png',
+    meta_type   => 'number',
     section_allowed => ['details','between']
 };
 
