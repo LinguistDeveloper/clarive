@@ -1345,10 +1345,10 @@ sub rule_node_to_fieldlet {
     my @cat_fields;
     my $field_order = 0;
     # first, the required fields
-    my @required_fields = Baseliner->registry->starts_with( "fieldlet.required" );
+    my @required_fields = Baseliner::Core::Registry->starts_with( "fieldlet.required" );
     foreach my $required_fields (@required_fields){
         my $res = {};
-        my $reg_params = Baseliner->registry->get_params($required_fields);
+        my $reg_params = Baseliner::Core::Registry->get_params($required_fields);
         $res->{params} = $reg_params;
         $res->{id_field} = $reg_params->{id};
         $res->{params}{field_order} = $field_order;
@@ -1361,7 +1361,7 @@ sub rule_node_to_fieldlet {
         my $res = { id_field=>$fieldlet->{id_field}, params=>$fieldlet };
         my $key = $fieldlet->{fieldletType} || $fieldlet->{key};  # FIXME fieldletType is deprecated
         try { 
-            my $registered_fieldlet = Baseliner->registry->get( $key );
+            my $registered_fieldlet = Baseliner::Core::Registry->get( $key );
             my $reg_params = $registered_fieldlet->registry_node->raw;
             $res->{params}{$_} = $reg_params->{$_} for grep !/^(registry_node|data_gen)$/, keys $reg_params;
             $res->{params}{field_order} = $field_order++;

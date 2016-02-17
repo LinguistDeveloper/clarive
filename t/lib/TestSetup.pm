@@ -46,7 +46,7 @@ sub create_label {
     return "$id_label";
 }
 
-sub create_rule_form {
+sub create_rule {
     my $class = shift;
     my (%params) = @_;
 
@@ -54,18 +54,31 @@ sub create_rule_form {
         $params{rule_tree} = JSON::encode_json( $params{rule_tree} );
     }
 
-    my $id_rule = mdb->seq('id');
+    my $id_rule  = mdb->seq('rule');
+    my $seq_rule = 0 + mdb->seq('rule_seq');
     mdb->rule->insert(
         {
-            id        => "$id_rule",
-            ts        => '2015-08-06 09:44:30',
-            rule_type => "form",
-            rule_seq  => $id_rule,
+            id          => "$id_rule",
+            rule_active => 1,
+            rule_name   => 'Rule',
+            rule_seq    => $seq_rule,
             %params,
         }
     );
 
     return "$id_rule";
+}
+
+sub create_rule_form {
+    my $class = shift;
+    my (%params) = @_;
+
+    return $class->create_rule(
+        rule_name => 'Form',
+        rule_type => "form",
+        rule_when => 'post-offline',
+        %params
+    );
 }
 
 sub create_category {
@@ -75,7 +88,7 @@ sub create_category {
     my $id_status = delete $params{id_status} || ci->status->new( name => 'New', type => 'I' )->save;
     my $id_rule = delete $params{id_rule};
 
-    my $id_cat = mdb->seq('id');
+    my $id_cat = mdb->seq('category');
     mdb->category->insert(
         {
             id       => "$id_cat",
@@ -93,7 +106,7 @@ sub create_topic {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_form = delete $params{form} || TestSetup->create_rule_form;
+    my $id_form = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $id_category =
       delete $params{id_category}
@@ -129,7 +142,7 @@ sub create_role {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_role = mdb->seq('id');
+    my $id_role = mdb->seq('role');
     mdb->role->insert(
         {
             id      => "$id_role",
@@ -148,12 +161,15 @@ sub create_user {
 
     my $id_role = delete $params{id_role} or die 'id_role required';
     my $project = delete $params{project} or die 'project required';
+
     my $username = delete $params{username} || 'developer';
+    my $password = delete $params{password} || 'password';
 
     return TestUtils->create_ci(
         'user',
         name             => $username,
         username         => $username,
+        password         => ci->user->encrypt_password($username, $password),
         project_security => {
             $id_role => {
                 project => [ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ]
