@@ -233,6 +233,23 @@ EOF
     ok !$doc;
 };
 
+subtest 'dispatches to DB collection drop' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<'EOF', {} );
+    var db = new Cla.DB;
+    var col = db.getCollection('test_collection');
+
+    col.insert({'foo':'bar'});
+    col.drop();
+EOF
+
+    my $cnt = mdb->test_collection->count;
+    is $cnt, 0;
+};
+
 subtest 'dispatches to fs: open/write/close' => sub {
     _setup();
 
@@ -465,6 +482,76 @@ subtest 'exceptions catch external errors' => sub {
 
     like exception { $code->eval_code(q/Cla.FS.openFile('unknown')/) }, qr/Cannot open file unknown/;
     ok !exception { $code->eval_code(q/try { Cla.FS.openFile('unknown') } catch(e) {}/) };
+};
+
+subtest 'returns js array' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code(q{var x = [1,2,3]; x});
+
+    is_deeply $ret,[1,2,3];
+};
+
+subtest 'returns js array from bare structure' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code(q{[1,2,3];});
+
+    is_deeply $ret,[1,2,3];
+};
+
+subtest 'gets clarive Config' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $home = $code->eval_code(q{Cla.config('home')});
+
+    is $home, Clarive->config->{home};
+};
+
+subtest 'load yaml util' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $hash = $code->eval_code(q{var yaml="---\nfoo: bar\n"; Cla.loadYAML(yaml)});
+
+    is_deeply $hash, { foo=>'bar' };
+};
+
+subtest 'dump yaml util' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $yaml = $code->eval_code(q{Cla.dumpYAML({ foo: 'bar' })});
+
+    like $yaml, qr/foo: bar/;
+};
+
+subtest 'load json util' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $hash = $code->eval_code(q{var json='{ "foo":"bar" }'; Cla.loadJSON(json)});
+
+    is_deeply $hash, { foo=>'bar' };
+};
+
+subtest 'dump json util' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $json = $code->eval_code(q{Cla.dumpJSON({ foo: 'bar' })});
+
+    like $json, qr/"foo"\s*:\s*"bar"/;
 };
 
 done_testing;

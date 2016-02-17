@@ -9,7 +9,7 @@ use Try::Tiny;
 use File::Basename ();
 use Scalar::Util qw(blessed);
 use Baseliner::Mongo;
-use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case _unbless :logging);
+use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case _unbless :logging _load _dump _encode_json _decode_json);
 use Storable ();
 use Clarive::App;
 
@@ -79,6 +79,11 @@ EOF
                                 my $js = shift;
 
                                 return $col->update(@_);
+                            },
+                            drop => sub {
+                                my $js = shift;
+
+                                return $col->drop;
                             },
                             findOne => sub {
                                 my $js = shift;
@@ -222,6 +227,31 @@ EOF
                 return $stash->{$key} if @_ == 1;
 
                 $stash->{$key} = $value;
+            },
+            config => sub {
+                shift;
+                my ( $key ) = @_;
+                Clarive->config->{$key};
+            },
+            loadYAML => sub {
+                shift;
+                my ( $yaml ) = @_;
+                _load( $yaml );
+            },
+            dumpYAML => sub {
+                shift;
+                my ( $ref ) = @_;
+                _dump( $ref );
+            },
+            loadJSON => sub {
+                shift;
+                my ( $json ) = @_;
+                _decode_json( $json );
+            },
+            dumpJSON => sub {
+                shift;
+                my ( $ref ) = @_;
+                _encode_json( $ref );
             }
         },
     );
