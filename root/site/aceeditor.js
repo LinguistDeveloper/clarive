@@ -76,9 +76,9 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         return self.editor.setReadOnly(v);
     },
 
-    setOptions : function(v) {
+    setOptions : function(options) {
         var self = this;
-        return self.editor.setOptions(v);
+        return self.editor.setOptions(options);
     }
 
     goTop : function() {
