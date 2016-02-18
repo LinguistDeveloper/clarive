@@ -273,6 +273,16 @@ register 'fieldlet.text' => {
     section_allowed => ['head','more','body']
 };
 
+register 'fieldlet.text_plain' => {
+    name        => _loc('TextPlain'),
+    html        => '/fields/templates/html/row_body.html',
+    js          => '/fields/templates/js/textfield.js',
+    form        => '/fields/templates/config/textplain.js',
+    icon        => '/static/images/icons/field.png',
+    type        => 'textarea',
+    section_allowed => ['head','more']
+};
+
 register 'fieldlet.number' => {
     name        => _loc('Numberfield'),
     html        => '/fields/templates/html/row_body.html',
