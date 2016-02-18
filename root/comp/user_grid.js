@@ -375,6 +375,7 @@
             draggable: false,
             checked: false,
             id: 'All',
+            iconCls:'default_folders',
             data: {
                 project: '',
                 id_project: 'todos',
