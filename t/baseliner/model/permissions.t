@@ -21,6 +21,16 @@ subtest 'user_can_search_ci: false when no action' => sub {
     is $permissions->user_can_search_ci( $user->username ), 0;
 };
 
+subtest 'user_can_search_ci: true when admin' => sub {
+    _setup();
+
+    my $user = _create_user_with_actions( actions => [ { action => 'action.ci.admin' } ] );
+
+    my $permissions = _build_permissions();
+
+    is $permissions->user_can_search_ci( $user->username ), 1;
+};
+
 subtest 'user_can_search_ci: true when action' => sub {
     _setup();
 

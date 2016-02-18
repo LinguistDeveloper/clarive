@@ -819,6 +819,8 @@ sub user_can_search_ci {
     my $self = shift;
     my ($username) = @_;
 
+    return 1 if $self->user_is_ci_admin($username);
+
     return $self->user_has_action( username => $username, action => 'action.search.ci' );
 }
 

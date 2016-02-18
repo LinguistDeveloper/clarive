@@ -1772,8 +1772,9 @@ sub default : Path Args(2) {
 
 sub user_can_search {
     my $self = shift;
+    my ($username) = @_;
 
-    return $self->_build_permissions->user_can_search_ci;
+    return $self->_build_permissions->user_can_search_ci($username);
 }
 
 sub _build_permissions {
