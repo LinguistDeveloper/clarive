@@ -313,6 +313,7 @@ register 'fieldlet.system.moniker' => {
     icon        => '/static/images/icons/lock_small.png',
     html        => '/fields/templates/html/row_body.html',
     origin      => 'system',
+    type        => 'textfield',
     bd_field    => 'moniker',
     id_field    => 'moniker'
 };
@@ -325,6 +326,7 @@ register 'fieldlet.system.title' => {
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/title.js',
     icon        => '/static/images/icons/lock_small.png',
+    type        => 'textfield',
     origin      => 'system',
     section     => 'head'
 };
