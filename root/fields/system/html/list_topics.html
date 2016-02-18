@@ -26,6 +26,14 @@ if( ! $meta->{hidden} ) {
     }
     my @hide_list_statuses;
     @hide_list_statuses = map { [ split /,/ ] } $meta->{hide_list_statuses} if $meta->{hide_list_statuses};
+
+    my @topics_mids = map { $_->{mid} } @topics;
+    my @related_mids = map { $_->{to_mid} } mdb->master_rel->find({ 'from_mid' => mdb->in(@topics_mids) })->all;
+    push @related_mids, map { $_->{from_mid} } mdb->master_rel->find({ 'to_mid' => mdb->in(@topics_mids) })->all;
+
+    my %related_cis = map { $_->{mid} => $_->{name} } mdb->master->find({ mid => mdb->in(@related_mids)})->all;
+
+_warn \%related_cis;
 </%perl>
     
     <tr>
@@ -70,6 +78,8 @@ if( ! $meta->{hidden} ) {
                 <& /partial/topic_name_multi.html, topics => $val, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
 %    } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
+%    } elsif( $$h{type} eq 'ci' ) {
+            <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% ref $val ? Util->_markdown(join("<br>", map {$related_cis{$_}} _array($val)), { tab_width=>2 }) : Util->_markdown($related_cis{$val}, { tab_width=>2 }) %></td>
 %    } elsif( $$h{key} eq 'name_status' ) {
             <& /partial/topic_status.html, topic=>$topic &>
 %    } else {
