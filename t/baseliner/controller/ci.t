@@ -727,6 +727,24 @@ subtest 'tree_objects: searches by mids' => sub {
 #    is $tree[0]->{name}, 'Your variable';
 #};
 
+subtest 'user_can_search: checks if user can search cis' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $another_project = TestUtils->create_ci('project');
+    my $another_id_role = TestSetup->create_role();
+    my $another_user =
+      TestSetup->create_user( username => 'another_user', id_role => $another_id_role, project => $another_project );
+
+    my $controller = _build_controller();
+
+    ok !$controller->user_can_search( $another_user->username );
+    ok $controller->user_can_search( $user->username );
+};
+
 sub _build_c {
     mock_catalyst_c(@_);
 }
