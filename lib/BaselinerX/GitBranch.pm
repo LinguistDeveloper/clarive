@@ -81,6 +81,9 @@ sub _click {
        $title=substr($self->name,0,26);
        $title= $title . "....";
     }
+    else{
+        $title = $self->name;   
+    }
     +{
             url      => '/comp/view_commits_history.js',
             type     => 'comp',
