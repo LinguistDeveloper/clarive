@@ -11,14 +11,18 @@ params:
 */
 
 (function(params){
-    var DEFAULT_MAX_LENGTH = 524288;
+    var DEFAULT_TEXTPLAIN_MAX_LENGTH = 524288;
+    var DEFAULT_TEXTFIELD_MAX_LENGTH = 255;
+    var DEFAULT_TEXTPLAIN_HEIGHT = 400;
+    var DEFAULT_TEXTFIELD_HEIGHT = 30 ;
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
 
     var meta = params.topic_meta;
     var data = params.topic_data;
     var allowBlank = meta.allowBlank == 'false' || meta.allowBlank == '0' || meta.allowBlank == 0 ? false: true;
-    var height = meta.type === 'textarea' ? (meta.height || 400) : (meta.height || 30);
-    var maxLength = meta.type === 'textarea' ? (meta.height || DEFAULT_MAX_LENGTH) : (meta.maxLength ? meta.maxLength : 255);
+
+    var height = meta.height ? meta.height : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_HEIGHT: DEFAULT_TEXTFIELD_HEIGHT );
+    var maxLength = meta.maxLength ? meta.maxLength : ( meta.maxLength === 'textarea' ? DEFAULT_MAX_LENGTH : (meta.maxLength ? meta.maxLength : DEFAULT_TEXTFIELD_MAX_LENGTH ));
 
     var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
