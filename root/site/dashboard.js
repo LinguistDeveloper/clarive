@@ -111,28 +111,6 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
-                var btn_html = {
-                    icon: '/static/images/icons/html.png',
-                    text: _('HTML'),
-                    handler: function() {
-                        form_report_submit({ url: '/topic/report_html' });
-                    }
-                };
-                var btn_yaml = {
-                    icon: '/static/images/icons/yaml.png',
-                    text: _('YAML'),
-                    handler: function() {
-                        form_report_submit({ no_html: true, url: '/topic/report_yaml' });
-                    }
-                };
-                var btn_csv = {
-                    icon: '/static/images/icons/csv.png',
-                    text: _('CSV'),
-                    handler: function() {
-                        form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload'});
-                    }
-                };
-
                 var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
                     id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
                     no_boot: dashlet.no_boot,
@@ -149,6 +127,30 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         exp_dashlet : exp_dashlet,
                         id_export_menu : id_export_menu
                     });
+                    var btn_html = {
+                        icon: '/static/images/icons/html.png',
+                        current_dashlet: dashlet.id,
+                        text: _('HTML'),
+                        handler: function() {
+                            var dashboard_id = self.dashboard_id; 
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            var name = dashlet.title
+                            var filter_topics = dashlet.data;
+                            //Baseliner.ajaxEval( '/topic/report_html');
+                        }
+                    };
+                    var btn_yaml = {
+                        icon: '/static/images/icons/yaml.png',
+                        text: _('YAML'),
+                        handler: function() {
+                        }
+                    };
+                    var btn_csv = {
+                        icon: '/static/images/icons/csv.png',
+                        text: _('CSV'),
+                        handler: function() {
+                        }
+                    };
                     var btn_reports = new Ext.Button({
                         icon: '/static/images/icons/exports.png',
                         renderTo: id_export_menu,
