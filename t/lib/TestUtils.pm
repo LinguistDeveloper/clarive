@@ -295,6 +295,7 @@ sub new {
     $self->{is_root}      = 0;
     $self->{path_to}      = $params{path_to} || '';
     $self->{languages}    = $params{languages} || ['en'];
+    $self->{language}     = $params{language} || 'en';
 
     return $self;
 }
@@ -307,6 +308,7 @@ sub path_to {
 
 sub user_languages { ('en') }
 sub languages      { shift->{languages} }
+sub language       { shift->{language} }
 
 sub config { shift->{config} }
 

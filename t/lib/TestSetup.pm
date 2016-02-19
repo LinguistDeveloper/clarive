@@ -179,6 +179,16 @@ sub create_user {
     );
 }
 
+sub create_calendar {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_cal = mdb->seq('calendar');
+    mdb->calendar->insert( { id => "$id_cal", active => 1, bl => '*', name => 'Calendar', %params } );
+
+    return "$id_cal";
+}
+
 sub _topic_setup {
     my $status_id = ci->status->new( name=>'New', type => 'I' )->save;
 
