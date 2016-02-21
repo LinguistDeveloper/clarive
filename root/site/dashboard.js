@@ -104,8 +104,11 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         data.rows.push( d );
                     });
                     var form = form_report.getForm();
+                    var rows_array = div.getElementsByClassName("dataTables_info")[0].innerHTML.split(" ");
                     form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
                     form.findField('title').setValue( dashlet.title );
+                    form.findField('rows').setValue( rows_html.length );
+                    form.findField('total_rows').setValue( rows_array[rows_array.length - 2] );
                     var el = form.getEl().dom;
                     var target = document.createAttribute("target");
                     target.nodeValue = args.target || "_blank";
