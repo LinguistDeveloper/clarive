@@ -29,7 +29,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                                         [%= last_update %]
                                 </div>
                             </td>
-                            <td id="[%= id_div %]_icons" style='text-align:-moz-right;'>
+                            <td id="[%= id_div %]_icons" style='text-align:-moz-right;text-align:rigth;text-align:-webkit-right;'>
                             </td>
                         </tr>
                     </table>
