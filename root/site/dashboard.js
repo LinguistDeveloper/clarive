@@ -119,16 +119,16 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
 
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = new Ext.XTemplate(
-                    '<table><tr><td>',
-                    '<span id="{id_export_menu}" class="dashboard-buttons"></span></td>',
-                       '<td><img class="dashboard-buttons"',
-                            'src="/static/images/icons/config.gif"',
-                            'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
-                        '/>',
-                        '<img class="dashboard-buttons"',
-                             'src="/static/images/icons/refresh.gif"',
-                             'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.refresh_dashlet(\'{id_dashlet}\')"',
-                        '/></td></tr></table>'
+                    '<table><tr>',
+                    '<td><span id="{id_export_menu}" class="dashboard-buttons"></span></td>',
+                    '<td><img class="dashboard-buttons"',
+                       'src="/static/images/icons/config.gif"',
+                       'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
+                    '/>',
+                    '<img class="dashboard-buttons"',
+                        'src="/static/images/icons/refresh.gif"',
+                        'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.refresh_dashlet(\'{id_dashlet}\')"',
+                    '/></td></tr></table>'
                 );
                 var id_div = Ext.id();
                 var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
@@ -199,11 +199,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                             export_data(dashlet, { no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
                         }
                     };
-                    var btn_reports = new Ext.Button({
-                        icon: '/static/images/icons/exports.png',
-                        renderTo: id_export_menu,
-                        menu: [ btn_html, btn_csv, btn_yaml ]
-                    });
+                    if( exp_dashlet ){
+                        var btn_reports = new Ext.Button({
+                            icon: '/static/images/icons/exports.png',
+                            renderTo: id_export_menu,
+                            menu: [ btn_html, btn_csv, btn_yaml ]
+                        });
+                    };
+
                 });
                 self.dashlets[ dashlet.id ] = dashlet; 
             });
