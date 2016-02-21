@@ -71,7 +71,49 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             html += "</tr><tr style='padding:10px;width:100%;'>";
             var cont=0;
             var rows = new Array();
+            var form_report = new Ext.form.FormPanel({
+                url: '/topic/report_html', renderTo:'run-panel', style:{ display: 'none'},
+                items: [
+                   { xtype:'hidden', name:'data_json'},
+                   { xtype:'hidden', name:'title' },
+                   { xtype:'hidden', name:'rows' },
+                   { xtype:'hidden', name:'total_rows' },
+                   { xtype:'hidden', name:'params' }
+                ]
+            });
+
             Ext.each( res.dashlets, function(dashlet){
+
+                var export_data = function(dashlet, args){
+                    var self = this;
+                    var i;
+                    var data = { rows:[], columns:[] };
+                    var div = document.getElementById(dashlet.id_div);
+                    console.log(div);
+                    var columns_html = div.getElementsByTagName("table")[0].getElementsByTagName("th");
+                    Ext.each( columns_html, function(column) {
+                        data.columns.push({id: column.getAttribute("id"), name: column.getAttribute("used_name") })
+                    });
+                    var rows_html = div.getElementsByTagName("table")[1].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+                    Ext.each( rows_html, function(row) {
+                        var d = {};
+                        var columns_rows = row.getElementsByTagName("td");
+                        for ( i = 0; i< data.columns.length; i++ ){
+                            d[ data.columns[i].id ] = columns_rows[i].innerHTML;
+                        };
+                        data.rows.push( d );
+                    });
+                    var form = form_report.getForm();
+                    form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
+                    form.findField('title').setValue( dashlet.title );
+                    var el = form.getEl().dom;
+                    var target = document.createAttribute("target");
+                    target.nodeValue = args.target || "_blank";
+                    el.setAttributeNode(target);
+                    el.action = args.url;
+                    el.submit();
+                };
+
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = new Ext.XTemplate(
                     '<table><tr><td>',
@@ -132,23 +174,26 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         current_dashlet: dashlet.id,
                         text: _('HTML'),
                         handler: function() {
-                            var dashboard_id = self.dashboard_id; 
                             var dashlet = self.dashlets[this.current_dashlet];
-                            var name = dashlet.title
-                            var filter_topics = dashlet.data;
-                            //Baseliner.ajaxEval( '/topic/report_html');
+                            export_data(dashlet, { url: '/topic/report_html' });
                         }
                     };
                     var btn_yaml = {
                         icon: '/static/images/icons/yaml.png',
+                        current_dashlet: dashlet.id,
                         text: _('YAML'),
                         handler: function() {
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            export_data(dashlet, { no_html: true, url: '/topic/report_yaml' });
                         }
                     };
                     var btn_csv = {
                         icon: '/static/images/icons/csv.png',
+                        current_dashlet: dashlet.id,
                         text: _('CSV'),
                         handler: function() {
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            export_data(dashlet, { no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
                         }
                     };
                     var btn_reports = new Ext.Button({

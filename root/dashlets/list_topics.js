@@ -76,9 +76,9 @@ my $iid = Util->_md5;
 
         Ext.each( columns, function(col) {
           if ( col.width ) {
-            html = html + '<th style="white-space:nowrap;width:' + col.width + 'px;">'+ _(names[col.name] || col.name) +'</th>';
+            html = html + '<th  id ="'+ col.name + '"used_name="' + _(names[col.name] || col.name) + '" style="white-space:nowrap;width:' + col.width + 'px;">'+ _(names[col.name] || col.name) +'</th>';
           } else {
-            html = html + '<th style="white-space:nowrap;">'+ _(names[col.name] || col.name) +'</th>';
+            html = html + '<th  id = "' + col.name + '"used_name="' + _(names[col.name] || col.name) + '" style="white-space:nowrap;">'+ _(names[col.name] || col.name) +'</th>';
           }
         });
 
