@@ -84,12 +84,11 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
 
             Ext.each( res.dashlets, function(dashlet){
 
-                var export_data = function(dashlet, args){
+                var export_data = function(dashlet, type, args){
                     var self = this;
                     var i;
                     var data = { rows:[], columns:[] };
                     var div = document.getElementById(dashlet.id_div);
-                    console.log(div);
                     var columns_html = div.getElementsByTagName("table")[0].getElementsByTagName("th");
                     Ext.each( columns_html, function(column) {
                         data.columns.push({id: column.getAttribute("id"), name: column.getAttribute("used_name") })
@@ -99,7 +98,11 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         var d = {};
                         var columns_rows = row.getElementsByTagName("td");
                         for ( i = 0; i< data.columns.length; i++ ){
-                            d[ data.columns[i].id ] = columns_rows[i].innerHTML;
+                            if( type === "csv" && ( data.columns[i].id === "name" || data.columns[i].id === "title" )){
+                                d[ data.columns[i].id ] = columns_rows[i].getElementsByTagName("span")[0].innerHTML;
+                            } else {
+                                d[ data.columns[i].id ] = columns_rows[i].innerHTML;
+                            }
                         };
                         data.rows.push( d );
                     });
@@ -178,7 +181,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         text: _('HTML'),
                         handler: function() {
                             var dashlet = self.dashlets[this.current_dashlet];
-                            export_data(dashlet, { url: '/topic/report_html' });
+                            export_data(dashlet, "html", { url: '/topic/report_html' });
                         }
                     };
                     var btn_yaml = {
@@ -187,7 +190,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         text: _('YAML'),
                         handler: function() {
                             var dashlet = self.dashlets[this.current_dashlet];
-                            export_data(dashlet, { no_html: true, url: '/topic/report_yaml' });
+                            export_data(dashlet, "yaml", { no_html: true, url: '/topic/report_yaml' });
                         }
                     };
                     var btn_csv = {
@@ -196,7 +199,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         text: _('CSV'),
                         handler: function() {
                             var dashlet = self.dashlets[this.current_dashlet];
-                            export_data(dashlet, { no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
+                            export_data(dashlet, "csv", { no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
                         }
                     };
                     if( exp_dashlet ){
