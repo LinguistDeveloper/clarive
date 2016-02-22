@@ -8466,8 +8466,11 @@ msgstr "Importar/Exportar"
 msgid "Selection method to introduce the date"
 msgstr "Metodo de seleccion para introducir la fecha"
 
-msgid "Max characters in legend (0 = no limit)"
-msgstr "Número max de caracteres en la leyenda (0 = sin limite)"
-
 msgid "Show class"
 msgstr "Mostrar clase"
+
+msgid "The file you want to upload do not have extension"
+msgstr "El fichero que desea subir no tiene extension"
+
+msgid "This type of file is not allowed: %1 "
+msgstr "El fichero tiene un formato no permitido: %1"
