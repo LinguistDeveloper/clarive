@@ -33,14 +33,14 @@ subtest 'kanban config save' => sub {
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { mid=>$topic_mid, statuses=>[ $base_params->{status_new} ]  } } );
+    my $c = _build_c( req => { params => { mid => $topic_mid, statuses => [ $base_params->{status_new} ] } } );
     $controller->kanban_config($c);
     ok ${ $c->stash->{json}{success} };
 
-    $c = _build_c( req => { params => { mid=>$topic_mid } } );
-    $controller->kanban_config( $c );
+    $c = _build_c( req => { params => { mid => $topic_mid } } );
+    $controller->kanban_config($c);
     is $c->stash->{json}{config}{statuses}->[0], $base_params->{status_new};
 };
 
@@ -49,9 +49,9 @@ subtest 'kanban no config, default' => sub {
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { mid=>$topic_mid } } );
+    my $c = _build_c( req => { params => { mid => $topic_mid } } );
     $controller->kanban_config($c);
     is keys %{ $c->stash->{json}{config} }, 0;
 };
@@ -61,21 +61,23 @@ subtest 'next status for topic by root user' => sub {
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $id_status_from = $base_params->{status_new};
-    my $id_status_to   = ci->status->new( name=>'Dev', type => 'I' )->save;
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
 
     # create a workflow
-    my $workflow = [{ id_role=>'1', id_status_from=> $id_status_from, id_status_to=>$id_status_to, job_type=>undef }];
-    mdb->category->update({ id=>"$base_params->{category}" },{ '$set'=>{ workflow=>$workflow }, '$push'=>{ statuses=>$id_status_to } });
+    my $workflow =
+      [ { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $id_status_to } } );
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topic_mid=>"$topic_mid" } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { topic_mid => "$topic_mid" } } );
+    $c->{username} = 'root';    # change context to root
     $controller->list_admin_category($c);
     my $data = $c->stash->{json}{data};
 
-    # 2 rows, root can take the topic 
+    # 2 rows, root can take the topic
     is $data->[0]->{status}, $id_status_from;
     is $data->[1]->{status}, $id_status_to;
 };
@@ -85,22 +87,24 @@ subtest 'next status for topics by root user' => sub {
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $id_status_from = $base_params->{status_new};
-    my $id_status_to   = ci->status->new( name=>'Dev', type => 'I' )->save;
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
 
     # create a workflow
-    my $workflow = [{ id_role=>'1', id_status_from=> $id_status_from, id_status_to=>$id_status_to, job_type=>undef }];
-    mdb->category->update({ id=>"$base_params->{category}" },{ '$set'=>{ workflow=>$workflow }, '$push'=>{ statuses=>$id_status_to } });
+    my $workflow =
+      [ { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $id_status_to } } );
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topics=>["$topic_mid"] } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { topics => ["$topic_mid"] } } );
+    $c->{username} = 'root';    # change context to root
     $controller->next_status_for_topics($c);
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{id_status_from}, $id_status_from;
-    is $data->[0]->{id_status_to}, $id_status_to;
+    is $data->[0]->{id_status_to},   $id_status_to;
 };
 
 subtest 'list statuses fieldlet for new topics not yet in database' => sub {
@@ -109,19 +113,21 @@ subtest 'list statuses fieldlet for new topics not yet in database' => sub {
     my $base_params = TestSetup->_topic_setup();
 
     my $id_status_from = $base_params->{status_new};
-    my $id_status_to   = ci->status->new( name=>'Dev', type => 'I' )->save;
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
 
     # create a workflow
-    my $workflow = [{ id_role=>'1', id_status_from=> $id_status_from, id_status_to=>$id_status_to, job_type=>undef }];
-    mdb->category->update({ id=>"$base_params->{category}" },{ '$set'=>{ workflow=>$workflow }, '$push'=>{ statuses=>$id_status_to } });
+    my $workflow =
+      [ { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $id_status_to } } );
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { categoryId=>$base_params->{category}, statusId=>$id_status_from } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { categoryId => $base_params->{category}, statusId => $id_status_from } } );
+    $c->{username} = 'root';    # change context to root
     $controller->list_admin_category($c);
     my $data = $c->stash->{json}{data};
 
-    # 2 rows, root can take the topic 
+    # 2 rows, root can take the topic
     is $data->[0]->{status}, $id_status_from;
     is $data->[1]->{status}, $id_status_to;
 };
@@ -131,21 +137,21 @@ subtest 'add label to topic' => sub {
     TestSetup->_setup_user();
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $label_id = TestSetup->_setup_label;
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topic_mid=>$topic_mid, label_ids=>["$label_id"] } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { topic_mid => $topic_mid, label_ids => ["$label_id"] } } );
+    $c->{username} = 'root';    # change context to root
     $controller->update_topic_labels($c);
     cmp_deeply( $c->stash, { json => { msg => 'Labels assigned', success => \1 } } );
-    is_deeply( mdb->topic->find_one({ mid=>"$topic_mid" })->{labels}, [$label_id] );
+    is_deeply( mdb->topic->find_one( { mid => "$topic_mid" } )->{labels}, [$label_id] );
 };
 
 subtest 'grid: sets correct template' => sub {
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => { } } );
+    my $c = _build_c( req => { params => {} } );
 
     $controller->grid($c);
 
@@ -155,7 +161,7 @@ subtest 'grid: sets correct template' => sub {
 subtest 'grid: prepares stash' => sub {
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => { } } );
+    my $c = _build_c( req => { params => {} } );
 
     $controller->grid($c);
 
@@ -174,7 +180,7 @@ subtest 'grid: prepares stash' => sub {
 subtest 'grid: overrides stash with params' => sub {
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => {query => '123', project => '456', id_project => '789' } } );
+    my $c = _build_c( req => { params => { query => '123', project => '456', id_project => '789' } } );
 
     $controller->grid($c);
 
@@ -193,7 +199,7 @@ subtest 'grid: overrides stash with params' => sub {
 subtest 'grid: set category_id' => sub {
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => {category_id => '123'} } );
+    my $c = _build_c( req => { params => { category_id => '123' } } );
 
     $controller->grid($c);
 
@@ -203,7 +209,7 @@ subtest 'grid: set category_id' => sub {
 subtest 'grid: replaces category_id if different' => sub {
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => {category_id => '123'} } );
+    my $c = _build_c( req => { params => { category_id => '123' } } );
 
     $c->stash->{category_id} = 321;
     $controller->grid($c);
@@ -217,12 +223,12 @@ subtest 'related: returns 1 (proper topic) for new topic before created' => sub 
     my $base_params = TestSetup->_topic_setup();
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => {} } );
+    $c->{username} = 'root';    # change context to root
 
     $controller->related($c);
     my $topics = $c->stash->{json}->{data};
-    
+
     is scalar @$topics, 0;
     is $c->stash->{json}->{totalCount}, 0;
 };
@@ -233,11 +239,11 @@ subtest 'related: returns self for a newly created topic' => sub {
 
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topic_mid=>$topic_mid } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { topic_mid => $topic_mid } } );
+    $c->{username} = 'root';    # change context to root
 
     $controller->related($c);
 
@@ -253,15 +259,15 @@ subtest 'related: returns 2 (self and related) related topics' => sub {
 
     my $base_params = TestSetup->_topic_setup();
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
 
     $base_params->{parent} = [$topic_mid];
 
-    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topic_mid=>$topic_mid } } );
-    $c->{username} = 'root'; # change context to root
+    my $c = _build_c( req => { params => { topic_mid => $topic_mid } } );
+    $c->{username} = 'root';    # change context to root
 
     $controller->related($c);
 
@@ -276,16 +282,23 @@ subtest 'create a topic' => sub {
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
-    my $controller = _build_controller();
-    my $c = _build_c( req => { params => { 
-            new_category_id=> $base_params->{category}, new_category_name=> 'Changeset', swEdit=> '1', tab_cls=> 'ui-tab-changeset', tab_icon=> '' 
-            } } 
+    my $controller  = _build_controller();
+    my $c           = _build_c(
+        req => {
+            params => {
+                new_category_id   => $base_params->{category},
+                new_category_name => 'Changeset',
+                swEdit            => '1',
+                tab_cls           => 'ui-tab-changeset',
+                tab_icon          => ''
+            }
+        }
     );
-    $c->{username} = 'root'; # change context to root
+    $c->{username} = 'root';    # change context to root
     $controller->view($c);
     my $stash = $c->stash;
 
-    ok !exists $stash->{json}{success}; # this only shows up in case of failure 
+    ok !exists $stash->{json}{success};    # this only shows up in case of failure
 };
 
 subtest 'new topics have category_id in stash' => sub {
@@ -293,12 +306,19 @@ subtest 'new topics have category_id in stash' => sub {
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
-    my $controller = _build_controller();
-    my $c = _build_c( req => { params => { 
-            new_category_id=> $base_params->{category}, new_category_name=> 'Changeset', swEdit=> '1', tab_cls=> 'ui-tab-changeset', tab_icon=> '' 
-            } } 
+    my $controller  = _build_controller();
+    my $c           = _build_c(
+        req => {
+            params => {
+                new_category_id   => $base_params->{category},
+                new_category_name => 'Changeset',
+                swEdit            => '1',
+                tab_cls           => 'ui-tab-changeset',
+                tab_icon          => ''
+            }
+        }
     );
-    $c->{username} = 'root'; # change context to root
+    $c->{username} = 'root';    # change context to root
     $controller->view($c);
     my $stash = $c->stash;
     is $stash->{category_id}, $base_params->{category};
@@ -328,7 +348,7 @@ subtest 'list_status_changes: returns status changes' => sub {
     my $controller = _build_controller();
     $controller->list_status_changes($c);
 
-    cmp_deeply $c->stash, {json => {data => [ignore(), ignore()]}};
+    cmp_deeply $c->stash, { json => { data => [ ignore(), ignore() ] } };
 };
 
 subtest 'topic_drop: set error when no drop fields found' => sub {
@@ -753,15 +773,21 @@ subtest 'upload: uploads file to topic' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.jpg");
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => 'jpg', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => { extension => 'jpg', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
+            body => "$tempdir/filename.jpg"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.jpg/) } };
 };
 
 subtest 'upload: fails to upload not allowed extension' => sub {
@@ -773,17 +799,23 @@ subtest 'upload: fails to upload not allowed extension' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.jpg");
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => 'sql,txt', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params =>
+              { extension => 'sql,txt', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
+            body => "$tempdir/filename.jpg"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: jpg/) }};
+    cmp_deeply $c->stash, { json => { success => \0, msg => re(qr/This type of file is not allowed: jpg/) } };
 };
-
 
 subtest 'upload: file without extension is not  allowed' => sub {
     _setup();
@@ -794,15 +826,23 @@ subtest 'upload: file without extension is not  allowed' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename");
+    TestUtils->write_file( 'content', "$tempdir/filename" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => 'sql,txt,JPG,PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename'}, body => "$tempdir/filename"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params =>
+              { extension => 'sql,txt,JPG,PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename' },
+            body => "$tempdir/filename"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/The file you want to upload do not have extension/) }};
+    cmp_deeply $c->stash,
+      { json => { success => \0, msg => re(qr/The file you want to upload do not have extension/) } };
 };
 
 subtest 'upload: accepts extension list with spaces' => sub {
@@ -814,15 +854,26 @@ subtest 'upload: accepts extension list with spaces' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.jpg");
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => '.sql txt .jpg, TXT', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => {
+                extension => '.sql txt .jpg, TXT',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.jpg'
+            },
+            body => "$tempdir/filename.jpg"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
- #dump mdb->master_seq->find_one({_id=>"mid-asset"})->{seq};
-    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/)}};
+
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.jpg/) } };
 };
 
 subtest 'upload: accepts extension list with dots' => sub {
@@ -834,15 +885,26 @@ subtest 'upload: accepts extension list with dots' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.jpg");
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => '.sql,.txt,.JPG,.PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => {
+                extension => '.sql,.txt,.JPG,.PDF',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.jpg'
+            },
+            body => "$tempdir/filename.jpg"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.jpg/) } };
 };
 
 subtest 'upload: correctly checks double extensions' => sub {
@@ -854,15 +916,26 @@ subtest 'upload: correctly checks double extensions' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.tar.gz', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.tar.gz");
+    TestUtils->write_file( 'content', "$tempdir/filename.tar.gz" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => 'txt .jpg .tar.gz tgz .foo.bar.baz', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.tar.gz'}, body => "$tempdir/filename.tar.gz"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => {
+                extension => 'txt .jpg .tar.gz tgz .foo.bar.baz',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.tar.gz'
+            },
+            body => "$tempdir/filename.tar.gz"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.tar.gz/) }};
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.tar.gz/) } };
 };
 
 subtest 'upload: correctly checks double extensions the the file have one extension' => sub {
@@ -874,15 +947,26 @@ subtest 'upload: correctly checks double extensions the the file have one extens
     my $params = { filter => 'test_file', qqfile => 'filename.tar', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.tar");
+    TestUtils->write_file( 'content', "$tempdir/filename.tar" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => 'txt .jpg .tar.gz tgz .foo.bar.baz', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.tar'}, body => "$tempdir/filename.tar"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => {
+                extension => 'txt .jpg .tar.gz tgz .foo.bar.baz',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.tar'
+            },
+            body => "$tempdir/filename.tar"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \0, msg => re(qr/This type of file is not allowed: tar/) }};
+    cmp_deeply $c->stash, { json => { success => \0, msg => re(qr/This type of file is not allowed: tar/) } };
 };
 
 subtest 'upload: does not check extension when none specified' => sub {
@@ -894,26 +978,33 @@ subtest 'upload: does not check extension when none specified' => sub {
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
 
     my $tempdir = tempdir();
-    TestUtils->write_file('content', "$tempdir/filename.jpg");
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
-    my $c = _build_c(username => 'user', req => {params => {extension => '', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg'}, body => "$tempdir/filename.jpg"});
+    my $c = _build_c(
+        username => 'user',
+        req      => {
+            params => { extension => '', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
+            body => "$tempdir/filename.jpg"
+        }
+    );
 
     my $controller = _build_controller();
 
     $controller->upload($c);
 
-    cmp_deeply $c->stash, { json => {success => \1, msg => re(qr/Uploaded file filename.jpg/) }};
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.jpg/) } };
 };
-
-
 
 subtest 'list_users: doesnt fail if role is not found and returns 0' => sub {
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { 
-            roles => 'TestRole'
-        } } 
+    my $c          = _build_c(
+        req => {
+            params => {
+                roles => 'TestRole'
+            }
+        }
     );
-    $c->{username} = 'root'; # change context to root
+    $c->{username} = 'root';    # change context to root
     $controller->list_users($c);
     my $stash = $c->stash;
 
@@ -979,10 +1070,9 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
     my $id_role    = TestSetup->create_role( role => 'TestRole' );
     my $id_role2   = TestSetup->create_role( role => 'TestRole2' );
 
-    my $id_changeset_rule = _create_changeset_form();
-    my $id_changeset_category =
-      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
-    my $topic_mid = TestSetup->create_topic(id_category => $id_changeset_category, project => $project);
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $topic_mid             = TestSetup->create_topic( id_category => $id_changeset_category, project => $project );
 
     my $user = TestSetup->create_user(
         username => 'test_user',
@@ -1058,7 +1148,7 @@ subtest 'list_users: returns users by projects' => sub {
         username => 'test_user',
         req      => {
             params => {
-                projects => [$project->mid, $project2->mid]
+                projects => [ $project->mid, $project2->mid ]
             }
         }
     );
@@ -1170,9 +1260,7 @@ subtest 'list_users: returns users paged' => sub {
       {
         json => {
             totalCount => 1,
-            data       => [
-                { id => ignore(), realname => 'Harry', username => 'harry' },
-            ]
+            data       => [ { id => ignore(), realname => 'Harry', username => 'harry' }, ]
         }
       };
 };
@@ -1315,12 +1403,9 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',
-        'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',          'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
     );
 
     mdb->master->drop;
