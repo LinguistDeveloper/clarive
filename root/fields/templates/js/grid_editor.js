@@ -25,7 +25,7 @@ params:
 		readOnly: readonly,
         width: meta.width || '100%',
         height: meta.height || 300,
-        hidden: Baseliner.eval_boolean(meta.hidden);
+        hidden: Baseliner.eval_boolean(meta.hidden),
         //style: 'margin-bottom: 10px',
         name: meta.id_field,
         id_field: meta.id_field,
