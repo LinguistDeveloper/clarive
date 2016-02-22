@@ -615,4 +615,9 @@ div[class*='ui-ci_box-'].search-item img {
    width: 16px;
 }
 
+.x-combo-list-inner .search-item td > img {
+   height:16px; 
+   width: 16px;   
+}
+
 
