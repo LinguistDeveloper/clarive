@@ -37,7 +37,12 @@ method chmod ( $mode, $path ) {
 method chown ( $perms, $path ) {
 }
 
-method execute( $options, $cmd, @args ) {
+sub execute {
+    my $self = shift;
+
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
+    my ($cmd, @args) = @_;
+
     my $exit_code = 255;
     my $output = '';
 

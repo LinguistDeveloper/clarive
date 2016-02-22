@@ -6,10 +6,8 @@ use Test::MonkeyMock;
 use Test::Deep;
 use Test::Fatal;
 
-use lib 't/lib';
 use TestEnv;
-
-TestEnv->setup;
+BEGIN { TestEnv->setup }
 
 use File::Temp qw(tempfile);
 use Baseliner::Role::CI;    # WTF this is needed for CI
@@ -32,7 +30,7 @@ subtest 'execute: sends correct request' => sub {
 
     my $clax_agent = _build_clax_agent( ua => $ua );
 
-    my $ret = $clax_agent->execute( {}, 'echo', 'bar' );
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
 
     my ( $url, $data ) = $ua->mocked_call_args('post_form');
 
