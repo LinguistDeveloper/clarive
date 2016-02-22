@@ -14,6 +14,12 @@ subtest 'eval_code: dispatches to js' => sub {
     is $ret, 2;
 };
 
+subtest 'eval_code: benchmark js code' => sub {
+    my $code = _build_code( lang => 'js', benchmark=>1 );
+    $code->eval_code(q{var x=1; x++;});
+    ok $code->elapsed > 0;   
+};
+
 done_testing;
 
 sub _build_code {

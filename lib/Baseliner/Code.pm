@@ -3,8 +3,11 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 use Baseliner::Utils qw(_fail _loc);
+use Time::HiRes qw(gettimeofday tv_interval);
 
-has lang => qw(default js is rw isa), enum([qw(js perl)]);
+has lang      => qw(default js is rw isa), enum([qw(js perl)]);
+has benchmark => qw(is rw isa Bool default 0);
+has elapsed   => qw(is rw isa Num default 0);
 
 sub eval_code {
     my $self = shift;
@@ -13,7 +16,15 @@ sub eval_code {
     if ( $self->lang eq 'js' ) {
         require Baseliner::Code::JS;
         my $js = Baseliner::Code::JS->new;
-        $js->eval_code( $code, $stash );
+        my $t0;
+        if( $self->benchmark ) {
+            $t0=[gettimeofday];
+        } 
+        my $ret = ( $js->eval_code( $code, $stash ) );
+        if( $self->benchmark ) {
+            $self->elapsed( tv_interval( $t0 ) );
+        } 
+        return $ret;
     }
     else {
         _fail _loc( 'Unhandled code language: %1', $self->lang );
