@@ -35,6 +35,7 @@ params:
             fieldLabel: _(meta.name_field),
             allowBlank: readonly ? true : allow,
             readOnly: readonly,
+            hidden: Baseliner.eval_boolean(meta.hidden);
             anchor: meta.anchor || '100%',
             height: meta.height,
             border: false,

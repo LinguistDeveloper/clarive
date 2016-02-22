@@ -10,7 +10,7 @@
             : "";
     $val = join( ',', @$val ) if ref $val eq 'ARRAY';
 </%perl>
-% if(  $meta->{section} eq 'body' && length($val) && !$meta->{hidden} ) {  # This is the 'Status' right column field:
+% if(  ($meta->{section} ne 'head' && $meta->{section} ne 'more') && length($val) && !$meta->{hidden} ) {  # This is the 'Status' right column field:
     <tr>
       <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 
