@@ -50,9 +50,9 @@ EOF
         Cla => {
             parseVars => sub {
                 my $js = shift;
-                my ($str) = @_;
+                my ($str, $local_stash) = @_;
 
-                return parse_vars( $str, $stash );
+                return parse_vars( $str, { %$stash, %{ $local_stash || {} } } );
             },
             DB => sub {
                 my $db = Baseliner::Mongo->new;
