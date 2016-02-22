@@ -2,21 +2,24 @@
 
 BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 CLARIVE_BASE=`realpath "$BINDIR/../../"`
-RESET=0
 
 ARGV=( "$@" )
+OPT_RESET=0
+OPT_DEV=0
 
 index=0
 for keyword in ${ARGV[@]}; do
     if [ "$keyword" = "--reset" ]; then
-        RESET=1
+        OPT_RESET=1
         unset ARGV[$index]
-        break
+    elif [ "$keyword" = "--dev" ]; then
+        OPT_DEV=1
+        unset ARGV[$index]
     fi
     let index++
 done
 
-if [[ "$RESET" == 1 ]]; then
+if [[ "$OPT_RESET" == 1 ]]; then
     echo 'Resetting bootstrap...'
 
     rm -rf "$CLARIVE_BASE/local";
@@ -27,3 +30,9 @@ fi
 echo 'Installing dependencies...'
 
 bin/cla stew install . "${ARGV[@]}"
+
+if [[ "$OPT_DEV" == 1 ]]; then
+    echo 'Installing development dependencies...'
+
+    bin/cla stew install clarive-dev
+fi
