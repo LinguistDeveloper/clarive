@@ -104,6 +104,10 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     open my $fh, '<', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
     binmode $fh;
 
+    if ($self->os eq 'win') {
+        $remote =~ s{\\}{/}g;
+    }
+
     my $basename = basename $local;
     my $dir = dirname $remote;
     $dir = '' if $dir eq '/' || $dir eq '.';
