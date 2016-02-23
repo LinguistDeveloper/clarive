@@ -38,14 +38,13 @@ subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
     cmp_deeply [ map { "$_" } @dirs ], [ re(qr{features/testfeature/docs/es}), re(qr{app-home/docs/es}) ];
 };
 
-subtest 'build_doc_tree: help tree is built from directory' => sub {
+subtest 'build_doc_tree: help tree is built from directory and in correct order' => sub {
     _setup();
 
     my $help = Baseliner::Model::Help->new;
     my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/en") );
 
-    cmp_deeply \@tree,
-      [
+    cmp_deeply \@tree, [
         {
             'icon' => ignore(),
             'text' => 'Help Test',
@@ -57,8 +56,32 @@ subtest 'build_doc_tree: help tree is built from directory' => sub {
                 'found'   => undef
             },
             'leaf' => \1
-        }
-      ];
+        },
+        {
+            'icon' => ignore(),
+            'text' => 'Dir',
+            'data' => {
+                'path' => 'dir'
+            },
+            children => [
+                {
+                    'icon' => ignore(),
+                    'text' => 'Test2',
+                    'data' => {
+                        'path' => 'dir/test2.markdown'
+                    },
+                    'search_results' => {
+                        'matches' => undef,
+                        'found'   => undef
+                    },
+                    'leaf' => \1
+                },
+            ],
+            index      => ignore(),
+            'expanded' => \1,
+            'leaf'     => \0
+        },
+    ];
 };
 
 subtest 'build_doc_tree: help tree is built from directory by language' => sub {
@@ -90,7 +113,18 @@ subtest 'build_doc_tree: returns only matches results when query' => sub {
                 'found'   => "<strong>Help</strong> Test.\n..."
             },
             'leaf' => \1
-        }
+        },
+        {
+            'icon' => ignore(),
+            'text' => 'Dir',
+            'data' => {
+                'path' => 'dir'
+            },
+            children => [],
+            index => ignore(),
+            'expanded' => \1,
+            'leaf' => \0
+        },
       ];
 };
 

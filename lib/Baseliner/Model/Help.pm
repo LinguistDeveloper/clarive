@@ -5,6 +5,8 @@ use Try::Tiny;
 use YAML::XS qw(Load);
 use Text::Markdown 'markdown';
 use HTML::Strip;
+use Git;
+
 use Baseliner::Utils qw(_array _throw _loc _fail _dir _file);
 
 sub docs_dirs {
@@ -20,6 +22,8 @@ sub build_doc_tree {
     my $self = shift;
     my ( $opts, @roots ) = @_;
 
+    $opts //= {};
+
     my $query = $opts->{query};
 
     my @tree;
@@ -27,7 +31,14 @@ sub build_doc_tree {
         local $opts->{feature_root} = $docs_root unless $opts->{feature_root};
         my ( @docs, @dirs );
         my %uniq_dirs;
-        while ( my $dir_or_file = $docs_root->next ) {
+
+        # ->next does not reliably sort dir contents on every platform
+        my @dir_or_file;
+        while (my $dir_or_file = $docs_root->next ) {
+            push @dir_or_file, $dir_or_file;
+        }
+
+        foreach my $dir_or_file (sort @dir_or_file) {
             my $name = $dir_or_file->basename;
             next if $name =~ /^\./;
 
@@ -38,7 +49,7 @@ sub build_doc_tree {
                 my @children = $self->build_doc_tree( $opts, $dir_or_file );
                 if ( $dir_or_file->parent->contains( _file( $dir_or_file->parent, $dir_markdown ) ) ) {
                     my $md_file = _file( $dir_or_file->parent, $dir_markdown );
-                    my $data = $self->parse_body( $md_file, $docs_root );
+                    my $data = $self->parse_body( $md_file, $docs_root, { rel=>$rel, %$opts } );
                     my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
                     $data->{rel} = "$rel";
                     $uniq_dirs{ $data->{uniq_id} } = 1;
@@ -66,7 +77,7 @@ sub build_doc_tree {
                 }
             }
             else {
-                my $data = $self->parse_body( $dir_or_file, $docs_root );
+                my $data = $self->parse_body( $dir_or_file, $docs_root, { rel=>$rel, %$opts } );
                 next if exists $uniq_dirs{ $data->{uniq_id} }; ## prevent dir markdown descriptors from showing up twice
                 next unless $self->doc_matches( $data, $query );
                 $data->{rel} = "$rel";
@@ -74,14 +85,24 @@ sub build_doc_tree {
             }
 
         }
-        push @tree, $_ for sort { $a->{index} <=> $b->{index} } @dirs;
-        for my $doc ( sort { $a->{index} <=> $b->{index} } sort { lc $a->{title} cmp lc $b->{title} } @docs ) {
+        my @docs_and_dirs =
+          sort { $a->{index} <=> $b->{index} }
+          sort { lc( $a->{title} // $a->{data}{path} ) cmp lc( $b->{title} // $b->{data}{path} ) } @dirs,
+          @docs;
+        for my $doc ( @docs_and_dirs ) {
+            if( ref  $doc->{leaf} && ! ${ $doc->{leaf} } ) {  # it's a dir
+                push @tree, $doc;
+                next;
+            }
             my $icon = Util->icon_path( $doc->{icon} || '/static/images/icons/page.png' );
+            my $node_data = { path => "" . $doc->{rel} };
+            $node_data->{html} = $doc->{html} if $opts->{include_html};
+            $node_data->{body} = $doc->{body} if $opts->{include_body};
             push @tree,
               {
                 leaf           => \1,
                 icon           => $icon,
-                data           => { path => "" . $doc->{rel} },
+                data           => $node_data,
                 search_results => {
                     found   => $doc->{found},
                     matches => $doc->{matches},
@@ -122,11 +143,14 @@ sub doc_matches {
 
 sub parse_body {
     my $self = shift;
-    my ( $path, $root ) = @_;
+    my ( $path, $root, $opts ) = @_;
+
+    $opts //= {};
 
     my ( $id, $type ) = $path->basename =~ /^([^\.]+)(?:\.(\w+))?$/;
     my ($uniq_id) = $path->relative($root) =~ /^([^\.]+)(?:\.(\w+))?$/;
     my $idx = 100;
+    my $rel = $opts->{rel};
 
     # in cache?
     my $cache_key = { d => 'help-doc', path => "$path" };
@@ -136,13 +160,22 @@ sub parse_body {
     $path = _file("$path.markdown") if -d $path;
 
     # no, so open it
-    open my $ff, '<:encoding(utf-8)', "$path"
-      or _fail _loc "error opening content: %1 (path=%2): %3", $path->basename, $path, $!;
+    my $ff;
+    if ( $opts->{version} ) {
+        my $repo = Git->repository(Directory => $root);
+        warn ">>>>>>>>>>>>> GIT: $root == $path == $rel ($id, $uniq_id)";
+        ($ff) = $repo->command_output_pipe('show', $opts->{version} . ':"' . $rel . '"' );
+    }
+    else {
+        open $ff, '<:encoding(utf-8)', "$path"
+          or _fail _loc "error opening content: %1 (path=%2): %3",
+          $path->basename, $path, $!;
+    }
     my $contents = join '', <$ff>;
     close $ff;
 
     # parse
-    my ( $yaml, $body ) = $contents =~ /(---.+?)---\r?\n(.*)/s;
+    my ( $yaml, $body ) = $contents =~ /(---.+?)---\n(.*)/s;
 
     # convert
     my $html =
