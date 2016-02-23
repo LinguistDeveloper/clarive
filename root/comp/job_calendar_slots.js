@@ -6,7 +6,7 @@ my $slots = $c->stash->{slots};
 
 my $firstday = Class::Date->new( $c->stash->{monday} );
 
-my $data = $c->build_helper('CalendarSlots')->slots($c);
+my $table = $c->build_helper('CalendarSlots')->slots;
 
 </%init>
 
@@ -20,7 +20,7 @@ my $data = $c->build_helper('CalendarSlots')->slots($c);
 % }
         </TR>
 <%perl>
-    foreach my $row ( @{ $data->{rows} } ) {
+    foreach my $row ( @{ $table->{rows} } ) {
         print qq{<TR time="$row->{time}">};
 
         foreach my $col ( @{ $row->{columns} } ) {
