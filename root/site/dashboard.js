@@ -96,10 +96,22 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     var rows_html = div.getElementsByTagName("table")[1].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
                     Ext.each( rows_html, function(row) {
                         var d = {};
+                        var img;
                         var columns_rows = row.getElementsByTagName("td");
                         for ( i = 0; i< data.columns.length; i++ ){
                             if( type === "csv" && ( data.columns[i].id === "name" || data.columns[i].id === "title" )){
                                 d[ data.columns[i].id ] = columns_rows[i].getElementsByTagName("span")[0].innerHTML;
+                            } else if (( columns_rows[i].getElementsByTagName("div")).length > 0 ){
+                                    if ( type === 'html' ){
+                                        d[ data.columns[i].id ] = columns_rows[i].getElementsByTagName("div")[0].innerHTML;
+                                    } else {
+                                        img = columns_rows[i].getElementsByTagName("div")[0].getElementsByTagName("img")[0].getAttribute("src");
+                                        if ( img === '/static/images/icons/topic_one.png' ){
+                                            d[ data.columns[i].id ] = _("No");
+                                        } else {
+                                            d[ data.columns[i].id ] = _("Yes");
+                                        }
+                                    }
                             } else {
                                 d[ data.columns[i].id ] = columns_rows[i].innerHTML;
                             }
