@@ -86,41 +86,38 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
 
                 var export_data = function(dashlet, type, args){
                     var self = this;
-                    var i;
-                    var data = { rows:[], columns:[] };
+                    var table = { rows:[], columns:[] };
                     var div = document.getElementById(dashlet.id_div);
                     var columns_html = div.getElementsByTagName("table")[0].getElementsByTagName("th");
                     Ext.each( columns_html, function(column) {
-                        data.columns.push({id: column.getAttribute("id"), name: column.getAttribute("used_name") })
+                        table.columns.push({id: column.getAttribute("id"), name: column.getAttribute("used_name") })
                     });
                     var rows_html = div.getElementsByTagName("table")[1].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
                     Ext.each( rows_html, function(row) {
-                        var d = {};
-                        var img;
-                        var columns_rows = row.getElementsByTagName("td");
-                        for ( i = 0; i< data.columns.length; i++ ){
-                            if( type === "csv" && ( data.columns[i].id === "name" || data.columns[i].id === "title" )){
-                                d[ data.columns[i].id ] = columns_rows[i].getElementsByTagName("span")[0].innerHTML;
-                            } else if (( columns_rows[i].getElementsByTagName("div")).length > 0 ){
-                                    if ( type === 'html' ){
-                                        d[ data.columns[i].id ] = columns_rows[i].getElementsByTagName("div")[0].innerHTML;
-                                    } else {
-                                        img = columns_rows[i].getElementsByTagName("div")[0].getElementsByTagName("img")[0].getAttribute("src");
-                                        if ( img === '/static/images/icons/topic_one.png' ){
-                                            d[ data.columns[i].id ] = _("No");
-                                        } else {
-                                            d[ data.columns[i].id ] = _("Yes");
-                                        }
-                                    }
+                        var i;
+                        var div_content;
+                        var value;
+                        var row_table = {};
+                        var columns = row.getElementsByTagName("td");
+                        for ( i = 0; i< table.columns.length; i++ ){
+                            if( type === "csv" && ( table.columns[i].id === "name" || table.columns[i].id === "title" )){
+                                row_table[ table.columns[i].id ] = columns[i].getElementsByTagName("span")[0].innerHTML;
+                            } else if ( columns[i].getElementsByTagName("div").length > 0 ){
+                                var div_content = columns[i].getElementsByTagName("div")[0];
+                                if ( type === 'html' ){
+                                    row_table[ table.columns[i].id ] = div_content.innerHTML;
+                                } else {
+                                    row_table[ table.columns[i].id ] = _(div_content.getElementsByTagName("img")[0].getAttribute("id"));
+                                }
                             } else {
-                                d[ data.columns[i].id ] = columns_rows[i].innerHTML;
+                                row_table[ table.columns[i].id ] = columns[i].innerHTML;
                             }
                         };
-                        data.rows.push( d );
+                        table.rows.push( row_table );
                     });
                     var form = form_report.getForm();
                     var rows_array = div.getElementsByClassName("dataTables_info")[0].innerHTML.split(" ");
-                    form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
+                    form.findField('data_json').setValue( Ext.util.JSON.encode( table ) );
                     form.findField('title').setValue( dashlet.title );
                     form.findField('rows').setValue( rows_html.length );
                     form.findField('total_rows').setValue( rows_array[rows_array.length - 2] );
