@@ -450,6 +450,7 @@
         
         // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
         Baseliner.ajaxEval( '/topic/timeline_list_status_changes', {mid: mid}, function(res) {
+
           var date;
           var date2;
           var array_group = [];
