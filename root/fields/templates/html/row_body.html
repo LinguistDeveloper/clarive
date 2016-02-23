@@ -9,9 +9,8 @@
             ? $data->{ $meta->{display_field} }
             : "";
     $val = join( ',', @$val ) if ref $val eq 'ARRAY';
-    my $hidden = $meta->{hidden} eq '0' ? 0 : 1;
 </%perl>
-% if(  $meta->{section} eq 'body' && length($val) && !$hidden ) {  # This is the 'Status' right column field:
+% if(  $meta->{section} eq 'body' && length($val) && !$meta->{hidden} ) {  # This is the 'Status' right column field:
     <tr>
       <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 
@@ -21,7 +20,7 @@
     </tr>
 % }
 
-% if ( ($meta->{section} eq 'head' || $meta->{section} eq 'more') && !$hidden && length($val)){
+% if ( ($meta->{section} eq 'head' || $meta->{section} eq 'more') && !$meta->{hidden} && length($val)){
     <tr><td>
        <table class="table table-bordered" style="margin-top: 10px; width: 100%">
          <tr><th width="1"><% _loc($meta->{name_field}) %></th></tr>
