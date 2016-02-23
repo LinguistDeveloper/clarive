@@ -76,7 +76,7 @@ websockets: 0
 # configure the rule precompilation options: 
 #   none     = no precompilation
 #   depends  = depends on rule configuration
-#   always   = depends on rule configuration
+#   always   = always compile rules
 rule_precompile: depends
     
 # non ajax access to ajax defined controllers
