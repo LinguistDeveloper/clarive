@@ -28,6 +28,8 @@ icon: grid
 
 
 ### Type
+* Allow to set the type of the field.
+
 
 * The type of the field is **Grid** by default. It means that the added topics are shown in a table.
 
@@ -37,11 +39,12 @@ icon: grid
 
 
 ### Advanced filter JSON
-* Allows to use a JSON format to add a condition.
+
+* Allows to use a JSON format to add a condition. 
 
 * For example, in this filter, only show one project to choose:
-        {"name":"Project_name"}
-        {"moniker":"Project_moniker"}
+        {"name":"Project_name"} 
+        {"moniker":"Project_moniker"} 
 
 Selectable fields to filter can be found through the REPL. In this case the command would be: `CI> project-> find_one ();`
 
@@ -49,27 +52,18 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 ### Selection method
 * Choose between selections.
 
+
 **Role selection**
 
 
 **Class selection**
-
-### Selection method
-* Choose between selections.
-
-&nbsp; &nbsp;• **Role selection**
 
 
 ### Roles
 
 * Selection of roles to show in the grid.
 
-* By default, the value of this field is **CI**.
-
-* If Class selection is selected, the value in this field must be **CI**.
-
-
-### CI Class
+* If Class selection is selected, the value in this field must be ci.
 
 * Select only works if *Class selection* is selected as a method.
 
@@ -78,3 +72,9 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 
 ### Show class
 
+=======
+### CI Class
+
+* Select only works if *Class selection* is selected as a method.
+
+* Specify the class of CI to be shown.

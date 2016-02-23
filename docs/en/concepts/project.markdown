@@ -2,23 +2,19 @@
 title: Project
 icon: project
 ---
+* A Project is the most common Clarive security [scope](concepts/scope).
+* A Clarive project is a collection of [topics](concepts/topic), and is defined according to your organization's requirements. For example, a Clarive project could be: <br />
 
-A Project is the most common Clarive security [scope](concepts/scope).
+&nbsp; &nbsp;• A software development project. <br />
 
-A Clarive project is a collection of [topics](concepts/topic), and is defined according to your organization's requirements. For example, a Clarive project could be: 
+&nbsp; &nbsp;• A system. <br />
 
--  A software development project. 
+&nbsp; &nbsp;• A group of software components. <br />
 
--  A system. 
+&nbsp; &nbsp;• Or, more commonly, an application.
 
--  A group of software components. 
+<br />
 
--  Or, more commonly, an application.
-
-
-
-
-Topics can belong to none, one or more projects, but that is not a requirement. 
+* Topics can belong to none, one or more projects, but that is not a requirement. 
 For example, Changeset topics must belong to one, and only one, project.
-
-Releases on the other hand may be multi-project or have no projects. 
+* Releases on the other hand may be multi-project or have no projects. 

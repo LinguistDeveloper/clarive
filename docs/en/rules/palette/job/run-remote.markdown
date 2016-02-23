@@ -2,46 +2,31 @@
 title: Run a Remote Script
 icon: cog_java
 ---
+* Execute a remote script and rollback if needed. 
+* Associate server agent will execute the script.
+* Form to configure has the following fields: <br />
 
-Execute a remote script and rollback if needed.
+ &nbsp; &nbsp;• **Server**: Server that holds the remote file, server to connect to. <br />
 
-Associate server agent will execute the script.
+ &nbsp; &nbsp;• **User**: User allowed to connect to remote server. <br />
 
-Form to configure has the following fields:
+ &nbsp; &nbsp;• **Path**: Path where script to run is located. <br />
 
-- **Server**: Server that holds the remote file, server to connect to.
+ &nbsp; &nbsp;• **Arguments**: List of input parameters script is waiting for. <br />
 
-- **User**: User allowed to connect to remote server.
+ &nbsp; &nbsp;• **Home**: Directory from which the local script is launched. <br />
 
-- **Path**: Path where script to run is located.
+ &nbsp; &nbsp;• **Errors and output**: These two fields are related to manage control errors. Options are: <br />
 
-- **Arguments**: List of input parameters script is waiting for.
+&nbsp; &nbsp;&nbsp; &nbsp; • *Fail and output error* - Search for configurated error pattern in script output. If found, an error message is displayed in monitor showing the match. <br />
 
-- **Home**: Directory from which the local script is launched.
+&nbsp; &nbsp;&nbsp; &nbsp; • *Warn and output warn* - search for configurated warning pattern in script output. If found, an error message is displayed in monitor showing the match.,<br />
 
-- **Errors and output**: These two fields are related to manage control errors. Options are:
+&nbsp; &nbsp;&nbsp; &nbsp; • *Custom*: In case combo box errors is set to custom a new form is showed to define the behavior with these fields: <br />
 
-**Fail and output error**
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • *OK* - Range of return code values for the script to have succeeded. No message will be displayed in monitor. <br />
 
-Search for configurated error pattern in script output. If found, an error message is displayed in monitor showing the match.
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • *Warn* - Range of return code values to warn the user. A warn message will be displayed in monitor.<br />
 
-**Warn and output warn**
-
-Search for configurated warning pattern in script output. If found, an error message is displayed in monitor showing the match.,
-
-**Custom**
-
-In case combo box errors is set to custom a new form is showed to define the behavior with these fields:
-
-**OK**
-
-Range of return code values for the script to have succeeded. No message will be displayed in monitor.
-
-**Warn**
-
-Range of return code values to warn the user. A warn message will be displayed in monitor.
-
-**Error**
-
-Range of return code values for the script to have failed. An error message will be displayed in monitor.
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • *Error* - Range of return code values for the script to have failed. An error message will be displayed in monitor.
 

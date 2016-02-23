@@ -2,28 +2,26 @@
 title: Invoke CI methods
 icon: ci
 ---
+* Invoke the selected ci method with the given arguments from the form. 
+* Form to configure has the following fields: <br />
 
-Invoke the selected ci method with the given arguments from the form.
+&nbsp; &nbsp; • **CI class**: Combo box with all clarive CIs. <br />
 
-Form to configure has the following fields:
+&nbsp; &nbsp; • **CI method**: Method from the CI to invoke. <br />
 
-- **CI class**: Combo box with all clarive CIs.
+&nbsp; &nbsp; • **MID**: CI mid. <br />
 
-- **CI method**: Method from the CI to invoke.
+&nbsp; &nbsp; • **Arguments**: Arguments to pass to the CI method. They are: <br />
 
-- **MID**: CI mid.
+&nbsp; &nbsp;&nbsp; &nbsp; • Named <br />
 
-- **Arguments**: Arguments to pass to the CI method. They are:
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Key: Parameter name to be passed to ci method. <br />
 
-- Named
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Value: Key value to be passed to ci method. <br />
 
-- Key: Parameter name to be passed to ci method.
+&nbsp; &nbsp;&nbsp; &nbsp; • Positional <br />
 
-- Value: Key value to be passed to ci method.
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Name: Variable name. <br />
 
-- Positional
-
-- Name: Variable name.
-
-- Value: Variable value to be passed to ci method.
+&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • Value: Variable value to be passed to ci method.
 

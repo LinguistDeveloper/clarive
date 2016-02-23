@@ -2,23 +2,19 @@
 title: FOR projects with changes DO
 icon: loop.gif
 ---
+* Execute nested ops for each project that have changeset.
+* Following project variables are included into stash: <br />
 
-Execute nested ops for each project that have changeset.
+&nbsp; &nbsp;• **project**: Project name. <br />
 
-Following project variables are included into stash:
+&nbsp; &nbsp;• **project_mid**: Project mid. <br />
 
-- **project**: Project name.
+&nbsp; &nbsp;• **project_lc**: Project name in lower case. <br />
 
-- **project_mid**: Project mid.
+&nbsp; &nbsp;• **project_uc**: Project name in upper case. <br />
 
-- **project_lc**: Project name in lower case.
+&nbsp; &nbsp;• ** < project variables > **: For the specified environment.
 
-- **project_uc**: Project name in upper case.
-
-- *
-< project variables > **: For the specified environment.
-
-
-This op no needs any configuration.
+* This op no needs any configuration.
 
 

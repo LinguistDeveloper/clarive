@@ -2,73 +2,64 @@
 title: Topic
 icon: topic
 ---
-
-The topic is Clarive's central lifecycle entity. 
-
-A **topic category*
-is an organization-defined form instance that has an associated [workflow](concepts/workflow).
+* The topic is Clarive's central lifecycle entity. 
+* A **topic category** is an organization-defined form instance that has an associated [workflow](concepts/workflow).
 Think of it as a template.
+* A **topic** is an instance of the topic category, that has an assigned [mid](concepts/mid).
 
-A **topic*
-is an instance of the topic category, that has an assigned [mid](concepts/mid).
+<br />
 
+* A topic category typically has the following properties:<br />
 
+&nbsp; &nbsp;• A set of statuses <br />
 
+&nbsp; &nbsp;• A workflow <br />
 
-A topic category typically has the following properties:
+&nbsp; &nbsp;• A form rule, with its defined fieldlets <br />
 
--  A set of statuses 
+&nbsp; &nbsp;• Field-level security <br />
 
--  A workflow 
+&nbsp; &nbsp;• Transition-level security: which user/roles can transition a topic from one status to the next <br />
 
--  A form rule, with its defined fieldlets 
+&nbsp; &nbsp;• A color, to visually represent  <br />
 
--  Field-level security 
+&nbsp; &nbsp;• An acronym, to easily represent the topic category name  <br />
 
--  Transition-level security: which user/roles can transition a topic from one status to the next 
+&nbsp; &nbsp;• A discussion
 
--  A color, to visually represent  
+<br />
 
--  An acronym, to easily represent the topic category name  
-
--  A discussion
-
-
-
-
-Some topic categories may be: 
+* Some topic categories may be: <br />
 
 
--  Release 
+&nbsp; &nbsp;• Release <br />
 
--  Changeset 
+&nbsp; &nbsp;• Changeset <br />
 
--  Issue 
+&nbsp; &nbsp;• Issue <br />
 
--  Bug or Defect 
+&nbsp; &nbsp;• Bug or Defect <br />
 
--  Test Case 
+&nbsp; &nbsp;• Test Case <br />
 
--  Estimation 
+&nbsp; &nbsp;• Estimation <br />
 
--  Request 
+&nbsp; &nbsp;• Request <br />
 
--  Sprint 
+&nbsp; &nbsp;• Sprint <br />
 
--  User Story 
+&nbsp; &nbsp;• User Story <br />
 
--  Product Backlog
+&nbsp; &nbsp;• Product Backlog
 
-
+<br />
 ### Why topics?
 
-
-We believe that every installation must have full control 
+* We believe that every installation must have full control 
 over how their process is defined. So having standard, out-of-the-box
 entities in a delivery lifecycle tool actually interferes with the 
 ground-up thinking that is needed to have the most adapted process.
-
-Topics are great for both brownfield and greenfield implementations, 
+* Topics are great for both brownfield and greenfield implementations, 
 as they can ajust and adapt to existing processes, but also help define 
 new, unconstrained processes that can best represent the organization needs.
 

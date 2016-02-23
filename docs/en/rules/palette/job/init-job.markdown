@@ -2,27 +2,23 @@
 title: Init Job Home
 icon: job
 ---
-
-This service is required for a correct job startup. Create or
+* This service is required for a correct job startup. Create or 
 clean job directory depending if it exits or not.
+* Job directory is formed using the path: 
 
-Job directory is formed using the path:
+`$ENV{CLARIVE_JOBDIR}/` 
 
-`$ENV{CLARIVE_JOBDIR}/`
-
-
-Or
+* Or
 
 `$CLARIVE_BASE/jobs/` - If environment variable above is not defined.
 
+* And
 
-And
+`<N|B>.<bl>-<job_id>` - Where parameters are: <br />
 
-`<N|B>.<bl>-<job_id>` - Where parameters are:
+&nbsp; &nbsp; • `<N|B>` - Depending on the job type, N for promote or static jobs or B for demote jobs. <br />
 
-- `<N|B>` - Depending on the job type, N for promote or static jobs or B for demote jobs.
+&nbsp; &nbsp; • `<bl>` -  Environment. <br />
 
-- `<bl>` -  Environment.
-
-- `<job_id>` - Unique number from mongo.
+&nbsp; &nbsp; • `<job_id>` - Unique number from mongo.
 

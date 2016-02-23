@@ -2,15 +2,13 @@
 title: Eval Remote
 icon: cog_java
 ---
+* Agent related to server evaluates given code, showing an error message in 
+case of failure or return code and output if succeded. 
+* Form to configure has the following fields: <br />
 
-Agent related to server evaluates given code, showing an error message in
-case of failure or return code and output if succeded.
+&nbsp; &nbsp;• **Server**: Server to eval code. <br />
 
-Form to configure has the following fields:
+&nbsp; &nbsp;• **User**: User to connect to agent server. <br />
 
-- **Server**: Server to eval code.
-
-- **User**: User to connect to agent server.
-
-- **Code**: Code to evaluate in remote server.
+&nbsp; &nbsp;• **Code**: Code to evaluate in remote server.
 

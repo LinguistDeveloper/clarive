@@ -4,61 +4,57 @@ index: 300
 icon: topic
 ---
 
-The topic grid is the list of topics that the user can see.
-It's concept is based around that of an email inbox.
+* The topic grid is the list of topics that the user can see. 
+It's concept is based around that of an email inbox. 
 
-The topic grid can be seen in Clarive in 3 initial modes:
+* The topic grid can be seen in Clarive in 3 initial modes:  <br />
 
-**All Topics**
+&nbsp; &nbsp;• **All Topics** - Opened by selecting the `All` menu option in the Topic menu.  <br />
 
-Opened by selecting the `All` menu option in the Topic menu.
+&nbsp; &nbsp;• **By Category** - Opened by selecting a category under the Topic menu.  <br />
 
-**By Category**
+&nbsp; &nbsp;• **By Project** - Opened by clicking on the project name under the project explorer <img src="/static/images/icons/project.png" />.
 
-Opened by selecting a category under the Topic menu.
+<br />
+### Sorting 
 
-**By Project**
+* By default the topic grid sorts by most recently modified date on top.
 
-Opened by clicking on the project name under the project explorer <img src="/static/images/icons/project.png" />.
+* To change the criteria, click on the desired column. Each click will change the direction of sort (ascending/descending). 
 
-### Sorting
-
-By default the topic grid sorts by most recently modified date on top.
-
-To change the criteria, click on the desired column. Each click will change the direction of sort (ascending/descending).
-
+<br />
 ### Searching
 
-The topic grid can be also filtered by using the Clarive [search syntax](getting-started/search-syntax).
+* The topic grid can be also filtered by using the Clarive [search syntax](getting-started/search-syntax).
 
+<br />
 ### Filtering
 
-To filter which topics are shown, use the right side selectors.
+* To filter which topics are shown, use the right side selectors.
 
+<br />
 ### Statuses
 
-Each topic status has 3 states:
+* Each topic status has 3 states:<br />
 
-**Checked**
 
-Show topics with this status
+&nbsp; &nbsp;• **Checked** - Show topics with this status <br />
 
-**Crossed**
+&nbsp; &nbsp;• **Crossed** - Hide topics with this status <br />
 
-Hide topics with this status
+&nbsp; &nbsp;• **Unselected** - Hide topics with this status (if there's another status checked) or show topics with this status (if there's no other status checked)  <br />
 
-**Unselected**
+* Therefore, if no status is checked or crossed, then all statuses are shown. 
 
-Hide topics with this status (if there's another status checked) or show topics with this status (if there's no other status checked)
-
-Therefore, if no status is checked or crossed, then all statuses are shown.
-
+<br />
 ### Categories
 
-Check the topic categories you want to see. If no categories are selected, shows all categories.
+* Check the topic categories you want to see. If no categories are selected, shows all categories.
 
+<br />
 ## Collapsed Rows
 
-Collapsing rows allows viewing more topics per page.
+* Collapsing rows allows viewing more topics per page. 
 
-Show the topics in a [Kanban view](getting-started/kanban)
+* Show the topics in a [Kanban view](getting-started/kanban)
+

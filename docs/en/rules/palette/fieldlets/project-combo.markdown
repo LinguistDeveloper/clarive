@@ -3,69 +3,64 @@ title: Project combo
 index: 400
 icon: combo_box
 ---
+* Allows to introduce a combo box with the projects in the form.
+* There are a list of elements can be configured in the fieldlet:
 
-Allows to introduce a combo box with the projects in the form.
-
-There are a list of elements can be configured in the fieldlet:
-
+<br />
 ### Section to view
+* Indicates in which part of the view position the fieldlet.
 
-Indicates in which part of the view position the fieldlet.
-
+<br />
 ### Row width
+* Allows to personalize the anchor of the fieldlet.
 
-Allows to personalize the anchor of the fieldlet.
-
+<br />
 ### Hidden from view mode
+* Indicates if the field will be hidden from the view mode.
 
-Indicates if the field will be hidden from the view mode.
-
+<br />
 ### Hidden from edit mode
+* Indicates if the field will be hidden from the edit mode.
 
-Indicates if the field will be hidden from the edit mode.
-
+<br />
 ### Mandatory field
+* Check if you want the field as mandatory.
 
-Check if you want the field as mandatory.
-
+<br />
 ### Type
+* Allow to set the type of the field. <br />
 
-Allow to set the type of the field.
+&nbsp; &nbsp;• **Single** - Allows to select one choice of the options available. <br />
 
-**Single**
+&nbsp; &nbsp;• **Multiple** - The user can select multiples choices. <br />
 
-Allows to select one choice of the options available.
+&nbsp; &nbsp;• **Grid** - The added topics are shown in a table.
 
-**Multiple**
 
-The user can select multiples choices.
-
-**Grid**
-
-The added topics are shown in a table.
-
+<br />
 ### Display field
+* Set the field to show.
 
-Set the field to show.
-
+<br />
 ### Advanced filter JSON
+* Allows to use a JSON format to add a condition.
 
-Allows to use a JSON format to add a condition.
+            
+        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
 
-        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-- Where id is the unique key of the category which can be consulted through the REPL.
+&nbsp;&nbsp;• Where id is the unique key of the category which can be consulted through the REPL.
 
+
+<br />
 ### CI Class
+* Specify the class of CI to be shown. Tipically the CI Class to use in this fieldlet is *project*.
 
-Specify the class of CI to be shown. Tipically the CI Class to use in this fieldlet is *project*.
-
+<br />
 ### Default value
+* To show a default project in the box. 
+* The value indicated will be the ID of the CI.
 
-To show a default project in the box.
-
-The value indicated will be the ID of the CI.
-
+<br />
 ### Roles
-
-Selection of roles to show in the grid.
+* Selection of roles to show in the grid.

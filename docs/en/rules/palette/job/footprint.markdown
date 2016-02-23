@@ -2,20 +2,19 @@
 title: Footprint elements
 icon: job
 ---
-
-List all updated files with the following data:
+* List all updated files with the following data: <br />
+        
+&nbsp; &nbsp;• **State**: Environment.  <br />
        
-- **State**: Environment. 
-      
-- **Project**: Project name.
- 
-- **Item**: File name.
+&nbsp; &nbsp;• **Project**: Project name. <br />
+  
+&nbsp; &nbsp;• **Item**: File name. <br />
 
-- **Viewpath**: File path.
+&nbsp; &nbsp;• **Viewpath**: File path. <br />
 
-- **User**: User name.
+&nbsp; &nbsp;• **User**: User name. <br />
 
-- **Job**: Job name.
+&nbsp; &nbsp;• **Job**: Job name. <br />
 
-- **Job date**: Date at footprint operation.
+&nbsp; &nbsp;• **Job date**: Date at footprint operation. 
 

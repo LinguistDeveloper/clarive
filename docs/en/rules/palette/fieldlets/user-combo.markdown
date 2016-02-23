@@ -3,48 +3,43 @@ title: User combo
 index: 400
 icon: combo_box
 ---
+* Allows to introduce a combo with the existing users.
+* There are a list of elements can be configured in the fieldlet:
 
-Allows to introduce a combo with the existing users.
-
-There are a list of elements can be configured in the fieldlet:
-
+<br />
 ### Section to view
+* Indicates in which part of the view position the fieldlet.
 
-Indicates in which part of the view position the fieldlet.
-
+<br />
 ### Row width
+* Allows to personalize the anchor of the fieldlet.
 
-Allows to personalize the anchor of the fieldlet.
-
+<br />
 ### Hidden from view mode
+* Indicates if the field will be hidden from the view mode.
 
-Indicates if the field will be hidden from the view mode.
-
+<br />
 ### Hidden from edit mode
+* Indicates if the field will be hidden from the edit mode.
 
-Indicates if the field will be hidden from the edit mode.
-
-
+<br />
 ### Mandatory field
+* Check if you want the field as mandatory.
 
-Check if you want the field as mandatory.
-
+<br />
 ### Type
+* Allow to set the type of the field. <br />
 
-Allow to set the type of the field.
+&nbsp; &nbsp;• **Single** - Allows to select one choice of the options available <br />
 
-- **Single**
+&nbsp; &nbsp;• **Multiple** - The user can select multiples choices <br />
+<!--- &nbsp; &nbsp;• **Grid** -  -->
 
-Allows to select one choice of the options available
-
-- **Multiple**
-
-The user can select multiples choices
-
+<br />
 ### Display field
+* Set the field to show.
 
-Set the field to show.
-
+<br />
 ### Advanced filter JSON
+* The user can filter by role. `Developer` : Only shows the users with that specific role.
 
-The user can filter by role. `Developer` : Only shows the users with that specific role.

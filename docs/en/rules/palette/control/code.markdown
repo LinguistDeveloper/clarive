@@ -2,7 +2,7 @@
 title: CODE
 icon: cog_perl
 ---
+* Run perl code block. Form to configure has the following field: <br />
 
-Run perl code block. Form to configure has the following field:
+&nbsp; &nbsp;• **Code**: Text area to be filled with perl instructions.
 
-- **Code**: Text area to be filled with perl instructions.

@@ -2,52 +2,47 @@
 title: Scheduler
 icon: calendar
 ---
+* The Scheduler is an administrator facility for scheduling the execution rules in set intervals. 
+* Allows to you to plan, enable, disable or run independent rules in the background,
+at given frequencies or times. 
+* The Scheduler has the following information: <br />
 
-The Scheduler is an administrator facility for scheduling the execution rules in set intervals.
+&nbsp; &nbsp;• *Name* - Name of the task along with the log output.  <br />
 
-Allows to you to plan, enable, disable or run independent rules in the background,
-at given frequencies or times.
+&nbsp; &nbsp;• *Status* - Actual status of the task. <br />
 
-The Scheduler has the following information:
+&nbsp; &nbsp;• *Next time* - The time scheduled for the next run. <br />
 
-- **Name**: Name of the task along with the log output.
+&nbsp; &nbsp;• *Last time* - Date and time of the last ejecuciónde the task. <br />
 
-- **Status**: Actual status of the task.
+&nbsp; &nbsp;• *PID* - PID of the last process. <br />
 
-- **Next time**: The time scheduled for the next run.
+&nbsp; &nbsp;• *Description*. <br />
 
-- **Last time**: Date and time of the last ejecuciónde the task.
+&nbsp; &nbsp;• *Frequency* - Follow the format (1H - 1 hour, 1D - one day ...). <br />
 
-- **PID**: PID of the last process.
+&nbsp; &nbsp;• *Day* <br />
 
-- **Description**: Description of the task.
+&nbsp; &nbsp;• *What* - The name of the rule and the id has been executed.
 
-- **Frequency**: Follow the format (1H - 1 hour, 1D - one day ...).
+<br />
+### Creating Scheduled Tasks
+* To create a new scheduled task, select the `New` button. 
+* The following fields are required: <br />
 
-- **Day**: The date where it will start to run.
+&nbsp; &nbsp;• *Name*: Name of the task. <br />
 
-- **What**: The name of the rule and the id has been executed.
+&nbsp; &nbsp;• *Rule*: drop-down combo with the independent rules created in Clarive. <br />
 
-### Scheduling Tasks
+&nbsp; &nbsp;• *Date*: Selecting this button will display a calendar field to select the desired execution date. <br />
 
-To schedule a new task, select the `New` button.
+&nbsp; &nbsp;• *Time*: Default actual shows the system time and the arrows can increase or decrease the minutes. <br />
 
-The following fields are required:
+&nbsp; &nbsp;• *Frequency*: Format (1H - 1 hour, 1D - one day ...). <br />
 
-- **Name**: Name of the task.
+&nbsp; &nbsp;• *Only weekdays*: Checkbox to select if you want to run only on weekdays.
 
-- **Rule**: drop-down combo with the independent rules created in Clarive.
-
-- **Date**: Selecting this button will display a calendar field to select the desired execution date.
-
-- **Time**: Default actual shows the system time and the arrows can increase or decrease the minutes.
-
-- **Frequency**: Format (1H - 1 hour, 1D - one day ...).
-
-- **Only weekdays**: Checkbox to select if you want to run only on weekdays.
-
+<br />
 ### Running Tasks On Demand
-
-If you press the `Run Now` button, the service execution will force immediately,
+* If you press the `Run Now` button, the service execution will force immediately, 
 regardless of the date of planning.
-

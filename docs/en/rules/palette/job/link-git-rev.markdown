@@ -2,17 +2,15 @@
 title: Link a git revision to the changesets in title
 icon: git
 ---
+* Configured revision is added to the desired topic field, topic is found through 
+the introduced title in form. 
+* Form to configure has the following fields: <br />
 
-Configured revision is added to the desired topic field, topic is found through
-the introduced title in form.
+&nbsp; &nbsp; • **Title**: Topic title, topic will be found through this param. <br />
 
-Form to configure has the following fields:
+&nbsp; &nbsp; • **Revision**: The desired revision to be added to the topic field. <br />
 
-- **Title**: Topic title, topic will be found through this param.
+&nbsp; &nbsp; • **Field**: Topic field to add the revision. <br />
 
-- **Revision**: The desired revision to be added to the topic field.
-
-- **Field**: Topic field to add the revision.
-
-- **User**: username to update topic data, if no user is configured, user ‘Clarive’ will be used.
+&nbsp; &nbsp; • **User**: username to update topic data, if no user is configured, user ‘Clarive’ will be used.
 
