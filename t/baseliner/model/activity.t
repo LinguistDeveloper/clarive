@@ -57,6 +57,32 @@ subtest 'returns mapped activity' => sub {
       ];
 };
 
+subtest 'hide event.topic.modify from topic activity' => sub {
+    _setup();
+
+    use Baseliner::Utils;
+    Baseliner::Core::Registry->add( 'main', 'event.topic.modify', { vars => ['username', 'topic_name', 'ts'] } );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
+
+    is_deeply $rv, [];
+};
+
+subtest 'hide event.ci* from topic activity' => sub {
+    _setup();
+
+    use Baseliner::Utils;
+    Baseliner::Core::Registry->add( 'main', 'event.ci.update', { vars => ['username', 'old_ci', 'new_ci', 'mid'] } );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
+
+    is_deeply $rv, [];
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
 
@@ -83,6 +109,44 @@ sub _setup {
             "text"     => undef,
             "module"   => "Baseliner::Controller::Job"
         }
+    );
+    mdb->activity->insert(
+        {
+            "event_key" => "event.topic.modify",
+            "ev_level"  => 0,
+            "event_id"  => "2017",
+            "ts"        => "2013-12-19 21:08:49",
+            "vars"      => {
+                "username" => "root",
+                "topic_name" => "Name Test",
+                "ts" => "2013-12-19 21:08:49",
+            },
+            "username" => "root",
+            "mid"      => "908",
+            "level"    => 1,
+            "text"     => '%1 modified topic',
+            "module"   => "Baseliner::Model::Topic"
+        },
+    );
+    mdb->activity->insert(
+        {
+            "event_key" => "event.ci.update",
+            "ev_level"  => 0,
+            "event_id"  => "2018",
+            "ts"        => "2016-02-24 10:50:47",
+            "vars"      => {
+                "mid" => "908",
+                "new_ci" => undef,
+                "old_ci" => undef,
+                "username" => "root",
+                "ts" => "2016-02-24 10:50:47",
+            },
+            "username" => "root",
+            "mid"      => "908",
+            "level"    => 0,
+            "text"     => undef,
+            "module"   => "/opt/clarive/clarive/lib/Baseliner/Role/CI.pm"
+        },
     );
 }
 
