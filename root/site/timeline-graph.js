@@ -900,26 +900,25 @@
               }
 
               //this part modify the duration of the last principal node.
-        var r;
-        for( r = 0; r < object_node.length; r++){
-          if (object_node[r].key == last_node.key){
-            if(count_nodes_2 > object_node[r].duration){
-              object_node[r].duration = count_nodes_2;
-              sum_duration = sum_duration + count_nodes_2;
-              //timer_nodes[start.length-1] = object_node[r].when;
-              start[start.length-1] = object_node[r].start;
-            }
-          }   
-        }
+              var r;
+              for( r = object_node.length-1; r >= 0; r--){
+                if (object_node[r].key == last_node.key){
+                  //if(count_nodes_2 > object_node[r].duration){
+                    object_node[r].duration = count_nodes_2;
+                    sum_duration = sum_duration + count_nodes_2;
+                    start[start.length-1] = object_node[r].start;
+                  //}
+                }   
+              }
 
-        // duration
-        var w;
-        for( w = 0; w < object_node.length; w++){
-          if(object_node[w].duration=="change"){
-                    object_node[w].duration = sum_duration;
-                  }
+              // duration
+              var w;
+              for( w = 0; w < object_node.length; w++){
+                if(object_node[w].duration=="change"){
+                  object_node[w].duration = sum_duration;
+                }
+              }
             }
-      }
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -936,8 +935,8 @@
               if (res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
                 object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": _('Username') + " : "+res.data[i].username+ "\n" + _('Date') + ": "+Cla.user_date(res.data[i].when), "time":start[j], selected_text: ""+"\n"+ _('Username') + ": "+res.data[i].username+"\n"+ _('from') + ": "+res.data[i].old_status+" "+ _('to') + ": "+res.data[i].status+"\n"+ _('Date') + ": "+Cla.user_date(res.data[i].when)+"\n"+ _('Name') + ": "+"\n"  });
                 j++;
-                }
-                i++;
+              }
+              i++;
             }
         diagram.model = new go.GraphLinksModel(object_node,object_link);
     });            
