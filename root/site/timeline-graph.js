@@ -151,8 +151,7 @@
         this.overview = overview;
 
         var i = 0;
-        var j = 0;
-        var color_node = "#FFFFFF";
+        j = 0;
         var go_api = go.GraphObject.make;
 
 
@@ -390,13 +389,14 @@
                       go_api(go.Shape, "Rectangle",
                             {
                                 name: "SHAPE",
-                                stroke: "black",
+                                //fill: "transparent", stroke: "green",
                                 width: ActivityWidth,
                                 // allow Activities to be resized down to 1/4 of a time unit
                                 minSize: new go.Size(ActivityWidth, computeActivityHeight(0))
                             },
-                            new go.Binding("fill","color_node"),
-                            new go.Binding("height", "duration", computeActivityHeight).makeTwoWay(backComputeActivityHeight)
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("height", "duration", function(h) { if (h > 0) { h = computeActivityHeight(h); }else{ h = computeActivityHeight2(h); } return h; }).makeTwoWay(backComputeActivityHeight)
                       ),
                       go_api(go.TextBlock, { angle: 90, font: "bold 11px sans-serif", stroke: "black"  },
                           new go.Binding("text", "text"),
@@ -451,26 +451,6 @@
         // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
         Baseliner.ajaxEval( '/topic/timeline_list_status_changes', {mid: mid}, function(res) {
 
-          var date;
-          var date2;
-          var array_group = [];
-
-            //Order data for creation date.
-            for(i=0;i<res.data.length-1;i++){
-                 for(j=0;j<res.data.length-1;j++){
-                     date = new Date(res.data[j].when);
-                     date2 = new Date(res.data[j+1].when);
-                      if(date>date2){
-                            //save the max number in aux
-                            aux=res.data[j];
-                            //save the min number in the correct position
-                            res.data[j]=res.data[j+1];
-                            //save the aux in the min position (change max with min)
-                            res.data[j+1]=aux;         
-                      }         
-                 }
-            }
-
             i=0;
             var temp_status = [];
             while(i< res.data.length){
@@ -511,7 +491,6 @@
             }*/
             
             var object_node = [];          
-            var object_link = [];
 
             //Create group of nodes for status
             i=0;
@@ -542,22 +521,6 @@
               i++;
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
             //create nodes timeline for user and status
             i=0;
             j=0;
@@ -571,62 +534,14 @@
               
               if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
 
-              if(i==0){
-                start[i]=1;
-                duration[i]=1;
-                text[i]= "start";
-                sum_duration = sum_duration + duration[i];
-
-                if(res.data[i].data_type == "topic_modify"){
-                  color_node = "#ffff99";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.5, color_node: color_node, "key": -(i+res.data.length), "text": ""});
-                }else if(res.data[i].data_type == "event_post"){
-                  color_node = "#3399ff";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.2, color_node: color_node, "key": -(i+res.data.length), "text": "text"});
-                }else if(res.data[i].data_type == "event_file"){
-                  color_node = "#ff4d4d";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.1, color_node: color_node, "key": -(i+res.data.length), "text": ""});
-                }else{
-                  color_node = "white";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], color_node: color_node, "key": -(i+res.data.length), "text": text});
-                }
-              }else{
-                start[i] = start[i-1] + duration[i-1];
-                date = new Date(res.data[i].when);
-                date2 = new Date(res.data[i-1].when);
-
-                // CALCULATE THE VALUE OF DURATION TO NODES.
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                // YEAR         DURATION 16.6 -        
-                // MONTH        DURATION 15.4 - 16.6     
-                // DAYS         DURATION 9.2 - 15.4      
-                // HOURS        DURATION 2 - 9.2 
-
-                var sum_date = date.getTime() - date2.getTime();
-                date_compare = date.getFullYear() - date2.getFullYear();
-                var leap_calculate = date_compare % 4; 
-                var number_text = 0;
-                var leap_year = 31622400000;
-                var year = 31536000000;
-                var leap_month = 2505600000;
-                var february_month = 2419200000;
-                var thirty_month = 2592000000;
-                var month = 2678400000;
-                var day = 86400000;
-                var hours = 3600000; 
-                var min = 60000;
-                var hour = 0;
-                var minutes = 0;
-
-                //leap-year
-                if (leap_calculate == 0 && sum_date >= leap_year){
-
-                  number_text = sum_date / leap_year;
-                  number_text = Math.round(number_text);
-                  if(number_text == 0){ number_text = 1;}
-
-                  duration[i]=number_text+20.6;
-                  text[i] = number_text+" "+_('Year');
+                if(j==0){
+                  start[j]=1;
+                  duration[j]=1;
+                  text[j]= "start";
+                  sum_duration = sum_duration + duration[j];
+                  object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "fill": "white", "stroke": "black"});
+                  before_index = i;
+                  j++;
                 }else{
                   start[j] = start[j-1] + duration[j-1];
                   date = new Date(res.data[i].when);
@@ -1016,13 +931,13 @@
             var object_link = [];
             var source;
             while (i < res.data.length){
-              //source = "/user/avatar/"+res.data[i].username+"/image.png";
-              if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+                //source = "/user/avatar/"+res.data[i].username+"/image.png";
                 source = "/identicon/"+res.data[i].username+".png";
-                object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": "user: "+res.data[i].username+ "\n date: "+Cla.user_date(res.data[i].when), "time":start[i], selected_text: ""+"\nUser: "+res.data[i].username+"\nFrom: "+res.data[i].old_status+" To: "+res.data[i].status+"\nTime: "+Cla.user_date(res.data[i].when)+"\n Name: "+"\n"  });
-              }
-              i++;
-
+              if (res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+                object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": _('Username') + " : "+res.data[i].username+ "\n" + _('Date') + ": "+Cla.user_date(res.data[i].when), "time":start[j], selected_text: ""+"\n"+ _('Username') + ": "+res.data[i].username+"\n"+ _('from') + ": "+res.data[i].old_status+" "+ _('to') + ": "+res.data[i].status+"\n"+ _('Date') + ": "+Cla.user_date(res.data[i].when)+"\n"+ _('Name') + ": "+"\n"  });
+                j++;
+                }
+                i++;
             }
         diagram.model = new go.GraphLinksModel(object_node,object_link);
     });            
