@@ -31,7 +31,7 @@ sub config_load {
     # in case we put env or config, make sure at least one was found
     my $ffound=0;
     if( @files && !grep { -e } @files ) {
-        die "ERROR: Could not find files for environment/config parameters.\nAttempted to load any of these without luck:\n    " 
+        die "ERROR: Could not find files for environment/config parameters.\nAttempted to load one of these without luck:\n    " 
             . join ("\n    ", @files) . "\n";
     }
     
