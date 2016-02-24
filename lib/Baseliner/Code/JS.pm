@@ -9,7 +9,7 @@ use Try::Tiny;
 use File::Basename ();
 use Scalar::Util qw(blessed);
 use Baseliner::Mongo;
-use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case _unbless :logging _load _dump _encode_json _decode_json);
+use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case _unbless :logging _load _dump _encode_json _decode_json _json_pointer);
 use Storable ();
 use Clarive::App;
 

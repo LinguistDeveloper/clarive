@@ -96,6 +96,7 @@ use Exporter::Tidy default => [
     _get_dotted_keys
     _reg_line
     _pointer
+    _json_pointer
     _clone
     _stash_dump
     _stash_load
@@ -2295,6 +2296,55 @@ sub _pointer {
     }
 
     return $p;
+}
+
+=head2 _json_pointer
+
+This allows you to manipulate nested hashes
+with a dotted key notation:
+
+    # getter
+    $stash = { aa=>{ bb=>{ cc=>22 } } };
+    say "Twenty-two = " . _json_pointer( $stash, '/aa/bb/cc' );
+
+    # setter
+    $stash = { aa=>{ bb=>{ cc=>22 } } };
+    _json_pointer( $stash, '/aa/bb/0/cc' => 33 );
+
+=cut
+sub _json_pointer {
+    my ($data, $key, $val) = @_;
+
+    my $is_setting = @_ == 3;
+
+    return $data if ! length $key;
+
+    if( substr($key,0,1) ne '/' || ( my $is_double = substr($key,0,2) eq '//' ) ) {
+        $key = substr($key,1) if $is_double;
+        return $data->{$key} if @_ == 2; 
+        return $data->{$key} = $val;
+    }
+
+    my $rec;
+    $rec = sub {
+        my ( $obj, $keys, $val, $is_setting ) = @_;
+        return $obj unless @$keys && ref( $obj ) =~ /HASH|ARRAY/;
+        my $key  = shift @$keys;
+        my $is_arr = is_number($key);
+        my $slot = do{ 
+            if( $is_setting && !@$keys ) {
+                $is_arr 
+                    ? ( $obj->[$key] = $val )
+                    : ( $obj->{$key} = $val );
+            } else {
+                $is_arr 
+                    ? $obj->[$key] 
+                    : $obj->{$key};
+            }
+        };
+        return $is_setting ? $rec->( $slot, $keys, $val, $is_setting ) : $rec->( $slot, $keys, $is_setting );
+    };
+    $rec->($data, [grep { length } split /\//, $key], $val, $is_setting );
 }
 
 sub _to_camel_case {

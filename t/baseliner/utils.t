@@ -501,4 +501,34 @@ subtest 'decode_json_safe: catches json errors and sets default value' => sub {
     is_deeply _decode_json_safe('{"foo":"bar"}'), {foo => 'bar'};
 };
 
+subtest '_json_pointer: get' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    is (Util->_json_pointer($stash,'/aa/bb'), 22);
+};
+
+subtest '_json_pointer: set' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
+};
+
+subtest '_json_pointer: get/set arrays' => sub {
+    my $stash = { aa=>{ bb=>[33,{ zz=>22 }] } };
+    Util->_json_pointer($stash,'/aa/bb/1/zz',99);
+    is ( Util->_json_pointer($stash,'/aa/bb/1/zz'), 99 );
+    is ( Util->_json_pointer($stash,'/aa/bb/0'), 33 );
+};
+
+subtest '_json_pointer: set non-pointers' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+
+    Util->_json_pointer($stash,'aa/bb',77);
+    is ( Util->_json_pointer($stash,'aa/bb'), 77 );
+    is ( $stash->{'aa/bb'}, 77 );
+
+    Util->_json_pointer($stash,'//aa/bb',88);
+    is ( Util->_json_pointer($stash,'//aa/bb'), 88 );
+    is ( $stash->{'/aa/bb'}, 88 );
+};
+
 done_testing;
