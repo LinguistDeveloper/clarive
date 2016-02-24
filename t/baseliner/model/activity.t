@@ -42,54 +42,6 @@ subtest 'returns mapped activity' => sub {
 
     Baseliner::Core::Registry->add( 'main', 'event.job.delete', { vars => ['jobname'] } );
 
-    my $activity = _build_model();
-
-    my $rv = $activity->find_by_mid(907);
-
-    is_deeply $rv,
-      [
-        {
-            text     => 'Event event.job.delete occurred',
-            ts       => '2014-10-15 11:30:32',
-            jobname  => 'N.DESA-00000087',
-            username => 'root'
-        }
-      ];
-};
-
-subtest 'hide event.topic.modify from topic activity' => sub {
-    _setup();
-
-    use Baseliner::Utils;
-    Baseliner::Core::Registry->add( 'main', 'event.topic.modify', { vars => ['username', 'topic_name', 'ts'] } );
-
-    my $activity = _build_model();
-
-    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
-
-    is_deeply $rv, [];
-};
-
-subtest 'hide event.ci* from topic activity' => sub {
-    _setup();
-
-    use Baseliner::Utils;
-    Baseliner::Core::Registry->add( 'main', 'event.ci.update', { vars => ['username', 'old_ci', 'new_ci', 'mid'] } );
-
-    my $activity = _build_model();
-
-    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
-
-    is_deeply $rv, [];
-};
-
-sub _setup {
-    Baseliner::Core::Registry->clear;
-
-    Baseliner::Core::Registry->add_class( 'main', 'event' => 'BaselinerX::Type::Event' );
-
-    mdb->activity->drop;
-
     mdb->activity->insert(
         {
             "event_key" => "event.job.delete",
@@ -110,6 +62,27 @@ sub _setup {
             "module"   => "Baseliner::Controller::Job"
         }
     );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid(907);
+
+    is_deeply $rv,
+      [
+        {
+            text     => 'Event event.job.delete occurred',
+            ts       => '2014-10-15 11:30:32',
+            jobname  => 'N.DESA-00000087',
+            username => 'root'
+        }
+      ];
+};
+
+subtest 'find_by_mid: hides event.topic.modify from topic activity' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'event.topic.modify', { vars => ['username', 'topic_name', 'ts'] } );
+
     mdb->activity->insert(
         {
             "event_key" => "event.topic.modify",
@@ -128,6 +101,19 @@ sub _setup {
             "module"   => "Baseliner::Model::Topic"
         },
     );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
+
+    is_deeply $rv, [];
+};
+
+subtest 'find_by_mid: hides event.ci.* from topic activity' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'event.ci.update', { vars => ['username', 'old_ci', 'new_ci', 'mid'] } );
+
     mdb->activity->insert(
         {
             "event_key" => "event.ci.update",
@@ -148,6 +134,19 @@ sub _setup {
             "module"   => "/opt/clarive/clarive/lib/Baseliner/Role/CI.pm"
         },
     );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( 908, no_ci => 1 );
+
+    is_deeply $rv, [];
+};
+
+sub _setup {
+    Baseliner::Core::Registry->clear;
+    Baseliner::Core::Registry->add_class( 'main', 'event' => 'BaselinerX::Type::Event' );
+
+    mdb->activity->drop;
 }
 
 sub _build_model {
