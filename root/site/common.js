@@ -2340,7 +2340,15 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
 
         self.on('contextmenu', self.menu_click );
         self.on('beforenodedrop', self.drop_handler );
-        self.on('nodedragover',self.handle_allow_drop);
+        // Paging commits
+        self.addEvents('paging');
+        self.on('paging', function(obj, n, res){
+            var parent = n.parentNode;
+            parent.removeChild(parent.childNodes[parent.childNodes.length-1]);
+            parent.appendChild(res);
+        });
+
+        // auto Topic drawing
         self.on('beforechildrenrendered', function(node){
             node.eachChild(function(n) {
                 Cla.style_topic_node(n);
@@ -2525,7 +2533,13 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         } else if (c.type == 'html') {
             Baseliner.add_tab(c.url, _(c.title), params);
         } else if (c.type == 'eval') {
-            Baseliner.ajax_json(c.url, params, function(res) {});
+            Baseliner.ajax_json( c.url, params, function(res){
+                if(params.event_paging && n.ownerTree){
+                    params.parent_id = n.ownerTree.id;
+                    var obj = Ext.getCmp(n.ownerTree.id);
+                    obj.fireEvent(params.event_paging, obj, n, res);
+                }
+            });
         } else if (c.type == 'iframe') {
             Baseliner.add_iframe(c.url, _(c.title), params);
         } else if (c.type == 'download') {

@@ -15,7 +15,6 @@ with 'Baseliner::Role::ControllerValidator';
 
 sub branch : Local {
     my ( $self, $c ) = @_;
-
     return
       unless my $node = $self->validate_params(
         $c,
@@ -74,21 +73,35 @@ sub branch_commits : Local {
     return
       unless my $p = $self->validate_params(
         $c,
-        repo_mid => { isa => 'ExistingCI' },
-        project    => { isa => 'Str' },
-        branch   => { isa => 'GitBranch', default => 'HEAD' },
+        repo_mid        => { isa => 'ExistingCI' },
+        branch          => { isa => 'GitBranch', default => 'HEAD' },
+        project         => { isa => 'Str' },
+        show_commit_tag => { isa => 'Num', default => '0' },
+        page            => { isa => 'Num', default => '1' }
       );
 
+    my $show_commit_tag = $p->{show_commit_tag};
+    my $page = $p->{page};
     my $repo_ci = $p->{repo_mid};
-
+    my $page_size = config_get('config.git')->{revision_paging_size} || 30;
     my $err;
     my @rev_list = try {
+        # Change page_size to variable
         my $project = ci->project->search_ci(name => $p->{project});
-        $repo_ci->commits_for_branch( branch => $p->{branch}, project => $project );
+        $repo_ci->commits_for_branch(
+            branch          => $p->{branch},
+            project         => $project,
+            page            => $page,
+            page_size       => $page_size,
+            show_commit_tag => $show_commit_tag
+        );
     }
     catch {
         $err = shift;
     };
+
+    my $no_more_commits = scalar @rev_list < $page_size + 1;
+    pop @rev_list if !$no_more_commits;
 
     if ($err) {
         $c->stash->{json} = { msg => $err, success => \0 };
@@ -173,6 +186,37 @@ sub branch_commits : Local {
               }
         } @rev_list
     ];
+
+    $page++;
+
+    if ( !$no_more_commits ) {
+        push @$data,
+          +{
+            text => _loc('Next commit set'),
+            icon => '/static/images/icons/down.png',
+            data => {
+                branch       => $p->{branch},
+                repo_mid     => $repo_ci->mid,
+                project      => $p->{project},
+                page         => $page,
+                event_paging => 'paging',
+                click        => {
+                    url  => '/gittree/branch_commits',
+                    data => {
+                        branch   => $p->{branch},
+                        repo_mid => $repo_ci->mid
+                    },
+                    branch   => $p->{branch},
+                    page     => $page,
+                    repo_dir => $repo_ci->repo_dir,
+                    repo_mid => $repo_ci->mid,
+                    type     => 'eval',
+                    load     => \1
+                }
+            },
+            leaf => \1
+          };
+    }
 
     $c->stash->{json} = $data;
 

@@ -567,8 +567,8 @@ sub branches : Local {
               };
         };
     }
-    $c->stash->{json} = \@tree;
-    $c->forward('View::JSON');
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
 }
 
 

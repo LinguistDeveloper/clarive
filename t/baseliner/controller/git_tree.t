@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
@@ -98,7 +97,7 @@ subtest 'branch_commits: returns validation errors' => sub {
 
     is_deeply $c->stash,
       { json =>
-          { success => \0, msg => 'Validation failed', errors => { project => 'REQUIRED', repo_mid => 'REQUIRED' } } };
+          { success => \0, msg => 'Validation failed', errors => { repo_mid => 'REQUIRED', project => 'REQUIRED' } } };
 };
 
 subtest 'branch_commits: returns commits' => sub {
@@ -113,7 +112,7 @@ subtest 'branch_commits: returns commits' => sub {
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, branch => 'master', project => 'test_project' };
+    my $params = { repo_mid => $repo_ci->mid, branch => 'master', show_commit_tag => 1, project => 'test_project' };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -169,6 +168,131 @@ subtest 'branch_commits: returns commits' => sub {
             }
         ]
       };
+};
+
+subtest 'branch_commits: returns paged commits with more nodes available for initial page' => sub {
+    _setup();
+
+    my $tag  = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    my $sha1 = TestGit->commit($repo_path);
+    my $sha2 = TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+
+    BaselinerX::Type::Model::ConfigStore->new->set(
+        key   => 'config.git.revision_paging_size',
+        value => 2
+    );
+
+    my $params =
+      { repo_mid => $repo->mid, branch => 'master', project => 'test_project', page => 1, show_commit_tag => 0 };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    my $controller = _build_controller();
+    $controller->branch_commits($c);
+
+    is scalar @{ $c->stash->{json} }, 3;
+    is $c->stash->{json}->[0]->{data}->{sha}, $sha2;
+    is $c->stash->{json}->[1]->{data}->{sha}, $sha1;
+    is $c->stash->{json}->[2]->{text}, 'Next commit set';
+    is $c->stash->{json}->[2]->{data}->{page}, 2;
+};
+
+subtest 'branch_commits: always initialized in page 1 by default' => sub {
+    _setup();
+
+    my $tag  = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    my $sha1 = TestGit->commit($repo_path);
+    my $sha2 = TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+
+    BaselinerX::Type::Model::ConfigStore->new->set(
+        key   => 'config.git.revision_paging_size',
+        value => 2
+    );
+
+    my $params =
+      { repo_mid => $repo->mid, branch => 'master', project => 'test_project', show_commit_tag => 0 };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    my $controller = _build_controller();
+    $controller->branch_commits($c);
+
+    is $c->stash->{json}->[2]->{data}->{page}, 2;
+};
+
+subtest 'branch_commits: returns paged commits with more nodes available for non initial revision_paging_size' => sub {
+    _setup();
+
+    my $tag                  = 'tag_1';
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    my $sha1 = TestGit->commit($repo_path);
+    my $sha2 = TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+
+    BaselinerX::Type::Model::ConfigStore->new->set(
+        key   => 'config.git.revision_paging_size',
+        value => 2
+    );
+
+    my $params =
+      { repo_mid => $repo->mid, branch => 'master', project => 'test_project', page => 2, show_commit_tag => 0 };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    my $controller = _build_controller();
+    $controller->branch_commits($c);
+
+    is scalar @{ $c->stash->{json} }, 2;
+    is $c->stash->{json}->[0]->{data}->{sha}, $sha2;
+    is $c->stash->{json}->[1]->{data}->{sha}, $sha1;
+};
+
+subtest 'branch_commits: returns paged commits with no more commits to show' => sub {
+    _setup();
+
+    my $tag  = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+
+    BaselinerX::Type::Model::ConfigStore->new->set(
+        key   => 'config.git.revision_paging_size',
+        value => 15
+    );
+
+    my $params =
+      { repo_mid => $repo->mid, branch => 'master', project => 'test_project', page => 3, show_commit_tag => 0 };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    my $controller = _build_controller();
+    $controller->branch_commits($c);
+
+    is_deeply $c->stash, { json => [] };
 };
 
 subtest 'branch_changes returns validation errors' => sub {
@@ -498,7 +622,6 @@ subtest 'get_file_blame: returns special blame when binary' => sub {
         file    => 'binary.img',
         content => do { local $/; open my $fh, '<', 'root/static/spinner.gif' or die $!; <$fh> }
     );
-
 
     my $controller = _build_controller();
 
@@ -1008,7 +1131,7 @@ sub _build_controller {
 }
 
 sub _setup {
-    Baseliner::Core::Registry->clear();
+    TestUtils->setup_registry();
     TestUtils->register_ci_events();
     TestUtils->cleanup_cis;
 }
