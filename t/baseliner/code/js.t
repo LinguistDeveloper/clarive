@@ -35,6 +35,14 @@ subtest 'dispatches to parseVars with local stash' => sub {
     is $ret, 'hola';
 };
 
+subtest 'parseVars without a stash' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( 'Cla.parseVars("this is ${foo}")' );
+
+    is $ret, 'this is ${foo}';
+};
+
 subtest 'dispatches to DB insert' => sub {
     _setup();
 

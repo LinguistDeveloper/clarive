@@ -17,6 +17,8 @@ sub eval_code {
     my $self = shift;
     my ( $code, $stash ) = @_;
 
+    $stash ||= {};
+
     my $prefix = <<"EOF";
 Duktape.modSearch = function (id) {
     var res;
