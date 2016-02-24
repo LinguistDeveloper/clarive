@@ -364,7 +364,6 @@
             {  name: 'dashboards' }
         ]
     });
-
     ///////// Single Role Data Load Event
     role_data_store.on('load', function() {
         try {
@@ -390,7 +389,6 @@
             Cla.error(_('Error'), _('Could not load role form data') + ': ' + e.description );
         }
     });
-
     ////////// Single Role Data Load
     role_data_store.load({ params:{ id: params.id_role } }); 
 
@@ -420,8 +418,10 @@
                             action_tree.getRootNode().reload();
 
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
+
+                            role_panel.destroy();
                         },
-                        failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
+                        failure: function(form, action) { Baseliner.message( _("Error: Role already exists")), _("Failure") + ":" + action.result.msg; }
                     });
                 }
             },

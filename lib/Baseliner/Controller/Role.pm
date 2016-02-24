@@ -264,32 +264,56 @@ sub action_tree : Local {
 
 sub update : Local {
     my ( $self, $c ) = @_;
-    my $p = $c->req->params;
+
+    my $p    = $c->req->params;
+    my $name = $p->{name};
+    my $id   = $p->{id};
     my $row;
-    eval {
-        my $role_actions = _decode_json(encode('UTF-8', $p->{role_actions}));
-        $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox},dashboards=>$p->{dashboards}, actions=>$role_actions };
-        $row->{id} = "$p->{id}" if $p->{id} >= 0;
-        if ($p->{id} < 0){
-            $row->{id} = ''.mdb->seq('role');
-            mdb->role->insert($row);
-        }else{
-            mdb->role->update( { id=>"$row->{id}" }, $row );
-        }
-        cache->remove("roles:tree:$p->{id}:") if $p->{id};
-        cache->remove(":role:actions:$p->{id}:") if $p->{id};
-        cache->remove(':role:ids:');
+
+    my $role_actions = _decode_json( encode( 'UTF-8', $p->{role_actions} ) );
+    $row = {
+        role        => $p->{name},
+        description => $p->{description},
+        mailbox     => $p->{mailbox},
+        dashboards  => $p->{dashboards},
+        actions     => $role_actions
     };
-    if( $@ ) {
-        warn $@;
-        $c->stash->{json} = { success => \0, msg => _loc("Error modifying the role ").$@};
-    } else { 
-        $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ), id=> $row->{id}  };
+    if ( $id ge 0 ) {
+        $row->{id} = "$p->{id}";
     }
-    cache->remove({ d=>'security' });
-    cache->remove({ d=>"topic:meta" });
-    $c->forward('View::JSON');  
+
+    if ( $id eq '-1' ) {
+        my $role_exists = mdb->role->find_one( { role => $name } );
+
+        if ($role_exists) {
+            $c->stash->{json} = { success => \0, msg => 'Error: role exists' };
+        }
+        else {
+            $row->{id} = '' . mdb->seq('role');
+            mdb->role->insert($row);
+            $c->stash->{json} = { success => \1, msg => "Role created" };
+        }
+
+    }
+    else {
+        my $another_role_exists = mdb->role->find_one( { role => $name, id => { '$ne' => $id } } );
+        if ($another_role_exists) {
+            $c->stash->{json} = { success => \0, msg => "Error: another role exists with same name" };
+        }
+        else {
+            mdb->role->update( { id => "$row->{id}" }, $row );
+            $c->stash->{json} = { success => \1, msg => "Role modified" };
+        }
+    }
+    cache->remove("roles:tree:$p->{id}:")    if $p->{id};
+    cache->remove(":role:actions:$p->{id}:") if $p->{id};
+    cache->remove(':role:ids:');
+    cache->remove( { d => 'security' } );
+    cache->remove( { d => "topic:meta" } );
+    $c->forward('View::JSON');
 }
+
+
 
 sub delete : Local {
     my ( $self, $c ) = @_;
