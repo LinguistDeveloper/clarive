@@ -2364,9 +2364,9 @@ sub timeline_list_status_changes : Local {
 
     my $p = $c->request->parameters;
 
-    my @status_changes = Baseliner::Model::Topic->new->timeline_status_changes( $p->{mid} );
+    my @events = Baseliner::Model::Topic->new->timeline_status_changes( $p->{mid} );
 
-    $c->stash->{json} = { data => \@status_changes };
+    $c->stash->{json} = { data => \@events };
     $c->forward('View::JSON');
 }
 
