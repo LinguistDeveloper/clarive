@@ -826,22 +826,6 @@
                   object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "text": text, "fill": "white", "stroke": "black"});
                   j++;
                 }
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                sum_duration = sum_duration + duration[i];
-                if(res.data[i].data_type == "topic_modify"){
-                  color_node = "#ffff99";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.5, color_node: color_node, "key": -(i+res.data.length), "text": ""});
-                }else if(res.data[i].data_type == "event_post"){
-                  color_node = "#3399ff";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.2, color_node: color_node, "key": -(i+res.data.length), "text": "text"});
-                }else if(res.data[i].data_type == "event_file"){
-                  color_node = "#ff4d4d";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":0.1, color_node: color_node, "key": -(i+res.data.length), "text": ""});
-                }else{
-                  color_node = "white";
-                  object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], color_node: color_node, "key": -(i+res.data.length), "text": text});
-                }
-                //object_node.push({ "group" : res.data[i].status, "start":start[i], "duration":duration[i], color_node: color_node, "key": -(i+res.data.length), "text": text});
               }
                 i++;
             }
