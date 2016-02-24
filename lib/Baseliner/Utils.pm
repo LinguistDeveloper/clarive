@@ -582,12 +582,12 @@ sub _probe_one_row {
                return 1 if $mode eq 'or' && $res;
            }
            elsif( ref $term->{$k} eq 'HASH' && (my $re = $term->{$k}{'$not'}) ) {
-               $res = $row->{$k} !~ $re;
+               $res = $row->{$k} !~ $re if $row->{$k} && $re;
                return 0 if $mode eq 'and' && !$res;
                return 1 if $mode eq 'or' && $res;
            }
            else {
-               $res = $row->{$k} =~ $term->{$k};
+               $res = $row->{$k} =~ $term->{$k} if $row->{$k} && $term->{$k};
                return 0 if $mode eq 'and' && !$res;
                return 1 if $mode eq 'or' && $res;
            }

@@ -807,6 +807,7 @@ subtest '_chdir: changes back to previous directory in case of error' => sub {
     is $cwd, getcwd();
 };
 
+
 subtest 'capture_pipe: returns correct results' => sub {
     my $output = '';
 
@@ -874,6 +875,24 @@ subtest 'capture_pipe: returns error exit code' => sub {
 
     like $ret->{error}, qr/here/;
     isnt $ret->{exit_code}, 0;
+};
+
+subtest '_probe_one_row: basic one term' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
+};
+
+subtest '_probe_one_row: and mode' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/a/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/x/ }) );
+};
+
+subtest '_probe_one_row: or mode' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('or', $row, { aa=>qr/xx/ }, { bb=>'bar' }) );
+    ok( ! Util->_probe_one_row('or', $row, { aa=>qr/xx/ },{ bb=>qr/tt/ }) );
 };
 
 done_testing;
