@@ -8,19 +8,43 @@ use TestDriver;
 
 my $driver = TestDriver->new;
 
-subtest 'invalid username/password' => sub {
+subtest 'shows an error when no password or username' => sub {
     $driver->get_fresh('localhost:3000');
 
-    $driver->wait_for('@loginButton')->send_keys('foo');
-    $driver->wait_for('input[name=password]')->send_keys('bar');
+    $driver->wait_for_element_visible('.ui-button-login button')->click;
 
-    $driver->pause(500);
+    my $error_message = $driver->wait_for_element_visible('div.x-form-invalid-msg');
 
-    $driver->wait_for('.ui-button-login button')->click;
+    ok $error_message;
+    like $error_message->get_text, qr/This field is required/;
+};
 
-    $driver->pause(500);
+subtest 'shows an error when invalid user' => sub {
+    $driver->get_fresh('localhost:3000');
 
-    ok $driver->find_element_by_css('input[name=login].x-form-invalid')->is_displayed;
+    $driver->wait_for_element_visible('input[name=login]')->send_keys('unknown user');
+    $driver->wait_for_element_visible('input[name=password]')->send_keys('unknown password');
+
+    $driver->wait_for_element_visible('.ui-button-login button')->click;
+
+    my $error_message = $driver->wait_for_element_visible('div.x-form-invalid-msg');
+
+    ok $error_message;
+    like $error_message->get_text, qr/Invalid User or Password/;
+};
+
+subtest 'shows an error when correct user but wrong password' => sub {
+
+    # TODO
+
+    ok 1;
+};
+
+subtest 'successfully logins with correct credentials' => sub {
+
+    # TODO
+
+    ok 1;
 };
 
 $driver->quit;

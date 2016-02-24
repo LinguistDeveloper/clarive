@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use base 'Selenium::Firefox';
 
+use Time::HiRes qw(usleep);
+
 sub resolve {
     my ($name) = @_;
 
@@ -17,9 +19,13 @@ sub get_fresh {
     $self->delete_all_cookies;
 
     $self->get('localhost:3000');
+
+    $SIG{__DIE__} = sub {
+        eval { $self->quit }
+    }
 }
 
-sub wait_for {
+sub wait_for_element_visible {
     my $self = shift;
     my ( $selector, $type ) = @_;
 
@@ -29,6 +35,8 @@ sub wait_for {
 
     $type //= 'css';
 
+    usleep(300_000); # 0.3
+
     my $start = time;
     while (1) {
         last if time - $start > 5;
@@ -36,11 +44,14 @@ sub wait_for {
         my $elements = $self->find_elements( $selector, $type );
 
         foreach my $element (@$elements) {
-            return $element if $element->is_displayed;
+            if ($element->is_displayed) {
+                usleep(300_000); # 0.3
+                return $element;
+            }
         }
-    }
 
-    $self->quit();
+        usleep(300_000); # 0.3
+    }
 
     die "element '$selector' not present";
 }
