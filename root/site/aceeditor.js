@@ -79,7 +79,7 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
     setOptions : function(options) {
         var self = this;
         return self.editor.setOptions(options);
-    }
+    },
 
     goTop : function() {
         var self = this;
