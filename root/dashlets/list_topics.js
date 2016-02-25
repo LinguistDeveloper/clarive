@@ -3,7 +3,7 @@ my $iid = Util->_md5;
 </%perl>
 (function(params){ 
     var id = params.id_div;
-
+    var decimal_zone;
     var project_id = params.project_id;
     var topic_mid = params.topic_mid;
     var graph;
@@ -53,6 +53,10 @@ my $iid = Util->_md5;
           columns.push(column);
        })
     }
+
+      Cla.ajax_json('/user/user_data', {  }, function(res){
+        decimal_zone = res.data.decimal;
+            });
 
     Cla.ajax_json('/dashboard/list_topics', {
         topic_mid: topic_mid,
@@ -140,7 +144,7 @@ my $iid = Util->_md5;
 
                   var colNameFixedPrecision = parseFloat(topic[col.name]).toFixed(precision);
                   if(col.type_number && col.type_number === 'currency'){
-                    html = html + new NumberFormat(colNameFixedPrecision).toFormatted();
+                    html = html + new NumberFormat(colNameFixedPrecision,decimal_zone).toFormatted();
                   }else{
                     html = html + colNameFixedPrecision;
                   }

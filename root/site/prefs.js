@@ -145,6 +145,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 lang_arr.push([ ln, _(lang_name)||_(ln) ]);
             }
             lang_arr = lang_arr.sort(function(a,b){ return a[1].toUpperCase() > b[1].toUpperCase() ? 1 : b[1].toUpperCase() > a[1].toUpperCase() ? -1 : 0; });
+
             var language = new Baseliner.ComboDouble({
                 fieldLabel: _('Interface Language'), 
                 name: 'language_pref', 
@@ -218,6 +219,25 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
 
+            var countries = Cla.country_list;
+
+             var country = new Baseliner.ComboDouble({
+                fieldLabel: _('Country'),
+                name: 'country',
+                value: res.data.country || Prefs.country || 'es',
+                data:( Cla.country_list.map(function(c){
+                    return c;
+                }) )
+            });
+
+            country.on('select', function(cb, rec, index){
+                currency.setValue(rec.json[2]);
+                decimal.setValue(rec.json[3]);
+             });
+
+            var currency = new Ext.form.Hidden({ name: 'currency', value: '' });
+            var decimal = new Ext.form.Hidden({ name: 'decimal', value: '' });
+
              var change_dashboard_form = new Cla.FormPanel({
                  frame: false,
                  border: false,
@@ -225,7 +245,10 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                  timeout: 120,
                  items: [ 
                     language, 
-                    timezone, 
+                    timezone,
+                    country,
+                    currency,
+                    decimal,
                     { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
                             fieldLabel:_('Current Browser Timezone'), html: _('<b>%1</b>',Cla.timezone_str()) },
                     { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
@@ -243,6 +266,9 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                                  Prefs.date_format = date_format.get_save_data();
                                  Prefs.time_format = time_format.get_save_data();
                                  Prefs.timezone = timezone.get_save_data();
+                                 Prefs.country = country.get_save_data();
+                                 Prefs.currency = currency.getValue();
+                                 Prefs.decimal = decimal.getValue();
                                  Baseliner.ci_call( 'user', 'general_prefs_save', { data:form_data, for_username: username }, function(res){
                                      Cla.message(_('Save'), _('General Preferences Saved') );
                                      if( !username && language.getValue() != language_pref ) {
