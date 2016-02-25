@@ -76,6 +76,11 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         return self.editor.setReadOnly(v);
     },
 
+    setOptions : function(options) {
+        var self = this;
+        return self.editor.setOptions(options);
+    },
+
     goTop : function() {
         var self = this;
         return self.editor.moveCursorToPosition({row: 0, column: 0});

@@ -17,7 +17,7 @@
                tabSize: 4,
                electricChars: false,  // allow editor to reindent according to certain chars
                matchBrackets: true,
-            }, Baseliner.AceEditor ));
+            }, Cla.AceEditor ));
             var hlLine = editor.setLineClass(0, "activeline");
             //editor.setSize( '100%', code.getEl().getHeight() );
             editor.setOption('mode', 'perl');
@@ -26,7 +26,7 @@
         });
         */
     } else {
-        code = new Baseliner.AceEditor({
+        code = new Cla.AceEditor({
             fieldLabel:_('Code'), anchor:'100%', height: 500, name:'code', value: params.data.code
         });
     }

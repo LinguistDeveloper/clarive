@@ -8,7 +8,7 @@
         ]
     });
 
-    var code = new Baseliner.AceEditor({
+    var code = new Cla.AceEditor({
         fieldLabel:_('Code'), anchor:'100%', height: 500, name:'code', value: data.code, mode: 'javascript'
     });
     

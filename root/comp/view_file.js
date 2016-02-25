@@ -9,7 +9,7 @@
     if(path.indexOf('/') != -1 && controller != 'svntree') path = path.substring(0,path.indexOf('/'));
     var repo_mid = params.repo_mid;
     var revisions = params.revisions;
-    var cons = new Baseliner.AceEditor();
+    var cons = new Cla.AceEditor();
     var params_view_file;
     if(controller == 'gittree'){
         params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: params.repo_mid };
@@ -167,7 +167,7 @@
             /////////////////
             }else if(comp.pane == 'source'){
                 cons.destroy();
-                cons = new Baseliner.AceEditor();
+                cons = new Cla.AceEditor();
                 cons.on("aftereditor", function(){
                     gen_editor();
                 });
@@ -200,7 +200,7 @@
         rev_num = revision;
         if(typeof cons.setValue === 'undefined'){
             cons.destroy();
-            cons = new Baseliner.AceEditor();
+            cons = new Cla.AceEditor();
             cons.on("aftereditor", function(){
                 gen_editor(revision);
             });
