@@ -125,9 +125,9 @@ my $iid = Util->_md5;
                 }
               } else if ( col.type == 'checkbox') {
                 if (!topic[col.name] || topic[col.name] == 0 || topic[col.name] == false ) {
-                  html = html + '<div style="text-align:center;"><img id="No" src="/static/images/icons/topic_one.png"></div>';
+                  html = html + '<div style="text-align:center;"><img class="img-non-checked" src="/static/images/icons/topic_one.png"></div>';
                 } else {
-                  html = html + '<div style="text-align:center;"><img id="Yes" src="/static/images/icons/checkbox.png"></div>'
+                  html = html + '<div style="text-align:center;"><img class="img-checked" src="/static/images/icons/checkbox.png"></div>'
                 }
               } else if ( col.type.match(/^number/) ) {
                 var precision = 0;
