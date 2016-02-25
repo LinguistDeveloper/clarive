@@ -265,7 +265,7 @@ register 'fieldlet.separator' => {
 
 register 'fieldlet.text' => {
     name        => _loc('Textfield'),
-    html        => '/fields/templates/html/textplain.html',
+    html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/textfield.js',
     icon        => '/static/images/icons/field.png',
@@ -274,10 +274,10 @@ register 'fieldlet.text' => {
 };
 
 register 'fieldlet.text_plain' => {
-    name        => _loc('TextPlain'),
-    html        => '/fields/templates/html/textplain.html',
+    name        => _loc('Preformatted Text'),
+    html        => '/fields/templates/html/preformattedtext.html',
     js          => '/fields/templates/js/textfield.js',
-    form        => '/fields/templates/config/textplain.js',
+    form        => '/fields/templates/config/preformattedtext.js',
     icon        => '/static/images/icons/field.png',
     type        => 'textarea',
     section_allowed => ['head','more']
