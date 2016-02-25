@@ -250,8 +250,7 @@ register 'fieldlet.checkbox' => {
     icon        => '/static/images/icons/admin_request.png',
     #icon        => '/static/images/icons/checkbox.png',
     type        => 'checkbox',
-    section_allowed => ['details','more','between'],
-    section_allowed => ['body']
+    section_allowed => ['details','more','between', 'body'],
 };
 
 register 'fieldlet.separator' => {
@@ -313,7 +312,9 @@ register 'fieldlet.system.status_new' => {
     origin      => 'system',
     relation    => 'status',
     meta_type   => 'status',
-    section     => 'body'
+    section     => 'body',
+    section_allowed => ['body']
+
 };
 
 register 'fieldlet.system.moniker' => {
@@ -339,7 +340,8 @@ register 'fieldlet.system.title' => {
     icon        => '/static/images/icons/lock_small.png',
     type        => 'textfield',
     origin      => 'system',
-    section     => 'head'
+    section     => 'head',
+    section_allowed => ['head']
 };
 
 register 'fieldlet.system.labels' => {
@@ -360,6 +362,8 @@ register 'fieldlet.system.description' => {
     id_field    => 'description',
     bd_field    => 'description',
     origin      => 'system',
+    section_allowed => ['head','more']
+
 };
 
 ########################################################################################

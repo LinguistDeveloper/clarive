@@ -8550,7 +8550,7 @@ msgstr "El fichero tiene un formato no permitido: %1"
 msgid "Error: Role already exists"
 msgstr "Error: El rol ya existe"
 
-msgid "'Preformatted Text'"
+msgid "Preformatted Text"
 msgstr "Texto con Preformato"
 
 msgid "Sort By"
@@ -8619,6 +8619,65 @@ msgstr "Nombre de la rama"
 msgid "Move to new sha if branch exists?"
 msgstr "¿Mover a un nuevo SHA si existe la rama?"
 
+msgid "Checkout directory"
+msgstr "Directorio de descarga"
 
+msgid "Extension"
+msgstr "Extensión"
 
+msgid "What Topics to Show"
+msgstr "Tópicos a mostrar"
 
+msgid "Operation"
+msgstr "Operación"
+
+msgid "Operation fields"
+msgstr "Campos de la operación"
+
+msgid "Date time format"
+msgstr "Formato fecha-hora"
+
+msgid "Default today"
+msgstr "Hoy por defecto"
+
+msgid "Time format"
+msgstr "Formato de hora"
+
+msgid "Advanced Filter JSON"
+msgstr "Filtro avanzado JSON"
+
+msgid "Display Field"
+msgstr "Campo mostrado"
+
+msgid "Selection method"
+msgstr "Método seleccionado"
+
+msgid "Role selection"
+msgstr "Selección por Rol"
+
+msgid "Class selection"
+msgstr "Selección por Clase"
+
+msgid "CI class"
+msgstr "Clase de CI"
+
+msgid "Depth"
+msgstr "Profundidad"
+
+msgid "Option settings"
+msgstr "Opciones configuradas"
+
+msgid "Default value"
+msgstr "Valor por defecto"
+
+msgid "Show real dates instead of 'ago' format"
+msgstr "Ver fechas reales en lugar del formato 'desde'"
+
+msgid "Checked"
+msgstr "Marcado"
+
+msgid "Release field"
+msgstr "Campo 'Release field'"
+
+msgid "Roles (comma separated)"
+msgstr "Roles (separados por comas)"
