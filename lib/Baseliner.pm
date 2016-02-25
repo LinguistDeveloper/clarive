@@ -43,6 +43,7 @@ use Catalyst (@modules);
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 use Baseliner::I18N;
+use Class::Load qw(load_class);
 use Try::Tiny;
 
 my $t0 = [ gettimeofday ];
@@ -233,6 +234,16 @@ sub build_app {
 sub registry {
     my $c = shift;
     return 'Baseliner::Core::Registry';
+}
+
+sub build_helper {
+    my $self = shift;
+    my ($helper_name, %params) = @_;
+
+    my $helper_class = 'Baseliner::Helper::' . $helper_name;
+    load_class $helper_class;
+
+    return $helper_class->new(c => $self, %params);
 }
 
 # elegant shutdown

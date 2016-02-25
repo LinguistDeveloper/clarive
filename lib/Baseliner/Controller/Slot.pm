@@ -267,12 +267,13 @@ sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
 
 sub calendar_submit : Path('/job/calendar_submit') {
     my ( $self, $c ) = @_;
+
     my $p           = $c->req->params;
+
     my $id_cal      = $p->{ id_cal };
-    my $cierra      = 0;
     my $id          = $p->{ id };
     my $cmd         = $p->{ cmd };
-    my $ven_dia     = $p->{ ven_dia };
+    my $ven_dia     = $p->{ ven_dia } // '';
     my $ven_ini     = $p->{ ven_ini };
     my $ven_fin     = $p->{ ven_fin };
     my $ven_tipo    = $p->{ ven_tipo };
@@ -297,60 +298,35 @@ sub calendar_submit : Path('/job/calendar_submit') {
                 #delete row
                 if ( $id ) {
                     mdb->calendar_window->remove({ id => $id });
-                    $cierra = 1;
                 }
                 else {
                     _fail( "<H5>Error: id '$id' de ventana no encontrado.</H5>" );
                 }
             }
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
-                my $last_row = mdb->calendar_window->find_one({start_time=>"$ven_ini", day=>0+$ven_dia, id_cal=>"$id_cal"});
-                $id = $last_row->{id} if ($last_row && $last_row->{id});
                 my $active = ( $cmd eq "A" );
                 $new_id = ''.mdb->seq('calendar_window');
-                unless ( $id ) {    #new row
-                    mdb->calendar_window->insert({
-                        id         => $new_id,
-                        id_cal     => $id_cal,
-                        day        => $ven_dia,
-                        type       => $ven_tipo,
-                        active     => $active,
-                        start_time => $ven_ini,
-                        end_time   => $ven_fin,
-                        start_date => $self->parseDateTimeToDbix( $currentDate ),
-                        end_date   => $self->parseDateTimeToDbix( $currentDate )
-                    });  
-                }
-                else {    #existing
-                    my $row = mdb->calendar_window->find_one({ id => $id });
-                    mdb->calendar_window->remove({ id => $id });
-                    # we need to recreate the id so this gets precedence in db_to_slots()
-                    mdb->calendar_window->insert({
-                        id         => $new_id,
-                        id_cal     => $id_cal,
-                        day        => $ven_dia,
-                        type       => $ven_tipo,
-                        active     => $row->{active},
-                        start_time => $ven_ini,
-                        end_time   => $ven_fin,
-                        start_date => $row->{start_date},
-                        end_date   => $row->{end_date},
-                    });
-                }
+                mdb->calendar_window->insert({
+                    id         => $new_id,
+                    id_cal     => "$id_cal",
+                    day        => $ven_dia,
+                    type       => $ven_tipo,
+                    active     => $active,
+                    start_time => $ven_ini,
+                    end_time   => $ven_fin,
+                    start_date => $self->parseDateTimeToDbix( $currentDate ),
+                    end_date   => $self->parseDateTimeToDbix( $currentDate )
+                });  
                 $self->db_merge_slots( $id_cal ) if defined $id_cal;
-                $cierra = 1;
             }
             elsif ( $cmd eq "C1" || $cmd eq "C0" ) {
 
                 #Activar
                 mdb->calendar_window->update({ id => $id }, { '$set'=>{ active=>substr($cmd, 1) } });
-                $cierra = 1;
             }
             else {
                 _fail( "<h5>Error: Comando desconocido o incompleto.</h5>" );
             }
-
-            last unless ( $cierra );
         }
         $c->stash->{ json } = { success => \1, msg => _loc( "Calendar modified." ), cal_window => $id // $new_id };
     } catch {
