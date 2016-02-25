@@ -68,7 +68,12 @@ this.setPlaces(2);
 }
 function setInputDecimalNF(val)
 {
-this.inputDecimalValue = val;
+if (val === 'Comma'){
+this.decimalValue = this.COMMA;
+}
+else {
+this.decimalValue = this.PERIOD;
+}
 }
 function setNumberNF(num, inputDecimal)
 {
@@ -94,21 +99,20 @@ function setNegativeRedNF(isRed)
 {
 this.negativeRed = isRed;
 }
-function setSeparatorsNF(isC, separator, decimal)
+function setSeparatorsNF(isC, decimal)
 {
 this.hasSeparators = isC;
-if (separator == null) separator = this.COMMA;
-if (decimal == null) decimal = this.PERIOD;
-if (separator == decimal) {
-this.decimalValue = (decimal == this.PERIOD) ? this.COMMA : this.PERIOD;
-} else {
-this.decimalValue = decimal;
+if (this.decimalValue === this.COMMA){
+	this.separatorValue = this.PERIOD;
 }
-this.separatorValue = separator;
+else{
+	this.separatorValue = this.COMMA;
+}
+
 }
 function setCommasNF(isC)
 {
-this.setSeparators(isC, this.COMMA, this.PERIOD);
+this.setSeparators(isC, this.decimalValue);
 }
 function setCurrencyNF(isC)
 {
@@ -133,10 +137,11 @@ this.roundToPlaces = !(p == this.NO_ROUNDING);
 this.truncate = (tr != null && tr); 
 this.places = (p < 0) ? 0 : p; 
 }
-function addSeparatorsNF(nStr, inD, outD, sep)
+function addSeparatorsNF(nStr, outD, sep)
 {
 nStr += '';
-var dpos = nStr.indexOf(inD);
+var dpos = nStr.indexOf(outD);
+
 var nStrEnd = '';
 if (dpos != -1) {
 nStrEnd = outD + nStr.substring(dpos + 1, nStr.length);
@@ -156,12 +161,12 @@ var nStr;
 var splitString = new Array(2);   
 if (this.roundToPlaces) {
 nNum = this.getRounded(nNum);
-nStr = this.preserveZeros(Math.abs(nNum)); 
+nStr = this.preserveZeros(Math.abs(nNum));
 } else {
-nStr = this.expandExponential(Math.abs(nNum)); 
+nStr = this.expandExponential(Math.abs(nNum));
 }
 if (this.hasSeparators) {
-nStr = this.addSeparators(nStr, this.PERIOD, this.decimalValue, this.separatorValue);
+nStr = this.addSeparators(nStr, this.decimalValue, this.separatorValue);
 } else {
 nStr = nStr.replace(new RegExp('\\' + this.PERIOD), this.decimalValue); 
 }
@@ -312,9 +317,9 @@ function preserveZerosNF(val)
 var i;
 val = this.expandExponential(val);
 if (this.places <= 0) return val; 
-var decimalPos = val.indexOf('.');
+var decimalPos = val.indexOf(this.decimalValue);
 if (decimalPos == -1) {
-val += '.';
+val += this.decimalValue;
 for (i=0; i<this.places; i++) {
 val += '0';
 }
