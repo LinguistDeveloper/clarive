@@ -39,7 +39,7 @@ subtest 'slots: returns simple slots' => sub {
         time    => '0000',
         columns => [
             {
-                'date'     => undef,
+                'date'     => '',
                 'active'   => undef,
                 'duration' => '00:00 - 02:00',
                 'end'      => '02:00',
@@ -86,7 +86,7 @@ subtest 'slots: slots with several durations' => sub {
         time    => '0000',
         columns => [
             {
-                'date'     => undef,
+                'date'     => '',
                 'active'   => undef,
                 'duration' => '00:00 - 02:00',
                 'end'      => '02:00',
@@ -110,7 +110,7 @@ subtest 'slots: slots with several durations' => sub {
         time    => '0300',
         columns => [
             {
-                'date'     => undef,
+                'date'     => '',
                 'active'   => undef,
                 'duration' => '03:00 - 05:00',
                 'end'      => '05:00',
@@ -134,7 +134,7 @@ subtest 'slots: slots with several durations' => sub {
         time    => '1900',
         columns => [
             {
-                'date'     => undef,
+                'date'     => '',
                 'active'   => undef,
                 'duration' => '19:00 - 20:00',
                 'end'      => '20:00',
@@ -249,7 +249,7 @@ subtest 'slots: do not show specific date if it is out of range and generic is p
         time    => '0100',
         columns => [
             {
-                'date'     => undef,
+                'date'     => '',
                 'active'   => undef,
                 'duration' => '01:00 - 05:00',
                 'end'      => '05:00',
