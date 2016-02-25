@@ -273,6 +273,16 @@ register 'fieldlet.text' => {
     section_allowed => ['head','more','body']
 };
 
+register 'fieldlet.text_plain' => {
+    name        => _loc('Preformatted Text'),
+    html        => '/fields/templates/html/preformattedtext.html',
+    js          => '/fields/templates/js/textfield.js',
+    form        => '/fields/templates/config/preformattedtext.js',
+    icon        => '/static/images/icons/field.png',
+    type        => 'textarea',
+    section_allowed => ['head','more']
+};
+
 register 'fieldlet.number' => {
     name        => _loc('Numberfield'),
     html        => '/fields/templates/html/row_body.html',
@@ -313,6 +323,7 @@ register 'fieldlet.system.moniker' => {
     icon        => '/static/images/icons/lock_small.png',
     html        => '/fields/templates/html/row_body.html',
     origin      => 'system',
+    type        => 'textfield',
     bd_field    => 'moniker',
     id_field    => 'moniker'
 };
@@ -325,6 +336,7 @@ register 'fieldlet.system.title' => {
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/title.js',
     icon        => '/static/images/icons/lock_small.png',
+    type        => 'textfield',
     origin      => 'system',
     section     => 'head'
 };

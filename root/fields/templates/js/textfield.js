@@ -11,28 +11,36 @@ params:
 */
 
 (function(params){
+    var DEFAULT_TEXTPLAIN_MAX_LENGTH = 524288;
+    var DEFAULT_TEXTFIELD_MAX_LENGTH = 255;
+    var DEFAULT_TEXTPLAIN_HEIGHT = 400;
+    var DEFAULT_TEXTFIELD_HEIGHT = 30 ;
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
 
     var meta = params.topic_meta;
     var data = params.topic_data;
     var allowBlank = meta.allowBlank == 'false' || meta.allowBlank == '0' || meta.allowBlank == 0 ? false: true;
+
+    var height = meta.height ? meta.height : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_HEIGHT: DEFAULT_TEXTFIELD_HEIGHT );
+    var maxLength = meta.maxLength ? meta.maxLength : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_MAX_LENGTH : DEFAULT_TEXTFIELD_MAX_LENGTH );
+
     var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';    
     return [
         {
-            xtype:'textfield',
+            xtype: meta.type,
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
             value: data && data[ meta.id_field ]!=undefined  ? data[ meta.id_field ] : ( meta.default_value || '' ), 
             style: style,
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
-            height: meta.height || 30,
+            height: height,
             allowBlank: allowBlank,
             readOnly: Baseliner.eval_boolean(meta.readonly, true),
-            maxLength: meta.maxLength ? meta.maxLength : 255,
+            maxLength: maxLength,
             preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
