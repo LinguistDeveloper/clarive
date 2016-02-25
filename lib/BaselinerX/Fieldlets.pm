@@ -265,7 +265,7 @@ register 'fieldlet.separator' => {
 
 register 'fieldlet.text' => {
     name        => _loc('Textfield'),
-    html        => '/fields/templates/html/row_body.html',
+    html        => '/fields/templates/html/textplain.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/textfield.js',
     icon        => '/static/images/icons/field.png',
@@ -275,7 +275,7 @@ register 'fieldlet.text' => {
 
 register 'fieldlet.text_plain' => {
     name        => _loc('TextPlain'),
-    html        => '/fields/templates/html/row_body.html',
+    html        => '/fields/templates/html/textplain.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/textplain.js',
     icon        => '/static/images/icons/field.png',
