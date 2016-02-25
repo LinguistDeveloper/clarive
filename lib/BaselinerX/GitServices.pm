@@ -58,7 +58,7 @@ register 'service.git.link_revision_to_topic' => {
 };
 
 register 'service.git.create_tag' => {
-    name    => 'Create a tag in a GIT repository',
+    name    => 'Create a tag in a Git repository',
     icon    => '/static/images/icons/git.png',
     #icon    => '/static/images/icons/git-repo.gif',
     form    => '/forms/git_create_tag.js',
@@ -66,7 +66,7 @@ register 'service.git.create_tag' => {
 };
 
 register 'service.git.create_branch' => {
-    name    => 'Create a branch in a GIT repository',
+    name    => 'Create a branch in a Git repository',
     icon    => '/static/images/icons/git.png',
     form    => '/forms/git_create_branch.js',
     handler => \&create_branch,
