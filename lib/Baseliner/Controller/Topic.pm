@@ -14,6 +14,8 @@ use Text::Unaccent::PurePerl;
 use v5.10;
 use experimental 'smartmatch', 'autoderef', 'switch';
 
+with 'Baseliner::Role::ControllerValidator';
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'action.admin.topics' => { name=>'Admin topics' };
@@ -294,37 +296,71 @@ sub check_modified_on: Local {
 sub related : Local {
     my ($self, $c) = @_;
     my $username = $c->username;
-    my $p = $c->request->parameters;
+    return
+      unless my $p = $self->validate_params(
+        $c,
+        valuesqry           => { isa => 'Str', default => undef },
+        query               => { isa => 'Str', default => '' },
+        start               => { isa => 'PositiveInt', default => 0 },
+        limit               => { isa => 'PositiveInt', default => 20 },
+        categories          => { isa => 'Str', default => undef },
+        statuses            => { isa => 'Str', default => undef },
+        not_in_status       => { isa => 'Str', default => 'false' },
+        topic_child_data    => { isa => 'Str', default => 'true' },
+        mids                => { isa => 'Str', default => undef },
+        show_release        => { isa => 'PositiveInt' }
+      );
+
+    my $start = $p->{start};
+    my $limit = $p->{limit};
+
     my @topics = ();
     my $cnt = 0;
+    my %filter;
     my $where = {};
+
     if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
         my $qry = delete $p->{query};  # rgo: usually SuperBox will send "mid1 mid2 mid3 etc" with spaces
         $where->{mid} = ref $qry ne 'ARRAY' ? [ split /\s+/, $qry ] : $qry;
     }
     $where->{query} = $p->{query} if length $p->{query};
-
-    my %filter;
-
-
-    my $start = $p->{start} // 0;
-    my $limit = $p->{limit} // 20;
-
-    if ( $p->{mids} ){
-        $filter{mid} = $p->{mids};
+  
+    if ( $p->{categories} && $p->{categories} ne '' ){
+        my @categories = split(',', $p->{categories});
+        $filter{category_id} = \@categories;
     }
 
+    if ( $p->{statuses} && $p->{statuses} ne '' ){
+        my @statuses_filter = split(',', $p->{statuses});
+        if($p->{not_in_status} && $p->{not_in_status} eq 'true'){
+            map { $_ *= -1 } @statuses_filter;
+        }
+        $filter{category_status_id} =  \@statuses_filter;
+    }
+
+    $filter{mid} = $p->{mids} if length $p->{mids};
     $filter{category_type} = 'release' if ($p->{show_release});
 
-    if ($p->{filter} && $p->{filter} ne 'none'){
-        delete $filter{category_type}; 
+    if ( $p->{filter} && $p->{filter} ne 'none'){
+
+        delete $filter{category_type};
         my $filter_js = _decode_json($p->{filter});
-
-        $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
-        $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
-        $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
-        $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
-
+        if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0 ){
+            if ( $filter{category_id} ){
+                push $filter{category_id}, $filter_js->{categories};
+            } else {
+                $filter{category_id} = $filter_js->{categories};
+            }
+        };
+        if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0) {
+            if ( $filter{category_status_id} ){
+                push $filter{category_status_id}, $filter_js->{statuses};
+            } else {
+                $filter{category_status_id} = $filter_js->{statuses};
+            }
+        }
+        $filter{id_priority}  =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
+        $filter{labels}  =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
         delete $filter_js->{categories};
         delete $filter_js->{statuses};
         delete $filter_js->{priorities};
