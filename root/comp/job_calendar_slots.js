@@ -15,7 +15,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 <FORM name="infForm" action="" method="GET">
     <TABLE border=0 style="height: 300px">
         <TR>
-% foreach my $header (@{ $data->{headers} }) {
+% foreach my $header (@{ $table->{headers} }) {
             <TH width='100' align=center><% $header %></TH>
 % }
         </TR>
