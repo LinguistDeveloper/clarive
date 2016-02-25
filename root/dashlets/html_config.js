@@ -237,10 +237,10 @@
         }
     });
     
-    var html_code = new Baseliner.AceEditor({
+    var html_code = new Cla.AceEditor({
         title: _('HTML Code'), mode:'html', fieldLabel:_('HTML Code'), anchor:'100%', height: 400, name:'html_code', value: params.data.html_code
     });
-    var js_code = new Baseliner.AceEditor({
+    var js_code = new Cla.AceEditor({
         title: _('JS Code'), mode:'javascript', fieldLabel:_('JS Code'), anchor:'100%', height: 400, name:'js_code', value: params.data.js_code
     });
 

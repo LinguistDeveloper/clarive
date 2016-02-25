@@ -1582,7 +1582,7 @@
                                lineNumbers: true,
                                tabMode: "indent", smartIndent: true,
                                matchBrackets: true
-                            }, Baseliner.AceEditor )
+                            }, Cla.AceEditor )
                         );
                     });
                     win.show();

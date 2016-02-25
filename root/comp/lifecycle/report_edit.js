@@ -612,7 +612,7 @@
         items: [ tree_all, tree_selected ]
     });
     var seltab = new Ext.Panel({ layout:'border', items:[ form_value, selector ], title: _('Query') });
-    //var sql = new Baseliner.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
+    //var sql = new Cla.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
     var height_window = $(window).height();
     if (height_window > 800 ) { 
         height_window = 600;

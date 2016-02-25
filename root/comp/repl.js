@@ -14,12 +14,12 @@ To do:
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 
     // setup defaults
-    if( Baseliner.AceEditor == undefined ) Baseliner.AceEditor = { theme: 'lesser-dark', mode: { name:'perl' } };
+    if( Cla.AceEditor == undefined ) Cla.AceEditor = { theme: 'lesser-dark', mode: { name:'perl' } };
 
     // editor generator function
     var editor_gen = function(args) {
         if( args ) {
-            Baseliner.AceEditor = Ext.apply( Baseliner.AceEditor, args );
+            Cla.AceEditor = Ext.apply( Cla.AceEditor, args );
         }
         /*
         var ret = CodeMirror( function(elt) { 
@@ -68,7 +68,7 @@ To do:
                          CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
                     }
                }
-            }, Baseliner.AceEditor )
+            }, Cla.AceEditor )
         );
         var hlLine = ret.setLineClass(0, "activeline");
         // ret.setSize( '100%', fcode.getEl().getHeight() );
@@ -460,8 +460,8 @@ To do:
             editor.setValue( txt );
         }
     };
-    var default_lang = function(x) { return Baseliner.AceEditor.mode.name == x; };
-    var default_theme = function(x) { return Baseliner.AceEditor.theme == x; };
+    var default_lang = function(x) { return Cla.AceEditor.mode.name == x; };
+    var default_theme = function(x) { return Cla.AceEditor.theme == x; };
     var change_lang = function(x) {
         if( x.checked && editor ) { 
             var txt = editor.getValue();

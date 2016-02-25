@@ -135,7 +135,7 @@
     // webservice-soap form
     var wsdl = Ext.isIE 
         ? new Ext.form.TextArea({ height: 300, anchor:'100%', fieldLabel:_('WSDL'), name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' })
-        : new Baseliner.AceEditor({ fieldLabel:_('WSDL'), anchor:'100%', height: 300, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
+        : new Cla.AceEditor({ fieldLabel:_('WSDL'), anchor:'100%', height: 300, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
     var subtype = new Baseliner.ComboSingle({ fieldLabel: _('Web Service Type'), name:'subtype', value: params.rec.subtype, data: [
                 '-', 'soap' ]});
     var authtype = new Baseliner.ComboDouble({ fieldLabel: _('Authentication'), name:'authtype', value: params.rec.authtype||'required', 

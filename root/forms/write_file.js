@@ -5,7 +5,7 @@
     if( Ext.isIE ) {
         body = new Ext.form.TextArea({ fieldLabel:_('Contents'), anchor:'100%', height: 350, name:'body', value: data.body  });
     } else {
-        body = new Baseliner.AceEditor({
+        body = new Cla.AceEditor({
             fieldLabel:_('Contents'), anchor:'100%', height: 350, name:'body', value: data.body
         });
     }

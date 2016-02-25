@@ -348,7 +348,7 @@ Baseliner.Editor = Ext.extend( Baseliner.CLEditor, {});
 
 Baseliner.CodeEditor = Ext.isIE 
     ? Ext.extend(Baseliner.CodeMirror,{}) 
-    : Ext.extend( Baseliner.AceEditor, {});
+    : Ext.extend( Cla.AceEditor, {});
 
 Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
     layout:'card',
