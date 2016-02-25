@@ -509,13 +509,13 @@ a {
 
 
 /*resizing icons for a better definition*/
-
+/*
 .x-btn-icon {
     height: 16px;
     width: 16px;
     background-size:contain;
 }
-
+*/
 .x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
     padding-left: 20px;
     background-position: 0 3px;
@@ -565,10 +565,8 @@ a {
 
 }
 
-.x-btn-icon .x-btn-text{
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size:contain;
+.x-btn-icon .x-btn-text {
+   background-repeat: no-repeat;
     height: 16px;
     width: auto;
 }
@@ -595,6 +593,31 @@ a {
     width: 16px;
 }
 
+.x-toolbar-left-row .x-toolbar-right-row, .x-btn-text {
+   background-position: center;
+   background-size:contain;
+}
+
+span[class*='ui-ci_box-'] div>img {
+   height: 16px;
+   width: 16px;
+   margin-top: 0px;
+}
+
+div[class*='ui-ci_box-'].search-item img {
+   height: 16px;
+   width: 16px;
+   margin-top: 0px;
+}
+
+.table td > ul > li > h4 > img {
+   height: 16px;
+   width: 16px;
+}
+
+.x-combo-list-inner .search-item td > img {
+   height:16px; 
+   width: 16px;   
+}
 
 
->>>>>>> Adding new color set of icons
