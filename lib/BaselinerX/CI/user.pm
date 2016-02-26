@@ -21,7 +21,7 @@ has time_format_pref    => qw(is rw isa Str default format_from_local);
 has timezone_pref    => qw(is rw isa Str default server_timezone);
 has country            => qw(is rw isa Str default es);
 has currency        => qw(is rw isa Str default EUR);
-has decimal         => qw(is rw isa Str default Period);
+has decimal         => qw(is rw isa Str default Comma);
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };

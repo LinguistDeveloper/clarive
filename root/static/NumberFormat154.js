@@ -55,7 +55,7 @@ this.moveDecimalAsString = moveDecimalAsStringNF;
 this.moveDecimal = moveDecimalNF;
 this.addSeparators = addSeparatorsNF;
 if (inputDecimal == null) {
-this.setNumber(num, this.PERIOD);
+this.setNumber(num, this.COMMA);
 } else {
 this.setNumber(num, inputDecimal); 
 }
@@ -168,7 +168,7 @@ nStr = this.expandExponential(Math.abs(nNum));
 if (this.hasSeparators) {
 nStr = this.addSeparators(nStr, this.decimalValue, this.separatorValue);
 } else {
-nStr = nStr.replace(new RegExp('\\' + this.PERIOD), this.decimalValue); 
+nStr = nStr.replace(new RegExp('\\' + this.COMMA), this.decimalValue); 
 }
 var c0 = '';
 var n0 = '';
