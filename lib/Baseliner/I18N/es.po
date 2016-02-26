@@ -5557,7 +5557,70 @@ msgid "Save API Key"
 msgstr "Guardar API Key"
 
 msgid "Generate API Key"
-msgstr "Genenar API Key"
+msgstr "Generar API Key"
+
+msgid "Save Current API Key"
+msgstr "Guardar API Key Actual"
+
+msgid "Change Avatar"
+msgstr "Cambiar Avatar"
+
+msgid "Interface Language"
+msgstr "Idioma de Interfaz"
+
+msgid "Timezone"
+msgstr "Zona Horaria"
+
+msgid "Current Browser Timezone"
+msgstr "Zona Horaria de Navegador"
+
+msgid "Current Server Timezone"
+msgstr "Zona Horaria de Servidor"
+
+msgid "Date Format"
+msgstr "Formato de Fecha"
+
+msgid "Time Format"
+msgstr "Formato de Hora"
+
+msgid "Default Dashboard"
+msgstr "Dashboard por defecto"
+
+msgid "English"
+msgstr "Inglés"
+
+msgid "Spanish"
+msgstr "Español"
+
+msgid "Server Timezone (%1)"
+msgstr "Zona Horaria Servidor"
+
+msgid "My Browser Timezone (now is %1)"
+msgstr "Zona Horaria mi Navegador (ahora es %1)"
+
+msgid "Default Format for Current Language"
+msgstr "Formato por Defecto para Idioma Actual"
+
+msgid "{0} (now is {1})"
+msgstr "{0} (ahora es {1})"
+
+msgid "Saved ok"
+msgstr "Guardado OK"
+
+msgid "Save %1"
+msgstr "Guardado %1"
+
+msgid "General Preferences Saved"
+msgstr "Preferencias Generales Guardadas"
+
+msgid "To reflect language changes you need to reload the page. Do you want to do that now?"
+msgstr "Para reflejar los cambios de idioma es necesario recargar la página. ¿Desea hacerlo ahora?"
+
+msgid "Could not save general preferences: %1"
+msgstr "No se pueden guardar las preferencias generales"
+
+msgid "Cannot change avatar for user %1: user %2 not administrator"
+msgstr "No se puede cambiar el avatar para el usuario %1: usuario  %2 no es administrador"
 
 msgid "Parent Project"
 msgstr "Proyecto Padre"

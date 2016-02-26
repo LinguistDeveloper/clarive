@@ -45,7 +45,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
         var self = this;
         var prefs = { site: self.site, stash: self.stash, js_date_format: self.js_date_format };
         Baseliner.ci_call( 'user', 'prefs_save', { prefs: prefs }, function(res){
-            Baseliner.message(_('Prefereces'), _('Saved ok') );
+            Baseliner.message(_('Preferences'), _('Saved ok') );
         });
     }, 
     open_editor : function(opts) {
@@ -211,7 +211,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     ['server_timezone', _('Server Timezone (%1)', Prefs.server_timezone)], 
                     ['browser_timezone', _('My Browser Timezone (now is %1)', moment(Date().now).format('h:mma') )]
                 ].concat( Cla.timezone_list.map(function(tz){ 
-                    tz[1]=String.format("{0} (now is {1})", tz[0], moment(Date().now).tz(tz[0]).format('h:mma')); 
+                    tz[1]=String.format(_("{0} (now is {1})"), tz[0], moment(Date().now).tz(tz[0]).format('h:mma')); 
                     return tz;
                 }) )
             });
@@ -221,15 +221,15 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
              var change_dashboard_form = new Cla.FormPanel({
                  frame: false,
                  border: false,
-                 labelWidth: 100, 
+                 labelWidth: 150, 
                  timeout: 120,
                  items: [ 
                     language, 
                     timezone, 
                     { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
-                            fieldLabel:'Current Browser Timezone', html: _('<b>%1</b>',Cla.timezone_str()) },
+                            fieldLabel:_('Current Browser Timezone'), html: _('<b>%1</b>',Cla.timezone_str()) },
                     { xtype:'panel', layout:'form', border:false, bodyStyle:'margin-top: 5px',
-                            fieldLabel:'Current Server Timezone', html: _('<b>%1</b>', Prefs.server_timezone ) },
+                            fieldLabel:_('Current Server Timezone'), html: _('<b>%1</b>', Prefs.server_timezone ) },
                     date_format, 
                     time_format, 
                     dashboard 
@@ -295,7 +295,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             });
             var win = new Baseliner.Window({
                 title: username ? _('Preferences for %1', username) : _('Preferences'),
-                layout:'fit', width: 600, height: 400, 
+                layout:'fit', width: 650, height: 320, 
                 items: [ preftabs ]
             });
             win.show(); 
