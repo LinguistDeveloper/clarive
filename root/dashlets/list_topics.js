@@ -196,7 +196,7 @@ my $iid = Util->_md5;
                     dataShown = (parseFloat(totals[col.name].sum) / parseFloat(totals[col.name].count)).toFixed(totals[col.name].precision);
                   }
                   if(col.type_number && col.type_number === 'currency'){
-                    html = html + '<th style="white-space:nowrap;">' + new NumberFormat(dataShown).toFormatted();
+                    html = html + '<th style="white-space:nowrap;">' + new NumberFormat(dataShown,decimal_zone).toFormatted();
                   }else{
                     html = html + '<th style="white-space:nowrap;">'+ dataShown;
                   }

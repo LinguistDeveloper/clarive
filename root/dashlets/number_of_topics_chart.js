@@ -16,6 +16,7 @@
     var symbol = params.data.symbol || '';
     var number_type = params.data.number_type || 'number';
     var max_legend_length = params.data.max_legend_length || 0;
+    var decimal_zone;
 
     var x_axis_label;
     if ( number_type === 'currency' ){
@@ -25,6 +26,10 @@
     } else {
         x_axis_label = _('Topics');
     }
+
+    Cla.ajax_json('/user/user_data', {  }, function(res){
+        decimal_zone = res.data.decimal;
+            });
 
     Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by,
                   condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, 
@@ -88,7 +93,7 @@
                             text += d[i].value;
                          } else {
                             if ( number_type === 'currency' ){
-                                text += new NumberFormat(d[i].value ).toFormatted();
+                                text += new NumberFormat(d[i].value,decimal_zone).toFormatted();
                                 if (symbol !== ''){
                                   text += " " + symbol;
                                 }
@@ -115,7 +120,7 @@
                         if ( number_type === 'percentage' && result_type !== 'count' ){
                               adaptedValue += " %";
                         } else if ( number_type === 'currency' && result_type !== 'count' ){
-                            adaptedValue = new NumberFormat(value).toFormatted();
+                            adaptedValue = new NumberFormat(value,decimal_zone).toFormatted();
                             if ( symbol !== '' ){
                                 adaptedValue += " " + symbol;
                             }
@@ -131,7 +136,7 @@
                         if ( number_type === 'percentage' && result_type !== 'count' ){
                               adaptedValue += " %";
                         } else if ( number_type === 'currency' && result_type !== 'count' ){
-                            adaptedValue = new NumberFormat(value).toFormatted();
+                            adaptedValue = new NumberFormat(value,decimal_zone).toFormatted();
                             if ( symbol !== '' ){
                               adaptedValue += " " + symbol;
                             }
