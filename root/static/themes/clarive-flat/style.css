@@ -356,7 +356,7 @@ div.x-menu.x-menu-floating.x-layer {
 
 /* rgo: split line on border layout */
 .x-layout-split {
-    width: 10px;
+    width: 4px;
     background-color: #f5f5f5;
 }
 
