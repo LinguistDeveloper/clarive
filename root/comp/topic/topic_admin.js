@@ -1606,7 +1606,8 @@
         url:'save-form.php',
         frame:true,
         title: 'Simple Form with FieldSets',
-        bodyStyle:'padding:5px 5px 0',
+        bodyCssClass: 'topic-admin-panel',
+        bodyStyle: {'padding':'5px 5px 0' },
         width: 400,
 
         items: [
