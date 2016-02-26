@@ -649,7 +649,7 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
 });
 
 // if id_com is undefined, then its add, otherwise it's an edit
-Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
+Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_id) {
     var win_comment;    
     /* rgo: works good, but we leave the old HtmlEditor for now TODO put CLEditor instead, with less buttons maybe?
     var comment_field = new Baseliner.CLEditor({
@@ -681,13 +681,16 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
                 function(res) {
                     btn_submit.enable();
-                    if( ! res.failure ) { 
+                    if( ! res.failure ) {
                        Baseliner.message(_('Success'), res.msg );
                        win_comment.close();
-                       if( Ext.isFunction(cb)){
-                            cb( res.id_com );
-                       } else if(cb != null){
-                            var my_self = Ext.getCmp(cb);
+                       if( Ext.isFunction(cb_or_parent_id)){
+                           // it's a callback
+                            cb_or_parent_id( res.id_com );
+                       } else if(cb_or_parent_id != null){
+                           // it's a parent id
+                            var my_self = Ext.getCmp(cb_or_parent_id);
+                            if( !my_self ) return; 
                             $( my_self.detail.body.dom ).load( '/topic/view', 
                                 { topic_mid: my_self.topic_mid, ii: my_self.ii, html: 1, 
                                     categoryId: my_self.new_category_id, topic_child_data : true },
@@ -745,8 +748,19 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
         items: [ comment_field, code_field ]
     });
 
-    win_comment = new Ext.Window({
-        title: _('Add Comment'),
+    if( title === null || title === undefined ) {
+        if( !Ext.isFunction(cb_or_parent_id) ) {
+            var my_topic = Ext.getCmp(cb_or_parent_id);
+            title = my_topic.title;
+        }
+    } else {
+        title = title.length == 0
+                   ? '#'+topic_mid
+                   : title;
+    }
+
+    win_comment = new Cla.Window({
+        title: _('Add Comment: %1', title),
         layout: 'fit',
         height: 450,
         width: 700,
@@ -764,6 +778,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 Baseliner.error( _('Error'), res.msg );
             } else {
                 comment_field.setValue( res.text );
+                btn_submit.setText( _('Edit Comment') );
                 win_comment.show();
             }
         });
@@ -843,7 +858,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon-text',
             hidden: !self.permComment,
             handler: function() {
-                Baseliner.Topic.comment_edit( params.topic_mid, null, function(id_com){ self.detail_reload() });
+                Baseliner.Topic.comment_edit( params.topic_mid, self.title, null, function(id_com){ self.detail_reload() });
             }
         });
     
@@ -1364,6 +1379,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         // using jquery cos the self.detail.load() method callback is not consistent in IE8
         if (self.topic_mid && self.swEdit==1){ self.swEdit = 0};
+        if( !self.detail.body.dom ) return;  // is the topic there still?
         $( self.detail.body.dom ).load( '/topic/view', 
             { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
             function( responseText, textStatus, req ){
@@ -2269,7 +2285,7 @@ Baseliner.comments_for_topic = function(args) {
 
 [% if ( can_edit ) { %]
 
-                    | <a href="javascript:Baseliner.Topic.comment_edit( '[%= topic_mid %]', '[%= id %]', '[%= parent %]')">[%= _("edit") %]</a>
+                    | <a href="javascript:Baseliner.Topic.comment_edit( '[%= topic_mid %]', null, '[%= id %]', '[%= parent %]')">[%= _("edit") %]</a>
 [% } %]
 [% if ( can_delete ) { %]
                     | <a href="javascript:Baseliner.Topic.comment_delete('[%= topic_mid %]', '[%= id %]', '[%= id_div_com %]')">[%= _("delete") %]</a>
