@@ -1486,6 +1486,7 @@ Cla.topic_grid = function(params){
           tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
         }
         grid.getTopToolbar().add(tbar);
+        grid.doLayout();
       });
 
       return true;
