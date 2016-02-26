@@ -5557,7 +5557,7 @@ msgid "Save API Key"
 msgstr "Guardar API Key"
 
 msgid "Generate API Key"
-msgstr "Genenar API Key"
+msgstr "Generar API Key"
 
 msgid "Save Current API Key"
 msgstr "Guardar API Key Actual"
@@ -5620,7 +5620,7 @@ msgid "Could not save general preferences: %1"
 msgstr "No se pueden guardar las preferencias generales"
 
 msgid "Cannot change avatar for user %1: user %2 not administrator"
-msgstr "No se puede cambiar el vatar para el usuario %1: usuario  %2 no es administrador"
+msgstr "No se puede cambiar el avatar para el usuario %1: usuario  %2 no es administrador"
 
 msgid "Parent Project"
 msgstr "Proyecto Padre"
