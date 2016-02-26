@@ -278,7 +278,7 @@ subtest 'related: returns 2 (self and related) related topics' => sub {
 };
 
 subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
@@ -302,7 +302,7 @@ subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
 };
 
 subtest 'related: valuesqry returns data for SuperBox in array mode' => sub {
-    TestSetup->_setup_clear();
+    _setup();
     TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
@@ -1451,9 +1451,10 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event',            'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',                     'BaselinerX::Fieldlets',
+        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     mdb->master->drop;
