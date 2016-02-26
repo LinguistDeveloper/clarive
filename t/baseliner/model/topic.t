@@ -1058,6 +1058,7 @@ subtest 'get_users: returns users filtering by role' => sub {
             {
                 "attributes" => {
                     "data" => {
+                        id_field       => 'Status',
                         "bd_field"     => "id_category_status",
                         "fieldletType" => "fieldlet.system.status_new",
                         "id_field"     => "status_new",
@@ -1145,6 +1146,195 @@ subtest 'get_users: adds username field to the data' => sub {
     my $users = $model->get_users( $topic_mid, 'asignada', undef, $data );
 
     is $data->{"asignada._user_name"}, $user->username;
+};
+
+subtest 'set_topic: saves topic into parent' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.sprint.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_sprint_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'sprint',
+                        parent_field  => 'changesets'
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Sprint',
+                }
+            }
+        ],
+    );
+    my $id_sprint_category =
+      TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status->mid );
+
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $sprint_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_sprint_category,
+        title       => 'Sprint Parent',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child',
+        sprint     => $sprint_mid,
+        status      => $status
+    );
+
+    my $model = _build_model();
+    my $sprint = $model->get_data( undef, $sprint_mid, with_meta=>1 );
+    is scalar @{ $sprint->{changesets} }, 1; 
+    is $sprint->{changesets}->[0]->{mid}, $changeset_mid;
+};
+
+subtest 'set_topic: saves topic into release' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topicsfield.changeset.release.new.write',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $id_release_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'changesets',
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Changesets',
+                }
+            }
+        ],
+    );
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            }
+        ],
+    );
+    my $id_release_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release Parent',
+        status      => $status
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child',
+        release     => $release_mid,
+        status      => $status
+    );
+
+    my $model = _build_model();
+    my $release = $model->get_data( undef, $release_mid, with_meta=>1);
+    is scalar @{ $release->{changesets} }, 1; 
+    is $release->{changesets}->[0]->{mid}, $changeset_mid;
 };
 
 done_testing();

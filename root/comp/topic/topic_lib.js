@@ -243,7 +243,7 @@ Baseliner.store.Topics = function(c) {
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 
-Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
     minChars: 2,
     //forceSelection: true,
     typeAhead: false,
@@ -334,9 +334,6 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
         Baseliner.TopicBox.superclass.initComponent.call(this);
     },
     // }, 
-    get_save_data : function(){
-        return this.hidden_value;
-    },
     listeners:{ 
         additem: function(obj,v){
             if(obj.getValue()){
