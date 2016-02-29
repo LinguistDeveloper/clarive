@@ -1,3 +1,11 @@
+---------------------------------------------- 6.4.4 February 2016 ----------------------------------------------
+- New icons
+- More documentation
+- Job execution percentage
+- TextPlain fieldlet
+- Number of Topic Dashlet improvements
+- Filtering file uploads by extension
+
 ---------------------------------------------- 6.4.3 February 2016 ----------------------------------------------
 - Topic lifecycle & timeline graph
 - Sorting options for dashlet list topics

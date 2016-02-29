@@ -1,3 +1,61 @@
+---------------------------------------------- 6.4.4 ----------------------------------------------
+[ENHANCEMENTS]
+
+- #31989 Combobox fieldlets able to be included in Header
+- #32010 Restore action to administer any ci class
+- #32100 Translate messages: drop_topic
+- #32109 Add flexibility to burndown Dashlets type
+- #32209 Test Utils
+- #32218 Changeset in fieldlets
+- #32235 Add filter by file extension to fieldlet type upload_files
+- #32236 Test links of docs
+- #32258 Make features testable
+- #32280 Number of Topic Dashlet can sort by label
+- #32288 Job execution percentage
+- #32300 Implement Setup profiles
+- #32316 Update icons
+- #32317 Update help docs
+- #32337 Control in ci_box show class with show_class parameter
+- #32430 New Tag Mode: Release+Project+BL
+- #32496 Create TextPlain fieldlet
+- #32600 Translate User Preferences
+
+[FIXES]
+
+- #31670 Fix searching with regular expressions
+- #31682 Topic's activity is not correctly shown
+- #32009 Blank Images en drag & drop
+- #32152 Fix error when no roles exist in ci user list boxes
+- #32165 Can't start cla in a home that is not clarive/
+- #32198 Dashboards of list topic are not filtering by project
+- #32210 Decode URL encoding in GitSmart
+- #32253 Links in English Clarive Help are not working
+- #32255 Error when opening topic time line
+- #32275 Fix hidden single/multiple fields
+- #32296 Fix sem grid visual stripping
+- #32303 Empty repository and sha in new git revisions
+- #32325 Reduce the width of the column ID of the field listTopics
+- #32332 Fix show topic related in edite mode when multiple entries
+- #32335 New job menú shown in every status in changesets
+- #32336 In a field of type list_users filter by username
+- #32350 CI_GRID fieldlet is not sending Advanced JSON filter
+- #32404 Fix Ace Editor Errors
+- #32405 Fix pack-dist when called not from git repo
+- #32408 CI user as column in list_topics, should show name instead of mid
+- #32410 Fix undef values in list_release.js and env_planner.js
+- #32411 In chat_topcis dashlets add new field to include type of numeric values
+- #32412 Do not remove ExtJS examples and doc when building distribution
+- #32417 Pill fieldlet not editable without permissions
+- #32427 Roles - Creating a new role, action's list is not charged
+- #32432 Role name should be unique
+- #32448 Fix multiple undefined warnings
+- #32475 Fix searching CIs
+- #32478 Ace editor fails without setOption method
+- #32482 Calendar not working properly
+- #32491 Fix Environment icon size in CI/Topic window
+- #32493 Set default icon in user projects parent node
+- #32608 Error generating new API Key
+
 ---------------------------------------------- 6.4.3 ----------------------------------------------
 [ENHANCEMENTS]
 
