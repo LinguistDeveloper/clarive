@@ -863,9 +863,9 @@ sub related {
 
     for my $edge ( @edges ){
         $opts{edge} = $edge;
-        push @cis, $self_or_class->related_mids( %opts, mid => $mid );
+        push @cis, grep { defined $_->{mid} } $self_or_class->related_mids( %opts, mid => $mid );
     }
-    my %edges = map { $_->{mid} => $_->{_edge} } @cis;
+    my %edges = map { $_->{mid} => ($_->{_edge} // '') } @cis;
 
 
     my @all_cis = ( @cis, map { _array($_) } values %$tree_relations );  

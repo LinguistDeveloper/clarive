@@ -1471,11 +1471,11 @@ sub topics_burndown_ng : Local {
         );
     }
 
-    @reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
+    #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
 
     unshift @topics,   'Topics';
     unshift @dates,    'x';
-    unshift @reg_line, 'Trend';
+    #unshift @reg_line, 'Trend';
 
     $c->stash->{json} = {
         success => \1,

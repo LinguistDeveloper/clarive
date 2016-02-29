@@ -65,7 +65,7 @@ if( ! $meta->{hidden} ) {
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 1%" class="fieldlet-html">
                 <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
-%    } elsif( $$h{type} eq 'topics' ) {
+%    } elsif( $$h{type} && $$h{type} eq 'topics' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px;" class="fieldlet-html">
                 <& /partial/topic_name_multi.html, topics => $val, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
 %    } elsif( $$h{key} eq 'title' ) {

@@ -1547,7 +1547,6 @@ sub upload : Local {
     my $name_filter = $p->{extension};
     my $match = 0;
     my $status;
-    my $match;
     my $message ;
     my ($extension) = $filename =~ /\.(\S+)$/;
     $extension //= '';
