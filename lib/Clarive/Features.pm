@@ -1,5 +1,6 @@
 package Clarive::Features {
     use Mouse;
+    use Path::Class ();
     has app => qw(is ro isa Any weak_ref 1 required 1);
     sub list_and_home { 
         my $self = shift; 
@@ -22,7 +23,13 @@ package Clarive::Feature {
     use Mouse;
     has path => qw(is ro isa Str required 1);
     sub id {  [ (Path::Class::dir(shift->path)->basename =~ /^(.*)\.(.*?)$/ ) ]->[0] }
-    sub path_to { Path::Class::dir(shift->path, @_) }
+    sub path_to { 
+        my $self = shift;
+
+        my $file = Path::Class::file( $self->path, @_ );
+
+        return -d $file ? Path::Class::dir("$file") : $file;
+    }
 }
 
 1;

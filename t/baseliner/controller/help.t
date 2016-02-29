@@ -44,7 +44,7 @@ subtest 'docs_tree: gets user language from user preferences' => sub {
 
     $controller->docs_tree($c);
 
-    is $c->stash->{json}->[0]->{text}, 'Ayuda Test';
+    is $c->stash->{json}->[0]->{text}, 'Ayuda Test Feature';
 };
 
 subtest 'get_doc: doc retrieval from file' => sub {
