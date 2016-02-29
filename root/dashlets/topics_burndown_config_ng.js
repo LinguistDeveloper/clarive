@@ -165,15 +165,7 @@
             layout: 'form',
             columnWidth: 0.5,
             bodyStyle: 'background:transparent;',
-            items: [{
-                    xtype: 'textfield',
-                    anchor: '100%',
-                    allowBlank: false,
-                    fieldLabel: _('Group by field'),
-                    name: 'date_field',
-                    value: data.date_field
-                },
-                group_by_period,
+            items: [
                 new Baseliner.ComboDouble({
                     fieldLabel: _('Chart will be shown as ...'),
                     name: 'type',
@@ -187,11 +179,32 @@
                     ]
                 })
             ]
-        }, {
+        }]
+    }, {
+        xtype: 'label',
+        text: _('X-Axis'),
+        style: {
+            // 'margin': '10px',
+            'font-size': '12px',
+            'font-weight': 'bold'
+        }
+    }, {
+        xtype: 'panel',
+        hideBorders: true,
+        layout: 'column',
+        bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+        items: [{
             layout: 'form',
             columnWidth: 0.5,
             bodyStyle: 'background:transparent;',
-            items: [
+            items: [{
+                    xtype: 'textfield',
+                    anchor: '100%',
+                    allowBlank: false,
+                    fieldLabel: _('Topic date field'),
+                    name: 'date_field',
+                    value: data.date_field
+                },
                 selector,
                 select_by_duration_range,
                 select_by_duration_offset,
