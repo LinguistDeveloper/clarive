@@ -743,7 +743,6 @@ sub update {
                         project         => [map { $_->{mid} } $topic->projects]
                     };
                     
-                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                     my @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $p->{username}, mid => $topic_mid  );
                     my $wf = mdb->category->find_one( { id => $id_category } )->{workflow};
                     $wf = grep {
@@ -751,6 +750,7 @@ sub update {
                     } _array $wf;
                     $return_options->{reload_tab} = 1 if $wf;
 
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
@@ -760,6 +760,7 @@ sub update {
 
                 });
                 $return_options->{reload} = 0;
+                return $return;
             } 
             => sub { # catch
                 if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
