@@ -51,9 +51,22 @@ subtest 'parse_vars: parses recursively' => sub {
     my $parser = _build_parser();
 
     is $parser->parse_vars( 'before${foo}after', { foo => '${bar}', bar => '|' } ), 'before|after';
+};
+
+subtest 'parse_vars: throws when direct recursion' => sub {
+    my $parser = _build_parser();
 
     capture {
         like exception { $parser->parse_vars( '${foo}', { foo => '${foo}' } ) },
+          qr/Deep recursion in parse_vars for variable `foo`, path \${foo}/;
+    };
+};
+
+subtest 'parse_vars: throws when indirect recursion' => sub {
+    my $parser = _build_parser();
+
+    capture {
+        like exception { $parser->parse_vars( '${foo}', { foo => '${bar}', bar => '${foo}' } ) },
           qr/Deep recursion in parse_vars for variable `foo`, path \${foo}/;
     };
 };
@@ -102,6 +115,18 @@ subtest 'parse_vars: mixing recursive and non-recursive' => sub {
     my $parser = _build_parser();
 
     is $parser->parse_vars( '${foo} ${{bar}}', { foo => '${baz}', bar => '${baz}', baz => '123' } ), '123 ${baz}';
+};
+
+subtest 'parse_vars: resolves 2 vars in one string' => sub {
+    my $parser = _build_parser( cleanup => 1 );
+
+    is $parser->parse_vars( '${foo} ${foo}', { foo => 'bar' } ), 'bar bar';
+};
+
+subtest 'parse_vars: resolves 2 empty vars in one string' => sub {
+    my $parser = _build_parser( cleanup => 1 );
+
+    is $parser->parse_vars( '${foo} ${foo}', {} ), ' ';
 };
 
 done_testing;

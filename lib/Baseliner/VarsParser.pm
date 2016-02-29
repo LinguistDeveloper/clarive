@@ -159,10 +159,11 @@ sub _parse_var {
     my $stack = $self->{stack};
 
     # Control recursion and create a path for a clearer error message
-    _throw _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k,
-      '${' . join( '}/${', _array( $stack->{path} ) ) . '}'
-      if exists $stack->{unresolved}->{$k};
-    $stack->{unresolved}->{$k} = 1;
+    if ( grep { $_ eq $k } @{ $stack->{path} || [] } ) {
+        _throw _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k,
+          '${' . join( '}/${', _array( $stack->{path} ) ) . '}';
+    }
+
     $stack->{path} or local $stack->{path} = [];
     push @{ $stack->{path} }, $k;
 
@@ -170,7 +171,6 @@ sub _parse_var {
     if ( exists $vars->{$k} ) {
         my $new_k = $vars->{$k};
         $str = $recursive ? $self->_parse_vars( $new_k, $vars ) : $new_k;
-        delete $stack->{unresolved}->{$k};
         return $str;
     }
 
@@ -182,7 +182,6 @@ sub _parse_var {
             if ( eval( 'exists $vars->{' . $k2 . '}' ) ) {
                 my $new_k = eval( '$vars->{' . $k2 . '}' );
                 $str = $recursive ? $self->_parse_vars( $new_k, $vars ) : $new_k;
-                delete $stack->{unresolved}->{$k};
                 return $str;
             }
         }
