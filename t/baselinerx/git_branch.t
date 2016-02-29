@@ -73,6 +73,19 @@ subtest 'node_data: returns correct data' => sub {
       };
 };
 
+subtest 'node_data: return the short name when are more than 30 characters' => sub {
+    my $branch = _build_branch(
+        head      => '123',
+        name      => 'master#1234567898765432112345678998765',
+        project   => 'Project',
+        repo_name => 'repo',
+        repo_dir  => '/repo.git',
+    );
+
+    is $branch->node_data->{click}->{title},"history: master#1234567898765432112....";
+     
+};
+
 sub _build_branch {
     my (%params) = @_;
 

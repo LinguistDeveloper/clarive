@@ -75,11 +75,20 @@ sub node_menu {
 
 sub _click {
     my $self = shift;
+    my $title;
+    if (length($self->name) > 29)
+    {
+       $title=substr($self->name,0,26);
+       $title= $title . "....";
+    }
+    else{
+        $title = $self->name;   
+    }
     +{
             url      => '/comp/view_commits_history.js',
             type     => 'comp',
             repo_dir => $self->repo_dir,
-            title    => 'history: '.$self->name,
+            title    => 'history: '.$title,
             repo_mid => $self->repo_mid,
             branch   => $self->name,
             controller => 'gittree',
