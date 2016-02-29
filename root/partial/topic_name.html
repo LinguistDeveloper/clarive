@@ -21,6 +21,7 @@
 % my $topic_id = $topic->{mid} . _nowstamp;
 <span id="topic<% $topic_id %>" class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{category}{color} %>')" 
     style="cursor:pointer;background: <% $topic->{category}{color} %>"><% $topic->{name} %></span>
+% $topic->{progress} ||= 0;
 % my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
 % if( $show_title ) {
             &nbsp;&nbsp;<span style="font-weight: bold; font-size: <% $title_font_size %>"><% $title_short->($topic->{title}) %></span>&nbsp;&nbsp;

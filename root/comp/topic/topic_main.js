@@ -20,7 +20,7 @@
     var category_name = '<% $category_name %>';
     var category_color = '<% $category_color %>';
     var category_id = '<% $category_id %>';
-    var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
+    var swEdit = <% $swEdit && $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
     var permGraph = <% $permissionGraph ? 'true' : 'false' %>;
