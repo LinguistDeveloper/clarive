@@ -621,3 +621,10 @@ div[class*='ui-ci_box-'].search-item img {
 }
 
 
+div#search-result-block img {
+   height:16px;
+   width:16px;
+
+}
+
+
