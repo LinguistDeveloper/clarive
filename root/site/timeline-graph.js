@@ -16,11 +16,6 @@
         }
     }
     
-    var color_green = "#008000";
-    var color_red = "#ff0000";
-    var color_blue = "#0066ff";
-    var win = 0;
-
     var diagram;
     var overview;
     var event_details_text = false;
@@ -28,7 +23,7 @@
 
     var getLuxColor = function(hex,lum) {
 
-        if ( !hex || hex == null || hex == 'null') return;
+        if ( !hex || hex === null || hex == 'null') return;
         // validate hex string
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
@@ -46,31 +41,31 @@
     return rgb;
     };
 
-  //Create the checkitems to the option menu.
-  var event_details = new Ext.menu.CheckItem({
-    text: _('Event details'), checked: false, checkHandler: function(){
-      if(!checked_event_details){
-        event_details_text=this.checked; 
-        try {
-          init_overview(pn_diagram.diagram, pn_overview.overview); 
-        }
-        catch(err) {
-          container.destroy();
-          Baseliner.ajaxEval('/comp/topic/topic_lib.js',{self: pn_diagram.self}, function(){ pn_diagram.self.show_timeline();});
+    //Create the checkitems to the option menu.
+    var event_details = new Ext.menu.CheckItem({
+      text: _('Event details'), checked: false, checkHandler: function(){
+        if(!checked_event_details){
+          event_details_text=this.checked; 
+          try {
+            init_overview(pn_diagram.diagram, pn_overview.overview); 
+          }
+          catch(err) {
+            container.destroy();
+            Baseliner.ajaxEval('/comp/topic/topic_lib.js',{self: pn_diagram.self}, function(){ pn_diagram.self.show_timeline();});
+          }
         }
       }
-    }
-    });
-  
-  //Create menus
-  iid = Ext.id();
+      });
+    
+    //Create menus
+    iid = Ext.id();
 
-  // Option menu to General Button
-  var options_menu = new Ext.Button({
-      text: _('Options'), icon: IC('timeline'), menu:{
-          items: [ event_details ]
-      }
-  });
+    // Option menu to General Button
+    var options_menu = new Ext.Button({
+        text: _('Options'), icon: IC('timeline'), menu:{
+            items: [ event_details ]
+        }
+    });
 
     //Zoom +
     var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
@@ -114,7 +109,6 @@
 
       var go_api = go.GraphObject.make;
 
-
       diagram = go_api(go.Diagram, pn_diagram.body.id, // must be the ID or reference to an HTML DIV
                  {
                      initialContentAlignment: go.Spot.Center,
@@ -142,45 +136,23 @@
       pn_overview.overview = overview;
 
       init_overview(diagram,overview);
-
     };
 
     init_overview = function(diagram,overview){   
 
         this.diagram = diagram;
         this.overview = overview;
-
-        var i = 0;
-        j = 0;
+        var win = 0;
+        var temp_nodes = [];
+        var object_node = [];   
+        var object_link = [];
+        var source;
+        var timer_nodes = [];
+        var start = [];
+        var duration = [];
+        var text = [];
+        var sum_duration = 0;
         var go_api = go.GraphObject.make;
-
-
-        function MessageLink() {
-            go.Link.call(this);
-            this.time = 0;
-        }
-            
-        go.Diagram.inherit(MessageLink, go.Link);
-        
-        function ensureLifelineHeights(e) {
-            var arr = diagram.model.nodeDataArray;
-            var max = -1;
-            for (i = 0; i < arr.length; i++) {
-                var act = arr[i];
-                if (act.isGroup) continue;
-                max = Math.max(max, act.start + act.duration);
-            }
-            if (max > 0) {
-                for (i = 0; i < arr.length; i++) {
-                    var gr = arr[i];
-                    if (!gr.isGroup) continue;
-                    if (max > gr.duration) {
-                        diagram.model.setDataProperty(gr, "duration", max);
-                    }
-                }
-            }
-        }
-        
         // some parameters
         var LinePrefix = 20;
         // vertical starting point in document for all Messages and Activations
@@ -198,7 +170,32 @@
         var ActivityEnd2 = 1;
         //var MessegeSpacing2 = 1;
 
+        function MessageLink() {
+          go.Link.call(this);
+          this.time = 0;
+        }
+            
+        go.Diagram.inherit(MessageLink, go.Link);
         
+        function ensureLifelineHeights(e) {
+          var arr = diagram.model.nodeDataArray;
+          var max = -1;
+          for (i = 0; i < arr.length; i++) {
+              var act = arr[i];
+              if (act.isGroup) continue;
+              max = Math.max(max, act.start + act.duration);
+          }
+          if (max > 0) {
+              for (i = 0; i < arr.length; i++) {
+                  var gr = arr[i];
+                  if (!gr.isGroup) continue;
+                  if (max > gr.duration) {
+                      diagram.model.setDataProperty(gr, "duration", max);
+                  }
+              }
+          }
+        }        
+    
         function computeLifelineHeight(duration) {
           return LinePrefix + duration * MessageSpacing + LineSuffix;
         }
@@ -234,9 +231,9 @@
           return (y - LinePrefix) / MessageSpacing;
         }
 
-        function showMessege(e, obj) { 
+        function showMessage(e, obj) { 
 
-          if(win != 0){
+          if(win !== 0){
             win.destroy();
           }
 
@@ -250,19 +247,19 @@
             }else{
               text = _('Data type is not defined');
             }
-            if(obj.Eh.data_username != undefined && obj.Eh.data_when != undefined){
-          win = new Ext.Window({
-          title: obj.Eh.group,
-          layout: 'fit',
-          autoScroll: true,
-          width: 400,
-          height: 200,
-          modal: false,
-          closeAction: 'hide',
-          items: [new Baseliner.MonoTextArea({ value:  '\n'+'\n'+_('Data type')+': ' + obj.Eh.data_type +'\n' +_('Username')+': ' + obj.Eh.data_username +'\n' +_('Date')+': ' + obj.Eh.data_when +'\n'  +_('Details')+': '+'\n' +text+'\n' })]
-        });
-        win.show();
-      }
+            if(obj.Eh.data_username !== undefined && obj.Eh.data_when !== undefined){
+                win = new Ext.Window({
+                title: obj.Eh.group,
+                layout: 'fit',
+                autoScroll: true,
+                width: 400,
+                height: 200,
+                modal: false,
+                closeAction: 'hide',
+                items: [new Baseliner.MonoTextArea({ value:  '\n'+'\n'+_('Data type')+': ' + obj.Eh.data_type +'\n' +_('Username')+': ' + obj.Eh.data_username +'\n' +_('Date')+': ' + obj.Eh.data_when +'\n'  +_('Details')+': '+'\n' +text+'\n' })]
+              });
+              win.show();
+            }
         } 
 
         /** @override */
@@ -403,10 +400,10 @@
                           new go.Binding("stroke","black")
                       )
                     ),
-        {
-          cursor: "pointer",
-          click: showMessege
-        }
+                    {
+                      cursor: "pointer",
+                      click: showMessage
+                    }
             );
         
         // define the Message Link template.
@@ -451,496 +448,451 @@
         // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
         Baseliner.ajaxEval( '/topic/timeline_list_status_changes', {mid: mid}, function(res) {
 
-            i=0;
-            var temp_status = [];
-            while(i< res.data.length){
-              if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
-                temp_status.push({ "old_status" : res.data[i].old_status, "status"  : res.data[i].status, "when" : res.data[i].when});
-              }
-              i++;
-            }
-
             //add status to nodes
-            i=0;
-            while(i < res.data.length){
-              if(res.data[i].data_type == "topic_modify" || res.data[i].data_type == "event_post" || res.data[i].data_type == "event_file"){
-                j = 0;
-                while ( j < temp_status.length){
-                  if( new Date(res.data[i].when) <= new Date(temp_status[j].when)){
-                    res.data[i].status = temp_status[j].status;
-                    res.data[i].old_status = temp_status[j].old_status;
-                    j = temp_status.length;
-                  }
-                  j++;
-                }
-              }
-              i++;
-            }
-
-            //delete the duplicate steps in the same statuses
-            /*for(i=0;i<res.data.length-1;i++){
-              var datas = res.data[i];
-              var datas2 = res.data[i+1];
-              if(datas.old_status == datas2.old_status && datas.status == datas2.status && datas.username == datas2.username){
-                date = new Date(res.data[i].when);
-                date2 = new Date(res.data[i+1].when);
-                if (date.getFullYear() == date2.getFullYear() && date.getMonth() == date2.getMonth() && date.getDate() == date2.getDate() && date.getHours() == date2.getHours()){
-                  res.data.splice(res.data.indexOf(res.data[i]),1);
-                }
-              }
-            }*/
-            
-            var object_node = [];          
+            status_into_nodes(res);
 
             //Create group of nodes for status
-            i=0;
-            var locx=240;
-            var local =0;
-            while (i < res.data.length){
-              if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
-                if (object_node.length==0){
-                  object_node.push({ "group": "title", "key" : res.data[i].old_status, "text"  : res.data[i].old_status, "isGroup":true, "loc": "0 0", "duration":"change"});
-                  object_node.push({ "group": "title", "key" : res.data[i].status, "text"  : res.data[i].status, "isGroup":true, "loc": "240 0", "duration":"change"});
-                }else{
-                  j=0;
-                  var equal = 1;
-                  while(j < object_node.length){
-
-                    if(object_node[j].key == res.data[i].status){
-                      j= object_node.length;
-                      equal = 0;
-                    }
-                   j++;
-                  }
-                  if(equal!=0){
-                    locx=locx+240;
-                    object_node.push({ "group": "title", "key" : res.data[i].status, "text"  : res.data[i].status, "isGroup":true, "loc": locx + " 0", "duration":"change"});
-                  }
-                }
-              }
-              i++;
-            }
+            group_for_status(object_node,res);
 
             //create nodes timeline for user and status
-            i=0;
-            j=0;
-            var start = [];
-            var duration = [];
-            var text = [];
-            var sum_duration = 0;
-            var before_index = 0;
-
-            while (i < res.data.length){
-              
-              if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
-
-                if(j==0){
-                  start[j]=1;
-                  duration[j]=1;
-                  text[j]= "start";
-                  sum_duration = sum_duration + duration[j];
-                  object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "fill": "white", "stroke": "black"});
-                  before_index = i;
-                  j++;
-                }else{
-                  start[j] = start[j-1] + duration[j-1];
-                  date = new Date(res.data[i].when);
-                  date2 = new Date(res.data[before_index].when);
-                  before_index = i;
-
-                  // CALCULATE THE VALUE OF DURATION TO NODES.
-                  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                  // YEAR         DURATION 16.6 -        
-                  // MONTH        DURATION 15.4 - 16.6     
-                  // DAYS         DURATION 9.2 - 15.4      
-                  // HOURS        DURATION 2 - 9.2 
-
-                  var sum_date = date.getTime() - date2.getTime();
-                  date_compare = date.getFullYear() - date2.getFullYear();
-                  var leap_calculate = date_compare % 4; 
-                  var number_text = 0;
-                  var leap_year = 31622400000;
-                  var year = 31536000000;
-                  var leap_month = 2505600000;
-                  var february_month = 2419200000;
-                  var thirty_month = 2592000000;
-                  var month = 2678400000;
-                  var day = 86400000;
-                  var hours = 3600000; 
-                  var min = 60000;
-                  var hour = 0;
-                  var minutes = 0;
-
-                  //leap-year
-                  if (leap_calculate == 0 && sum_date >= leap_year){
-
-                    number_text = sum_date / leap_year;
-                    number_text = Math.round(number_text);
-                    if(number_text == 0){ number_text = 1;}
-
-                    duration[j]=number_text+20.6;
-                    text[j] = number_text+" "+_('Year');
-                  }else{
-                    //year
-                    if(sum_date >= year){
-
-                      number_text = sum_date / year;
-                      number_text = Math.round(number_text);
-                      if(number_text == 0){ number_text = 1;}
-
-                      duration[j]=number_text+20.6;
-                      text[j] = number_text+" "+_('Year');
-
-                    }else{
-                      //Month with 31 days
-                      date_compare = (date.getMonth()+1) - (date2.getMonth()+1);
-                      if((date_compare == 1 || date_compare == 3 || date_compare == 5 || date_compare == 7 || date_compare == 8 || date_compare == 10 || date_compare == 12) && sum_date >= month){
-                        
-                        number_text = sum_date / month;
-                        number_text = Math.round(number_text);
-                        if(number_text == 0){ number_text = 1;}  
-
-                        duration[j]=(number_text*0.1)+18.4;
-                        number_text = new Date(sum_date);  
-                        hour = (number_text.getHours()-1);      
-                        if (hour < 10){ hour = "0"+(number_text.getHours()-1);} 
-                        minutes = number_text.getMinutes();
-                        if (minutes < 10){ minutes = "0"+number_text.getMinutes();}   
-                        text[j] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
-
-                      }else {
-                        //Month with 30 days
-                        if((date_compare == 4 || date_compare == 6 || date_compare == 9 || date_compare == 11) && sum_date >= thirty_month){
-
-                          number_text = sum_date / thirty_month;
-                          number_text = Math.round(number_text);
-                          if(number_text == 0){ 
-                            number_text = 1;
-                          }                                                
-                          duration[j]=(number_text*0.1)+18.4;
-                          number_text = new Date(sum_date);  
-                          hour = (number_text.getHours()-1);      
-                          if (hour < 10){ 
-                            hour = "0"+(number_text.getHours()-1);
-                          } 
-                          minutes = number_text.getMinutes();
-                          if (minutes < 10){ 
-                            minutes = "0"+number_text.getMinutes();
-                          }   
-                          text[j] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
-
-                        }else{
-                          //Leap-Month
-                          if(leap_calculate == 0 && date_compare == 2 && sum_date >= leap_month ){
-
-                            number_text = sum_date / leap_month;
-                            number_text = Math.round(number_text);
-                            if(number_text == 0){ number_text = 1;}      
-
-                            duration[j]=(number_text*0.1)+18.4;
-                            number_text = new Date(sum_date);  
-                            hour = (number_text.getHours()-1);      
-                            if (hour < 10){ 
-                              hour = "0"+(number_text.getHours()-1);
-                            } 
-                            minutes = number_text.getMinutes();
-                            if (minutes < 10){ 
-                              minutes = "0"+number_text.getMinutes();
-                            }   
-                            text[j] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
-
-                          }else{
-                            //February Month
-                            if(date_compare == 2 && sum_date >= february_month){
-
-                              number_text = sum_date / february_month;
-                              number_text = Math.round(number_text);
-                              if(number_text == 0){ number_text = 1;}
-
-                              duration[j]=(number_text*0.1)+18.4;
-                              number_text = new Date(sum_date);  
-                              hour = (number_text.getHours()-1);      
-                              if (hour < 10){ 
-                                hour = "0"+(number_text.getHours()-1);
-                              } 
-                              minutes = number_text.getMinutes();
-                              if (minutes < 10){ 
-                                minutes = "0"+number_text.getMinutes();
-                              }   
-                              text[j] = number_text.getMonth()+" "+_('Month')+" "+  (number_text.getDate()-1) +" "+_('Days')+" " + hour +":"+ minutes +" H ";
-                            }else{
-                              //Days
-                              if(sum_date >= day){
-
-                                number_text = sum_date / day;
-                                number_text = Math.round(number_text);
-                                if(number_text == 0){ 
-                                  number_text = 1;
-                                }
-
-                                duration[j]=(number_text*0.2)+12.2;
-                                number_text = new Date(sum_date);  
-                                hour = (number_text.getHours()-1);      
-                                if (hour < 10){ 
-                                  hour = "0"+(number_text.getHours()-1);
-                                } 
-                                minutes = number_text.getMinutes();
-                                if (minutes < 10){ 
-                                  minutes = "0"+number_text.getMinutes();
-                                }   
-                                text[j] = (number_text.getDate()-1) +" "+_('Days')+" " + hour+":"+minutes+" H ";
-
-                              }else{
-                                //Hours
-                                if(sum_date >= hours){
-
-                                  number_text = sum_date / hours;
-                                  number_text = Math.round(number_text);
-                                  if(number_text == 0){ number_text = 1;}
-
-                                  duration[j]= (number_text*0.3)+4;
-                                  number_text = new Date(sum_date);  
-                                  hour = (number_text.getHours()-1);      
-                                  if (hour < 10){ 
-                                    hour = "0"+(number_text.getHours()-1);
-                                  } 
-                                  minutes = number_text.getMinutes();
-                                  if (minutes < 10){ 
-                                    minutes = "0" +number_text.getMinutes();
-                                  }     
-                                  text[j] = hour+":"+minutes+" H ";
-
-                                //Minutes
-                                }else{
-
-                                  number_text = sum_date / min;
-                                  number_text = Math.round(number_text);
-                                  if(number_text == 0){ number_text = 1;}
-                                  duration[j] = 3;
-                                  number_text = new Date(sum_date);    
-                                  minutes = number_text.getMinutes();
-                                  if (minutes < 10){ 
-                                    minutes = "0"+number_text.getMinutes();
-                                  }
-                                  var seconds = number_text.getSeconds();      
-                                  if (seconds < 10){ 
-                                    seconds = "0"+number_text.getSeconds();
-                                  }                
-                                  text[j] = minutes+":"+ seconds +" Min ";
-
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                  sum_duration = sum_duration + duration[j];
-                  object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "text": text, "fill": "white", "stroke": "black"});
-                  j++;
-                }
-              }
-                i++;
-            }
+            sum_duration = create_nodes_timeline(object_node, res, start, duration, text, sum_duration);
 
             //Modify the duration in the nodes.
             duration.push(1);
             duration.splice(duration.indexOf(duration[0]),1);
             text.push("");
             text.splice(text.indexOf(text[0]),1);
-            var i = 0;
-            var j = 0;
-            var temp_nodes = [];
-            var count = 0;
-            var change_stroke = "black";
-            while (i < object_node.length){
-        if(object_node[i].duration=="change"){
-        if(event_details_text != true){
-          object_node[i].duration = sum_duration;
-        }
-        }else{
-        if(j==0){
-          start[j]= 1;
-          object_node[i].duration = duration[j];
-          object_node[i].text = text[j];
-          object_node[i].start = start[j];
-        }else{
-          start[j]= start[j-1]+duration[j-1];
-          object_node[i].duration = duration[j];
-          object_node[i].text = text[j];             
-          object_node[i].start = start[j];           
-        }
-        j++;
-        }  
-              i++;
-            }
+            modify_duration(object_node, start, duration, text, sum_duration);
 
             //This is the new part with the elements like comments, files updates and topics changes.
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            if(event_details_text == true){
-              //Create a intermidial nodes to activity in status.
-              i = 0;
-              j = 0;
-              //sum_duration = 1;
-              var timer_nodes = [];
-              var count_nodes = 0;
-              var count_nodes_2 = 0;
-              var last_node = object_node[object_node.length-1];
-              var count_start = 0;
-              while ( i < res.data.length ){
-                if(res.data[i].data_type == "change_status"){
-                  var k;
-                  var start_node;
-                  var duration_node;
-                  for( k = 0; k < object_node.length; k++){
-                    if (res.data[i].status == object_node[k].group && res.data[i].when == object_node[k].when && object_node[k].fill == "white"){
-                      start_node = object_node[k-1].start;
-                      duration_node = object_node[k-1].duration;
-                    }   
-                  }
-
-                  while ( j < res.data.length && res.data[i].when >= res.data[j].when ){
-                      var aux_count_nodes;
-                          if(res.data[j].data_type == "topic_modify"){
-                            change_stroke = color_green;
-                              if(duration_node < 4){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/600000;
-                              }else if(duration_node < 12){
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/3600000;
-                              }else if(duration_node < 18){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/86400000;
-                              }else if(duration_node < 21){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/2678400000;//86400000
-                              }else{
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/31536000000;//86400000
-                              }
-                            object_node.push({ "group" : res.data[i].old_status, "start":start_node+count_nodes+aux_count_nodes, "duration":0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_text": res.data[j].text, "data_field": res.data[j].field, "data_old_value":res.data[j].old_value, "data_new_value":res.data[j].new_value});
-                            count_nodes =count_nodes + aux_count_nodes+0.3;
-                          }else if(res.data[j].data_type == "event_post"){
-                              change_stroke = color_red;
-                                if(duration_node < 4){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/600000;
-                              }else if(duration_node < 12){
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/3600000;
-                              }else if(duration_node < 18){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/86400000;
-                              }else if(duration_node < 21){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/2678400000;
-                              }else{
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/31536000000;
-                              }
-                              object_node.push({ "group" : res.data[i].old_status, "start":start_node+count_nodes+aux_count_nodes, "duration":0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_post": res.data[j].post, "data_text": res.data[j].text});
-                              count_nodes =count_nodes + aux_count_nodes+0.3;
-                          }else if(res.data[j].data_type == "event_file"){
-                              change_stroke = color_blue;   
-                                if(duration_node < 4){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/600000;
-                              }else if(duration_node < 12){
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/3600000;
-                              }else if(duration_node < 18){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/86400000;
-                              }else if(duration_node < 21){
-                                aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/2678400000;
-                              }else{
-                      aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/31536000000;
-                              }   
-                              object_node.push({ "group" : res.data[i].old_status, "start":start_node+count_nodes+aux_count_nodes, "duration":0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_filename": res.data[j].filename, "data_text": res.data[j].text});                 
-                              count_nodes =count_nodes + aux_count_nodes+0.3;
-                          }else{
-                              change_stroke = "black";       
-                              //count_nodes++;                 
-                          }
-
-                    j++;
-                  }
-
-                  var z;
-                  for( z = 0; z < object_node.length; z++){
-                    if (res.data[i].status == object_node[z].group && res.data[i].when == object_node[z].when && object_node[z].fill == "white"){
-                      if(count_nodes > object_node[z].duration){
-                        object_node[z-1].duration = count_nodes;
-                        object_node[z].start = object_node[z-1].start+object_node[z-1].duration;
-                        object_node[z-1].text = "";
-                        sum_duration = sum_duration + count_nodes;
-                        //timer_nodes[count_start] = object_node[z-1].when;
-                        start[count_start] = object_node[z-1].start;
-                        count_start++;
-                      }else{
-                        object_node[z].start = object_node[z-1].start+object_node[z-1].duration;
-                        object_node[z-1].text = "";
-                        sum_duration = sum_duration + count_nodes;
-                        //timer_nodes[count_start] = object_node[z-1].when;
-                        start[count_start] = object_node[z-1].start;
-                        count_start++;
-                      }                   
-                    }   
-                  }
-                  count_nodes = 0;
-                }else if (res.data[i].status == "" && res.data[i].old_status == ""){
-                  if(res.data[i].data_type == "topic_modify"){
-                        change_stroke = color_green;
-                        object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_text": res.data[i].text, "data_field": res.data[i].field, "data_old_value":res.data[i].old_value, "data_new_value":res.data[i].new_value});
-                      }else if(res.data[i].data_type == "event_post"){
-                          change_stroke = color_red;
-                          object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_post": res.data[i].post, "data_text": res.data[i].text});
-                      }else if(res.data[i].data_type == "event_file"){
-                          change_stroke = color_blue;   
-                          object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_filename": res.data[i].filename, "data_text": res.data[i].text});                 
-                      }else{
-                          change_stroke = "black";                        
-                      }
-                  count_nodes_2++;
-                }
-                i++;
-              }
-
-              //this part modify the duration of the last principal node.
-              var r;
-              for( r = object_node.length-1; r >= 0; r--){
-                if (object_node[r].key == last_node.key){
-                  //if(count_nodes_2 > object_node[r].duration){
-                    object_node[r].duration = count_nodes_2;
-                    sum_duration = sum_duration + count_nodes_2;
-                    start[start.length-1] = object_node[r].start;
-                  //}
-                }   
-              }
-
-              // duration
-              var w;
-              for( w = 0; w < object_node.length; w++){
-                if(object_node[w].duration=="change"){
-                  object_node[w].duration = sum_duration;
-                }
-              }
+            if(event_details_text === true){
+              sum_duration = create_intermidial_nodes_activity(object_node, res, sum_duration, start);
             }
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //create links
-            i=0;
-            j=0;
-            var object_link = [];
-            var source;
-            while (i < res.data.length){
-                //source = "/user/avatar/"+res.data[i].username+"/image.png";
-                source = "/identicon/"+res.data[i].username+".png";
+            j = 0;
+            for (i = 0; i < res.data.length; i++){
+              source = "/identicon/"+res.data[i].username+".png";
               if (res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
                 object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": _('Username') + " : "+res.data[i].username+ "\n" + _('Date') + ": "+Cla.user_date(res.data[i].when), "time":start[j], selected_text: ""+"\n"+ _('Username') + ": "+res.data[i].username+"\n"+ _('from') + ": "+res.data[i].old_status+" "+ _('to') + ": "+res.data[i].status+"\n"+ _('Date') + ": "+Cla.user_date(res.data[i].when)+"\n"+ _('Name') + ": "+"\n"  });
                 j++;
               }
-              i++;
             }
         diagram.model = new go.GraphLinksModel(object_node,object_link);
     });            
     };   
+
+    function status_into_nodes(res) { 
+      var temp_status = [];
+      var i;
+      var j;
+      for (i = 0; i < res.data.length; i++){
+        if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+          temp_status.push({ "old_status" : res.data[i].old_status, "status"  : res.data[i].status, "when" : res.data[i].when});
+        }
+      }      
+      for (i = 0; i < res.data.length; i++){
+        if(res.data[i].data_type == "topic_modify" || res.data[i].data_type == "event_post" || res.data[i].data_type == "event_file"){
+          j = 0;
+          while ( j < temp_status.length){
+            if( new Date(res.data[i].when) <= new Date(temp_status[j].when)){
+              res.data[i].status = temp_status[j].status;
+              res.data[i].old_status = temp_status[j].old_status;
+              j = temp_status.length;
+            }
+            j++;
+          }
+        }
+      }
+    }
+
+    function group_for_status(object_node, res){
+      var locx = 240;
+      var equal;
+      for(i = 0; i < res.data.length; i++){
+        if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+          if (object_node.length === 0){
+            object_node.push({ "group": "title", "key" : res.data[i].old_status, "text"  : res.data[i].old_status, "isGroup":true, "loc": "0 0", "duration":"change"});
+            object_node.push({ "group": "title", "key" : res.data[i].status, "text"  : res.data[i].status, "isGroup":true, "loc": "240 0", "duration":"change"});
+          }else{
+            j=0;
+            equal = 1;
+            while(j < object_node.length){
+              if(object_node[j].key == res.data[i].status){
+                j= object_node.length;
+                equal = 0;
+              }
+             j++;
+            }
+            if(equal !== 0){
+              locx=locx+240;
+              object_node.push({ "group": "title", "key" : res.data[i].status, "text"  : res.data[i].status, "isGroup":true, "loc": locx + " 0", "duration":"change"});
+            }
+          }
+        }
+      }
+    }
+
+    function create_nodes_timeline(object_node, res, start, duration, text, sum_duration){
+      
+      var LEAP_YEAR = 31622400000;
+      var YEAR = 31536000000;
+      var LEAP_MONTH = 2505600000;
+      var FEBRUARY_MONTH = 2419200000;
+      var THIRTY_MONTH = 2592000000;
+      var MONTH = 2678400000;
+      var DAY = 86400000;
+      var HOURS = 3600000; 
+      var MIN = 60000;
+      var j = 0;
+      var i;
+      var hour;
+      var minutes;
+      var seconds;        
+      var before_index = 0;
+      var date;
+      var date2;
+      var sum_date;
+      var leap_calculate; 
+      var number_text;
+      var date_compare;
+
+      for(i = 0; i < res.data.length; i++){      
+
+        if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+          if(j === 0){
+
+            start[j] = 1;
+            duration[j] = 1;
+            text[j] = "start";
+            sum_duration = sum_duration + duration[j];
+            object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "fill": "white", "stroke": "black"});
+            before_index = i;
+            j++;
+
+          }else{
+
+            start[j] = start[j-1] + duration[j-1];
+            date = new Date(res.data[i].when);
+            date2 = new Date(res.data[before_index].when);
+            before_index = i;
+
+            // CALCULATE THE VALUE OF DURATION TO NODES.
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // YEAR         DURATION 20.6 -        
+            // MONTH        DURATION 18.4 - 20.6     
+            // DAYS         DURATION 12.2 - 18.4      
+            // HOURS        DURATION 2 - 12.2 
+            sum_date = date.getTime() - date2.getTime();
+            date_compare = date.getFullYear() - date2.getFullYear();
+            leap_calculate = date_compare % 4; 
+            number_text = 0;
+            hour = 0;
+            minutes = 0;
+
+            //leap-year
+            if (leap_calculate === 0 && sum_date >= LEAP_YEAR){
+
+              number_text = calculate_number_text(sum_date, LEAP_YEAR);
+              duration[j] = number_text + 20.6;
+              text[j] = number_text + " " + _('Year');
+
+            }else{
+              //year
+              if(sum_date >= YEAR){
+
+                number_text = calculate_number_text(sum_date, YEAR);
+                duration[j] = number_text + 20.6;
+                text[j] = number_text + " " + _('Year');
+
+              }else{
+                //Month with 31 days
+                date_compare = (date.getMonth() + 1) - (date2.getMonth() + 1);
+                if((date_compare == 1 || date_compare == 3 || date_compare == 5 || date_compare == 7 || date_compare == 8 || date_compare == 10 || date_compare == 12) && sum_date >= MONTH){
+                  
+                  number_text = calculate_number_text(sum_date, MONTH);
+                  duration[j] = (number_text * 0.1) + 18.4;
+
+                  number_text = new Date(sum_date);  
+                  hour = calculate_hour(number_text);
+                  minutes = calculate_minutes(number_text); 
+                  text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate() - 1) +" " + _('Days') + " " + hour +":"+ minutes +" H ";
+
+                }else {
+                  //Month with 30 days
+                  if((date_compare == 4 || date_compare == 6 || date_compare == 9 || date_compare == 11) && sum_date >= THIRTY_MONTH){
+
+                    number_text = calculate_number_text(sum_date, THIRTY_MONTH); 
+                    duration[j] = (number_text * 0.1) + 18.4;
+
+                    number_text = new Date(sum_date);  
+                    hour = calculate_hour(number_text);
+                    minutes = calculate_minutes(number_text);
+                    text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
+
+                  }else{
+                    //Leap-Month
+                    if(leap_calculate === 0 && date_compare == 2 && sum_date >= LEAP_MONTH ){
+
+                      number_text = calculate_number_text(sum_date, LEAP_MONTH);  
+                      duration[j]=(number_text*0.1)+18.4;
+                      number_text = new Date(sum_date);     
+                      hour = calculate_hour(number_text);
+                      minutes = calculate_minutes(number_text);  
+                      text[j] = number_text.getMonth() + " " + _('Month') + " " + (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
+
+                    }else{
+                      //February Month
+                      if(date_compare == 2 && sum_date >= FEBRUARY_MONTH){
+
+                        number_text = calculate_number_text(sum_date, FEBRUARY_MONTH);
+                        duration[j] = (number_text * 0.1) + 18.4;
+                        number_text = new Date(sum_date);  
+                        hour = calculate_hour(number_text);
+                        minutes = calculate_minutes(number_text);
+                        text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
+                      }else{
+                        //Days
+                        if(sum_date >= DAY){
+                          
+                          number_text = calculate_number_text(sum_date, DAY);
+                          duration[j] = (number_text * 0.2) + 12.2;
+                          number_text = new Date(sum_date);  
+                          hour = calculate_hour(number_text);
+                          minutes = calculate_minutes(number_text);
+                          text[j] = (number_text.getDate() - 1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
+
+                        }else{
+                          //Hours
+                          if(sum_date >= HOURS){
+
+                            number_text = calculate_number_text(sum_date, HOURS);
+                            duration[j]= (number_text*0.3)+4;
+                            number_text = new Date(sum_date);  
+                            hour = calculate_hour(number_text);
+                            minutes = calculate_minutes(number_text);  
+                            text[j] = hour + ":" + minutes + " H ";
+
+                          //Minutes
+                          }else{
+
+                            number_text = calculate_number_text(sum_date, MIN);
+                            duration[j] = 3;
+                            number_text = new Date(sum_date);    
+                            minutes = calculate_minutes(number_text);
+                            seconds = calculate_seconds(number_text);         
+                            text[j] = minutes + ":" + seconds + " Min ";
+
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            sum_duration = sum_duration + duration[j];
+            object_node.push({ "group" : res.data[i].status, "start":start[j], "duration":duration[j], "key": -(i+res.data.length), "when": res.data[i].when, "text": text, "fill": "white", "stroke": "black"});
+            j++;
+          }
+        }
+      }
+      return sum_duration;
+    }
+
+    function modify_duration(object_node, start, duration, text, sum_duration){
+      
+      var j = 0;
+      var i;            
+      
+      for(i = 0; i < object_node.length; i++){
+        if(object_node[i].duration == "change"){
+          if(event_details_text !== true){
+            object_node[i].duration = sum_duration;
+          }
+        }else{
+          if(j === 0){
+            start[j]= 1;
+            object_node[i].duration = duration[j];
+            object_node[i].text = text[j];
+            object_node[i].start = start[j];
+          }else{
+            start[j]= start[j-1]+duration[j-1];
+            object_node[i].duration = duration[j];
+            object_node[i].text = text[j];             
+            object_node[i].start = start[j];           
+          }
+          j++;
+        }  
+      }
+    }
+
+    function calculate_number_text(sum_date, date){
+      var number_text = 0;
+      number_text = sum_date / date;
+      number_text = Math.round(number_text);
+      if(number_text === 0){ 
+        number_text = 1;
+      }
+      return number_text;
+    }
+
+    function calculate_hour (number_text){
+      
+      var hour;
+      hour = (number_text.getHours()-1);      
+      if (hour < 10){ 
+        hour = "0" + (number_text.getHours() - 1);
+      } 
+      return hour;
+
+    }
+    
+    function calculate_minutes (number_text){
+      
+      var minutes;
+      minutes = number_text.getMinutes();
+      if (minutes < 10){ 
+        minutes = "0" + number_text.getMinutes();
+      } 
+      return minutes;
+
+    }
+
+    function calculate_seconds (number_text){
+      
+      var seconds;
+      seconds = number_text.getSeconds();      
+      if (seconds < 10){ 
+        seconds = "0" + number_text.getSeconds();
+      }    
+      return seconds;
+
+    }
+
+    function calculate_duration_node(res, duration_node, aux_count_nodes){
+      
+      var CALCULATE_MIN = 600000;
+      var CALCULATE_HOUR = 3600000;
+      var CALCULATE_DAY = 86400000;
+      var CALCULATE_MONTH = 2678400000;
+      var CALCULATE_YEAR = 31536000000;
+
+      if(duration_node < 4){
+        aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/CALCULATE_MIN;
+      }else if(duration_node < 12){
+        aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/CALCULATE_HOUR;
+      }else if(duration_node < 18){
+        aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/CALCULATE_DAY;
+      }else if(duration_node < 21){
+        aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/CALCULATE_MONTH;//86400000
+      }else{
+        aux_count_nodes = (new Date(res.data[j].when) - new Date(res.data[j-1].when))/CALCULATE_YEAR;//86400000
+      }
+      return aux_count_nodes;
+    }
+
+    function create_intermidial_nodes_activity(object_node, res, sum_duration, start){
+      
+      var j = 0;
+      var change_stroke = "black";
+      var color_green = "#008000";
+      var color_red = "#ff0000";
+      var color_blue = "#0066ff";
+      var count_nodes = 0;
+      var count_nodes_2 = 0;
+      var last_node = object_node[object_node.length-1];
+      var count_start = 0;
+      var aux_count_nodes;
+      var start_node;
+      var duration_node;
+
+      for(i = 0; i < res.data.length; i++){
+        if(res.data[i].data_type == "change_status"){
+          for(var k = 0; k < object_node.length; k++){
+            if (res.data[i].status == object_node[k].group && res.data[i].when == object_node[k].when && object_node[k].fill == "white"){
+              start_node = object_node[k-1].start;
+              duration_node = object_node[k-1].duration;
+            }   
+          }
+          while ( j < res.data.length && res.data[i].when >= res.data[j].when ){
+            if(res.data[j].data_type == "topic_modify"){
+              change_stroke = color_green;
+              aux_count_nodes = calculate_duration_node(res, duration_node,aux_count_nodes);
+              object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_text": res.data[j].text, "data_field": res.data[j].field, "data_old_value":res.data[j].old_value, "data_new_value":res.data[j].new_value});
+              count_nodes = count_nodes + aux_count_nodes + 0.3;
+            }else if(res.data[j].data_type == "event_post"){
+                change_stroke = color_red;
+                aux_count_nodes = calculate_duration_node(res, duration_node,aux_count_nodes);
+                object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_post": res.data[j].post, "data_text": res.data[j].text});
+                count_nodes = count_nodes + aux_count_nodes + 0.3;
+            }else if(res.data[j].data_type == "event_file"){
+                change_stroke = color_blue;   
+                aux_count_nodes = calculate_duration_node(res, duration_node,aux_count_nodes);   
+                object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_filename": res.data[j].filename, "data_text": res.data[j].text});                 
+                count_nodes = count_nodes + aux_count_nodes + 0.3;
+            }else{
+                change_stroke = "black";                    
+            }
+            j++;
+          }
+          for(var z = 0; z < object_node.length; z++){
+            if (res.data[i].status == object_node[z].group && res.data[i].when == object_node[z].when && object_node[z].fill == "white"){
+              if(count_nodes > object_node[z].duration){
+                object_node[z-1].duration = count_nodes;
+                object_node[z].start = object_node[z-1].start+object_node[z-1].duration;
+                object_node[z-1].text = "";
+                sum_duration = sum_duration + count_nodes;
+                //timer_nodes[count_start] = object_node[z-1].when;
+                start[count_start] = object_node[z-1].start;
+                count_start++;
+              }else{
+                object_node[z].start = object_node[z-1].start+object_node[z-1].duration;
+                object_node[z-1].text = "";
+                sum_duration = sum_duration + count_nodes;
+                //timer_nodes[count_start] = object_node[z-1].when;
+                start[count_start] = object_node[z-1].start;
+                count_start++;
+              }                   
+            }   
+          }
+          count_nodes = 0;
+        }else if (res.data[i].status === "" && res.data[i].old_status === ""){
+          if(res.data[i].data_type == "topic_modify"){
+                change_stroke = color_green;
+                object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_text": res.data[i].text, "data_field": res.data[i].field, "data_old_value":res.data[i].old_value, "data_new_value":res.data[i].new_value});
+              }else if(res.data[i].data_type == "event_post"){
+                  change_stroke = color_red;
+                  object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_post": res.data[i].post, "data_text": res.data[i].text});
+              }else if(res.data[i].data_type == "event_file"){
+                  change_stroke = color_blue;   
+                  object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_filename": res.data[i].filename, "data_text": res.data[i].text});                 
+              }else{
+                  change_stroke = "black";                        
+              }
+          count_nodes_2++;
+        }
+      }
+      //this part modify the duration of the last principal node.
+      for(var r = object_node.length-1; r >= 0; r--){
+        if (object_node[r].key == last_node.key){
+            object_node[r].duration = count_nodes_2;
+            sum_duration = sum_duration + count_nodes_2;
+            start[start.length-1] = object_node[r].start;
+        }   
+      }
+      // duration                  
+      for(var w = 0; w < object_node.length; w++){
+        if(object_node[w].duration=="change"){
+          object_node[w].duration = sum_duration;
+        }
+      }
+      return sum_duration;
+    }
+
     
     var container = new Ext.Panel({
         width: 800,
