@@ -13,8 +13,7 @@ sub docs_dirs {
 
     $user_lang //= 'en';
 
-    my @feature_dirs = grep { -d } map { _dir( $_->path, 'docs/' . $user_lang ) } _array( Clarive->features->list );
-    return Clarive->app->path_to( 'docs/' . $user_lang ), @feature_dirs;
+    return Clarive->app->paths_to( 'docs/' . $user_lang );
 }
 
 sub build_doc_tree {

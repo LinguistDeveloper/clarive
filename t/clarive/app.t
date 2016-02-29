@@ -79,4 +79,30 @@ subtest 'path_to: looks through features too' => sub {
     like $file, qr{app-base/features/testfeature/docs/en/test_feature.markdown};
 };
 
+subtest 'paths_to: returns all available paths' => sub {
+    my $app = Clarive::App->new(
+        config => "$root/../data/acmetest.yml",
+        base   => "$root/../data/app-base",
+        home   => "$root/../data/app-base/app-home"
+    );
+
+    my @paths = $app->paths_to('docs/en');
+
+    like $paths[0], qr{app-base/features/testfeature/docs/en};
+    like $paths[1], qr{app-home/docs/en};
+};
+
+subtest 'paths_to: returns all available existings files' => sub {
+    my $app = Clarive::App->new(
+        config => "$root/../data/acmetest.yml",
+        base   => "$root/../data/app-base",
+        home   => "$root/../data/app-base/app-home"
+    );
+
+    my @paths = $app->paths_to('docs/en/test_feature.markdown');
+
+    is scalar @paths, 1;
+    like $paths[0], qr{app-base/features/testfeature/docs/en};
+};
+
 done_testing;

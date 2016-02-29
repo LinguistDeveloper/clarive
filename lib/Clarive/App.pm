@@ -399,6 +399,33 @@ sub path_to {
     return -d "$file" ? Path::Class::dir("$file") : $file;
 }
 
+sub paths_to {
+    my $self = shift;
+    my (@args) = @_;
+
+    require Path::Class;
+
+    my @paths;
+
+    foreach my $feature ( $self->features->list ) {
+        my $path_to = $feature->path_to(@args);
+        if (-e $path_to) {
+            push @paths, $path_to;
+        }
+    }
+
+    my $app_file = Path::Class::file( $self->home, @args );
+    push @paths, $app_file if -e $app_file;
+
+    foreach my $path (@paths) {
+        if (-d "$path") {
+            $path = Path::Class::dir("$path");
+        }
+    }
+
+    return @paths;
+}
+
 sub features {
     my $self = shift;
     require Clarive::Features;

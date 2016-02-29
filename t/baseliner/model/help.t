@@ -16,7 +16,7 @@ BEGIN {
     TestEnv->setup( base => "$root/../../data/app-base", home => "$root/../../data/app-base/app-home" );
 }
 
-use Baseliner::Model::Help;
+use_ok 'Baseliner::Model::Help';
 
 subtest 'docs_dirs: finds all base and home docs dirs' => sub {
     _setup();
@@ -25,7 +25,7 @@ subtest 'docs_dirs: finds all base and home docs dirs' => sub {
 
     my @dirs = $help->docs_dirs;
 
-    cmp_deeply \@dirs, [ re(qr{app-home/docs/en}), re(qr{features/testfeature/docs/en}) ];
+    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{features/testfeature/docs/en}), re(qr{app-home/docs/en}) ];
 };
 
 subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
@@ -35,7 +35,7 @@ subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
 
     my @dirs = $help->docs_dirs('es');
 
-    cmp_deeply \@dirs, [ re(qr{app-home/docs/es}), re(qr{features/testfeature/docs/es}) ];
+    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{features/testfeature/docs/es}), re(qr{app-home/docs/es}) ];
 };
 
 subtest 'build_doc_tree: help tree is built from directory' => sub {
