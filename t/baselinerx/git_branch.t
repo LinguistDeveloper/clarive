@@ -82,56 +82,8 @@ subtest 'node_data: return the short name when are more than 30 characters' => s
         repo_dir  => '/repo.git',
     );
 
-    cmp_deeply $branch->node_data,
-      {
-        'icon'       => ignore(),
-        'provider'   => 'Git Revision',
-        'project'    => 'Project',
-        'demotable'  => '0',
-        'bl_to'      => undef,
-        'tab_icon'   => ignore(),
-        'controller' => 'gittree',
-        'ci'         => {
-            'ns'   => 'git.revision/master#1234567898765432112345678998765',
-            'name' => 'master#1234567898765432112345678998765',
-            'data' => {
-                'repo'   => 'ci_pre:0',
-                'ci_pre' => [
-                    {
-                        'mid'  => undef,
-                        'ns'   => 'git.repository//repo.git',
-                        'name' => '/repo.git',
-                        'data' => {
-                            'repo_dir' => '/repo.git'
-                        },
-                        'class' => 'GitRepository'
-                    }
-                ],
-                'sha'     => 'master#1234567898765432112345678998765',
-                'rev_num' => 'master#1234567898765432112345678998765',
-                'branch'  => 'master#1234567898765432112345678998765'
-            },
-            'class' => 'GitRevision',
-            'role'  => 'Revision'
-        },
-        'repo_mid'   => undef,
-        'repo_name'  => 'repo',
-        'name'       => 'master#1234567898765432112345678998765',
-        'repo_dir'   => '/repo.git',
-        'branch'     => 'master#1234567898765432112345678998765',
-        'promotable' => '0',
-        'bl_from'    => undef,
-        'ns'         => 'git.revision/master#1234567898765432112345678998765@Project:repo',
-        'click'      => {
-            'controller' => 'gittree',
-            'repo_mid'   => undef,
-            'url'        => '/comp/view_commits_history.js',
-            'title'      => 'history: master#1234567898765432112....',
-            'type'       => 'comp',
-            'branch'     => 'master#1234567898765432112345678998765',
-            'repo_dir'   => '/repo.git'
-        }
-      };
+    is $branch->node_data->{click}->{title},"history: master#1234567898765432112....";
+     
 };
 
 sub _build_branch {
