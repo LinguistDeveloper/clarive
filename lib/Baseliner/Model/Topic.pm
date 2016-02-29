@@ -3449,7 +3449,7 @@ sub filter_children {
 
 sub get_topics_mdb {
     my ($self, %p ) = @_;
-    my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 
+    my ($where, $username, $start, $limit, $fields, $order_by, $sort_by) = @p{qw(where username start limit fields order_by sort_by )}; 
     try{
         $where = {} if !$where;
         my @mids_in = _array( delete $where->{mid} );
@@ -3461,12 +3461,11 @@ sub get_topics_mdb {
         _throw _loc('Missing username') if !$username;
 
         Baseliner::Model::Permissions->new->build_project_security( $where, $username );
-        #_warn $where;
-
         my $rs_topics = mdb->topic->find($where);
         $fields //= {};
         $rs_topics->fields({ _id=>0, _txt=>0, %$fields });
         my $cnt = $rs_topics->count;
+        $rs_topics->sort({ $order_by => 0+$sort_by }) if ($sort_by && $order_by );
         $rs_topics->skip($start) if ($start);
         $rs_topics->limit($limit) if ($limit);
 
