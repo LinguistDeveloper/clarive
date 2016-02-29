@@ -9,7 +9,7 @@ use TestDriver;
 my $driver = TestDriver->new;
 
 subtest 'shows an error when no password or username' => sub {
-    $driver->get_fresh('localhost:3000');
+    $driver->get_fresh();
 
     $driver->wait_for_element_visible('.ui-button-login button')->click;
 
@@ -20,7 +20,7 @@ subtest 'shows an error when no password or username' => sub {
 };
 
 subtest 'shows an error when invalid user' => sub {
-    $driver->get_fresh('localhost:3000');
+    $driver->get_fresh();
 
     $driver->wait_for_element_visible('input[name=login]')->send_keys('unknown user');
     $driver->wait_for_element_visible('input[name=password]')->send_keys('unknown password');

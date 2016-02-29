@@ -68,15 +68,9 @@ sub run {
         print "# UI TESTS ", "\n";
         print "#" x 80, "\n\n";
 
-        copy 'ui-tests/nightwatch.json.example', $smoke_nightwatch_conf;
-        replace_inplace(
-            $smoke_nightwatch_conf,
-            qr{"launchUrl"\s*:\s*".*?"},
-            qq{"launchUrl" : "http://localhost:$smoke_port"}
-        );
-
         my ($stdout) = tee_merged {
-            $ui_exit = _system("cla proveui -c $smoke_nightwatch_conf -e default");
+            $ENV{TEST_SELENIUM_HOSTNAME} = "localhost:$smoke_port";
+            $ui_exit = _system("cla proveui");
         };
 
         $ui_exit = 255 if $stdout =~ m/TEST FAILURE/;

@@ -42,10 +42,13 @@ sub find_extjs_components {
 
 sub get_fresh {
     my $self = shift;
+    my ($hostname) = @_;
+
+    $hostname //= $ENV{TEST_SELENIUM_HOSTNAME} || 'localhost:3000';
 
     $self->delete_all_cookies;
 
-    $self->get('localhost:3000');
+    $self->get($hostname);
 
     $SIG{__DIE__} = sub {
         eval { $self->quit };
