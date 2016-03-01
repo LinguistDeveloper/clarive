@@ -340,8 +340,7 @@ register 'fieldlet.system.title' => {
     icon        => '/static/images/icons/lock_small.png',
     type        => 'textfield',
     origin      => 'system',
-    section     => 'head',
-    section_allowed => ['head']
+    section     => 'head'
 };
 
 register 'fieldlet.system.labels' => {
