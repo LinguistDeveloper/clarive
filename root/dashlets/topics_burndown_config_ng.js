@@ -215,33 +215,6 @@
         }]
     }, {
         xtype: 'label',
-        text: _('Y-Axis'),
-        style: {
-            // 'margin': '10px',
-            'font-size': '12px',
-            'font-weight': 'bold'
-        }
-    }, {
-        xtype: 'panel',
-        hideBorders: true,
-        layout: 'column',
-        bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-        items: [{
-            layout: 'form',
-            columnWidth: 0.5,
-            bodyStyle: 'background:transparent;',
-            items: [{
-                    xtype: 'textfield',
-                    anchor: '100%',
-                    allowBlank: false,
-                    fieldLabel: _('Group by field'),
-                    name: 'y_group_by',
-                    value: data.y_group_by
-                }
-            ]
-        }]
-    }, {
-        xtype: 'label',
         text: _('Topics selection criteria'),
         style: {
             // 'margin': '10px',
