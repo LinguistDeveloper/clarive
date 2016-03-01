@@ -1418,7 +1418,7 @@ sub topics_burndown_ng : Local {
     my $p = $c->req->params;
 
     my $selection_method = $p->{selection_method} || 'period';
-    my $group_by_period  = $p->{group_by_period}  || 'hour';
+    my $scale = $p->{scale};
 
     my $from;
     my $to;
@@ -1447,7 +1447,7 @@ sub topics_burndown_ng : Local {
         id_project      => $p->{id_project},
         from            => $from,
         to              => $to,
-        group_by_period => $group_by_period,
+        scale           => $scale,
         date_field      => $p->{date_field},
         closed_statuses => $p->{closed_statuses},
         query           => $p->{query},
@@ -1460,16 +1460,6 @@ sub topics_burndown_ng : Local {
 
     push @dates,  map { $_->[0] } @$burndown;
     push @topics, map { $_->[1] } @$burndown;
-
-    if ($group_by_period eq 'day_of_week') {
-        @dates = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', );
-    }
-    elsif ($group_by_period eq 'month') {
-        @dates = (
-            'January', 'February', 'March',     'April',   'May',      'June',
-            'July',    'August',   'September', 'October', 'November', 'December'
-        );
-    }
 
     #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
 

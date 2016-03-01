@@ -33,7 +33,7 @@
 
             date: date,
 
-            scale: params.scale || 'hour',
+            scale: params.data.scale || 'hour',
             date_field: date_field,
             categories: categories,
             _ignore_conn_errors: true
