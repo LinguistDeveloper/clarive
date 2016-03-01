@@ -10,320 +10,7 @@ use TestUtils qw(mock_time);
 
 use_ok 'Baseliner::Dashboard::TopicsBurndown';
 
-subtest 'burndown: group by hour period' => sub {
-    _setup();
-
-    my $id_rule            = TestSetup->create_rule_form();
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $id_category        = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_rule,
-        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
-    );
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.category.view',
-            }
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $dashboard = _build_dashboard();
-
-    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    mock_time '2015-01-02T00:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-    };
-
-    mock_time '2015-01-02T01:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_finished->mid
-        );
-    };
-
-    my $topic_during = mock_time '2015-01-02T03:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $burndown = $dashboard->dashboard( username => $user->username, from => '2015-01-02', to => '2015-01-03' );
-    is_deeply $burndown,
-      [
-        [ '00' => 3 ],
-        [ '01' => 2 ],
-        [ '02' => 2 ],
-        [ '03' => 3 ],
-        [ '04' => 3 ],
-        [ '05' => 3 ],
-        [ '06' => 3 ],
-        [ '07' => 3 ],
-        [ '08' => 3 ],
-        [ '09' => 3 ],
-        [ '10' => 3 ],
-        [ '11' => 3 ],
-        [ '12' => 3 ],
-        [ '13' => 3 ],
-        [ '14' => 3 ],
-        [ '15' => 3 ],
-        [ '16' => 3 ],
-        [ '17' => 3 ],
-        [ '18' => 3 ],
-        [ '19' => 3 ],
-        [ '20' => 3 ],
-        [ '21' => 3 ],
-        [ '22' => 3 ],
-        [ '23' => 3 ],
-      ];
-};
-
-subtest 'burndown: group by day period' => sub {
-    _setup();
-
-    my $id_rule            = TestSetup->create_rule_form();
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $id_category        = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_rule,
-        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
-    );
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.category.view',
-            }
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $dashboard = _build_dashboard();
-
-    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    mock_time '2015-01-02T00:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-    };
-
-    mock_time '2015-01-02T01:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_finished->mid
-        );
-    };
-
-    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( project => $project ) };
-
-    my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        group_by_period => 'day_of_week'
-    );
-
-    is_deeply $burndown,
-      [ [ '00' => 3 ], [ '01' => 3 ], [ '02' => 2 ], [ '03' => 2 ], [ '04' => 3 ], [ '05' => 3 ], [ '06' => 3 ], ];
-};
-
-subtest 'burndown: group by date period' => sub {
-    _setup();
-
-    my $id_rule            = TestSetup->create_rule_form();
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $id_category        = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_rule,
-        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
-    );
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.category.view',
-            }
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $dashboard = _build_dashboard();
-
-    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    mock_time '2015-01-02T00:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-    };
-
-    mock_time '2015-01-02T01:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_finished->mid
-        );
-    };
-
-    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( project => $project ) };
-
-    my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        group_by_period => 'date'
-    );
-
-    is_deeply $burndown, [
-        ['2015-01-02', 2],
-        ['2015-01-03', 2],
-        ['2015-01-04', 3],
-        ['2015-01-05', 3],
-    ];
-};
-
-subtest 'burndown: group by month period' => sub {
-    _setup();
-
-    my $id_rule            = TestSetup->create_rule_form();
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
-    my $id_category        = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_rule,
-        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
-    );
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.category.view',
-            }
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $dashboard = _build_dashboard();
-
-    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_in_progress_mid = mock_time '2015-02-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    my $topic_finished = mock_time '2015-03-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
-
-    mock_time '2015-01-04T00:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-    };
-
-    mock_time '2015-01-05T01:00:00', sub {
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_in_progress->mid
-        );
-        Baseliner::Model::Topic->new->change_status(
-            change    => 1,
-            mid       => $topic_in_progress_mid,
-            id_status => $status_finished->mid
-        );
-    };
-
-    my $topic_during = mock_time '2015-01-06T03:00:00', sub { TestSetup->create_topic( project => $project ) };
-
-    my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-06-07',
-        group_by_period => 'month'
-    );
-
-    is_deeply $burndown,
-      [
-        [ '00', 1 ],
-        [ '01', 1 ],
-        [ '02', 2 ],
-        [ '03', 3 ],
-        [ '04', 3 ],
-        [ '05', 3 ],
-        [ '06', 3 ],
-        [ '07', 3 ],
-        [ '08', 3 ],
-        [ '09', 3 ],
-        [ '10', 3 ],
-        [ '11', 3 ]
-      ];
-};
-
-subtest 'burndown: by default show for today' => sub {
+subtest 'burndown: by default show for today with hour scale' => sub {
     _setup();
 
     my $id_rule            = TestSetup->create_rule_form();
@@ -376,38 +63,181 @@ subtest 'burndown: by default show for today' => sub {
 
     my $burndown = mock_time '2015-01-02T22:00:00', sub {
         $dashboard->dashboard(
-            username        => $user->username,
-            group_by_period => 'hour'
+            username => $user->username,
+            scale    => 'hour'
         );
     };
 
     is_deeply $burndown,
       [
-        [ '00', 3 ],
-        [ '01', 2 ],
-        [ '02', 2 ],
-        [ '03', 2 ],
-        [ '04', 2 ],
-        [ '05', 2 ],
-        [ '06', 2 ],
-        [ '07', 2 ],
-        [ '08', 2 ],
-        [ '09', 2 ],
-        [ '10', 2 ],
-        [ '11', 2 ],
-        [ '12', 2 ],
-        [ '13', 2 ],
-        [ '14', 2 ],
-        [ '15', 2 ],
-        [ '16', 2 ],
-        [ '17', 2 ],
-        [ '18', 2 ],
-        [ '19', 2 ],
-        [ '20', 2 ],
-        [ '21', 2 ],
-        [ '22', 2 ],
-        [ '23', 2 ],
+        [ '2015-01-02 00', 3 ],
+        [ '2015-01-02 01', 2 ],
+        [ '2015-01-02 02', 2 ],
+        [ '2015-01-02 03', 2 ],
+        [ '2015-01-02 04', 2 ],
+        [ '2015-01-02 05', 2 ],
+        [ '2015-01-02 06', 2 ],
+        [ '2015-01-02 07', 2 ],
+        [ '2015-01-02 08', 2 ],
+        [ '2015-01-02 09', 2 ],
+        [ '2015-01-02 10', 2 ],
+        [ '2015-01-02 11', 2 ],
+        [ '2015-01-02 12', 2 ],
+        [ '2015-01-02 13', 2 ],
+        [ '2015-01-02 14', 2 ],
+        [ '2015-01-02 15', 2 ],
+        [ '2015-01-02 16', 2 ],
+        [ '2015-01-02 17', 2 ],
+        [ '2015-01-02 18', 2 ],
+        [ '2015-01-02 19', 2 ],
+        [ '2015-01-02 20', 2 ],
+        [ '2015-01-02 21', 2 ],
+        [ '2015-01-02 22', 2 ],
+        [ '2015-01-02 23', 2 ],
       ];
+};
+
+subtest 'burndown: scale by day' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $dashboard = _build_dashboard();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    mock_time '2015-01-02T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+    };
+
+    mock_time '2015-01-02T01:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_finished->mid
+        );
+    };
+
+    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( project => $project ) };
+
+    my $burndown = $dashboard->dashboard(
+        username => $user->username,
+        from     => '2015-01-02',
+        to       => '2015-01-05',
+        scale    => 'day'
+    );
+
+    is_deeply $burndown, [
+        ['2015-01-02', 2],
+        ['2015-01-03', 2],
+        ['2015-01-04', 3],
+        ['2015-01-05', 3],
+    ];
+};
+
+subtest 'burndown: scale by month' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $dashboard = _build_dashboard();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    mock_time '2015-02-01T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+    };
+
+    mock_time '2015-03-01T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_finished->mid
+        );
+    };
+
+    my $burndown = $dashboard->dashboard(
+        username => $user->username,
+        from     => '2015-01-01',
+        to       => '2015-03-01',
+        scale    => 'month'
+    );
+
+    is_deeply $burndown, [
+        ['2015-01', 2],
+        ['2015-02', 2],
+        ['2015-03', 2],
+    ];
 };
 
 subtest 'burndown: created and closed during period' => sub {
@@ -483,37 +313,37 @@ subtest 'burndown: created and closed during period' => sub {
 
     my $burndown = mock_time '2015-01-02T22:00:00', sub {
         $dashboard->dashboard(
-            username        => $user->username,
-            group_by_period => 'hour'
+            username => $user->username,
+            scale    => 'hour'
         );
     };
 
     is_deeply $burndown,
       [
-        [ '00', 3 ],
-        [ '01', 2 ],
-        [ '02', 2 ],
-        [ '03', 3 ],
-        [ '04', 2 ],
-        [ '05', 0 ],
-        [ '06', 0 ],
-        [ '07', 0 ],
-        [ '08', 0 ],
-        [ '09', 0 ],
-        [ '10', 0 ],
-        [ '11', 0 ],
-        [ '12', 0 ],
-        [ '13', 0 ],
-        [ '14', 0 ],
-        [ '15', 0 ],
-        [ '16', 0 ],
-        [ '17', 0 ],
-        [ '18', 0 ],
-        [ '19', 0 ],
-        [ '20', 0 ],
-        [ '21', 0 ],
-        [ '22', 0 ],
-        [ '23', 0 ],
+        [ '2015-01-02 00', 3 ],
+        [ '2015-01-02 01', 2 ],
+        [ '2015-01-02 02', 2 ],
+        [ '2015-01-02 03', 3 ],
+        [ '2015-01-02 04', 2 ],
+        [ '2015-01-02 05', 0 ],
+        [ '2015-01-02 06', 0 ],
+        [ '2015-01-02 07', 0 ],
+        [ '2015-01-02 08', 0 ],
+        [ '2015-01-02 09', 0 ],
+        [ '2015-01-02 10', 0 ],
+        [ '2015-01-02 11', 0 ],
+        [ '2015-01-02 12', 0 ],
+        [ '2015-01-02 13', 0 ],
+        [ '2015-01-02 14', 0 ],
+        [ '2015-01-02 15', 0 ],
+        [ '2015-01-02 16', 0 ],
+        [ '2015-01-02 17', 0 ],
+        [ '2015-01-02 18', 0 ],
+        [ '2015-01-02 19', 0 ],
+        [ '2015-01-02 20', 0 ],
+        [ '2015-01-02 21', 0 ],
+        [ '2015-01-02 22', 0 ],
+        [ '2015-01-02 23', 0 ],
       ];
 };
 
@@ -560,14 +390,13 @@ subtest 'burndown: filters out categories that user has no access to' => sub {
     };
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        group_by_period => 'day_of_week'
+        username => $user->username,
+        from     => '2015-01-02',
+        to       => '2015-01-05',
+        scale    => 'day'
     );
 
-    is_deeply $burndown,
-      [ [ '00' => 0 ], [ '01' => 0 ], [ '02' => 0 ], [ '03' => 0 ], [ '04' => 0 ], [ '05' => 0 ], [ '06' => 0 ], ];
+    is_deeply $burndown, [ [ '2015-01-02', 0 ], [ '2015-01-03', 0 ], [ '2015-01-04', 0 ], [ '2015-01-05', 0 ] ];
 };
 
 subtest 'burndown: filters out topics that user has no access to project' => sub {
@@ -625,14 +454,13 @@ subtest 'burndown: filters out topics that user has no access to project' => sub
     };
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        group_by_period => 'day_of_week'
+        username => $user->username,
+        from     => '2015-01-02',
+        to       => '2015-01-05',
+        scale    => 'day'
     );
 
-    is_deeply $burndown,
-      [ [ '00' => 0 ], [ '01' => 0 ], [ '02' => 0 ], [ '03' => 0 ], [ '04' => 0 ], [ '05' => 0 ], [ '06' => 0 ], ];
+    is_deeply $burndown, [ [ '2015-01-02', 0 ], [ '2015-01-03', 0 ], [ '2015-01-04', 0 ], [ '2015-01-05', 0 ] ];
 };
 
 subtest 'burndown: filters by category' => sub {
@@ -682,12 +510,11 @@ subtest 'burndown: filters by category' => sub {
         username        => $user->username,
         from            => '2015-01-02',
         to              => '2015-01-05',
-        group_by_period => 'day_of_week',
+        scale => 'day',
         categories      => [$id_category]
     );
 
-    is_deeply $burndown,
-      [ [ '00' => 0 ], [ '01' => 0 ], [ '02' => 0 ], [ '03' => 0 ], [ '04' => 0 ], [ '05' => 0 ], [ '06' => 0 ], ];
+    is_deeply $burndown, [ [ '2015-01-02', 0 ], [ '2015-01-03', 0 ], [ '2015-01-04', 0 ], [ '2015-01-05', 0 ] ];
 };
 
 subtest 'burndown: filters by custom filter' => sub {
@@ -722,15 +549,14 @@ subtest 'burndown: filters by custom filter' => sub {
       sub { TestSetup->create_topic( title => 'Bye', status => $status_new, project => $project, id_category => $id_category ) };
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        group_by_period => 'day_of_week',
-        query           => q/{"title":"Hello"}/
+        username => $user->username,
+        from     => '2015-01-02',
+        to       => '2015-01-05',
+        scale    => 'day',
+        query    => q/{"title":"Hello"}/
     );
 
-    is_deeply $burndown,
-      [ [ '00' => 1 ], [ '01' => 1 ], [ '02' => 1 ], [ '03' => 1 ], [ '04' => 1 ], [ '05' => 1 ], [ '06' => 1 ], ];
+    is_deeply $burndown, [ [ '2015-01-02', 1 ], [ '2015-01-03', 1 ], [ '2015-01-04', 1 ], [ '2015-01-05', 1 ] ];
 };
 
 subtest 'burndown: filters by topic_mid' => sub {
@@ -801,11 +627,11 @@ subtest 'burndown: filters by topic_mid' => sub {
     my $dashboard = _build_dashboard();
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        group_by_period => 'date',
-        from            => '2016-01-01',
-        to              => '2016-01-03',
-        topic_mid       => $sprint2_mid
+        username  => $user->username,
+        scale     => 'day',
+        from      => '2016-01-01',
+        to        => '2016-01-03',
+        topic_mid => $sprint2_mid
     );
 
     is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1], ['2016-01-03' => 1]];
@@ -843,10 +669,10 @@ subtest 'burndown: selects dates with including' => sub {
     my $dashboard = _build_dashboard();
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        group_by_period => 'date',
-        from            => '2016-01-01',
-        to              => '2016-01-02',
+        username => $user->username,
+        scale    => 'day',
+        from     => '2016-01-01',
+        to       => '2016-01-02',
     );
 
     is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1]];

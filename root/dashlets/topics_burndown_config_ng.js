@@ -11,7 +11,6 @@
             ['month', _('Month')],
             ['year', _('Year')]
         ],
-        autoWidth: true,
 
         hidden: !data.selection_method || data.selection_method === 'duration' ? false : true
     });
@@ -34,7 +33,6 @@
         anchor: '100%',
         format: 'Y-m-d',
         height: 100,
-        autoWidth: true,
 
         hidden: data.selection_method === 'period' ? false : true
     });
@@ -47,7 +45,6 @@
         anchor: '100%',
         format: 'Y-m-d',
         height: 100,
-        autoWidth: true,
 
         hidden: data.selection_method === 'period' ? false : true
     });
@@ -70,6 +67,19 @@
         width: 165,
 
         hidden: data.selection_method === 'topic_filter' ? false : true
+    });
+
+    var scale_selector = new Baseliner.ComboDouble({
+        fieldLabel: _('Scale'),
+        name: 'scale',
+        value: data.scale || 'day',
+        data: [
+            ['hour', _('Hour')],
+            ['day', _('Day')],
+            ['week', _('Week')],
+            ['month', _('Month')],
+            ['year', _('Year')]
+        ]
     });
 
     var selector = new Baseliner.ComboDouble({
@@ -136,18 +146,6 @@
 
     var common = params.common_options || Cla.dashlet_common(params);
 
-    var group_by_period = new Baseliner.ComboDouble({
-        fieldLabel: _('Group by date'),
-        name: 'group_by_period',
-        value: data.group_by_period || 'hour',
-        data: [
-            ['hour', _('Hour')],
-            ['day_of_week', _('Day Of Week')],
-            ['month', _('Month')],
-            ['date', _('Date')]
-        ],
-    });
-
     return common.concat([{
         xtype: 'label',
         text: _('General control'),
@@ -167,7 +165,7 @@
             bodyStyle: 'background:transparent;',
             items: [
                 new Baseliner.ComboDouble({
-                    fieldLabel: _('Chart will be shown as ...'),
+                    fieldLabel: _('Chart will be shown as'),
                     name: 'type',
                     value: data.type || 'area',
                     data: [
@@ -205,6 +203,7 @@
                     name: 'date_field',
                     value: data.date_field
                 },
+                scale_selector,
                 selector,
                 select_by_duration_range,
                 select_by_duration_offset,

@@ -21,10 +21,13 @@ sub dashboard {
     $from = "$from 00:00:00" unless $to =~ m/ \d\d:\d\d:\d\d/;
     $to   = "$to 23:59:59"   unless $to =~ m/ \d\d:\d\d:\d\d/;
 
-    my $group_by_period = $params{group_by_period} || 'hour';
-    my $date_field      = $params{date_field}      || 'created_on';
-    my $categories      = $params{categories}      || [];
-    my $query           = $params{query};
+    my $from_date = Class::Date->new($from);
+    my $to_date   = Class::Date->new($to);
+
+    my $scale      = $params{scale}      || 'hour';
+    my $date_field = $params{date_field} || 'created_on';
+    my $categories = $params{categories} || [];
+    my $query      = $params{query};
     my @closed_statuses = _array $params{closed_statuses};
 
     if (@closed_statuses) {
@@ -48,26 +51,19 @@ sub dashboard {
     }
 
     my %burndown = ();
-    if ( $group_by_period eq 'hour' ) {
-        $group_by = { '$substr' => [ '$ts', 11, 2 ] };
+    if ( $scale eq 'hour' ) {
+        $group_by = { '$substr' => [ '$ts', 0, 13 ] };
 
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 23;
-    }
-    elsif ( $group_by_period eq 'day_of_week' ) {
-        $group_by = { '$substr' => [ '$ts', 8, 2 ] };
+        while ( $from_date < $to_date ) {
+            for (0 .. 23) {
+                $burndown{ substr($from_date, 0, 11) . sprintf('%02d', $_) } = 0;
+            }
 
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 6;
+            $from_date = $from_date + '1D';
+        }
     }
-    elsif ( $group_by_period eq 'month' ) {
-        $group_by = { '$substr' => [ '$ts', 5, 2 ] };
-
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 11;
-    }
-    elsif ( $group_by_period eq 'date' ) {
+    elsif ( $scale eq 'day' ) {
         $group_by = { '$substr' => [ '$ts', 0, 10 ] };
-
-        my $from_date = Class::Date->new($from);
-        my $to_date   = Class::Date->new($to);
 
         while ( $from_date < $to_date ) {
             $burndown{ substr $from_date, 0, 10 } = 0;
@@ -75,8 +71,17 @@ sub dashboard {
             $from_date = $from_date + '1D';
         }
     }
+    elsif ( $scale eq 'month' ) {
+        $group_by = { '$substr' => [ '$ts', 5, 2 ] };
+
+        while ( $from_date < $to_date ) {
+            $burndown{ substr $from_date, 0, 7 } = 0;
+
+            $from_date = $from_date + '1M';
+        }
+    }
     else {
-        die 'unknown group_by_period';
+        die 'unknown scale';
     }
 
     my $topic_group_by = { '$substr' => [ @{ $group_by->{'$substr'} } ] };
