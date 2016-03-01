@@ -182,7 +182,7 @@ Cla.help_show = function(params) {
         height: 750,
         width: 1000,
         //top: 20, left: 3,
-        autoScroll: true,
+        autoScroll: false,
         title: _('Help'),
         titleCollapse: true,
         //closeAction: 'destroy',
