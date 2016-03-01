@@ -251,6 +251,65 @@ subtest 'update: creates correct event.topic.create' => sub {
       };
 };
 
+subtest 'update: force load tab when deploy in initial status' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    
+    my $project = ci->new($base_params->{project});
+    $project->{bls} = [ $bl->mid ];
+    $project->update();
+    
+    my $id_role = TestSetup->create_role();   
+    my $user = TestSetup->create_user( username => 'test', id_role => $id_role, project => $project );
+    
+    my $status1 = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $workflow = [ { id_role => $id_role, id_status_from => $base_params->{status}, id_status_to => $status1->mid, job_type => 'promote' } ];
+    mdb->category->update( { id => "$base_params->{category}" }, { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.create' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{return_options}->{reload_tab}, 1;
+};
+
+
+subtest 'update: creates correct event.topic.modify' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    Baseliner::Model::Topic->new->update( { action => 'update', topic_mid => $topic_mid, title => 'Second title' } );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify' } );
+    my $event_data = _load $event->{event_data};
+
+    my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
+    my $category = mdb->category->find_one;
+
+    is $event_data->{mid},           $topic_mid;
+    is $event_data->{title},         $topic->{title};
+    is $event_data->{topic},         $topic->{title};
+    is $event_data->{topic_data}->{name_category}, $category->{name};
+    is $event_data->{topic_data}->{category}->{name},      $category->{name};
+    is $event_data->{topic_data}->{category_name}, $category->{name};
+    is_deeply $event_data->{notify_default}, [];
+    like $event_data->{subject}, qr/Topic updated: Category #\d+/;
+    is_deeply $event_data->{notify},
+      {
+        'category_status' => $category->{statuses}->[0],
+        'category'        => $category->{id}
+      };
+};
+
 subtest 'upload: uploads file' => sub {
     _setup();
     TestSetup->_setup_user();

@@ -1348,6 +1348,586 @@ subtest 'list_users: returns users paged' => sub {
       };
 };
 
+subtest 'topic_selector: sort topics on filed asc' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => 1,
+                sort_field       => "title",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    is $c->stash->{json}->{data}->[0]->{title}, 'A_name';
+    is $c->stash->{json}->{data}->[1]->{title}, 'B_name';
+    is $c->stash->{json}->{data}->[2]->{title}, 'C_name';
+    is $c->stash->{json}->{data}->[3]->{title}, 'Z_name';
+};
+
+subtest 'topic_selector: sort topics on filed desc' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => -1,
+                sort_field       => "title",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    is $c->stash->{json}->{data}->[0]->{title}, 'Z_name';
+    is $c->stash->{json}->{data}->[1]->{title}, 'C_name';
+    is $c->stash->{json}->{data}->[2]->{title}, 'B_name';
+    is $c->stash->{json}->{data}->[3]->{title}, 'A_name';
+};
+
+subtest 'topic_selector: sort topics on filed desc' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => -1,
+                sort_field       => "title",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    is $c->stash->{json}->{data}->[0]->{title}, 'Z_name';
+    is $c->stash->{json}->{data}->[1]->{title}, 'C_name';
+    is $c->stash->{json}->{data}->[2]->{title}, 'B_name';
+    is $c->stash->{json}->{data}->[3]->{title}, 'A_name';
+};
+
+subtest 'topic_selector: must operate when sort field is not specified' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => '',
+                sort_field       => "",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    cmp_deeply $c->stash, { json => { totalCount => '4', data => ignore() } };
+};
+
+subtest 'topic_selector: must operate when sort field do not exist' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => 1,
+                sort_field       => "tttt",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    cmp_deeply $c->stash, { json => { totalCount => '4', data => ignore() } };
+};
+
+
+subtest 'topic_selector: sort by mid asc' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => 1,
+                sort_field       => "mid",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    is $c->stash->{json}->{data}->[0]->{title}, 'A_name';
+    is $c->stash->{json}->{data}->[1]->{title}, 'Z_name';
+    is $c->stash->{json}->{data}->[2]->{title}, 'B_name';
+    is $c->stash->{json}->{data}->[3]->{title}, 'C_name';
+};
+
+
+subtest 'topic_selector: sort by mid desc' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => -1,
+                sort_field       => "mid",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    is $c->stash->{json}->{data}->[0]->{title}, 'C_name';
+    is $c->stash->{json}->{data}->[1]->{title}, 'B_name';
+    is $c->stash->{json}->{data}->[2]->{title}, 'Z_name';
+    is $c->stash->{json}->{data}->[3]->{title}, 'A_name';
+};
+
+subtest 'topic_selector: must operate when sort order is not specified or is wrong' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_topic_selector_rule = _create_topic_selector_form();
+    my $id_changeset_category  = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_topic_selector_rule,
+        id_status => $status->mid
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'A_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Z_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'B_name',
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'C_name',
+        status      => $status
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                dir              => 0,
+                sort_field       => "",
+                filter           => "",
+                limit            => "20",
+                mid              => "1",
+                query            => "",
+                show_release     => "0",
+                start            => "0",
+                topic_child_data => "true",
+                valuesqry        => ""
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    cmp_deeply $c->stash, { json => { totalCount => '4', data => ignore() } };
+};
+
+sub _create_topic_selector_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            }
+        ],
+    );
+}
+
 subtest 'get_menu_deploy: Menu for deploy in topic view' => sub {
     _setup();
       
