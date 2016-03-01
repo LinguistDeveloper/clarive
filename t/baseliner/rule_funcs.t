@@ -10,6 +10,7 @@ use Test::MockSleep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
+use TestSetup;
 
 use POSIX ":sys_wait_h";
 use JSON ();
@@ -170,14 +171,18 @@ subtest 'changeset_projects from data' => sub {
     mdb->category->insert(
         { id => "$cat_id", name => 'Category', statuses => [$status_id], default_form => "$id_rule" } );
 
-    my $project = ci->project->new( name => 'Project' );
-    my $project_mid = $project->save;
+    my $project = TestUtils->create_ci_project( );
+    my $project_mid = $project->mid;
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $params = {
         'project'    => $project_mid,
         'category'   => "$cat_id",
         'status_new' => "$status_id",
         'action'     => 'add',
+        'username'   => $user->name,
     };
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update($params);

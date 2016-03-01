@@ -13,7 +13,11 @@ use_ok 'BaselinerX::CI::job';
 subtest 'start_task: sets current_service' => sub {
     _setup();
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1);
+    my $project = TestUtils->create_ci_project( );
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
 
     my $job = _build_ci(changesets => [$changeset]);
 
@@ -28,7 +32,11 @@ subtest 'start_task: sets current_service' => sub {
 subtest 'start_task: creates job_log entry' => sub {
     _setup();
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1);
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
 
     my $job = _build_ci(changesets => [$changeset]);
 

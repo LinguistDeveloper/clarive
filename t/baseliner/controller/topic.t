@@ -1928,13 +1928,13 @@ sub _create_topic_selector_form {
     );
 }
 
-subtest 'get_menu_deploy: Menu for deploy in topic view' => sub {
+subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
     _setup();
       
     my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
     my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
 
-    my $id_role = TestSetup->create_role();   
+    my $id_role = TestSetup->create_role();
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -1943,7 +1943,7 @@ subtest 'get_menu_deploy: Menu for deploy in topic view' => sub {
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
-    
+
     my $topic_mid = TestSetup->create_topic(
         status => $status,
         id_category => $id_changeset_category,
@@ -1980,14 +1980,14 @@ subtest 'get_menu_deploy: Menu for deploy in topic view' => sub {
       };
 };
 
-subtest 'new topics have menu_deploy in stash' => sub {
+subtest 'update: new topics have menu_deploy in stash' => sub {
     _setup();
     TestSetup->_setup_user();
 
     my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
     my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
 
-    my $id_role = TestSetup->create_role();   
+    my $id_role = TestSetup->create_role();
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -1996,7 +1996,7 @@ subtest 'new topics have menu_deploy in stash' => sub {
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
-    
+
     my $topic_mid = TestSetup->create_topic(
         status => $status,
         id_category => $id_changeset_category,

@@ -388,7 +388,7 @@ sub get_field_bodies {
     return $meta;
 }
 
-sub get_menu_deploy : Local {
+sub get_menu_deploy : Private {
     my ( $self, $p ) = @_;
 
     my $topic_mid = $p->{topic_mid};

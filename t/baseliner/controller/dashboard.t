@@ -846,9 +846,13 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when topic and fiel
     my $id_topic_rule = _create_topic_form();
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
-    my $topic_mid =
-      TestSetup->create_topic( id_category => $id_topic_category, from => '2016-01-01', to => '2016-02-02' );
+    my $project = TestUtils->create_ci_project();
 
+    my $id_role = TestSetup->create_role();   
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid =
+      TestSetup->create_topic( id_category => $id_topic_category, from => '2016-01-01', to => '2016-02-02', username => $user->name);
     my $dashboard = Test::MonkeyMock->new;
     $dashboard->mock( dashboard => sub { } );
 

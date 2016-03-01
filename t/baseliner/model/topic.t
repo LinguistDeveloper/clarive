@@ -251,7 +251,7 @@ subtest 'update: creates correct event.topic.create' => sub {
       };
 };
 
-subtest 'update: force load tab when deploy in initial status' => sub {
+subtest 'update: reload topic when have deploy in initial status' => sub {
     _setup();
 
     my $base_params = TestSetup->_topic_setup();
@@ -261,10 +261,10 @@ subtest 'update: force load tab when deploy in initial status' => sub {
     my $project = ci->new($base_params->{project});
     $project->{bls} = [ $bl->mid ];
     $project->update();
-    
-    my $id_role = TestSetup->create_role();   
+
+    my $id_role = TestSetup->create_role();
     my $user = TestSetup->create_user( username => 'test', id_role => $id_role, project => $project );
-    
+
     my $status1 = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
 
     my $workflow = [ { id_role => $id_role, id_status_from => $base_params->{status}, id_status_to => $status1->mid, job_type => 'promote' } ];

@@ -218,6 +218,9 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
     my $status_final =
       TestUtils->create_ci( 'status', name => 'Closed', type => 'F' );
 
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $id_rule = _create_release_form();
 
     my $id_category = TestSetup->create_category(
@@ -231,6 +234,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
         status          => $status_new,
         release_version => '1.0',
         project         => $project,
+        username        => $user->name,
     );
     TestSetup->create_topic(
         id_category     => $id_category,
@@ -238,6 +242,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
         status          => $status_not_final,
         release_version => '1.1',
         project         => [$project, $project2],
+        username        => $user->name,
     );
     TestSetup->create_topic(
         id_category     => $id_category,
@@ -245,6 +250,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
         status          => $status_not_final,
         release_version => '9.9',
         project         => $project2,
+        username        => $user->name,
     );
     TestSetup->create_topic(
         id_category     => $id_category,
@@ -252,6 +258,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
         status          => $status_final,
         release_version => '0.9',
         project         => $project,
+        username        => $user->name,
     );
 
     $repo->create_tags_handler( undef, {} );
@@ -447,6 +454,8 @@ subtest 'update_baselines: updates tags for every release' => sub {
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
 
     my $project = _create_ci_project( moniker => 'project', repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
@@ -481,7 +490,8 @@ subtest 'update_baselines: updates tags for every release' => sub {
         title       => 'Changeset #1',
         project     => $project,
         release     => $release_mid,
-        revisions   => [ $new_sha_rev->mid ]
+        revisions   => [ $new_sha_rev->mid ],
+        username    => $user->name,
     );
 
     $repo->update_baselines(
@@ -851,6 +861,8 @@ subtest 'group_items_for_revisions: returns top revision items in release,projec
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_release_rule = _create_release_form();
 
@@ -864,6 +876,7 @@ subtest 'group_items_for_revisions: returns top revision items in release,projec
         title           => 'New Release',
         release_version => '1.0',
         project         => $project,
+        username        => $user->name,
     );
 
     my $id_changeset_rule = _create_changeset_form();
@@ -886,7 +899,8 @@ subtest 'group_items_for_revisions: returns top revision items in release,projec
         title       => 'Changeset #1',
         project     => $project,
         release     => $release_mid,
-        revisions   => [ $sha->mid, $sha2->mid ]
+        revisions   => [ $sha->mid, $sha2->mid ],
+        username        => $user->name,
     );
 
     my $ci = TestUtils->create_ci('topic');
@@ -997,6 +1011,8 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
@@ -1017,6 +1033,7 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
         title           => 'New Release',
         release_version => '1.0',
         project         => $project,
+        username        => $user->name,
     );
 
     my $id_changeset_rule = _create_changeset_form();
@@ -1032,7 +1049,8 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
         title       => 'Changeset #1',
         project     => $project,
         release     => $release_mid,
-        revisions   => [ $sha_rev->mid, $sha2_rev->mid ]
+        revisions   => [ $sha_rev->mid, $sha2_rev->mid ],
+        username    => $user->name
     );
 
     my $dir = tempdir();

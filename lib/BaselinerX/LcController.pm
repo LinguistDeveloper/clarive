@@ -842,7 +842,7 @@ sub promotes_and_demotes {
     #Personalized _workflow!
     if($topic->{_workflow} && $topic->{_workflow}->{$id_status_from}){
         my @_workflow;
-        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner::Model::Topic::new->user_workflow( $username );
+        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow( $username );
         use Array::Utils qw(:all);
     
         @_workflow = map { _array(values $_) } $topic->{_workflow} ;
