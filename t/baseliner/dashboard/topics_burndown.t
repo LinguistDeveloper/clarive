@@ -1,8 +1,8 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
@@ -162,12 +162,7 @@ subtest 'burndown: scale by day' => sub {
         scale    => 'day'
     );
 
-    is_deeply $burndown, [
-        ['2015-01-02', 2],
-        ['2015-01-03', 2],
-        ['2015-01-04', 3],
-        ['2015-01-05', 3],
-    ];
+    is_deeply $burndown, [ [ '2015-01-02', 2 ], [ '2015-01-03', 2 ], [ '2015-01-04', 3 ], [ '2015-01-05', 3 ], ];
 };
 
 subtest 'burndown: scale by month' => sub {
@@ -233,11 +228,7 @@ subtest 'burndown: scale by month' => sub {
         scale    => 'month'
     );
 
-    is_deeply $burndown, [
-        ['2015-01', 2],
-        ['2015-02', 2],
-        ['2015-03', 2],
-    ];
+    is_deeply $burndown, [ [ '2015-01', 2 ], [ '2015-02', 2 ], [ '2015-03', 2 ], ];
 };
 
 subtest 'burndown: created and closed during period' => sub {
@@ -507,11 +498,11 @@ subtest 'burndown: filters by category' => sub {
     };
 
     my $burndown = $dashboard->dashboard(
-        username        => $user->username,
-        from            => '2015-01-02',
-        to              => '2015-01-05',
-        scale => 'day',
-        categories      => [$id_category]
+        username   => $user->username,
+        from       => '2015-01-02',
+        to         => '2015-01-05',
+        scale      => 'day',
+        categories => [$id_category]
     );
 
     is_deeply $burndown, [ [ '2015-01-02', 0 ], [ '2015-01-03', 0 ], [ '2015-01-04', 0 ], [ '2015-01-05', 0 ] ];
@@ -543,10 +534,22 @@ subtest 'burndown: filters by custom filter' => sub {
 
     my $dashboard = _build_dashboard();
 
-    my $topic = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( title => 'Hello', status => $status_new, project => $project, id_category => $id_category ) };
-    my $topic2 = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( title => 'Bye', status => $status_new, project => $project, id_category => $id_category ) };
+    my $topic = mock_time '2015-01-01T00:00:00', sub {
+        TestSetup->create_topic(
+            title       => 'Hello',
+            status      => $status_new,
+            project     => $project,
+            id_category => $id_category
+        );
+    };
+    my $topic2 = mock_time '2015-01-01T00:00:00', sub {
+        TestSetup->create_topic(
+            title       => 'Bye',
+            status      => $status_new,
+            project     => $project,
+            id_category => $id_category
+        );
+    };
 
     my $burndown = $dashboard->dashboard(
         username => $user->username,
@@ -576,7 +579,7 @@ subtest 'burndown: filters by topic_mid' => sub {
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my ($status_new, $status_in_progress, $status_finished) = _create_statuses();
+    my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
 
     my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
     my $id_changeset_category =
@@ -634,7 +637,7 @@ subtest 'burndown: filters by topic_mid' => sub {
         topic_mid => $sprint2_mid
     );
 
-    is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1], ['2016-01-03' => 1]];
+    is_deeply $burndown, [ [ '2016-01-01' => 0 ], [ '2016-01-02' => 1 ], [ '2016-01-03' => 1 ] ];
 };
 
 subtest 'burndown: selects dates with including' => sub {
@@ -651,7 +654,7 @@ subtest 'burndown: selects dates with including' => sub {
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my ($status_new, $status_in_progress, $status_finished) = _create_statuses();
+    my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
 
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
@@ -675,17 +678,17 @@ subtest 'burndown: selects dates with including' => sub {
         to       => '2016-01-02',
     );
 
-    is_deeply $burndown, [['2016-01-01' => 0], ['2016-01-02' => 1]];
+    is_deeply $burndown, [ [ '2016-01-01' => 0 ], [ '2016-01-02' => 1 ] ];
 };
 
 done_testing();
 
 sub _create_statuses {
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
     my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'F' );
 
-    return ( $status_new, $status_in_progress, $status_finished )
+    return ( $status_new, $status_in_progress, $status_finished );
 }
 
 sub _create_sprint_form {
@@ -754,8 +757,7 @@ sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;

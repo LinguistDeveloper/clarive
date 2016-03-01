@@ -3,6 +3,7 @@ use Moose;
 
 use Array::Utils qw(intersect);
 use JSON ();
+use Class::Date ();
 use Baseliner::Model::Topic;
 use Baseliner::Utils qw(_now _array);
 
@@ -168,10 +169,12 @@ sub dashboard {
     $self->_update_burndown( $created_topics_aggr[0], \%burndown, 1 );
     $self->_update_burndown( $closed_topics_aggr[0],  \%burndown, -1 );
 
-    return [
+    my $data = [
         map { [ $_, $burndown{$_} ] }
         sort { $a cmp $b } keys %burndown
     ];
+
+    return $data;
 }
 
 sub _update_burndown {

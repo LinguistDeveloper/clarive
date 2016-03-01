@@ -9,11 +9,11 @@ use experimental 'switch', 'autoderef';
 
 use Baseliner::DateRange;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Dashboard::TopicsBurndown;
+use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line);
 
 with 'Baseliner::Role::ControllerValidator';
 
@@ -1454,22 +1454,17 @@ sub topics_burndown_ng : Local {
         categories      => [ _array $p->{categories} ]
     );
 
-    my @topics;
-    my @dates;
-    my @reg_line;
+    my @dates  = map { $_->[0] } @$burndown;
+    my @topics = map { $_->[1] } @$burndown;
+    my @trend = @{ _trend_line( x => [ 0 .. @$burndown - 1 ], y => [@topics] ) };
 
-    push @dates,  map { $_->[0] } @$burndown;
-    push @topics, map { $_->[1] } @$burndown;
-
-    #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
-
-    unshift @topics,   'Topics';
-    unshift @dates,    'x';
-    #unshift @reg_line, 'Trend';
+    unshift @topics, 'Topics';
+    unshift @dates,  'x';
+    unshift @trend, 'Trend';
 
     $c->stash->{json} = {
         success => \1,
-        data    => [\@dates, \@topics, \@reg_line]
+        data    => [\@dates, \@topics, \@trend]
     };
     $c->forward('View::JSON');
 }

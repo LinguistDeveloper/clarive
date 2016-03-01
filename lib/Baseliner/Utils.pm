@@ -99,6 +99,7 @@ use Exporter::Tidy default => [
     _slurp
     _to_camel_case
     _unbless
+    _trend_line
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -125,6 +126,7 @@ use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : (); 
 use Class::Date;
 use YAML::XS;
+use List::Util qw(sum);
 use List::MoreUtils qw(:all);
 use Try::Tiny;
 use Path::Class;
@@ -2252,6 +2254,38 @@ sub _to_camel_case {
     $result .= '_' if $string =~ m/_$/;
 
     return $result;
+}
+
+sub _trend_line {
+    my %p = @_;
+
+    my @x = _array( $p{x} );
+    my @y = _array( $p{y} );
+
+    use Data::Dumper; warn Dumper(\@x);
+    use Data::Dumper; warn Dumper(\@y);
+
+    my ( $m, $d, $b, @xy, @x2, @xy_res, @x_res_sq, @y_res_sq ) = (0);    #vars,+ arrays
+    my $n     = $#x + 1;
+    my $sum_x = sum(@x);
+    my $sum_y = sum(@y);
+
+    foreach my $i ( 0 .. $#x ) {
+        $x2[$i] = $x[$i] * $x[$i];                                       #needed for summation of x[i]**2
+        $xy[$i] = $x[$i] * $y[$i];                                       #needed for summation of x[i]*y[i]
+        $xy_res[$i] = abs( $y[$i] - ( $sum_x / $n ) ) * abs( $x[$i] - ( $sum_x / $n ) )
+          ;    #needed for summation of residuals of x[i]*y[i] in r2
+        $y_res_sq[$i] = ( abs( $y[$i] - ( $sum_y / $n ) ) )**2;    #needed for summa+tions in y-sigma and r2 calcs
+        $x_res_sq[$i] = ( abs( $x[$i] - ( $sum_y / $n ) ) )**2;    #needed for summa+tions in x-sigma and r2 calcs
+    }
+    my $y_sigma = $#y ? sqrt( sum(@y_res_sq) / ($#y) ) : 0;        #calculate the sigma of data in+ y-array
+    my $x_sigma = $#x ? sqrt( sum(@x_res_sq) / ($#x) ) : 0;        #calculate the sigma of data in+ x-array
+    $d = ( $n * sum(@x2) ) - ( sum(@x) * sum(@x) );                #calculate the deviation
+    $m = $d ? ( ( $n * sum(@xy) ) - ( sum(@x) * sum(@y) ) ) / $d : 0;    #calculate the slope
+    $b = $d ? ( ( sum(@x2) * sum(@y) ) - ( sum(@xy) * sum(@x) ) ) / $d : 0;    #calculate the inte+rcept
+
+    my @line = map { sprintf( "%.2f", $b + $m * $x[$_] ) } 0 .. scalar(@x) - 1;
+    return \@line;
 }
 
 1;
