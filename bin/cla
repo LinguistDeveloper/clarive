@@ -53,7 +53,13 @@ elif [ "$1" == "bootstrap" ]; then
 elif [ "$1" == "prove" ]; then
     shift
 
-    prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
+    ARGV=( "$@" )
+
+    if [ $# -eq 0 ]; then
+        ARGV[0]=t;
+    fi
+
+    prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
 elif [ "$1" == "proveui" ]; then
     shift
 
