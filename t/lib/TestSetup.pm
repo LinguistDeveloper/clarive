@@ -56,12 +56,14 @@ sub create_rule {
 
     my $id_rule  = mdb->seq('rule');
     my $seq_rule = 0 + mdb->seq('rule_seq');
+    my $ts = $params{ts} || '2016-01-01 00:00:00';
     mdb->rule->insert(
         {
             id          => "$id_rule",
             rule_active => 1,
             rule_name   => 'Rule',
             rule_seq    => $seq_rule,
+            ts          => $ts,
             %params,
         }
     );
