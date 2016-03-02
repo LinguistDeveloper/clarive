@@ -1046,6 +1046,61 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
     is_deeply \@files, ['README'];
 };
 
+subtest 'checkout: checkouts items into directory with release,project tag_mode and release is an arrayref' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = _create_ci_project( repositories => [ $repo->mid ] );
+
+    my $sha = TestGit->commit($repo);
+    TestGit->tag( $repo, tag => '1.0-TEST' );
+    my $sha2 = TestGit->commit($repo);
+
+    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+    my $sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha2);
+
+    my $id_release_rule = _create_release_form();
+
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_release_rule,
+    );
+    my $release_mid = TestSetup->create_topic(
+        id_category     => $id_release_category,
+        title           => 'New Release',
+        release_version => '1.0',
+        project         => $project,
+    );
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category(
+        name       => 'Changeset',
+        is_release => '1',
+        id_rule    => $id_changeset_rule,
+    );
+
+    TestSetup->create_topic(
+        id_category => $id_changeset_category,
+        title       => 'Changeset #1',
+        project     => $project,
+        release     => [$release_mid],
+        revisions   => [ $sha_rev->mid, $sha2_rev->mid ]
+    );
+
+    my $dir = tempdir();
+
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [$sha_rev, $sha2_rev] );
+
+    opendir( my $dh, $dir ) || die "can't opendir $dir $!";
+    my @files = grep { !/^\./ } readdir($dh);
+    closedir $dh;
+
+    is_deeply \@files, ['README'];
+};
+
 subtest 'list_branches: returns branches' => sub {
     _setup();
 
