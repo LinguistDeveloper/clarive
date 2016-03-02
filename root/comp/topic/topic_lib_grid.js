@@ -1458,39 +1458,39 @@ Cla.topic_grid = function(params){
     });
 
     grid_topics.on('beforerender', function(grid) {
-      var grid = this;
-      Baseliner.ajaxEval('/topic/list_category', {
-        action: 'create'
-      }, function(res) {
-        var categories = res.data;
-        var tbar = [_('Search') + ': ', ' ', search_field];
-        if (!typeApplication) {
-          var createAllowed = false;
-          if (category_id.length) {
-            categories.forEach(function(category) {
-              if (category.id == category_id) {
-                createAllowed = true;
-              }
-            });
-          }
-          else if (categories.length > 0) {
-            createAllowed = true;
-          }
+        var grid = this;
+        Baseliner.ajaxEval('/topic/list_category', {
+            action: 'create'
+        }, function(res) {
+            var categories = res.data;
+            var tbar = [_('Search') + ': ', ' ', search_field];
 
-          if (createAllowed) {
-            tbar.push(btn_add);
-          }
+            if (!typeApplication) {
+                var createAllowed = false;
+                if (category_id.length) {
+                    categories.forEach(function(category) {
+                        if (category.id == category_id) {
+                            createAllowed = true;
+                        }
+                    });
+                } else if (categories.length > 0) {
+                    createAllowed = true;
+                }
 
-          tbar.push(btn_edit, btn_custom, btn_delete, btn_change_status);
-        }
+                if (createAllowed) {
+                    tbar.push(btn_add);
+                }
 
-        tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
+                tbar.push(btn_edit, btn_custom, btn_delete, btn_change_status);
+            }
 
-        grid.getTopToolbar().add(tbar);
-        grid.doLayout();
-      });
+            tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
 
-      return true;
+            grid.getTopToolbar().add(tbar);
+            grid.doLayout();
+        });
+
+        return true;
     });
 
 
