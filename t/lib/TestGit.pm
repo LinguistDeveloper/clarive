@@ -18,7 +18,7 @@ sub create_repo {
 
     $ENV{GIT_AUTHOR_NAME} = $ENV{GIT_COMMITTER_NAME} = 'clarive';
     $ENV{EMAIL} = $ENV{GIT_COMMITTER_EMAIL} = $ENV{GIT_AUTHOR_EMAIL} = 'clarive@localhost';
-    system(qq{mkdir $dir}) unless (-d $dir);
+    system(qq{mkdir $dir}) unless -d $dir;
     system(qq{cd $dir; git init$bare});
 
     return $dir;
