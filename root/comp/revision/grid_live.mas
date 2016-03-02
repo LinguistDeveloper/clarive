@@ -90,9 +90,7 @@
         }),
 
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-          loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+        loadMask: true,
         columns: [
             { header: _("Scope"), width: 120, dataIndex: 'ns', sortable: true },	
             { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
@@ -196,9 +194,7 @@
                 { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
             ]),
-              loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+            loadMask: true,
             title      : _("Packages"),
             height     : 400,
             autoWidth: true,

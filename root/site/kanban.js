@@ -223,7 +223,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 });
                 self.store.on('load', function(){
                     self.load_workflow( self.topics );
-                    self.el.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;"></center>') );
+                    self.el.mask( '<img src="/static/images/loading.gif" style="height:40px;width:40px;">');
                 });
                 self.store.load();
             } else {

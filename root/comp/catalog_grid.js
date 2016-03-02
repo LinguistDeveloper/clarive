@@ -225,9 +225,7 @@
         view: gview,
         store: store,
         sm: sm,
-        loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+        loadMask: true,
             viewConfig: {
             forceFit: true
         },

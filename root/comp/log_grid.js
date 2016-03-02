@@ -475,9 +475,7 @@
                 forceFit: true
             },
             selModel: row_sel, 
-              loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+            loadMask: true,
             columns: [
                 { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, hidden: true, renderer: render_job_exec },   
                 { header: _('Step'), width: 40, dataIndex: 'step', sortable: true },

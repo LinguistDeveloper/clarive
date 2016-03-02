@@ -1,6 +1,5 @@
 (function(){
 
-var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
 
     var store=new Baseliner.JsonStore({
         root: 'data' , 
@@ -48,7 +47,7 @@ var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
             + '</div>';
         ;
     }
-
+var first_load = true;
         var ps = 60; //page_size
 
         // create the grid
@@ -61,9 +60,7 @@ var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
             store: store,
            // viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-              loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;margin-top:300px"></center></div>'
-        },
+            //loadMask: true,
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
@@ -155,9 +152,18 @@ var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
                 '->'
                 ]
         });
-   
-    store.load({params:{start:0 , limit: ps}}); 
+    grid.on("activate", function() {
+        if( first_load ) {
+            Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
+            first_load = false;
+        }
+    });
 
+   store.load({params:{start:0 , limit: ps }, callback: function(){
+      Baseliner.hideLoadingMaskFade(grid.getEl());
+    } }); 
+
+  
     grid.getView().forceFit = true;
     
     grid.list_actions = function(ix,invalid){
@@ -171,9 +177,7 @@ var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
             store: st,
             autoScroll: true,
             viewConfig: { forceFit: true },
-             loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+            loadMask: true,
             columns: [
                { header: _('Name'), width: 100, dataIndex: 'name', sortable: true  },
                { header: _('Key'), width: 100, dataIndex: 'key', sortable: true  }
@@ -205,14 +209,15 @@ var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
     };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
-
             var row = grid.getStore().getAt(rowIndex);
+             Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
             role_detail( row.get('id'), row.get('role') );
-        
+        Baseliner.hideLoadingMaskFade(grid.getEl());
         });		
+   
 
     grid.on("load", function(grid, rowIndex, e ) {
-    
+    Baseliner.hideLoadingMaskFade(grid.getEl());
     }); 
     return grid;
 });

@@ -1486,13 +1486,14 @@ if( Prefs.routing ) {
     }
     
     Baseliner.showLoadingMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask( String.format('<div class="ext-el-mask-msg" style="heigh:100%""><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px; margin-top:50px;"></center>') );
+        Baseliner._defaultLoadingMask = el.mask('<img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;">');
         //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
         //    removeMask: true, msg : msg
         //});
         //Baseliner._defaultLoadingMask.show();
         return Baseliner._defaultLoadingMask;
     };
+    
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         if( cmp ) {
             Baseliner.showLoadingMask(cmp, msg);
@@ -1872,3 +1873,4 @@ Baseliner.whereami = function(cons){
 Cla.log = function(msg){
     console.log(msg); 
 }
+

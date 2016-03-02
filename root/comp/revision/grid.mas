@@ -481,9 +481,7 @@
         }),
 
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-         loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+        loadMask: true,
         columns: [
             { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },	
             { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},	

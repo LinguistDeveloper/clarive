@@ -185,9 +185,7 @@ Ext.override(Ext.form.HtmlEditor, {
             }],
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             sm: check_sm_events,
-             loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+            loadMask: true,
             columns: [
                 check_sm_events,
                 { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	

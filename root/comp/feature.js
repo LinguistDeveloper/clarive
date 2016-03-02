@@ -137,9 +137,7 @@
                 selModel: self.sm, 
                 region:'center',
                 store: self.store, 
-                 loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+                loadMask  : true,
                 autoScroll: true,
                 autoWidth: true,
                 autoSizeColumns: true,

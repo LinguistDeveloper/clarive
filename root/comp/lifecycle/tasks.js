@@ -26,9 +26,7 @@
                 forceFit: true
 		    },
 		    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		      loadMask  : {
-                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
-            },
+		    loadMask: true,
 		    columns: [
 			    { header: _('Tarea'), width: 200, dataIndex: 'name', sortable: true, renderer: render_bold },	
 			    { header: _('Category'), width: 200, dataIndex: 'category', sortable: true, renderer: render_category },	
