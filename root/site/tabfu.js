@@ -1493,6 +1493,11 @@ if( Prefs.routing ) {
         //Baseliner._defaultLoadingMask.show();
         return Baseliner._defaultLoadingMask;
     };
+
+    Baseliner.showLoadingTreeMask = function (el, msg){
+        Baseliner._defaultLoadingMask = el.mask('<img src="/static/images/loading.gif" style="height:40px;width:40px;margin-top:400px;">');
+        return Baseliner._defaultLoadingMask;
+    };
     
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         if( cmp ) {
