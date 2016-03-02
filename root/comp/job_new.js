@@ -237,7 +237,13 @@
         allowBlank: false,
         editable: false,
         lazyRender: true,
-        hidden: <% $has_chain_perm ? 'false':'true' %>
+        hidden: <% $has_chain_perm ? 'false':'true' %>,
+        listeners: {
+            select: function(combo, row, index) {
+                store_versions.baseParams.id_rule = row.data.id;
+                store_versions.load();
+            }
+        }
     });
     store_chain.on('beforeload', function(){
         store_chain.baseParams.type = 'promote';
