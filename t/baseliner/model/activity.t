@@ -142,6 +142,68 @@ subtest 'find_by_mid: hides event.ci.* from topic activity' => sub {
     is_deeply $rv, [];
 };
 
+subtest 'find_by_mid: skips activity with non-zero ev_level' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'event.topic.change_status', {} );
+
+    mdb->activity->insert(
+        {
+            "event_key" => "event.topic.change_status",
+            "ev_level"  => 1,
+            "event_id"  => "2017",
+            "ts"        => "2013-12-19 21:08:49",
+            "vars"      => {
+                "username" => "root",
+                "topic_name" => "Name Test",
+                "ts" => "2013-12-19 21:08:49",
+            },
+            "username" => "root",
+            "mid"      => "908",
+            "level"    => 1,
+            "text"     => '%1 modified topic',
+            "module"   => "Baseliner::Model::Topic"
+        },
+    );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( 908, min_level => 5 );
+
+    is_deeply $rv, [];
+};
+
+subtest 'find_by_mid: skips activity with undefined ev_level' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'event.topic.change_status', {} );
+
+    mdb->activity->insert(
+        {
+            "event_key" => "event.topic.change_status",
+            "ev_level"  => undef,
+            "event_id"  => "2017",
+            "ts"        => "2013-12-19 21:08:49",
+            "vars"      => {
+                "username" => "root",
+                "topic_name" => "Name Test",
+                "ts" => "2013-12-19 21:08:49",
+            },
+            "username" => "root",
+            "mid"      => "908",
+            "level"    => 0,
+            "text"     => '%1 modified topic',
+            "module"   => "Baseliner::Model::Topic"
+        },
+    );
+
+    my $activity = _build_model();
+
+    my $rv = $activity->find_by_mid( '908', min_level => 5 );
+
+    is scalar @$rv, 1;
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     Baseliner::Core::Registry->add_class( 'main', 'event' => 'BaselinerX::Type::Event' );
