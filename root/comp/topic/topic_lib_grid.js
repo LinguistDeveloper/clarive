@@ -1476,15 +1476,16 @@ Cla.topic_grid = function(params){
           else if (categories.length > 0) {
             createAllowed = true;
           }
+
           if (createAllowed) {
             tbar.push(btn_add);
           }
 
           tbar.push(btn_edit, btn_custom, btn_delete, btn_change_status);
-
-        } else {
-          tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
         }
+
+        tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
+
         grid.getTopToolbar().add(tbar);
         grid.doLayout();
       });
