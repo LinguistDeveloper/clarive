@@ -930,7 +930,7 @@
                                 { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ form.destroy() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
-                            bodyStyle: { padding: '4px', "background-color": '#eee' },
+                            bodyCssClass: 'rule-op-edit-form',
                             items: comp
                         });
                         show_win( node, form );
