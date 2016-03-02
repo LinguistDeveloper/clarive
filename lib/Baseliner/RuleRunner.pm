@@ -262,8 +262,7 @@ sub _dsl_run {
     my $rule         = $p{rule};
     my $simple_error = $p{simple_error};
     my $stash        = $p{stash} // {};
-
-    local $@;
+    my $include_dsl  = $p{include_dsl} // {};
 
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash );
 
@@ -291,7 +290,9 @@ sub _dsl_run {
             _debug "DSL:\n", $rules_model->dsl_listing( $compiler->dsl ) if $p{logging};
         }
 
-        { stash => $stash, dsl => $compiler->dsl }
+        my $dsl = $include_dsl ? $compiler->dsl : $compiler->package;
+
+        { stash => $stash, dsl => $dsl }
     }
     catch {
         my $error = shift;
