@@ -1,4 +1,4 @@
-/* 
+/*
  *********************************************************************************
  * Topic Grid
  *********************************************************************************
@@ -9,7 +9,7 @@ Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
         if( o.params && o.params[p.start] ) {
             var st = o.params[p.start];
             var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-            if( ap > this.getPageData().pages ) { 
+            if( ap > this.getPageData().pages ) {
                 delete o.params[p.start];
             }
         }
@@ -21,8 +21,8 @@ var shorten_title = function(t){
     if( !t || t.length==0 ) {
         t = '';
     } else if( t.length > 12 ) {
-        t = t.substring(0,12) + '\u2026'; 
-    } 
+        t = t.substring(0,12) + '\u2026';
+    }
     return t;
 }
 
@@ -32,7 +32,7 @@ Baseliner.open_topic_grid = function(dir,title,mid){
        gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
        gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
    }
-   Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
+   Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp );
 };
 
 Cla.open_grid_from_field = function(el,mid,category,field_title){
@@ -45,17 +45,17 @@ Cla.open_grid_from_field = function(el,mid,category,field_title){
 Baseliner.open_monitor_query = function(q){
     Baseliner.add_tabcomp('/job/monitor', null, { query: q });
 }
-    
+
 Cla.topic_grid = function(params){
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
     var ps = ps_maxi; // current page_size
     var filter_current;
     var stop_filters = false;
-    var typeApplication = params.typeApplication; 
+    var typeApplication = params.typeApplication;
     var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
-    var query_id = params.query_id; 
-    var id_project = params.id_project; 
+    var query_id = params.query_id;
+    var id_project = params.id_project;
     var id_report = params.id_report || params.id_report_rule;
     var report_type = params.report_type || 'topics';
     var custom_form_url = params.custom_form;
@@ -71,7 +71,7 @@ Cla.topic_grid = function(params){
      report_name = params.data_report.report_name;
      fields = params.data_report.fields;
     }
-    
+
     var mini_mode = params.mini_mode==undefined ? Prefs.mini_mode : params.mini_mode;
     if( report_rows ) {
         ps_maxi=report_rows;
@@ -79,26 +79,26 @@ Cla.topic_grid = function(params){
         ps= parseInt(report_rows);
         mini_mode = params.mini_mode==undefined ? true : params.mini_mode;
     }
-   
+
     var state_id =id_report ? 'topic-grid-'+id_report : 'topic-grid';
     //console.log( params );
-    
-    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
+
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication,
         from_mid: params.from_mid,
         to_mid: params.to_mid,
-        id_project: id_project ? id_project : undefined, 
+        id_project: id_project ? id_project : undefined,
         topic_list: params.topic_list ? params.topic_list : undefined,
-        clear_filter: params.clear_filter ? params.clear_filter : undefined 
+        clear_filter: params.clear_filter ? params.clear_filter : undefined
     };  // for store_topics
 
-    // this grid may be limited for a given category category id 
+    // this grid may be limited for a given category category id
     var category_id = params.category_id;
     if( category_id ) {
         params.id_category = category_id;
         base_params.categories = category_id;
     }
     base_params.statuses = status_id;
-    
+
 	var store_config;
     if( id_report ) {
         base_params.id_report = params.id_report;
@@ -123,8 +123,8 @@ Cla.topic_grid = function(params){
             //         }
             //     }
             //     this.superclass().sort.call(this, sorters, direction);
-            // }           
-        };          
+            // }
+        };
     } else{
 		store_config = {
 			baseParams: base_params,
@@ -135,7 +135,7 @@ Cla.topic_grid = function(params){
 						filter_current = Baseliner.merge( filter_current, opt.params );
 				}
 			}
-		};		
+		};
 	}
 
     if( fields ) {
@@ -148,7 +148,7 @@ Cla.topic_grid = function(params){
     var store_category = new Baseliner.Topic.StoreCategory();
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList(store_config);
-   
+
     store_topics.proxy.conn.timeout = 600000;
     var loading;
     store_topics.on('beforeload',function(){
@@ -182,8 +182,8 @@ Cla.topic_grid = function(params){
         var cd = s.reader.jsonData.config;
         if( cd ) custom_form_data = cd;
     });
-    
-    var change_status_multi = function(obj){ 
+
+    var change_status_multi = function(obj){
         var sm = grid_topics.getSelectionModel();
         if( !sm.hasSelection() ) {
             Cla.warn(_('Change Status'), _('No selections') );
@@ -201,14 +201,16 @@ Cla.topic_grid = function(params){
                 grid_topics.getEl().unmask();
             });
         }
-        sels.length == 1 
-           ? change_it() 
+        sels.length == 1
+           ? change_it()
            : Cla.confirm( _('Are you sure you want to change %1 topics status to %2?', sels.length, obj.status_name), change_it );
     };
 
     var init_buttons = function(action) {
+            
         btn_edit[ action ]();
-        btn_delete[ action ]();
+        btn_delete[ action ]();         
+
         // change status button:
         var sm = grid_topics.getSelectionModel();
         if( action == 'enable' && sm.hasSelection() ) {
@@ -217,21 +219,21 @@ Cla.topic_grid = function(params){
             Cla.ajax_json('/topic/next_status_for_topics',{ topics:sels },function(res){
                 var items = [];
                 Ext.each( res.data,function(st){
-                    items.push({ 
-                        text: _(st.status_name), 
-                        new_status: st.id_status_to, 
-                        old_status: st.topic_status, 
-                        status_name: st.status_name, 
-                        handler: change_status_multi 
+                    items.push({
+                        text: _(st.status_name),
+                        new_status: st.id_status_to,
+                        old_status: st.topic_status,
+                        status_name: st.status_name,
+                        handler: change_status_multi
                     });
                 });
                 Ext.each(items,function(it){
                     status_menu.addItem(it);
                 });
-                if( items.length > 0 ) { 
+                if( items.length > 0 ) {
                     btn_change_status.setText( _('Change Status') );
                     btn_change_status.enable();
-                } else { 
+                } else {
                     btn_change_status.setText( _('No Common Statuses') );
                     btn_change_status.disable();
                 }
@@ -240,8 +242,9 @@ Cla.topic_grid = function(params){
             btn_change_status.setText( _('Change Status') );
             btn_change_status.disable();
         }
+
     }
-    
+
     var button_no_filter = new Ext.Button({
         icon:'/static/images/icons/clear-all.png',
         tooltip: _('Clear filters'),
@@ -264,7 +267,7 @@ Cla.topic_grid = function(params){
             loadfilters();
         }
     });
-    
+
     //var button_create_view = new Ext.Button({
     //    icon:'/static/images/icons/add.gif',
     //    tooltip: _('Create view'),
@@ -274,24 +277,24 @@ Cla.topic_grid = function(params){
     //        add_view();
     //    }
     //});
-    
+
     var button_create_view = new Baseliner.Grid.Buttons.Add({
         text:'',
         tooltip: _('Create view'),
-        disabled: false,        
+        disabled: false,
         handler: function() {
             add_view()
         }
-    });     
-    
+    });
+
     var button_delete_view = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
         tooltip: _('Delete view'),
         cls: 'x-btn-icon',
         disabled: true,
         handler: function() {
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the views selected?'), 
-                function(btn){ 
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the views selected?'),
+                function(btn){
                     if(btn=='yes') {
                         var views_delete = new Array();
                         selNodes = tree_filters.getChecked();
@@ -306,7 +309,7 @@ Cla.topic_grid = function(params){
                                 }
                             }
                         });
-                        
+
                         Baseliner.ajaxEval( '/topic/view_filter?action=delete',{ ids_view: views_delete },
                             function(response) {
                                 if ( response.success ) {
@@ -323,16 +326,16 @@ Cla.topic_grid = function(params){
                 }
             );
         }
-    }); 
+    });
 
     var status_menu = new Ext.menu.Menu({ items: [] });
     var btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.gif'), menu: status_menu, disabled: true });
-    
+
     var add_view = function() {
         var win;
-        
+
         var title = 'Create view';
-        
+
         var form_view = new Ext.FormPanel({
             frame: true,
             url: '/topic/view_filter',
@@ -355,20 +358,20 @@ Cla.topic_grid = function(params){
                                     win.close();
                                 },
                                 failure: function(f,a){
-                                    Ext.Msg.show({  
-                                    title: _('Information'), 
-                                    msg: a.result.msg , 
-                                    buttons: Ext.Msg.OK, 
+                                    Ext.Msg.show({
+                                    title: _('Information'),
+                                    msg: a.result.msg ,
+                                    buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.INFO
-                                    });                      
+                                    });
                                 }
                            });
-                        }                   
+                        }
                     }
                 },
                 {
                 text: _('Close'),
-                handler: function(){ 
+                handler: function(){
                         win.close();
                     }
                 }
@@ -384,36 +387,43 @@ Cla.topic_grid = function(params){
                 }
             ]
         });
-        
+
         win = new Ext.Window({
             title: _(title),
             width: 550,
             autoHeight: true,
             items: form_view
         });
-        win.show();     
+        win.show();
     };
-    
+
+
+
+
     var btn_add = new Baseliner.Grid.Buttons.Add({
-        handler: function() {
+        disabled: false,
+
+            handler: function() {
             store_category.load({params:{action: 'create'}});
             add_topic();
-        }       
+
+        }
     });
-   
+
     var topic_create_for_category = function(args){
         Baseliner.ajaxEval( '/topic/list_category', { action:'create'}, function(res){
             var data = res.data;
             if (data.length > 0){
                 var data_ok = 0;
                 data.forEach(function(value){
-                    if (value.id == args.id) { 
+                    if (value.id == args.id) {
                         data_ok = 1;
                         Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { title: args.title, new_category_id: args.id, new_category_name: args.name, _parent_grid: grid_topics.id }, new Date().getTime().toString());
                      };
                  });
                 if (data_ok == 0) { Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'))}
             } else {
+
                 Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'));
             }
         });
@@ -430,7 +440,7 @@ Cla.topic_grid = function(params){
             var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
             return ret;
         };
-        
+
         var topic_category_grid = new Ext.grid.GridPanel({
             store: store_category,
             height: 200,
@@ -443,18 +453,18 @@ Cla.topic_grid = function(params){
             columns: [
               { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
               { header: _('Description'), width: 450, dataIndex: 'description' }
-        
+
             ]
         });
-        
+
         topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             topic_create_for_category({ id: r.get('id'), name: r.get('name') });
             win.close();
-        });     
-        
+        });
+
         var cat_title = _('Select a category');
-        
+
         var form_topic = new Ext.FormPanel({
             frame: true,
             items: [
@@ -470,20 +480,20 @@ Cla.topic_grid = function(params){
             modal: true,
             items: form_topic
         });
-        win.show();     
+        win.show();
     };
-    
-    
+
+
     var make_title = function(){
         var title = [];
         if( report_name ) {
-            return report_name; 
+            return report_name;
         }
         var selNodes = tree_filters.getChecked();
         Ext.each(selNodes, function(node){
             //var type = node.parentNode.attributes.id;
             title.push(node.text);
-        }); 
+        });
         return title.length > 0 ? title.join(', ') : _('(no filter)');
     };
 
@@ -497,24 +507,24 @@ Cla.topic_grid = function(params){
            { xtype:'hidden', name:'params' }
         ]
     });
-    
+
     var form_report_submit = function(args) {
         var data = { rows:[], columns:[] };
         // find current columns
         var cfg = grid_topics.getColumnModel().config;
 
-        if( !args.store_data ) { 
-        
+        if( !args.store_data ) {
+
             var row=0, col=0;
             var gv = grid_topics.getView();
-            
+
             for( var row=0; row<9999; row++ ) {
                 if( !gv.getRow(row) ) break;
                 var d = {};
                 for( var col=0; col<9999; col++ ) {
                     if( !cfg[col] ) break;
-                    if( cfg[col].hidden || cfg[col]._checker ) continue; 
-                    var cell = gv.getCell(row,col); 
+                    if( cfg[col].hidden || cfg[col]._checker ) continue;
+                    var cell = gv.getCell(row,col);
                     if( !cell ) break;
                     //console.log( cell.innerHTML );
                     var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
@@ -522,27 +532,27 @@ Cla.topic_grid = function(params){
                     text = text.replace(/\s+$/,'');
                     d[ cfg[col].dataIndex ] = text;
                 }
-                data.rows.push( d ); 
+                data.rows.push( d );
             }
-            
+
         } else {
             // get the grid store data
             store_topics.each( function(rec) {
                 var d = rec.data;
                 var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
                 d.topic_name = topic_name;
-                data.rows.push( d ); 
+                data.rows.push( d );
             });
 
         }
-        
+
         for( var i=0; i<cfg.length; i++ ) {
             //console.log( cfg[i] );
-            if( ! cfg[i].hidden && ! cfg[i]._checker ) 
+            if( ! cfg[i].hidden && ! cfg[i]._checker )
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
         // report so that it opens cleanly in another window/download
-        var form = form_report.getForm(); 
+        var form = form_report.getForm();
         form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
         form.findField('title').setValue( make_title() );
         form.findField('rows').setValue( store_topics.getCount() );
@@ -553,7 +563,7 @@ Cla.topic_grid = function(params){
         target.nodeValue = args.target || "_blank";
         el.setAttributeNode(target);
         el.action = args.url;
-        el.submit(); 
+        el.submit();
     };
 
     var btn_html = {
@@ -586,7 +596,7 @@ Cla.topic_grid = function(params){
         iconCls: 'x-btn-icon',
         menu: [ btn_html, btn_csv, btn_yaml ]
     });
-    
+
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
         disabled: true,
         handler: function() {
@@ -596,17 +606,17 @@ Cla.topic_grid = function(params){
                         Baseliner.show_topic_from_row( r, grid_topics );
                     });
                 } else {
-                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                    Baseliner.message( _('ERROR'), _('Select at least one row'));
                 };
         }
     });
-    
+
     var btn_clear_state = new Ext.Button({
         icon: '/static/images/icons/reset-grey.png',
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
-            // deletes 
+            // deletes
             var cp=new Ext.state.CookieProvider();
             Ext.state.Manager.setProvider(cp);
             Ext.state.Manager.clear( state_id );
@@ -635,12 +645,12 @@ Cla.topic_grid = function(params){
                 if( topic_names.length > 10 ) {
                     names += _(' (and %1 more)', topic_names.length-10 );
                 }
-                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
-                    function(btn){ 
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?',
+                    function(btn){
                         if(btn=='yes') {
-                            Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){ 
+                            Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){
                                 grid_topics.getStore().remove(sm.getSelections());
-                                init_buttons('disable') 
+                                init_buttons('disable')
                             }});
                         }
                     }
@@ -648,7 +658,7 @@ Cla.topic_grid = function(params){
             }
         }
     });
-    
+
     var btn_mini = new Ext.Toolbar.Button({
         icon:'/static/images/icons/updown_.gif',
         tooltip: _('Collapse Rows'),
@@ -670,9 +680,9 @@ Cla.topic_grid = function(params){
             }
             //store_topics.reload();
             ptool.doRefresh();
-        }       
-    }); 
-    
+        }
+    });
+
     var btn_kanban = new Ext.Toolbar.Button({
         icon:'/static/images/icons/kanban.png',
         tooltip:_('Open Kanban'),
@@ -680,7 +690,7 @@ Cla.topic_grid = function(params){
         //enableToggle: true,
         pressed: false,
         handler: function(){
-            // kanban fullscreen 
+            // kanban fullscreen
             var mids = [];
             var sm = grid_topics.getSelectionModel();
             if (sm.hasSelection()) {
@@ -697,12 +707,12 @@ Cla.topic_grid = function(params){
             var kanban = new Baseliner.Kanban({ topics: mids, data_source: { base_params: store_topics.baseParams } });
             kanban.fullscreen();
         }
-    }); 
-    
+    });
+
     var btn_custom = new Ext.Button({
         icon: '/static/images/icons/table_edit.png',
         iconCls: 'x-btn-icon',
-        enableToggle: true, 
+        enableToggle: true,
         pressed: false,
         text: _('Customize'),
         hidden: custom_form_url ? false : true,
@@ -716,18 +726,18 @@ Cla.topic_grid = function(params){
                     panel.doLayout();
                 });
             }
-            if( this.pressed ) { 
-                custom_panel.show(); 
+            if( this.pressed ) {
+                custom_panel.show();
                 custom_panel.expand();
             } else {
-                custom_panel.hide(); 
+                custom_panel.hide();
                 custom_panel.collapse();
             }
             panel.doLayout();
         }
     });
-    
-    var custom_form = new Baseliner.FormPanel({ 
+
+    var custom_form = new Baseliner.FormPanel({
         frame: true, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
         hidden: false,
         labelWidth: 150,
@@ -735,14 +745,14 @@ Cla.topic_grid = function(params){
         autoScroll: true,
         bodyStyle: { padding: '4px', "background-color": '#eee' }
     });
-    var custom_panel = new Ext.Panel({ 
+    var custom_panel = new Ext.Panel({
         region: 'south', layout:'fit',
         hidden: true,
         height: 200,
         items: custom_form
     });
-    
-    
+
+
     var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
     };
@@ -756,17 +766,17 @@ Cla.topic_grid = function(params){
     }
 
 
-    
+
     var body_mini_tpl = function(){/*
-                  <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
+                  <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]'
                   onclick='javascript:Baseliner.show_topic_colored("[%=mid%]","[%=category_name%]","[%=category_color%]", "[%=id%]");return false;'>[%=value%][%=folders%] </span>
           */}.tmpl();
-    
-    var body_tpl = function(){/* 
-                <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
+
+    var body_tpl = function(){/*
+                <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]'
                 onclick='javascript:Baseliner.show_topic_colored("[%=mid%]","[%=category_name%]","[%=category_color%]", "[%=id%]"); return false;'>[%=value%] </span>
                         <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= Cla.user_date(modified_on) %] </font>[%=folders%]
-                        <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
+                        <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div>
            */}.tmpl();
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -774,21 +784,21 @@ Cla.topic_grid = function(params){
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
-        };      
-        
+        };
+
         var mid = rec.data.topic_mid;
         var category_name = rec.data.category_name;
         var category_color = rec.data.category_color;
         var date_modified_on = rec.data.modified_on ? rec.data.modified_on : '';
         // var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
         var modified_by = rec.data.modified_by;
-        
+
         if ( rec.json['mid_' + this.alias] && rec.json['category_name_' + this.alias] && rec.json['category_color_' + this.alias]){
             mid = rec.json['mid_' + this.alias];
             category_name = rec.json['category_name_' + this.alias];
             category_color = rec.json['category_color_' + this.alias];
         }
-        
+
         var tag_color_html;
         tag_color_html = '';
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
@@ -816,64 +826,64 @@ Cla.topic_grid = function(params){
                 }
             }
         }
-        
-        // rowbody: 
+
+        // rowbody:
         if(btn_mini.pressed){
-            return tag_color_html + body_mini_tpl({ 
-                        value: value, 
+            return tag_color_html + body_mini_tpl({
+                        value: value,
                         strike: strike,
-                        modified_on: date_modified_on, 
-                        who: _('by %1', modified_by||_('internal')), 
+                        modified_on: date_modified_on,
+                        who: _('by %1', modified_by||_('internal')),
                         ago: Cla.moment(date_modified_on).fromNow(),
                         mid: mid,
                         category_name: category_name,
                         category_color: category_color,
-                        id: grid_topics.id, 
-                        font_weight: font_weight, 
-                        folders: folders, 
-                        current_job: rec.data.current_job });                        
+                        id: grid_topics.id,
+                        font_weight: font_weight,
+                        folders: folders,
+                        current_job: rec.data.current_job });
         }else{
-            return tag_color_html + body_tpl({ 
-                        value: value, 
+            return tag_color_html + body_tpl({
+                        value: value,
                         strike: strike,
-                        modified_on: date_modified_on, 
-                        who: _('by %1', modified_by||_('internal')), 
+                        modified_on: date_modified_on,
+                        who: _('by %1', modified_by||_('internal')),
                         ago: Cla.moment(date_modified_on).fromNow(),
                         mid: mid,
-                        category_name: category_name, 
-                        category_color: category_color, 
-                        id: grid_topics.id, 
-                        font_weight: font_weight, 
-                        folders: folders, 
-                        current_job: rec.data.current_job });                        
+                        category_name: category_name,
+                        category_color: category_color,
+                        id: grid_topics.id,
+                        font_weight: font_weight,
+                        folders: folders,
+                        current_job: rec.data.current_job });
         }
-        
+
     };
-    
+
     var render_title_comprimido = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_color_html = '';
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
-        
+
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
                 var label_name = label[1];
                 var label_color = label[2];
-                tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";                
+                tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";
             }
         }
         return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";
-    };  
-    
+    };
+
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
         var arr=[];
-        
+
         // if ( !rec.json[this.dataIndex] ) {
         //     var str = this.dataIndex;
         //     var res = str.replace('_' +  this.alias,"");
         //     value = rec.json[res];
-        // };      
+        // };
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
@@ -884,35 +894,35 @@ Cla.topic_grid = function(params){
     var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
         var arr=[];
-        
+
         // if ( !rec.json[this.dataIndex] ) {
         //     var str = this.dataIndex;
         //     var res = str.replace('_' +  this.alias,"");
         //     value = rec.json[res];
-        // };      
+        // };
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
         });
         return arr.join('<br>');
     };
-    
+
     var render_revision = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
         var arr=[];
-        
+
         // if ( !rec.json[this.dataIndex] ) {
         //     var str = this.dataIndex;
         //     var res = str.replace('_' +  this.alias,"");
         //     value = rec.json[res];
-        // };      
+        // };
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.name : v );
         });
         return arr.join('<br>');
     };
-    
+
     // calendar meta_type, a little table precompiled
     var html_cal = function(){/*
          <table style="background: transparent">
@@ -967,7 +977,7 @@ Cla.topic_grid = function(params){
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
-        };          
+        };
         if( !value || value == undefined ) return '';
         return value;
         //var value_to_date = new Date(value);
@@ -985,55 +995,55 @@ Cla.topic_grid = function(params){
         }
         return date.dateFormat('d/m/Y');
     };
-    
+
     var render_bool = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
-        };          
+        };
         if( !value ) return '';
-        return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
+        return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>';
     };
-    
+
     var render_user = function(value,metadata,rec,rowIndex,colIndex,store) {
         // if ( !rec.json[this.dataIndex] ) {
         //     var str = this.dataIndex;
         //     var res = str.replace('_' +  this.alias,"");
         //     value = rec.json[res];
-        // };          
+        // };
         // if( value == undefined ) return '';
         var user_list = value.join();
-        return user_list; 
+        return user_list;
     };
-    
+
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
-        // console.log( metadata ); 
-        
+        // console.log( metadata );
+
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
         };
-        
+
         if ( !value || value == undefined ) return '';
         //if( !value  ) return '';
-        
-        //#################################################Ñapa 
+
+        //#################################################Ñapa
         if ( value[0] && !value[0].mid ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
         };
         //#####################################################
-        
+
         Ext.each( value, function(topic){
             arr.push( Baseliner.topic_name({
                 link: true,
                 parent_id: grid_topics.id,
                 ix: rowIndex,
-                mid: topic.mid, 
+                mid: topic.mid,
                 mini: btn_mini.pressed,
                 size: btn_mini.pressed ? '9' : '11',
                 category_name: topic.category.name,
@@ -1041,7 +1051,7 @@ Cla.topic_grid = function(params){
                 //category_icon: topic.category.icon,
                 is_changeset: topic.is_changeset,
                 is_release: topic.is_release
-            }) ); 
+            }) );
         });
         return arr.join("<br>");
     }
@@ -1050,7 +1060,7 @@ Cla.topic_grid = function(params){
         var actions_html = new Array();
         var swGo = false;
         actions_html.push("<span id='boot' style='background: transparent'>");
-        
+
         var ref_html = function(dir, refs){
             var img = dir =='in' ? 'referenced_in' : 'references_out';
             var ret = [];
@@ -1060,7 +1070,7 @@ Cla.topic_grid = function(params){
             ret.push("<img src='/static/images/icons/"+img+".png'>");
             ret.push( refs.length );
             ret.push("</span>");
-            ret.push("</a>&nbsp;");           
+            ret.push("</a>&nbsp;");
             return ret.join('');
         }
         if( Ext.isArray( rec.data.references_out ) && rec.data.references_out.length > 0 ) {
@@ -1077,25 +1087,25 @@ Cla.topic_grid = function(params){
             swGo = true;
             actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
-            actions_html.push("</span>");           
+            actions_html.push("</span>");
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
             if( swGo && !btn_mini.pressed )  actions_html.push( '<br>' );
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
-        
+
         actions_html.push("</span>");
         var str = swGo ? actions_html.join(""):'';
         return str;
     };
-    
+
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
         var tag_project_html = '';
         if(rec.data.projects){
             for(i=0;i<rec.data.projects.length;i++){
                 var project = rec.data.projects[i].split(';');
-                var project_name = project[1];              
+                var project_name = project[1];
                 tag_project_html = tag_project_html ? tag_project_html + ',' + project_name: project_name;
             }
         }
@@ -1107,10 +1117,10 @@ Cla.topic_grid = function(params){
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
-        };          
+        };
         //////////if(rec.json[this.dataIndex + '_' + this.alias]){
         //////////  value = rec.json[this.dataIndex + '_' + this.alias];
-        //////////}     
+        //////////}
         var size = btn_mini.pressed ? '8' : '8';
         var ret = String.format(
             '<b><span class="bali-topic-status" style="font-size: {0}px;">{1}</span></b>',
@@ -1124,7 +1134,7 @@ Cla.topic_grid = function(params){
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
-        };          
+        };
         if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
@@ -1149,7 +1159,7 @@ Cla.topic_grid = function(params){
             link: true,
             parent_id: grid_topics.id,
             row_index: rowIndex,
-            mid: d.topic_mid || d.mid, 
+            mid: d.topic_mid || d.mid,
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
             category_name: (topic_name_too_narrow ? '' : d.category_name),
@@ -1159,12 +1169,12 @@ Cla.topic_grid = function(params){
             is_release: d.is_release
         });
     };
-    
+
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
         //console.dir(rec);
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
-            if ( str ) {   
+            if ( str ) {
                 var res = str.replace('_' +  this.alias,"");
                 value = rec.json[res];
             }
@@ -1187,9 +1197,9 @@ Cla.topic_grid = function(params){
             }
             return render_obj.join("<br>");
         }else{
-            return value;    
+            return value;
         }
-    };  
+    };
 
     var search_field = new Baseliner.SearchField({
         store: store_topics,
@@ -1225,7 +1235,7 @@ Cla.topic_grid = function(params){
         forceSelection: true
     });
 
-    var ptool = new Baseliner.PagingToolbar({            
+    var ptool = new Baseliner.PagingToolbar({
         store: store_topics,
         pageSize: ps,
         plugins:[
@@ -1246,7 +1256,7 @@ Cla.topic_grid = function(params){
     });
 
     var force_fit = true;
-    
+
     var type_filters ={
         string: 'string',
         number: 'numeric',
@@ -1255,7 +1265,7 @@ Cla.topic_grid = function(params){
         ci: 'list'
     }
     var fields_filter = [];
-    
+
     var columns = [];
     var col_map = {
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
@@ -1264,15 +1274,15 @@ Cla.topic_grid = function(params){
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
         progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, hidden: true, renderer: render_progress },
-        numcomment : { header: _('Info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
-        ago : { header: _('When'), report_header: _('When'), sortable: true, dataIndex: 'modified_on', width: 40, renderer: Baseliner.render_ago },         
+        numcomment : { header: _('Info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },
+        ago : { header: _('When'), report_header: _('When'), sortable: true, dataIndex: 'modified_on', width: 40, renderer: Baseliner.render_ago },
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
-        topic_mid : { header: _('MID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    
-        moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker', renderer: render_default},    
-        cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out', renderer: render_default},    
-        cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in', renderer: render_default},    
-        references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out', renderer: render_default},    
-        references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in', renderer: render_default},    
+        topic_mid : { header: _('MID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},
+        moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker', renderer: render_default},
+        cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out', renderer: render_default},
+        cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in', renderer: render_default},
+        references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out', renderer: render_default},
+        references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in', renderer: render_default},
         assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee', renderer: render_default},
         current_job : { header: _('Current Job'), hidden: true, sortable: true, dataIndex: 'current_job', renderer: render_default},
         modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by', renderer: render_default },
@@ -1301,21 +1311,21 @@ Cla.topic_grid = function(params){
     if( fields ) {
         force_fit = false;
         columns = [ check_sm, col_map['topic_name'] ];
-        Ext.each( fields.columns, function(r){ 
+        Ext.each( fields.columns, function(r){
             // r.meta_type, r.id, r.as, r.width, r.header
             //console.log('cols');
-        
+
             if(r.filter){
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
                 //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
-                
+
                 //console.dir(filter_params);
                 switch (filter_params.type){
-                    case 'date':   
+                    case 'date':
                         //filter_params.dateFormat = 'Y-m-d';
                         filter_params.beforeText = _('Before');
-                        filter_params.afterText = _('After'); 
-                        filter_params.onText = _('On'); 
+                        filter_params.afterText = _('After');
+                        filter_params.onText = _('On');
                         break;
                     case 'numeric':
                         filter_params.menuItemCfgs = {
@@ -1330,7 +1340,7 @@ Cla.topic_grid = function(params){
                             if(r.filter.options.length == 1 && r.filter.values[0] == -1){
                                 filter_params.type = 'string';
                                 filter_params.emptyText = _('Enter mid...');
-                                break;                      
+                                break;
                             }else{
                                 var options = [];
                                 for(i=0;i<r.filter.options.length;i++){
@@ -1347,35 +1357,35 @@ Cla.topic_grid = function(params){
                     fields_filter.push(filter_params);
                 }
             }
-            
+
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
                 dataIndex: r.category ? r.id + '_' + r.category : r.id,
                 //dataIndex: r.id,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
             };
-            
+
             col = Ext.apply({},col);  // clone the column
             //col.dataIndex = r.id;
             col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
-            //if( !col.dataIndex ) col.dataIndex = r.id;
-            
+            //if( !col.dataIndex ) col.datoptaIndex = r.id;
+
             if( r.meta_type == 'custom_data' && r.data_key ) {
                 var dk = r.data_key;
                 col.renderer = function(v,m,row,ri){ return render_custom_data(dk,v,m,row,ri) };
             }
             col.hidden = false;
-            
+
             col.alias = r.category;
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
-            
+
             //console.log(col);
             columns.push( col );
                         if (r.ci_columns) {
                 if (typeof r.ci_columns === 'string'){
                     var ci_col = {
-                        //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
+                        //dataIndex: r.category ? r.ci_coltoptotopumns + '_' + r.category : r.ci_columns,
                         header: r.category + ': ' + r.ci_columns,
                         dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns : r.category + '_' + r.ci_columns,
                         //dataIndex: r.id,
@@ -1404,6 +1414,7 @@ Cla.topic_grid = function(params){
         });
         //console.dir(columns);
     } else {
+
          columns = [ check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'ago', 'title', 'progress',
             'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
@@ -1412,30 +1423,24 @@ Cla.topic_grid = function(params){
              columns.push( col_map[col] );
          });
     }
-    
+
     var filters = new Ext.ux.grid.GridFilters({
         menuFilterText: _('Filters'),
-        encode: true,
-        local: false,
+          encode: true,
+          local: false,
         filters: fields_filter
     });
-    
-    // toolbar
-    var tbar=[_('Search')+': ', ' ', search_field ];
-    if( !typeApplication ) {
-        tbar = tbar.concat([ ' ',' ', btn_add, btn_edit, btn_custom, btn_delete, btn_change_status ]);
-    }
-    tbar = tbar.concat([ '->', btn_clear_state, btn_reports, btn_kanban, btn_mini ]);
-    
+
+
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
         //title: _('Topics'),
         //header: false,
-        plugins: [filters],     
+        plugins: [filters],
         stripeRows: true,
         autoScroll: true,
         stateful: true,
-        stateId: state_id, 
+        stateId: state_id,
         //enableHdMenu: false,
         store: store_topics,
         //enableDragDrop: true,
@@ -1448,28 +1453,64 @@ Cla.topic_grid = function(params){
         sm: !typeApplication ? check_sm : null,
         //loadMask:'true',
         columns: columns,
-        tbar: tbar,      
+        tbar: [],
         bbar: ptool
     });
-    
-   // grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+
+    grid_topics.on('beforerender', function(grid) {
+      var grid = this;
+      Baseliner.ajaxEval('/topic/list_category', {
+        action: 'create'
+      }, function(res) {
+        var categories = res.data;
+        var tbar = [_('Search') + ': ', ' ', search_field];
+        if (!typeApplication) {
+          var createAllowed = false;
+          if (category_id.length) {
+            categories.forEach(function(category) {
+              if (category.id == category_id) {
+                createAllowed = true;
+              }
+            });
+          }
+          else if (categories.length > 0) {
+            createAllowed = true;
+          }
+          if (createAllowed) {
+            tbar.push(btn_add);
+          }
+
+          tbar.push(btn_edit, btn_custom, btn_delete, btn_change_status);
+
+        } else {
+          tbar = tbar.concat(['->', btn_clear_state, btn_reports, btn_kanban, btn_mini]);
+        }
+        grid.getTopToolbar().add(tbar);
+        grid.doLayout();
+      });
+
+      return true;
+    });
+
+
+     // grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
    //      if(columnIndex == 0){
    //          topicsSelected();
    //      }
    // });
-    
+
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 0){
             topicsSelected();
         }
     });
-    
+
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
         if(columnIndex == 0){
             topicsSelected();
         }
     });
-    
+
     grid_topics.on('columnresize', function(ix,newSize){
         if( newSize < 80 ) {
             topic_name_too_narrow = true;
@@ -1488,7 +1529,7 @@ Cla.topic_grid = function(params){
     node: Ext.tree.AsyncTreeNode
     allowChildren: true
     attributes: Object
-    attributes: 
+    attributes:
         calevent: Object
         children: Array[1]
         data:
@@ -1501,7 +1542,7 @@ Cla.topic_grid = function(params){
         leaf: false
         loader: Baseliner.TreeLoader.Ext.extend.constructor
         text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
-        topic_name: 
+        topic_name:
             category_color: "#20bcff"
             category_name: "Funcionalidad"
             is_changeset: "0"
@@ -1566,9 +1607,9 @@ Cla.topic_grid = function(params){
                 data: data,
                 getDragData: function(e){
                     var sourceEl = e.getTarget();
-                    var mid = this.mid; 
+                    var mid = this.mid;
                     var data = this.data;
-                    // create new node 
+                    // create new node
                     var proxy_node = sourceEl.cloneNode(true);
                     proxy_node.id = Ext.id();
                     // TODO create topic node using the original data from attributes
@@ -1611,7 +1652,7 @@ Cla.topic_grid = function(params){
             var sw_edit;
             check_sm.each(function(rec){
                 sw_edit = (rec.get('sw_edit'));
-            });       
+            });
             init_buttons('enable');
         }else{
             if(topics_checked.length == 0){
@@ -1625,7 +1666,7 @@ Cla.topic_grid = function(params){
             topics_checked.push(rec.get('topic_mid'));
         });
         return topics_checked
-    }   
+    }
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
@@ -1636,7 +1677,7 @@ Cla.topic_grid = function(params){
             Baseliner.show_topic_from_row( r, grid_topics );
         }
     });
-    
+
     grid_topics.on( 'render', function(){
         var gt_view = grid_topics.getView();
         if( !gt_view ) return;
@@ -1673,12 +1714,12 @@ Cla.topic_grid = function(params){
                     //if( projects.name.indexOf( data.project ) == -1 ) {
                     if( swSave ) {
                         row.beginEdit();
-                        
+
                         projects.push( data.id_project + ';' + data.project );
                         row.set('projects', projects );
                         row.endEdit();
                         row.commit();
-                        
+
                         Baseliner.ajaxEval( '/topic/update_project',{ id_project: data.id_project, topic_mid: row.get('topic_mid') },
                             function(response) {
                                 if ( response.success ) {
@@ -1688,21 +1729,21 @@ Cla.topic_grid = function(params){
                                 } else {
                                     //Baseliner.message( _('ERROR'), response.msg );
                                     Ext.Msg.show({
-                                        title: _('Information'), 
-                                        msg: response.msg , 
-                                        buttons: Ext.Msg.OK, 
+                                        title: _('Information'),
+                                        msg: response.msg ,
+                                        buttons: Ext.Msg.OK,
                                         icon: Ext.Msg.INFO
                                     });
                                 }
                             }
-                        
+
                         );
                     } else {
                         Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));
                     }
-                    
+
                 };
-                
+
                 var add_label = function(node) {
                     var text = node.attributes.text;
                     // determine the row
@@ -1725,12 +1766,12 @@ Cla.topic_grid = function(params){
                     //if( projects.name.indexOf( data.project ) == -1 ) {
                     if( swSave ) {
                         row.beginEdit();
-                        
+
                         labels.push( node.attributes.idfilter + ';' + text + ';' + node.attributes.color );
                         row.set('labels', labels );
                         row.endEdit();
                         row.commit();
-                        
+
                         var label_ids = new Array();
                         for(i=0;i<labels.length;i++){
                             var label = labels[i].split(';');
@@ -1745,21 +1786,21 @@ Cla.topic_grid = function(params){
                                 } else {
                                     //Baseliner.message( _('ERROR'), response.msg );
                                     Ext.Msg.show({
-                                        title: _('Information'), 
-                                        msg: response.msg , 
-                                        buttons: Ext.Msg.OK, 
+                                        title: _('Information'),
+                                        msg: response.msg ,
+                                        buttons: Ext.Msg.OK,
                                         icon: Ext.Msg.INFO
                                     });
                                 }
                             }
-                        
+
                         );
                     } else {
                         Baseliner.message( _('Warning'), _('Label %1 is already assigned', text));
                     }
-                    
-                };              
-                
+
+                };
+
                 var attr = n.attributes;
                 if(attr.data){
                     if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
@@ -1774,19 +1815,19 @@ Cla.topic_grid = function(params){
                     }else{
                         //Baseliner.message( _('Error'), _('Node is not a label'));
                     }
-                    
+
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
-                return (true); 
+                return (true);
              }
         });
-        
-    }); 
 
-   
+    });
+
+
     var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
-    };  
+    };
 
     function loadfilters( unselected_node ){
         var labels_checked = new Array();
@@ -1795,11 +1836,11 @@ Cla.topic_grid = function(params){
         var priorities_checked = new Array();
         var type;
         var selected_views = { };
-        
+
         selNodes = tree_filters.getChecked();
         if( selNodes.length > 0 ) button_no_filter.enable();
           else button_no_filter.disable();
-          
+
 
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
@@ -1808,7 +1849,7 @@ Cla.topic_grid = function(params){
             var node_value = node.attributes.checked3 == -1 ? '!' + node.attributes.idfilter : node.attributes.idfilter;
             switch (type){
                 //Views
-                case 'V':   
+                case 'V':
                             var d = Ext.util.JSON.decode(node.attributes.filter);
                             if( d.query !=undefined && selected_views.query !=undefined ) {
                                 d.query = d.query + ' ' + selected_views.query;
@@ -1835,23 +1876,23 @@ Cla.topic_grid = function(params){
         }
         filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
     }
-    
+
     function filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node){
         // copy baseParams for merging
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined, statuses: status_id, clear_filter: params.clear_filter  };        // object for merging with views 
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined, statuses: status_id, clear_filter: params.clear_filter  };        // object for merging with views
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
-        
+
 
         // merge selected filters with views
         var merge_filters = Baseliner.merge( selected_views, selected_filters);
         // now merge baseparams (query, limit and start) over the resulting filters
         var filter_final = Baseliner.merge( merge_filters, base_params );
         // query and unselected
-        
-        
+
+
         //if( unselected_node != undefined ) {
         //    var unselected_type = unselected_node.parentNode.attributes.id;
         //    var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
@@ -1871,12 +1912,12 @@ Cla.topic_grid = function(params){
         //}
 
         //if( base_params.query !== filter_final.query ) {
-            //delete filter_final['query'];    
+            //delete filter_final['query'];
         //}
         //console.dir(filter_final);
-        
+
         if (statuses_checked.length == 0) filter_final.clear_filter = 1
-        
+
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
@@ -1890,7 +1931,7 @@ Cla.topic_grid = function(params){
             });
 
     var tree_filters = {};
-    
+
     function checkchange(node_selected, checked) {
         var type = node_selected.parentNode.attributes.id;
         if (!changing  ) {
@@ -1900,15 +1941,15 @@ Cla.topic_grid = function(params){
                 node_selected.getUI().toggleCheck( c3 );
                 changing = false;
             //}
-        
-        
+
+
             if( stop_filters ) return;
-            
+
             var swDisable = true;
             var selNodes = tree_filters.getChecked();
             var tot_view_defaults = 1;
             //Ext.each(selNodes, function(node){
-            //  
+            //
             //  var type = node.parentNode.attributes.id;
             //  if(type == 'V'){
             //      //if(!eval('node.attributes.default')){   //Eval, I.E
@@ -1927,10 +1968,10 @@ Cla.topic_grid = function(params){
             //      swDisable = true;
             //  }
             //});
-            
+
             if (swDisable)
                 button_delete_view.disable();
-                
+
             if( checked ) {
                 loadfilters();
             } else {
@@ -1938,7 +1979,7 @@ Cla.topic_grid = function(params){
             }
         }
     }
-    
+
     if( !id_report ) {
         var id_collapse = Ext.id();
         tree_filters = new Ext.tree.TreePanel({
@@ -1967,22 +2008,22 @@ Cla.topic_grid = function(params){
             ddGroup: 'explorer_dd',
             listeners: {
                 'checkchange': checkchange
-            }       
+            }
         });
-        
+
         tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
             var loader = tree_filters.getLoader();
             if(category_id){
-                loader.baseParams = {category_id: category_id}; 
+                loader.baseParams = {category_id: category_id};
             }
             if(status_id){
-                loader.baseParams = {status_id: status_id}; 
-            }       
-            
-        }); 
-        
+                loader.baseParams = {status_id: status_id};
+            }
+
+        });
+
         var changing = false;
-        
+
         tree_filters.on('beforechildrenrendered', function(node){
             /* Changing node text
             node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
@@ -1998,7 +2039,7 @@ Cla.topic_grid = function(params){
                     var style = document.createElement('style');
                     var head = document.getElementsByTagName('head')[0];
                     var rules = document.createTextNode(
-                        '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #fff;' 
+                        '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #fff;'
                          + ';background: ' + color +
                         ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
                     );
@@ -2013,15 +2054,15 @@ Cla.topic_grid = function(params){
                 });
             }
         });
-        
+
         // expand the whole tree
         tree_filters.getLoader().on( 'load', function(){
             tree_root.expandChildNodes();
 
-            // draw the collapse button onclick event 
+            // draw the collapse button onclick event
             var el_collapse = Ext.get( id_collapse );
             if( el_collapse ){
-                el_collapse.dom.onclick = function(){ 
+                el_collapse.dom.onclick = function(){
                     panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
                     tree_filters.collapse();
                 };
@@ -2033,9 +2074,9 @@ Cla.topic_grid = function(params){
             //////
             //////}
         });
-            
+
     } // if !id_report
-        
+
     var panel = new Ext.Panel({
         layout : "border",
         defaults: {layout:'fit'},
@@ -2049,10 +2090,10 @@ Cla.topic_grid = function(params){
     });
     /* change style for 'Topics' tab! */
     if( params.tabTopic_force==1 ) {
-        panel.tab_icon = ''; // removes icon 
+        panel.tab_icon = ''; // removes icon
         panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 13px"><img src="/static/images/icons/topic.png" /></span>'; // removes title
     }
-        
+
     grid_topics.on('afterrender', function(){
 
         grid_topics.loadMask = new Ext.LoadMask(grid_topics.bwrap, { msg: _('Loading'), store: store_topics });
@@ -2060,13 +2101,13 @@ Cla.topic_grid = function(params){
             params: {
                 start:0 , limit: ps,
                 topic_list: params.topic_list,
-                query_id: params.query_id, 
+                query_id: params.query_id,
                 typeApplication: typeApplication
             }
         });
     });
     //store_label.load();
-    
+
     panel.print_hook = function(){
         return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
     };
@@ -2084,4 +2125,3 @@ Cla.topic_grid = function(params){
 
     return panel;
 }
-
