@@ -32,9 +32,11 @@ Possible statuses for the queue:
 =cut
 package Baseliner::Sem;
 use Moose;
+
+use Try::Tiny;
+use Sys::Hostname;
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
 
 has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
