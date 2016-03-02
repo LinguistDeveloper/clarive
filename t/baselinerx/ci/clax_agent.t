@@ -227,6 +227,8 @@ subtest 'put_file: sends request with directory on win' => sub {
     like $url, qr{http://bar:8888/tree/C:/Users/clarive};
 };
 
+done_testing;
+
 sub _mock_ua {
     my $mock = Test::MonkeyMock->new;
 
@@ -251,5 +253,3 @@ sub _build_clax_agent {
 
     return $agent;
 }
-
-done_testing;
