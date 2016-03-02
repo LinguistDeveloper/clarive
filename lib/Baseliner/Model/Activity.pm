@@ -29,7 +29,7 @@ sub find_by_mid {
 
     my @acts = mdb->activity->find( $where )->sort( { ts => -1 } )->all;
 
-    my @filtered_acts = grep { (defined($_->{ev_level}) && $_->{ev_level} == 0) || $_->{level} >= $min_level } @acts;
+    my @filtered_acts = grep { !defined($_->{ev_level}) || $_->{ev_level} == 0 || $_->{level} >= $min_level } @acts;
 
     my @elems;
     foreach my $act (@filtered_acts) {
