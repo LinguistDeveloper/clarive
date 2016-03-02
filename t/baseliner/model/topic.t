@@ -295,19 +295,52 @@ subtest 'update: creates correct event.topic.modify' => sub {
     my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
     my $category = mdb->category->find_one;
 
-    is $event_data->{mid},           $topic_mid;
-    is $event_data->{title},         $topic->{title};
-    is $event_data->{topic},         $topic->{title};
-    is $event_data->{topic_data}->{name_category}, $category->{name};
-    is $event_data->{topic_data}->{category}->{name},      $category->{name};
-    is $event_data->{topic_data}->{category_name}, $category->{name};
-    is_deeply $event_data->{notify_default}, [];
+    cmp_deeply $event_data, {
+        mid => $topic_mid,
+        title => $topic->{title},
+        topic => $topic->{title},
+        topic_data => {
+            name_category => $category->{name},
+            category_color => $category->{category_color},
+            category_id => $category->{id},
+            category_status_id => $topic->{category_status}->{id},
+            category_status_name => $topic->{category_status}->{name},
+            category_status_seq => ignore(),
+            category_status_type => $topic->{category_status}->{type},
+            color_category => ignore(),
+            id_category => $topic->{category_id},
+            id_category_status => $topic->{id_category_status},
+            is_changeset => ignore(),
+            is_release => ignore(),
+            mid => ignore(),
+            modified_on => ignore(),
+            name_status => $topic->{name_status},
+            status_new => $topic->{status_new},
+            title => ignore(),
+            topic_mid => $topic_mid,
+            category => {
+                _id => ignore(),
+                id => $category->{id},
+                statuses => ignore(),
+                default_form => $category->{default_form},
+                name => $category->{name},
+            },
+            category_name => $category->{name},
+            category_status => $topic->{category_status},
+            modified_by => ignore(),
+        },
+        notify => {
+            'category_status' => $category->{statuses}->[0],
+            'category'        => $category->{id}
+        },
+        notify_default => [],
+        return_options => ignore(),
+        rules_exec => ignore(),
+        subject => ignore(),
+        topic_mid => $topic_mid,
+        username => ignore(),
+    };
     like $event_data->{subject}, qr/Topic updated: Category #\d+/;
-    is_deeply $event_data->{notify},
-      {
-        'category_status' => $category->{statuses}->[0],
-        'category'        => $category->{id}
-      };
 };
 
 subtest 'upload: uploads file' => sub {
