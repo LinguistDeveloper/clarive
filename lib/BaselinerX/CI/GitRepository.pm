@@ -724,7 +724,7 @@ sub _find_release_version_by_revisions {
     my $topics_model = Baseliner::Model::Topic->new;
     return unless my ($release_field) =
       $topics_model->get_meta_fields_by_key( $changeset->{mid}, 'fieldlet.system.release' );
-    return unless my $release_mid = $changeset->{$release_field};
+    return unless my ($release_mid) = _array $changeset->{$release_field};
 
     my $release = mdb->topic->find_one({mid => $release_mid});
     return unless $release;
