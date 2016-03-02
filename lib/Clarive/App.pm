@@ -2,15 +2,16 @@ package Clarive::App;
 use Mouse;
 use v5.10;
 
-has env     => qw(is rw required 0);
-has home    => qw(is rw required 1);
-has base    => qw(is rw required 1);
-has lang    => qw(is ro required 1);
-has debug   => qw(is rw default 0);
-has migrate => qw(is rw default 0);
-has verbose => qw(is rw default 0);
-has trace   => qw(is ro default 0);
-has carp_always   => qw(is ro default 0);
+has env          => qw(is rw required 0);
+has home         => qw(is rw required 1);
+has base         => qw(is rw required 1);
+has plugins_home => qw(is rw default), sub { shift->base . '/plugins' };
+has lang         => qw(is ro required 1);
+has debug        => qw(is rw default 0);
+has migrate      => qw(is rw default 0);
+has verbose      => qw(is rw default 0);
+has trace        => qw(is ro default 0);
+has carp_always  => qw(is ro default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
