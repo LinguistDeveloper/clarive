@@ -5,7 +5,8 @@
     var default_value = "Start Date[start_date],datefield,80;Planned Start Date[plan_start_date],datefield,80;Real Start Date[real_start_date],datefield,80;End Date[end_date],datefield,80";
 
     ret.push([ 
-    	{ xtype:'textarea',fieldLabel: _('Columns'), name: 'columns', allowBlank: false, value: data.columns || default_value }
+        { xtype:'textarea',fieldLabel: _('Columns'), name: 'columns', allowBlank: false, value: data.columns || default_value },
+        { xtype:'textfield',fieldLabel: _('Height'), name: 'height', value: data.height }
     ]);
     return ret;
 })
