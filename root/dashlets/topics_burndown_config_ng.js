@@ -76,7 +76,6 @@
         data: [
             ['hour', _('Hour')],
             ['day', _('Day')],
-            ['week', _('Week')],
             ['month', _('Month')],
             ['year', _('Year')]
         ]
