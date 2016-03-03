@@ -446,10 +446,10 @@ subtest 'dispatches to CI method returning object' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
 
-    my @ret = $code->eval_code(q/var Status = Cla.ci.getClass('Status'); (new Status).searchCis()/);
+    my @ret = $code->eval_code(q/var Status = Cla.ci.getClass('Status'); var ci = (new Status).searchCis(); ci.mid()/);
 
     is scalar @ret, 1;
-    is $ret[0]->{mid}, '123';
+    is $ret[0], '123';
 };
 
 subtest 'dispatches to toJSON' => sub {

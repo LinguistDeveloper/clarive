@@ -152,7 +152,10 @@ sub _serialize {
         }
 
         if ( Scalar::Util::blessed($doc) ) {
-            push @result, _unbless($doc);
+            push @result, $self->_map_instance( $doc );
+        }
+        elsif ( ref $doc eq 'CODE' ) {
+            push @result, sub{ $self->_serialize( $options, $doc->(@_) ) };
         }
         elsif ( ref $doc eq 'ARRAY' ) {
             my $array = [];
@@ -169,7 +172,7 @@ sub _serialize {
             }
             push @result, $hash;
         }
-        if ( $options->{convert_subs} && ref $doc eq 'CODE' ) {
+        elsif ( $options->{convert_subs} && ref $doc eq 'CODE' ) {
             return 'function() { ... }';
         }
         else {
@@ -755,6 +758,8 @@ sub _db_wrap_cursor {
         forEach => js_sub {
             my $js = shift;
             my ($cb) = @_;
+
+            return unless $cb && ref $cb eq 'CODE';
 
             while ( my $entry = $cursor->next ) {
                 $cb->( $self->_serialize( {}, $entry ) );
