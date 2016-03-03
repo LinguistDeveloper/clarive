@@ -7,8 +7,10 @@ use Test::TempDir::Tiny;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
+use Try::Tiny;
 
 use Baseliner::Utils qw(_slurp);
+use BaselinerX::CI::generic_server;
 use_ok 'Baseliner::Code::JS';
 
 subtest 'evals js' => sub {
@@ -17,6 +19,14 @@ subtest 'evals js' => sub {
     my $ret = $code->eval_code( '1 + 1', {} );
 
     is $ret, 2;
+};
+
+subtest 'require module underscore' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $arr = $code->eval_code( 'var _ = require("underscore"); _.each([1,2],function(){})', {} );
+
+    is_deeply $arr, [1,2];
 };
 
 subtest 'dispatches to parseVars' => sub {
@@ -30,7 +40,7 @@ subtest 'dispatches to parseVars' => sub {
 subtest 'dispatches to parseVars with local stash' => sub {
     my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code( q{Cla.parseVars('${my_var}', { my_var: 'hola' })}, { my_var => 'hello' } );
+    my $ret = $code->eval_code( q{Cla.parseVars('${my_var}',{ "my_var":"hola" })}, { my_var => 'hello' } );
 
     is $ret, 'hola';
 };
@@ -49,8 +59,7 @@ subtest 'dispatches to DB insert' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
 EOF
@@ -66,8 +75,7 @@ subtest 'dispatches to DB findOne' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -84,8 +92,7 @@ subtest 'dispatches to DB find and cursor hasNext' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -104,8 +111,7 @@ subtest 'dispatches to DB find and cursor count' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -124,8 +130,7 @@ subtest 'dispatches to DB find and cursor limit' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -145,8 +150,7 @@ subtest 'dispatches to DB find and cursor skip' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -166,8 +170,7 @@ subtest 'dispatches to DB find and cursor sort' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':2});
     col.insert({'foo':1});
@@ -187,8 +190,7 @@ subtest 'dispatches to DB find and cursor forEach' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -214,8 +216,7 @@ subtest 'dispatches to DB update' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -234,8 +235,7 @@ subtest 'dispatches to DB remove' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.insert({'foo':'baz'});
@@ -255,8 +255,7 @@ subtest 'dispatches to DB collection drop' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<'EOF', {} );
-    var db = new Cla.DB;
-    var col = db.getCollection('test_collection');
+    var col = Cla.db.getCollection('test_collection');
 
     col.insert({'foo':'bar'});
     col.drop();
@@ -274,7 +273,7 @@ subtest 'dispatches to fs: open/write/close' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<"EOF", {} );
-    var fh = Cla.FS.openFile("$tempdir/foo", "w");
+    var fh = Cla.fs.openFile("$tempdir/foo", "w");
     fh.write("foobar");
     fh.close();
 EOF
@@ -296,7 +295,7 @@ subtest 'dispatches to fs: open/read/close' => sub {
     close $fh;
 
     my $ret = $code->eval_code( <<"EOF", {} );
-    var fh = Cla.FS.openFile("$tempdir/foo");
+    var fh = Cla.fs.openFile("$tempdir/foo");
     var data = fh.readLine("foobar");
     fh.close();
 
@@ -318,7 +317,7 @@ subtest 'dispatches to fs: slurp' => sub {
     close $fh;
 
     my $ret = $code->eval_code( <<"EOF", {} );
-    Cla.FS.slurp("$tempdir/foo");
+    Cla.fs.slurp("$tempdir/foo");
 EOF
 
     is $ret, "foobar\nnewline";
@@ -332,7 +331,7 @@ subtest 'dispatches to fs: createDir' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<"EOF", {} );
-    Cla.FS.createDir("$tempdir/foo");
+    Cla.fs.createDir("$tempdir/foo");
 EOF
 
     ok -d "$tempdir/foo";
@@ -349,25 +348,23 @@ subtest 'dispatches to fs: walk directory' => sub {
     var dirs = [];
     var files = [];
 
-    Cla.FS.createDir("$tempdir/dir1");
-    Cla.FS.createDir("$tempdir/dir2");
-    Cla.FS.createFile("$tempdir/file1");
-    Cla.FS.createFile("$tempdir/file2");
+    Cla.fs.createDir("$tempdir/dir1");
+    Cla.fs.createDir("$tempdir/dir2");
+    Cla.fs.createFile("$tempdir/file1");
+    Cla.fs.createFile("$tempdir/file2");
 
-    var dir = Cla.FS.openDir("$tempdir");
-    while (file = dir.readDir()) {
+    Cla.fs.iterateDir("$tempdir",function(file,path){
         if (file.indexOf(".") == 0) {
-            continue;
+            return;
         }
 
-        if (Cla.FS.isDir(Cla.Path.join(dir.path, file))) {
+        if (Cla.fs.isDir(path)) {
             dirs.push(file)
         }
-        else if (Cla.FS.isFile(Cla.Path.join(dir.path, file))) {
+        else if (Cla.fs.isFile(path)) {
             files.push(file)
         }
-    }
-    dir.close();
+    });
 
     [dirs, files]
 EOF
@@ -387,8 +384,8 @@ subtest 'dispatches to fs: delete dir and file' => sub {
     my $code = _build_code( lang => 'js' );
 
     my $ret = $code->eval_code( <<"EOF", {} );
-    Cla.FS.deleteDir("$tempdir/dir");
-    Cla.FS.deleteFile("$tempdir/file");
+    Cla.fs.deleteDir("$tempdir/dir");
+    Cla.fs.deleteFile("$tempdir/file");
 EOF
 
     ok !-d "$tempdir/dir";
@@ -400,12 +397,12 @@ subtest 'dispatches to path' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    is $code->eval_code(q{Cla.Path.basename('/foo/bar.baz')}),    'bar.baz';
-    is $code->eval_code(q{Cla.Path.dirname('/foo/bar.baz')}),     '/foo';
-    is $code->eval_code(q{Cla.Path.extname('/foo/bar.baz')}),     '.baz';
-    is $code->eval_code(q{Cla.Path.extname('/foo/bar.daz.baz')}), '.baz';
-    is $code->eval_code(q{Cla.Path.extname('.foo')}),             '';
-    is $code->eval_code(q{Cla.Path.join('foo', 'bar', 'baz')}),   'foo/bar/baz';
+    is $code->eval_code(q{Cla.path.basename('/foo/bar.baz')}),    'bar.baz';
+    is $code->eval_code(q{Cla.path.dirname('/foo/bar.baz')}),     '/foo';
+    is $code->eval_code(q{Cla.path.extname('/foo/bar.baz')}),     '.baz';
+    is $code->eval_code(q{Cla.path.extname('/foo/bar.daz.baz')}), '.baz';
+    is $code->eval_code(q{Cla.path.extname('.foo')}),             '';
+    is $code->eval_code(q{Cla.path.join('foo', 'bar', 'baz')}),   'foo/bar/baz';
 };
 
 subtest 'dispatches to CI instance' => sub {
@@ -415,7 +412,7 @@ subtest 'dispatches to CI instance' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
 
-    my $ret = $code->eval_code(q/var ci = Cla.CI.load('123'); ci.name()/);
+    my $ret = $code->eval_code(q/var ci = Cla.ci.load('123'); ci.name()/);
 
     is $ret, 'New';
 };
@@ -425,7 +422,7 @@ subtest 'dispatches to CI attribute method' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.icon()/);
+    my $ret = $code->eval_code(q/var Status = Cla.ci.getClass('Status'); (new Status({'mid': '123'})).icon()/);
 
     like $ret, qr{static/images};
 };
@@ -435,7 +432,9 @@ subtest 'dispatches to CI method' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.delete()/);
+    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
+
+    my $ret = $code->eval_code(q/var Status = Cla.ci.getClass('Status'); (new Status({'mid': '123'})).delete()/);
 
     ok !mdb->master->find_one( { mid => '123' } );
 };
@@ -447,7 +446,7 @@ subtest 'dispatches to CI method returning object' => sub {
 
     my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
 
-    my @ret = $code->eval_code(q/var ci = new Cla.CI.Status({'mid': '123'}); ci.searchCis()/);
+    my @ret = $code->eval_code(q/var Status = Cla.ci.getClass('Status'); (new Status).searchCis()/);
 
     is scalar @ret, 1;
     is $ret[0]->{mid}, '123';
@@ -482,6 +481,17 @@ subtest 'dispatches to stash' => sub {
 
 };
 
+subtest 'dispatches to stash pointers' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $stash = { foo=>{} };
+    $code->eval_code(q{Cla.stash('/foo/bar', 99)}, $stash);
+
+    is_deeply $stash, {foo =>{ bar => 99 } };
+};
+
 subtest 'exceptions catch internal errors' => sub {
     _setup();
 
@@ -496,8 +506,8 @@ subtest 'exceptions catch external errors' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    like exception { $code->eval_code(q/Cla.FS.openFile('unknown')/) }, qr/Cannot open file unknown/;
-    ok !exception { $code->eval_code(q/try { Cla.FS.openFile('unknown') } catch(e) {}/) };
+    like exception { $code->eval_code(q/Cla.fs.openFile('unknown')/) }, qr/Cannot open file unknown/;
+    ok !exception { $code->eval_code(q/try { Cla.fs.openFile('unknown') } catch(e) {}/) };
 };
 
 subtest 'returns js array' => sub {
@@ -525,9 +535,11 @@ subtest 'gets clarive Config' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $home = $code->eval_code(q{Cla.config('home')});
+    Clarive->app->config->{_tester99} = 99; 
 
-    is $home, Clarive->config->{home};
+    my $home = $code->eval_code(q{Cla.config('_tester99')});
+
+    is $home, 99;
 };
 
 subtest 'load yaml util' => sub {
@@ -535,7 +547,7 @@ subtest 'load yaml util' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $hash = $code->eval_code(q{var yaml="---\nfoo: bar\n"; Cla.loadYAML(yaml)});
+    my $hash = $code->eval_code(q{var yaml="---\nfoo: bar\n"; Cla.util.loadYAML(yaml)});
 
     is_deeply $hash, { foo=>'bar' };
 };
@@ -545,7 +557,7 @@ subtest 'dump yaml util' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $yaml = $code->eval_code(q{Cla.dumpYAML({ foo: 'bar' })});
+    my $yaml = $code->eval_code(q{Cla.util.dumpYAML({ foo: 'bar' })});
 
     like $yaml, qr/foo: bar/;
 };
@@ -555,7 +567,7 @@ subtest 'load json util' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $hash = $code->eval_code(q{var json='{ "foo":"bar" }'; Cla.loadJSON(json)});
+    my $hash = $code->eval_code(q{var json='{ "foo":"bar" }'; Cla.util.loadJSON(json)});
 
     is_deeply $hash, { foo=>'bar' };
 };
@@ -565,7 +577,7 @@ subtest 'dump json util' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $json = $code->eval_code(q{Cla.dumpJSON({ foo: 'bar' })});
+    my $json = $code->eval_code(q{Cla.util.dumpJSON({ foo: 'bar' })});
 
     like $json, qr/"foo"\s*:\s*"bar"/;
 };
