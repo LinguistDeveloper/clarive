@@ -506,6 +506,37 @@ subtest 'build_where: builds correct where category_type' => sub {
     is $where2->{'category.is_changeset'}, 1;
 };
 
+subtest 'build_where: builds correct where with custom where' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where( username => $developer->username, where => { foo => 'bar' } );
+
+    is $where->{'foo'}, 'bar';
+};
+
 subtest 'view: accepts limit and skip' => sub {
     _setup();
 
@@ -609,6 +640,41 @@ subtest 'view: accepts sort and dir' => sub {
     my $view = _build_view();
 
     my $rs = $view->find( username => $developer->username, sort => 'title', dir => 'desc' );
+
+    is $rs->next->{title}, 'My Topic 9';
+};
+
+subtest 'view: accepts sort and dir as number' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    for ( 1 .. 10 ) {
+        TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic ' . $_ );
+    }
+
+    my $view = _build_view();
+
+    my $rs = $view->find( username => $developer->username, sort => 'title', dir => -1 );
 
     is $rs->next->{title}, 'My Topic 9';
 };

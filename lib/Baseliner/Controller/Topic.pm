@@ -293,7 +293,7 @@ sub check_modified_on: Local {
 }
 
 sub related : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
 
     my $p = $c->req->params;
 
@@ -301,17 +301,27 @@ sub related : Local {
     my $statuses      = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
     my $show_release  = $p->{show_release};
-    my $search_query  = $p->{query};
-    my $filter        = $p->{filter};
 
-    my $start         = $p->{start} //= 0;
-    my $limit         = $p->{limit} //= 20;
-    my $sort          = $p->{sort_field};
-    my $dir           = $p->{dir};
+    my $where;
+    my $valuesqry = $p->{valuesqry};
+    if ( $valuesqry && $valuesqry eq 'true' ) {
+        $where = { mid => mdb->in( split /\s+/, _array( delete $p->{query} ) ) };
+    }
+    my $search_query = $p->{query};
+
+    my $filter = $p->{filter};
+
+    my $start = $p->{start} //= 0;
+    my $limit = $p->{limit} //= 20;
+    my $sort  = $p->{sort_field};
+    my $dir   = $p->{dir};
+
+    my $where;
 
     my $view = Baseliner::DataView::Topic->new;
 
     my $rs = $view->find(
+        where         => $where,
         username      => $c->username,
         categories    => $categories,
         statuses      => $statuses,
@@ -320,7 +330,7 @@ sub related : Local {
         filter        => $filter,
         start         => $start,
         limit         => $limit,
-        sort          => $sort_field,
+        sort          => $sort,
         dir           => $dir,
         $show_release ? ( category_type => 'release' ) : (),
     );
@@ -329,11 +339,13 @@ sub related : Local {
     my @topics = $rs->all;
 
     @topics = map {
-        $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
+        $_->{name}  = _loc( $_->{category}->{name} ) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
-        $_->{short_name} = Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid} if $_->{mid};
-       $_
-    }  @topics;
+        $_->{short_name} =
+          Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid}
+          if $_->{mid};
+        $_
+    } @topics;
 
     $c->stash->{json} = { totalCount => $rs->count, data => \@topics };
     $c->forward('View::JSON');

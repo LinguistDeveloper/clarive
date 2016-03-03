@@ -14,7 +14,7 @@ sub find {
 
     my $sort = delete $params{sort};
     my $dir  = delete $params{dir};
-    $dir = $dir && lc($dir) eq 'desc' ? -1 : 1;
+    $dir = $dir && (lc($dir) eq 'desc' || $dir eq '-1') ? -1 : 1;
 
     my $limit = delete $params{limit};
     my $skip = delete $params{skip} || delete $params{start};
@@ -47,6 +47,7 @@ sub build_where {
     my $id_project = $params{id_project};
     my $topic_mid  = $params{topic_mid};
 
+    my $where         = $params{where} || {};
     my $username      = $params{username} or _fail 'username required';
     my @categories    = _array $params{categories};
     my $category_type = $params{category_type};
@@ -54,8 +55,6 @@ sub build_where {
     my $not_in_status = $params{not_in_status};
     my $filter        = $self->_parse_filter( $params{filter} );
     my $search_query  = $params{search_query};
-
-    my $where = {};
 
     if ($filter) {
         delete $filter->{start};
