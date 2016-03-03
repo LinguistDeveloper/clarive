@@ -1963,7 +1963,6 @@ sub save_doc {
             # calendar info
             my $arr = $doc->{$field} or next;
             $doc->{$field} = {};
-            _warn($doc->{planner});
             for my $cal ( _array($arr) ) {
                 _fail "field $field is not a calendar?" unless ref $cal;
                 if( length $cal->{slotname} ) {
