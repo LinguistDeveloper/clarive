@@ -2,7 +2,6 @@ package Baseliner::View::Topics;
 use Moose;
 
 use Array::Utils qw(intersect);
-use JSON ();
 use Hash::Merge qw(merge);
 use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
@@ -74,7 +73,7 @@ sub build_where {
     Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
     if ($query) {
-        $where = merge $where, JSON::decode_json($query);
+        $where = merge $where, $query;
     }
 
     return $where;

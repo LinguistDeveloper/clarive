@@ -199,7 +199,7 @@ subtest 'build_where: builds correct where project id' => sub {
 
     my $project1 = TestUtils->create_ci_project;
     my $project2 = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
+    my $id_role  = TestSetup->create_role(
         actions => [
             {
                 action => 'action.topics.category1.view',
@@ -210,16 +210,17 @@ subtest 'build_where: builds correct where project id' => sub {
         ]
     );
 
-    my $developer = TestSetup->create_user( id_role => $id_role, project => [$project1, $project2] );
+    my $developer = TestSetup->create_user( id_role => $id_role, project => [ $project1, $project2 ] );
 
-    my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic' );
-    my $topic_mid2 = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic2' );
-    my $topic_mid3 = TestSetup->create_topic( project => $project2, id_category => $id_category2, title => 'My Topic3' );
+    my $topic_mid = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic' );
+    my $topic_mid2 =
+      TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic2' );
+    my $topic_mid3 =
+      TestSetup->create_topic( project => $project2, id_category => $id_category2, title => 'My Topic3' );
 
     my $view = _build_view();
 
-    my $where =
-      $view->build_where( username => $developer->username, id_project => $project1->mid);
+    my $where = $view->build_where( username => $developer->username, id_project => $project1->mid );
 
     is_deeply $where->{'mid'}, { '$in' => [ $topic_mid, $topic_mid2 ] };
 };
@@ -227,7 +228,7 @@ subtest 'build_where: builds correct where project id' => sub {
 subtest 'build_where: builds correct where topic mid' => sub {
     _setup();
 
-    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status1 = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
 
     my $project = TestUtils->create_ci_project;
 
@@ -288,8 +289,7 @@ subtest 'build_where: builds correct where topic mid' => sub {
 
     my $view = _build_view();
 
-    my $where =
-      $view->build_where( username => $developer->username, topic_mid => $sprint1_mid);
+    my $where = $view->build_where( username => $developer->username, topic_mid => $sprint1_mid );
 
     is_deeply $where->{'mid'}, { '$in' => [ $sprint1_mid, $changeset1_mid ] };
 };
@@ -297,7 +297,7 @@ subtest 'build_where: builds correct where topic mid' => sub {
 subtest 'build_where: builds correct where merging query' => sub {
     _setup();
 
-    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status1 = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $id_rule = TestSetup->create_rule_form(
         rule_tree => [
             {
@@ -322,7 +322,7 @@ subtest 'build_where: builds correct where merging query' => sub {
 
     my $project1 = TestUtils->create_ci_project;
     my $project2 = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
+    my $id_role  = TestSetup->create_role(
         actions => [
             {
                 action => 'action.topics.category1.view',
@@ -333,18 +333,20 @@ subtest 'build_where: builds correct where merging query' => sub {
         ]
     );
 
-    my $developer = TestSetup->create_user( id_role => $id_role, project => [$project1, $project2] );
+    my $developer = TestSetup->create_user( id_role => $id_role, project => [ $project1, $project2 ] );
 
-    my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic' );
-    my $topic_mid2 = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic2' );
-    my $topic_mid3 = TestSetup->create_topic( project => $project2, id_category => $id_category2, title => 'My Topic3' );
+    my $topic_mid = TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic' );
+    my $topic_mid2 =
+      TestSetup->create_topic( project => $project1, id_category => $id_category1, title => 'My Topic2' );
+    my $topic_mid3 =
+      TestSetup->create_topic( project => $project2, id_category => $id_category2, title => 'My Topic3' );
 
     my $view = _build_view();
 
     my $where = $view->build_where(
         username   => $developer->username,
         categories => [$id_category1],
-        query      => JSON::encode_json( { foo => 'bar', 'category.id' => { '$in' => [$id_category2] } } )
+        query      => { foo => 'bar', 'category.id' => { '$in' => [$id_category2] } }
     );
 
     is $where->{'foo'}, 'bar';
@@ -375,7 +377,7 @@ subtest 'view: accepts limit and skip' => sub {
 
     my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    for (1 .. 10) {
+    for ( 1 .. 10 ) {
         TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic ' . $_ );
     }
 
@@ -411,13 +413,13 @@ subtest 'view: accepts sort and dir' => sub {
 
     my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    for (1 .. 10) {
+    for ( 1 .. 10 ) {
         TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic ' . $_ );
     }
 
     my $view = _build_view();
 
-    my $rs = $view->view( username => $developer->username, sort => 'title', dir => 'desc');
+    my $rs = $view->view( username => $developer->username, sort => 'title', dir => 'desc' );
 
     is $rs->next->{title}, 'My Topic 9';
 };
