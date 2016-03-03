@@ -4282,7 +4282,8 @@ Baseliner.generic_list_fields = function(params,opts){
         list_type.setValue(rec.data.value_type);
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
     });
-    var json_field = new Ext.form.TextArea({ name:'filter', fieldLabel: _('Advanced Filter JSON'), height: 60, anchor:'100%', value: data.filter });
+    var filter_name = _(opts.filter_name) || _('Advanced Filter JSON');
+    var json_field = new Ext.form.TextArea({ name:'filter', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
     var display_field = new Ext.form.TextField({ name:'display_field', fieldLabel: _('Display Field'), anchor:'100%', value: data.display_field==undefined?'title':data.display_field });
     var ret = [ 
         value_combo, 
