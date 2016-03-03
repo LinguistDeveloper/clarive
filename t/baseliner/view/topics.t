@@ -97,6 +97,41 @@ subtest 'build_where: builds correct where categories' => sub {
     is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
 };
 
+subtest 'build_where: builds correct where categories from query' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid  = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic2' );
+    my $topic_mid3 = TestSetup->create_topic( project => $project, id_category => $id_category2, title => 'My Topic3' );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where( username => $developer->username, query => { categories => [$id_category1] } );
+
+    is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
+};
+
 subtest 'build_where: builds correct where statuses' => sub {
     _setup();
 
@@ -129,6 +164,42 @@ subtest 'build_where: builds correct where statuses' => sub {
     my $view = _build_view();
 
     my $where = $view->build_where( username => $developer->username, statuses => [ $status1->mid ] );
+
+    is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
+};
+
+subtest 'build_where: builds correct where statuses from query' => sub {
+    _setup();
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status1->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status1->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid  = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic2' );
+    my $topic_mid3 = TestSetup->create_topic( project => $project, id_category => $id_category2, title => 'My Topic3' );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where( username => $developer->username, query => { statuses => [ $status1->mid ] } );
 
     is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
 };
@@ -353,6 +424,52 @@ subtest 'build_where: builds correct where merging query' => sub {
     is_deeply $where->{'category.id'}, { '$in' => [ $id_category1, $id_category2 ] };
 };
 
+subtest 'build_where: builds correct where category_type' => sub {
+    _setup();
+
+    my $status1      = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule      = TestSetup->create_rule_form();
+    my $id_category1 = TestSetup->create_category(
+        name       => 'Category1',
+        is_release => 1,
+        id_rule    => $id_rule,
+        id_status  => $status1->mid
+    );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status1->mid );
+
+    my $project1 = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+    my $id_role  = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => [ $project1, $project2 ] );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where(
+        username      => $developer->username,
+        category_type => 'release'
+    );
+
+    is $where->{'category.is_release'}, 1;
+
+    my $where2 = $view->build_where(
+        username      => $developer->username,
+        category_type => 'changeset'
+    );
+
+    is $where2->{'category.is_changeset'}, 1;
+};
+
 subtest 'view: accepts limit and skip' => sub {
     _setup();
 
@@ -384,6 +501,42 @@ subtest 'view: accepts limit and skip' => sub {
     my $view = _build_view();
 
     my $rs = $view->view( username => $developer->username, limit => 5, skip => 8 );
+
+    is $rs->count(1), 2;
+    is $rs->next->{title}, 'My Topic 9';
+};
+
+subtest 'view: accepts limit and skip from query' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    for ( 1 .. 10 ) {
+        TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic ' . $_ );
+    }
+
+    my $view = _build_view();
+
+    my $rs = $view->view( username => $developer->username, query => { limit => 5, start => 8 } );
 
     is $rs->count(1), 2;
     is $rs->next->{title}, 'My Topic 9';

@@ -16,7 +16,12 @@ sub view {
     $dir = $dir && lc($dir) eq 'desc' ? -1 : 1;
 
     my $limit = delete $params{limit};
-    my $skip  = delete $params{skip};
+    my $skip = delete $params{skip} || delete $params{start};
+
+    if ( my $query = $params{query} ) {
+        $skip //= delete $params{skip} || delete $query->{start};
+        $limit //= delete $query->{limit};
+    }
 
     my $where = $self->build_where(%params);
 
@@ -41,17 +46,32 @@ sub build_where {
 
     my $username      = $params{username};
     my @categories    = _array $params{categories};
-    my $statuses      = $params{statuses};
+    my $category_type = $params{category_type};
+    my @statuses      = _array $params{statuses};
     my $not_in_status = $params{not_in_status};
     my $query         = $params{query};
 
     my $where = {};
-    if ($statuses) {
+
+    if ($query) {
+        delete $query->{start};
+        delete $query->{limit};
+
+        if ( my $categories = delete $query->{categories} ) {
+            push @categories, _array $categories;
+        }
+
+        if ( my $statuses = delete $query->{statuses} ) {
+            push @statuses, _array $statuses;
+        }
+    }
+
+    if (@statuses) {
         if ($not_in_status) {
-            $where->{'category_status.id'} = mdb->nin($statuses);
+            $where->{'category_status.id'} = mdb->nin(@statuses);
         }
         else {
-            $where->{'category_status.id'} = mdb->in($statuses);
+            $where->{'category_status.id'} = mdb->in(@statuses);
         }
     }
 
@@ -70,10 +90,24 @@ sub build_where {
 
     $where->{'category.id'} = mdb->in(@user_categories) if @categories;
 
+    if ($category_type) {
+        if ( $category_type eq 'release' ) {
+            $where->{'category.is_release'} = 1;
+        }
+        elsif ( $category_type eq 'changeset' ) {
+            $where->{'category.is_changeset'} = 1;
+        }
+        else {
+            _fail 'Uknown category type';
+        }
+    }
+
     Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
     if ($query) {
         $where = merge $where, $query;
+
+        delete $where->{query} unless defined($where->{query}) && $where->{query} ne '';
     }
 
     return $where;
