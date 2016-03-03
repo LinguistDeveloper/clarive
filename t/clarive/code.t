@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 
-use_ok 'Baseliner::Code';
+use_ok 'Clarive::Code';
 
 subtest 'eval_code: dispatches to js' => sub {
     my $code = _build_code(lang => 'js');
@@ -23,5 +23,5 @@ subtest 'eval_code: benchmark js code' => sub {
 done_testing;
 
 sub _build_code {
-    Baseliner::Code->new(@_);
+    Clarive::Code->new(@_);
 }

@@ -1,4 +1,4 @@
-package Baseliner::Code::JS;
+package Clarive::Code::JS;
 use Moose;
 
 BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }

@@ -11,7 +11,7 @@ use Try::Tiny;
 
 use Baseliner::Utils qw(_slurp);
 use BaselinerX::CI::generic_server;
-use_ok 'Baseliner::Code::JS';
+use_ok 'Clarive::Code::JS';
 
 subtest 'evals js' => sub {
     my $code = _build_code( lang => 'js' );
@@ -592,5 +592,5 @@ sub _setup {
 }
 
 sub _build_code {
-    Baseliner::Code::JS->new(@_);
+    Clarive::Code::JS->new(@_);
 }

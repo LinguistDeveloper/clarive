@@ -1,4 +1,4 @@
-package Baseliner::Code;
+package Clarive::Code;
 use Moose;
 use Moose::Util::TypeConstraints;
 
@@ -14,8 +14,8 @@ sub eval_code {
     my ( $code, $stash ) = @_;
 
     if ( $self->lang eq 'js' ) {
-        require Baseliner::Code::JS;
-        my $js = Baseliner::Code::JS->new;
+        require Clarive::Code::JS;
+        my $js = Clarive::Code::JS->new;
         my $t0;
         if( $self->benchmark ) {
             $t0=[gettimeofday];

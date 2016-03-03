@@ -7,7 +7,7 @@ use JSON::XS;
 #use IO::CaptureOutput;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Try::Tiny;
-use Baseliner::Code;
+use Clarive::Code;
 
 BEGIN { extends 'Catalyst::Controller' }
 use experimental 'autoderef';
@@ -207,7 +207,7 @@ sub eval : Local {
                 $elapsed = tv_interval( $t0 );
             } else {
                 if( $lang eq 'js-server' ) {
-                    my $runner = Baseliner::Code->new( lang=>'js', benchmark=>1 );
+                    my $runner = Clarive::Code->new( lang=>'js', benchmark=>1 );
                     my $stash = {}; # TODO it would be great if we could set a YAML stash in the REPL
                     try {
                         $res = [ $runner->eval_code( $code, $stash ) ]; 
