@@ -348,6 +348,7 @@ register 'fieldlet.system.labels' => {
     origin      => 'default',
     bd_field    => 'labels',
     id_field    => 'labels',
+    show_in_palette => 0,
     get_method  => 'get_labels',
     relation    => 'system'
 };
@@ -520,6 +521,7 @@ register 'fieldlet.system.tasks' => {
     js          => '',
     meta_type   => 'task',
     type        => 'listbox',
+    show_in_palette => 0,
     relation    => '',
     form        => '/fields/templates/config/tasks.js',
 };
