@@ -112,7 +112,11 @@ sub build_where {
     }
 
     if ( defined $search_query && length $search_query ) {
-        $where->{query} = $search_query;
+        my @mids_in = _array( delete $where->{mid} );
+        push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
+        push @mids_in,
+          Baseliner::Model::Topic->new->run_query_builder( $search_query, $where, $username, build_query => 1 );
+        $where->{mid} = mdb->in(@mids_in) if @mids_in;
     }
 
     return $where;
