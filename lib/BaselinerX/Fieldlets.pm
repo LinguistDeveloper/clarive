@@ -507,7 +507,7 @@ register 'fieldlet.system.cis' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_ci',
-    section_allowed => ['body','head','more']
+    section_allowed => ['body','details']
 };
 
 
