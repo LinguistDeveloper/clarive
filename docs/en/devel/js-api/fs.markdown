@@ -12,32 +12,40 @@ the agent CI.
 
 Creates and writes content to file in one go.
 
-    Cla.fs.createFile("/tmp/myfile", "first line\nsecond line\n");
+```javascript
+Cla.fs.createFile("/tmp/myfile", "first line\nsecond line\n");
+```
 
 ### Cla.fs.slurp(file)
 
 Reads files content into a string in one go.
 
-    var content = Cla.fs.slurp("/tmp/myfile");
+```javascript
+var content = Cla.fs.slurp("/tmp/myfile");
+```
 
 ### Cla.fs.openFile(filepath,mode)
 
 Opens a file for reading, returning
 a file handle. 
 
-    var fh = Cla.fs.openFile("/tmp/myfile", "r");
-    while( !fh.eof() ) {
-        print( fh.readLine() );
-    }
+```javascript
+var fh = Cla.fs.openFile("/tmp/myfile", "r");
+while( !fh.eof() ) {
+    print( fh.readLine() );
+}
+```
 
 #### fh.readLine()
 
 Reads a single line from the file.
 
-    var fh = Cla.fs.openFile("/tmp/myfile", "r");
-    while( !fh.eof() ) {
-        print( fh.readLine() );
-    }
+```javascript
+var fh = Cla.fs.openFile("/tmp/myfile", "r");
+while( !fh.eof() ) {
+    print( fh.readLine() );
+}
+```
 
 Returns `undefined` if the file has reach its end.
 
@@ -45,10 +53,12 @@ Returns `undefined` if the file has reach its end.
 
 Reads any number of bytes from a file. 
 
-    var fh = Cla.fs.openFile("/tmp/myfile", "r");
-    while( !fh.eof() ) {
-        print( fh.readChunk(10) ); // read only 10 bytes out from the file
-    }
+```javascript
+var fh = Cla.fs.openFile("/tmp/myfile", "r");
+while( !fh.eof() ) {
+    print( fh.readChunk(10) ); // read only 10 bytes out from the file
+}
+```
 
 Returns `undefined` if the file has reach its end.
 
@@ -60,29 +70,37 @@ Checks if filehandle has reached the end of file.
 
 Closes a file.
 
-    var fh = Cla.fs.openFile("/tmp/myfile", "r");
-    fh.close();
+```javascript
+var fh = Cla.fs.openFile("/tmp/myfile", "r");
+fh.close();
+```
 
 #### fh.fileno()
 
 Returns the filehandle number. 
 
-    var fh = Cla.fs.openFile("/tmp/myfile", "r");
-    print( fh.fileno() );
+```javascript
+var fh = Cla.fs.openFile("/tmp/myfile", "r");
+print( fh.fileno() );
+```
 
 ### Cla.fs.iterateDir(dirpath,cb)
 
 Iterates through directory contents.
 
-    Cla.fs.iterateDir( "/tmp", function(file,path){
-        if( Cla.fs.isDir(file) ) return; 
-    });
+```javascript
+Cla.fs.iterateDir( "/tmp", function(file,path){
+    if( Cla.fs.isDir(file) ) return; 
+});
+```
 
 ### Cla.fs.stat(file)
 
 Returns status info for a file.
 
-    Cla.dump( Cla.fs.stat("/tmp/myfile") );
+```javascript
+Cla.dump( Cla.fs.stat("/tmp/myfile") );
+```
 
 Not all fields are supported on all filesystem types. Here are the meanings of the fields:
 
@@ -114,30 +132,38 @@ Returns true if `path` is a file.
 
 Deletes a file.
 
-    Cla.fs.deleteFile("/tmp/myfile");
+```javascript
+Cla.fs.deleteFile("/tmp/myfile");
+```
 
 ### Cla.fs.createDir()
 
 Creates a directory in the filesystem,
 but does not create the intermediate paths.
 
-    var dir = "/tmp/dad/son";
-    if( !Cla.fs.isDir(dir) ) {
-        Cla.fs.createDir(dir);
-    }
+```javascript
+var dir = "/tmp/dad/son";
+if( !Cla.fs.isDir(dir) ) {
+    Cla.fs.createDir(dir);
+}
+```
 
 ### Cla.fs.createPath()
 
 Creates a directory in the filesystem,
 creating the intermediate parent path if necessary. 
 
-    var dir = "/tmp/dad/son";
-    Cla.fs.createPath(dir);
+```javascript
+var dir = "/tmp/dad/son";
+Cla.fs.createPath(dir);
+```
 
 ### Cla.fs.deleteDir()
 
 Deletes an empty directory. 
 
-    Cla.fs.deleteDir("/tmp/dad/son");
+```javascript
+Cla.fs.deleteDir("/tmp/dad/son");
+```
 
 Returns true if deletion was successful. 

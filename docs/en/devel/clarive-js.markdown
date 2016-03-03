@@ -38,12 +38,14 @@ Many applications are initiated with Ext.application which is called once the DO
 
 Gets and sets data in and out of the current [stash](concepts/stash). 
 
-    Cla.stash("filename", "/tmp/file.txt");  
-    print( Cla.stash("filename") );
+```javascript
+Cla.stash("filename", "/tmp/file.txt");  
+print( Cla.stash("filename") );
 
-    // it also supports nested data structures with JSON pointers
-    Cla.stash("/domain/filename", "/tmp/file.txt");  
-    print( Cla.stash("domain.filename") );
+// it also supports nested data structures with JSON pointers
+Cla.stash("/domain/filename", "/tmp/file.txt");  
+print( Cla.stash("domain.filename") );
+```
 
 To read or set data in nested levels, Clarive implements 
 a subset of the standard ISO JSON pointers:
@@ -65,11 +67,13 @@ layers of values:
 - From the current and global environment files (clarive.yml, env.yml)
 - Command-line parameters when starting the server
 
-    // gets the value from workers in the clarive.yml file
-    var wks = Cla.config("workers");
+```javascript
+// gets the value from workers in the clarive.yml file
+var wks = Cla.config("workers");
 
-    // our current database name
-    var dbname = Cla.config("/mongo/dbname");
+// our current database name
+var dbname = Cla.config("/mongo/dbname");
+```
 
 This is useful for creating site specific .yml files
 and putting your automation configuration in there. 
@@ -81,8 +85,10 @@ Gets and sets configuration data from/to the [config table](concepts/config-tabl
 The config system in Clarive is built through the combination of 3 
 layers of values:
 
-    // gets the value from workers in the clarive.yml file
-    var gitHome = Cla.configTable('config.git.home');
+```javascript
+// gets the value from workers in the clarive.yml file
+var gitHome = Cla.configTable('config.git.home');
+```
 
 The config table is a flat table with values separated with
 dots `.`, such as `config.git.home`. 
@@ -99,25 +105,30 @@ structure, such as arrays and objects. The values for the
 variables will come either from the `data` argument or
 the [stash](concepts/stash).
 
-    Cla.stash("foo", 99);
-    var txt = Cla.parseVars("This is feet"); // This is 99 feet
+```javascript
+Cla.stash("foo", 99);
+var txt = Cla.parseVars("This is feet"); // This is 99 feet
 
-    Cla.stash("name", "Haley");
-    var txt = Cla.parseVars("Hello ${name}", { name: "Joe" });  // Hello Joe
-
+Cla.stash("name", "Haley");
+var txt = Cla.parseVars("Hello ${name}", { name: "Joe" });  // Hello Joe
+```
 
 ### Cla.printf(fmt,args)
 
 Prints a string formatted by the usual printf conventions of the C library function sprintf. 
 
-    Cla.printf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
+```javascript
+Cla.printf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
+```
 
 ### Cla.sprintf(fmt,args)
 
 Returns a string formatted by the usual printf conventions of the C library function sprintf. 
 
-    var msg = Cla.sprintf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
-    print( msg );
+```javascript
+var msg = Cla.sprintf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
+print( msg );
+```
 
 ### Cla.dump(data)
 
@@ -130,9 +141,11 @@ Localizes the string using I18N formatting
 for the lang specified in the lang string.
 This function uses the Clarive I18N translation files.
 
-    var jobNum = 1234;
-    var msg = Cla.loc("es","Job %1 started", jobNum );
-    print( msg );
+```javascript
+var jobNum = 1234;
+var msg = Cla.loc("es","Job %1 started", jobNum );
+print( msg );
+```
 
 ### Cla.lastError()
 

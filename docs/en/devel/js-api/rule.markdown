@@ -13,20 +13,22 @@ Creates a new rule from a rule tree.
 The rule tree is an Array data structure with one or more operations (nodes) 
 that conform its implemented logic. 
 
-    var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
-        {
-            attributes: {
-                icon: "/static/images/icons/code.png",
-                key: "statement.code.server",
-                name: "Server CODE",
-                data: {
-                    lang: "js",
-                    code: "Cla.stash('returning_value', 999)",
-                },
+```javascript
+var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
+    {
+        attributes: {
+            icon: "/static/images/icons/code.png",
+            key: "statement.code.server",
+            name: "Server CODE",
+            data: {
+                lang: "js",
+                code: "Cla.stash('returning_value', 999)",
             },
-            children: []
-        }
-    ]);
+        },
+        children: []
+    }
+]);
+```
 
 ### Cla.rule.run(rule,[stash])
 
@@ -43,10 +45,14 @@ The function returns the stash after the rule execution.
 
 Run with an empty stash:
 
-    var stash = Cla.rule.run('myrule', {});
+```javascript
+var stash = Cla.rule.run('myrule', {});
+```
 
 Run with the current stash:
 
-    Cla.rule.run('myrule');
-    print( Cla.stash("returning_value") );
+```javascript
+Cla.rule.run('myrule');
+print( Cla.stash("returning_value") );
+```
 

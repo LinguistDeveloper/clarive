@@ -16,7 +16,9 @@ to learn more.
 This is the most basic program you can 
 write:
 
-    print('Hello world');
+```javascript
+print('Hello world');
+```
 
 ## Basic Syntax
 
@@ -25,8 +27,10 @@ by setting a `"use strict;" at the beginning of code evaluation.
 
 So this code will fail:
 
-    xx = 20;
-    print(xx); // syntax error due to undefined variable xx
+```javascript
+xx = 20;
+print(xx); // syntax error due to undefined variable xx
+```
 
 ## Declaring variables
 
@@ -34,104 +38,117 @@ Variables are declared with the keyword `var`.
 JavaScript has no types, so you don't need to 
 define its type. 
 
-    var foo;
-    foo = 100;
-    var bar = 10;
-    var age,time,address;
+```javascript
+var foo;
+foo = 100;
+var bar = 10;
+var age,time,address;
+```
 
 ## Conditionals
 
 Conditionals in JavaScript is done with the `if`
 instruction:
 
-    var foo = false;
-    if( foo ) {
-        bar();
-    } else {
-        // ... 
-    }
+```javascript
+var foo = false;
+if( foo ) {
+    bar();
+} else {
+    // ... 
+}
 
-    // you can also use switch-case to dispatch conditional values
+// you can also use switch-case to dispatch conditional values
 
-    var xx = 100;
-    switch(xx) {
-        case 100: 
-            print('low'); 
-            break;
-        case 200: print('high');
-    }
+var xx = 100;
+switch(xx) {
+    case 100: 
+    print('low'); 
+    break;
+    case 200: print('high');
+}
+```
 
 ## Loops
 
 Loops allows us to repeat a block of code many times over.
 Most loops in JS are built using `for` and `while`. 
 
-    for( var i=10; i<100; i++ ) {
-        print("Hello " + i);
-        if( i > 20 ) {
-            break;
-        }
+```javascript
+for( var i=10; i<100; i++ ) {
+    print("Hello " + i);
+    if( i > 20 ) {
+        break;
     }
-
-    var arr = [1,2,3];
-    while( arr.length ) {
-        print( arr.shift() );
-    }
+}
+```
 
 Another elegant and clever way to iterate through arrays is to use `map()`
 which is natively supported in the Clarive JS.
 
-    var arr = [1,2,3];
-    arr.map(function(el){
-        print( "This is " + el );
-    });
+```javascript
+var arr = [1,2,3];
+arr.map(function(el){
+    print( "This is " + el );
+});
+```
 
 ## Arrays
 
-    var arr = [];
-    arr.push( 100 );
-    
-    var arr2 = [1,2,3];
-    var arr3 = arr2.concat( arr, 100 );
-    
-    print( arr3.join(',') );
+```javascript
+var arr = [];
+arr.push( 100 );
+
+var arr2 = [1,2,3];
+var arr3 = arr2.concat( arr, 100 );
+
+print( arr3.join(',') );
+```
 
 ## Objects
 
-    var obj = {};
-    obj[ 'myvalue' ] = 100; 
+```javascript
+var obj = {};
+obj[ 'myvalue' ] = 100; 
 
-    // object keys can also be nested
-    obj = { address: {} };
-    obj['address']['zip'] = 90210;
+// object keys can also be nested
+obj = { address: {} };
+obj['address']['zip'] = 90210;
+```
 
 You can also use shorthand notation:
 
-    var obj = { myvalue: 200 };
-    // these are the same:
-    print( obj.myvalue );
-    print( obj[ 'myvalue' ] );
+```javascript
+var obj = { myvalue: 200 };
+// these are the same:
+print( obj.myvalue );
+print( obj[ 'myvalue' ] );
+```
 
 ## Functions
 
-    function nada(name) {
-        return "Nada is everything, dear " + name;
-    }
-    
-    print( nada("Bob") );
+```javascript
+function nada(name) {
+    return "Nada is everything, dear " + name;
+}
+
+print( nada("Bob") );
+```
 
 ## Heredocs
 
 To write multi-line strings, this is 
 the recommended way:
 
-    var txt = <<END;
+```javascript
+var txt = <<END;
 My long text starts here.
 
 See, this is how we use this.
 
 But make sure you ident it to the beginning of the line. 
 END;
+```
 
 Don't forget the colon `;` after the "END" identifier. 
 
@@ -145,14 +162,16 @@ case it's better to use the more powerful `Cla.error()` function).
 
 To catch errors, use the `try-catch` statements. 
 
-    try {
-        if( somethingIsNotright ) {
-            throw new Error("This is not ok");
-        }
-        // ... keep processing here ...
-    } catch(e) {
-        print( "Error caught on tape, everything under control: " + e);
+```javascript
+try {
+    if( somethingIsNotright ) {
+        throw new Error("This is not ok");
     }
+    // ... keep processing here ...
+} catch(e) {
+    print( "Error caught on tape, everything under control: " + e);
+}
+```
 
 ## General JavaScript Error Messages
 
@@ -168,29 +187,35 @@ an Object or Array type was expected.
 
 For example:
 
-    var myfunc = function(){ return undefined };
-    var foo = myfunc();  // say myfunc() returns undefined
-    print( foo.arg );   // Invalid base value error
-    print( foo.doIt() );   // Invalid base value error too
+```javascript
+var myfunc = function(){ return undefined };
+var foo = myfunc();  // say myfunc() returns undefined
+print( foo.arg );   // Invalid base value error
+print( foo.doIt() );   // Invalid base value error too
+```
 
 To fix it, always check for undefined or null objects and arrays before
 calling methods or attributes on objects you are not sure are correct.
 
-    var myfunc = function(){ return undefined };
-    var foo = myfunc();  
-    if( foo != undefined ) {
-        print( foo.arg );
-    } else {
-        throw new Error("Not the value I expected!");
-    }
+```javascript
+var myfunc = function(){ return undefined };
+var foo = myfunc();  
+if( foo != undefined ) {
+    print( foo.arg );
+} else {
+    throw new Error("Not the value I expected!");
+}
+```
 
 ### `ReferenceError: identifier '...' undefined `
 
 This error is thrown when there's an attempt to 
 use a variable or function that has not been defined. 
 
-    print( xxx );
-    // ReferenceError: identifier 'xxx' undefined 
+```javascript
+print( xxx );
+// ReferenceError: identifier 'xxx' undefined 
+```
 
 Remember that Clarive JS has strictures turned on by default, 
 which requires every variable to be declared in the current context. 
@@ -200,9 +225,11 @@ which requires every variable to be declared in the current context.
 This error occurs when trying to call a method that
 is not part of an object. For example:
 
-    var obj = { age: function(){ return 19 } };
-    print( obj.age() ); // prints 19
-    print( obj.name() ); // TypeError: not callable 
+```javascript
+var obj = { age: function(){ return 19 } };
+print( obj.age() ); // prints 19
+print( obj.name() ); // TypeError: not callable 
+```
 
 ### `SyntaxError: parse error`
 
@@ -235,13 +262,15 @@ the `plugins/[plugin]/modules` directory in the Clarive base.
 Handlebars are a templating system, for replacing
 strings within another from data.
 
-    var hs = require('handlebars');
-    var tt = "Hi there,\
+```javascript
+var hs = require('handlebars');
+var tt = "Hi there,\
     this is {{mom}}\
     ok?\
     ";
-    var foo = hs.compile(tt);
-    print( foo({ mom: "Johanna"}) );
+var foo = hs.compile(tt);
+print( foo({ mom: "Johanna"}) );
+```
 
 For more info, read the [Handlebars.js library reference](http://handlebarsjs.com/)
 
@@ -251,8 +280,10 @@ Underscore.js is a utility library
 that adds plenty of handy functions to
 the global object `\_` (underscore).
 
-    var _ = require('underscore');
-    _.each([1,2], function(x){ print(x) });
+```javascript
+var _ = require('underscore');
+_.each([1,2], function(x){ print(x) });
+```
 
 For more info, read the [Underscore library reference](http://underscorejs.org/)
 

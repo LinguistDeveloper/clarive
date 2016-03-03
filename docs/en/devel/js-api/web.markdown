@@ -37,6 +37,7 @@ elaborate web requests.
 In this example, we invoke a REST `GET` webservice
 that returns JSON content. 
 
+```javascript
     var ag = Cla.web.agent();
     var res = ag.get('http://jsonplaceholder.typicode.com/posts');
     if( res.isSuccess() ) {
@@ -48,6 +49,7 @@ that returns JSON content.
         Cla.printf("Something went wrong (code=%d): %s", res.code(), res.message() )
         // or: throw Error( Cla.sprintf("Something went wrong (code=%d): %s", res.code(), res.message() ) );
     }
+```
 
 Here are the agent REST methods, which have very similar handling:
 
@@ -66,9 +68,11 @@ as `Content-Type`, etc.
 - `agent.METHOD(url,[ 'Header', val, 'Content', { ..form content..} ])` - this is for more elaborate forms, 
 with different header and content formats
 
+```javascript
     var ag = Cla.web.agent();
     var url = 'http://jsonplaceholder.typicode.com/posts';
     ag.post( url, { foo: 11, bar: 22 });
+```
 
 All methods return a `response` object, which is described bellow:
 
@@ -100,16 +104,20 @@ This is a generic request
 Mirror (downloads) the URL to the file, but only
 if necessary (ie. it has changed and files differ).
 
-    var ag = Cla.web.agent();
-    ag.mirror('http://jsonplaceholder.typicode.com/posts', '/tmp/posts.json');
+```javascript
+var ag = Cla.web.agent();
+ag.mirror('http://jsonplaceholder.typicode.com/posts', '/tmp/posts.json');
+```
 
 #### agent.isOnline(options)
 
 Checks if the agent is online and can make requests, ie. if 
 the Clarive server has network connectivity.
 
-    var ag = Cla.web.agent();
-    if( ag.isOnline() ) {
-        // ... call some webservices ...
-    }
+```javascript
+var ag = Cla.web.agent();
+if( ag.isOnline() ) {
+    // ... call some webservices ...
+}
+```
 

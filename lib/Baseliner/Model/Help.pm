@@ -190,10 +190,17 @@ sub parse_body {
     my ( $yaml, $body ) = $contents =~ /(---.+?)---\n(.*)/s;
 
     # convert
-    my $html =
-        !defined $type || $type eq 'html' ? $body
-      : $type eq 'markdown' ? markdown($body)
-      :                       die "File type `$type` (extension) not found!";
+    my $html;
+    if ( !defined $type || $type eq 'html' ) {
+        $html = $body;
+    }
+    elsif ( $type eq 'markdown' ) {
+        (my $body_processed = $body ) =~ s{\n```([\S]+)(.*?)```\s*\n}{my $h2 = Util->_html_escape($2); qq{\n<pre class="$1 hljs">$h2</pre>\n\n}}sge;
+        $html = markdown($body_processed);
+    }
+    else {
+        die "File type `$type` (extension) not found!";
+    }
 
     my $data = try {
         YAML::XS::Load($yaml);

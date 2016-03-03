@@ -14,22 +14,24 @@ the `CLARIVE_BASE/plugins/[plugin-name]/modules` folder.
 To create the modules folder, we recommend 
 creating a plugin first in your `CLARIVE_BASE` [location](install/directories)
 
-    // create the file plugins/myplugin/modules/myutil.js:
-    (function(){
-        return {
-            doThis: function(num) {
-                print("This is it: " + num);
-            }
+```javascript
+// create the file plugins/myplugin/modules/myutil.js:
+(function(){
+    return {
+        doThis: function(num) {
+            print("This is it: " + num);
         }
-    }());
-
-    // now use it in your code
-    var myutils = require("myutil");
-    if( myutils ) {
-        myutils.doThis(123);
-    } else {
-        print( "could not find myutil" );
     }
+}());
+
+// now use it in your code
+var myutils = require("myutil");
+if( myutils ) {
+    myutils.doThis(123);
+} else {
+    print( "could not find myutil" );
+}
+```
 
 ## Rules
 
@@ -38,11 +40,13 @@ Then invoke that rule as part of your code.
 
 Write a rule with a JS CODE operation with the following content:
 
-    var something = Cla.stash("something");
-    Cla.stash("myresults", something * 1000 );  
+```javascript
+var something = Cla.stash("something");
+Cla.stash("myresults", something * 1000 );  
 
-    var stash = { something: 123 };
-    Cla.rule.run('my_rule_runner', stash);
-    print( "results=" + stash.myresults );  // you get 123000
+var stash = { something: 123 };
+Cla.rule.run('my_rule_runner', stash);
+print( "results=" + stash.myresults );  // you get 123000
+```
 
 Read more about `Cla.rule` [here](devel/js-api/rule)

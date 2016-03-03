@@ -21,11 +21,13 @@ following values:
 Returns the request path arguments broken down
 into an Array.
 
-    var req = Cla.ws.request();
-    var args = req.args();
-    for( var i=0; i<args.length; i++) {
-        print( args[i] );
-    }
+```javascript
+var req = Cla.ws.request();
+var args = req.args();
+for( var i=0; i<args.length; i++) {
+    print( args[i] );
+}
+```
 
 For instance, if the rule was invoked with
 the URL `http://clariveurl/rule/json/myrule/path1/path2`,
@@ -35,16 +37,20 @@ the `req.args()` will return the array `['path1','path2']`.
 
 Returns the request body.  
 
-    var req = Cla.ws.request();
-    print( req.body() );  // the body can be a huge text string
+```javascript
+var req = Cla.ws.request();
+print( req.body() );  // the body can be a huge text string
+```
 
 #### req.headers([header])
 
 Returns the request headers as an object. If the 
 header parameters is sent, returns only the value for that given header.
 
-    var req = Cla.ws.request();
-    print( req.headers('accept-language') ); 
+```javascript
+var req = Cla.ws.request();
+print( req.headers('accept-language') ); 
+```
 
 Some common headers one may get from a browser call:
 
@@ -58,8 +64,10 @@ How to send headers (myheader and another) with a `curl` command call:
 
 Returns the request query parameters.
 
-    var req = Cla.ws.request();
-    var fooParam = req.params('foo');  // in case this was called http://.../?foo=bar
+```javascript
+var req = Cla.ws.request();
+var fooParam = req.params('foo');  // in case this was called http://.../?foo=bar
+```
 
 #### req.type()
 
@@ -71,14 +79,18 @@ but it maybe useful when returning specifically built responses.
 
 The full URL of the request. 
 
-    var req = Cla.ws.request();
-    print( req.url() );   // something like: http://clariveurl/rule/json/myrule
+```javascript
+var req = Cla.ws.request();
+print( req.url() );   // something like: http://clariveurl/rule/json/myrule
+```
 
 ### Cla.ws.response()
 
 Manipulate the webservice response values and options.
-    
-    var res = Cla.ws.response();
+
+```javascript
+var res = Cla.ws.response();
+```
 
 #### res.data(key,value)
 
@@ -86,18 +98,21 @@ Sets a key-value pair in a hashed (object) response data.
 
 This is useful for returning JSON formats for webservice-like consumers.
 
-    var res = Cla.ws.response();
-    res.data("foo", 1234);
-    res.data("bar", { xx: 10, yy: [1,2,100] });
-
+```javascript
+var res = Cla.ws.response();
+res.data("foo", 1234);
+res.data("bar", { xx: 10, yy: [1,2,100] });
+```
 
 #### res.body(value)
 
 The response body let's you freely define
 what text will be in the content body. 
 
-    var res = Cla.ws.response();
-    res.body("<html><body><h1>Title</h1></body></html>");
+```javascript
+var res = Cla.ws.response();
+res.body("<html><body><h1>Title</h1></body></html>");
+```
 
 **Important**: remember that the client expects 
 a different output format depending on the request 

@@ -20,25 +20,33 @@ to be downloaded, in case of a job log.
 
 An informational message. 
 
-    Cla.log.info("This is plain information", { foo: 123 }); 
+```javascript
+Cla.log.info("This is plain information", { foo: 123 }); 
+```
 
 ### Cla.log.debug(msg, args)
 
 A lower level informational message. 
 
-    Cla.log.debug("This is plain information", { foo: 123 }); 
+```javascript
+Cla.log.debug("This is plain information", { foo: 123 }); 
+```
 
 ### Cla.log.warn(msg, args)
 
 A warning message. 
 
-    Cla.log.warn("A warning"); 
+```javascript
+Cla.log.warn("A warning"); 
+```
 
 ### Cla.log.error(msg, args)
 
 Error message.
 
-    Cla.log.error("An error"); 
+```javascript
+Cla.log.error("An error"); 
+```
 
 ### Cla.log.fatal(msg, args)
 

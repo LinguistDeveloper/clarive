@@ -11,12 +11,14 @@ use semaphores in their code.
 Takes a semaphore to execute the code block
 passed as an argument. 
 
-    var ret = Cla.sem.take('abc', function(){
-        Cla.sleep(0.05);
-        print( 111 );
-        return 123;
-    });
-    print( ret );
+```javascript
+var ret = Cla.sem.take('abc', function(){
+    Cla.sleep(0.05);
+    print( 111 );
+    return 123;
+});
+print( ret );
+```
 
 Take consumes 1 semaphore slot. This typically 
 means that no other process can take the same semaphore, unless
