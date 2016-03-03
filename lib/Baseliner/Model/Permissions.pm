@@ -440,7 +440,7 @@ sub build_project_security {
             my ($category) = $action =~ /action\.topics\.(.*?)\./;
             $categories_for_role{ $all_categories{$category} }=1 if $category && exists $all_categories{$category};
         }
-        my @filtered_categories = grep { exists $cat_filter{$_} } keys %categories_for_role if @filter_categories;
+        my @filtered_categories = sort grep { exists $cat_filter{$_} } keys %categories_for_role if @filter_categories;
         while ( my ( $coll, $collmid ) = each %{ $colls || {} } ) {
             if (@filter_categories) { 
                 next unless @filtered_categories;
