@@ -81,6 +81,15 @@ sub dashboard {
             $from_date = $from_date + '1M';
         }
     }
+    elsif ( $scale eq 'year' ) {
+        $group_by = { '$substr' => [ '$ts', 0, 4 ] };
+
+        while ( $from_date < $to_date ) {
+            $burndown{ substr $from_date, 0, 4 } = 0;
+
+            $from_date = $from_date + '1Y';
+        }
+    }
     else {
         die 'unknown scale';
     }

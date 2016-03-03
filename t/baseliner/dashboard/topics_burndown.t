@@ -231,6 +231,72 @@ subtest 'burndown: scale by month' => sub {
     is_deeply $burndown, [ [ '2015-01', 2 ], [ '2015-02', 2 ], [ '2015-03', 2 ], ];
 };
 
+subtest 'burndown: scale by year' => sub {
+    _setup();
+
+    my $id_rule            = TestSetup->create_rule_form();
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
+    my $id_category        = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $dashboard = _build_dashboard();
+
+    my $topic_new_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    my $topic_finished = mock_time '2015-01-01T00:00:00',
+      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+
+    mock_time '2016-02-01T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+    };
+
+    mock_time '2017-03-01T00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_in_progress->mid
+        );
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_in_progress_mid,
+            id_status => $status_finished->mid
+        );
+    };
+
+    my $burndown = $dashboard->dashboard(
+        username => $user->username,
+        from     => '2015-01-01',
+        to       => '2017-03-01',
+        scale    => 'year'
+    );
+
+    is_deeply $burndown, [ [ '2015', 3 ], [ '2016', 3 ], [ '2017', 2 ], ];
+};
+
 subtest 'burndown: created and closed during period' => sub {
     _setup();
 
