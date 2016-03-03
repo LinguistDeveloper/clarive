@@ -3,6 +3,7 @@ use Moose;
 
 use Array::Utils qw(intersect);
 use Hash::Merge qw(merge);
+use JSON ();
 use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_fail _array);
@@ -18,9 +19,11 @@ sub view {
     my $limit = delete $params{limit};
     my $skip = delete $params{skip} || delete $params{start};
 
-    if ( my $query = $params{query} ) {
-        $skip //= delete $params{skip} || delete $query->{start};
-        $limit //= delete $query->{limit};
+    if ( my $filter = $params{filter} ) {
+        $filter = $params{filter} = $self->_parse_filter($filter);
+
+        $skip //= delete $filter->{skip} || delete $filter->{start};
+        $limit //= delete $filter->{limit};
     }
 
     my $where = $self->build_where(%params);
@@ -44,24 +47,25 @@ sub build_where {
     my $id_project = $params{id_project};
     my $topic_mid  = $params{topic_mid};
 
-    my $username      = $params{username};
+    my $username      = $params{username} or _fail 'username required';
     my @categories    = _array $params{categories};
     my $category_type = $params{category_type};
     my @statuses      = _array $params{statuses};
     my $not_in_status = $params{not_in_status};
-    my $query         = $params{query};
+    my $filter        = $self->_parse_filter( $params{filter} );
+    my $search_query  = $params{search_query};
 
     my $where = {};
 
-    if ($query) {
-        delete $query->{start};
-        delete $query->{limit};
+    if ($filter) {
+        delete $filter->{start};
+        delete $filter->{limit};
 
-        if ( my $categories = delete $query->{categories} ) {
+        if ( my $categories = delete $filter->{categories} ) {
             push @categories, _array $categories;
         }
 
-        if ( my $statuses = delete $query->{statuses} ) {
+        if ( my $statuses = delete $filter->{statuses} ) {
             push @statuses, _array $statuses;
         }
     }
@@ -104,13 +108,26 @@ sub build_where {
 
     Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
-    if ($query) {
-        $where = merge $where, $query;
+    if ($filter) {
+        $where = merge $where, $filter;
+    }
 
-        delete $where->{query} unless defined($where->{query}) && $where->{query} ne '';
+    if ( defined $search_query && length $search_query ) {
+        $where->{query} = $search_query;
     }
 
     return $where;
+}
+
+sub _parse_filter {
+    my $self = shift;
+    my ($filter) = @_;
+
+    return {} unless defined $filter && length $filter;
+
+    return $filter if ref $filter eq 'HASH';
+
+    return eval { JSON::decode_json($filter) } or do { +{} };
 }
 
 1;

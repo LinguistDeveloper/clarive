@@ -299,32 +299,29 @@ sub related : Local {
 
     my $categories    = $p->{categories};
     my $statuses      = $p->{statuses};
-    my $not_in_status = $p->{not_in_status} // 0;
+    my $not_in_status = $p->{not_in_status};
     my $show_release  = $p->{show_release};
-    my $query         = $p->{query} // '';
-    my $filter        = eval { JSON::decode_json( $p->{filter} // '{}' ) } or do { {} };
+    my $search_query  = $p->{query};
+    my $filter        = $p->{filter};
 
     my $start         = $p->{start} //= 0;
     my $limit         = $p->{limit} //= 20;
     my $sort          = $p->{sort_field};
     my $dir           = $p->{dir};
 
-    my $username = $c->username;
-
     my $view = Baseliner::View::Topics->new;
 
-    my $final_query = $filter;
-    $final_query->{query} = $query;
-
     my $rs = $view->view(
-        username   => $username,
-        categories => $categories,
-        statuses   => $statuses,
-        query      => $final_query,
-        start      => $start,
-        limit      => $limit,
-        sort       => $sort_field,
-        dir        => $dir,
+        username      => $c->username,
+        categories    => $categories,
+        statuses      => $statuses,
+        not_in_status => $not_in_status,
+        search_query  => $search_query,
+        filter        => $filter,
+        start         => $start,
+        limit         => $limit,
+        sort          => $sort_field,
+        dir           => $dir,
         $show_release ? ( category_type => 'release' ) : (),
     );
     $rs->fields( { _txt => 0 } );

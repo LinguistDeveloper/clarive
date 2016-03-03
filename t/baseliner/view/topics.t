@@ -97,7 +97,7 @@ subtest 'build_where: builds correct where categories' => sub {
     is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
 };
 
-subtest 'build_where: builds correct where categories from query' => sub {
+subtest 'build_where: builds correct where categories from filter' => sub {
     _setup();
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -127,7 +127,7 @@ subtest 'build_where: builds correct where categories from query' => sub {
 
     my $view = _build_view();
 
-    my $where = $view->build_where( username => $developer->username, query => { categories => [$id_category1] } );
+    my $where = $view->build_where( username => $developer->username, filter => { categories => [$id_category1] } );
 
     is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
 };
@@ -168,7 +168,7 @@ subtest 'build_where: builds correct where statuses' => sub {
     is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
 };
 
-subtest 'build_where: builds correct where statuses from query' => sub {
+subtest 'build_where: builds correct where statuses from filter' => sub {
     _setup();
 
     my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
@@ -199,7 +199,43 @@ subtest 'build_where: builds correct where statuses from query' => sub {
 
     my $view = _build_view();
 
-    my $where = $view->build_where( username => $developer->username, query => { statuses => [ $status1->mid ] } );
+    my $where = $view->build_where( username => $developer->username, filter => { statuses => [ $status1->mid ] } );
+
+    is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
+};
+
+subtest 'build_where: builds correct where filter is JSON' => sub {
+    _setup();
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status1->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status1->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid  = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project, id_category => $id_category1, title => 'My Topic2' );
+    my $topic_mid3 = TestSetup->create_topic( project => $project, id_category => $id_category2, title => 'My Topic3' );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where( username => $developer->username, filter => JSON::encode_json({ statuses => [ $status1->mid ] }) );
 
     is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
 };
@@ -365,7 +401,7 @@ subtest 'build_where: builds correct where topic mid' => sub {
     is_deeply $where->{'mid'}, { '$in' => [ $sprint1_mid, $changeset1_mid ] };
 };
 
-subtest 'build_where: builds correct where merging query' => sub {
+subtest 'build_where: builds correct where merging filter' => sub {
     _setup();
 
     my $status1 = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -417,7 +453,7 @@ subtest 'build_where: builds correct where merging query' => sub {
     my $where = $view->build_where(
         username   => $developer->username,
         categories => [$id_category1],
-        query      => { foo => 'bar', 'category.id' => { '$in' => [$id_category2] } }
+        filter     => { foo => 'bar', 'category.id' => { '$in' => [$id_category2] } }
     );
 
     is $where->{'foo'}, 'bar';
@@ -506,7 +542,7 @@ subtest 'view: accepts limit and skip' => sub {
     is $rs->next->{title}, 'My Topic 9';
 };
 
-subtest 'view: accepts limit and skip from query' => sub {
+subtest 'view: accepts limit and skip from filter' => sub {
     _setup();
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -536,7 +572,7 @@ subtest 'view: accepts limit and skip from query' => sub {
 
     my $view = _build_view();
 
-    my $rs = $view->view( username => $developer->username, query => { limit => 5, start => 8 } );
+    my $rs = $view->view( username => $developer->username, filter => { limit => 5, start => 8 } );
 
     is $rs->count(1), 2;
     is $rs->next->{title}, 'My Topic 9';
