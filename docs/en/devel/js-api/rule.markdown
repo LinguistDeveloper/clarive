@@ -1,0 +1,52 @@
+---
+title: Cla.rule - rule execution
+---
+
+This namespace contains functions 
+that enables your code to interop with the 
+rule system.
+
+### Cla.rule.create(options,tree)
+
+Creates a new rule from a rule tree.
+
+The rule tree is an Array data structure with one or more operations (nodes) 
+that conform its implemented logic. 
+
+    var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
+        {
+            attributes: {
+                icon: "/static/images/icons/code.png",
+                key: "statement.code.server",
+                name: "Server CODE",
+                data: {
+                    lang: "js",
+                    code: "Cla.stash('returning_value', 999)",
+                },
+            },
+            children: []
+        }
+    ]);
+
+### Cla.rule.run(rule,[stash])
+
+Runs the rule identified by the argument
+`rule`, which can be either a rule name or
+id. 
+
+The `stash` is an Object that can be created by the user
+and sent to the rule. If no `stash` is set
+the current program stash will be used. That's the 
+one contained in `Cla.stash()`.
+
+The function returns the stash after the rule execution. 
+
+Run with an empty stash:
+
+    var stash = Cla.rule.run('myrule', {});
+
+Run with the current stash:
+
+    Cla.rule.run('myrule');
+    print( Cla.stash("returning_value") );
+
