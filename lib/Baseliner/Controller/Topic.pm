@@ -8,7 +8,7 @@ use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Users;
-use Baseliner::View::Topics;
+use Baseliner::DataView::Topic;
 use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
@@ -309,9 +309,9 @@ sub related : Local {
     my $sort          = $p->{sort_field};
     my $dir           = $p->{dir};
 
-    my $view = Baseliner::View::Topics->new;
+    my $view = Baseliner::DataView::Topic->new;
 
-    my $rs = $view->view(
+    my $rs = $view->find(
         username      => $c->username,
         categories    => $categories,
         statuses      => $statuses,

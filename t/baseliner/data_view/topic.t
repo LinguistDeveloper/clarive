@@ -10,7 +10,7 @@ use TestUtils;
 use TestSetup;
 
 use Baseliner::Model::Topic;
-use Baseliner::View::Topics;
+use Baseliner::DataView::Topic;
 
 subtest 'build_where: builds correct where project_security' => sub {
     _setup();
@@ -536,7 +536,7 @@ subtest 'view: accepts limit and skip' => sub {
 
     my $view = _build_view();
 
-    my $rs = $view->view( username => $developer->username, limit => 5, skip => 8 );
+    my $rs = $view->find( username => $developer->username, limit => 5, skip => 8 );
 
     is $rs->count(1), 2;
     is $rs->next->{title}, 'My Topic 9';
@@ -572,7 +572,7 @@ subtest 'view: accepts limit and skip from filter' => sub {
 
     my $view = _build_view();
 
-    my $rs = $view->view( username => $developer->username, filter => { limit => 5, start => 8 } );
+    my $rs = $view->find( username => $developer->username, filter => { limit => 5, start => 8 } );
 
     is $rs->count(1), 2;
     is $rs->next->{title}, 'My Topic 9';
@@ -608,7 +608,7 @@ subtest 'view: accepts sort and dir' => sub {
 
     my $view = _build_view();
 
-    my $rs = $view->view( username => $developer->username, sort => 'title', dir => 'desc' );
+    my $rs = $view->find( username => $developer->username, sort => 'title', dir => 'desc' );
 
     is $rs->next->{title}, 'My Topic 9';
 };
@@ -676,7 +676,7 @@ sub _create_changeset_form {
 }
 
 sub _build_view {
-    Baseliner::View::Topics->new;
+    Baseliner::DataView::Topic->new;
 }
 
 sub _setup {

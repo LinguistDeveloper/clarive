@@ -1,4 +1,4 @@
-package Baseliner::View::Topics;
+package Baseliner::DataView::Topic;
 use Moose;
 
 use Array::Utils qw(intersect);
@@ -8,7 +8,7 @@ use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_fail _array);
 
-sub view {
+sub find {
     my $self = shift;
     my (%params) = @_;
 
