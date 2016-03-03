@@ -2262,9 +2262,6 @@ sub _trend_line {
     my @x = _array( $p{x} );
     my @y = _array( $p{y} );
 
-    use Data::Dumper; warn Dumper(\@x);
-    use Data::Dumper; warn Dumper(\@y);
-
     my ( $m, $d, $b, @xy, @x2, @xy_res, @x_res_sq, @y_res_sq ) = (0);    #vars,+ arrays
     my $n     = $#x + 1;
     my $sum_x = sum(@x);
