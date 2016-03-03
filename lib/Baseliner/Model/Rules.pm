@@ -1335,46 +1335,57 @@ sub restore_rule {
 }
 
 sub save_rule {
-    my ($self,%p)=@_;
+    my ($self,%params)=@_;
 
-    if( $p{wsdl} ) {
+    my $id_rule;
+
+    if( $params{wsdl} ) {
         # soap envelope received, precompile for errors
-        $self->compile_wsdl($p{wsdl});
+        $self->compile_wsdl($params{wsdl});
     }
     my $data = {
         rule_active => '1',
-        rule_name  => $p{rule_name},
-        rule_when  => ( $p{rule_type} eq 'pipeline'
-            ? $p{pipeline_default}
-            : $p{rule_when} ),
-        rule_event => $p{rule_event},
-        rule_type  => $p{rule_type},
-        rule_compile_mode  => $p{rule_compile_mode},
-        rule_desc  => substr($p{rule_desc},0,2000),
-        subtype => $p{subtype},
-        authtype => $p{authtype},
-        wsdl => $p{wsdl},
-        ts =>  mdb->ts,
-        username => $p{username}
+        rule_name   => $params{rule_name},
+        rule_when   => (
+              $params{rule_type} eq 'pipeline'
+            ? $params{pipeline_default}
+            : $params{rule_when}
+        ),
+        rule_event        => $params{rule_event},
+        rule_type         => $params{rule_type},
+        rule_compile_mode => $params{rule_compile_mode},
+        rule_desc         => substr( $params{rule_desc}, 0, 2000 ),
+        subtype           => $params{subtype},
+        authtype          => $params{authtype},
+        wsdl              => $params{wsdl},
+        ts                => mdb->ts,
+        username          => $params{username}
     };
-    if ( length $p{rule_id} ) {
+
+    if ( exists $params{rule_tree} && ref $params{rule_tree} ) {
+        $data->{rule_tree} = JSON::encode_json( $params{rule_tree} ); 
+    }
+
+    if ( length $params{rule_id} ) {
+        $id_rule = $params{rule_id};
         event_new 'event.rule.update'
-            => { username=>$p{username}, rule_id=>$p{rule_id}, rule_name=>$p{rule_name}, rule_type=>$p{rule_type}}
-            => sub {
-                my $doc = mdb->rule->find_one({ id=>"$p{rule_id}" });
-                _fail _loc 'Rule %1 not found', $p{rule_id} unless $doc;
-                mdb->rule->update({ id=>"$p{rule_id}" },{ %$doc, %$data });
+            => { username=>$params{username}, rule_id=>$params{rule_id}, rule_name=>$params{rule_name}, rule_type=>$params{rule_type}}
+            => sub { 
+                my $doc = mdb->rule->find_one({ id=>"$params{rule_id}" });
+                _fail _loc 'Rule %1 not found', $params{rule_id} unless $doc;
+                mdb->rule->update({ id=>"$params{rule_id}" },{ %$doc, %$data });
             }
     } else {
+        $id_rule = mdb->seq('rule');
         event_new 'event.rule.create'
-            => { username=>$p{username}, rule_id=>$p{rule_id}, rule_name=>$p{rule_name}, rule_type=>$p{rule_type}}
+            => { username=>$params{username}, rule_id=>$params{rule_id}, rule_name=>$params{rule_name}, rule_type=>$params{rule_type}}
             => sub {
-                $data->{id} = mdb->seq('rule');
+                $data->{id} = $id_rule;
                 $data->{rule_seq} = 0+mdb->seq('rule_seq');
                 mdb->rule->insert($data);
             }
     }
-    return { rule_name => $p{rule_name} };
+    return { id_rule=>$id_rule, rule_name => $params{rule_name} };
 }
 no Moose;
 __PACKAGE__->meta->make_immutable;

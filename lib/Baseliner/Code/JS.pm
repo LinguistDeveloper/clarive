@@ -530,6 +530,38 @@ sub _generate_top_level {
                 BaselinerX::Type::Model::ConfigStore->set( key=>$key, value=>$value ) :
                 BaselinerX::Type::Model::ConfigStore->get( $key, value=>1 );
         },
+        rule => {
+            create => js_sub {
+                shift;
+                my ($opts,$rule_tree) = @_;
+
+                Baseliner::Model::Rules->save_rule(
+                    rule_tree         => $rule_tree, 
+                    rule_active       => '1',
+                    rule_name         => $opts->{name},
+                    rule_when         => $opts->{when},
+                    rule_event        => $opts->{event},
+                    rule_type         => $opts->{type}, 
+                    rule_compile_mode => $opts->{compileMode},
+                    rule_desc         => $opts->{description},
+                    subtype           => $opts->{subtype},
+                    authtype          => $opts->{authtype},
+                    wsdl              => $opts->{wsdl},
+                );
+            },
+            run => js_sub {
+                shift;
+                my ($id_rule,$rule_stash) = @_;
+
+                my $ret_rule = Baseliner::Model::Rules->run_single_rule(
+                    id_rule   => $id_rule,
+                    stash     => ( ref $rule_stash ? $rule_stash : $stash ),
+                    contained => 1
+                );
+
+                ref $rule_stash ? $rule_stash : $stash;
+            }
+        },
         web => {
             agent => js_sub {
                 shift;

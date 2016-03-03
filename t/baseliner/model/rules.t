@@ -411,6 +411,107 @@ subtest 'save_rule: actually creates a new rule' => sub {
     is scalar @rules, 2;
 };
 
+subtest 'save_rule: returns the rule id' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe'
+    };
+
+    my $ret = $rules->save_rule( %$data );
+
+    is( mdb->rule->find({ id=>$ret->{id_rule} })->count, 1 );
+};
+
+subtest 'save_rule: data is correct' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe',
+    };
+
+    my $ret = $rules->save_rule( %$data );
+
+    is_deeply(
+        mdb->rule->find_one(
+            { id => $ret->{id_rule} },
+            {
+                _id      => 0,
+                wsdl     => 0,
+                authtype => 0,
+                id       => 0,
+                rule_seq => 0,
+                subtype  => 0
+            }
+        ),
+        $data
+    );
+};
+
+subtest 'save_rule: saves the tree' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe',
+        rule_tree => [
+            {
+                "attributes"=> {
+                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "key"=> "statement.code.server",
+                    "text"=> "Server CODE",
+                    "id"=> "rule-ext-gen38276-1456842988061",
+                    "name"=> "Server CODE",
+                    "data"=> {
+                        "lang"=> "js",
+                        "code"=> q{
+                            var req = Cla.ws.request();
+                            var res = Cla.ws.response();
+                            res.data('hola', req.headers('accept-language'));
+                            res.content_type('baz');
+                        }
+                    },
+                },
+                "children"=> [],
+            }
+        ]
+    };
+
+    my $ret = $rules->save_rule( %$data );
+    my $tree = mdb->rule->find_one({ id=>$ret->{id_rule} })->{rule_tree};
+    
+    is_deeply( Util->_decode_json($tree), $data->{rule_tree} );
+};
+
 subtest 'save_rule: updates the rule data' => sub {
     _setup();
 
