@@ -28,13 +28,23 @@ params:
         ]
     });
     */
+    var readonly = Baseliner.eval_boolean(meta.readonly);
     var p = { 
         fieldLabel:_( meta.name_field ), 
         name: meta.id_field, 
-        value: data[ meta.id_field ]
+        value: data[ meta.id_field ],
+        readOnly:  readonly,
+        hidden: Baseliner.eval_boolean(meta.hidden),
+        allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
     };
     if( meta.filter!=undefined ) {
-        p['combo_store'] = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter } });
+        p['combo_store'] = new Baseliner.store.Topics({
+            baseParams: {
+                mid: data ? data.topic_mid : '',
+                show_release: 0,
+                filter: meta.filter
+            }
+        });
     }
     var grid = new Baseliner.TopicGrid( p );
     return [
