@@ -628,3 +628,15 @@ div#search-result-block img {
 }
 
 
+#boot .dashboard-buttons em.x-btn-arrow button {
+  margin-right: 12px;
+}
+
+#boot .dashboard-buttons  table.x-btn.x-btn-menu-active {
+    opacity: 1.0 !important;
+    border: none !important;
+}
+
+#boot .dashboard-buttons em.x-btn-arrow.x-unselectable {
+    margin-top: -1px;
+}
