@@ -3,43 +3,57 @@ title: Job daily distribution
 index: 400
 icon: chart_line
 ---
-* Shows the jobs distribution in a chart line
-* There are a list of elements can be configured in the dashlet:
 
-<br />
+Shows the jobs distribution in a chart line
+
+There are a list of elements can be configured in the dashlet:
+
+
 ### Dimensions of the dashlet
-* Can personalize the size of the dashlet modifying the number of columns and rows.
 
-<br />
+Can personalize the size of the dashlet modifying the number of columns and rows.
+
+
 ### Autorefresh
-* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
+
+Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
 
-<br />
+
 ### Charts will be shown as...
-* Show the different views of the chart <br />
+
+Show the different views of the chart
 
 
-&nbsp; &nbsp;• **Area** <br />
+- **Area*
 
-&nbsp; &nbsp;• **Stacked area** <br />
 
-&nbsp; &nbsp;• **Area step** <br />
+- **Stacked area*
 
-&nbsp; &nbsp;• **Line** <br />
 
-&nbsp; &nbsp;• **Bar** <br />
+- **Area step*
 
-&nbsp; &nbsp;• **Stacked bar** 
 
-<br />
+- **Line*
+
+
+- **Bar*
+
+
+- **Stacked bar*
+
+
+
 ### Do you want the data to be shown by environment?
-* Allows to filter the data by environment or show all data
 
-<br />
+Allows to filter the data by environment or show all data
+
+
 ### Period to be shown. Last...
-* Use to configure the period view of the chart. 
 
-<br />
+Use to configure the period view of the chart.
+
+
 ### Which environmets do you want to see
-* Allows to select one o more environments.
+
+Allows to select one o more environments.

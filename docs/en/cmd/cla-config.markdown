@@ -2,41 +2,43 @@
 title: cla config - Configuration tool
 icon: console
 ---
-* `cla config`:  Tool for generate a custom config file or display the config and opts parameters. 
-* Running alone, this command **asks the user to generate a custom configuration file** through a template.
-* This template can be defined:  <br />
-     
-&nbsp; &nbsp; • As an argument passed through the command line as following: `--template <template file>`. <br />
 
-&nbsp; &nbsp; • If no argument is passed, the template is located in `$CLARIVE_HOME/config/clarive.yml.template`. <br/>
+`cla config`:  Tool for generate a custom config file or display the config and opts parameters.
 
-* After executing, it asks **some questions about some configuration parameters**, these are: <br />
+Running alone, this command **asks the user to generate a custom configuration file*
+through a template.
 
-&nbsp; &nbsp;• `host`: Name of the instance that identifies the server. <br />
+This template can be defined:
 
-&nbsp; &nbsp;• `web host`: Host added to published urls in emails. <br />
+- As an argument passed through the command line as following: `--template <template file>`.
 
-&nbsp; &nbsp;• `web port`: Port added to published urls in emails and the interface. <br />
+- If no argument is passed, the template is located in `$CLARIVE_HOME/config/clarive.yml.template`. 
 
-&nbsp; &nbsp;• `site_key`: A random key used to encrypt passwords. <br />
+After executing, it asks **some questions about some configuration parameters**, these are:
 
-&nbsp; &nbsp;• `default theme`.  <br />
+- `host`: Name of the instance that identifies the server.
 
-&nbsp; &nbsp;•  `time_zone_offset`: To establish time zone.
+- `web host`: Host added to published urls in emails.
 
-<br/>
+- `web port`: Port added to published urls in emails and the interface.
 
-* After answering all these questions **a configuration file is created** in `$CLARIVE_HOME/config` directory. It is  called: <br />
+- `site_key`: A random key used to encrypt passwords.
 
-&nbsp; &nbsp; • `<$env>.yml`: If an option has been passed as an argument in the form: `--env <environment_name>` . <br />
+- `default theme`.
 
-&nbsp; &nbsp; • `<$CLARIVE_ENV>.yml.`:If no env argument is passed. <br />
+-  `time_zone_offset`: To establish time zone.
 
-* This command has three different subcommands that can be displayed through the help option:
-            
+After answering all these questions **a configuration file is created*
+in `$CLARIVE_HOME/config` directory. It is  called:
+
+- `<$env>.yml`: If an option has been passed as an argument in the form: `--env <environment_name>` .
+
+- `<$CLARIVE_ENV>.yml.`:If no env argument is passed.
+
+
+This command has three different subcommands that can be displayed through the help option:
+
         > cla help config
-
-        Clarive|Software - Copyright (c) 2013 VASSLabs
 
         usage: cla [-h] [-v] [--config file] command <command-args>
 
@@ -48,22 +50,25 @@ icon: console
         cla help <command> to get all subcommands.
         cla <command> -h for command options
 
-<br/>
 
-* `cla config-show`: this command shows all configuration parameters defined in the following configuration files:  <br />
+`cla config-show`: this command shows all configuration parameters defined in the following configuration files:
 
-      &nbsp; &nbsp; • `clarive.yml`. <br />
-      &nbsp; &nbsp; • `global.yml`.
+      - `clarive.yml`.
+      - `global.yml`.
 
-* File defined in option `--env` passed as argument in the command call with yml extension, or file `$CLARIVE_ENV` with yml extension.
-* With the option `--key <parameter>`, the output shows only the parameters defined in <parameter> field.    
-* `cla config-opts`: this command shows: <br />
 
-      &nbsp; &nbsp; • All configuration parameters from the config files mentioned above. <br />
+File defined in option `--env` passed as argument in the command call with yml extension, or file `$CLARIVE_ENV` with yml extension.
 
-      &nbsp; &nbsp; • Some key configuration parameters from the environment. <br />
+With the option `--key <parameter>`, the output shows only the parameters defined in <parameter> field.
 
-      &nbsp; &nbsp; • Arguments passed through command line.
+`cla config-opts`: this command shows:
 
-* `cla config-gen`: Same behavior as cla config.
+      - All configuration parameters from the config files mentioned above.
+
+      - Some key configuration parameters from the environment.
+
+      - Arguments passed through command line.
+
+
+`cla config-gen`: Same behavior as cla config.
 

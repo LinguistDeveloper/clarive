@@ -2,83 +2,121 @@
 title: Rule Concepts
 icon: rule
 ---
-* Once the different needs are recorded and managed through the 
-various states that make up their lifecycle, they must be deployed and delivered for final operation. 
+
+Once the different needs are recorded and managed through the
+various states that make up their lifecycle, they must be deployed and delivered for final operation.
 It is highly related to Change set Management.
 Rule Management is in charge of automation and deployment among systems.
-* Automation is done through rules executions; they must be 
-created first using Clarive process definition, also Clarive supplies 
-all needed tools to manage rules. For rule management, a number of 
+
+Automation is done through rules executions; they must be
+created first using Clarive process definition, also Clarive supplies
+all needed tools to manage rules. For rule management, a number of
 Clarive concepts are describe here.
-  
-<br /> 
+
 ### Types of rules
-* There are six types of rules:
 
-&nbsp; &nbsp;• **Event** - Triggers or triggers based on actions performed on the system. Three types of rules: <br />
+There are six types of rules:
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Pre online* - Load rule before the execution of the event <br />
+**Event**
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Post online* - The rule loads synchronously with the event <br />
+Triggers or triggers based on actions performed on the system.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Post offline* - The rule runs after the event <br />
+There are 3 types of event rules:
 
+1) **Pre online**
 
-&nbsp; &nbsp;• **Job Chain**: Chain through. There are three possible final steps. <br />
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Promote* - Promotes a conceptually superior environment, for example, pre-production to production <br />
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Static* - Deployed in the same environment<br />
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Demote* - Demotes a conceptually inferior environment, for example, production to pre-production  <br />
+Load rule before the execution of the event
 
+2) **Post online**
 
-<br />
+The rule loads synchronously with the event
+
+3) **Post offline**
+
+The rule runs after the event.
+
+**Pipeline Rule**
+
+A pipeline rule is a rule that promotes, demotes or just deploys
+changes from releases and/or changesets into an environment.
+
+The rule can also become the default for a given transition:
+
+**Promote**
+
+Promotes a conceptually superior environment,
+for example from pre-production to production
+
+**Static**
+
+Used to redeploy changesets to the same environment they currently occupy.
+
+**Demote**
+
+Demotes a conceptually inferior environment,
+for example from production (PROD) to pre-production (PREP).
+
 ### Job Steps
-* When a rule is created, 5 steps are displayed, these are: <br />
 
-&nbsp; &nbsp;• **CHECK**: Check before creating the job, job object not yet available. <br />
+When a rule is created, 5 steps are displayed, these are:
 
-&nbsp; &nbsp;• **INIT**: Check after creation, but in order to job longer available. <br />
+- **CHECK**: Check before creating the job, job object not yet available.
 
-&nbsp; &nbsp;• **PRE**: Immediate implementation prior to the scheduled time. <br />
+- **INIT**: Check after creation, but in order to job longer available.
 
-&nbsp; &nbsp;• **RUN**: Run at the scheduled time. <br />
+- **PRE**: Immediate implementation prior to the scheduled time.
 
-&nbsp; &nbsp;• **POST**: Runs allways when job finishes right or wrong.
+- **RUN**: Run at the scheduled time.
 
-<br />
-### Types of Tasks  
-* It is divided in three types of tasks: <br />
+- **POST**: Runs allways when job finishes right or wrong.
 
 
-&nbsp; &nbsp;• **Statements**: Provide control flow rule, they are IFs and Fors, and ad- hoc tasks. <br />
+### Types of Tasks
 
-&nbsp; &nbsp;• **Services**: Operating in the pass,  they can be: <br />
-      
-&nbsp; &nbsp;&nbsp; &nbsp; • *Job Services* - Tasks associated to a job.<br />
-      
-&nbsp; &nbsp;&nbsp; &nbsp; • *Generic Services* - General type. <br />
+It is divided in three types of tasks:
 
-&nbsp; &nbsp;• **Rules**: Allow including rules within other rules, these rules to be include have to be of independent type.
+1) **Statements**
 
+Provide control flow rule, they are IFs and Fors, and ad- hoc tasks.
+
+2) **Services**
+
+Operating in the pass,  they can be:
+
+3) **Job Services**
+
+Tasks associated to a job.
+
+4) **Generic Services**
+
+General type.
+
+**Rules**: Allow including rules within other rules, these rules to be include have to be of independent type.
 
 ### Other rules
 
-&nbsp; &nbsp;• **Report** - Create a report with Perl code. <br />
+**Report**
 
-&nbsp; &nbsp;• **Webservice** - Allows to integrate webservices in rules.<br />
+Create a report with Perl code.
 
-&nbsp; &nbsp;• **Independent** - Little rules to include within more complex rules, simplifying the system.  <br />
+**Webservice**
 
-&nbsp; &nbsp;• **Dashboard** - Rule that allows the user to create a personalized dashboard with dashlets components.  <br />
+Allows to integrate webservices in rules.
 
-&nbsp; &nbsp;• **Form** - Rule composed by fieldlets that shape the form of a topic.  <br />
+**Independent**
 
+Little rules to include within more complex rules, simplifying the system.
 
-<br />
+**Dashboard**
+
+Rule that allows the user to create a personalized dashboard with dashlets components.
+
+**Form**
+
+Rule composed by fieldlets that shape the form of a topic.
+
 ### Stash
-* The stash of the rules is Clarive system that keeps the state of the pass between runs. Stash variables are used to communicate between tasks and it is used to replace the variables in the different configurations.
 
-
-
+The stash of the rules is Clarive system that keeps the state of the pass between runs.
+Stash variables are used to communicate between tasks and
+it is used to replace the variables in the different configurations.

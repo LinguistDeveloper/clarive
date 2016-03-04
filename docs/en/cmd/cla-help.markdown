@@ -3,20 +3,22 @@ title: cla help - Help on cla commands
 index: 10
 icon: console
 ---
-* `cla help`: Clarive has a number of command lines that can be executed to manage the application. 
-* These commands are called through the command cla as follow: `cla <command><command-args>`. 
-* Cla command itself has two options: <br />
 
-&nbsp; &nbsp;• `version`: displays Clarive version. <br />
+`cla help`: Clarive has a number of command lines that can be executed to manage the application.
 
-&nbsp; &nbsp;• `help`: shows the available command. Help output can be accessed through the option `–h` as well. <br/>
+These commands are called through the command cla as follow: `cla <command><command-args>`.
 
-* Cla command is in charge of collecting all configuration data from config files, environment and arguments passed through the command line before running the command call itself.
-* In order to describe every command, let’s show the output of cla help:
-            
+Cla command itself has two options:
+
+- `version`: displays Clarive version.
+
+- `help`: shows the available command. Help output can be accessed through the option `–h` as well. 
+
+Cla command is in charge of collecting all configuration data from config files, environment and arguments passed through the command line before running the command call itself.
+
+In order to describe every command, let’s show the output of cla help:
+
         > cla help
-
-        Clarive|Software - Copyright (c) 2013 VASSLabs
 
         usage: cla [-h] [-v] [--config file] command <command-args>
 
@@ -42,9 +44,4 @@ icon: console
         cla help <command> to get all subcommands.
         cla <command> -h for command options.
 
-
-<br/>
-
-* A common option to all this cla commands is the option `-v` (verbose) to activate the verbose mode and display all the user environment and command arguments. 
-
-
+A common option to all this cla commands is the option `-v` (verbose) to activate the verbose mode and display all the user environment and command arguments.

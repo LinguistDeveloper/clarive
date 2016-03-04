@@ -3,55 +3,63 @@ title: Release combo
 index: 400
 icon: combo_box
 ---
-* Allows to introduce a combo box with the releases availables in the form.
-* There are a list of elements can be configured in the fieldlet:
 
-<br />
+Allows to introduce a combo box with the releases availables in the form.
+
+There are a list of elements can be configured in the fieldlet:
+
 ### Section to view
-* Indicates in which part of the view position the fieldlet.
 
-<br />
+Indicates in which part of the view position the fieldlet.
+
 ### Row width
-* Allows to personalize the anchor of the fieldlet.
 
-<br />
+Allows to personalize the anchor of the fieldlet.
+
 ### Hidden from view mode
-* Indicates if the field will be hidden from the view mode.
 
-<br />
+Indicates if the field will be hidden from the view mode.
+
 ### Hidden from edit mode
-* Indicates if the field will be hidden from the edit mode.
 
-<br />
+Indicates if the field will be hidden from the edit mode.
+
 ### Mandatory field
-* Check if you want the field as mandatory.
 
-<br />
+Check if you want the field as mandatory.
+
 ### Type
-* Allow to set the type of the field. <br />
 
-&nbsp; &nbsp;• **Single** - Allows to select one choice of the options available. <br />
+Allow to set the type of the field.
 
-&nbsp; &nbsp;• **Multiple** - The user can select multiples choices. <br />
+**Single**
 
-&nbsp; &nbsp;• **Grid** - The added topics are shown in a table.
+Allows to select one choice of the options available.
 
-<br />
+**Multiple**
+
+The user can select multiples choices.
+
+**Grid**
+
+The added topics are shown in a table.
+
 ### Display field
-* Set the field to show.
 
-<br />
+Set the field to show.
+
 ### Advanced filter JSON
-* Allows to use a JSON format to add a condition. 
-* For example, to show only a category user can use the filter:
 
-            
-        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
+Allows to use a JSON format to add a condition.
 
+For example, to show only a category user can use the filter:
 
-&nbsp;&nbsp;• Where id is the unique key of the category which can be consulted through the REPL.
+    {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-<br />
+Where id is the unique key of the category which can be consulted through the REPL.
+
 ### Release field
-* It establishes dependence between this Release topics type and dependent topics.
-* It is through this field which should be completed by the ID field in the form of the dependent topics.
+
+It establishes dependence between this Release topics type and dependent topics.
+
+It is through this field which should be completed by the ID field in the form of the dependent topics.

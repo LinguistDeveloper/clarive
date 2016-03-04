@@ -3,39 +3,50 @@ title: Topic burndown
 index: 400
 icon: chart_line
 ---
-* Shows a chronogram with a list of topics from a specific date.
-* There are a list of elements can be configured in the dashlet:
 
-<br />
+Shows a chronogram with a list of topics from a specific date.
+
+There are a list of elements can be configured in the dashlet:
+
+
 ### Dimensions of the dashlet
-* Can personalize the size of the dashlet modifying the number of columns and rows.
 
-<br />
+Can personalize the size of the dashlet modifying the number of columns and rows.
+
+
 ### Autorefresh
-* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
+
+Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
 
-<br />
+
 ###  Date field with schedule start date
-* Set the first day.
 
-<br />
+Set the first day.
+
+
 ### Shift in days from today to show in chart
 
-<br />
+
 ### Chart will be shown as...
-* Indicate what type of chart will be shown. <br />
 
-&nbsp; &nbsp;• **Area** <br />
+Indicate what type of chart will be shown.
 
-&nbsp; &nbsp;• **Area step** <br />
+- **Area*
 
-&nbsp; &nbsp;• **Line** <br />
 
-&nbsp; &nbsp;• **Bar** <br />
+- **Area step*
 
-&nbsp; &nbsp;• **Scatter**
 
-<br />
+- **Line*
+
+
+- **Bar*
+
+
+- **Scatter**
+
+
 ### Select topics in categories
-* Select one o more categories to show in the graph.
+
+Select one o more categories to show in the graph.

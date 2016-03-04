@@ -2,22 +2,25 @@
 title: cla stop - Stops all server processes
 icon: console
 ---
-* `cla stop`: Stop all server processes. It tries to stop all systems Clarive needs to operate. 
-* They are: <br />
 
-&nbsp; &nbsp;• *mongo*: Stop mongo server.  <br />
+`cla stop`: Stop all server processes. It tries to stop all systems Clarive needs to operate. 
 
-&nbsp; &nbsp;• *nginx*: Stop nginx server.  <br />
+They are: 
 
-&nbsp; &nbsp;• *Clarive web server*: Stop web server, options can be sent as arguments to the command to stop web server in some way.  <br />
+- *mongo*: Stop mongo server.  
 
-&nbsp; &nbsp;• *Clarive dispatcher*: Stop dispatcher server, options can be sent as arguments to the command to stop dispatcher in some way. <br />
+- *nginx*: Stop nginx server.  
 
-* This command supports some options. They are: <br />
+- *Clarive web server*: Stop web server, options can be sent as arguments to the command to stop web server in some way.  
 
-&nbsp; &nbsp;• `--no_mongo`: To not stop mongo server. <br />
+- *Clarive dispatcher*: Stop dispatcher server, options can be sent as arguments to the command to stop dispatcher in some way. 
 
-&nbsp; &nbsp;• `--redis`: To stop redis server. <br />
 
-&nbsp; &nbsp;• `--no_nginx`: To not stop nginx server.
+This command supports some options. They are: 
+
+- `--no_mongo`: To not stop mongo server. 
+
+- `--redis`: To stop redis server. 
+
+- `--no_nginx`: To not stop nginx server.
 

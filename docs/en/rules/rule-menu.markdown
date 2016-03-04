@@ -2,75 +2,119 @@
 title: Rule Menu
 icon: rule
 ---
-* The way to access rule stuff is through admin menu. Selecting **Admin → Rules** a new tab appears with three different areas. From left to right:
 
-<br />
+The way to access rule stuff is through admin menu. Selecting **Admin → Rules**
+a new tab appears with three different areas. From left to right:
+
 ### Rules grid area
-* Area with two columns and an action tab: <br />
 
-&nbsp; &nbsp;• **Rule**: Rule id, rule name and rule type. <br />
+Area with two columns and an action tab:
 
-&nbsp; &nbsp;• **Time**: Last modification time.
+**Rule**
 
-<br />
+Rule id, rule name and rule type.
+
+**Time**
+
+Last modification time.
+
 ### Actions
-* Actions defined are: <br />
 
-&nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" />**Search field**: To find rules names according to the mask typed in search field, it list till 30 rules. <br />
+Actions defined are:
 
-&nbsp; &nbsp;• <img src="/static/images/icons/refresh.png" /> **Refresh** - To refresh the list of rules. <br />
+- <img src="/static/images/icons/search-small.png" />**Search field**: To find rules names according to the mask typed in search field, it list till 30 rules.
 
-&nbsp; &nbsp;• <img src="/static/images/icons/add.gif" /> **Create** - Use to start a configure a new rule. <br />
+- <img src="/static/images/icons/refresh.png" /> **Refresh**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/edit.gif" /> **Edit** - Edit selected rule. <br />
+To refresh the list of rules.
 
-&nbsp; &nbsp;• <img src="/static/images/icons/delete_.png" /> **Delete** - Delete selected rule. <br />
+- <img src="/static/images/icons/add.gif" /> **Create**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/workflow.png" /> **Workflow** - Organise the rules based on the type. <br />
+Use to start a configure a new rule.
 
-&nbsp; &nbsp;• <img src="/static/images/icons/restart_new.png" /> **Activate** - Activate selected rule. <br />
+- <img src="/static/images/icons/edit.gif" /> **Edit**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/wrench.gif" /> **Tools** - <img src="/static/images/icons/import.png" /> Import or <img src="/static/images/icons/export.png" /> Export the rule to other Clarive system in YAML format. 
+Edit selected rule.
 
-<br />
+- <img src="/static/images/icons/delete_.png" /> **Delete**
+
+Delete selected rule.
+
+- <img src="/static/images/icons/workflow.png" /> **Workflow**
+
+Organise the rules based on the type.
+
+- <img src="/static/images/icons/restart_new.png" /> **Activate**
+
+Activate selected rule.
+
+- <img src="/static/images/icons/wrench.gif" /> **Tools**
+- <img src="/static/images/icons/import.png" /> Import or <img src="/static/images/icons/export.png" /> Export the rule to other Clarive system in YAML format.
+
 ### Rule tree
 
-* Area where selected rule is displayed as a tree, it has an **action tab with some operations**, they are: <br />
- 
-&nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Search field** - To find field names according to the mask typed in search field. <br />
+Area where selected rule is displayed as a tree, it has an **action tab with some operations**, they are:
 
-&nbsp; &nbsp;• <img src="/static/images/icons/refresh.png" /> **Refresh** - To refresh the rule <br />
+- <img src="/static/images/icons/search-small.png" /> **Search field**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/save.png" /> **Save** - To save rule. <br />
+To find field names according to the mask typed in search field.
 
-&nbsp; &nbsp;• <img src="/static/images/icons/edit.gif" /> **DSL** - Raises up a new window with DSL code from the rule selected. This code can be executed. This functionality will be described in the [rule palette](rules/rule-palette) page. <br />
+- <img src="/static/images/icons/refresh.png" /> **Refresh**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/wrench.gif" /> **Tools** - Some additional options: <br />
+To refresh the rule
 
-<!-- &nbsp; &nbsp;&nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> *Search* - <br />
+- <img src="/static/images/icons/save.png" /> **Save**
 
-&nbsp; &nbsp;&nbsp; &nbsp;• <img src="/static/images/icons/wipe_cache.png" /> *Clear* <br />
--->
-&nbsp; &nbsp;&nbsp; &nbsp;• *Regular expression* - Allow to search a regular expression. <br />
+To save rule.
 
-&nbsp; &nbsp;&nbsp; &nbsp;• *Ignore case* - Activate/Desactivate case sentitive to search text. <br />
+- <img src="/static/images/icons/edit.gif" /> **DSL**
 
-&nbsp; &nbsp;&nbsp; &nbsp;• *Blame by time* - Mark the changes in the elements by a specific period of time.<br />
+Raises up a new window with DSL code from the rule selected. This code can be executed.
+This functionality will be described in the [rule palette](rules/rule-palette) page.
 
-<br />
-&nbsp; &nbsp;• <img src="/static/images/icons/expandall.png" /> **Expand all** - Expands every single rule in any job step. <br />
+- <img src="/static/images/icons/wrench.gif" /> **Tools**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/collapseall.png" /> **Collapse all** - Collapse every rule and step, just viewing start point. <br />
+Some additional options:
 
-&nbsp; &nbsp;• <img src="/static/images/icons/history.png" /> **Version** - Expands all history versions from the rule selected. The output shows date, time and user who saved the rule. <br />
+- **Regular expression**
 
-&nbsp; &nbsp;• <img src="/static/images/icons/html.png" /> **HTML** - Displays in another navigator tab, op properties values and configuration from every op included in the selected rule. Every op is indented as it is built in rules.
+Allow to search a regular expression.
 
-<br />
+- **Ignore case**
+
+Activate/Desactivate case sentitive to search text.
+
+- **Blame by time**
+
+Mark the changes in the elements by a specific period of time.
+
+- <img src="/static/images/icons/expandall.png" /> **Expand all**
+
+Expands every single rule in any job step.
+
+- <img src="/static/images/icons/collapseall.png" /> **Collapse all**
+
+Collapse every rule and step, just viewing start point.
+
+- <img src="/static/images/icons/history.png" /> **Version**
+
+Expands all history versions from the rule selected. The output shows date, time and user who saved the rule.
+
+- <img src="/static/images/icons/html.png" /> **HTML**
+
+Displays in another navigator tab, op properties values and configuration from every op included in the selected rule. Every op is indented as it is built in rules.
+
 ### Palette
-* Contains all operations (ops) that can be used for rule composition. 
-* It has an action tab with two action: <br />
 
-&nbsp; &nbsp;• <img src="/static/images/icons/search-small.png" /> **Search** - To find a rule with a mask as input. <br />
+Contains all operations (ops) that can be used for rule composition.
 
-&nbsp; &nbsp;• <img src="/static/images/icons/refresh.png" /> **Refresh** - To refresh the palette. 
+It has an action tab with two action:
+
+<img src="/static/images/icons/search-small.png" /> **Search**
+
+To find a rule with a mask as input.
+
+<img src="/static/images/icons/refresh.png" /> **Refresh**
+
+To refresh the palette
+

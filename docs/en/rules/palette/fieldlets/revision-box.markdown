@@ -3,29 +3,36 @@ title: Revision box
 index: 400
 icon: combo_box
 ---
-* Allows to introduce a revision box into the topic form.
-* There are a list of elements can be configured in the fieldlet:
 
-<br />
+Allows to introduce a revision box into the topic form.
+
+There are a list of elements can be configured in the fieldlet:
+
 ### Section to view
-* Indicates in which part of the view position the fieldlet.
 
-<br />
+Indicates in which part of the view position the fieldlet.
+
+
 ### Row width
-* Allows to personalize the anchor of the fieldlet.
 
-<br />
+Allows to personalize the anchor of the fieldlet.
+
+
 ### Hidden from view mode
-* Indicates if the field will be hidden from the view mode.
 
-<br />
+Indicates if the field will be hidden from the view mode.
+
+
 ### Hidden from edit mode
-* Indicates if the field will be hidden from the edit mode.
 
-<br />
+Indicates if the field will be hidden from the edit mode.
+
+
 ### Mandatory field
-* Check if you want the field as mandatory.
 
-<br />
+Check if you want the field as mandatory.
+
+
 ### Branch
-* Configure the branch to view in the topic.
+
+Configure the branch to view in the topic.

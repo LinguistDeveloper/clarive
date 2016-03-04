@@ -3,46 +3,58 @@ title: Swarm
 index: 400
 icon: swarm
 ---
-* Shows an animated swarm with the options configured in the dashlet.
-* There are a list of elements can be configured in the dashlet:
 
-<br />
+Shows an animated swarm with the options configured in the dashlet.
+
+There are a list of elements can be configured in the dashlet:
+
+
 ### Dimensions of the dashlet
-* Can personalize the size of the dashlet modifying the number of columns and rows.
 
-<br />
+Can personalize the size of the dashlet modifying the number of columns and rows.
+
+
 ### Autorefresh
-* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-<br />
+Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
+
+
 ###  Background color
-* Set the background color. Can be white or black.
 
-<br />
+Set the background color. Can be white or black.
+
+
 ### Animation start mode
-* Set if the dashlet runs automatically or starts in pause mode.
 
-<br />
+Set if the dashlet runs automatically or starts in pause mode.
+
+
 ### Date from: / Date to:
-* Set a date range to draw the swarm.
 
-<br />
+Set a date range to draw the swarm.
+
+
 ### Maximum node
-* Select the numbers of nodes.
 
-<br />
+Select the numbers of nodes.
+
+
 ### Minium node category
-* Select the lower number of categories to show. 
 
-<br />
+Select the lower number of categories to show.
+
+
 ### Node groupping
-* Nodes can be groupping by categories or status
+
+Nodes can be groupping by categories or status
 
 
-<br />
+
 ### Select topics in categories
-* Select one o more categories to show in the swarm.
 
-<br />
+Select one o more categories to show in the swarm.
+
+
 ### Select topics in statuses
-* Select one o more status to configure the view.
+
+Select one o more status to configure the view.

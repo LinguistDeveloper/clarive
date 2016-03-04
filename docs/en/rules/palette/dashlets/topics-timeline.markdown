@@ -3,48 +3,62 @@ title: Topics timeline
 index: 400
 icon: chart_curve
 ---
-* Shows a timeline with the number of topics.
-* There are a list of elements can be configured in the dashlet:
 
-<br />
+Shows a timeline with the number of topics.
+
+There are a list of elements can be configured in the dashlet:
+
+
 ### Dimensions of the dashlet
-* Can personalize the size of the dashlet modifying the number of columns and rows.
 
-<br />
+Can personalize the size of the dashlet modifying the number of columns and rows.
+
+
 ### Autorefresh
-* Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
-<br />
+Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
+
+
 ### Select topics in categories
-* Select one o more categories to show in the swarm.
 
-<br />
+Select one o more categories to show in the swarm.
+
+
 ### Select topics in statuses
-* Select one o more status to configure the table.
 
-<br />
+Select one o more status to configure the table.
+
+
 ### Advanced JSON/MongoDB condition for filter
-* Allows to use a JSON format o MongoDB query to add a condition. 
 
-<br />
+Allows to use a JSON format o MongoDB query to add a condition.
+
+
 ### Date field in topics to use as X axis
-* Select the date field to use in X axis the graphic timeline.
 
-<br />
+Select the date field to use in X axis the graphic timeline.
+
+
 ### Chart will be shown as...
-* Indicate what type of chart will be shown. <br />
+
+Indicate what type of chart will be shown.
 
 
-&nbsp; &nbsp;• **Area** <br />
+- **Area*
 
-&nbsp; &nbsp;• **Area step** <br />
 
-&nbsp; &nbsp;• **Line** <br />
+- **Area step*
 
-&nbsp; &nbsp;• **Bar** <br />
 
-&nbsp; &nbsp;• **Scatter**
+- **Line*
 
-<br />
+
+- **Bar*
+
+
+- **Scatter**
+
+
 ### Data grouped by
-* Select the criteria for grouping data.
+
+Select the criteria for grouping data.

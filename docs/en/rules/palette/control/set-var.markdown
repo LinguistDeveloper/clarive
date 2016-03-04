@@ -2,12 +2,15 @@
 title: SET VAR
 icon: let.gif
 ---
-* Creates a new stash variable and set its value to a specific value. 
-* Stash is accessible to set value to new variable. 
-* Form to configure has the following fields: <br />
 
-&nbsp; &nbsp;• **Variable**: Stash variable to create. <br />
+Creates a new stash variable and set its value to a specific value.
 
-&nbsp; &nbsp;• **Value**: Value to assign to variable defined in variable field. Can use stash to set value dynamically. 
+Stash is accessible to set value to new variable.
+
+Form to configure has the following fields:
+
+- **Variable**: Stash variable to create.
+
+- **Value**: Value to assign to variable defined in variable field. Can use stash to set value dynamically.
 
 

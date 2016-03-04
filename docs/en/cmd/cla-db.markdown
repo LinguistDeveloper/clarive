@@ -2,10 +2,13 @@
 title: cla db - Database utilities
 icon: console
 ---
-* `cla db`: Database diff and deploy tool.
-* This command is in charge of deploying Clarive schema to a database. The behavior is the same as the command `db-deploy`.
-* The option `–h` shows the command help with a short description of every option: <br />
-            
+
+`cla db`: Database diff and deploy tool.
+
+This command is in charge of deploying Clarive schema to a database. The behavior is the same as the command `db-deploy`.
+
+The option `–h` shows the command help with a short description of every option: 
+
         > cla db -h
 
         NAME
@@ -46,12 +49,4 @@ icon: console
         cla db-deploy --env t --upgrade –deploy   # print migration scripts only, no changes made
         cla db-deploy --env t --upgrade --show --to 2 # same, but with schema version 2
         cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
-
-
-
-
-
-
-    
 
