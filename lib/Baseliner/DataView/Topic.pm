@@ -55,6 +55,8 @@ sub build_where {
     my $not_in_status = $params{not_in_status};
     my $filter        = $self->_parse_filter( $params{filter} );
     my $search_query  = $params{search_query};
+    my @priorities;
+    my @labels;
 
     if ($filter) {
         delete $filter->{start};
@@ -67,6 +69,14 @@ sub build_where {
         if ( my $statuses = delete $filter->{statuses} ) {
             push @statuses, _array $statuses;
         }
+
+        if ( my $priorities = delete $filter->{priorities} ) {
+            push @priorities, _array $priorities;
+        }
+
+        if ( my $labels = delete $filter->{labels} ) {
+            push @labels, _array $labels;
+        }
     }
 
     if (@statuses) {
@@ -76,6 +86,10 @@ sub build_where {
         else {
             $where->{'category_status.id'} = mdb->in(@statuses);
         }
+    }
+
+    if (@labels) {
+        $where->{'labels'} = mdb->in(@labels);
     }
 
     my @user_categories = map { $_->{id} }

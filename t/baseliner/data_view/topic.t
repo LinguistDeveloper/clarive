@@ -205,6 +205,76 @@ subtest 'build_where: builds correct where statuses from filter' => sub {
     is_deeply $where->{'category_status.id'}, { '$in' => [ $status1->mid ] };
 };
 
+subtest 'build_where: builds correct where labels from filter' => sub {
+    _setup();
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status1->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status1->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where(
+        username => $developer->username,
+        filter   => { labels => [ 1, 2, 3 ] }
+    );
+
+    is_deeply $where->{'labels'}, { '$in' => [ 1, 2, 3 ] };
+};
+
+subtest 'build_where: builds correct where priorities from filter' => sub {
+    _setup();
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => 'Category1', id_rule => $id_rule, id_status => $status1->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'Category2', id_rule => $id_rule, id_status => $status1->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where(
+        username => $developer->username,
+        filter   => { priorities => [ 1, 2, 3 ] }
+    );
+
+    ok !$where->{'priorities'};
+};
+
 subtest 'build_where: builds correct where filter is JSON' => sub {
     _setup();
 
