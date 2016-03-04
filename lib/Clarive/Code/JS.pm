@@ -77,7 +77,14 @@ sub eval_code {
             my $start_line = $err_line > $prefix_lines+2 ? $err_line - 2 : $prefix_lines;
             my $end_line = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
             for my $line ( $start_line..$end_line ) {
-                $msg .= sprintf "%d%s %s\n", ($line+1-$prefix_lines), ( $line == $err_line ? '>>>' : ':  ' ), $lines[$line];
+
+                my $real_line = $line+1-$prefix_lines;
+
+                if( $line == $err_line ) {
+                    $msg =~ s/(\(line )(\d+)\)/(line $real_line)/;
+                }
+
+                $msg .= sprintf "%d%s %s\n", $real_line, ( $line == $err_line ? '>>>' : ':  ' ), $lines[$line];
             }
         }
         die $msg;
