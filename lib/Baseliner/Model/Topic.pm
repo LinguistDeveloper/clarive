@@ -207,6 +207,11 @@ register 'event.topic.change_status' => {
     }
 };
 
+register 'event.topic_list.export' => {
+    text => '%1 exported topic list',
+    vars => [ 'username', 'format' ],
+};
+
 register 'action.topics.logical_change_status' => {
     name => 'Change topic status logically (no deployment)'
 };
