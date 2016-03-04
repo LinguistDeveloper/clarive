@@ -10,6 +10,7 @@ use Exporter::Tidy default => [
         js_sub
         from_camel_class
         to_duk_bool
+        template_literals
       )
 ];
 
@@ -17,6 +18,38 @@ our $GLOBAL_ERR;
 
 sub to_duk_bool {
     $_[0] ? $JavaScript::Duktape::Bool::true : $JavaScript::Duktape::Bool::false;
+}
+
+sub template_literals {
+    my $code = shift;
+
+    # Ecmascript ES6 templating
+    my $strf = sub {
+        my ($str) = @_;
+
+        # escape single-quotes, (?<=[^\\]) means "preceded by \, but don't capture it"
+        $str =~ s{(?<=[^\\])'}{\\'}g; 
+
+        # convert expression to function  
+        #    TODO this is too precarious: brackets and single-quotes get messed up
+        $str =~ s/(?<=[^\\])\$\{([^\}]+)\}/'+(function(){return($1);})()+'/g;
+
+        # and for the str position 0, can't find a zero-width look behind that works...
+        $str =~ s/^\$\{([^\}]+)\}/'+(function(){return($1);})()+'/g;
+
+        # preserve escaped expressions: \${...}
+        $str =~ s/\\\$\{([^\}]+)\}/\${$1}/g;
+
+        # turn new lines into escaped new lines, 
+        #   so that the line number count doesn't change
+        $str =~ s{\n}{\\n\\\n}g;  
+
+        "'$str'";
+    };
+
+    $code =~ s{`([^`]*)`}{$strf->($1)}egs;
+
+    $code;
 }
 
 sub unwrap_types {

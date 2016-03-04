@@ -31,7 +31,9 @@ my $prefix_lines = split /\n/, $prefix;
 
 sub eval_code {
     my $self = shift;
-    my ( $code, $stash ) = @_;
+    my ( $code, $stash, $opts ) = @_;
+
+    $code = template_literals( $code );
 
     $stash ||= {};
     
