@@ -129,7 +129,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 if ( !rows[cont] ) rows.push(0);
                 var buttons_tpl = new Ext.XTemplate(
                     '<table><tr>',
-                    '<td class="dashboard-buttons"><span id="{id_export_menu}"></span></td>',
+                    '<td class="dashboard-buttons-menu"><span id="{id_export_menu}"></span></td>',
                     '<td><img class="dashboard-buttons"',
                        'src="/static/images/icons/config.gif"',
                        'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
