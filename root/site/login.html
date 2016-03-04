@@ -53,8 +53,17 @@
     <& '/site/login.js' &>
     </script>
 
+% if ($c->config->{login_logo}){
+
+    <div class='band-white'></div>
+    <img class='logo' src="<% $c->config->{login_logo} %>" />
+
+% } else {
+
     <div class='band-white'></div>
     <img class='logo' src='/static/themes/clarive/images/clarive-logo-black.png' />
+
+% };
 <%doc>
     <div class="bottom">
         <img class='logo-lower' src='/static/themes/clarive/images/vasslabs-logo-black.png' />

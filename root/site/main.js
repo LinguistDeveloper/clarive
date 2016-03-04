@@ -144,10 +144,10 @@ Ext.onReady(function(){
           </button>
         */}.heredoc()
     ];
-    if( Prefs.logo_file ) { 
-            tbar_items.push( '<img src="'+Prefs.logo_file+'" style="border:0px;"/>' );
+    if( Prefs.logo_file ) {
+            tbar_items.push( '<img src="'+Prefs.logo_file +'" style="border:0px;width:220px;height:40px"/><img src="/static/images/powered_by_clarive.png" style="position:absolute;border:0px;width:150px;height:50px;left:90px;top:-6px"/>' );
     } else {
-            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" style="border:0px;"/>' );
+            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" style="border:0px;width:220px;height:40px"/>' );
     }
     tbar_items.push('-');
 
