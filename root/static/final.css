@@ -626,6 +626,10 @@ div#search-result-block img {
    width:16px;
 
 }
+#boot .dashboard-buttons-menu {
+  cursor: pointer;
+  border: none !important;
+}
 
 #boot .dashboard-buttons-menu table.x-btn.x-btn-icon {
   opacity: 0.1 ;
@@ -635,7 +639,6 @@ div#search-result-block img {
 #boot .dashboard-buttons-menu table.x-btn.x-btn-icon.x-btn-over {
   opacity: 1.0 !important;
   filter: alpha(opacity=10);
-  border: none !important;
 }
 
 #boot .dashboard-buttons-menu em.x-btn-arrow button {
