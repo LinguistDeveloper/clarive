@@ -8,7 +8,7 @@ BEGIN {
         our $clarive_home = $Bin . '/..';
         chdir $clarive_home;
         require Cwd;
-        $clarive_home = Cwd::realpath( $clarive_home );  # clean up the clarive_home path 
+        $clarive_home = Cwd::realpath( $clarive_home );  # clean up the clarive_home path
         $ENV{CLARIVE_HOME} //= $clarive_home;
     }
     if( ! $ENV{CLARIVE_BASE} ) {
@@ -48,6 +48,7 @@ if( @pre_opts ) {
 # get command options
 my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
 %opts = process_dot_opts( %opts );
+%opts = process_dash_opts( %opts );
 %opts = process_not_opts( %opts );
 %opts = process_json_opts( %opts );
 my $argv = delete $opts{_argv};
@@ -62,7 +63,7 @@ if( !$cmd ) {
     else { $cmd='help' }
 }
 
-# create app 
+# create app
 require Clarive::App;
 my $app = Clarive::App->new( %opts );
 
@@ -86,6 +87,17 @@ sub process_dot_opts {
     return ( %opt, %dots );
 }
 
+# process dashes - as underscore _, so that --stop-this becomes --stop_this
+sub process_dash_opts {
+    my %opt = @_;
+    for my $k ( keys %opt ) {
+        ( my $k2 = $k ) =~ s{-}{_}g;
+        next if $k2 eq $k;
+        $opt{$k2} = $opt{$k};
+    }
+    return %opt;
+}
+
 # process all --no-key options, treated as --key 0
 sub process_not_opts {
     my %opt = @_;
@@ -106,7 +118,8 @@ sub process_json_opts {
         my $d = JSON::XS->new->decode($json);  # TODO allow_barekey would be nice, but JSON::XS does not allow it
         my $type = ref $d;
         die "Invalid --json: has to he an Object (hash), not $type\n" unless $type eq 'HASH';
-        %opt = ( %opt, %$d ); 
+        %opt = ( %opt, %$d );
     }
     return %opt;
 }
+
