@@ -518,7 +518,7 @@ subtest 'view_diff_file: returns diff' => sub {
                     'code_chunks' => [
                         {
                             'stats' => '-0,0 +1',
-                            'code'  => '+This is a howto.'
+                            'code'  => "+This is a howto.\n"
                         }
                     ],
                     'path'      => 'HOWTO',
@@ -528,6 +528,63 @@ subtest 'view_diff_file: returns diff' => sub {
         }
       };
 };
+
+subtest 'view_diff_file: return diff when file have only one line' => sub {
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $dir = substr( $repo->repo_dir, 0, index( $repo->repo_dir, '.' ) );
+
+    my $sha = TestGit->commit( $repo, file => 'fich.txt', content => 'primera linea', message => 'primer commit' );
+    truncate $dir . 'fich.txt', 0;
+    my $sha2 = TestGit->commit( $repo, file => 'fich.txt', content => 'segunda linea', message => 'segundo commit' );
+
+    my $controller = _build_controller();
+
+    my $params = { file => 'fich.txt', repo_mid => $repo->mid, sha => $sha2 };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->view_diff_file($c);
+    $controller->view_diff_file($c);
+
+    is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code}, "-primera linea\n+segunda linea\n";
+
+};
+
+
+subtest 'view_diff_file: return diff when the change is in finally line' => sub {
+    _setup();
+    use Baseliner::Utils;
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $dir = substr( $repo->repo_dir, 0, index( $repo->repo_dir, '.' ) );
+
+    my $sha = TestGit->commit(
+        $repo,
+        file    => 'fich.txt',
+        content => "Primera linea \nSegunda linea",
+        message => 'primer commit'
+    );
+    truncate $dir . 'fich.txt', 0;
+    my $sha2 = TestGit->commit(
+        $repo,
+        file    => 'fich.txt',
+        content => "Primera linea \nModif Segunda linea",
+        message => 'segundo commit'
+    );
+
+    my $controller = _build_controller();
+
+    my $params = { file => 'fich.txt', repo_mid => $repo->mid, sha => $sha2 };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->view_diff_file($c);
+
+    is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code},
+        " Primera linea \n-Segunda linea\n+Modif Segunda linea\n";
+
+};
+
 
 subtest 'view_diff: returns validation errors' => sub {
     _setup();
