@@ -24,8 +24,6 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-console.log(data);
-console.log(meta);
 	var form = params.form.getForm();
 	var topics = new Array();
     var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
@@ -74,7 +72,6 @@ console.log(meta);
             'filter', meta.filter,'sort_field', meta.sort,'dir', order_sort);
         });
     }
-console.log(topic_box_store);
     if( meta.list_type == 'grid' ) {
         // Grid
 		

@@ -52,7 +52,7 @@ params:
             topic_child_data: true, 
             mid: data ? data.topic_mid : '', 
             show_release: 0, 
-            filter: meta.filter ? meta.filter : '',
+            filter:'',
             sort_field: meta.sort,
             dir: order_sort,
             categories : meta.categories ? meta.categories : [],
