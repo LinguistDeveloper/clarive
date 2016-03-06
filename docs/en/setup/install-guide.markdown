@@ -9,7 +9,7 @@ or update the Clarive Software to version 6.4 in a simple way using the steps de
 # Prerrequisites
 
 The prerrequisites for the Clarive installation are
-specified in the Technical Specifications.
+specified in the [Technical Specifications](install/specs).
 
 # Software Download
 
