@@ -568,9 +568,9 @@ sub view_diff_file : Local {
         my @array_file_content = $g->git->exec( 'cat-file', '-p', $file_sha );
         $rev_list = $g->git->exec( 'rev-list', '--objects', $previous_commit . ":$node->{file}" );
         my $previous_file_sha           = $self->return_sha8($rev_list);
-        my $file_content                = join( "\n", @array_file_content );
+        my $file_content                = join( "\n", @array_file_content ) . "\n";
         my @array_previous_file_content = $g->git->exec( 'cat-file', '-p', $previous_file_sha );
-        my $previous_content = $previous_commit eq $actual_commit ? '' : join( "\n", @array_previous_file_content );
+        my $previous_content = $previous_commit eq $actual_commit ? '' : join( "\n", @array_previous_file_content ) . "\n";
         $diff = _to_utf8 Text::Diff::diff( \$previous_content, \$file_content, { STYLE => 'Unified' } );
         my @parts;
 
@@ -586,7 +586,6 @@ sub view_diff_file : Local {
             push @code_chunks, { stats => $stats, code => $code };
         }
     }
-
     push @changes,
       {
         path        => $file,
@@ -594,7 +593,6 @@ sub view_diff_file : Local {
         revision2   => substr( $actual_commit, 0, 8 ),
         code_chunks => \@code_chunks
       };
-
     $c->stash->{json} = try {
         { success => \1, msg => _loc("Success loading file diff"), changes => \@changes, commit_info => $commit_info };
     }

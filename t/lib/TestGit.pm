@@ -49,6 +49,9 @@ sub commit {
     if ($params{action} eq 'add') {
         $cmd = qq{echo '$params{content}' >> $params{file}; git add .};
     }
+    elsif ($params{action} eq 'replace') {
+        $cmd = qq{echo '$params{content}' > $params{file}; git add .};
+    }
     else {
         $cmd = $params{action};
     }
