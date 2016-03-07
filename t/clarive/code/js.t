@@ -3,7 +3,9 @@ use warnings;
 
 use Test::More;
 use Test::Fatal;
+use Test::Deep;
 use Test::TempDir::Tiny;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
@@ -25,7 +27,8 @@ subtest 'evals js' => sub {
 subtest 'extend cla namespace' => sub {
     my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code( 'cla.foo();', {}, { extended=>{ foo=>js_sub{ 321 } } });
+    $code->extend_cla({ foo=>js_sub{ 321 } });
+    my $ret = $code->eval_code( 'cla.foo();', {});
 
     is $ret, 321;
 };
@@ -33,9 +36,38 @@ subtest 'extend cla namespace' => sub {
 subtest 'extend global namespace' => sub {
     my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code( 'foo();', {}, { global=>{ foo=>js_sub{ 999 } } });
+    $code->global_ns({ foo=>js_sub{ 999 } });
+    my $ret = $code->eval_code( 'foo();', {});
 
     is $ret, 999;
+};
+
+subtest 'save vm creates globals' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    $code->save_vm(1);
+    $code->eval_code( 'var x = 100;', {});
+    my $ret = $code->eval_code( 'x', {});
+
+    is $ret, 100;
+};
+
+subtest 'save_vm enclose_code protects against globals' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    $code->save_vm(1);
+    $code->enclose_code(1);
+    $code->eval_code( 'var x = 100;', {});
+    ok exception { $code->eval_code( 'x', {}) };
+};
+
+subtest 'enclose code doesnt return value' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    $code->enclose_code(1);
+    my $ret = $code->eval_code( '100', {});
+
+    is $ret, undef;
 };
 
 subtest 'require module underscore' => sub {

@@ -20,24 +20,50 @@ use Clarive::App;
 use Clarive::Code::Utils;
 use Clarive::Plugins;
 
-my $prefix = <<"EOF";
+has dump_code     => qw(is rw isa Bool default 0);
+has enclose_code  => qw(is rw isa Bool default 0);
+has strict_mode   => qw(is rw isa Bool default 0);
+has allow_pragmas => qw(is rw isa Bool default 0);
+
+has extend_cla    => qw(is rw isa HashRef default),sub{+{}};
+has global_ns     => qw(is rw isa HashRef default),sub{+{}};
+
+has save_vm  => qw(is rw isa Bool default 0);
+has _last_vm => qw(is rw isa Any);
+
+has prefix => qw(is rw isa Str required 1 lazy 1), default => sub{
+    my $self = shift;
+
+    my $prefix = <<"EOF";
 Duktape.modSearch = function (id) {
     var res = cla.loadModule(id);
     return res;
 };
 EOF
+    $prefix .= qq{"use strict";\n} if $self->strict_mode;
 
-my $prefix_lines = split /\n/, $prefix;
+    $prefix;
+};
+
+has _prefix_lines => qw(is rw isa Num lazy 1), default => sub{
+    my $self = shift;
+    scalar split /\n/, $self->prefix;
+};
 
 sub eval_code {
     my $self = shift;
-    my ( $code, $stash, $opts ) = @_;
+    my ( $code, $stash ) = @_;
 
     $code = template_literals( $code );
 
     $stash ||= {};
 
-    my $js = JavaScript::Duktape->new;
+    # create / load / save JS vm
+    my $js = $self->_last_vm || JavaScript::Duktape->new;
+    if( $self->save_vm ) {
+        $self->_last_vm( $js );
+    }
+
     $js->set(
         toJSON => js_sub {
             shift;
@@ -47,23 +73,33 @@ sub eval_code {
         }
     );
 
+    # cla ns setup
     my $cla_ns = $self->_generate_cla($stash);
-
-    if( ref $opts->{extended} ) {
-        $cla_ns->{$_} = $opts->{extended}{$_} for keys %{ $opts->{extended} };
+    foreach my $ns ( keys %{ $self->extend_cla } ) {
+        $cla_ns->{$ns} = $self->extend_cla->{$ns};
     }
+    $js->set( cla => $cla_ns );
 
-    my %top_level = ( cla => $cla_ns );
-
-    if( ref $opts->{global} ) {
-        %top_level = %{ $opts->{global} };
+    # top level ns setup
+    foreach my $ns ( keys %{ $self->global_ns } ) {
+        $js->set( $ns => $self->global_ns->{$ns} );
     }
-
-    $js->set( %top_level );
 
     local $Clarive::Code::Utils::GLOBAL_ERR = '';
 
-    my $fullcode = $prefix . $code;
+    if( $self->allow_pragmas ) {
+        $self->_process_pragmas($code);
+    }
+
+    my $fullcode;
+
+    if( $self->enclose_code ) {
+        $fullcode = $self->prefix . "(function(){$code}())";
+    } else {
+        $fullcode = $self->prefix . $code;
+    }
+
+    printf STDERR $fullcode if $self->dump_code;
 
     return try {
         $js->eval( $fullcode );
@@ -74,11 +110,11 @@ sub eval_code {
         if( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
             $err_line--;
             my @lines = ( split "\n", $fullcode );
-            my $start_line = $err_line > $prefix_lines+2 ? $err_line - 2 : $prefix_lines;
-            my $end_line = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
+            my $start_line = $err_line > ($self->_prefix_lines+2) ? $err_line - 2 : $self->_prefix_lines;
+            my $end_line   = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
             for my $line ( $start_line..$end_line ) {
 
-                my $real_line = $line+1-$prefix_lines;
+                my $real_line = $line + 1 - $self->_prefix_lines;
 
                 if( $line == $err_line ) {
                     $msg =~ s/(\(line )(\d+)\)/(line $real_line)/;
@@ -818,4 +854,17 @@ sub _db_wrap_cursor {
     };
 }
 
+sub _process_pragmas {
+    my $self = shift;
+    my $code = shift;
+
+    for my $pragma ( $code =~ m{//CLA-PRAGMA (\S+)}g ) {
+        if( $pragma =~ 'enclose=(\d+)' ) {
+            $self->enclose_code($1);
+        }
+        elsif( $pragma =~ 'dump_code=(\d+)' ) {
+            $self->dump_code($1);
+        }
+    }
+}
 1;
