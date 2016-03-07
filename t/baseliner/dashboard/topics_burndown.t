@@ -747,6 +747,69 @@ subtest 'burndown: selects dates with including' => sub {
     is_deeply $burndown, [ [ '2016-01-01' => 0 ], [ '2016-01-02' => 1 ] ];
 };
 
+subtest 'burndown: understands several status changes' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status_new->mid );
+
+    my $topic_mid = mock_time '2016-01-01 00:00:00', sub {
+        TestSetup->create_topic(
+            project     => $project,
+            id_category => $id_changeset_category,
+            title       => 'Fix everything',
+            status      => $status_new,
+        );
+    };
+
+    mock_time '2016-01-02 00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_mid,
+            id_status => $status_finished->mid
+        );
+
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_mid,
+            id_status => $status_in_progress->mid
+        );
+    };
+
+    mock_time '2016-01-03 00:00:00', sub {
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            mid       => $topic_mid,
+            id_status => $status_finished->mid
+        );
+    };
+
+    my $dashboard = _build_dashboard();
+
+    my $burndown = $dashboard->dashboard(
+        username => $user->username,
+        scale    => 'day',
+        from     => '2016-01-01',
+        to       => '2016-01-03',
+    );
+
+    is_deeply $burndown, [ [ '2016-01-01' => 1 ], [ '2016-01-02' => 1 ], [ '2016-01-03' => 0 ] ];
+};
+
 done_testing();
 
 sub _create_statuses {
@@ -815,6 +878,15 @@ sub _create_changeset_form {
                 }
               )
             : (),
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'foo',
+                        "fieldletType" => "fieldlet.text",
+                    },
+                    "key" => "fieldlet.text",
+                }
+            },
         ],
     );
 }

@@ -2,7 +2,7 @@ package Baseliner::Dashboard::TopicsBurndown;
 use Moose;
 
 use Array::Utils qw(intersect);
-use JSON ();
+use JSON        ();
 use Class::Date ();
 use Baseliner::Model::Topic;
 use Baseliner::Utils qw(_now _array);
@@ -56,8 +56,8 @@ sub dashboard {
         $group_by = { '$substr' => [ '$ts', 0, 13 ] };
 
         while ( $from_date < $to_date ) {
-            for (0 .. 23) {
-                $burndown{ substr($from_date, 0, 11) . sprintf('%02d', $_) } = 0;
+            for ( 0 .. 23 ) {
+                $burndown{ substr( $from_date, 0, 11 ) . sprintf( '%02d', $_ ) } = 0;
             }
 
             $from_date = $from_date + '1D';
@@ -158,9 +158,27 @@ sub dashboard {
                     'ts'          => $date_query_during_period,
                 }
             },
-            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+            { '$group' => { _id => $group_by, mids => { '$addToSet' => '$mid' }, total => { '$sum' => 1 } } }
         ]
     );
+
+    # Make sure when topics are closed/reopen several times a day
+    # or during several days, we remove those duplications
+    my %seen;
+    foreach my $closed_topic ( @{ $closed_topics_aggr[0] } ) {
+        my $mids = $closed_topic->{mids};
+
+        my @filtered_mids;
+        foreach my $mid (@$mids) {
+            next if $seen{$mid};
+
+            $seen{$mid}++;
+
+            push @filtered_mids, $mids;
+        }
+
+        $closed_topic->{mids} = \@filtered_mids;
+    }
 
     my @created_topics_aggr = mdb->topic->aggregate(
         [
@@ -171,7 +189,7 @@ sub dashboard {
                     %$where,
                 }
             },
-            { '$group' => { _id => $topic_group_by, total => { '$sum' => 1 } } }
+            { '$group' => { _id => $topic_group_by, mids => { '$addToSet' => '$mid' } } }
         ]
     );
 
@@ -192,7 +210,7 @@ sub _update_burndown {
 
     foreach my $topic (@$topics) {
         my $from  = $topic->{_id};
-        my $total = $topic->{total};
+        my $total = @{ $topic->{mids} };
 
         foreach my $by ( sort { $a cmp $b } keys %$burndown ) {
             next if $by lt $from;
