@@ -37,7 +37,7 @@ sub re_sha  { re(qr/^$RE_sha$/) }
 sub re_date { re(qr/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$/) }
 
 subtest 'get_commits_history: returns validation errors' => sub {
-    _setup();    
+    _setup();
 
     my $controller = _build_controller();
 
@@ -109,7 +109,8 @@ subtest 'branch_commits: returns validation errors' => sub {
     $controller->branch_commits($c);
 
     is_deeply $c->stash,
-      { json => { success => \0, msg => 'Validation failed', errors => { project => 'REQUIRED', repo_mid => 'REQUIRED' } } };
+      { json =>
+          { success => \0, msg => 'Validation failed', errors => { project => 'REQUIRED', repo_mid => 'REQUIRED' } } };
 };
 
 subtest 'branch_commits: returns commits' => sub {
@@ -254,10 +255,10 @@ subtest 'branch_tree: returns tree' => sub {
       {
         json => [
             {
-                'text' => 'foo',
-                'url'  => '/gittree/branch_tree',
+                'text'    => 'foo',
+                'url'     => '/gittree/branch_tree',
                 'iconCls' => 'default_folders',
-                'data' => {
+                'data'    => {
                     'sha'      => re_sha(),
                     'repo_mid' => $repo_ci->mid,
                     'branch'   => 'HEAD',
@@ -283,7 +284,7 @@ subtest 'branch_tree: returns tree' => sub {
                     'branch'   => 'HEAD'
                 },
                 'iconCls' => 'default_folders',
-                'leaf' => \1
+                'leaf'    => \1
             }
         ]
       };
@@ -324,7 +325,7 @@ subtest 'branch_tree: returns tree from a subdirectory' => sub {
                     'branch'   => 'HEAD'
                 },
                 'iconCls' => 'default_folders',
-                'leaf' => \1
+                'leaf'    => \1
             }
         ]
       };
@@ -529,14 +530,17 @@ subtest 'view_diff_file: returns diff' => sub {
       };
 };
 
-subtest 'view_diff_file: return diff when file have only one line' => sub {
+subtest 'view_diff_file: returns diff when file has only one line' => sub {
     my $repo = TestUtils->create_ci_GitRepository();
 
-    my $dir = substr( $repo->repo_dir, 0, index( $repo->repo_dir, '.' ) );
-
     my $sha = TestGit->commit( $repo, file => 'fich.txt', content => 'primera linea', message => 'primer commit' );
-    truncate $dir . 'fich.txt', 0;
-    my $sha2 = TestGit->commit( $repo, file => 'fich.txt', content => 'segunda linea', message => 'segundo commit' );
+    my $sha2 = TestGit->commit(
+        $repo,
+        file    => 'fich.txt',
+        content => 'segunda linea',
+        message => 'segundo commit',
+        action  => 'replace'
+    );
 
     my $controller = _build_controller();
 
@@ -548,15 +552,12 @@ subtest 'view_diff_file: return diff when file have only one line' => sub {
     $controller->view_diff_file($c);
 
     is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code}, "-primera linea\n+segunda linea\n";
-
 };
 
-
-subtest 'view_diff_file: return diff when the change is in finally line' => sub {
+subtest 'view_diff_file: returns diff when the change is in finally line' => sub {
     _setup();
-    use Baseliner::Utils;
+
     my $repo = TestUtils->create_ci_GitRepository();
-    my $dir = substr( $repo->repo_dir, 0, index( $repo->repo_dir, '.' ) );
 
     my $sha = TestGit->commit(
         $repo,
@@ -564,12 +565,12 @@ subtest 'view_diff_file: return diff when the change is in finally line' => sub 
         content => "Primera linea \nSegunda linea",
         message => 'primer commit'
     );
-    truncate $dir . 'fich.txt', 0;
     my $sha2 = TestGit->commit(
         $repo,
         file    => 'fich.txt',
         content => "Primera linea \nModif Segunda linea",
-        message => 'segundo commit'
+        message => 'segundo commit',
+        action  => 'replace',
     );
 
     my $controller = _build_controller();
@@ -581,10 +582,8 @@ subtest 'view_diff_file: return diff when the change is in finally line' => sub 
     $controller->view_diff_file($c);
 
     is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code},
-        " Primera linea \n-Segunda linea\n+Modif Segunda linea\n";
-
+      " Primera linea \n-Segunda linea\n+Modif Segunda linea\n";
 };
-
 
 subtest 'view_diff: returns validation errors' => sub {
     _setup();
