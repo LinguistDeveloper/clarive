@@ -1070,6 +1070,8 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
@@ -1090,6 +1092,7 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode 
         title           => 'New Release',
         release_version => '1.0',
         project         => $project,
+        username        => $user->username,
     );
 
     my $id_changeset_rule = _create_changeset_form();
