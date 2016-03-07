@@ -325,6 +325,51 @@ subtest 'related: valuesqry returns data for SuperBox in array mode' => sub {
     is $c->stash->{json}->{totalCount}, 2;
 };
 
+subtest 'related: sends correct parameters to DataView' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $data_view = Baseliner::DataView::Topic->new;
+    $data_view = Test::MonkeyMock->new($data_view);
+    $data_view->mock('find');
+
+    my $controller = _build_controller();
+    $controller = Test::MonkeyMock->new($controller);
+    $controller->mock(_build_data_view => sub {$data_view});
+
+    my $c = _build_c(
+        req => {
+            params => {
+                categories    => [ 1, 2, 3 ],
+                statuses      => [ 4, 5, 6 ],
+                not_in_status => 'on',
+                query         => 'this and that',
+                filter        => '{"foo":"bar"}',
+                sort_field    => 'title',
+                dir           => 'asc',
+            }
+        }
+    );
+
+    $controller->related($c);
+
+    my %params = $data_view->mocked_call_args('find');
+
+    is_deeply \%params,
+      {
+        'filter'        => '{"foo":"bar"}',
+        'categories'    => [1, 2, 3],
+        'dir'           => 'asc',
+        'username'      => 'test',
+        'sort'          => 'title',
+        'not_in_status' => 1,
+        'limit'         => 20,
+        'statuses'      => [4, 5, 6],
+        'search_query'  => 'this and that',
+        'start'         => 0
+      };
+};
+
 subtest 'create a topic' => sub {
     _setup();
     TestSetup->_setup_user();
@@ -2152,6 +2197,8 @@ sub _create_sprint_form {
     );
 }
 
+done_testing;
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }
@@ -2179,5 +2226,3 @@ sub _setup {
     mdb->rule->drop;
     mdb->topic->drop;
 }
-
-done_testing;

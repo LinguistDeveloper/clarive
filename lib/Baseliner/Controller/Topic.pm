@@ -316,16 +316,13 @@ sub related : Local {
     my $sort  = $p->{sort_field};
     my $dir   = $p->{dir};
 
-    my $where;
-
-    my $view = Baseliner::DataView::Topic->new;
+    my $view = $self->_build_data_view;
 
     my $rs = $view->find(
-        where         => $where,
         username      => $c->username,
         categories    => $categories,
         statuses      => $statuses,
-        not_in_status => $not_in_status,
+        not_in_status => $not_in_status && $not_in_status eq 'on',
         search_query  => $search_query,
         filter        => $filter,
         start         => $start,
@@ -2456,6 +2453,10 @@ sub list_status_changes : Local {
 
     $c->stash->{json} = { data => \@status_changes };
     $c->forward('View::JSON');
+}
+
+sub _build_data_view {
+    return Baseliner::DataView::Topic->new;
 }
 
 no Moose;
