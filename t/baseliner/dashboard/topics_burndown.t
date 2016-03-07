@@ -228,7 +228,7 @@ subtest 'burndown: scale by month' => sub {
         scale    => 'month'
     );
 
-    is_deeply $burndown, [ [ '2015-01', 2 ], [ '2015-02', 2 ], [ '2015-03', 2 ], ];
+    is_deeply $burndown, [ [ '2015-01', 3 ], [ '2015-02', 3 ], [ '2015-03', 2 ], ];
 };
 
 subtest 'burndown: scale by year' => sub {

@@ -73,7 +73,7 @@ sub dashboard {
         }
     }
     elsif ( $scale eq 'month' ) {
-        $group_by = { '$substr' => [ '$ts', 5, 2 ] };
+        $group_by = { '$substr' => [ '$ts', 0, 7 ] };
 
         while ( $from_date < $to_date ) {
             $burndown{ substr $from_date, 0, 7 } = 0;
