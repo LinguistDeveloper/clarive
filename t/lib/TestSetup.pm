@@ -56,13 +56,14 @@ sub create_rule {
 
     my $id_rule  = mdb->seq('rule');
     my $seq_rule = 0 + mdb->seq('rule_seq');
+    my $ts = $params{ts} || '2016-01-01 00:00:00';
     mdb->rule->insert(
         {
             id          => "$id_rule",
-            ts          => '2016-01-01 00:00:00',
             rule_active => 1,
             rule_name   => 'Rule',
             rule_seq    => $seq_rule,
+            ts          => $ts,
             %params,
         }
     );
@@ -109,6 +110,7 @@ sub create_topic {
 
     my $id_form = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $username = delete $params{username} || 'developer';
     my $id_category =
       delete $params{id_category}
       || TestSetup->create_category( id_rule => $id_form, name => 'Category', id_status => $status->mid );
@@ -131,7 +133,7 @@ sub create_topic {
             %$base_params,
             action   => 'add',
             title    => 'New Topic',
-            username => 'developer',
+            username => $username,
             %params
         }
     );

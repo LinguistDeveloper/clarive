@@ -251,6 +251,98 @@ subtest 'update: creates correct event.topic.create' => sub {
       };
 };
 
+subtest 'update: reload topic when have deploy in initial status' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    
+    my $project = ci->new($base_params->{project});
+    $project->{bls} = [ $bl->mid ];
+    $project->update();
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( username => 'test', id_role => $id_role, project => $project );
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $workflow = [ { id_role => $id_role, id_status_from => $base_params->{status}, id_status_to => $status1->mid, job_type => 'promote' } ];
+    mdb->category->update( { id => "$base_params->{category}" }, { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.create' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{return_options}->{reload_tab}, 1;
+};
+
+
+subtest 'update: creates correct event.topic.modify' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    Baseliner::Model::Topic->new->update( { action => 'update', topic_mid => $topic_mid, title => 'Second title' } );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify' } );
+    my $event_data = _load $event->{event_data};
+
+    my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
+    my $category = mdb->category->find_one;
+
+    cmp_deeply $event_data, {
+        mid => $topic_mid,
+        title => $topic->{title},
+        topic => $topic->{title},
+        topic_data => {
+            name_category => $category->{name},
+            category_color => $category->{category_color},
+            category_id => $category->{id},
+            category_status_id => $topic->{category_status}->{id},
+            category_status_name => $topic->{category_status}->{name},
+            category_status_seq => ignore(),
+            category_status_type => $topic->{category_status}->{type},
+            color_category => ignore(),
+            id_category => $topic->{category_id},
+            id_category_status => $topic->{id_category_status},
+            is_changeset => ignore(),
+            is_release => ignore(),
+            mid => ignore(),
+            modified_on => ignore(),
+            name_status => $topic->{name_status},
+            status_new => $topic->{status_new},
+            title => ignore(),
+            topic_mid => $topic_mid,
+            category => {
+                _id => ignore(),
+                id => $category->{id},
+                statuses => ignore(),
+                default_form => $category->{default_form},
+                name => $category->{name},
+            },
+            category_name => $category->{name},
+            category_status => $topic->{category_status},
+            modified_by => ignore(),
+        },
+        notify => {
+            'category_status' => $category->{statuses}->[0],
+            'category'        => $category->{id}
+        },
+        notify_default => [],
+        return_options => ignore(),
+        rules_exec => ignore(),
+        subject => ignore(),
+        topic_mid => $topic_mid,
+        username => ignore(),
+    };
+    like $event_data->{subject}, qr/Topic updated: Category #\d+/;
+};
+
 subtest 'upload: uploads file' => sub {
     _setup();
     TestSetup->_setup_user();

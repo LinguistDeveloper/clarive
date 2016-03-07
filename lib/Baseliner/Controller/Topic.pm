@@ -388,6 +388,38 @@ sub get_field_bodies {
     return $meta;
 }
 
+sub get_menu_deploy : Private {
+    my ( $self, $p ) = @_;
+
+    my $topic_mid = $p->{topic_mid};
+    my $username  = $p->{username};
+    my $menu_deploy;
+
+    my $topic_ci  = ci->new($topic_mid);
+    my $topic_doc = $topic_ci->get_doc;
+
+    if ( !$topic_doc->{category_status}->{bind_releases} ) {
+        my ($id_project) = map { $_->{mid} } $topic_ci->projects;
+        my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d )
+            = BaselinerX::LcController->promotes_and_demotes(
+            topic      => $topic_doc,
+            username   => $p->{username},
+            id_project => $id_project
+            );
+        $menu_deploy = {
+            deployable => $deployable,
+            promotable => $promotable,
+            demotable  => $demotable,
+            menu       => [ _array $menu_s, _array $menu_p, _array $menu_d]
+        };
+    }
+    else {
+        $menu_deploy = { deployable => {}, promotable => {}, demotable => {}, menu => [] };
+    }
+    return $menu_deploy;
+}
+
+
 sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -538,19 +570,8 @@ sub view : Local {
             
             $c->stash->{dashboard} = $category->{dashboard};
             if ( $category->{is_changeset} ) {
-                if ( !$topic_doc->{category_status}->{bind_releases} ) {
-                    my ($id_project) = map {$_->{mid}} $topic_ci->projects;
-                    my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = BaselinerX::LcController->promotes_and_demotes(
-                        topic      => $topic_doc,
-                        username   => $c->username,
-                        id_project => $id_project
-                    );
-                    my $menu = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => [_array $menu_s, _array $menu_p, _array $menu_d]};
-                    $c->stash->{menu_deploy} = _encode_json($menu);
-                } else {
-                    my $menu = { deployable => {}, promotable => {}, demotable => {}, menu => []};
-                    $c->stash->{menu_deploy} = _encode_json($menu);
-                }
+                my $menu = $self->get_menu_deploy( { topic_mid => $topic_mid, username => $c->username } );
+                $c->stash->{menu_deploy} = _encode_json($menu);
             }
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             

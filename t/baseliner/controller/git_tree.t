@@ -15,6 +15,7 @@ use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
 use Baseliner::Controller::GitTree;
+use BaselinerX::Type::Model::ConfigStore;
 
 local *Baseliner::model = sub {
     shift;

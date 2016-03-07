@@ -338,10 +338,12 @@ sub _create_changeset {
 
     my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
 
+    my $id_role = TestSetup->create_role();
     my $project = TestUtils->create_ci('project');
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $changeset_mid =
-      TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+      TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1, username => $user->name );
 
     return $changeset_mid;
 }

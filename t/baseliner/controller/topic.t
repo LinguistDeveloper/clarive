@@ -375,6 +375,10 @@ subtest 'new topics have category_id in stash' => sub {
 subtest 'list_status_changes: returns status changes' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $topic_mid = TestSetup->create_topic(
         status => $status,
@@ -384,10 +388,10 @@ subtest 'list_status_changes: returns status changes' => sub {
     my $model = Baseliner::Model::Topic->new;
 
     my $status1 = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
-    $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => 'user' );
+    $model->change_status( mid => $topic_mid, id_status => $status1->mid, change => 1, username => $user->username );
 
     my $status2 = TestUtils->create_ci( 'status', name => 'Change2', type => 'I' );
-    $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => 'user' );
+    $model->change_status( mid => $topic_mid, id_status => $status2->mid, change => 1, username => $user->username );
 
     my @changes = $model->status_changes($topic_mid);
 
@@ -815,6 +819,10 @@ subtest 'topic_drop: correctly replaces existing release when value_type is sing
 subtest 'upload: uploads file to topic' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -824,7 +832,7 @@ subtest 'upload: uploads file to topic' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => { extension => 'jpg', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
             body => "$tempdir/filename.jpg"
@@ -841,6 +849,10 @@ subtest 'upload: uploads file to topic' => sub {
 subtest 'upload: fails to upload not allowed extension' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -849,7 +861,7 @@ subtest 'upload: fails to upload not allowed extension' => sub {
     my $tempdir = tempdir();
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params =>
               { extension => 'sql,txt', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
@@ -867,6 +879,10 @@ subtest 'upload: fails to upload not allowed extension' => sub {
 subtest 'upload: file without extension is not  allowed' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -876,7 +892,7 @@ subtest 'upload: file without extension is not  allowed' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params =>
               { extension => 'sql,txt,JPG,PDF', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename' },
@@ -895,6 +911,10 @@ subtest 'upload: file without extension is not  allowed' => sub {
 subtest 'upload: accepts extension list with spaces' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -904,7 +924,7 @@ subtest 'upload: accepts extension list with spaces' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => {
                 extension => '.sql txt .jpg, TXT',
@@ -926,6 +946,10 @@ subtest 'upload: accepts extension list with spaces' => sub {
 subtest 'upload: accepts extension list with dots' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -935,7 +959,7 @@ subtest 'upload: accepts extension list with dots' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => {
                 extension => '.sql,.txt,.JPG,.PDF',
@@ -957,6 +981,10 @@ subtest 'upload: accepts extension list with dots' => sub {
 subtest 'upload: correctly checks double extensions' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -966,7 +994,7 @@ subtest 'upload: correctly checks double extensions' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename.tar.gz" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => {
                 extension => 'txt .jpg .tar.gz tgz .foo.bar.baz',
@@ -988,6 +1016,10 @@ subtest 'upload: correctly checks double extensions' => sub {
 subtest 'upload: correctly checks double extensions the the file have one extension' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -997,7 +1029,7 @@ subtest 'upload: correctly checks double extensions the the file have one extens
     TestUtils->write_file( 'content', "$tempdir/filename.tar" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => {
                 extension => 'txt .jpg .tar.gz tgz .foo.bar.baz',
@@ -1019,6 +1051,10 @@ subtest 'upload: correctly checks double extensions the the file have one extens
 subtest 'upload: does not check extension when none specified' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
@@ -1028,7 +1064,7 @@ subtest 'upload: does not check extension when none specified' => sub {
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
 
     my $c = _build_c(
-        username => 'user',
+        username => $user->username,
         req      => {
             params => { extension => '', topic_mid => $topic_mid, filter => 'test_file', qqfile => 'filename.jpg' },
             body => "$tempdir/filename.jpg"
@@ -1118,29 +1154,30 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
 
     my $id_changeset_rule     = _create_changeset_form();
     my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
-    my $topic_mid             = TestSetup->create_topic( id_category => $id_changeset_category, project => $project );
-
+    
     my $user = TestSetup->create_user(
-        username => 'test_user',
+        username => 'developer',
         realname => 'Test User',
         id_role  => $id_role,
         project  => $project
     );
     my $user2 = TestSetup->create_user(
-        username => 'test_user2',
+        username => 'developer2',
         realname => 'Test User2',
         id_role  => $id_role,
         project  => $project2
     );
     my $user3 = TestSetup->create_user(
-        username => 'test_user3',
+        username => 'developer3',
         realname => 'Test User3',
         id_role  => $id_role2,
         project  => $project2
     );
+    
+    my $topic_mid = TestSetup->create_topic( id_category => $id_changeset_category, project => $project );
 
     my $c = _build_c(
-        username => 'test_user',
+        username => $user->username,
         req      => {
             params => {
                 roles => 'TestRole'
@@ -1155,8 +1192,8 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
         json => {
             totalCount => 2,
             data       => [
-                { id => ignore(), realname => 'Test User',  username => 'test_user' },
-                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+                { id => ignore(), realname => 'Test User',  username => $user->username },
+                { id => ignore(), realname => 'Test User2', username => $user2->username },
             ]
         }
       };
@@ -1891,6 +1928,102 @@ sub _create_topic_selector_form {
     );
 }
 
+subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
+    _setup();
+      
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status1 = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic(
+        status => $status,
+        id_category => $id_changeset_category,
+        title  => "Topic"
+    );
+
+    my $workflow = [ { id_role => $id_role, id_status_from => $status->mid, id_status_to => $status1->mid, job_type => 'promote' } ];
+    mdb->category->update( { id => "$id_changeset_category" }, { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my $controller = _build_controller();
+    my $menu = $controller->get_menu_deploy( { topic_mid => $topic_mid, username => $user->username } );
+
+    cmp_deeply $menu,
+      {
+        demotable => ignore(),
+        deployable => ignore(),
+        menu => [{
+            eval => {
+                bl_to => $bl->bl,
+                id => ignore(),
+                id_project => ignore(),
+                is_release => ignore(),
+                job_type => 'promote',
+                status_to => $status1->mid,
+                status_to_name => $status1->name,
+                title => 'To Promote',
+                url => '/comp/lifecycle/deploy.js',
+            },
+            icon => "/static/images/silk/arrow_down.gif",
+            id_status_from => $status->mid,
+            text => ignore(),
+        }],
+        promotable => ignore(),
+      };
+};
+
+subtest 'update: new topics have menu_deploy in stash' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $status1 = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
+
+    my $topic_mid = TestSetup->create_topic(
+        status => $status,
+        id_category => $id_changeset_category,
+        title  => "Topic"
+    );
+
+    my $workflow = [ { id_role => $id_role, id_status_from => $status->mid, id_status_to => $status1->mid, job_type => 'promote' } ];
+    mdb->category->update( { id => "$id_changeset_category" }, { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my $controller = _build_controller();
+    my $c           = _build_c(
+        req => {
+            params => {
+                new_category_id   => $id_changeset_category,
+                new_category_name => 'Changeset',
+                topic_mid => $topic_mid,
+            }
+        }
+    );
+    $c->{username} = 'root';    # change context to root
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    ok exists $stash->{menu_deploy};    # this only shows up in case of failure
+};
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 
@@ -2032,7 +2165,8 @@ sub _setup {
         'BaselinerX::Type::Event',            'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',                     'BaselinerX::Fieldlets',
         'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'Baseliner::Model::Rules',            'BaselinerX::LcController',
+        'BaselinerX::Type::Model::ConfigStore',
     );
 
     mdb->master->drop;

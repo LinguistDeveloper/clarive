@@ -35,9 +35,9 @@ use Baseliner::Model::Events;
 
 sub mdl {  }
 
-sub config_store { Baseliner->model('ConfigStore') }
-sub config_get { Baseliner->model('ConfigStore')->get(@_) }
-sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
+sub config_store { BaselinerX::Type::Model::ConfigStore->new }
+sub config_get { BaselinerX::Type::Model::ConfigStore->new->get(@_) }
+sub config_value { BaselinerX::Type::Model::ConfigStore->new->get($_[0], value=>1) }
 
 # sub relation { Baseliner->model('Relationships') }
 
