@@ -408,6 +408,13 @@ sub paths_to {
 
     my @paths;
 
+    foreach my $plugin ( $self->plugins->all_plugins ) {
+        my $path_to = Path::Class::dir( $plugin, @args);
+        if (-e $path_to) {
+            push @paths, $path_to;
+        }
+    }
+
     foreach my $feature ( $self->features->list ) {
         my $path_to = $feature->path_to(@args);
         if (-e $path_to) {
@@ -431,6 +438,12 @@ sub features {
     my $self = shift;
     require Clarive::Features;
     return Clarive::Features->new(app=>$self);
+}
+
+sub plugins {
+    my $self = shift;
+    require Clarive::Plugins;
+    return Clarive::Plugins->new(app=>$self);
 }
 
 # singleton Clarive package

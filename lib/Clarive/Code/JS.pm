@@ -18,7 +18,6 @@ use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case to_base_class
 
 use Clarive::App;
 use Clarive::Code::Utils;
-use Clarive::Plugins;
 
 has dump_code     => qw(is rw isa Bool default 0);
 has enclose_code  => qw(is rw isa Bool default 0);
@@ -272,13 +271,13 @@ sub _generate_cla {
                     }());
                 }, $1;
             }
-            elsif( my $path = Clarive::Plugins->locate_path( "modules/$id", "modules/$id.js") ) {
+            elsif( my $path = Clarive->app->plugins->locate_path( "modules/$id", "modules/$id.js") ) {
                 return scalar Util->_file($path)->slurp;
             }
             else {
                 die sprintf(
                     "Could not find module `%s` in the following plugins: %s\n",
-                    $id, join( ',', Clarive::Plugins->all_plugins( name_only=>1 ) )
+                    $id, join( ',', Clarive->app>plugins->all_plugins( name_only=>1 ) )
                 );
             }
         },

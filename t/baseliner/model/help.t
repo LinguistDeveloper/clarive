@@ -25,7 +25,7 @@ subtest 'docs_dirs: finds all base and home docs dirs' => sub {
 
     my @dirs = $help->docs_dirs;
 
-    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{features/testfeature/docs/en}), re(qr{app-home/docs/en}) ];
+    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{app-home/docs/en}), re(qr{plugins/my-plugin/docs/en}), re(qr{features/testfeature/docs/en}) ];
 };
 
 subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
@@ -35,7 +35,7 @@ subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
 
     my @dirs = $help->docs_dirs('es');
 
-    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{features/testfeature/docs/es}), re(qr{app-home/docs/es}) ];
+    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{app-home/docs/es}), re(qr{features/testfeature/docs/es}) ];
 };
 
 subtest 'build_doc_tree: help tree is built from directory and in correct order' => sub {
@@ -45,6 +45,18 @@ subtest 'build_doc_tree: help tree is built from directory and in correct order'
     my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/en") );
 
     cmp_deeply \@tree, [
+        {
+            'icon' => ignore(),
+            'text' => 'External',
+            children => [
+            ],
+            'expanded' => \1,
+            index => ignore(),
+            'data' => {
+                'path' => 'ext-test',
+            },
+            'leaf' => \0
+        },
         {
             'icon' => ignore(),
             'text' => 'Help Test',
@@ -93,6 +105,16 @@ subtest 'build_doc_tree: help tree is built from directory by language' => sub {
     is $tree[0]->{text}, 'Ayuda Test';
 };
 
+subtest 'build_doc_tree: help tree merges directories from plugins' => sub {
+    _setup();
+
+    my $help = Baseliner::Model::Help->new;
+    my @dirs = $help->docs_dirs;
+    my @tree = $help->build_doc_tree( { query => '' }, @dirs );
+
+    is $tree[0]->{text}, 'External';
+};
+
 subtest 'build_doc_tree: returns only matches results when query' => sub {
     _setup();
 
@@ -102,6 +124,17 @@ subtest 'build_doc_tree: returns only matches results when query' => sub {
 
     cmp_deeply \@tree,
       [
+        {
+            'icon' => ignore(),
+            'text' => 'External',
+            children => [],
+            'data' => {
+                'path' => 'ext-test',
+            },
+            expanded => \1,
+            index => ignore(),
+            'leaf' => \0
+        },
         {
             'icon' => ignore(),
             'text' => 'Help Test',
