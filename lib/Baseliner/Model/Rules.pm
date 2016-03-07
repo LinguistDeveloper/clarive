@@ -115,11 +115,41 @@ sub tree_format {
     return @tree_out;
 }
 
+sub load_tree {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $rule = $params{rule};
+
+    if (!$rule) {
+        my $id_rule = $params{id_rule};
+
+        my $rule = mdb->rule->find_one(
+            {'$or' => [{id => "$id_rule"}, {rule_name => "$id_rule"}]});
+        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+    }
+
+    my $tree = try { Util->_decode_json( $rule->{rule_tree} ) } catch { +{} };
+
+    return $self->tree_format(@$tree);
+}
+
 sub build_tree {
     my ($self, $id_rule, $parent, %p) = @_;
-    # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
-    _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+
+    my $rule;
+
+    # Temporary workaround
+    if (ref $id_rule) {
+        $rule = $id_rule;
+        $id_rule = $rule->{id};
+    }
+    else {
+        # TODO run query just once and work with a hash ->hash_for( id_parent )
+        $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
+        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+    }
+
     my $rule_tree_json = $rule->{rule_tree};
 
     if( $rule_tree_json ) {
@@ -161,16 +191,6 @@ sub all_nodes {
         } @_;
     };
     $dig->( @nodes );
-}
-
-# called when rule is saved
-sub dsl_build_and_test {
-    my ($self,$stmts, %p )=@_;
-    my $dsl = $self->dsl_build( $stmts, id_rule=>$p{id_rule}, %p ); 
-    my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
-    $rule->compile;
-    die $rule->errors if $rule->errors;
-    return $dsl;
 }
 
 sub dsl_build {
@@ -320,37 +340,6 @@ sub dsl_build {
     return $dsl;
 }
 
-sub dsl_run {
-    my ($self, %p ) = @_;
-    my $id_rule = $p{id_rule};
-    local $@;
-    my $ret;
-    my $stash = $p{stash} // {};
-    
-    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
-    
-    ## local $Baseliner::Utils::caller_level = 3;
-    ############################## EVAL DSL Tasks
-    my $rule = Baseliner::CompiledRule->new( ( $id_rule ? (id_rule=>$id_rule):() ), dsl=>$p{dsl} );
-    $rule->compile;
-    $rule->run(stash=>$stash);  # if there's a compile error it wont run
-    ##############################
-    
-    
-    if( my $err = $rule->errors ) {
-        if( $p{simple_error} ) {
-            _error( _loc("Error during DSL Execution: %1", $err) ) unless $p{simple_error} > 1;
-            _fail $err;
-        } else {
-            _fail( _loc("Error during DSL Execution: %1", $err) );
-        }
-        _debug "DSL:\n",  $self->dsl_listing( $rule->dsl );
-    } else {
-        _debug "DSL:\n",  $self->dsl_listing( $rule->dsl ) if $p{logging};
-    }
-    return { stash=>$stash, dsl=>($rule->dsl || $rule->package) };  # TODO storing dsl everywhere maybe a waste of space
-}
-
 sub compile_rules {
     my $self = shift;
     my (%params) = @_;
@@ -370,99 +359,6 @@ sub compile_rules {
     }
 }
 
-# used by events
-sub run_rules {
-    my ($self, %p) = @_;
-    my $when = $p{when};
-    local $Baseliner::_no_cache = 0;
-    my @rules = 
-        $p{id_rule} 
-            ? ( mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] }) )
-            : mdb->rule->find({ rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active => mdb->true })
-              ->sort(mdb->ixhash(rule_seq=>1, id=>1))->all;
-    my $stash = $p{stash};
-    my @rule_log;
-    local $ENV{BASELINER_LOGCOLOR} = 0;
-    
-    my $mid = $stash->{mid} if $stash;
-    my $sem;
-    if( defined $mid && @rules && $p{use_semaphore} ) {
-        require Baseliner::Sem;
-        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when", internal=>1 );
-        $sem->take;
-    }
-    $stash->{rules_exec}{$p{event}}{ $when } = 0;
-    for my $rule ( @rules ) {
-        $stash->{rules_exec}{$p{event}}{ $when }++;
-        my ($runner_output, $rc, $ret,$err);
-        my $id_rule = $rule->{id};
-        try {
-            my $t0=[Time::HiRes::gettimeofday];
-
-            ################### RUN THE RULE DSL ######################
-            require Capture::Tiny;
-            ($runner_output) = Capture::Tiny::tee_merged(sub{
-                try {
-                    $ret = $self->dsl_run( id_rule=>$id_rule, stash=>$stash, simple_error=>$p{simple_error} );
-                } catch {
-                    $err = shift // _loc('Unknown error running rule: %1', $id_rule ); 
-                };
-            });
-            # report controlled errors
-            if( $err ) {
-                if ( $rule->{rule_when} !~ /online/ ) {
-                    event_new 'event.rule.failed' => { username => 'internal', dsl=>$ret->{dsl}, rule=>$id_rule, rule_name=>$rule->{rule_name}, stash=>$stash, output => $runner_output } => sub {};
-                }           
-                if( $p{simple_error} ) {
-                    _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ) unless $p{simple_error} > 1; 
-                    _fail $err; 
-                } else {
-                    _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
-                }
-            }
-        } catch {
-            my $err_global = shift;
-            $rc = 1;
-            if( ref $p{onerror} eq 'CODE') {
-                if ( $rule->{rule_when} !~ /online/ ) {
-                    event_new 'event.rule.failed' => { username => 'internal', dsl=>$ret->{dsl}, rc=>$rc, ret=>$ret->{stash}, rule => $id_rule, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
-                }
-                $p{onerror}->( { err=>$err_global, ret=>$ret->{stash}, id=>$id_rule, dsl=>$ret->{dsl}, stash=>$stash, output=>$runner_output, rc=>$rc } );
-            } elsif( ! $p{onerror} ) {
-                _fail "(rule $id_rule): ".$err_global;
-            }
-        };
-        push @rule_log, { ret=>$ret->{stash}, id => $id_rule, dsl=>$ret->{dsl}, stash=>$stash, output=>$runner_output, rc=>$rc };
-    }
-    if( $sem ) {
-        $sem->release;
-    }
-    return { stash=>$stash, rule_log=>\@rule_log }; 
-}
-
-# used by pipelines
-sub run_single_rule {
-    my ($self, %p ) = @_;
-    local $Baseliner::_no_cache = 0;
-    $p{stash} //= {};
-    my $stash = $p{stash};
-    my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
-    
-    _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
-    my $rule_id = $rule->{id};
-    my @tree = $self->build_tree( $p{id_rule}, undef );
-    #local $self->{tidy_up} = 0;
-    my $t0=[Time::HiRes::gettimeofday];
-
-    my $ret = try {
-        ################### RUN THE RULE DSL ######################
-        $self->dsl_run( id_rule=>$rule_id, stash=>$p{stash}, %p );
-    } catch {
-        _fail( _loc("Error running rule '%1': %2", $rule->{rule_name}, shift() ) ); 
-    };
-    return { ret=>$ret, dsl=>'' };
-}
-
 sub dsl_listing {
     my ($self,$dsl)=@_;
     my $lin = 1;
@@ -470,15 +366,6 @@ sub dsl_listing {
 }
 
 ######################################## GLOBAL SUBS
-
-sub merge_into_stash {
-    my ($stash, $data) = @_;
-    return unless ref $data eq 'HASH';
-    while( my($k,$v) = each %$data ) {
-        $stash->{$k} = $v;
-    }
-    return $stash
-}
 
 #sub project_changed {
 #    my $stash = shift;
@@ -1396,7 +1283,7 @@ sub write_rule {
             mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
         };
 
-    { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
+    return { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
 }
 
 sub delete_rule {

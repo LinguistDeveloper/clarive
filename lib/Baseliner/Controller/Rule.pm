@@ -1,16 +1,19 @@
 package Baseliner::Controller::Rule;
 use Moose;
-use Baseliner::Utils;
-use Baseliner::Sugar;
-use DateTime;
+BEGIN {  extends 'Catalyst::Controller::WrapCGI' }
+
+use Capture::Tiny ();
 use Try::Tiny;
 use Time::HiRes qw(time);
 use v5.10;
+use BaselinerX::CI::variable;
+use Baseliner::RuleRunner;
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::CompiledRule;
+use Baseliner::Model::Rules;
+use Baseliner::Utils;
+use Baseliner::Sugar;
 
-
-BEGIN {  extends 'Catalyst::Controller' }
-BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
@@ -532,8 +535,11 @@ sub palette : Local {
 
 sub stmts_save : Local {
     my ($self,$c)=@_;
+
     my $p = $c->req->params;
+
     $p->{username} = $c->username;
+
     my $error_checking_dsl = 0;
     try {
         my ($detected_errors,$returned_ts);
@@ -579,9 +585,9 @@ sub local_stmts_save {
     my $ts = mdb->ts;
     #_debug $stmts;
     # check if DSL is buildable
+    my $rule_runner = Baseliner::RuleRunner->new;
     my $detected_errors = try { 
-        use Baseliner::Model::Rules;
-        my $dsl = Baseliner::Model::Rules->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
+        my $dsl = $rule_runner->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
         _debug "Caching rule $id_rule for further use";
         mdb->grid->remove({id_rule=> "$id_rule"});
         mdb->grid_insert( $dsl ,id_rule => $id_rule );
@@ -637,58 +643,93 @@ sub rule_test : Local{
 }
 
 sub rollback_version : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     my $version_id = $p->{version_id};
-    my $ver = mdb->rule_version->find_one({ _id=>mdb->oid($version_id) });
+
+    my $ver = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
     _fail _loc 'Version not found: %1', $version_id unless $ver;
+
     try {
-        Baseliner::Model::Rules->new->write_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
-        $c->stash->{json} = { success=>\1, msg => _loc('Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
-    } catch {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule    => $ver->{id_rule},
+            stmts_json => $ver->{rule_tree},
+            username   => $ver->{username},
+            was        => $ver->{ts},
+            old_ts     => $ver->{ts}
+        );
+        $c->stash->{json} = { success => \1, msg => _loc( 'Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
+    }
+    catch {
         my $err = shift;
+
         _error $err;
-        $c->stash->{json} = { success=>\0, msg => $err };
+        chomp($err);
+
+        $c->stash->{json} = { success => \0, msg => $err };
     };
     $c->forward("View::JSON");
-} 
-    
+}
+
 sub stmts_load : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
+    my $id_rule       = $p->{id_rule};
     my $load_versions = $p->{load_versions};
+
     try {
-        my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-        # recursive loading from rows to tree:
-        my @tree = Baseliner->model('Rules')->build_tree( $id_rule, undef );
-        # $c->stash->{json} = [{ text=>_loc('Start'), leaf=>\0, children=>\@tree }];
-        if( $load_versions ) {
-            my $rs = mdb->rule_version->find({ id_rule=>"$id_rule" })->sort({ ts=>-1 });
+        _throw 'Missing rule id' unless $id_rule;
+
+        my @tree = Baseliner::Model::Rules->new->build_tree( $id_rule, undef );
+
+        if ($load_versions) {
+            my $rs      = mdb->rule_version->find( { id_rule => "$id_rule" } )->sort( { ts => -1 } );
             my $current = $rs->next;
-            my $text = ' was: '.$current->{was} if $current && $current->{was};
-            @tree = ( 
-                {   text => $current ? _loc('Current: %1 (%2)', $current->{ts}, $current->{username}).$text : _loc('Current'), 
-                    leaf=>\0, 
-                    icon=>'/static/images/icons/history.png',
-                    is_current=>\1, children=>[ @tree ]
+            my $text    = ' was: ' . $current->{was} if $current && $current->{was};
+            @tree = (
+                {
+                    text => $current
+                    ? _loc( 'Current: %1 (%2)', $current->{ts}, $current->{username} ) . $text
+                    : _loc('Current'),
+                    leaf       => \0,
+                    icon       => '/static/images/icons/history.png',
+                    is_current => \1,
+                    children   => [@tree]
                 }
 
             );
-            while( my $rv = $rs->next ) {
-                my $ver_tree = try { Util->_decode_json($rv->{rule_tree}) } catch { +{} }; 
-                my @ver_tree = Baseliner->model('Rules')->tree_format( @$ver_tree );
-                my $text = _loc('Version: %1 (%2)', $rv->{ts}, $rv->{username} );
-                $text .= ' was: '.$rv->{was} if $rv->{was};
-                push @tree, +{ text=>$text, 
-                    icon=>'/static/images/icons/history.png',
-                    is_version=>\1, version_id=>''.$rv->{_id}, leaf=>\0, children=>\@ver_tree };
-            } 
+
+            while ( my $rv = $rs->next ) {
+                my @ver_tree = Baseliner::Model::Rules->new->load_tree(rule => $rv);
+
+                my $text     = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                $text .= ' was: ' . $rv->{was} if $rv->{was};
+                push @tree,
+                  +{
+                    text       => $text,
+                    icon       => '/static/images/icons/history.png',
+                    is_version => \1,
+                    version_id => '' . $rv->{_id},
+                    leaf       => \0,
+                    children   => \@ver_tree
+                  };
+            }
         }
-        $c->stash->{json} =  \@tree;
-    } catch {
+
+        $c->stash->{json} = \@tree;
+    }
+    catch {
         my $err = shift;
+
         _error $err;
-        $c->stash->{json} = { success=>\0, msg => $err };
+
+        chomp $err;
+
+        $c->stash->{json} = { success => \0, msg => $err };
     };
     $c->forward("View::JSON");
 }
@@ -744,14 +785,18 @@ sub edit_key : Local {
 }
 
 sub dsl : Local {
-    my ($self,$c)=@_;
+    my ($self, $c)=@_;
+
     my $p = $c->req->params;
-    #_debug "\n\n" . $p->{stmts} . "\n\n";;
-    my $stmts = _decode_json( $p->{stmts} ) if $p->{stmts};
+
+    my $id_rule   = $p->{id_rule};
+    my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
+    my $stmts     = $p->{stmts};
+
+    $stmts = _decode_json( $stmts ) if $stmts;
+
     try {
-        my $id_rule = $p->{id_rule};
         my $doc = mdb->rule->find_one({ id=>$id_rule },{ rule_tree=>0 }) // {};
-        my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
         my $data;
         if( $rule_type eq 'pipeline' ) {
             $data = {
@@ -768,7 +813,7 @@ sub dsl : Local {
             # loose rule 
             $data = {};
         }
-        my $dsl = $c->model('Rules')->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
+        my $dsl = Baseliner::Model::Rules->new->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
         $c->stash->{json} = { success=>\1, dsl=>$dsl, data_yaml => _dump( $data ) };
     } catch {
         my $err = shift; _error $err;
@@ -782,49 +827,52 @@ sub run_rule : Local {
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule} // _fail('Missing id_rule');
     my $stash = $p->{stash};
-    
-    my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+    my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash );
 
     $c->stash->{json} = { stash=>$stash, ret=>$ret_rule };
     $c->forward("View::JSON");
 }
 
 sub dsl_try : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
     my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
-    $c->stash->{json} = $self->dsl_run($dsl,$stash);
-    $c->forward("View::JSON");
-}
 
-sub dsl_run {
-    my ($self,$dsl,$stash) = @_;
-    my $output;
+    my $success = \1;
+    my $msg     = 'ok';
+
     local $Baseliner::no_log_color = 1;
-    return try {
-        my $dslerr;
-        require Capture::Tiny;
-        _log "============================ DSL TRY START ============================";
-        ($output) = Capture::Tiny::tee_merged(sub{
-            try {
-                $stash = Baseliner->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
-            } catch {
-               $dslerr = shift;   
-            };
-        });
-        _log "============================ DSL TRY END   ============================";
-        my $stash_yaml = _dump( $stash );
-        if( $dslerr ) {
-            _fail "ERROR DSL TRY: $dslerr";
-        }
-        #$stash = Util->_unbless( $stash );
-        return { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
-    } catch {
-        my $err = shift; _error $err;
-        my $stash_yaml = _dump( $stash );
-        return { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+
+    my $ret_rule = try {
+        $rule_runner->run_dsl( dsl => $dsl, stash => $stash );
+    }
+    catch {
+        my $error = $_;
+
+        $success = \0;
+        $msg = $error;
+
+        return;
     };
+
+    my $output = $ret_rule ? $ret_rule->{output} : '';
+
+    my $stash_yaml = _dump( $stash );
+
+    $c->stash->{json} = {
+        success    => $success,
+        msg        => $msg,
+        output     => $output,
+        stash_yaml => $stash_yaml
+    };
+    $c->forward("View::JSON");
 }
 
 =head2 default
@@ -842,7 +890,9 @@ sub rule_from_url {
 
 sub default : Path {
     my ($self,$c,$meth,$id_rule,@args) = @_;
+
     my $p = $c->req->params;
+
     $meth //= 'json';
     my $ret = {};
     my $username = $c->username;
@@ -863,7 +913,9 @@ sub default : Path {
         try {
             my $rule = $self->rule_from_url( $id_rule );
             _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
-            my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
+
+            my $rule_runner = Baseliner::RuleRunner->new;
+            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response} 
                 ? $stash->{ws_response} 

@@ -185,7 +185,7 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $self->{uri}        = $params{uri};
+    $self->{uri}        = $params{uri} || URI->new('http://localhost');
     $self->{method}     = $params{method} || 'GET';
     $self->{params}     = $params{params} || {};
     $self->{headers}    = $params{headers} || {};
@@ -200,7 +200,7 @@ sub new {
     return $self;
 }
 
-sub uri              { shift->{uri} || 'http://localhost' }
+sub uri              { shift->{uri} }
 sub content_type     { 'text/html' }
 sub user_agent       { shift->{user_agent} || 'Mozilla/1.0' }
 sub address          { '127.0.0.1' }

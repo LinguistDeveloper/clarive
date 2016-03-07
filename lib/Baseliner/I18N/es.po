@@ -8558,3 +8558,6 @@ msgstr "Ordenar por"
 
 msgid "Sort Order"
 msgstr "Forma de ordenar"
+
+msgid "Latest"
+msgstr "Última"

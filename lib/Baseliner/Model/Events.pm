@@ -56,8 +56,9 @@ register 'service.event.run_once' => {
 
 sub run_once {
     my ($self, $c, $data ) = @_;
-    my $rules = Baseliner->model('Rules')->new;
-    $rules->tidy_up( 0 );  # turn off perl_tidy
+
+    my $rule_runner = Baseliner::RuleRunner->new(tidy_up => 0);
+
     my $more_events = 1;
     while( $more_events ) {
         my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
@@ -71,7 +72,7 @@ sub run_once {
                 alarm $data->{timeout} if $data->{timeout};  # 0 turns off timeout
                 my $stash = $ev->{event_data} ? _load( $ev->{event_data} ) : {};
                 # run rules for this event
-                my $ret = $rules->run_rules( event=>$ev->{event_key}, rule_type=>'event', when=>'post-offline', stash=>$stash, onerror=>1 );
+                my $ret = $rule_runner->run_rules( event=>$ev->{event_key}, rule_type=>'event', when=>'post-offline', stash=>$stash, onerror=>1 );
                 alarm 0 if $data->{timeout};
                 my $rc=0;
                 # save log
