@@ -17,7 +17,7 @@ the option `--env mypersonal` will tell `cla` to load the
 configuration options from any file called `config/mypersonal.yml`
 in the config search hierarchy.
 
-Do not confuse this with Clarive environments.
+Do not confuse this with Clarive [environments](concepts/environment).
 
 ### --load-plugins
 
