@@ -755,7 +755,7 @@ subtest 'topics_burndown_ng: sends correct default args to dashboard' => sub {
         'from'            => '2016-01-01 00:00:00',
         'to'              => '2016-01-01 12:00:00',
         'date_field'      => undef,
-        'group_by_period' => 'hour',
+        'scale'           => undef,
         'closed_statuses' => undef
       };
 };
@@ -794,7 +794,7 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when period' => sub
         'from'            => '2016-01-01',
         'to'              => '2016-02-01',
         'date_field'      => undef,
-        'group_by_period' => 'hour',
+        'scale'           => undef,
         'closed_statuses' => undef
       };
 };
@@ -835,7 +835,7 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when duration' => s
         'from'            => '2015-12-31 00:00:00',
         'to'              => '2015-12-31 23:59:59',
         'date_field'      => undef,
-        'group_by_period' => 'hour',
+        'scale'           => undef,
         'closed_statuses' => undef
       };
 };
@@ -885,7 +885,7 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when topic and fiel
         'from'            => '2016-01-01',
         'to'              => '2016-02-02',
         'date_field'      => undef,
-        'group_by_period' => 'hour',
+        'scale'           => undef,
         'closed_statuses' => undef
       };
 };

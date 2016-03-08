@@ -2,7 +2,8 @@ package Baseliner::Dashboard::TopicsBurndown;
 use Moose;
 
 use Array::Utils qw(intersect);
-use JSON ();
+use JSON        ();
+use Class::Date ();
 use Baseliner::Model::Topic;
 use Baseliner::Utils qw(_now _array);
 
@@ -21,10 +22,13 @@ sub dashboard {
     $from = "$from 00:00:00" unless $to =~ m/ \d\d:\d\d:\d\d/;
     $to   = "$to 23:59:59"   unless $to =~ m/ \d\d:\d\d:\d\d/;
 
-    my $group_by_period = $params{group_by_period} || 'hour';
-    my $date_field      = $params{date_field}      || 'created_on';
-    my $categories      = $params{categories}      || [];
-    my $query           = $params{query};
+    my $from_date = Class::Date->new($from);
+    my $to_date   = Class::Date->new($to);
+
+    my $scale      = $params{scale}      || 'hour';
+    my $date_field = $params{date_field} || 'created_on';
+    my $categories = $params{categories} || [];
+    my $query      = $params{query};
     my @closed_statuses = _array $params{closed_statuses};
 
     if (@closed_statuses) {
@@ -48,26 +52,19 @@ sub dashboard {
     }
 
     my %burndown = ();
-    if ( $group_by_period eq 'hour' ) {
-        $group_by = { '$substr' => [ '$ts', 11, 2 ] };
+    if ( $scale eq 'hour' ) {
+        $group_by = { '$substr' => [ '$ts', 0, 13 ] };
 
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 23;
-    }
-    elsif ( $group_by_period eq 'day_of_week' ) {
-        $group_by = { '$substr' => [ '$ts', 8, 2 ] };
+        while ( $from_date < $to_date ) {
+            for ( 0 .. 23 ) {
+                $burndown{ substr( $from_date, 0, 11 ) . sprintf( '%02d', $_ ) } = 0;
+            }
 
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 6;
+            $from_date = $from_date + '1D';
+        }
     }
-    elsif ( $group_by_period eq 'month' ) {
-        $group_by = { '$substr' => [ '$ts', 5, 2 ] };
-
-        $burndown{ sprintf( '%02d', $_ ) } = 0 for 0 .. 11;
-    }
-    elsif ( $group_by_period eq 'date' ) {
+    elsif ( $scale eq 'day' ) {
         $group_by = { '$substr' => [ '$ts', 0, 10 ] };
-
-        my $from_date = Class::Date->new($from);
-        my $to_date   = Class::Date->new($to);
 
         while ( $from_date < $to_date ) {
             $burndown{ substr $from_date, 0, 10 } = 0;
@@ -75,8 +72,26 @@ sub dashboard {
             $from_date = $from_date + '1D';
         }
     }
+    elsif ( $scale eq 'month' ) {
+        $group_by = { '$substr' => [ '$ts', 0, 7 ] };
+
+        while ( $from_date < $to_date ) {
+            $burndown{ substr $from_date, 0, 7 } = 0;
+
+            $from_date = $from_date + '1M';
+        }
+    }
+    elsif ( $scale eq 'year' ) {
+        $group_by = { '$substr' => [ '$ts', 0, 4 ] };
+
+        while ( $from_date < $to_date ) {
+            $burndown{ substr $from_date, 0, 4 } = 0;
+
+            $from_date = $from_date + '1Y';
+        }
+    }
     else {
-        die 'unknown group_by_period';
+        die 'unknown scale';
     }
 
     my $topic_group_by = { '$substr' => [ @{ $group_by->{'$substr'} } ] };
@@ -143,9 +158,27 @@ sub dashboard {
                     'ts'          => $date_query_during_period,
                 }
             },
-            { '$group' => { _id => $group_by, total => { '$sum' => 1 } } }
+            { '$group' => { _id => $group_by, mids => { '$addToSet' => '$mid' }, total => { '$sum' => 1 } } }
         ]
     );
+
+    # Make sure when topics are closed/reopen several times a day
+    # or during several days, we remove those duplications
+    my %seen;
+    foreach my $closed_topic ( @{ $closed_topics_aggr[0] } ) {
+        my $mids = $closed_topic->{mids};
+
+        my @filtered_mids;
+        foreach my $mid (@$mids) {
+            next if $seen{$mid};
+
+            $seen{$mid}++;
+
+            push @filtered_mids, $mids;
+        }
+
+        $closed_topic->{mids} = \@filtered_mids;
+    }
 
     my @created_topics_aggr = mdb->topic->aggregate(
         [
@@ -156,17 +189,19 @@ sub dashboard {
                     %$where,
                 }
             },
-            { '$group' => { _id => $topic_group_by, total => { '$sum' => 1 } } }
+            { '$group' => { _id => $topic_group_by, mids => { '$addToSet' => '$mid' } } }
         ]
     );
 
     $self->_update_burndown( $created_topics_aggr[0], \%burndown, 1 );
     $self->_update_burndown( $closed_topics_aggr[0],  \%burndown, -1 );
 
-    return [
+    my $data = [
         map { [ $_, $burndown{$_} ] }
         sort { $a cmp $b } keys %burndown
     ];
+
+    return $data;
 }
 
 sub _update_burndown {
@@ -175,7 +210,7 @@ sub _update_burndown {
 
     foreach my $topic (@$topics) {
         my $from  = $topic->{_id};
-        my $total = $topic->{total};
+        my $total = @{ $topic->{mids} };
 
         foreach my $by ( sort { $a cmp $b } keys %$burndown ) {
             next if $by lt $from;

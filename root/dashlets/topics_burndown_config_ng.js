@@ -11,15 +11,16 @@
             ['month', _('Month')],
             ['year', _('Year')]
         ],
-        autoWidth: true,
 
         hidden: !data.selection_method || data.selection_method === 'duration' ? false : true
     });
 
-    var select_by_duration_offset = new Ext.form.TextField({
+    var select_by_duration_offset = new Ext.ux.form.SpinnerField({
         fieldLabel: _('Offset'),
         name: 'select_by_duration_offset',
-        value: data.select_by_duration_offset,
+        value: data.select_by_duration_offset || 0,
+        minValue: 0,
+        maxValue: 365,
 
         width: 165,
 
@@ -34,7 +35,6 @@
         anchor: '100%',
         format: 'Y-m-d',
         height: 100,
-        autoWidth: true,
 
         hidden: data.selection_method === 'period' ? false : true
     });
@@ -47,7 +47,6 @@
         anchor: '100%',
         format: 'Y-m-d',
         height: 100,
-        autoWidth: true,
 
         hidden: data.selection_method === 'period' ? false : true
     });
@@ -70,6 +69,18 @@
         width: 165,
 
         hidden: data.selection_method === 'topic_filter' ? false : true
+    });
+
+    var scale_selector = new Baseliner.ComboDouble({
+        fieldLabel: _('Scale'),
+        name: 'scale',
+        value: data.scale || 'day',
+        data: [
+            ['hour', _('Hour')],
+            ['day', _('Day')],
+            ['month', _('Month')],
+            ['year', _('Year')]
+        ]
     });
 
     var selector = new Baseliner.ComboDouble({
@@ -136,21 +147,41 @@
 
     var common = params.common_options || Cla.dashlet_common(params);
 
-    var group_by_period = new Baseliner.ComboDouble({
-        fieldLabel: _('Group by date'),
-        name: 'group_by_period',
-        value: data.group_by_period || 'hour',
-        data: [
-            ['hour', _('Hour')],
-            ['day_of_week', _('Day Of Week')],
-            ['month', _('Month')],
-            ['date', _('Date')]
-        ],
-    });
-
     return common.concat([{
         xtype: 'label',
         text: _('General control'),
+        style: {
+            // 'margin': '10px',
+            'font-size': '12px',
+            'font-weight': 'bold'
+        }
+    }, {
+        xtype: 'panel',
+        hideBorders: true,
+        layout: 'column',
+        bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+        items: [{
+            layout: 'form',
+            columnWidth: 0.5,
+            bodyStyle: 'background:transparent;',
+            items: [
+                new Baseliner.ComboDouble({
+                    fieldLabel: _('Chart will be shown as ...'),
+                    name: 'type',
+                    value: data.type || 'area',
+                    data: [
+                        ['area', _('Area')],
+                        ['stack-area-step', _('Area step')],
+                        ['line', _('Line')],
+                        ['bar', _('Bar')],
+                        ['scatter', _('Scatter')]
+                    ]
+                })
+            ]
+        }]
+    }, {
+        xtype: 'label',
+        text: _('X-Axis'),
         style: {
             // 'margin': '10px',
             'font-size': '12px',
@@ -169,29 +200,11 @@
                     xtype: 'textfield',
                     anchor: '100%',
                     allowBlank: false,
-                    fieldLabel: _('Group by field'),
+                    fieldLabel: _('Topic date field'),
                     name: 'date_field',
                     value: data.date_field
                 },
-                group_by_period,
-                new Baseliner.ComboDouble({
-                    fieldLabel: _('Chart will be shown as ...'),
-                    name: 'type',
-                    value: data.type || 'area',
-                    data: [
-                        ['area', _('Area')],
-                        ['stack-area-step', _('Area step')],
-                        ['line', _('Line')],
-                        ['bar', _('Bar')],
-                        ['scatter', _('Scatter')]
-                    ]
-                })
-            ]
-        }, {
-            layout: 'form',
-            columnWidth: 0.5,
-            bodyStyle: 'background:transparent;',
-            items: [
+                scale_selector,
                 selector,
                 select_by_duration_range,
                 select_by_duration_offset,

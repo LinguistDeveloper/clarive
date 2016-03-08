@@ -8,7 +8,7 @@ use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -257,6 +257,17 @@ subtest '_markup: converts markup to html' => sub {
     is (Util->_markup('*$foo*'),'<b>$foo</b>');
     is (Util->_markup('`$foo`'),'<code>$foo</code>');
     is (Util->_markup('`*$foo*`'),'<code><b>$foo</b></code>');
+};
+
+subtest '_trend_line: calculates trend' => sub {
+    is_deeply _trend_line( x => [ 0, 1, 2, 3, 4, 5 ], y => [ 10, 8, 6, 5, 4 ] ),
+      [ '10.00', '8.20', '6.40', '4.60', '2.80', '1.00' ];
+};
+
+subtest '_trend_line: calculates trend with special cases' => sub {
+    is_deeply _trend_line( x => [], y => [] ), [];
+    is_deeply _trend_line( x => [ 0, 0, 0, 0, 0 ], y => [ 0, 0, 0, 0, 0 ] ),
+      [ '0.00', '0.00', '0.00', '0.00', '0.00', ];
 };
 
 done_testing;

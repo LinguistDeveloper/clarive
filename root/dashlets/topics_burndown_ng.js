@@ -11,7 +11,6 @@
     var date_type = params.data.date_type || 'today';
     var days_from = params.data.days_from || 0;
     var days_from_format_date = params.data.days_from_format_date || 0;
-    var group_by_period = params.data.group_by_period;
     var graph_type = params.data.type || 'area';
 
     Cla.ajax_json('/dashboard/topics_burndown_ng', {
@@ -34,7 +33,7 @@
 
             date: date,
 
-            group_by_period: group_by_period,
+            scale: params.data.scale || 'hour',
             date_field: date_field,
             categories: categories,
             _ignore_conn_errors: true

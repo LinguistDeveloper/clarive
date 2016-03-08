@@ -9,11 +9,11 @@ use experimental 'switch', 'autoderef';
 
 use Baseliner::DateRange;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Dashboard::TopicsBurndown;
+use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line);
 
 with 'Baseliner::Role::ControllerValidator';
 
@@ -1418,7 +1418,7 @@ sub topics_burndown_ng : Local {
     my $p = $c->req->params;
 
     my $selection_method = $p->{selection_method} || 'period';
-    my $group_by_period  = $p->{group_by_period}  || 'hour';
+    my $scale = $p->{scale};
 
     my $from;
     my $to;
@@ -1447,39 +1447,24 @@ sub topics_burndown_ng : Local {
         id_project      => $p->{id_project},
         from            => $from,
         to              => $to,
-        group_by_period => $group_by_period,
+        scale           => $scale,
         date_field      => $p->{date_field},
         closed_statuses => $p->{closed_statuses},
         query           => $p->{query},
         categories      => [ _array $p->{categories} ]
     );
 
-    my @topics;
-    my @dates;
-    my @reg_line;
+    my @dates  = map { $_->[0] } @$burndown;
+    my @topics = map { $_->[1] } @$burndown;
+    my @trend = @{ _trend_line( x => [ 0 .. @$burndown - 1 ], y => [@topics] ) };
 
-    push @dates,  map { $_->[0] } @$burndown;
-    push @topics, map { $_->[1] } @$burndown;
-
-    if ($group_by_period eq 'day_of_week') {
-        @dates = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', );
-    }
-    elsif ($group_by_period eq 'month') {
-        @dates = (
-            'January', 'February', 'March',     'April',   'May',      'June',
-            'July',    'August',   'September', 'October', 'November', 'December'
-        );
-    }
-
-    #@reg_line = _array( _reg_line( x => \@dates, y => \@topics ) );
-
-    unshift @topics,   'Topics';
-    unshift @dates,    'x';
-    #unshift @reg_line, 'Trend';
+    unshift @topics, 'Topics';
+    unshift @dates,  'x';
+    unshift @trend, 'Trend';
 
     $c->stash->{json} = {
         success => \1,
-        data    => [\@dates, \@topics, \@reg_line]
+        data    => [\@dates, \@topics, \@trend]
     };
     $c->forward('View::JSON');
 }

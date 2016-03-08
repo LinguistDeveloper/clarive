@@ -8561,3 +8561,54 @@ msgstr "Forma de ordenar"
 
 msgid "Latest"
 msgstr "Última"
+
+msgid "Year"
+msgstr "Año"
+
+msgid "X-Axis"
+msgstr "Eje-X"
+
+msgid "Range"
+msgstr "Rango"
+
+msgid "Topic date field"
+msgstr "Campo de tópico de tipo fecha"
+
+msgid "From field"
+msgstr "Desde el campo"
+
+msgid "To field"
+msgstr "Hasta el campo"
+
+msgid "Date selection method"
+msgstr "Método para la selección de fechas"
+
+msgid "Duration"
+msgstr "Duración"
+
+msgid "Period"
+msgstr "Periodo"
+
+msgid "To field"
+msgstr "Campo hasta"
+
+msgid "Topic Filter"
+msgstr "Filtrar por campos del tópico"
+
+msgid "Custom JSON query"
+msgstr "Query personalizada JSON"
+
+msgid "Close statuses"
+msgstr "Estados finales"
+
+msgid "General control"
+msgstr "Control general"
+
+msgid "Area step"
+msgstr "Paso Área"
+
+msgid "Bar"
+msgstr "Barras"
+
+msgid "Scatter"
+msgstr "Dispersión"
