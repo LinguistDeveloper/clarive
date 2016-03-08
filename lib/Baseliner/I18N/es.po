@@ -8593,7 +8593,7 @@ msgid "To field"
 msgstr "Campo hasta"
 
 msgid "Topic Filter"
-msgstr "Topic Filter"
+msgstr "Filtrar por campos del tópico"
 
 msgid "Custom JSON query"
 msgstr "Query personalizada JSON"
