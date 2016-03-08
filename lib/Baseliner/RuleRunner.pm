@@ -149,7 +149,7 @@ sub run_single_rule {
     _fail _loc 'Rule with id `%1` not found', $id_rule unless $rule;
 
     my $ret = try {
-        $self->dsl_run( id_rule => $rule->{id}, rule_version => $rule_version, stash => $stash, %p );
+        $self->dsl_run( rule_version => $rule_version, stash => $stash, %p, id_rule => $rule->{id} );
     }
     catch {
         _fail( _loc( "Error running rule '%1': %2", $rule->{rule_name}, shift() ) );
