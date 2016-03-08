@@ -15,10 +15,12 @@
         hidden: !data.selection_method || data.selection_method === 'duration' ? false : true
     });
 
-    var select_by_duration_offset = new Ext.form.TextField({
+    var select_by_duration_offset = new Ext.ux.form.SpinnerField({
         fieldLabel: _('Offset'),
         name: 'select_by_duration_offset',
-        value: data.select_by_duration_offset,
+        value: data.select_by_duration_offset || 0,
+        minValue: 0,
+        maxValue: 365,
 
         width: 165,
 
