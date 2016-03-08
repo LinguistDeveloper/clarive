@@ -166,7 +166,7 @@
             bodyStyle: 'background:transparent;',
             items: [
                 new Baseliner.ComboDouble({
-                    fieldLabel: _('Chart will be shown as'),
+                    fieldLabel: _('Chart will be shown as ...'),
                     name: 'type',
                     value: data.type || 'area',
                     data: [

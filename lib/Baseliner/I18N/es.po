@@ -8561,3 +8561,9 @@ msgstr "Forma de ordenar"
 
 msgid "Latest"
 msgstr "Última"
+
+msgid "Year"
+msgstr "Año"
+
+msgid "X-Axis"
+msgstr "Eje-X"
