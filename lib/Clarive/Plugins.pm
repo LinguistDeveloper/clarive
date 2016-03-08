@@ -1,6 +1,6 @@
 package Clarive::Plugins;
 use Mouse;
-use Baseliner::Utils qw(_dir _file);
+use Baseliner::Utils qw(_dir _file _debug);
 
 use Path::Class ();
 has app => qw(is ro isa Any weak_ref 1 required 1), default=>sub{ Clarive->app };
@@ -35,6 +35,25 @@ sub locate_path {
         }
     }
     return undef;
+}
+
+sub run_dir {
+    my $self = shift;
+    my ($dir,$opts) = @_;
+
+    my $js;
+
+    for my $path ( map { _dir($_) } Clarive::Plugins->new->locate_path($dir) ) {
+        for my $file ( $path->children ) {
+            my ($ext) = $file->basename =~ /\.(\w+)$/;
+            if( $ext eq 'js' ) {
+                _debug( "Running plugin init: $file" );
+                require Clarive::Code::JS;
+                $js //= Clarive::Code::JS->new( %{ $opts->{js} || {} } );
+                $js->eval_code( scalar $file->slurp(iomode=>'<:utf8') );
+            }
+        }
+    }
 }
 
 1;

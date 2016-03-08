@@ -18,24 +18,33 @@ BEGIN {
 use Clarive::App;
 use Clarive::Plugins;
 
+use Baseliner::Role::CI;    # WTF this is needed for CI
+use BaselinerX::CI::Status;
+
 subtest 'all_plugins: picks up all plugins' => sub {
-    my $cnt =  Clarive::Plugins->all_plugins;
+    my $cnt =  Clarive::Plugins->new->all_plugins;
     is $cnt, 2;
 };
 
 subtest 'all_plugins: picks up all plugins, but just names' => sub {
-    my @pg =  Clarive::Plugins->all_plugins( name_only=>1 );
+    my @pg =  Clarive::Plugins->new->all_plugins( name_only=>1 );
     ok $pg[0] !~ /\//;
 };
 
 subtest 'locate_path: finds file' => sub {
-    my $path =  Clarive::Plugins->locate_path('modules/test-module.js');
+    my $path =  Clarive::Plugins->new->locate_path('modules/test-module.js');
     like $path, qr{app-base/plugins/my-plugin/modules/test-module.js};
 };
 
 subtest 'locate_path: doesnt find file' => sub {
-    my $path =  Clarive::Plugins->locate_path('modules/not-here-module.js');
+    my $path =  Clarive::Plugins->new->locate_path('modules/not-here-module.js');
     is $path, undef;
+};
+
+subtest 'run_dir: loads file in init/ dir' => sub {
+    my $path =  Clarive::Plugins->new->run_dir('init');
+    my $ci = BaselinerX::CI::TestClassFromStatus->new( name=>'foo' );
+    like ref $ci, qr/TestClassFromStatus/;
 };
 
 done_testing;

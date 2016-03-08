@@ -206,6 +206,12 @@ sub build_app {
     # cache setup
     cache->remove( qr/registry:/ );
 
+    # load plugins /init
+    if( Clarive->app->load_plugins ) {
+        require Clarive::Plugins;
+        Clarive::Plugins->new->run_dir( 'init' );
+    }
+
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
     print STDERR ( Baseliner->config->{name} // 'Baseliner' )
