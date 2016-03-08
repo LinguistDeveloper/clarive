@@ -1,6 +1,7 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Permissions;
 use v5.10;
 use Try::Tiny;
 use experimental 'autoderef', 'switch';
@@ -201,10 +202,16 @@ sub reports_from_rule {
         $compiled_rule->compile;
         $compiled_rule->run( stash => $stash );
 
-        if (  ref $stash->{report_security} eq 'CODE'
+        my $permissions = Baseliner::Model::Permissions->new;
+
+        my $is_access_allowed = $permissions->is_root($username)
+          || (
+            ref $stash->{report_security} eq 'CODE'
             ? $stash->{report_security}->( username => $username )
-            : $stash->{report_security} )
-        {
+            : $stash->{report_security}
+          );
+
+        if ($is_access_allowed) {
             my $node = {
                 key  => "$rule->{_id}",
                 text => $rule->{rule_name},
