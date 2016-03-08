@@ -213,7 +213,7 @@ sub reports_from_rule {
 
         if ($is_access_allowed) {
             my $node = {
-                key  => "$rule->{_id}",
+                key  => "$rule->{id}",
                 text => $rule->{rule_name},
                 icon => '/static/images/icons/rule.png',
                 leaf => \1,
@@ -224,7 +224,7 @@ sub reports_from_rule {
                         type  => 'eval',
                         title => $rule->{rule_name},
                     },
-                    id_report_rule => "$rule->{_id}",
+                    id_report_rule => "$rule->{id}",
                     report_name    => $rule->{rule_name},
                     hide_tree      => \1,
 

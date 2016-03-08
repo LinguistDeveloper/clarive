@@ -26,7 +26,7 @@ subtest 'reports_from_rule: returns empty tree when no report rules' => sub {
 subtest 'reports_from_rule: builds tree from report rules' => sub {
     _setup();
 
-    _create_report_rule( code => q/$stash->{report_security} = 1;/ );
+    my $id_rule = _create_report_rule( code => q/$stash->{report_security} = 1;/ );
 
     my $report = TestUtils->create_ci('report');
 
@@ -38,7 +38,7 @@ subtest 'reports_from_rule: builds tree from report rules' => sub {
             'icon' => ignore(),
             'text' => 'Rule',
             'data' => {
-                'id_report_rule' => ignore(),
+                'id_report_rule' => $id_rule,
                 'click'          => {
                     'icon'  => ignore(),
                     'url'   => '/comp/topic/topic_report.js',
@@ -49,7 +49,7 @@ subtest 'reports_from_rule: builds tree from report rules' => sub {
                 'hide_tree'   => \1
             },
             'leaf' => \1,
-            'key'  => ignore()
+            'key'  => $id_rule,
         }
       ];
 };

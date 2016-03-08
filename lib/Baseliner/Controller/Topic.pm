@@ -186,7 +186,7 @@ sub get_items {
         }  
 
     } elsif( my $id = $p->{id_report_rule} ) {
-        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
+        my $cr = Baseliner::CompiledRule->new( id_rule=>$p->{id_report_rule} );
         my $stash = { 
             report_data => { data=>[], count=>0 },
             report_params => {
