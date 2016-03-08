@@ -239,29 +239,37 @@ sub reports_from_rule {
 }
 
 sub report_meta {
-    my ($self,$p) = @_;
-    my $key = $p->{key};
+    my ( $self, $p ) = @_;
+
     my $config = $p->{config} // {};
-    if( my $id = $p->{id_report_rule} ) {
-        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
-        my $stash = { 
-            step=>'meta', 
-            report_params => +{ %$p },
-            report_meta=>{ 
-                fields => { ids => ['info'], columns => [ {id => 'info', text => 'Info' } ],
+
+    if ( my $id = $p->{id_report_rule} ) {
+        my $stash = {
+            step          => 'meta',
+            report_params => +{%$p},
+            report_meta   => {
+                fields => {
+                    ids     => ['info'],
+                    columns => [ { id => 'info', text => 'Info' } ],
                 },
                 report_name => 'No Data',
                 report_type => 'jobs',
-                hide_tree => \1,
+                hide_tree   => \1,
             }
         };
-        $cr->compile;
-        $cr->run( stash=>$stash ); 
-        return ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};  # grid_params, 
-    } elsif( my $key = $p->{id_report} ) {
-        my $report = Baseliner->registry->get( $key );
-        return $report->meta_handler->( $config );
-    } else {
+
+        my $compiled_rule = Baseliner::CompiledRule->new( id_rule => $p->{id_report_rule} );
+        $compiled_rule->compile;
+        $compiled_rule->run( stash => $stash );
+
+        my $meta = ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};
+        return $meta;
+    }
+    elsif ( my $key = $p->{id_report} ) {
+        my $report = Baseliner->registry->get($key);
+        return $report->meta_handler->($config);
+    }
+    else {
         _fail 'Missing report id';
     }
 }

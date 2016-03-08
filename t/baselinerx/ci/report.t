@@ -109,6 +109,37 @@ subtest 'reports_from_rule: always shows reports to root' => sub {
     is @$tree, 1;
 };
 
+subtest 'report_meta: returns meta from rule' => sub {
+    _setup();
+
+    my $id_rule = _create_report_rule( code => q/$stash->{report_meta} = {foo => 'bar'};/ );
+
+    my $report = TestUtils->create_ci('report');
+
+    my $meta = $report->report_meta( { id_report_rule => $id_rule } );
+
+    is_deeply $meta, { foo => 'bar' };
+};
+
+subtest 'report_meta: returns meta from rule as coderef' => sub {
+    _setup();
+
+    my $id_rule = _create_report_rule(
+        code => q/
+        $stash->{report_meta} = sub {
+            my %params = @_;
+            return { %params, bar => 'baz' };
+        };
+        /
+    );
+
+    my $report = TestUtils->create_ci('report');
+
+    my $meta = $report->report_meta( { id_report_rule => $id_rule, config => { foo => 'bar' } } );
+
+    is_deeply $meta, { foo => 'bar', bar => 'baz' };
+};
+
 done_testing;
 
 sub _setup {
