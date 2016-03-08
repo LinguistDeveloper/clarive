@@ -99,6 +99,8 @@ subtest 'parse_vars: parses with functions' => sub {
     my $parser = _build_parser();
     is $parser->parse_vars( '${lc(foo)}', { foo => 'BAR' } ), 'bar';
     is $parser->parse_vars( '${uc(foo)}', { foo => 'bar' } ), 'BAR';
+    is $parser->parse_vars( '${json(foo)}', { foo => { aa=>100 } } ), '{"aa":100}';
+    is $parser->parse_vars( '${yaml(foo)}', { foo => { aa=>200 } } ), '{"aa":200}';
     is $parser->parse_vars( '${to_id(this is 123 and #more... !stuff)}', {} ), 'this_is_123_and_more_stuff';
     is $parser->parse_vars( '${quote_list(foo)}', { foo => 'bar' } ), '"bar"';
 };

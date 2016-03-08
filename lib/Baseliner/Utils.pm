@@ -1181,11 +1181,13 @@ sub _markup {
 }
 
 sub _to_json {
+    require JSON::XS;
     goto &JSON::XS::encode_json;
 }
 
 sub _from_json {
-    goto &JSON::XS::decode_json;
+    require JSON::XS;
+    goto &JSON::XS::decode_json;   
 }
 
 =head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
