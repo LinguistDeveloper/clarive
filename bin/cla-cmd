@@ -102,7 +102,7 @@ sub process_dash_opts {
 sub process_not_opts {
     my %opt = @_;
     for my $k ( keys %opt ) {
-        if( $k=~/^no-(.+)$/ )  {
+        if( $k=~/^no_(.+)$/ )  {
             my $k2 = $1;
             $opt{$k2} = 0;
         }
