@@ -34,6 +34,25 @@ subtest 'run_single_rule: runs rule' => sub {
       };
 };
 
+subtest 'run_single_rule: runs rule by name' => sub {
+    _setup();
+
+    my $id_rule = _create_rule(rule_name => 'my rule');
+
+    my $runner = _build_runner();
+
+    my $ret = $runner->run_single_rule( id_rule => 'my rule' );
+
+    cmp_deeply $ret,
+      {
+        ret => {
+            stash => ignore(),
+            dsl   => 'Clarive::RULE_1',
+        },
+        dsl => ''
+      };
+};
+
 subtest 'run_rules: runs rule when' => sub {
     _setup();
 
@@ -135,7 +154,8 @@ sub _create_rule {
                         "children" => []
                     }
                 ]
-            )
+            ),
+            %params
         }
     );
 
