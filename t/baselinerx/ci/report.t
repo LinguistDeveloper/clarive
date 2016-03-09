@@ -140,6 +140,119 @@ subtest 'report_meta: returns meta from rule as coderef' => sub {
     is_deeply $meta, { foo => 'bar', bar => 'baz' };
 };
 
+subtest 'get_where: builds correct IN where' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+
+    my $where = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'children' => [
+                        {
+                            'options'  => [ 'Release #11309' ],
+                            'value'    => [ '11309' ],
+                            'children' => [],
+                            'where'    => 'ci',
+                            'oper'     => '$in',
+                            'text'     => 'IN Release #11309',
+                            'type'     => 'value',
+                            'field'    => 'ci',
+                        }
+                    ],
+                    'text'      => 'Release',
+                    'category'  => 'Changeset',
+                    'meta_type' => 'release',
+                    'id_field'  => 'Release',
+                    'type'      => 'where_field'
+                }
+            ],
+        }
+    );
+
+    is_deeply $where, { Release => { '$in' => ['11309'] } };
+};
+
+subtest 'get_where: builds correct EMPTY where' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+
+    my $where = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'children' => [
+                        {
+                            'options'  => [],
+                            'children' => [],
+                            'where'    => 'ci',
+                            'oper'     => 'EMPTY',
+                            'text'     => 'EMPTY',
+                            'type'     => 'value',
+                            'field'    => 'ci',
+                        }
+                    ],
+                    'text'      => 'Release',
+                    'category'  => 'Changeset',
+                    'meta_type' => 'release',
+                    'id_field'  => 'Release',
+                    'type'      => 'where_field'
+                }
+            ],
+        }
+    );
+
+    is_deeply $where,
+      { '$or' => [ { 'Release' => { '$exists' => 0 } }, { 'Release' => { '$in' => [ undef, '' ] } } ] };
+};
+
+subtest 'get_where: builds correct NOT EMPTY where' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+
+    my $where = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'children' => [
+                        {
+                            'options'  => [],
+                            'children' => [],
+                            'where'    => 'ci',
+                            'oper'     => 'NOT EMPTY',
+                            'text'     => 'NOT EMPTY',
+                            'type'     => 'value',
+                            'field'    => 'ci',
+                        }
+                    ],
+                    'text'      => 'Release',
+                    'category'  => 'Changeset',
+                    'meta_type' => 'release',
+                    'id_field'  => 'Release',
+                    'type'      => 'where_field'
+                }
+            ],
+        }
+    );
+
+    is_deeply $where,
+      {
+        'Release' => {
+            '$exists' => 1,
+            '$nin' => [ undef, '' ]
+        }
+      };
+};
+
 done_testing;
 
 sub _setup {

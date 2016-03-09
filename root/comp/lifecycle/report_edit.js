@@ -72,7 +72,7 @@
         var pn = node.parentNode; // should be where_field
         
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
-        var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
+        var oper_in = [ ['$in','IN'], ['$nin','NOT IN'], ['EMPTY', 'EMPTY'], ['NOT EMPTY', 'NOT EMPTY'] ];
         var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'] ];
         var oper_by_type = oper_all;
         var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
@@ -189,6 +189,14 @@
         var set_value = function(){ 
             if( ! Ext.getCmp( fcomp.id ) ) return;
             attr.oper = oper.get_save_data();
+
+            if (!fcomp.isVisible()) {
+                attr.value = undefined;
+                attr.options = undefined;
+                node.setText( oper.getRawValue() );
+                return;
+            }
+
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             
             var label;
@@ -230,12 +238,33 @@
         //oper.on('blur', function(f){ set_value() });
         //fcomp.on('blur', function(f){ set_value() });
         fcomp.on('change', function(f){ set_value() });
-        oper.on('change', function(f){ set_value() });
+
+        if (!operNeedsValue(node.text)) {
+            fcomp.hide();
+        }
+
+        oper.on('select', function(f, record, index){
+            if (!operNeedsValue(record.data.item)) {
+                fcomp.hide();
+            } else {
+                fcomp.show();
+            }
+
+            set_value();
+        });
         form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
         form_value.set_value = function(){ set_value() };
     };
+
+    function operNeedsValue(oper) {
+        if (oper === 'EMPTY' || oper === 'NOT EMPTY') {
+            return false;
+        }
+
+        return true;
+    }
     
 
     // selected fields editor
