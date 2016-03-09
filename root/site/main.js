@@ -145,9 +145,9 @@ Ext.onReady(function(){
         */}.heredoc()
     ];
     if( Prefs.logo_file ) {
-            tbar_items.push( '<img src="'+Prefs.logo_file +'" style="border:0px;width:220px;height:40px"/><img src="/static/images/powered_by_clarive.png" style="position:absolute;border:0px;width:150px;height:50px;left:90px;top:-6px"/>' );
+            tbar_items.push( '<img src="'+Prefs.logo_file +'" class="img-main-logo-file"/><img src="/static/images/powered_by_clarive.png" class="img-main-logo-powered""/>' );
     } else {
-            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" style="border:0px;width:220px;height:40px"/>' );
+            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" class="img-main-logo-file"/>' );
     }
     tbar_items.push('-');
 
