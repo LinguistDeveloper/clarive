@@ -1,6 +1,7 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Permissions;
 use v5.10;
 use Try::Tiny;
 use experimental 'autoderef', 'switch';
@@ -173,17 +174,17 @@ sub reports_available {
 }
 
 sub reports_from_rule {
-    my ( $self, $p ) = @_;
-    my $userci   = Baseliner->user_ci( $p->{username} );
+    my $self = shift;
+    my ( $p ) = @_;
+
     my $username = $p->{username};
+
+    my @active_report_rules =
+      mdb->rule->find( { rule_type => 'report', rule_active => mdb->true } )->sort( { id => 1 } )->all;
+
     my @tree;
-    for my $rule (
-        mdb->rule->find(
-            { rule_type => 'report', rule_active => mdb->true }
-        )->sort( { id => 1 } )->all
-        )
-    {
-        my $cr = Baseliner::CompiledRule->new( _id => $$rule{_id} );
+    for my $rule (@active_report_rules) {
+        my $compiled_rule = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
 
         my $stash = {
             step          => 'meta',
@@ -198,16 +199,22 @@ sub reports_from_rule {
                 hide_tree   => \1,
             }
         };
-        $cr->compile;
-        $cr->run( stash => $stash );
+        $compiled_rule->compile;
+        $compiled_rule->run( stash => $stash );
 
-        if (  $stash->{report_security} eq 'CODE'
-            ? $stash->{report_security}->( username => $p->{username} )
-            : $stash->{report_security} )
-        {
-            my $n = {
-                key  => "$$rule{_id}",
-                text => $$rule{rule_name},
+        my $permissions = Baseliner::Model::Permissions->new;
+
+        my $is_access_allowed = $permissions->is_root($username)
+          || (
+            ref $stash->{report_security} eq 'CODE'
+            ? $stash->{report_security}->( username => $username )
+            : $stash->{report_security}
+          );
+
+        if ($is_access_allowed) {
+            my $node = {
+                key  => "$rule->{id}",
+                text => $rule->{rule_name},
                 icon => '/static/images/icons/rule.png',
                 leaf => \1,
                 data => {
@@ -215,45 +222,54 @@ sub reports_from_rule {
                         icon  => '/static/images/icons/topic.png',
                         url   => '/comp/topic/topic_report.js',
                         type  => 'eval',
-                        title => $$rule{rule_name},
+                        title => $rule->{rule_name},
                     },
-                    id_report_rule => "$$rule{_id}",
-                    report_name    => $$rule{rule_name},
+                    id_report_rule => "$rule->{id}",
+                    report_name    => $rule->{rule_name},
                     hide_tree      => \1,
 
                     #custom_form    => $reg->form,
                 }
             };
-            push @tree, $n;
+            push @tree, $node;
         }
     }
+
     return \@tree;
 }
 
 sub report_meta {
-    my ($self,$p) = @_;
-    my $key = $p->{key};
+    my ( $self, $p ) = @_;
+
     my $config = $p->{config} // {};
-    if( my $id = $p->{id_report_rule} ) {
-        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
-        my $stash = { 
-            step=>'meta', 
-            report_params => +{ %$p },
-            report_meta=>{ 
-                fields => { ids => ['info'], columns => [ {id => 'info', text => 'Info' } ],
+
+    if ( my $id = $p->{id_report_rule} ) {
+        my $stash = {
+            step          => 'meta',
+            report_params => +{%$p},
+            report_meta   => {
+                fields => {
+                    ids     => ['info'],
+                    columns => [ { id => 'info', text => 'Info' } ],
                 },
                 report_name => 'No Data',
                 report_type => 'jobs',
-                hide_tree => \1,
+                hide_tree   => \1,
             }
         };
-        $cr->compile;
-        $cr->run( stash=>$stash ); 
-        return ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};  # grid_params, 
-    } elsif( my $key = $p->{id_report} ) {
-        my $report = Baseliner->registry->get( $key );
-        return $report->meta_handler->( $config );
-    } else {
+
+        my $compiled_rule = Baseliner::CompiledRule->new( id_rule => $p->{id_report_rule} );
+        $compiled_rule->compile;
+        $compiled_rule->run( stash => $stash );
+
+        my $meta = ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};
+        return $meta;
+    }
+    elsif ( my $key = $p->{id_report} ) {
+        my $report = Baseliner->registry->get($key);
+        return $report->meta_handler->($config);
+    }
+    else {
         _fail 'Missing report id';
     }
 }
