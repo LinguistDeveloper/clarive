@@ -411,9 +411,12 @@ sub index_all {
         notification => [
             [{'$**'=> "text"},{ language_override=>'_lang', background=>1 }],
         ],
+        jes_log => [
+            [{ id_log=>1}],
+        ],
         role => [
           [{ role=>1 }],
-          [{ id=>1 }], 
+          [{ id=>1 }],
         ],
         rule => [
             [{ id=>1 }],
@@ -447,7 +450,7 @@ sub index_all {
             [{ '_project_security'=>1, category_name=>1 }],
             [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
-            [{'$**'=> "text"},{ 
+            [{'$**'=> "text"},{
                     weights=>{ %{ Clarive->config->{index}{weights}{topic} || {} } }, 
                     language_override=>'_lang', background=>1 }],
         ],
@@ -457,9 +460,11 @@ sub index_all {
         'fs.files' => [
             'db.fs.files.ensureIndex({ topic_mid: 1 })',
             'db.fs.files.ensureIndex({ parent_mid: 1 })',
+            'db.fs.files.ensureIndex({ _id: 1, md5: 1 })',
+            'db.fs.files.ensureIndex({ md5: 1 })',
         ],
     };
-    
+
     my $index_hash = sub{
         my $idx = shift;
         for my $cn ( keys %{ $idx || {} } ) {
