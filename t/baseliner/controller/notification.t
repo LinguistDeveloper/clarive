@@ -1,17 +1,15 @@
 use strict;
 use warnings;
-use lib 't/lib';
+
 use Test::More;
-use Test::Fatal;
+
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
 
-use Clarive::mdb;
-
 use_ok 'Baseliner::Controller::Notification';
 
-subtest 'list_notifications: return notifications' => sub {
+subtest 'list_notifications: returns notifications' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -29,15 +27,17 @@ subtest 'list_notifications: return notifications' => sub {
         }
     );
     $controller->save_notification($c);
+
     $c = _build_c( req => { params => { start => '0' } } );
+
     $controller->list_notifications($c);
+
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{event_key}, 'event.auth.cas_ok';
-
 };
 
-subtest 'list_notifications: search with special characters' => sub {
+subtest 'list_notifications: searches with special characters' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -54,7 +54,9 @@ subtest 'list_notifications: search with special characters' => sub {
             }
         }
     );
+
     $controller->save_notification($c);
+
     $c = _build_c(
         req => {
             params => {
@@ -67,17 +69,20 @@ subtest 'list_notifications: search with special characters' => sub {
             }
         }
     );
+
     $controller->save_notification($c);
+
     $c = _build_c( req => { params => { start => '0', query => '"event"' } } );
+
     $controller->list_notifications($c);
+
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{event_key}, 'event.job.run';
     is $data->[1]->{event_key}, 'event.auth.cas_ok';
-
 };
 
-subtest 'list_notifications: search notification that exist' => sub {
+subtest 'list_notifications: searches notification that exist' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -94,7 +99,9 @@ subtest 'list_notifications: search notification that exist' => sub {
             }
         }
     );
+
     $controller->save_notification($c);
+
     $c = _build_c(
         req => {
             params => {
@@ -107,12 +114,16 @@ subtest 'list_notifications: search notification that exist' => sub {
             }
         }
     );
+
     $controller->save_notification($c);
+
     my $cnt = mdb->notification->count();
     is $cnt, '2';
 
     $c = _build_c( req => { params => { query => 'event.job', start => '0' } } );
+
     $controller->list_notifications($c);
+
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{event_key}, 'event.job.run';
@@ -136,14 +147,16 @@ subtest 'list_notifications: search a notification does not exist' => sub {
             }
         }
     );
+
     $controller->save_notification($c);
 
     $c = _build_c( req => { params => { start => '0', query => 'event.job' } } );
+
     $controller->list_notifications($c);
+
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{event_key}, undef;
-
 };
 
 sub _setup {
