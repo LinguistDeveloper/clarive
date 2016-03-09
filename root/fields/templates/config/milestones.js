@@ -6,7 +6,7 @@
 
     ret.push([ 
         { xtype:'textarea',fieldLabel: _('Columns'), name: 'columns', allowBlank: false, value: data.columns || default_value },
-        { xtype:'numberfield',fieldLabel: _('Height'), name: 'height', value: data.height }
+        { xtype:'numberfield',fieldLabel: _('Height'), name: 'height', fieldClass: "height-fieldlet-field", minValue:'1', value: data.height }
     ]);
     return ret;
 })

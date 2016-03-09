@@ -673,3 +673,7 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     left:90px;
     top:-13px;
 }
+
+.height-fieldlet-field {
+    width: 50px !important;
+}

@@ -26,6 +26,7 @@
 
     ret.push([ 
         { xtype:'textfield', fieldLabel: _('List of columns to show in grid'), name: 'columns', value: data.columns },
+        { xtype:'numberfield', fieldLabel: _('Height of grid in edit mode'), name: 'height', fieldClass: "height-fieldlet-field", minValue:'1', value: data.height || 250 },
     	{ xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size },
         { xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field },
         { xtype:'textfield', name:'filter_field', fieldLabel: _('Filter field'), value: data.filter_field },

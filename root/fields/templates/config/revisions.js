@@ -4,7 +4,7 @@
     
     ret.push([ 
         { xtype:'textfield', name:'branch', fieldLabel: _('Branch'), value: data.branch },
-        { xtype:'numberfield', name:'height', fieldLabel: _('Height'), value: data.height }
+        { xtype:'numberfield', name:'height', fieldLabel: _('Height'), fieldClass: "height-fieldlet-field", minValue:'1', value: data.height }
     ]);
     return ret;
 })
