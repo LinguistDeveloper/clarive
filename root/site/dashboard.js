@@ -29,7 +29,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                                         [%= last_update %]
                                 </div>
                             </td>
-                            <td id="[%= id_div %]_icons" style='text-align:right;'>
+                            <td id="[%= id_div %]_icons" style='text-align:right;float:right;'>
                             </td>
                         </tr>
                     </table>
@@ -71,18 +71,74 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             html += "</tr><tr style='padding:10px;width:100%;'>";
             var cont=0;
             var rows = new Array();
+            var form_report = new Ext.form.FormPanel({
+                url: '/topic/report_html', renderTo:'run-panel', style:{ display: 'none'},
+                items: [
+                   { xtype:'hidden', name:'data_json'},
+                   { xtype:'hidden', name:'title' },
+                   { xtype:'hidden', name:'rows' },
+                   { xtype:'hidden', name:'total_rows' },
+                   { xtype:'hidden', name:'params' }
+                ]
+            });
+
             Ext.each( res.dashlets, function(dashlet){
+
+                var export_data = function(dashlet, type, args){
+                    var self = this;
+                    var table = { rows:[], columns:[] };
+                    var div = document.getElementById(dashlet.id_div);
+                    var columns_html = div.getElementsByTagName("table")[0].getElementsByTagName("th");
+                    Ext.each( columns_html, function(column) {
+                        table.columns.push({id: column.getAttribute("id"), name: column.getAttribute("used_name") })
+                    });
+                    var rows_html = div.getElementsByTagName("table")[1].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+                    Ext.each( rows_html, function(row) {
+                        var i;
+                        var div_content;
+                        var value;
+                        var row_table = {};
+                        var columns = row.getElementsByTagName("td");
+                        for ( i = 0; i< table.columns.length; i++ ){
+                            if( type === "csv" && ( table.columns[i].id === "name" || table.columns[i].id === "title" )){
+                                row_table[ table.columns[i].id ] = columns[i].getElementsByTagName("span")[0].innerHTML;
+                            } else if ( columns[i].getElementsByTagName("div").length > 0 ){
+                                var div_content = columns[i].getElementsByTagName("div")[0];
+                                row_table[ table.columns[i].id ] = type === 'html' ? div_content.innerHTML : 
+                                (div_content.getElementsByTagName("img")[0].getAttribute("class") === "img-non-checked") ? _("No") : _("Yes");
+                            } else {
+                                row_table[ table.columns[i].id ] = columns[i].innerHTML;
+                            }
+                        };
+                        table.rows.push( row_table );
+                    });
+                    var form = form_report.getForm();
+                    var rows_array = div.getElementsByClassName("dataTables_info")[0].innerHTML.split(" ");
+                    form.findField('data_json').setValue( Ext.util.JSON.encode( table ) );
+                    form.findField('title').setValue( dashlet.title );
+                    form.findField('rows').setValue( rows_html.length );
+                    form.findField('total_rows').setValue( rows_array[rows_array.length - 2] );
+                    var el = form.getEl().dom;
+                    var target = document.createAttribute("target");
+                    target.nodeValue = args.target || "_blank";
+                    el.setAttributeNode(target);
+                    el.action = args.url;
+                    el.submit();
+                };
+
                 if ( !rows[cont] ) rows.push(0);
-                var buttons_tpl = function(){/*
-                    <img class='dashboard-buttons'
-                        src='/static/images/icons/config.gif' 
-                        onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.show_config("[%= id_dashlet %]")'
-                    />
-                    <img class='dashboard-buttons'
-                         src='/static/images/icons/refresh.gif' 
-                         onClick='javascript:var obj=Ext.getCmp("[%= id_cmp %]"); if(obj) obj.refresh_dashlet("[%= id_dashlet %]")' 
-                    />
-                */};
+                var buttons_tpl = new Ext.XTemplate(
+                    '<table><tr>',
+                    '<td class="dashboard-buttons-menu"><span id="{id_export_menu}"></span></td>',
+                    '<td><img class="dashboard-buttons"',
+                       'src="/static/images/icons/config.gif"',
+                       'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
+                    '/>',
+                    '<img class="dashboard-buttons"',
+                        'src="/static/images/icons/refresh.gif"',
+                        'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.refresh_dashlet(\'{id_dashlet}\')"',
+                    '/></td></tr></table>'
+                );
                 var id_div = Ext.id();
                 var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
                 if ( rows[cont] + dashlet_columns > 12 ){
@@ -109,7 +165,6 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
-
                 var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
                     id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
                     no_boot: dashlet.no_boot,
@@ -118,10 +173,49 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 html += dh;
                 Cla.ajaxEval(dashlet.js_file, { id_div: id_div, project_id: self.project_id, topic_mid: self.topic_mid, data: dashlet.data }, function(){
                     var icons = document.getElementById(id_div + "_icons");
-                    if(icons) icons.innerHTML = buttons_tpl.tmpl({
+                    var exp_dashlet = dashlet.form === "/dashlets/list_topics_config.js";
+                    var id_export_menu = dashlet.id + '-export';
+                    if(icons) icons.innerHTML =  buttons_tpl.apply({
                         id_dashlet : dashlet.id,
-                        id_cmp     : self.id
+                        id_cmp     : self.id,
+                        exp_dashlet : exp_dashlet,
+                        id_export_menu : id_export_menu
                     });
+                    var btn_html = {
+                        icon: '/static/images/icons/html.png',
+                        current_dashlet: dashlet.id,
+                        text: _('HTML'),
+                        handler: function() {
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            export_data(dashlet, "html", { url: '/topic/report_html' });
+                        }
+                    };
+                    var btn_yaml = {
+                        icon: '/static/images/icons/yaml.png',
+                        current_dashlet: dashlet.id,
+                        text: _('YAML'),
+                        handler: function() {
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            export_data(dashlet, "yaml", { no_html: true, url: '/topic/report_yaml' });
+                        }
+                    };
+                    var btn_csv = {
+                        icon: '/static/images/icons/csv.png',
+                        current_dashlet: dashlet.id,
+                        text: _('CSV'),
+                        handler: function() {
+                            var dashlet = self.dashlets[this.current_dashlet];
+                            export_data(dashlet, "csv", { no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
+                        }
+                    };
+                    if( exp_dashlet ){
+                        var btn_reports = new Ext.Button({
+                            icon: '/static/images/icons/exports.png',
+                            renderTo: id_export_menu,
+                            menu: [ btn_html, btn_csv, btn_yaml ]
+                        });
+                    };
+
                 });
                 self.dashlets[ dashlet.id ] = dashlet; 
             });
