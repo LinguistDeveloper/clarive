@@ -1256,7 +1256,7 @@
                 { text:_('Import'), 
                     icon: '/static/images/icons/import.png',
                     handler: function(){
-                        Baseliner.ajaxEval('/notification/import', { yaml: data_paste.getValue() }, function(res){
+                        Baseliner.ajaxEval('/notification/import_notification', { yaml: data_paste.getValue() }, function(res){
                             if( !res.success ) {
                                 Baseliner.error( _('Import'), res.msg );
                                 if( ! Ext.isArray( res.log ) ) res.log=[];

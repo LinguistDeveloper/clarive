@@ -2,6 +2,7 @@ package Baseliner::Controller::Notification;
 use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Notification;
 use Try::Tiny;
 use v5.10;
 use experimental 'switch';
@@ -47,7 +48,7 @@ sub list_notifications : Local {
     
     my @rows;
     while( my $r = $rs->next ) {
-        my $data = Baseliner->model('Notification')->encode_data($r->{data});
+        my $data = Baseliner::Model::Notification->new->encode_data($r->{data});
         push @rows, {
             id              => $r->{_id}->{value},
             event_key       => $r->{event_key},
@@ -161,10 +162,10 @@ sub save_notification : Local {
     my %scope;
     my $recipient;
     my $data;
-    
+
     try{
         if($p->{event}){
-            if (Baseliner->registry->get( $p->{event} )->notify){
+            if (Baseliner::Core::Registry->get( $p->{event} )->notify){
                 my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
         
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
@@ -173,7 +174,7 @@ sub save_notification : Local {
         $data->{scopes} = \%scope;
         $data->{recipients} = _decode_json($p->{recipients});
         #convert data to mongo style
-        $data = Baseliner->model('Notification')->decode_data(_dump $data);
+        $data = Baseliner::Model::Notification->new->decode_data(_dump $data);
         my $id_notification = $p->{notification_id} eq '-1' ? '' : $p->{notification_id};
         my $notification = mdb->notification->update(
             {
@@ -199,7 +200,6 @@ sub save_notification : Local {
         _error( $err );        
         $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )}; 
     };
-    
     $c->forward('View::JSON');
 }
 
@@ -303,7 +303,7 @@ sub export : Local {
     $c->forward('View::JSON');  
 }
 
-sub import : Local {
+sub import_notification : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
