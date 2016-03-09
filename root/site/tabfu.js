@@ -1486,7 +1486,7 @@ if( Prefs.routing ) {
     }
     
     Baseliner.showLoadingMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask('<img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;">');
+        Baseliner._defaultLoadingMask = el.mask('');
         //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
         //    removeMask: true, msg : msg
         //});
@@ -1495,7 +1495,7 @@ if( Prefs.routing ) {
     };
 
     Baseliner.showLoadingTreeMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask('<img src="/static/images/loading.gif" style="height:40px;width:40px;margin-top:400px;">');
+        Baseliner._defaultLoadingMask = el.mask('','ext-el-mask-msg-tree');
         return Baseliner._defaultLoadingMask;
     };
     
@@ -1538,7 +1538,7 @@ if( Prefs.routing ) {
                 var loadingMask = cmp.el;
                 Baseliner._defaultLoadingMask = loadingMask;
                 Baseliner._activeMask[cmp.id] = loadingMask;
-                loadingMask.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center>') );
+                loadingMask.mask(String.format('') );
                 //loadingMask.show();
             }
         }

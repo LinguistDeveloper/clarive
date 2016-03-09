@@ -637,7 +637,7 @@ div[class*='ui-ci_box-'].search-item img {
     line-height:50px;
 }
 
-.x-mask-loading-msg div{ 
+.x-mask-loading-msg div { 
     text-align: center; 
     text-transform: uppercase; 
     font-weight: normal; 
@@ -646,36 +646,36 @@ div[class*='ui-ci_box-'].search-item img {
     font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 
-.ext-el-mask{
+.ext-el-mask {
     z-index:20000;
     position:absolute;
     -moz-opacity:0.8;
     opacity:.80;
     filter:alpha(opacity=80);
-    background-color:#ffffff;
+    background-color:transparent;
     width:100%;
     height:100%;
-    zoom:1;}
+    zoom:1;
+}
 
-.ext-el-mask-msg{
+.ext-el-mask-msg {
     z-index:20001;
     position:absolute;
     border:none;
     background:transparent;
-    padding:20px;
 }
-.ext-el-mask-msg div{
 
-    padding:0 0 0 0;
-    background:transparent;
-    border:none;
-    font-weight: normal; 
+.ext-el-mask-msg div {
+    background: url("/static/images/loading.gif") no-repeat scroll 35px 5px / 40px auto;
+    border: none;
     color: #999;
+    cursor: wait;
     font: 11px tahoma,arial,helvetica,sans-serif;
-    background-image:url('/static/images/loading.gif') !important 40px 40px;
-    background-repeat: no-repeat;
-    background-size:32px;
-    cursor:wait;
+    padding: 50px 75px 25px 25px;
+}
+
+.ext-el-mask-msg-tree div {
+    margin-top:400px;
 }
 
 div#search-result-block img {

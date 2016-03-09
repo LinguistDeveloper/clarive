@@ -223,7 +223,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 });
                 self.store.on('load', function(){
                     self.load_workflow( self.topics );
-                    self.el.mask( '<img src="/static/images/loading.gif" style="height:40px;width:40px;">');
+                    self.el.mask('');
                 });
                 self.store.load();
             } else {

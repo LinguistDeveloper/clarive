@@ -1735,7 +1735,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    },
    search_cpan: function(q){
        var self = this;
-       self.el.mask('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center>');
+       self.el.mask('');
        $.ajax({
            type: 'GET',
            url: 'http://patch.vasslabs.com/cpan_search',
@@ -1765,7 +1765,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    download: function(){
        var self = this;
        var sels = self.grid_remote.getSelectionModel().getSelections();
-       self.el.mask('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Downloading...')+'</div>');
+       self.el.mask(_('Downloading...'));
        Ext.each( sels, function(sel){
            var url = sel.data.url;
            //url = url.replace(/http:\/\/cpan.metacpan.org\//, '');
@@ -1776,9 +1776,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                data: { url: sel.data.url },
                crossDomain: true,
                success: function(res, textStatus, jqXHR) {
-                   self.el.mask('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Uploading...')+'</div>'); 
-                   // submit to server
-                   /*
+                  self.el.mask(_('Uploading...'));
+                  /*
                    var arrBuf = new ArrayBuffer(res.length);
                     var writer = new Uint8Array(arrBuf);
                     for (var i = 0, len = res.length; i < len; i++) {
@@ -1804,7 +1803,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    del: function(){
        var self = this;
        var sels = self.grid_remote.getSelectionModel().getSelections();
-       self.el.mask('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Deleting...')+'</div>');
+       self.el.mask(_('Deleting...'));
        var files = [];
        Ext.each( sels, function(s){
            files.push( s.data.file );
@@ -1851,7 +1850,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    install : function(){
        var self = this;
        var sels = self.grid_local.getSelectionModel().getSelections();
-       self.el.mask('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Installing...')+'</div>'); 
+      self.el.mask(_('Installing...'));
        var files = [];
        Ext.each( sels, function(s){
            files.push( s.data.file );
@@ -4325,6 +4324,6 @@ Baseliner.view_field_content = function(params) {
 };
 
 Ext.override(Ext.LoadMask, {
-    msg : '<img src="/static/images/loading.gif" alt="loading" style="height:40px;width:40px;">'
-    
+    msg : '',
+    msgCls : 'ext-el-mask-msg'
   });

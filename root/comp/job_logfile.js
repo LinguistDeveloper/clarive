@@ -4,8 +4,7 @@
             value: ''
         });
         var load_logfile = function() {
-            if( panel.el ) panel.el.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;"></center>') );
-     
+            if( panel.el ) panel.el.mask('');
             Baseliner.ajaxEval( '/job/job_logfile', { mid: params.mid || 0 },
                 function(res) {
                     panel.el.unmask();

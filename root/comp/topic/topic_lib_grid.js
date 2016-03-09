@@ -162,18 +162,6 @@ Cla.topic_grid = function(params){
             store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
         }
         loading = Baseliner.showLoadingMask(panel.getEl() );
-        //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );
-        
-        /*loading = Ext.Msg.show({
-                title : _('Loading'),
-                msg : _('Loading'),
-                buttons: false,
-                closable:false,
-                wait: true,
-                modal: false,
-                minWidth: Ext.Msg.minProgressWidth,
-                waitConfig: {}
-            });*/
             
     });
     store_topics.on('load',function(s){

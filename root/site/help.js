@@ -195,7 +195,7 @@ Cla.help_show = function(params) {
         items: [ docs_tree, doc_reader ]
     });
     help_win.mask = function(){
-        help_win.body.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;"></center></div>') );
+        help_win.body.mask('');
      }
     help_win.unmask = function(){
         help_win.body.unmask();

@@ -154,7 +154,7 @@ var first_load = true;
         });
     grid.on("activate", function() {
         if( first_load ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
+            Baseliner.showLoadingMask( grid.getEl());
             first_load = false;
         }
     });
