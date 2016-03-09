@@ -2,7 +2,15 @@
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
-    ret.push(value_type);
+    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
+    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
+
+    ret.push([
+        ccategory,
+        cstatus,
+        { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
+        value_type
+    ]);
 
     var combo_datatable = new Baseliner.ComboDouble({
         name: 'datatable',

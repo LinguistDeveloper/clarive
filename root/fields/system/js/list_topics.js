@@ -57,7 +57,7 @@ params:
             dir: order_sort,
             categories : meta.categories ? meta.categories.toString() : '',
             statuses : meta.statuses ? meta.statuses.toString() : '',
-            not_in_status: Baseliner.eval_boolean(meta.not_in_status) ? 'on' : ''
+            not_in_status: Baseliner.eval_boolean(meta.not_in_status)
         },
         display_field: display_field,
         tpl_cfg: tpl_cfg
