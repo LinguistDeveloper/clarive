@@ -88,17 +88,19 @@ sub create_tag {
 sub create_branch {
     my ( $self, $c, $p ) = @_;
 
-    my $repo_mid = $p->{repo}   // _fail( _loc("Missing repo mid") );
+    my $repo_mids = $p->{repo}   // _fail( _loc("Missing repo mid") );
     my $tag      = $p->{branch} // _fail( _loc("Missing branch name") );
     my $sha      = $p->{sha}    // _fail( _loc("Missing sha") );
 
-    my $repo = ci->new($repo_mid);
-    my $git  = $repo->git;
+    for my $repo_mid ( _array $repo_mids ) {
+        my $repo = ci->new("$repo_mid");
+        my $git  = $repo->git;
 
-    if ( $p->{force} ) {
-        $git->exec( 'branch', '-f', $tag, $sha );
-    } else {
-        $git->exec( 'branch', $tag, $sha );
+        if ( $p->{force} ) {
+            $git->exec( 'branch', '-f', $tag, $sha );
+        } else {
+            $git->exec( 'branch', $tag, $sha );
+        }
     }
 }
 
