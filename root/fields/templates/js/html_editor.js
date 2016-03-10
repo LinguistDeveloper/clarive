@@ -48,7 +48,7 @@ params:
                 'afterrender':function(){
                     var disable = Baseliner.eval_boolean(meta.readonly);
                     if(disable){
-                        var mask = this.el.mask('');
+                        this.el.mask('');
                         mask.setStyle('opacity', 0.6);
                         mask.setStyle('height', 5000);
                     }

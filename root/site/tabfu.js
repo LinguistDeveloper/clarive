@@ -1534,7 +1534,7 @@ if( Prefs.routing ) {
                 var loadingMask = cmp.el;
                 Baseliner._defaultLoadingMask = loadingMask;
                 Baseliner._activeMask[cmp.id] = loadingMask;
-                loadingMask.mask(String.format('') );
+                loadingMask.mask('');
                 //loadingMask.show();
             }
         }

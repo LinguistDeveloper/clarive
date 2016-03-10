@@ -74,8 +74,7 @@ params:
                 listeners: {
                     'afterrender':function(){
                         if(meta.readonly){
-                            var el = this.el;
-                            var mask = el.mask('');
+                            this.el.mask('');
                             mask.setStyle('opacity', 0.2);
                             mask.setStyle('height', 5000);
                         }

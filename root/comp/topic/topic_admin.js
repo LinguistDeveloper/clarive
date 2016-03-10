@@ -253,7 +253,7 @@
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
-             columns: [
+        columns: [
             { hidden: true, dataIndex:'id' },
             // check_status_sm,
             { header: _('Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
