@@ -15,7 +15,7 @@
             color = matches[1];
         }
     }
-    
+
     var diagram;
     var overview;
     var event_details_text = false;
@@ -45,9 +45,9 @@
     var event_details = new Ext.menu.CheckItem({
       text: _('Event details'), checked: false, checkHandler: function(){
         if(!checked_event_details){
-          event_details_text=this.checked; 
+          event_details_text=this.checked;
           try {
-            init_overview(pn_diagram.diagram, pn_overview.overview); 
+            init_overview(pn_diagram.diagram, pn_overview.overview);
           }
           catch(err) {
             container.destroy();
@@ -56,9 +56,6 @@
         }
       }
       });
-    
-    //Create menus
-    iid = Ext.id();
 
     // Option menu to General Button
     var options_menu = new Ext.Button({
@@ -81,29 +78,29 @@
     var pn_diagram = new Ext.Panel({
         html: 'Diagram',
         anchor: '100% 100%',
-        tbar:[ options_menu, '-', btn_decreaseZoom, btn_increaseZoom] 
+        tbar:[ options_menu, '-', btn_decreaseZoom, btn_increaseZoom]
     }
     );
-    
-    //OVERVIEW PANEL 
+
+    //OVERVIEW PANEL
     var pn_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
         bodyStyle:{"z-index":10},
         floating: true,
         height: 250,
-        width: 250,        
+        width: 250,
         animCollapse: true,
         collapsible: true,
     }
     );
-    
+
     pn_overview.on('afterrender', function() {
         start();
         var left = pn_diagram.container.getWidth() - 250;
         pn_overview.setPosition(left,0);
     }
-    );    
+    );
 
     var start = function(){
 
@@ -124,10 +121,10 @@
                      "undoManager.isEnabled": false
                  }
                 );
-      
+
       overview = go_api(go.Overview, pn_overview.body.id,  // the HTML DIV element for the Overview
-                 {                       
-                     observed: diagram, contentAlignment: go.Spot.Center 
+                 {
+                     observed: diagram, contentAlignment: go.Spot.Center
                  }
                 );
 
@@ -138,13 +135,13 @@
       init_overview(diagram,overview);
     };
 
-    init_overview = function(diagram,overview){   
+    init_overview = function(diagram,overview){
 
         this.diagram = diagram;
         this.overview = overview;
         var win = 0;
         var temp_nodes = [];
-        var object_node = [];   
+        var object_node = [];
         var object_link = [];
         var source;
         var timer_nodes = [];
@@ -174,13 +171,13 @@
           go.Link.call(this);
           this.time = 0;
         }
-            
+
         go.Diagram.inherit(MessageLink, go.Link);
-        
+
         function ensureLifelineHeights(e) {
           var arr = diagram.model.nodeDataArray;
           var max = -1;
-          for (i = 0; i < arr.length; i++) {
+          for (var i = 0; i < arr.length; i++) {
               var act = arr[i];
               if (act.isGroup) continue;
               max = Math.max(max, act.start + act.duration);
@@ -194,12 +191,12 @@
                   }
               }
           }
-        }        
-    
+        }
+
         function computeLifelineHeight(duration) {
           return LinePrefix + duration * MessageSpacing + LineSuffix;
         }
-        
+
         function computeActivityLocation(act) {
           var groupdata = diagram.model.findNodeDataForKey(act.group);
           if (groupdata === null) return new go.Point();
@@ -210,7 +207,7 @@
         function backComputeActivityLocation(loc, act) {
           diagram.model.setDataProperty(act, "start", convertYToTime(loc.y + ActivityStart));
         }
-        
+
         function computeActivityHeight(duration) {
           return ActivityStart + duration * MessageSpacing + ActivityEnd;
         }
@@ -222,7 +219,7 @@
         function backComputeActivityHeight(height) {
           return (height - ActivityStart - ActivityEnd) / MessageSpacing;
         }
-        
+
         function convertTimeToY(t) {
           return t * MessageSpacing + LinePrefix;
         }
@@ -231,7 +228,7 @@
           return (y - LinePrefix) / MessageSpacing;
         }
 
-        function showMessage(e, obj) { 
+        function showMessage(e, obj) {
 
           if(win !== 0){
             win.destroy();
@@ -260,22 +257,22 @@
               });
               win.show();
             }
-        } 
+        }
 
         /** @override */
         MessageLink.prototype.getLinkPoint = function(node, port, spot, from, ortho, othernode, otherport) {
           var p = port.getDocumentPoint(go.Spot.Center);
           var r = new go.Rect(port.getDocumentPoint(go.Spot.TopLeft), port.getDocumentPoint(go.Spot.BottomRight));
           var op = otherport.getDocumentPoint(go.Spot.Center);
-          
+
           var data = this.data;
-          var time = data !== null ? data.time : this.time;          
+          var time = data !== null ? data.time : this.time;
           var aw = this.findActivityWidth(node, time);
           var x = (op.x > p.x ? p.x + aw / 2 : p.x - aw / 2);
           var y = convertTimeToY(time);
           return new go.Point(x, y);
         };
-        
+
         MessageLink.prototype.findActivityWidth = function(node, time) {
           var aw = ActivityWidth;
           if (node instanceof go.Group) {
@@ -302,7 +299,7 @@
               var time = data !== null ? data.time : this.time;
               var p = this.fromNode.port.getDocumentPoint(go.Spot.Center);
               var aw = this.findActivityWidth(this.fromNode, time);
-              
+
               var x = p.x + aw / 2;
               var y = convertTimeToY(time);
               this.clearPoints();
@@ -319,7 +316,7 @@
             catch(err) {
               console.log("aqui salta un error");
               //init_overview(panel.diagram, panel.overview);
-            }        
+            }
           }
         };
 
@@ -337,16 +334,16 @@
                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
                go_api(go.Panel, "Auto",
                       {
-                          name: "HEADER" 
+                          name: "HEADER"
                       },
                       go_api(go.Shape, "Rectangle",
                         {
-                           fill: color, stroke: "white" 
+                           fill: color, stroke: "white"
                         }
                       ),
                       go_api(go.TextBlock,
                         {
-                          margin: 10, stroke: "white" 
+                          margin: 10, stroke: "white"
                         },
                        new go.Binding("text", "text")
                       )
@@ -369,7 +366,7 @@
                       new go.Binding("height", "duration", computeLifelineHeight)
                 )
             );
-        
+
         // define the Activity Node template
         diagram.nodeTemplate =
             go_api(go.Node,
@@ -405,13 +402,13 @@
                       click: showMessage
                     }
             );
-        
+
         // define the Message Link template.
         diagram.linkTemplate =
-            go_api(MessageLink,  
+            go_api(MessageLink,
                    {
-                       selectionAdorned: true, 
-                       curviness: 0 
+                       selectionAdorned: true,
+                       curviness: 0
                    },
                    go_api(go.Shape, "Rectangle",
                           {
@@ -444,10 +441,11 @@
                           new go.Binding("stroke", "isSelected", function(b) { return b ? "#FFFFFF" : "transparent"; }).ofObject(),
                           new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject())
                   );
-        
-        // create the graph by reading the JSON data saved in "mySavedModel" textarea element         
+
+        // create the graph by reading the JSON data saved in "mySavedModel" textarea element
         Baseliner.ajaxEval( '/topic/timeline_list_status_changes', {mid: mid}, function(res) {
 
+            var j = 0;
             //add status to nodes
             status_into_nodes(res);
 
@@ -472,8 +470,7 @@
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //create links
-            j = 0;
-            for (i = 0; i < res.data.length; i++){
+            for (var i = 0; i < res.data.length; i++){
               source = "/identicon/"+res.data[i].username+".png";
               if (res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
                 object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": _('Username') + " : "+res.data[i].username+ "\n" + _('Date') + ": "+Cla.user_date(res.data[i].when), "time":start[j], selected_text: ""+"\n"+ _('Username') + ": "+res.data[i].username+"\n"+ _('from') + ": "+res.data[i].old_status+" "+ _('to') + ": "+res.data[i].status+"\n"+ _('Date') + ": "+Cla.user_date(res.data[i].when)+"\n"+ _('Name') + ": "+"\n"  });
@@ -481,10 +478,10 @@
               }
             }
         diagram.model = new go.GraphLinksModel(object_node,object_link);
-    });            
-    };   
+    });
+    };
 
-    function status_into_nodes(res) { 
+    function status_into_nodes(res) {
       var temp_status = [];
       var i;
       var j;
@@ -492,7 +489,7 @@
         if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
           temp_status.push({ "old_status" : res.data[i].old_status, "status"  : res.data[i].status, "when" : res.data[i].when});
         }
-      }      
+      }
       for (i = 0; i < res.data.length; i++){
         if(res.data[i].data_type == "topic_modify" || res.data[i].data_type == "event_post" || res.data[i].data_type == "event_file"){
           j = 0;
@@ -536,7 +533,7 @@
     }
 
     function create_nodes_timeline(object_node, res, start, duration, text, sum_duration){
-      
+
       var LEAP_YEAR = 31622400000;
       var YEAR = 31536000000;
       var LEAP_MONTH = 2505600000;
@@ -544,22 +541,22 @@
       var THIRTY_MONTH = 2592000000;
       var MONTH = 2678400000;
       var DAY = 86400000;
-      var HOURS = 3600000; 
+      var HOURS = 3600000;
       var MIN = 60000;
       var j = 0;
       var i;
       var hour;
       var minutes;
-      var seconds;        
+      var seconds;
       var before_index = 0;
       var date;
       var date2;
       var sum_date;
-      var leap_calculate; 
+      var leap_calculate;
       var number_text;
       var date_compare;
 
-      for(i = 0; i < res.data.length; i++){      
+      for(i = 0; i < res.data.length; i++){
 
         if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
           if(j === 0){
@@ -581,13 +578,13 @@
 
             // CALCULATE THE VALUE OF DURATION TO NODES.
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // YEAR         DURATION 20.6 -        
-            // MONTH        DURATION 18.4 - 20.6     
-            // DAYS         DURATION 12.2 - 18.4      
-            // HOURS        DURATION 2 - 12.2 
+            // YEAR         DURATION 20.6 -
+            // MONTH        DURATION 18.4 - 20.6
+            // DAYS         DURATION 12.2 - 18.4
+            // HOURS        DURATION 2 - 12.2
             sum_date = date.getTime() - date2.getTime();
             date_compare = date.getFullYear() - date2.getFullYear();
-            leap_calculate = date_compare % 4; 
+            leap_calculate = date_compare % 4;
             number_text = 0;
             hour = 0;
             minutes = 0;
@@ -611,23 +608,23 @@
                 //Month with 31 days
                 date_compare = (date.getMonth() + 1) - (date2.getMonth() + 1);
                 if((date_compare == 1 || date_compare == 3 || date_compare == 5 || date_compare == 7 || date_compare == 8 || date_compare == 10 || date_compare == 12) && sum_date >= MONTH){
-                  
+
                   number_text = calculate_number_text(sum_date, MONTH);
                   duration[j] = (number_text * 0.1) + 18.4;
 
-                  number_text = new Date(sum_date);  
+                  number_text = new Date(sum_date);
                   hour = calculate_hour(number_text);
-                  minutes = calculate_minutes(number_text); 
+                  minutes = calculate_minutes(number_text);
                   text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate() - 1) +" " + _('Days') + " " + hour +":"+ minutes +" H ";
 
                 }else {
                   //Month with 30 days
                   if((date_compare == 4 || date_compare == 6 || date_compare == 9 || date_compare == 11) && sum_date >= THIRTY_MONTH){
 
-                    number_text = calculate_number_text(sum_date, THIRTY_MONTH); 
+                    number_text = calculate_number_text(sum_date, THIRTY_MONTH);
                     duration[j] = (number_text * 0.1) + 18.4;
 
-                    number_text = new Date(sum_date);  
+                    number_text = new Date(sum_date);
                     hour = calculate_hour(number_text);
                     minutes = calculate_minutes(number_text);
                     text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
@@ -636,11 +633,11 @@
                     //Leap-Month
                     if(leap_calculate === 0 && date_compare == 2 && sum_date >= LEAP_MONTH ){
 
-                      number_text = calculate_number_text(sum_date, LEAP_MONTH);  
+                      number_text = calculate_number_text(sum_date, LEAP_MONTH);
                       duration[j]=(number_text*0.1)+18.4;
-                      number_text = new Date(sum_date);     
+                      number_text = new Date(sum_date);
                       hour = calculate_hour(number_text);
-                      minutes = calculate_minutes(number_text);  
+                      minutes = calculate_minutes(number_text);
                       text[j] = number_text.getMonth() + " " + _('Month') + " " + (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
 
                     }else{
@@ -649,17 +646,17 @@
 
                         number_text = calculate_number_text(sum_date, FEBRUARY_MONTH);
                         duration[j] = (number_text * 0.1) + 18.4;
-                        number_text = new Date(sum_date);  
+                        number_text = new Date(sum_date);
                         hour = calculate_hour(number_text);
                         minutes = calculate_minutes(number_text);
                         text[j] = number_text.getMonth() + " " + _('Month') + " " +  (number_text.getDate()-1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
                       }else{
                         //Days
                         if(sum_date >= DAY){
-                          
+
                           number_text = calculate_number_text(sum_date, DAY);
                           duration[j] = (number_text * 0.2) + 12.2;
-                          number_text = new Date(sum_date);  
+                          number_text = new Date(sum_date);
                           hour = calculate_hour(number_text);
                           minutes = calculate_minutes(number_text);
                           text[j] = (number_text.getDate() - 1) + " " + _('Days') + " " + hour + ":" + minutes + " H ";
@@ -670,9 +667,9 @@
 
                             number_text = calculate_number_text(sum_date, HOURS);
                             duration[j]= (number_text*0.3)+4;
-                            number_text = new Date(sum_date);  
+                            number_text = new Date(sum_date);
                             hour = calculate_hour(number_text);
-                            minutes = calculate_minutes(number_text);  
+                            minutes = calculate_minutes(number_text);
                             text[j] = hour + ":" + minutes + " H ";
 
                           //Minutes
@@ -680,9 +677,9 @@
 
                             number_text = calculate_number_text(sum_date, MIN);
                             duration[j] = 3;
-                            number_text = new Date(sum_date);    
+                            number_text = new Date(sum_date);
                             minutes = calculate_minutes(number_text);
-                            seconds = calculate_seconds(number_text);         
+                            seconds = calculate_seconds(number_text);
                             text[j] = minutes + ":" + seconds + " Min ";
 
                           }
@@ -704,10 +701,10 @@
     }
 
     function modify_duration(object_node, start, duration, text, sum_duration){
-      
+
       var j = 0;
-      var i;            
-      
+      var i;
+
       for(i = 0; i < object_node.length; i++){
         if(object_node[i].duration == "change"){
           if(event_details_text !== true){
@@ -722,11 +719,11 @@
           }else{
             start[j]= start[j-1]+duration[j-1];
             object_node[i].duration = duration[j];
-            object_node[i].text = text[j];             
-            object_node[i].start = start[j];           
+            object_node[i].text = text[j];
+            object_node[i].start = start[j];
           }
           j++;
-        }  
+        }
       }
     }
 
@@ -734,47 +731,47 @@
       var number_text = 0;
       number_text = sum_date / date;
       number_text = Math.round(number_text);
-      if(number_text === 0){ 
+      if(number_text === 0){
         number_text = 1;
       }
       return number_text;
     }
 
     function calculate_hour (number_text){
-      
+
       var hour;
-      hour = (number_text.getHours()-1);      
-      if (hour < 10){ 
+      hour = (number_text.getHours()-1);
+      if (hour < 10){
         hour = "0" + (number_text.getHours() - 1);
-      } 
+      }
       return hour;
 
     }
-    
+
     function calculate_minutes (number_text){
-      
+
       var minutes;
       minutes = number_text.getMinutes();
-      if (minutes < 10){ 
+      if (minutes < 10){
         minutes = "0" + number_text.getMinutes();
-      } 
+      }
       return minutes;
 
     }
 
     function calculate_seconds (number_text){
-      
+
       var seconds;
-      seconds = number_text.getSeconds();      
-      if (seconds < 10){ 
+      seconds = number_text.getSeconds();
+      if (seconds < 10){
         seconds = "0" + number_text.getSeconds();
-      }    
+      }
       return seconds;
 
     }
 
     function calculate_duration_node(res, duration_node, aux_count_nodes){
-      
+
       var CALCULATE_MIN = 600000;
       var CALCULATE_HOUR = 3600000;
       var CALCULATE_DAY = 86400000;
@@ -796,8 +793,9 @@
     }
 
     function create_intermidial_nodes_activity(object_node, res, sum_duration, start){
-      
+
       var j = 0;
+      var i;
       var change_stroke = "black";
       var color_green = "#008000";
       var color_red = "#ff0000";
@@ -816,7 +814,7 @@
             if (res.data[i].status == object_node[k].group && res.data[i].when == object_node[k].when && object_node[k].fill == "white"){
               start_node = object_node[k-1].start;
               duration_node = object_node[k-1].duration;
-            }   
+            }
           }
           while ( j < res.data.length && res.data[i].when >= res.data[j].when ){
             if(res.data[j].data_type == "topic_modify"){
@@ -830,12 +828,12 @@
                 object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_post": res.data[j].post, "data_text": res.data[j].text});
                 count_nodes = count_nodes + aux_count_nodes + 0.3;
             }else if(res.data[j].data_type == "event_file"){
-                change_stroke = color_blue;   
-                aux_count_nodes = calculate_duration_node(res, duration_node,aux_count_nodes);   
-                object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_filename": res.data[j].filename, "data_text": res.data[j].text});                 
+                change_stroke = color_blue;
+                aux_count_nodes = calculate_duration_node(res, duration_node,aux_count_nodes);
+                object_node.push({ "group": res.data[i].old_status, "start": start_node + count_nodes + aux_count_nodes, "duration": 0, "key": -(j+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[j].username, "data_when": res.data[j].when, "data_type": res.data[j].data_type, "data_filename": res.data[j].filename, "data_text": res.data[j].text});
                 count_nodes = count_nodes + aux_count_nodes + 0.3;
             }else{
-                change_stroke = "black";                    
+                change_stroke = "black";
             }
             j++;
           }
@@ -856,8 +854,8 @@
                 //timer_nodes[count_start] = object_node[z-1].when;
                 start[count_start] = object_node[z-1].start;
                 count_start++;
-              }                   
-            }   
+              }
+            }
           }
           count_nodes = 0;
         }else if (res.data[i].status === "" && res.data[i].old_status === ""){
@@ -868,10 +866,10 @@
                   change_stroke = color_red;
                   object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_post": res.data[i].post, "data_text": res.data[i].text});
               }else if(res.data[i].data_type == "event_file"){
-                  change_stroke = color_blue;   
-                  object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_filename": res.data[i].filename, "data_text": res.data[i].text});                 
+                  change_stroke = color_blue;
+                  object_node.push({ "group" : last_node.group, "start":last_node.start+count_nodes_2, "duration":0, "key": -(i+i+res.data.length), "text": "", "fill": getLuxColor(change_stroke,0.3), "stroke": change_stroke, "data_username": res.data[i].username, "data_when": res.data[i].when, "data_type": res.data[i].data_type, "data_filename": res.data[i].filename, "data_text": res.data[i].text});
               }else{
-                  change_stroke = "black";                        
+                  change_stroke = "black";
               }
           count_nodes_2++;
         }
@@ -882,9 +880,9 @@
             object_node[r].duration = count_nodes_2;
             sum_duration = sum_duration + count_nodes_2;
             start[start.length-1] = object_node[r].start;
-        }   
+        }
       }
-      // duration                  
+      // duration
       for(var w = 0; w < object_node.length; w++){
         if(object_node[w].duration=="change"){
           object_node[w].duration = sum_duration;
@@ -893,13 +891,13 @@
       return sum_duration;
     }
 
-    
+
     var container = new Ext.Panel({
         width: 800,
         height: 600,
-        layout: 'absolute', 
+        layout: 'absolute',
         items:[pn_diagram,pn_overview]
     }
     );
-    return container;    
+    return container;
 });
