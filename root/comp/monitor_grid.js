@@ -1355,9 +1355,9 @@
 
         grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
-            Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
+            Baseliner.showLoadingMask( grid.getEl());
             Baseliner.openLogTab(r.get('mid') , r.get('name') );
-           Baseliner.hideLoadingMaskFade(grid.getEl());
+            Baseliner.hideLoadingMaskFade(grid.getEl());
         });		
 
 
@@ -1402,7 +1402,7 @@
 
     grid.on("activate", function() {
         if( first_load ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
+            Baseliner.showLoadingMask( grid.getEl());
             first_load = false;
         }
     });

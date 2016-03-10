@@ -161,11 +161,10 @@ Cla.topic_grid = function(params){
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
             store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
         }
-        loading = Baseliner.showLoadingMask(panel.getEl() );
-            
+        loading = Baseliner.showLoadingMask(panel.getEl());
     });
     store_topics.on('load',function(s){
-        if( loading ) Baseliner.hideLoadingMask( panel.getEl() );
+        if( loading ) Baseliner.hideLoadingMask( panel.getEl());
         // get extra data
         var cd = s.reader.jsonData.config;
         if( cd ) custom_form_data = cd;
@@ -180,7 +179,7 @@ Cla.topic_grid = function(params){
         var sels = sm.getSelections().map(function(row){ return row.data.topic_mid });
         var change_it = function(){
             var statuses = sm.getSelections().map(function(row){ return row.data.category_status_id });
-           Cla.ajax_json( '/topic/change_status',{ mid: sels, new_status: obj.new_status, old_status: statuses }, function(res){
+            Cla.ajax_json( '/topic/change_status',{ mid: sels, new_status: obj.new_status, old_status: statuses }, function(res){
                 Cla.message( _('Change Status'), _('Status changed to %1 for %2 topics', obj.status_name, sels.length) );
                 grid_topics.store.reload();
                 grid_topics.getEl().unmask();
@@ -1418,19 +1417,15 @@ Cla.topic_grid = function(params){
         filters: fields_filter
     });
 
-
+ 
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
-        //title: _('Topics'),
-        //header: false,
         plugins: [filters],
         stripeRows: true,
         autoScroll: true,
         stateful: true,
         stateId: state_id,
-        //enableHdMenu: false,
         store: store_topics,
-        //enableDragDrop: true,
         dropable: true,
         autoSizeColumns: true,
         width: '100%',
@@ -1438,9 +1433,8 @@ Cla.topic_grid = function(params){
         ddGroup: 'explorer_dd',
         viewConfig: {forceFit: force_fit},
         sm: !typeApplication ? check_sm : null,
-        // loadMask: true,
-            columns: columns,
-        tbar: tbar,      
+        columns: columns,
+        tbar: [],
         bbar: ptool
     });
 

@@ -913,7 +913,7 @@
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
-             columns: [
+            columns: [
                 { header: _('Id'), hidden: true, dataIndex: 'id' },
                 { header: _('Avatar'), hidden: false, width: 64, dataIndex: 'username', renderer: Baseliner.render_avatar },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },

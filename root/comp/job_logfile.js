@@ -18,7 +18,7 @@
                 function(){
                     panel.el.unmask();
                 }
-            ); 
+            );
         };
         var panel = new Ext.Panel({
             layout: 'fit',

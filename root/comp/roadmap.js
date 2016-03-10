@@ -5,13 +5,13 @@
         fields.push({ name:bl });
     });
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty: 'totalCount', 
+        totalProperty: 'totalCount',
         baseParams: Ext.apply({ project_id: params.project_id, topic_mid: params.topic_mid },config),
-        id: 'id', 
+        id: 'id',
         url: '/dashboard/roadmap',
-        fields: fields 
+        fields: fields
     });
 
     var color_index = 0;
@@ -31,7 +31,7 @@
         }
         return color;
     }
-    
+
     var hcolor={};
     var render_topic = function(value,meta,rec,rowIndex,colIndex,store) {
         var cell_color, cell_text;
@@ -59,10 +59,10 @@
             cell_color = hcolor[first_mid];
         }
 
-        /* meta.style += cell_color!=undefined 
+        /* meta.style += cell_color!=undefined
                 ? 'line-height:20px; color: #fff; background-color: '+ cell_color
                 : 'line-height:20px; color: #fff';  */
-        meta.style += 'line-height:20px; color: #fff'; 
+        meta.style += 'line-height:20px; color: #fff';
         return cell_text ? '<table width="100%" border=0 style="margin-bottom: -2px; margin-top: -2px; margin-left: -2px, margin-right: -2px"><tr>'+cell_text+'</tr></table>' : ''; 
     }
 
@@ -90,7 +90,7 @@
         viewConfig: { scrollOffset: 2, forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
-             columns: cols 
+        columns: cols
     });
 
     store.load();

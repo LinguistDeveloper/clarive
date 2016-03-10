@@ -47,7 +47,7 @@
             + '</div>';
         ;
     }
-var first_load = true;
+        var first_load = true;
         var ps = 60; //page_size
 
         // create the grid
@@ -56,11 +56,8 @@ var first_load = true;
             title: _('Roles'),
             header: false,
             autoScroll: true,
-           // autoWidth: true,
             store: store,
-           // viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            //loadMask: true,
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
@@ -159,13 +156,18 @@ var first_load = true;
         }
     });
 
-   store.load({params:{start:0 , limit: ps }, callback: function(){
-      Baseliner.hideLoadingMaskFade(grid.getEl());
-    } }); 
+    store.load({
+        params:{
+            start:0,
+            limit: ps
+        },
+        callback: function(){
+            Baseliner.hideLoadingMaskFade(grid.getEl());
+        }
+    });
 
-  
     grid.getView().forceFit = true;
-    
+
     grid.list_actions = function(ix,invalid){
         var row = grid.store.getAt(ix);
         var actions = [];
@@ -209,15 +211,15 @@ var first_load = true;
     };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
-            var row = grid.getStore().getAt(rowIndex);
-             Baseliner.showLoadingMask( grid.getEl() , _('LOADING') );
-            role_detail( row.get('id'), row.get('role') );
+        var row = grid.getStore().getAt(rowIndex);
+        Baseliner.showLoadingMask( grid.getEl());
+        role_detail( row.get('id'), row.get('role'));
         Baseliner.hideLoadingMaskFade(grid.getEl());
-        });		
-   
+    });
 
     grid.on("load", function(grid, rowIndex, e ) {
-    Baseliner.hideLoadingMaskFade(grid.getEl());
-    }); 
+        Baseliner.hideLoadingMaskFade(grid.getEl());
+    });
+
     return grid;
 });

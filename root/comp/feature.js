@@ -137,7 +137,7 @@
                 selModel: self.sm, 
                 region:'center',
                 store: self.store, 
-                loadMask  : true,
+                loadMask: true,
                 autoScroll: true,
                 autoWidth: true,
                 autoSizeColumns: true,

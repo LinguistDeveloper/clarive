@@ -226,7 +226,7 @@
         store: store,
         sm: sm,
         loadMask: true,
-            viewConfig: {
+        viewConfig: {
             forceFit: true
         },
         tbar: [ 

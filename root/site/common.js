@@ -1293,7 +1293,6 @@ Baseliner.loading_panel = function(msg){
             '<center>',
             '<img style="height:52px;width:52px;" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
-           // msg,
             '</div>',
             '</center>',
             '</div>' ].join('')
@@ -1776,13 +1775,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                data: { url: sel.data.url },
                crossDomain: true,
                success: function(res, textStatus, jqXHR) {
-                  self.el.mask(_('Uploading...'));
-                  /*
-                   var arrBuf = new ArrayBuffer(res.length);
-                    var writer = new Uint8Array(arrBuf);
-                    for (var i = 0, len = res.length; i < len; i++) {
-                        writer[i] = res.charCodeAt(i);
-                    }*/
+                    self.el.mask(_('Uploading...'));
                    var filename = sel.data.name + '-' + sel.data.version + '.tar.gz' ;
                    Baseliner.ajaxEval('/feature/upload_cpan',{ data: res.data, filename: filename }, function(res){
                        self.el.unmask();
@@ -1850,7 +1843,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    install : function(){
        var self = this;
        var sels = self.grid_local.getSelectionModel().getSelections();
-      self.el.mask(_('Installing...'));
+       self.el.mask(_('Installing...'));
        var files = [];
        Ext.each( sels, function(s){
            files.push( s.data.file );

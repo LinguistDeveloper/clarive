@@ -926,7 +926,7 @@
             iconCls: 'icon-grid',
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
-             columns: [
+            columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', hidden: true }, 
                 { header: _('From Status'), width: 60, dataIndex: 'status_from', renderer: render_status },
                 { width: 16, renderer: render_status_arrow },

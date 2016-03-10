@@ -214,8 +214,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     load_data : function() {
         var self = this;
-        
-     if( ! self.store ) {
+        if( ! self.store ) {
             if( Ext.isArray( self.topics ) && self.topics.length > 0 ) {
                 // create my own store
                 self.store = new Baseliner.Topic.StoreList({

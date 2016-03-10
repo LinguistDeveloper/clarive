@@ -112,7 +112,7 @@
         viewConfig: { forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
-            columns: [
+        columns: [
             { header: _('ID'), width: 50, dataIndex: '_id', sortable: true, 
                 renderer: function(v,m,row){ 
                     return row.data.expired 

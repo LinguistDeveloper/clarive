@@ -620,7 +620,7 @@ div[class*='ui-ci_box-'].search-item img {
    width: 16px;
 }
 
-.x-mask-loading div{ 
+.x-mask-loading div{
     -moz-opacity:0.8;
     opacity:.80;
     filter:alpha(opacity=80);
@@ -637,12 +637,12 @@ div[class*='ui-ci_box-'].search-item img {
     line-height:50px;
 }
 
-.x-mask-loading-msg div { 
-    text-align: center; 
-    text-transform: uppercase; 
-    font-weight: normal; 
-    font-size: 11px; 
-    color: #999; 
+.x-mask-loading-msg div {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: normal;
+    font-size: 11px;
+    color: #999;
     font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 
