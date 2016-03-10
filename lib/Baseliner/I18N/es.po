@@ -8574,12 +8574,6 @@ msgstr "Rango"
 msgid "Topic date field"
 msgstr "Campo de tópico de tipo fecha"
 
-msgid "From field"
-msgstr "Desde el campo"
-
-msgid "To field"
-msgstr "Hasta el campo"
-
 msgid "Date selection method"
 msgstr "Método para la selección de fechas"
 
@@ -8588,6 +8582,9 @@ msgstr "Duración"
 
 msgid "Period"
 msgstr "Periodo"
+
+msgid "From field"
+msgstr "Campo desde"
 
 msgid "To field"
 msgstr "Campo hasta"
