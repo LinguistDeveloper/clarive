@@ -92,7 +92,7 @@ sub create_branch {
     my $tag      = $p->{branch} // _fail( _loc("Missing branch name") );
     my $sha      = $p->{sha}    // _fail( _loc("Missing sha") );
 
-    for my $repo_mid ( _array $repo_mids ) {
+    for my $repo_mid ( Util->_array_or_commas( $repo_mids )) {
         my $repo = ci->new("$repo_mid");
         my $git  = $repo->git;
 
