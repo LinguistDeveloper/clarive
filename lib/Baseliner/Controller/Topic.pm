@@ -322,7 +322,7 @@ sub related : Local {
         username      => $c->username,
         categories    => $categories,
         statuses      => $statuses,
-        not_in_status => $not_in_status && $not_in_status eq 'true',
+        not_in_status => $not_in_status && $not_in_status eq 'on',
         search_query  => $search_query,
         filter        => $filter,
         start         => $start,
