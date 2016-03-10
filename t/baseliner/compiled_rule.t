@@ -51,6 +51,25 @@ subtest 'compile: compiles rule' => sub {
     $cr->unload;
 };
 
+subtest 'compile: compiles passed dsl' => sub {
+    _setup();
+
+    my $cr = _build_compiled_rule(dsl => q{do { '123'}; });
+
+    $cr->compile;
+
+    ok $cr->is_compiled;
+    ok $cr->is_loaded;
+
+    my $package = $cr->package;
+
+    is $package, 'Clarive::RULE_1';
+
+    is $package->run({job_step => 'RUN'}), '123';
+
+    $cr->unload;
+};
+
 subtest 'compile: returns info' => sub {
     _setup();
 
