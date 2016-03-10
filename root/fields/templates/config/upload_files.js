@@ -4,7 +4,7 @@
     ret.push([ 
     	{ xtype:'textfield', name:'checkout_dir', fieldLabel:_('Checkout directory'), value: data.checkout_dir },
         { xtype:'textfield', name:'extension', fieldLabel:_('Extension'), value: data.extension },
-        { xtype:'numberfield', name:'height', fieldLabel:_('Height'), fieldClass: "height-fieldlet-field", minValue:'1', value: data.height }
+        { xtype:'numberfield', name:'height', fieldLabel:_('Height'), fieldClass: "x-fieldlet-type-height", minValue:'1', value: data.height }
     ]);
     return ret;
 })
