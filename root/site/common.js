@@ -1775,7 +1775,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                data: { url: sel.data.url },
                crossDomain: true,
                success: function(res, textStatus, jqXHR) {
-                    self.el.mask(_('Uploading...'));
+                   self.el.mask(_('Uploading...'));
                    var filename = sel.data.name + '-' + sel.data.version + '.tar.gz' ;
                    Baseliner.ajaxEval('/feature/upload_cpan',{ data: res.data, filename: filename }, function(res){
                        self.el.unmask();
