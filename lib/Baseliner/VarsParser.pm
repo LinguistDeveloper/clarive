@@ -113,7 +113,7 @@ sub _parse_vars {
     #    my $array_ref = parse_vars('${foo}', {foo => [1, 2, 3]});
     #
     if ( $str =~ m/^$RE_WITH_CAPTURES$/ ) {
-        $str = $self->_parse_var( $1, $2 || $3, $vars );
+        $str = $self->_parse_var_top( $1, $2 || $3, $vars );
     }
 
     # Otherwise we just stringify everything
@@ -123,7 +123,7 @@ sub _parse_vars {
     # This will product smth like 'ARRAY(...) 123'
     #
     else {
-        $str =~ s/$RE_WITH_CAPTURES/$self->_parse_var($1, $2 || $3, $vars)/ge;
+        $str =~ s/$RE_WITH_CAPTURES/$self->_parse_var_top($1, $2 || $3, $vars)/ge;
     }
 
     # Cleanup or throw unresolved vars
@@ -143,6 +143,18 @@ sub _parse_vars {
     }
 
     return $str;
+}
+
+sub _parse_var_top {
+    my $self = shift;
+    my ( $str, $k, $vars ) = @_;
+
+    my $result = $self->_parse_var($str, $k, $vars);
+
+    if ($result && ref $result) {
+        _throw _loc('Unexpected reference found in %1', $str);
+    }
+    return $result;
 }
 
 sub _parse_var {
