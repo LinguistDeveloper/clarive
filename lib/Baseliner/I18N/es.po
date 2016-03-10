@@ -8612,3 +8612,16 @@ msgstr "Barras"
 
 msgid "Scatter"
 msgstr "Dispersión"
+
+msgid "Sha or Ref"
+msgstr "SHA o Ref."
+
+msgid "Branch Name"
+msgstr "Nombre de la rama"
+
+msgid "Move to new sha if branch exists?"
+msgstr "¿Mover a un nuevo SHA si existe la rama?"
+
+
+
+

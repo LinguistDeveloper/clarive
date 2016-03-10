@@ -19,7 +19,7 @@ register 'config.git' => {
         { id=>'no_auth', label=>'Allow unauthenticated users to access the repository URL', default=>0 },
         { id=>'force_authorization', label=>'Check Auth Always', default=>1 },
         #{ id=>'gitcgi', label=>'Path to git-http-backend', default=>'/usr/local/Cellar/git/1.7.6/libexec/git-core/git-http-backend' },
-        { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{BASELINER_HOME},'etc','repo')  },
+        { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{CLARIVE_HOME},'etc','repo')  },
         { id=>'path', label=>'Path to git binary', default=>'/usr/bin/git'  },
         { id=>'show_changes_in_tree', label=>'Show tags in the Lifecycle tree', default=>'1' },
         { id=>'hide_used_commits', label=>'Hide commits already added to changeset', default=>'1' },
@@ -58,11 +58,18 @@ register 'service.git.link_revision_to_topic' => {
 };
 
 register 'service.git.create_tag' => {
-    name    => 'Create a tag in the repository',
+    name    => 'Create a tag in a Git repository',
     icon    => '/static/images/icons/git.png',
     #icon    => '/static/images/icons/git-repo.gif',
     form    => '/forms/git_create_tag.js',
     handler => \&create_tag,
+};
+
+register 'service.git.create_branch' => {
+    name    => 'Create a branch in a Git repository',
+    icon    => '/static/images/icons/git.png',
+    form    => '/forms/git_create_branch.js',
+    handler => \&create_branch,
 };
 
 sub create_tag {
@@ -77,6 +84,26 @@ sub create_tag {
     
     $git->exec( 'tag', '-f', $tag, $sha );
 }
+
+sub create_branch {
+    my ( $self, $c, $p ) = @_;
+
+    my $repo_mids = $p->{repo}   // _fail( _loc("Missing repo mid") );
+    my $tag      = $p->{branch} // _fail( _loc("Missing branch name") );
+    my $sha      = $p->{sha}    // _fail( _loc("Missing sha") );
+
+    for my $repo_mid ( Util->_array_or_commas( $repo_mids )) {
+        my $repo = ci->new("$repo_mid");
+        my $git  = $repo->git;
+
+        if ( $p->{force} ) {
+            $git->exec( 'branch', '-f', $tag, $sha );
+        } else {
+            $git->exec( 'branch', $tag, $sha );
+        }
+    }
+}
+
 sub link_revision {
     my ($self, $c, $p) = @_;
 
