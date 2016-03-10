@@ -57,6 +57,7 @@ sub build_where {
     my $search_query  = $params{search_query};
     my @priorities;
     my @labels;
+    my @category_status_id;
 
     if ($filter) {
         delete $filter->{start};
@@ -67,7 +68,7 @@ sub build_where {
         }
 
         if ( my $statuses = delete $filter->{statuses} ) {
-            push @statuses, _array $statuses;
+            push @category_status_id, _array $statuses;
         }
 
         if ( my $priorities = delete $filter->{priorities} ) {
@@ -79,12 +80,25 @@ sub build_where {
         }
     }
 
-    if (@statuses) {
-        if ($not_in_status) {
-            $where->{'category_status.id'} = mdb->nin(@statuses);
+    if(@category_status_id){
+        my @in = grep {!m/^\-/ } @category_status_id;
+        my @not_in = map { s/^.{1}//s; $_} grep { m/^\-/ } @category_status_id;
+
+        if (@statuses) {
+            if ($not_in_status) {
+                push(@not_in, @statuses);
+            }else {
+                push(@in, @statuses);
+            }
         }
-        else {
-            $where->{'category_status.id'} = mdb->in(@statuses);
+        if (@not_in && @in){
+            $where->{'category_status.id'} = {'$nin' =>\@not_in, '$in' =>\@in};
+        }else{
+            if (@not_in){
+                $where->{'category_status.id'} = mdb->nin(@not_in);
+            }else{
+                $where->{'category_status.id'} = mdb->in(@in);
+            }
         }
     }
 

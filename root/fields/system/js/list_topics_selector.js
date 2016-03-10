@@ -55,8 +55,8 @@ params:
             filter: meta.filter ? meta.filter : '',
             sort_field: meta.sort,
             dir: order_sort,
-            categories : meta.categories ? meta.categories.toString() : '',
-            statuses : meta.statuses ? meta.statuses.toString() : '',
+            categories : meta.categories ? meta.categories : [],
+            statuses : meta.statuses ? meta.statuses : [],
             not_in_status: Baseliner.eval_boolean(meta.not_in_status) ? 'on' : ''
         },
         display_field: display_field,
