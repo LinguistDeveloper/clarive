@@ -37,7 +37,12 @@ method chmod ( $mode, $path ) {
 method chown ( $perms, $path ) {
 }
 
-method execute( $options, $cmd, @args ) {
+sub execute {
+    my $self = shift;
+
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
+    my ($cmd, @args) = @_;
+
     my $exit_code = 255;
     my $output = '';
 
@@ -99,21 +104,25 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     open my $fh, '<', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
     binmode $fh;
 
-    my $basename = basename $local;
-    my $dir = dirname $remote;
-    $dir = '' if $dir eq '/' || $dir eq '.';
+    if ($self->os eq 'win') {
+        $remote =~ s{\\}{/}g;
+    }
+
+    my $remote_basename = basename $local;
+    my $remote_dir = dirname $remote;
+    $remote_dir = '' if $remote_dir eq '/' || $remote_dir eq '.';
 
     my @alpha = ('0' .. '9', 'a' .. 'z', 'A' .. 'Z');
     my $boundary = '------------clax';
     $boundary .= $alpha[rand($#alpha)] for 1 .. 20;
 
-    my $first_header = qq{--$boundary\r\nContent-Disposition: form-data; name="file"; filename="$basename"\r\n\r\n};
+    my $first_header = qq{--$boundary\r\nContent-Disposition: form-data; name="file"; filename="$remote_basename"\r\n\r\n};
     my $last_header  = qq{\r\n--$boundary--\r\n};
 
     my $first_header_sent = 0;
     my $last_header_sent = 0;
 
-    my $url = $self->_build_url("/tree/$dir");
+    my $url = $self->_build_url("/tree/$remote_dir");
 
     my %query;
     if ($self->copy_attrs) {
@@ -157,7 +166,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     );
 
     if (!$response->{success}) {
-        _fail( _loc( "clax put_file: error while sending remote file") );
+        _fail( _loc( "clax put_file: error while sending remote file: $response->{reason}") );
     }
 
     return $self->tuple;

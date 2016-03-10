@@ -6,10 +6,8 @@ use Test::MonkeyMock;
 use Test::Deep;
 use Test::Fatal;
 
-use lib 't/lib';
 use TestEnv;
-
-TestEnv->setup;
+BEGIN { TestEnv->setup }
 
 use File::Temp qw(tempfile);
 use Baseliner::Role::CI;    # WTF this is needed for CI
@@ -32,7 +30,7 @@ subtest 'execute: sends correct request' => sub {
 
     my $clax_agent = _build_clax_agent( ua => $ua );
 
-    my $ret = $clax_agent->execute( {}, 'echo', 'bar' );
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
 
     my ( $url, $data ) = $ua->mocked_call_args('post_form');
 
@@ -193,6 +191,44 @@ subtest 'put_file: sends request with attributes' => sub {
     is $url, "http://bar:8888/tree/?time=$stat[9]&crc=3610a686";
 };
 
+subtest 'put_file: sends request with directory' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock( post => sub { { success => 1 } } );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my ($local_fh, $local_file) = tempfile();
+    print $local_fh 'hello';
+    close $local_fh;
+
+    my $ret = $clax_agent->put_file( local => $local_file, remote => 'some/where/remote-file', user => 'user' );
+
+    my ( $url ) = $ua->mocked_call_args('post');
+
+    like $url, qr{http://bar:8888/tree/some/where};
+};
+
+subtest 'put_file: sends request with directory on win' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock( post => sub { { success => 1 } } );
+
+    my $clax_agent = _build_clax_agent( ua => $ua, server => {os => 'win'} );
+
+    my ($local_fh, $local_file) = tempfile();
+    print $local_fh 'hello';
+    close $local_fh;
+
+    my $ret = $clax_agent->put_file( local => $local_file, remote => 'C:\Users\clarive\remote-file', user => 'user' );
+
+    my ( $url ) = $ua->mocked_call_args('post');
+
+    like $url, qr{http://bar:8888/tree/C:/Users/clarive};
+};
+
+done_testing;
+
 sub _mock_ua {
     my $mock = Test::MonkeyMock->new;
 
@@ -202,13 +238,14 @@ sub _mock_ua {
 sub _build_clax_agent {
     my (%params) = @_;
 
+    my $server_args = delete $params{server} || { };
     my $ua = delete $params{ua} || _mock_ua();
 
     my $agent = BaselinerX::CI::clax_agent->new(
         user   => 'foo',
         port   => '8888',
-        server => BaselinerX::CI::generic_server->new( hostname => 'bar' ),
-        @_
+        server => BaselinerX::CI::generic_server->new( hostname => 'bar', %$server_args ),
+        %params
     );
 
     $agent = Test::MonkeyMock->new($agent);
@@ -216,5 +253,3 @@ sub _build_clax_agent {
 
     return $agent;
 }
-
-done_testing;
