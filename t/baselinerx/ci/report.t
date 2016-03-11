@@ -209,7 +209,13 @@ subtest 'get_where: builds correct EMPTY where' => sub {
     );
 
     is_deeply $where,
-      { '$or' => [ { 'Release' => { '$exists' => 0 } }, { 'Release' => { '$in' => [ undef, '' ] } } ] };
+      {
+        '$or' => [
+            { 'Release' => { '$exists' => 0 } },
+            { 'Release' => { '$in'     => [ undef, '' ] } },
+            { 'Release' => { '$eq'     => [] } }
+        ]
+      };
 };
 
 subtest 'get_where: builds correct NOT EMPTY where' => sub {
@@ -248,7 +254,8 @@ subtest 'get_where: builds correct NOT EMPTY where' => sub {
       {
         'Release' => {
             '$exists' => 1,
-            '$nin' => [ undef, '' ]
+            '$nin'    => [ undef, '' ],
+            '$ne'     => [],
         }
       };
 };
