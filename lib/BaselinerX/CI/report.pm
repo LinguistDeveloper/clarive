@@ -835,12 +835,14 @@ sub get_where {
                         if ( $val->{oper} eq 'NOT EMPTY' ) {
                             $where->{$id} = {
                                 '$exists' => 1,
-                                '$nin'    => [ undef, '' ]
+                                '$nin'    => [ undef, '' ],
+                                '$ne'     => [],
                             };
                         }
                         else {
                             push @{ $where->{'$or'} },
-                              { $id => { '$exists' => 0 } }, { $id => { '$in' => [ undef, '' ] } };
+                              { $id => { '$exists' => 0 } }, { $id => { '$in' => [ undef, '' ] } },
+                              { $id => { '$eq' => [] } };
                         }
                     }
                     elsif ( $val->{value} ne 'default' ) {
