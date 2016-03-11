@@ -127,7 +127,7 @@ subtest 'parse_vars: resolves 2 empty vars in one string' => sub {
     is $parser->parse_vars( '${foo} ${foo}', {} ), ' ';
 };
 
-subtest 'parse_vars: return unexpected reference in var' => sub {
+subtest 'parse_vars: throws when unexpected reference in var' => sub {
     my $parser = _build_parser( cleanup => 1 );
 
     capture {
