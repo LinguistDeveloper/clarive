@@ -94,19 +94,13 @@ sub build_where {
         if (@not_in && @in){
             $where->{'category_status.id'} = {'$nin' =>\@not_in, '$in' =>\@in};
         }else{
-            if (@not_in){
-                $where->{'category_status.id'} = mdb->nin(@not_in);
-            }else{
-                $where->{'category_status.id'} = mdb->in(@in);
-            }
+            $where->{'category_status.id'} = @not_in ? 
+                    mdb->nin(@not_in) : mdb->in(@in);
         }
     } else {
         if (@statuses) {
-            if ($not_in_status) {
-                $where->{'category_status.id'} = mdb->nin(@statuses);
-            }else {
-                $where->{'category_status.id'} = mdb->in(@statuses);
-            }
+            $where->{'category_status.id'} = $not_in_status ?
+                    mdb->nin(@statuses) : mdb->in(@statuses);
         }
     }
 
