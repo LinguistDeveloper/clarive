@@ -343,41 +343,46 @@ sub build_sort {
 }
 
 sub build_where_clause_with_reg_exp {
-    my ($self,$query,$username) = @_;
+    my ( $self, $query, $username ) = @_;
     my $where = {};
-    $self->run_query_builder($query,$where,$username);
+    $self->run_query_builder( $query, $where, $username );
     return $where;
 }
 
 sub run_query_builder {
     my ( $self, $query, $where, $username, $id_project, %opts ) = @_;
     my @mids_in;
+    my @mids_query;
 
 #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-    my @mids_query;
-    if ( $id_project eq '' ) {
-        if ( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {  # special queries handled by query_build later
+
+    if ( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {    # special queries handled by query_build later
+        if ( $id_project eq '' ) {
             @mids_query = map { $_->{obj}{mid} }
                 _array( mdb->topic->search( query => $query, project => { mid => 1 } )->{results} );
+            push @mids_in, @mids_query > 0 ? @mids_query : -1;
         }
-    }
-    else {
-        if ( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {
+        else {
             my @mids = map { $_->{from_mid} }
                 mdb->master_rel->find( { rel_type => 'topic_project', to_mid => $id_project } )->all;
             @mids_query = map { $_->{mid} }
                 mdb->topic->find( { '$text' => { '$search' => $query }, mid => { '$in' => \@mids } } )->all;
+            push @mids_in, @mids_query > 0 ? @mids_query : -1;
+
         }
     }
-
-    if ( @mids_query == 0 && $id_project eq '' ) {
-        $self->build_field_query( $query, $where, $username, fields => $opts{fields} );
-    }
     else {
-        push @mids_in, @mids_query > 0 ? @mids_query : -1;
+
+        $self->build_field_query( $query, $where, $username, fields => $opts{fields} );
+        if ( $id_project ne '' ) {
+            @mids_query = map { $_->{from_mid} }
+                mdb->master_rel->find( { rel_type => 'topic_project', to_mid => $id_project } )->all;
+                push @mids_in, @mids_query > 0 ? @mids_query : -1;
+        }
     }
     return @mids_in;
 }
+
 
 # this is the main topic grid 
 # MONGO:
