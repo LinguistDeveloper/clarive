@@ -3,6 +3,7 @@ use Moose;
 
 use File::Temp  ();
 use Class::Load ();
+use Encode ();
 use Baseliner::Model::Events;
 use Baseliner::Utils qw(_fail _decode_json _decode_json_safe);
 
@@ -14,7 +15,7 @@ sub export {
 
     my $exporter = $self->_build_exporter($format);
 
-    my $fh = File::Temp->new;
+    my $fh = $self->_create_temp_file;
 
     my $content;
     Baseliner::Model::Events->new_event(
@@ -31,6 +32,10 @@ sub export {
 
             $content = $exporter->export($data, %params);
 
+            if (Encode::is_utf8($content)) {
+                $content = Encode::encode('UTF-8', $content);
+            }
+
             print $fh $content;
             close $fh;
         },
@@ -43,6 +48,10 @@ sub export {
     );
 
     return $content;
+}
+
+sub _create_temp_file {
+    return File::Temp->new;
 }
 
 sub _build_exporter {

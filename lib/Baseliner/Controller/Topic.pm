@@ -1961,12 +1961,14 @@ sub children : Local {
 sub report_html : Local {
     my ( $self, $c ) = @_;
 
+    $c->res->content_type('text/html; charset=utf-8');
     return $self->_export($c, 'html');
 }
 
 sub report_yaml : Local {
     my ($self, $c ) = @_;
 
+    $c->res->content_type('text/plain; charset=utf-8');
     return $self->_export($c, 'yaml');
 }
 
@@ -2023,6 +2025,10 @@ sub _export {
             rows       => $p->{rows},
             total_rows => $p->{total_rows},
         );
+
+        if (Encode::is_utf8($content)) {
+            $content = Encode::decode('UTF-8', $content);
+        }
 
         $c->res->body($content);
     } catch {

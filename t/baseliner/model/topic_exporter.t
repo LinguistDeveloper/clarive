@@ -1,16 +1,19 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More;
 use Test::Deep;
 use Test::Fatal;
+use Test::MonkeyMock;
 
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
 use JSON ();
-use Baseliner::Utils qw(_load);
+use File::Temp;
+use Baseliner::Utils qw(_load _file);
 
 use_ok 'Baseliner::Model::TopicExporter';
 
@@ -57,6 +60,79 @@ subtest 'export: creates event' => sub {
     ok $event_data->{export_temp_file};
 };
 
+subtest 'export: removes temp file after event fired' => sub {
+    _setup();
+
+    my $exporter = _build_exporter();
+
+    my $content = $exporter->export(
+        'test', JSON::encode_json( { foo => 'bar' } ),
+        username => 'user',
+        title    => 'Hello',
+        params   => JSON::encode_json( { query => 'params' } )
+    );
+
+    my $event = mdb->event->find_one;
+
+    my $event_data = _load $event->{event_data};
+
+    ok !-f $event_data->{export_temp_file};
+};
+
+subtest 'export: correctly saves data to temp file' => sub {
+    _setup();
+
+    my $exporter = _build_exporter();
+    $exporter = Test::MonkeyMock->new($exporter);
+    $exporter->mock( _create_temp_file => sub { File::Temp->new( UNLINK => 0 ) } );
+
+    my $content = $exporter->export(
+        'test', JSON::encode_json( { foo => 'bar', data => '123' } ),
+        username => 'user',
+        title    => 'Hello',
+        params   => JSON::encode_json( { query => 'params' } )
+    );
+
+    my $event = mdb->event->find_one;
+
+    my $event_data = _load $event->{event_data};
+
+    my $temp_file = $event_data->{export_temp_file};
+
+    my $export = _file($temp_file)->slurp;
+
+    is $export, '123';
+
+    unlink $temp_file;
+};
+
+subtest 'export: correctly saves data with unicode to temp file' => sub {
+    _setup();
+
+    my $exporter = _build_exporter();
+    $exporter = Test::MonkeyMock->new($exporter);
+    $exporter->mock( _create_temp_file => sub { File::Temp->new( UNLINK => 0 ) } );
+
+    my $content = $exporter->export(
+        'test', JSON::encode_json( { foo => 'bar', data => 'привет' } ),
+        username => 'user',
+        title    => 'Hello',
+        params   => JSON::encode_json( { query => 'params' } )
+    );
+
+    my $event = mdb->event->find_one;
+
+    my $event_data = _load $event->{event_data};
+
+    my $temp_file = $event_data->{export_temp_file};
+
+    my $export = _file($temp_file)->slurp;
+
+    is $export, Encode::encode('UTF-8', 'привет');
+
+    unlink $temp_file;
+};
+
 done_testing;
 
 sub _setup {
@@ -78,6 +154,8 @@ sub export {
     my ( $data, %params ) = @_;
 
     die 'error' if $params{error};
+
+    return $data->{data} if $data->{data};
 
     return $data;
 }
