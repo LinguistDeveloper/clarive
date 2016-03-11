@@ -12,23 +12,16 @@ use_ok 'Baseliner::Controller::Notification';
 subtest 'list_notifications: returns notifications' => sub {
     _setup();
 
-    my $controller = _build_controller();
+    mdb->notification->insert(
+        {   event_key     => 'event.auth.cas_ok',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
 
-    my $c = _build_c(
-        req => {
-            params => {
-                action          => 'SEND',
-                event           => 'event.auth.cas_ok',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
+        },
     );
-    $controller->save_notification($c);
-
-    $c = _build_c( req => { params => { start => '0' } } );
+    my $controller = _build_controller();
+    my $c = _build_c();
 
     $controller->list_notifications($c);
 
@@ -37,95 +30,66 @@ subtest 'list_notifications: returns notifications' => sub {
     is $data->[0]->{event_key}, 'event.auth.cas_ok';
 };
 
-subtest 'list_notifications: searches with special characters' => sub {
+subtest 'list_notifications: search with special characters + -' => sub {
     _setup();
 
+    mdb->notification->insert(
+        {   event_key     => 'event.auth.cas_ok',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
+
+        },
+    );
+    mdb->notification->insert(
+        {   event_key     => 'event.job.run',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
+
+        },
+    );
     my $controller = _build_controller();
-
-    my $c = _build_c(
-        req => {
-            params => {
-                action          => 'SEND',
-                event           => 'event.auth.cas_ok',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
-    );
-
-    $controller->save_notification($c);
-
-    $c = _build_c(
-        req => {
-            params => {
-                action          => 'SEND',
-                event           => 'event.job.run',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
-    );
-
-    $controller->save_notification($c);
-
-    $c = _build_c( req => { params => { start => '0', query => '"event"' } } );
+    my $c = _build_c( req => { params => { query => '+auth -job' } } );
 
     $controller->list_notifications($c);
 
     my $data = $c->stash->{json}{data};
 
-    is $data->[0]->{event_key}, 'event.job.run';
-    is $data->[1]->{event_key}, 'event.auth.cas_ok';
+    is $data->[0]->{event_key}, 'event.auth.cas_ok';
+    is $data->[1]->{event_key}, undef;
+
 };
 
 subtest 'list_notifications: searches notification that exist' => sub {
     _setup();
 
+    mdb->notification->insert(
+        {   event_key     => 'event.auth.cas_ok',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
+
+        },
+    );
+    mdb->notification->insert(
+        {   event_key     => 'event.job.run',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
+
+        },
+    );
     my $controller = _build_controller();
 
-    my $c = _build_c(
-        req => {
-            params => {
-                action          => 'SEND',
-                event           => 'event.auth.cas_ok',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
-    );
-
-    $controller->save_notification($c);
-
-    $c = _build_c(
-        req => {
-            params => {
-                action          => 'SEND',
-                event           => 'event.job.run',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
-    );
-
-    $controller->save_notification($c);
-
     my $cnt = mdb->notification->count();
-    is $cnt, '2';
-
-    $c = _build_c( req => { params => { query => 'event.job', start => '0' } } );
+    my $c = _build_c( req => { params => { query => 'event.job' } } );
 
     $controller->list_notifications($c);
 
     my $data = $c->stash->{json}{data};
 
+    is $cnt, '2';
     is $data->[0]->{event_key}, 'event.job.run';
     is $data->[1], undef;
 };
@@ -133,24 +97,16 @@ subtest 'list_notifications: searches notification that exist' => sub {
 subtest 'list_notifications: search a notification does not exist' => sub {
     _setup();
 
-    my $controller = _build_controller();
+    mdb->notification->insert(
+        {   event_key     => 'event.auth.cas_ok',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}'
 
-    my $c = _build_c(
-        req => {
-            params => {
-                action          => 'EXCLUDE',
-                event           => 'event.auth.cas_ok',
-                chk_subject     => 'on',
-                notification_id => '-1',
-                recipients      => '{}',
-                template        => ''
-            }
-        }
+        },
     );
-
-    $controller->save_notification($c);
-
-    $c = _build_c( req => { params => { start => '0', query => 'event.job' } } );
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { query => 'event.job' } } );
 
     $controller->list_notifications($c);
 
