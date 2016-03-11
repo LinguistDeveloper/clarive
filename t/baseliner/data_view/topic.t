@@ -418,40 +418,6 @@ subtest 'build_where: builds correct where topic mid' => sub {
     my $id_sprint_category =
       TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status1->mid );
 
-    my $sprint1_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_sprint_category,
-        title       => 'Sprint #1',
-        status      => $status1
-    );
-
-    my $changeset1_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_changeset_category,
-        title       => 'Fix everything',
-        status      => $status1
-    );
-
-    Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset1_mid, sprint => [$sprint1_mid] } );
-
-    my $sprint2_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_sprint_category,
-        title       => 'Sprint #2',
-        status      => $status1
-    );
-
-    my $changeset2_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_changeset_category,
-        title       => 'Fix everything again',
-        status      => $status1
-    );
-
-    Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset2_mid, sprint => [$sprint2_mid] } );
-
     my $id_role = TestSetup->create_role(
         actions => [
             {
@@ -464,6 +430,44 @@ subtest 'build_where: builds correct where topic mid' => sub {
     );
 
     my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $sprint1_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_sprint_category,
+        title       => 'Sprint #1',
+        status      => $status1,
+        username    => $developer->username
+    );
+
+    my $changeset1_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status1,
+        username    => $developer->username
+    );
+
+    Baseliner::Model::Topic->new->update(
+        { action => 'update', topic_mid => $changeset1_mid, sprint => [$sprint1_mid], username => $developer->username } );
+
+    my $sprint2_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_sprint_category,
+        title       => 'Sprint #2',
+        status      => $status1,
+        username    => $developer->username
+    );
+
+    my $changeset2_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything again',
+        status      => $status1,
+        username    => $developer->username
+    );
+
+    Baseliner::Model::Topic->new->update(
+        { action => 'update', topic_mid => $changeset2_mid, sprint => [$sprint2_mid], username => $developer->username } );
 
     my $view = _build_view();
 
