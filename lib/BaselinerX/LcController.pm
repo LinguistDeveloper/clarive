@@ -494,6 +494,7 @@ sub branches : Local {
             if ($repo->{navigation_type} && $repo->{navigation_type} eq 'Directory'){
                 my $res = $repo->list_directories( project=>$project, repo_mid=>$id_repo, username => $c->username, directory=>'', id_project=>$id_project );
                 push @tree, $_ for _array($res->{directories});
+                @tree = sort { $a->{text} cmp $b->{text} } @tree;
                 push @changes, $_ for _array($res->{repositories});
             } else {
                 @changes = $repo->can('list_contents') ? $repo->list_contents( request=>$p ) : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
