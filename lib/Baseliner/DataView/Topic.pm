@@ -100,6 +100,14 @@ sub build_where {
                 $where->{'category_status.id'} = mdb->in(@in);
             }
         }
+    } else {
+        if (@statuses) {
+            if ($not_in_status) {
+                $where->{'category_status.id'} = mdb->nin(@statuses);
+            }else {
+                $where->{'category_status.id'} = mdb->in(@statuses);
+            }
+        }
     }
 
     if (@labels) {
