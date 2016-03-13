@@ -28,12 +28,13 @@
     
     var color_btn_gen = function(color){
         return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: {0}">{1}</span></div>', 
-            color, cl || '#999' );
+            color, color || '#999' );
     };
     var color_button = new Ext.Button({ 
         text: color_btn_gen( color ), 
         fieldLabel: _('Pick a Color'),
         height: 30,
+        autoWidth: true,
         menu: { items: [color_pick] }
     });
     
