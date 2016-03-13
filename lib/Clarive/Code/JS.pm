@@ -544,22 +544,53 @@ sub _generate_ns {
 
                 my $attributes = delete( $obj->{has} ) || {};
                 my $methods    = delete( $obj->{methods} ) || {};
+                my @method_names = keys %$methods;
                 my $roles      = delete( $obj->{roles} ) || [];
                 my $superclasses = delete( $obj->{superclasses} ) || [];
 
                 my $class = Moose::Meta::Class->create( $package,
-                    attributes => [
-                        map { Moose::Meta::Attribute->new( $_, %{ $attributes->{$_} } ) } keys %$attributes
-                    ],
-                    roles => ['Baseliner::Role::CI', @$roles ],
-                    methods => {
-                        icon  => sub { '/static/images/icons/ci.png' },
-                        _lang => sub { 'js' },
-                        map { $_ => $methods->{$_} } keys %$methods
-                    },
+                    roles        => ['Baseliner::Role::CI', ( map { 'Baseliner::Role::CI::' . $_ } @$roles ) ],
                     superclasses => [
                         map { 'BaselinerX::CI::' . from_camel_class( $_ ) } @$superclasses
                     ],
+                    attributes   => [
+                        map { Moose::Meta::Attribute->new( $_, %{ $attributes->{$_} } ) } keys %$attributes
+                    ],
+                    methods => {
+                        icon  => sub { '/static/images/icons/ci.png' },
+                        _lang => sub { 'js' },
+                        _duk_methods => sub { +{ map { $_=>1 } @method_names } },
+                        map {
+                            my $meth = $methods->{$_};
+                            my ($bytecode,$len) = to_bytecode( $CURRENT_VM->duk, $meth );
+                            $_ => sub {
+                                my $self_ci = shift;
+                                my @args = @_;
+                                my $duk;
+
+                                if( ref $_[0] ne 'JavaScript::Duktape::Vm' ) {
+                                    my $js = __PACKAGE__->new( save_vm=>1 );
+                                    #my $vm = JavaScript::Duktape->new;
+                                    #$vm->eval('(function(){ print(111) }())');
+                                    $js->eval_code('');
+                                    $duk = $js->_last_vm->duk;
+                                } else {
+                                    $duk = $CURRENT_VM->duk;
+                                }
+
+                                my $pv_ptr = pv_address( $bytecode );
+                                $duk->push_external_buffer;
+                                $duk->config_buffer( -1, $pv_ptr, $len);
+                                $duk->load_function;
+                                $duk->push_perl( $self->_serialize({},$self_ci) );
+                                $duk->push_perl( $self->_serialize({},$_) ) for @args;
+                                $duk->call(1 + @args );
+                                my $ret = $duk->to_perl(-1);
+                                $duk->pop;
+                                return $ret;
+                            }
+                        } keys %$methods
+                    },
                     %$obj,
                 );
                 $class->make_immutable;

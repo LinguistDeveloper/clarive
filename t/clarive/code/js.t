@@ -13,6 +13,7 @@ use Try::Tiny;
 
 use Baseliner::Utils qw(_slurp);
 use BaselinerX::CI::generic_server;
+use BaselinerX::CI::status;
 use_ok 'Clarive::Code::JS';
 use Clarive::Code::Utils;
 
@@ -696,6 +697,116 @@ subtest 'dump json util' => sub {
         util.dumpJSON({ foo: 'bar' })});
 
     like $json, qr/"foo"\s*:\s*"bar"/;
+};
+
+subtest 'CI creation / use' => sub {
+    _setup();
+
+    {
+        my $code = _build_code( lang => 'js' );
+
+        is $code->eval_code(q{
+            var ci = require('cla/ci');
+            ci.create("FooFooTestCI",{
+                superclasses: ['Status'],
+                has: { password: { is:'rw', isa:'Str', default: 'xxx' } },
+                methods: {
+                    foo : function(){ return 100 },
+                    connect: function(me){ return { aa: me.name(), bb: me.password() } }
+                }
+            });
+            var ci = require('cla/ci');
+            var obj = ci.build('FooFooTestCI', { name: 'bob' });
+            obj.foo();
+        }), 100;
+    }
+};
+
+subtest 'bytecode call serialized from js to js' => sub {
+    _setup();
+
+    {
+        my $code = _build_code( lang => 'js' );
+
+        $code->eval_code(q{
+            var ci = require('cla/ci');
+            ci.create("AnotherTestCI",{
+                superclasses: ['Status'],
+                has: { password: { is:'rw', isa:'Str', default: 'xxx' } },
+                methods: {
+                    foo : function(){ return 100 },
+                    connect: function(me){ return { aa: me.name(), bb: me.password() } }
+                }
+            });
+        });
+    }
+    {
+        my $code = _build_code( lang => 'js' );
+
+        is $code->eval_code(q{
+            var ci = require('cla/ci');
+            var obj = ci.build('AnotherTestCI', { name: 'bob' });
+            obj.foo();
+        }), 100;
+        is_deeply $code->eval_code(q{
+            var ci = require('cla/ci');
+            var obj = ci.build('AnotherTestCI', { name: 'bob' });
+            obj.password('222');
+            obj.connect();
+        }), { aa=>'bob', bb=>222 };
+    }
+};
+
+subtest 'bytecode call serialized from js to perl' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $json = $code->eval_code(q{
+        var ci = require('cla/ci');
+        ci.create("TestCI",{
+            superclasses: ['Status'],
+            has: { password: { is:'rw', isa:'Str', default: 'xxx' } },
+            methods: {
+                foo : function(){ return 100 },
+                connect: function(me){ return { aa: me.name(), bb: me.password() } }
+            }
+        });
+    });
+
+    my $ci = ci->TestCI->new( name=>'joe' );
+    is $ci->foo, 100;
+    is $ci->password, 'xxx';
+    is $ci->connect->{aa}, 'joe';
+    is $ci->connect->{bb}, 'xxx';
+};
+
+subtest 'docs code snippet testing' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
+
+    my $code = _build_code( lang => 'js' );
+    my @docs = ('en/devel/clarive-js.markdown','en/devel/js-primer.markdown');
+    my $root = Util->_dir(Clarive->app->home, 'docs');
+    push @docs, $_ for map { $_->relative( $root ) } Util->_dir( $root, 'en/devel/js-api')->children; 
+    for my $id_doc ( @docs ) {
+
+        note "*** Testing snippets in doc $id_doc\n";
+
+        my $file = Util->_file( $root, $id_doc  );
+        ok -e $file;
+
+        # now open the doc and test each snippet
+        my $body = $file->slurp;
+
+        for my $snip ( $body =~ m{\n```javascript\n(.*?)\n```\s*\n}sg ) {
+            note "\n>>>>>>\n$snip\n<<<<<\n";
+            is exception {
+                $code->eval_code($snip,{});
+            }, undef, "snippet: $file:\n>>>>\n$snip\n<<<<\n";
+        }
+    }
 };
 
 done_testing;
