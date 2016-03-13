@@ -3,7 +3,7 @@
     var ret = Baseliner.generic_fields(data);
 
     ret.push([
-        { xtype:'numberfield',fieldLabel: _('Height'), name: 'height', fieldClass: "x-fieldlet-type-height", minValue:'1', value: data.height }
+        { xtype:'numberfield',fieldLabel: _('Height'), name: 'height', fieldClass: "x-fieldlet-type-height", minValue:'1', value: data.height || "300" }
     ]);
 
     // TODO add a selection of available BLs ??
