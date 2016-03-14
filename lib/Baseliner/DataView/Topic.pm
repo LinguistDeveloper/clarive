@@ -149,7 +149,7 @@ sub build_where {
             $where->{mid} = mdb->in(@mids_in) if @mids_in;
         }
     }   
-    _log "este es el where que tenemos al final -----> " . _dump $where;
+
     return $where;
 }
 

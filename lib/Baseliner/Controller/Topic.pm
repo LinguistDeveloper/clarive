@@ -302,9 +302,7 @@ sub related : Local {
     my $show_release  = $p->{show_release};
 
     use Data::Dumper;
-
-    warn Dumper($p);
-
+    
     my $where = '';
     my $valuesqry = $p->{valuesqry};
     if ( $valuesqry && $valuesqry eq 'true' ) {
@@ -312,7 +310,6 @@ sub related : Local {
     }
     my $search_query =  $p->{query};
 
-    _log "es lo que tenemos en where ------> " . _dump $where;
     my $filter = $p->{filter};
 
     my $start = $p->{start} //= 0;
