@@ -20,7 +20,7 @@
         anchor: '100%',
         width: '100%',
         // hideLabel: true,
-        fieldLabel: _('Show real dates instead of "ago" format'),
+        fieldLabel: _("Show real dates instead of 'ago' format"),
         style: 'margin-bottom: 3px'
     });
 

@@ -250,8 +250,7 @@ register 'fieldlet.checkbox' => {
     icon        => '/static/images/icons/admin_request.png',
     #icon        => '/static/images/icons/checkbox.png',
     type        => 'checkbox',
-    section_allowed => ['details','more','between'],
-    section_allowed => ['body']
+    section_allowed => ['details','more','between', 'body'],
 };
 
 register 'fieldlet.separator' => {
@@ -313,7 +312,9 @@ register 'fieldlet.system.status_new' => {
     origin      => 'system',
     relation    => 'status',
     meta_type   => 'status',
-    section     => 'body'
+    section     => 'body',
+    section_allowed => ['body']
+
 };
 
 register 'fieldlet.system.moniker' => {
@@ -347,6 +348,7 @@ register 'fieldlet.system.labels' => {
     origin      => 'default',
     bd_field    => 'labels',
     id_field    => 'labels',
+    show_in_palette => 0,
     get_method  => 'get_labels',
     relation    => 'system'
 };
@@ -360,6 +362,8 @@ register 'fieldlet.system.description' => {
     id_field    => 'description',
     bd_field    => 'description',
     origin      => 'system',
+    section_allowed => ['head','more']
+
 };
 
 ########################################################################################
@@ -503,7 +507,7 @@ register 'fieldlet.system.cis' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_ci',
-    section_allowed => ['body','head','more']
+    section_allowed => ['body','details']
 };
 
 
@@ -517,6 +521,7 @@ register 'fieldlet.system.tasks' => {
     js          => '',
     meta_type   => 'task',
     type        => 'listbox',
+    show_in_palette => 0,
     relation    => '',
     form        => '/fields/templates/config/tasks.js',
 };

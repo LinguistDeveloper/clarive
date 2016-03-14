@@ -163,7 +163,8 @@
         role_box_multiselect,
         ci_class_box,
         ci_role_field,
-        ci_class_field
+        ci_class_field,
+        { xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height }
     ]);
     return ret;
 })
