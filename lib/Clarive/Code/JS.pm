@@ -14,6 +14,7 @@ use Time::HiRes qw(usleep);
 
 use Baseliner::Mongo;
 use Baseliner::RuleFuncs;
+use Baseliner::RuleRunner;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case to_base_class _unbless :logging _load _dump _encode_json _decode_json _json_pointer _array);
 
@@ -668,10 +669,12 @@ sub _generate_ns {
             run => js_sub {
                 my ($id_rule,$rule_stash) = @_;
 
-                my $ret_rule = Baseliner::Model::Rules->run_single_rule(
-                    id_rule   => $id_rule,
-                    stash     => ( ref $rule_stash ? $rule_stash : $stash ),
-                    contained => 1
+                my $rule_runner = Baseliner::RuleRunner->new;
+                my $ret_rule    = $rule_runner->run_single_rule(
+                    id_rule      => $id_rule,
+                    stash        => ( ref $rule_stash ? $rule_stash : $stash ),
+                    logging      => 1,
+                    simple_error => 2,
                 );
 
                 ref $rule_stash ? $rule_stash : $stash;
