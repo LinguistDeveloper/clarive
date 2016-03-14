@@ -779,6 +779,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
             } else {
                 comment_field.setValue( res.text );
                 btn_submit.setText( _('Edit Comment') );
+                win_comment.title = _('Edit Comment');
                 win_comment.show();
             }
         });
