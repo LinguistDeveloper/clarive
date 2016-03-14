@@ -305,16 +305,14 @@ sub related : Local {
 
     warn Dumper($p);
 
-    my $where;
+    my $where = '';
     my $valuesqry = $p->{valuesqry};
     if ( $valuesqry && $valuesqry eq 'true' ) {
         $where = { mid => mdb->in( split /\s+/, join ' ', _array( delete $p->{query} ) ) };
     }
-    warn Dumper( [split /\s+/, _array( delete $p->{query} )]);
-        warn Dumper($where);
+    my $search_query =  $p->{query};
 
-    my $search_query = $p->{query};
-
+    _log "es lo que tenemos en where ------> " . _dump $where;
     my $filter = $p->{filter};
 
     my $start = $p->{start} //= 0;
@@ -330,6 +328,7 @@ sub related : Local {
         statuses      => $statuses,
         not_in_status => $not_in_status && $not_in_status eq 'on',
         search_query  => $search_query,
+        valuesqry     => $valuesqry,
         where         => $where,
         filter        => $filter,
         start         => $start,
