@@ -21,7 +21,7 @@ subtest 'list_notifications: returns notifications' => sub {
         },
     );
     my $controller = _build_controller();
-    my $c = _build_c();
+    my $c          = _build_c();
 
     $controller->list_notifications($c);
 
@@ -57,11 +57,11 @@ subtest 'list_notifications: search with special characters + -' => sub {
     my $data = $c->stash->{json}{data};
 
     is $data->[0]->{event_key}, 'event.auth.cas_ok';
-    is $data->[1]->{event_key}, undef;
+    is @$data, '1';
 
 };
 
-subtest 'list_notifications: searches notification that exist' => sub {
+subtest 'list_notifications: search a notification that exist' => sub {
     _setup();
 
     mdb->notification->insert(
@@ -91,7 +91,7 @@ subtest 'list_notifications: searches notification that exist' => sub {
 
     is $cnt, '2';
     is $data->[0]->{event_key}, 'event.job.run';
-    is $data->[1], undef;
+    is @$data, '1';
 };
 
 subtest 'list_notifications: search a notification does not exist' => sub {
@@ -112,7 +112,7 @@ subtest 'list_notifications: search a notification does not exist' => sub {
 
     my $data = $c->stash->{json}{data};
 
-    is $data->[0]->{event_key}, undef;
+    is @$data, '0';
 };
 
 sub _setup {
