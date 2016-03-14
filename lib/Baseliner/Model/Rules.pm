@@ -10,7 +10,7 @@ use Baseliner::CompiledRule;
 use BaselinerX::CI::variable;
 use Try::Tiny;
 use v5.10;
-use experimental 'autoderef';
+use experimental 'autoderef', 'smartmatch';
 
 with 'Baseliner::Role::Service';
 

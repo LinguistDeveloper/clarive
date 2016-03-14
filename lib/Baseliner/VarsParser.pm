@@ -4,10 +4,10 @@ use warnings;
 
 use Baseliner::Utils qw(_array _throw _loc _damn _name_to_id);
 
-my $RE_START    = qr/\${/;
-my $RE_END      = qr/}/;
-my $RE_NR_START = qr/\${{/;
-my $RE_NR_END   = qr/}}/;
+my $RE_START    = qr/\$\{/;
+my $RE_END      = qr/\}/;
+my $RE_NR_START = qr/\$\{\{/;
+my $RE_NR_END   = qr/\}\}/;
 my $RE_INSIDE   = qr/[^\}]+/;
 
 my $RE_WITH_CAPTURES = qr{

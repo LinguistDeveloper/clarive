@@ -9,7 +9,7 @@ use Path::Class;
 use Try::Tiny;
 use Data::Dumper;
 use Class::Date;
-use experimental 'autoderef';
+use experimental 'autoderef', 'smartmatch';
 
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Sugar;
