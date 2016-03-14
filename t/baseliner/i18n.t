@@ -10,6 +10,7 @@ BEGIN { TestEnv->setup }
 
 use Test::TempDir::Tiny;
 use File::Temp qw(tempfile);
+use Capture::Tiny qw(capture_merged);
 use Baseliner::I18N;
 
 subtest 'installed_languages' => sub {
@@ -167,11 +168,10 @@ subtest 'validates po files' => sub {
     foreach my $file (@files) {
         next unless $file =~ m/\.po$/;
 
-        my $output = `msgfmt -c $root/$file`;
+        my $output = capture_merged { `msgfmt -c $root/$file` };
 
-        unlike $output, qr/fatal errors/;
-
-    }    
+        unlike $output, qr/fatal errors?/;
+    }
 };
 
 done_testing;

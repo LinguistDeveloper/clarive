@@ -220,7 +220,7 @@ sub DESTROY {
 sub _build_dsl {
     my $self = shift;
 
-    return $self->dsl if $self->is_temp_rule;
+    return $self->dsl if $self->is_temp_rule || $self->dsl;
 
     my $rules_model = Baseliner::Model::Rules->new;
 
