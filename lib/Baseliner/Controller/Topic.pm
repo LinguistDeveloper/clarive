@@ -294,7 +294,6 @@ sub check_modified_on: Local {
 
 sub related : Local {
     my ( $self, $c ) = @_;
-
     my $p = $c->req->params;
 
     my $categories    = $p->{categories};

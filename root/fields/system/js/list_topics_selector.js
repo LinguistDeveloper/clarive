@@ -52,7 +52,7 @@ params:
             topic_child_data: true, 
             mid: data ? data.topic_mid : '', 
             show_release: 0, 
-            filter:'',
+            filter: meta.filter ? meta.filter : '',
             sort_field: meta.sort,
             dir: order_sort,
             categories : meta.categories ? meta.categories : [],
@@ -63,12 +63,6 @@ params:
         tpl_cfg: tpl_cfg
     });
 
-     if (meta.filter){
-        topic_box_store.on('load', function(){
-            topic_box_store.setBaseParam('limit',ps,'topic_child_data',true,'mid',data.topic_mid,'show_release',0, 
-            'filter', meta.filter,'sort_field', meta.sort,'dir', order_sort);
-        });
-    }
     if( meta.list_type == 'grid' ) {
         // Grid
         
