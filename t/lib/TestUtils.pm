@@ -248,6 +248,15 @@ sub headers {
     return $self->{headers};
 }
 
+sub header {
+    my $self = shift;
+    my $header = shift;
+
+    $self->{headers} ||= FakeHeaders->new;
+
+    return $self->{headers}{$header};
+}
+
 sub status {
     my $self = shift;
 

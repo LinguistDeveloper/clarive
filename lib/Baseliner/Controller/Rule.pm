@@ -1025,6 +1025,13 @@ sub default : Path {
             $c->res->body( $ret );
         }
     }
+
+    if( ref $stash->{ws_response_methods} eq 'HASH' ) {
+        for my $meth ( qw(body cookies status redirect location write content_type headers header) ) {
+            $c->res->$meth( $stash->{ws_response_methods}{$meth} )
+                if exists $stash->{ws_response_methods}{$meth};
+        }
+    }
 }
 
 sub tree_structure : Local {
