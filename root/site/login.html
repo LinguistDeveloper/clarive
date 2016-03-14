@@ -13,10 +13,20 @@
             background-image: url(/static/themes/clarive/images/gradient.gif);
         }
         .logo {
-             position: absolute;
-             top: 60px;
-             left: 35%;
-             padding: 5px;
+            position: absolute;
+            top: 60px;
+            left: 35%;
+            width: 30%;
+            height:80px;
+            padding: 5px;
+        }
+        .logo-powered {
+            position: absolute;
+            top: 105px;
+            left: 55%;
+            width: 10%;
+            height: 30px;
+            padding: 5px;
         }
         .logo-lower {
              padding: 5px;
@@ -54,7 +64,13 @@
     </script>
 
     <div class='band-white'></div>
-    <img class='logo' src='/static/themes/clarive/images/clarive-logo-black.png' />
+%   if ($c->config->{login_logo}) {
+        <img class='logo' src="<% $c->config->{login_logo} %>" />
+        <img class='logo-powered' src="/static/images/powered_by_clarive_login.png" />
+%   } else {
+        <img class='logo' src="/static/themes/clarive/images/clarive-logo-black.png" />
+%   }
+
 <%doc>
     <div class="bottom">
         <img class='logo-lower' src='/static/themes/clarive/images/vasslabs-logo-black.png' />

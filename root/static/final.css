@@ -121,7 +121,7 @@ body {
     color: #fff;
 }
 
-.bali-form-table .x-table-layout { 
+.bali-form-table .x-table-layout {
     width: 100%;
 }
 
@@ -130,7 +130,7 @@ body {
 }
 
 /* -- put gritter close on the right
-    
+
 .gritter-close {
 	left:270px;
 }
@@ -157,7 +157,7 @@ body {
     border:2px #d4d4d4 solid;
     padding: 3px;
     font-family: Consolas, Courier New, monotype;
-    text-align:center; 
+    text-align:center;
 }
 
 .CodeMirror {
@@ -257,7 +257,7 @@ body {
 .title-html {
 	max-width: 50px;
 	white-space:nowrap;
-	overflow:hidden;	
+	overflow:hidden;
 	text-overflow:ellipsis;
 }
 
@@ -265,8 +265,8 @@ body {
 	width: 20px;
     text-transform: uppercase;
     font-size: 10px;
-    font-weight: bold !important;  
-    background-color: #eee; 
+    font-weight: bold !important;
+    background-color: #eee;
     text-align: center;
 	white-space:nowrap;
 }
@@ -274,8 +274,8 @@ body {
 .created-html {
 	width: 130px;
 	white-space:nowrap;
-	overflow:hidden;	
-	text-overflow:ellipsis;	
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 
 .sent-html {
@@ -343,7 +343,7 @@ body {
     position: relative;
     background: url('/static/images/row-check-sprite.png') no-repeat;
     height: 18px;
-    width: 100%;	
+    width: 100%;
 }
 
 .wrapChecked{ background-position: -25px 0px; }
@@ -586,7 +586,7 @@ a {
     width: 16px;
 }
 
-/*Resizing icons in Rule admin*/ 
+/*Resizing icons in Rule admin*/
 
 .x-grid3-row .x-grid3-row-expanded .x-unselectable, .x-unselectable img{
     height: 16px;
@@ -657,4 +657,19 @@ td.x-btn-ml, td.x-btn-mc, td.x-btn-mr,
 td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     background-image: none;
     border: none;
+}
+
+.img-main-logo-file{
+    border:0px;
+    width:220px;
+    height:40px;
+}
+
+.img-main-logo-powered{
+    position:absolute;
+    border:0px;
+    width:150px;
+    height:50px;
+    left:90px;
+    top:-13px;
 }
