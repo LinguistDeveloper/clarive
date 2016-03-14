@@ -163,7 +163,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Add to Favorites...'),
-            icon: '/static/images/icons/favorite.png',
+            icon: '/static/images/icons/favorite_grey.png',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
@@ -522,7 +522,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_projects = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/project.png',
+            icon: '/static/images/icons/project_grey.png',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -542,7 +542,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_favorites = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/favorite.png',
+            icon: '/static/images/icons/favorite_grey.png',
             tooltip: _('Favorites'),
             handler: function(){
                 var that = this;
@@ -581,7 +581,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_ci = new Ext.Button({
             cls: 'x-btn-icon ui-explorer-ci',
-            icon: '/static/images/icons/class.gif',
+            icon: '/static/images/icons/class_grey.gif',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -641,7 +641,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_dashboards = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/dashboard.png',
+            icon: '/static/images/icons/dashboard_grey.png',
             handler: function(){
                 this.disable();
                 var that = this;

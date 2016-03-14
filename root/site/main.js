@@ -163,7 +163,7 @@ Ext.onReady(function(){
     tbar_items.push( Cla.help_button );
 
     Cla.share_button = new Ext.Button({
-       icon: '/static/images/icons/favorite.png',
+       icon: '/static/images/icons/favorite_grey.png',
        cls: 'x-btn-icon',
        tooltip: _('Add to Favorites...'),
        handler: function(){
