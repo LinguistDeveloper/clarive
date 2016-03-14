@@ -996,7 +996,7 @@ Baseliner.merge = function() {
 
 Baseliner.openLogTab = function(id, name) {
     //Baseliner.addNewTabComp('/job/log/list?mid=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-    Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
+    Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job_grey.png' });
 };
 
 Baseliner.openDashboardTab = function(id_job,title) {
