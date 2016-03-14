@@ -8,6 +8,7 @@ use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Users;
+use Baseliner::DataView::Topic;
 use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
@@ -292,68 +293,58 @@ sub check_modified_on: Local {
 }
 
 sub related : Local {
-    my ($self, $c) = @_;
-    my $username = $c->username;
-    my $p = $c->request->parameters;
-    my @topics = ();
-    my $cnt = 0;
-    my $where = {};
-    if ( $p->{valuesqry} && $p->{valuesqry} eq 'true' ){
-        my $qry = delete $p->{query};  # rgo: usually SuperBox will send "mid1 mid2 mid3 etc" with spaces
-        $where->{mid} = ref $qry ne 'ARRAY' ? [ split /\s+/, $qry ] : $qry;
+    my ( $self, $c ) = @_;
+
+    my $p = $c->req->params;
+
+    my $categories    = $p->{categories};
+    my $statuses      = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+    my $show_release  = $p->{show_release};
+
+    my $where;
+    my $valuesqry = $p->{valuesqry};
+    if ( $valuesqry && $valuesqry eq 'true' ) {
+        $where = { mid => mdb->in( split /\s+/, _array( delete $p->{query} ) ) };
     }
-    $where->{query} = $p->{query} if length $p->{query};
+    my $search_query = $p->{query};
 
-    my %filter;
+    my $filter = $p->{filter};
 
+    my $start = $p->{start} //= 0;
+    my $limit = $p->{limit} //= 20;
+    my $sort  = $p->{sort_field};
+    my $dir   = $p->{dir};
 
-    my $start = $p->{start} // 0;
-    my $limit = $p->{limit} // 20;
+    my $view = $self->_build_data_view;
 
-    if ( $p->{mids} ){
-        $filter{mid} = $p->{mids};
-    }
+    my $rs = $view->find(
+        username      => $c->username,
+        categories    => $categories,
+        statuses      => $statuses,
+        not_in_status => $not_in_status && $not_in_status eq 'on',
+        search_query  => $search_query,
+        filter        => $filter,
+        start         => $start,
+        limit         => $limit,
+        sort          => $sort,
+        dir           => $dir,
+        $show_release ? ( category_type => 'release' ) : (),
+    );
+    $rs->fields( { _txt => 0 } );
 
-    $filter{category_type} = 'release' if ($p->{show_release});
+    my @topics = $rs->all;
 
-    if ($p->{filter} && $p->{filter} ne 'none'){
-        delete $filter{category_type}; 
-        my $filter_js = _decode_json($p->{filter});
-
-        $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
-        $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
-        $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
-        $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
-
-        delete $filter_js->{categories};
-        delete $filter_js->{statuses};
-        delete $filter_js->{priorities};
-        delete $filter_js->{labels};
-        delete $filter_js->{limit};
-        delete $filter_js->{start};
-        delete $filter_js->{typeApplication};
-
-        for my $other_filter ( keys %$filter_js ) {
-            $filter{$other_filter} = $filter_js->{$other_filter};
-        }
-    }
-
-    $where = Baseliner::Model::Topic->new->apply_filter( $where, %filter );
-    # _debug $where;
-
-    my @result_topics = ();
-
-    ($cnt, @result_topics) = Baseliner::Model::Topic->new->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
-            fields=>{ _txt=>0 }, order_by => $p->{sort_field}, sort_by =>$p->{dir});
-            # fields=>{ category=>1, mid=>1, title=>1, });
     @topics = map {
-        $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
+        $_->{name}  = _loc( $_->{category}->{name} ) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
-        $_->{short_name} = Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid} if $_->{mid};
-       $_
-    }  @result_topics;
+        $_->{short_name} =
+          Baseliner::Model::Topic->new->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid}
+          if $_->{mid};
+        $_
+    } @topics;
 
-    $c->stash->{json} = { totalCount => $cnt, data => \@topics };
+    $c->stash->{json} = { totalCount => $rs->count, data => \@topics };
     $c->forward('View::JSON');
 }
 
@@ -2462,6 +2453,10 @@ sub list_status_changes : Local {
 
     $c->stash->{json} = { data => \@status_changes };
     $c->forward('View::JSON');
+}
+
+sub _build_data_view {
+    return Baseliner::DataView::Topic->new;
 }
 
 no Moose;
