@@ -50,23 +50,24 @@ has _prefix_lines => qw(is rw isa Num lazy 1), default => sub{
     scalar split /\n/, $self->prefix;
 };
 
-sub eval_code {
+our $CURRENT_VM;
+
+sub initialize {
     my $self = shift;
-    my ( $code, $stash ) = @_;
+    my ($stash) = @_;
 
-    $code = template_literals( $code );
-
-    $stash ||= {};
-
-    # create / load / save JS vm
-    my $js = $self->_last_vm || JavaScript::Duktape->new;
-    if( $self->save_vm ) {
-        $self->_last_vm( $js );
+    if( my $last_vm = $self->_last_vm ) {
+        return $last_vm;
     }
 
-    $js->set(
+    # create / load / save JS vm
+    my $js_duk = $self->_last_vm || JavaScript::Duktape->new;
+    if( $self->save_vm ) {
+        $self->_last_vm( $js_duk );
+    }
+
+    $js_duk->set(
         toJSON => js_sub {
-            shift;
             my ($what) = @_;
 
             return $self->_to_json($what);
@@ -78,12 +79,26 @@ sub eval_code {
     foreach my $ns ( keys %{ $self->extend_cla } ) {
         $cla_ns->{$ns} = $self->extend_cla->{$ns};
     }
-    $js->set( cla => $cla_ns );
+    $js_duk->set( cla => $cla_ns );
 
     # top level ns setup
     foreach my $ns ( keys %{ $self->global_ns } ) {
-        $js->set( $ns => $self->global_ns->{$ns} );
+        $js_duk->set( $ns => $self->global_ns->{$ns} );
     }
+
+    return $js_duk;
+}
+
+sub eval_code {
+    my $self = shift;
+    my ( $code, $stash ) = @_;
+
+    $code = heredoc( $code );
+    $code = template_literals( $code );
+
+    $stash ||= {};
+
+    my $js_duk = $self->initialize( $stash );
 
     local $Clarive::Code::Utils::GLOBAL_ERR = '';
 
@@ -102,7 +117,8 @@ sub eval_code {
     printf STDERR $fullcode if $self->dump_code;
 
     return try {
-        $js->eval( $fullcode );
+        local $CURRENT_VM = $js_duk;
+        $js_duk->eval( $fullcode );
     }
     catch {
         my $err = $_;
@@ -132,7 +148,6 @@ sub _map_ci {
     my $name = shift;
 
     return js_sub {
-        shift;
         my $instance = ci->$name->new(@_);
 
         return $self->_map_instance($instance);
@@ -151,7 +166,9 @@ sub _map_instance {
 
     foreach my $method (@methods) {
         my $method_camelized = _to_camel_case($method);
-        $method_map->{$method_camelized} = js_sub { shift; $self->_serialize( {}, $instance->$method(@_) ) };
+        $method_map->{$method_camelized} = js_sub {
+            $self->_serialize( {}, $instance->$method(@_) );
+        };
     }
 
     return $method_map;
@@ -211,7 +228,7 @@ sub _serialize {
             push @result, $self->_map_instance( $doc );
         }
         elsif ( ref $doc eq 'CODE' ) {
-            push @result, sub{ $self->_serialize( $options, $doc->(@_) ) };
+            push @result, $self->_bc_sub( $doc );
         }
         elsif ( ref $doc eq 'ARRAY' ) {
             my $array = [];
@@ -239,6 +256,40 @@ sub _serialize {
     return wantarray ? @result : $result[0];
 }
 
+sub _bc_sub {
+    my $self = shift;
+    my $orig = shift;
+
+    my ($bytecode,$len) = to_bytecode( $CURRENT_VM->duk, $orig );
+
+    sub {
+        my $self_ci = shift;
+        my @args = @_;
+        my $duk;
+
+        if( ref $_[0] ne 'JavaScript::Duktape::Vm' ) {
+            my $js = __PACKAGE__->new( save_vm=>1 );
+            #my $vm = JavaScript::Duktape->new;
+            #$vm->eval('(function(){ print(111) }())');
+            $js->eval_code('');
+            $duk = $js->_last_vm->duk;
+        } else {
+            $duk = $Clarive::Code::JS::CURRENT_VM->duk;
+        }
+
+        my $pv_ptr = pv_address( $bytecode );
+        $duk->push_external_buffer;
+        $duk->config_buffer( -1, $pv_ptr, $len);
+        $duk->load_function;
+        $duk->push_perl( $self->_serialize({},$self_ci) );
+        $duk->push_perl( $self->_serialize({},$_) ) for @args;
+        $duk->call(1 + @args );
+        my $ret = $duk->to_perl(-1);
+        $duk->pop;
+        return $ret;
+    }
+}
+
 sub _to_json {
     my $self = shift;
     my ($what) = @_;
@@ -256,13 +307,11 @@ sub _generate_cla {
     my ($stash) = @_;
     return {
         loadCla => js_sub {
-            shift;
             my $id = shift;
             my $ns = $self->_generate_ns($id,$stash) || die "Clarive standard library namespace not found: $id\n";
             return $ns;
         },
         loadModule => js_sub {
-            shift;
             my $id = shift;
 
             if( $id =~ /^cla\/(.+)$/ ) {
@@ -273,7 +322,7 @@ sub _generate_cla {
                 }, $1;
             }
             elsif( my $path = Clarive->app->plugins->locate_path( "modules/$id", "modules/$id.js") ) {
-                return scalar Util->_file($path)->slurp;
+                return scalar Util->_file($path)->slurp( iomode=>'<:utf8' );
             }
             else {
                 die sprintf(
@@ -283,7 +332,6 @@ sub _generate_cla {
             }
         },
         each => js_sub {
-            shift;
             my ($arr, $cb) = @_;
 
             return 0 unless ref $arr eq 'ARRAY' || !@$arr;
@@ -296,71 +344,58 @@ sub _generate_cla {
             $cnt;
         },
         loc => js_sub {
-            shift;
             my ($lang, $fmt, @args) = @_;
 
             my $handle = Baseliner::I18N->get_handle($lang);
             return $handle->maketext($fmt,@args);
         },
         lastError => js_sub {
-            shift;
             return $!;
         },
         regex => js_sub {
-            my $js = shift;
             my ($re, $opts) = @_;
             { __cla_js=>'regex', re=>$re, opts=>$opts }
         },
         printf => js_sub {
-            my $js = shift;
-
             printf( @_ );
         },
         sprintf => js_sub {
-            my $js = shift;
             my $fmt = shift;
 
             sprintf( $fmt, @_ );
         },
         dump => js_sub {
-            my $js = shift;
-
             print Util->_dump( @_ );
         },
         parseVars => js_sub {
-            my $js = shift;
             my ($str, $local_stash) = @_;
 
             return parse_vars( $str, { %$stash, %{ $local_stash || {} } } );
         },
         sleep => js_sub {
-            shift;
             my $s = shift;
             usleep( $s * 1_000_000 );
         },
         stash => js_sub {
-            shift;
             my ( $pointer, $value ) = @_;
 
             return $stash if @_ == 0;
 
-            @_ == 2 ? 
+            @_ == 2 ?
                 _json_pointer( $stash, $pointer, $value ) :
                 _json_pointer( $stash, $pointer );
         },
         config => js_sub {
-            shift;
             my ( $pointer, $value ) = @_;
 
-            @_ == 2 ? 
+            @_ == 2 ?
                 _json_pointer( Clarive->app->config, $pointer, $value ) :
                 _json_pointer( Clarive->app->config, $pointer );
         },
         configTable => js_sub {
-            shift;
             my ( $key, $value ) = @_;
 
-            @_ == 2 ? 
+            @_ == 2 ?
                 BaselinerX::Type::Model::ConfigStore->set( key=>$key, value=>$value ) :
                 BaselinerX::Type::Model::ConfigStore->get( $key, value=>1 );
         },
@@ -374,11 +409,9 @@ sub _generate_ns {
     my $all_ns = {
         db => {
             seq => js_sub {
-                my $js = shift;
                 mdb->seq( @_ );
             },
             getDatabase => js_sub {
-                my $js = shift;
                 my ($name) = @_;
 
                 my $db = Baseliner::Mongo->new( db_name=>$name );
@@ -391,7 +424,6 @@ sub _generate_ns {
         },
         fs => {
             slurp => js_sub {
-                my $sh = shift;
                 my ($file) = @_;
 
                 local $/;
@@ -403,7 +435,6 @@ sub _generate_ns {
                 return $data;
             },
             openFile => js_sub {
-                my $js = shift;
                 my ( $file, $mode ) = @_;
 
                 _fail 'file required' unless $file;
@@ -415,7 +446,6 @@ sub _generate_ns {
 
                 return {
                     write => js_sub {
-                        my $js = shift;
                         my ($data) = @_;
 
                         print $fh $data;
@@ -424,7 +454,6 @@ sub _generate_ns {
                         binmode($fh);
                     },
                     readChunk => js_sub {
-                        shift;
                         my ($length) = @_;
                         local $/ = \$length;
                         <$fh>;
@@ -444,7 +473,6 @@ sub _generate_ns {
                 };
             },
             stat => js_sub {
-                shift;
                 my ($file) = @_;
                 my @st = stat $file;
                 +{
@@ -453,7 +481,6 @@ sub _generate_ns {
                 }
             },
             iterateDir => js_sub {
-                shift;
                 my ($dir, $cb) = @_;
 
                 opendir my $dh, $dir or _fail "Cannot open dir $dir: $!";
@@ -462,10 +489,9 @@ sub _generate_ns {
                 }
                 closedir $dh;
             },
-            isDir  => js_sub { shift; !!-d $_[0] },
-            isFile => js_sub { shift; !!-f $_[0] },
+            isDir  => js_sub { !!-d $_[0] },
+            isFile => js_sub { !!-f $_[0] },
             createFile => js_sub {
-                my $js = shift;
                 my ( $file, $content ) = @_;
 
                 open my $fh, '>', $file or die "Cannot create file $file: $!";
@@ -473,33 +499,30 @@ sub _generate_ns {
                 close $fh;
             },
             deleteFile => js_sub {
-                to_duk_bool( unlink $_[1] );
+                to_duk_bool( unlink $_[0] );
             },
             deleteDir => js_sub {
-                to_duk_bool( rmdir $_[1] );
+                to_duk_bool( rmdir $_[0] );
             },
             createDir => js_sub {
-                my $js = shift;
                 my ($dir) = @_;
 
                 mkdir $dir;
             },
             createPath => js_sub {
-                my $js = shift;
                 my ($dir) = @_;
 
                 to_duk_bool( Util->_mkpath( $dir ) );
             },
         },
         path => {
-            basename => js_sub { File::Basename::basename( $_[1] ) },
-            dirname  => js_sub { File::Basename::dirname( $_[1] ) },
-            extname  => js_sub { ( File::Basename::fileparse( $_[1], qr/(?<=.)\.[^.]*/ ) )[2] },
-            join     => js_sub { shift; File::Spec->catfile(@_) },
+            basename => js_sub { File::Basename::basename( @_ ) },
+            dirname  => js_sub { File::Basename::dirname( @_ ) },
+            extname  => js_sub { ( File::Basename::fileparse( $_[0], qr/(?<=.)\.[^.]*/ ) )[2] },
+            join     => js_sub { File::Spec->catfile(@_) },
         },
         sem => {
             take => js_sub {
-                shift;
                 my $key = shift || die "Missing semaphore key\n";
                 my $cb = shift || die "Missing semaphore function\n";
 
@@ -524,7 +547,6 @@ sub _generate_ns {
         },
         ci => {
             getClass => js_sub {
-                shift;
                 my ($camel) = @_;
 
                 die "Missing parameter `classname`\n" unless $camel;
@@ -536,7 +558,6 @@ sub _generate_ns {
                 $self->_map_ci($classname);
             },
             build => js_sub {
-                my $duk = shift;
                 my ($camel,$obj) = @_;
 
                 die "Missing parameter `classname`\n" unless $camel;
@@ -548,7 +569,6 @@ sub _generate_ns {
                 return $self->_map_instance($instance);
             },
             create => js_sub {
-                shift;
                 my ($classname,$obj) = @_;
 
                 die "Missing parameter `classname`\n" unless $classname;
@@ -577,33 +597,7 @@ sub _generate_ns {
                         _duk_methods => sub { +{ map { $_=>1 } @method_names } },
                         map {
                             my $meth = $methods->{$_};
-                            my ($bytecode,$len) = to_bytecode( $CURRENT_VM->duk, $meth );
-                            $_ => sub {
-                                my $self_ci = shift;
-                                my @args = @_;
-                                my $duk;
-
-                                if( ref $_[0] ne 'JavaScript::Duktape::Vm' ) {
-                                    my $js = __PACKAGE__->new( save_vm=>1 );
-                                    #my $vm = JavaScript::Duktape->new;
-                                    #$vm->eval('(function(){ print(111) }())');
-                                    $js->eval_code('');
-                                    $duk = $js->_last_vm->duk;
-                                } else {
-                                    $duk = $CURRENT_VM->duk;
-                                }
-
-                                my $pv_ptr = pv_address( $bytecode );
-                                $duk->push_external_buffer;
-                                $duk->config_buffer( -1, $pv_ptr, $len);
-                                $duk->load_function;
-                                $duk->push_perl( $self->_serialize({},$self_ci) );
-                                $duk->push_perl( $self->_serialize({},$_) ) for @args;
-                                $duk->call(1 + @args );
-                                my $ret = $duk->to_perl(-1);
-                                $duk->pop;
-                                return $ret;
-                            }
+                            $_ => $self->_bc_sub( $meth );
                         } keys %$methods
                     },
                     %$obj,
@@ -613,12 +607,10 @@ sub _generate_ns {
                 return $self->_map_ci($classname);
             },
             listClasses => js_sub {
-                shift;
                 my $role = shift;
                 [ map { ucfirst _to_camel_case( to_base_class($_) ) } packages_that_do($role || 'Baseliner::Role::CI') ];
             },
             find => js_sub {
-                shift;
                 my $class_or_query = shift;
 
                 if( !ref $class_or_query ) {
@@ -632,7 +624,6 @@ sub _generate_ns {
 
             },
             findOne => js_sub {
-                shift;
                 my $class_or_query = shift;
 
                 my ($class, $query);
@@ -646,19 +637,18 @@ sub _generate_ns {
                     $self->_serialize( {}, Baseliner::Role::CI->find_one($query, @_) );
                 }
             },
-            load => js_sub { shift; $self->_map_instance( ci->new(@_) ) },
-            delete => js_sub { shift; ci->delete(@_) }
+            load => js_sub { $self->_map_instance( ci->new(@_) ) },
+            delete => js_sub { ci->delete(@_) }
         },
         log => {
-            info  => js_sub { shift; _info( @_ ) },
-            debug => js_sub { shift; _debug( @_ ) },
-            warn  => js_sub { shift; _warn( @_ ) },
-            error => js_sub { shift; _error( @_ ) },
-            fatal => js_sub { shift; _fail( @_ ) },
+            info  => js_sub { _info( @_ ) },
+            debug => js_sub { _debug( @_ ) },
+            warn  => js_sub { _warn( @_ ) },
+            error => js_sub { _error( @_ ) },
+            fatal => js_sub { _fail( @_ ) },
         },
         rule => {
             create => js_sub {
-                shift;
                 my ($opts,$rule_tree) = @_;
 
                 Baseliner::Model::Rules->save_rule(
@@ -676,7 +666,6 @@ sub _generate_ns {
                 );
             },
             run => js_sub {
-                shift;
                 my ($id_rule,$rule_stash) = @_;
 
                 my $ret_rule = Baseliner::Model::Rules->run_single_rule(
@@ -690,7 +679,6 @@ sub _generate_ns {
         },
         web => {
             agent => js_sub {
-                shift;
                 my $opts = shift;
 
                 require LWP::UserAgent;
@@ -699,20 +687,19 @@ sub _generate_ns {
 
                 # rgo: map_instance does not work for $ua
                 return {
-                    request       => js_sub { shift; $ua->request(@_) },
-                    get           => js_sub { shift; $self->_map_instance( $ua->get(@_) ) },
-                    head          => js_sub { shift; $self->_map_instance( $ua->head(@_) ) },
-                    post          => js_sub { shift; $self->_map_instance( $ua->post(@_) ) },
-                    put           => js_sub { shift; $self->_map_instance( $ua->put(@_) ) },
-                    delete        => js_sub { shift; $self->_map_instance( $ua->delete(@_) ) },
-                    mirror        => js_sub { shift; $self->_map_instance( $ua->mirror(@_) ) },
-                    simpleRequest => js_sub { shift; $self->_map_instance( $ua->simple_request(@_) ) },
-                    isOnline      => js_sub { shift; $ua->is_online(@_) },
-                    isProtocolSupported => js_sub { shift; $ua->is_protocol_supported(@_) },
+                    request       => js_sub { $ua->request(@_) },
+                    get           => js_sub { $self->_map_instance( $ua->get(@_) ) },
+                    head          => js_sub { $self->_map_instance( $ua->head(@_) ) },
+                    post          => js_sub { $self->_map_instance( $ua->post(@_) ) },
+                    put           => js_sub { $self->_map_instance( $ua->put(@_) ) },
+                    delete        => js_sub { $self->_map_instance( $ua->delete(@_) ) },
+                    mirror        => js_sub { $self->_map_instance( $ua->mirror(@_) ) },
+                    simpleRequest => js_sub { $self->_map_instance( $ua->simple_request(@_) ) },
+                    isOnline      => js_sub { $ua->is_online(@_) },
+                    isProtocolSupported => js_sub { $ua->is_protocol_supported(@_) },
                 }
             },
             request => js_sub {
-                shift;
                 my ($method, $endpoint, $opts) = @_;
 
                 require HTTP::Request::Common;
@@ -723,31 +710,25 @@ sub _generate_ns {
         },
         ws => {
             request => js_sub {
-                shift;
                 return {
                     url => js_sub {
-                        shift;
                         my $header = shift;
                         return $stash->{WSURL};
                     },
                     body => js_sub {
-                        shift;
                         my $header = shift;
                         return $stash->{ws_body};
                     },
                     args => js_sub {
-                        shift;
                         return $stash->{ws_arguments} || [];
                     },
                     headers => js_sub {
-                        shift;
                         my $header = shift;
                         return length $header
                             ? $stash->{ws_headers}{$header}
                             : $stash->{ws_headers}
                     },
                     params => js_sub {
-                        shift;
                         my $param = shift;
                         return length $param
                             ? $stash->{ws_params}{$param}
@@ -756,23 +737,20 @@ sub _generate_ns {
                 }
             },
             response => js_sub {
-                shift;
                 return {
-                    body => js_sub { shift; $stash->{ws_response} = shift },
-                    cookies => js_sub { shift; $stash->{ws_response_methods}{cookies} = shift },
-                    status => js_sub { shift; $stash->{ws_response_methods}{status} = shift },
-                    redirect => js_sub { shift; $stash->{ws_response_methods}{redirect} = shift },
-                    location => js_sub { shift; $stash->{ws_response_methods}{location} = shift },
-                    write => js_sub { shift; $stash->{ws_response_methods}{write} = shift },
-                    content_type => js_sub { shift; $stash->{ws_response_methods}{content_type} = shift },
-                    headers => js_sub { shift; $stash->{ws_response_methods}{headers} = shift },
-                    header => js_sub { shift; $stash->{ws_response_methods}{header} = shift },
+                    body => js_sub { $stash->{ws_response} = shift },
+                    cookies => js_sub { $stash->{ws_response_methods}{cookies} = shift },
+                    status => js_sub { $stash->{ws_response_methods}{status} = shift },
+                    redirect => js_sub { $stash->{ws_response_methods}{redirect} = shift },
+                    location => js_sub { $stash->{ws_response_methods}{location} = shift },
+                    write => js_sub { $stash->{ws_response_methods}{write} = shift },
+                    content_type => js_sub { $stash->{ws_response_methods}{content_type} = shift },
+                    headers => js_sub { $stash->{ws_response_methods}{headers} = shift },
+                    header => js_sub { $stash->{ws_response_methods}{header} = shift },
                     get => js_sub {
-                        shift;
                         $stash->{ws_response} //= {};
                     },
                     data => js_sub {
-                        shift;
                         my ($key,$value) = @_;
                         $stash->{ws_response}{$key} = $value;
                     }
@@ -781,31 +759,25 @@ sub _generate_ns {
         },
         util => {
             loadYAML => js_sub {
-                shift;
                 my ( $yaml ) = @_;
                 _load( $yaml );
             },
             dumpYAML => js_sub {
-                shift;
                 my ( $ref ) = @_;
                 _dump( $ref );
             },
             loadJSON => js_sub {
-                shift;
                 _decode_json( @_ );
             },
             dumpJSON => js_sub {
-                shift;
                 $self->_to_json( @_ );
             },
             unaccent => js_sub {
-                shift;
                 my ( $str ) = @_;
 
                 return Util->_unac( $str );
             },
             benchmark => js_sub {
-                shift;
                 my ( $count, $cb ) = @_;
 
                 require Benchmark;
@@ -823,49 +795,34 @@ sub _generate_db_methods {
 
     return (
         getCollection => js_sub {
-            my $js = shift;
             my ($name) = @_;
 
             my $col = $db->collection($name);
 
             return {
                 insert => js_sub {
-                    my $js = shift;
-
                     return $col->insert(@_);
                 },
                 remove => js_sub {
-                    my $js = shift;
-
                     return $col->remove(@_);
                 },
                 update => js_sub {
-                    my $js = shift;
-
                     return $col->update(@_);
                 },
                 drop => js_sub {
-                    my $js = shift;
-
                     return $col->drop;
                 },
                 findOne => js_sub {
-                    my $js = shift;
 
                     my $doc = $col->find_one( @_ );
-
                     return $self->_serialize( {}, $doc );
                 },
                 clone => js_sub {
-                    my $js = shift;
-
                     return $col->clone( @_ );
                 },
                 find => js_sub {
-                    my $js = shift;
 
                     my $cursor = $col->find(@_);
-
                     return $self->_db_wrap_cursor( $cursor );
                 }
             };
@@ -880,7 +837,6 @@ sub _db_wrap_cursor {
         next    => js_sub { _unbless( $cursor->next ) },
         hasNext => js_sub { $cursor->has_next },
         forEach => js_sub {
-            my $js = shift;
             my ($cb) = @_;
 
             return unless $cb && ref $cb eq 'CODE';
@@ -892,11 +848,11 @@ sub _db_wrap_cursor {
             return;
         },
         count => js_sub { $cursor->count },
-        all   => js_sub { shift; [ map { _unbless($_) } $cursor->all(@_) ] },
-        fields=> js_sub { shift; $self->_db_wrap_cursor( $cursor->fields(@_) ) },
-        limit => js_sub { shift; $self->_db_wrap_cursor( $cursor->limit(@_) ) },
-        skip  => js_sub { shift; $self->_db_wrap_cursor( $cursor->skip(@_) ) },
-        sort  => js_sub { shift; $self->_db_wrap_cursor( $cursor->sort(@_) ) },
+        all   => js_sub { [ map { _unbless($_) } $cursor->all(@_) ] },
+        fields=> js_sub { $self->_db_wrap_cursor( $cursor->fields(@_) ) },
+        limit => js_sub { $self->_db_wrap_cursor( $cursor->limit(@_) ) },
+        skip  => js_sub { $self->_db_wrap_cursor( $cursor->skip(@_) ) },
+        sort  => js_sub { $self->_db_wrap_cursor( $cursor->sort(@_) ) },
     };
 }
 

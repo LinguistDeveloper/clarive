@@ -540,9 +540,28 @@ subtest 'dispatches to CI method' => sub {
 
     my $ret = $code->eval_code(q{
         var ci = require("cla/ci");
-        var Status = ci.getClass('Status'); (new Status({'mid': '123'})).delete()});
+        var obj = ci.load('123');
+        obj.delete();
+    });
 
     ok !mdb->master->find_one( { mid => '123' } );
+};
+
+subtest 'dispatches CI set method with argument' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
+
+    my $ret = $code->eval_code(q{
+        var ci = require("cla/ci");
+        var obj = ci.load('123');
+        obj.name('joe');
+        obj.name();
+    });
+
+    is $ret, 'joe';
 };
 
 subtest 'dispatches to CI method returning object' => sub {
@@ -554,7 +573,7 @@ subtest 'dispatches to CI method returning object' => sub {
 
     my @ret = $code->eval_code(q{
         var ci = require("cla/ci");
-        var Status = ci.getClass('Status'); 
+        var Status = ci.getClass('Status');
         var obj = (new Status).searchCis(); obj.mid()});
 
     is scalar @ret, 1;
@@ -646,7 +665,7 @@ subtest 'gets clarive Config' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    Clarive->app->config->{_tester99} = 99; 
+    Clarive->app->config->{_tester99} = 99;
 
     my $home = $code->eval_code(q{cla.config('_tester99')});
 
@@ -815,36 +834,6 @@ subtest 'cla.launch: register and launch a service' => sub {
 
     is $ret, 99;
     is( Baseliner::Core::Registry->get('service.test')->name, 'FooService' );
-};
-
-subtest 'docs code snippet testing' => sub {
-    _setup();
-
-    my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
-    Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
-
-    my $code = _build_code( lang => 'js' );
-
-    my @docs = ('en/devel/clarive-js.markdown','en/devel/js-primer.markdown');
-    my $root = Util->_dir(Clarive->app->home, 'docs');
-    push @docs, $_ for map { $_->relative( $root ) } Util->_dir( $root, 'en/devel/js-api')->children;
-    for my $id_doc ( @docs ) {
-
-        note "*** Testing snippets in doc $id_doc\n";
-
-        my $file = Util->_file( $root, $id_doc  );
-        ok -e $file;
-
-        # now open the doc and test each snippet
-        my $body = $file->slurp;
-
-        for my $snip ( $body =~ m{\n```javascript\n(.*?)\n```\s*\n}sg ) {
-            note "\n>>>>>>\n$snip\n<<<<<\n";
-            is exception {
-                $code->eval_code($snip,{});
-            }, undef, "snippet: $file:\n>>>>\n$snip\n<<<<\n";
-        }
-    }
 };
 
 done_testing;
