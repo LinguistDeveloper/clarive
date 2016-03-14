@@ -323,6 +323,7 @@ sub related : Local {
         statuses      => $statuses,
         not_in_status => $not_in_status && $not_in_status eq 'on',
         search_query  => $search_query,
+        where         => $where,
         filter        => $filter,
         start         => $start,
         limit         => $limit,
