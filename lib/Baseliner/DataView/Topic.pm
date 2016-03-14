@@ -27,7 +27,6 @@ sub find {
     }
 
     my $where = $self->build_where(%params);
-    _log "contenido de where -----> "  . _dump $where;
     my $rs = mdb->topic->find($where);
 
     if ($sort) {

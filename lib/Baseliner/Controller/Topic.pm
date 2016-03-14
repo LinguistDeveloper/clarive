@@ -301,11 +301,18 @@ sub related : Local {
     my $not_in_status = $p->{not_in_status};
     my $show_release  = $p->{show_release};
 
+    use Data::Dumper;
+
+    warn Dumper($p);
+
     my $where;
     my $valuesqry = $p->{valuesqry};
     if ( $valuesqry && $valuesqry eq 'true' ) {
-        $where = { mid => mdb->in( split /\s+/, _array( delete $p->{query} ) ) };
+        $where = { mid => mdb->in( split /\s+/, join ' ', _array( delete $p->{query} ) ) };
     }
+    warn Dumper( [split /\s+/, _array( delete $p->{query} )]);
+        warn Dumper($where);
+
     my $search_query = $p->{query};
 
     my $filter = $p->{filter};
