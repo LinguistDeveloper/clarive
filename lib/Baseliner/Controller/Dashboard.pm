@@ -13,7 +13,7 @@ use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Dashboard::TopicsBurndown;
-use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line);
+use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line parse_dt);
 
 with 'Baseliner::Role::ControllerValidator';
 
@@ -1294,18 +1294,15 @@ sub topics_burndown : Local {
 
     my $days_from = $p->{days_from} || 0;
 
-    my $date;
     my $today;
     my $days_from_format_date = $p->{days_from_format_date};
 
-    $date = Class::Date->now();
-    $date = $date + ($days_from .'D');
-  if ($days_from_format_date != 0)
-  {
-    $today = $days_from_format_date;
-  }else {
-     $today    = substr( $date,        0, 10 );
-  }
+    my $date = Class::Date->now() - ($days_from .'D');
+    if ($days_from_format_date){
+        $today = $days_from_format_date;
+    }else {
+        $today = substr( $date, 0, 10 );
+    }
     my $tomorrow = substr( $date + "1D", 0, 10 );
     my %hours = map { $_ => 0 } 0 .. 23;
     my $date_field = $p->{date_field};
@@ -1479,11 +1476,13 @@ sub topics_period_burndown : Local {
     my $days_after_format_date = $p->{days_after_format_date};
     my $start;
     my $end;
-
-    $start = Class::Date->now();
-    $start = $start + ($days_before .'D');
-    $end = Class::Date->now();
-    $end = $end + ($days_after .'D');
+    if($days_before_format_date && $days_after_format_date){
+        $start = Class::Date->new($days_before_format_date);
+        $end = Class::Date->new($days_after_format_date);
+    }else{
+        $start = Class::Date->now() - ($days_before .'D');
+        $end = Class::Date->now() + ($days_after .'D');
+    }
 
     my $date_field = $p->{date_field} || 'closed_on';
     my $categories = $p->{categories};
@@ -1577,8 +1576,7 @@ sub topics_period_burndown : Local {
     unshift @real_data,     'Real';
     unshift @expected_data, 'Expected';
 
-    if ($days_before_format_date != 0)
-    {
+    if ($days_before_format_date){
         $c->stash->{json} = {
             success => \1,
             date_from    => $days_before_format_date,
@@ -1587,17 +1585,15 @@ sub topics_period_burndown : Local {
             data    => [ \@data_dates, \@real_data, \@expected_data ]
         };
     }else{
-
-            $c->stash->{json} = {
+        $c->stash->{json} = {
             success => \1,
             date_from    => substr($start,0,10),
             date_to    => substr($end,0,10),
             future_start => substr($today,0,10),
             data    => [ \@data_dates, \@real_data, \@expected_data ]
         };
-  
     }
-      $c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub list_emails: Local {
