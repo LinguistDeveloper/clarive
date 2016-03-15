@@ -350,9 +350,10 @@ sub build_where_clause_with_reg_exp {
 }
 
 sub run_query_builder {
-    my ( $self, $query, $where, $username, $id_project, %opts ) = @_;
+    my ( $self, $query, $where, $username, %opts ) = @_;
     my @mids_in;
     my @mids_query;
+    my $id_project = $opts{id_project};
 
 #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
 
@@ -372,12 +373,11 @@ sub run_query_builder {
         }
     }
     else {
-
         $self->build_field_query( $query, $where, $username, fields => $opts{fields} );
         if ( $id_project ne '' ) {
             @mids_query = map { $_->{from_mid} }
                 mdb->master_rel->find( { rel_type => 'topic_project', to_mid => $id_project } )->all;
-                push @mids_in, @mids_query > 0 ? @mids_query : -1;
+            push @mids_in, @mids_query > 0 ? @mids_query : -1;
         }
     }
     return @mids_in;
@@ -399,7 +399,6 @@ sub topics_for_user {
     my @filter_categories     = _array( $p->{categories} );
     my @filter_statuses     = _array( $p->{statuses} );
     my @filter_labels     = _array( $p->{labels} );
-
     my $where = $p->{where} // {};
     my $perm = Baseliner::Model::Permissions->new;
     my $username = $p->{username} or die 'username required';
@@ -408,7 +407,7 @@ sub topics_for_user {
     my $id_project = $p->{id_project};
     my ( @mids_in, @mids_nin, @mids_or );
     if( length($query) ) {
-        @mids_in = $self->run_query_builder($query,$where,$username,$id_project);
+        @mids_in = $self->run_query_builder($query,$where,$username,id_project => $id_project);
 
     }
     

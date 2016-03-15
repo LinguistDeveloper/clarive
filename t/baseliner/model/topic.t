@@ -221,52 +221,6 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' =>
     is $doc->{to_cl},   'project';
 };
 
-subtest 'save_doc: correctly saved common environment entry in calendar fieldlet' => sub {
-    _setup();
-    my $id_rule = TestSetup->create_rule_form();
-    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user
-        = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_rule,
-        id_status => $status->mid
-    );
-
-    my $topic_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic'
-    );
-
-    my $doc = {
-        'calendar' => [
-            {   'mid'             => '32446',
-                'allday'          => 0,
-                'plan_start_date' => '2016-03-09 00:00:00',
-                'rel_field'       => 'env',
-                'plan_end_date'   => '2016-03-26 00:00:00',
-                'id'              => '163',
-                'slotname'        => '*'
-            }
-        ],
-    };
-
-    my %p = ( mid => $topic_mid, custom_fields => [] );
-    my $meta = [ { id_field => 'calendar', meta_type => 'calendar' } ];
-    my $topic_ci = ci->new($topic_mid);
-
-    Baseliner::Model::Topic->new->save_doc( $meta, $topic_ci, $doc, %p );
-
-    ok( $doc->{calendar}->{'*'} );
-};
-
 subtest 'update: creates correct event.topic.create' => sub {
     _setup();
     TestSetup->_setup_user();
@@ -865,6 +819,197 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
     is $rows[0]->{title}, 'Topic one';
 };
 
+subtest 'run_query_builder: Topic with query that exist in the project' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'project',
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+
+                    },
+                    "key"      => "fieldlet.system.projects",
+                    name_field => 'Project',
+                }
+            }
+        ],
+    );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+    my $where = {};
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $topic1 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic1'
+    );
+    my $topic2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic2'
+    );
+    my $topic3 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic3'
+    );
+    
+    my $model = _build_model();
+
+    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid );
+
+    is scalar @topics, 1;
+    is $topics[0], $topic2;
+};
+
+subtest 'run_query_builder: Topic that does not exist ' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'project',
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+
+                    },
+                    "key"      => "fieldlet.system.projects",
+                    name_field => 'Project',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "id_field"     => "title",
+                        "name_field"   => "Title",
+                        "fieldletType" => "fieldlet.system.title",
+                    },
+                    "key" => "fieldlet.system.title",
+                    text  => 'Title',
+                }
+            }
+        ],
+    );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $topic1 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic1'
+    );
+    my $topic2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic2'
+    );
+    my $where = {};
+    my $model = _build_model();
+
+    my (@topics) = $model->run_query_builder( 'Topic3', $where, $user->username );
+
+    is $topics[0], '-1';
+
+};
+
+subtest 'run_query_builder: topic that exist in other project ' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'project',
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+
+                    },
+                    "key"      => "fieldlet.system.projects",
+                    name_field => 'Project',
+                }
+            }
+        ],
+    );
+
+    my $status        = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project       = TestUtils->create_ci_project;
+    my $other_project = TestUtils->create_ci_project;
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $topic1 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic1'
+    );
+    my $topic2 = TestSetup->create_topic(
+        project     => $other_project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic2'
+    );
+    my $where = {};
+    my $model = _build_model();
+
+    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid );
+
+    is $topics[0], '-1';
+
+};
+
 subtest 'topics_for_user: returns topics of project' => sub {
     _setup();
 
@@ -924,193 +1069,6 @@ subtest 'topics_for_user: returns topics of project' => sub {
     is $rows[1]->{topic_mid}, $topic1;
 };
 
-subtest 'topics_for_user: Search topic that exist in the project' => sub {
-    _setup();
-
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                    name  => 'Status',
-                }
-            },
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'project',
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-
-                    },
-                    "key"      => "fieldlet.system.projects",
-                    name_field => 'Project',
-                }
-            }
-        ],
-    );
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $topic1 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic1'
-    );
-    my $topic2 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic2'
-    );
-    my $topic3 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic3'
-    );
-
-    my $model = _build_model();
-
-    my ( $data, @rows )
-        = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => $topic2 } );
-
-    is scalar @rows, 1;
-    is $rows[0]->{topic_mid}, $topic2;
-};
-
-subtest 'topics_for_user: Search a topic that does not exist ' => sub {
-    _setup();
-
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                    name  => 'Status',
-                }
-            },
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'project',
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-
-                    },
-                    "key"      => "fieldlet.system.projects",
-                    name_field => 'Project',
-                }
-            }
-        ],
-    );
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $topic1 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic1'
-    );
-    my $topic2 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic2'
-    );
-
-    my $model = _build_model();
-
-    my ( $data, @rows )
-        = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => 'Topic3' } );
-
-    is scalar @rows, 0;
-    is $rows[0]->{topic_mid}, undef;
-
-};
-
-subtest 'topics_for_user: Search a topic that exist in other project ' => sub {
-    _setup();
-
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                    name  => 'Status',
-                }
-            },
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'project',
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-
-                    },
-                    "key"      => "fieldlet.system.projects",
-                    name_field => 'Project',
-                }
-            }
-        ],
-    );
-
-    my $status        = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project       = TestUtils->create_ci_project;
-    my $other_project = TestUtils->create_ci_project;
-    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $topic1 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic1'
-    );
-    my $topic2 = TestSetup->create_topic(
-        project     => $other_project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic2'
-    );
-
-    my $model = _build_model();
-
-    my ( $data, @rows )
-        = $model->topics_for_user(
-        { username => $user->username, id_project => $other_project->mid, query => 'Topic1' } );
-
-    is scalar @rows, 0;
-    is $rows[0]->{topic_mid}, undef;
-
-};
-
 subtest 'topics_for_user: Search a topic with special characters ' => sub {
     _setup();
 
@@ -1149,7 +1107,6 @@ subtest 'topics_for_user: Search a topic with special characters ' => sub {
                     "key" => "fieldlet.system.title",
                     text  => 'Title',
                     }
-
             }
         ],
     );
