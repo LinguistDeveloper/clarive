@@ -30,9 +30,9 @@ sub list_notifications : Local {
     
     if( $query ) {
         my @mids_query;
-        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
+        if( $query !~ /\+|\-|\"|\.|\/|\*|\?/ ) {  # special queries handled by query_build later
             @mids_query = map { $_->{obj}{_id} } 
-            _array( mdb->notification->find( { '$text' => { '$search' => $query }, limit=>1000, project=>{_id=>1} } )->all );
+            _array( mdb->notification->search( query=>$query, limit=>1000, project=>{_id=>1})->{results} );
         }
         if( @mids_query == 0 ) {
             $where = mdb->query_build(query => $query, fields=>[qw(id event_key action data is_active username template_path subject digest_time digest_date digest_freq)]);
