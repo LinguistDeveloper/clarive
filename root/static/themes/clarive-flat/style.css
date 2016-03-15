@@ -931,16 +931,3 @@ table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMont
 .x-panel.x-column .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
     border: none;
 }
-
-.x-form-item .x-form-element .x-form-text.x-form-field,
-.x-form-item .x-form-element .x-form-textarea.x-form-field {
-    max-width:98%;
-}
-
-.x-form-item .x-form-element .x-form-field-wrap.x-form-field-trigger-wrap .x-form-text.x-form-field.x-trigger-noedit {
-    max-width:90%;
-}
-
-.x-panel.x-panel-noborder.x-form-label-top .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder .x-form-item .x-form-element .x-form-field-wrap.x-form-field-trigger-wrap .x-form-text.x-superboxselect.x-superboxselect-display-btns {
-    max-width:95%;
-}
