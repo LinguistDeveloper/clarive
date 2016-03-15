@@ -106,6 +106,7 @@
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
+        stripeRows: true,
         sortable: false,
         checkOnly: true
     });
@@ -114,6 +115,7 @@
         region: 'center',
         store: store_ci,
         sm: check_sm,
+        stripeRows: true,
         tbar: [ search_field,
             { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon' },

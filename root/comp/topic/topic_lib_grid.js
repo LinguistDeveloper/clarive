@@ -431,6 +431,7 @@ Cla.topic_grid = function(params){
             store: store_category,
             height: 200,
             hideHeaders: true,
+            stripeRows: true,
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,

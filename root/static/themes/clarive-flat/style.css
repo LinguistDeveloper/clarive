@@ -283,24 +283,24 @@ li.x-menu-item-active a.x-menu-item {
 }
 
 .x-tab-scroller-left {
-    background:transparent url(images/icons7.png) no-repeat scroll -160px -96px; 
+    background:transparent url(images/icons7.png) no-repeat scroll -160px -96px;
     border-right: 1px solid #999;
 }
 
 .x-tab-scroller-left-over { background-position: -160px -96px; }
 .x-tab-scroller-left-disabled {
-    background:transparent url(images/icons7.png) no-repeat scroll -160px -96px; 
+    background:transparent url(images/icons7.png) no-repeat scroll -160px -96px;
     opacity: .3;
 }
 
 .x-tab-scroller-right {
-    background:transparent url(images/icons7.png) no-repeat scroll -139px -96px; 
+    background:transparent url(images/icons7.png) no-repeat scroll -139px -96px;
     border-left: 1px solid #999;
 }
 
 .x-tab-scroller-right-over { background-position: -139px -96px; }
 .x-tab-scroller-right-disabled {
-    background:transparent url(images/icons7.png) no-repeat scroll -139px -96px; 
+    background:transparent url(images/icons7.png) no-repeat scroll -139px -96px;
     opacity: .3;
 }
 
@@ -563,8 +563,8 @@ body .x-window .x-window-header-text, body .x-panel-ghost .x-window-header-text 
 
 .x-window {
     /*border: 1px solid #bbb !important;*/
-    padding:2px 2px 2px 2px; 
-    background: #c1c1c1; 
+    padding:2px 2px 2px 2px;
+    background: #c1c1c1;
     border-color:#c1c1c1;
 }
 
@@ -820,8 +820,8 @@ body .x-grid3 .x-grid3-row-over {
 }
 
 /* rgo: left column checkbox selector in CI grid */
-.x-grid3-body .x-grid3-row-selected .x-grid3-td-numberer, 
-.x-grid3-body .x-grid3-row-selected .x-grid3-td-checker, 
+.x-grid3-body .x-grid3-row-selected .x-grid3-td-numberer,
+.x-grid3-body .x-grid3-row-selected .x-grid3-td-checker,
 .x-grid3-body .x-grid3-row-selected .x-grid3-td-expander {
     background: transparent;
 }
@@ -892,8 +892,6 @@ color: #000 !important;
     color: #000;
 }*/
 
-
-
 td.x-btn.x-btn-noicon.x-btn-over {
     border: 1.1pt solid #bbb;
     background: #fff;
@@ -932,7 +930,13 @@ table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMont
 
 .x-panel.x-column .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
     border: none;
-
 }
 
-/*form.*/
+.x-form-item .x-form-element .x-form-text.x-form-field,
+.x-form-item .x-form-element .x-form-textarea.x-form-field {
+    max-width:98%;
+}
+
+.x-form-item .x-form-element .x-form-field-wrap.x-form-field-trigger-wrap .x-form-text.x-form-field.x-trigger-noedit {
+    max-width:90%;
+}

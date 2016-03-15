@@ -64,14 +64,14 @@ Ext.onReady(function() {
     var login_button = new Ext.Button({
         text: login_txt,
         handler: Baseliner.doLoginForm,
-        cls: 'ui-button-login'
+        cls: 'login_button'
     });
     var login_form = new Ext.FormPanel({
         id: 'lf',
         url: '/login',
         frame: false,
         style: 'background: #d8d0e1',
-        bodyStyle: 'padding:5px 5px 0; background: transparent',
+        bodyStyle: 'padding:5px 5px 0; background: transparent; border-color:#c1c1c1;',
         cls: 'centered',
         labelAlign: 'right',
         timeout: 120, // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something
@@ -81,6 +81,7 @@ Ext.onReady(function() {
         buttons: [
             login_button, {
                 text: '<% _loc("Reset") %>',
+                cls: 'login_button',
                 handler: function() {
                     login_form.getForm().findField('login').focus('', 100);
                     login_form.getForm().reset()

@@ -1113,6 +1113,7 @@
             autoSizeColumns: true,
             deferredRender: true,
             startCollapsed: false,
+            stripeRows: true,
             hideGroupedColumn: true,
             //groupTextTpl: '{[ values.rs[0].data["day"] ]}',
             //groupTextTpl: '{[ values.rs[0].data["ago"] ]}',  // TODO use this only when field is "when"
@@ -1192,6 +1193,7 @@
         autoScroll: true,
         family: 'jobs',
         loadMask: true,
+        stripeRows: true,
         stateful: true,
         stateId: state_id,
         store: store,

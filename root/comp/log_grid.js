@@ -454,7 +454,7 @@
         autoSizeColumns: true,
         deferredRender: true,
         startCollapsed: false,
-        //groupTextTpl: '{[ values.rs[0].data[grouping] || _("General") ]}',
+        stripeRows: true,
         hideGroupedColumn: true
     });
 
@@ -470,6 +470,7 @@
             clicksToEdit: 'auto',
             store: store,
             view: gview,
+            stripeRows: true,
             viewConfig: {
                 scrollOffset: 2,
                 forceFit: true

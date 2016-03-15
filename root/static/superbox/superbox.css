@@ -2,7 +2,7 @@
 .x-superboxselect {position:relative; height: auto !important; margin: 0px; overflow: hidden; padding:2px; display:block; outline: none !important;}
 .x-superboxselect input[disabled] {background-color: transparent;};
 .x-superboxselect ul {overflow: hidden; cursor: text;}
-.x-superboxselect-display-btns {padding-right: 33px !important;}
+.x-superboxselect-display-btns {padding-right: 2px !important; width: 94% !important;}
 .x-superboxselect-btns {position: absolute; right: 1px; top: 0; overflow:hidden; padding:2px;}
 .x-superboxselect-btns div {float: left; width: 16px; height: 16px; margin-top: 4px;}
 .x-superboxselect-btn-clear {background: url(/static/superbox/clear.png) no-repeat scroll left 0px;}
@@ -23,4 +23,3 @@ body.ext-ie6 .x-superboxselect-item {margin: 2px 1px 2px 1px; line-height: 1.2em
 .x-superboxselect-item-close:hover, .x-superboxselect-item-close:active  { background-position: left -12px;}
 .x-superboxselect-item-focus .x-superboxselect-item-close{ background-position: left -24px}
 .x-item-disabled .x-superboxselect-item-close{ background-position: left -36px}
-

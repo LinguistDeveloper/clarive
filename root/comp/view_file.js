@@ -85,7 +85,7 @@
 
                     cons = new Ext.grid.GridPanel({
                         store: store,
-
+                        stripeRows: true,
                         columns: [
                             {
                                 id       : 'author',

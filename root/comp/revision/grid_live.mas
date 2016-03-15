@@ -81,6 +81,7 @@
         deferredRender:true,
         clicksToEdit: 'auto',
         store: store,
+        stripeRows: true,
         viewConfig: [{
                 forceFit: true
         }],

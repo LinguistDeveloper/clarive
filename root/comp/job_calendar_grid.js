@@ -163,6 +163,7 @@
             autoScroll: true,
             autoWidth: true,
             store: store,
+            stripeRows: true,
             viewConfig: { forceFit: true,
                 enableRowBody: true,
                 getRowClass : function(rec, index, p, store){

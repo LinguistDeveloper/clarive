@@ -917,6 +917,7 @@
 			layout: 'form',
 			height: 300,
 			hideHeaders: true,
+			stripeRows: true,
 			viewConfig: {
 				headersDisabled: true,
 				forceFit: true
@@ -1375,12 +1376,13 @@
     }  	
 	
 	var grid = new Ext.grid.GridPanel({
-		  renderTo: 'main-panel',
+		renderTo: 'main-panel',
 		sm: check_notifications_sm,
         store: store_notifications,
         viewConfig: {
             forceFit: true
         },
+        stripeRows: true,
         columns:[
 			check_notifications_sm,
             { header: _('Event'), width: 150, dataIndex: 'event_key', renderer: show_event },

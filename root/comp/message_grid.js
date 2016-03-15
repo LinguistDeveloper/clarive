@@ -180,6 +180,7 @@ Ext.override(Ext.form.HtmlEditor, {
             autoWidth: true,
             iconCls: 'icon-inbox',
             store: store,
+            stripeRows: true,
             viewConfig: [{
                     forceFit: true
             }],

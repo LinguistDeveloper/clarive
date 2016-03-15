@@ -64,6 +64,7 @@
             viewConfig: [{
                     forceFit: true
             }],
+            stripeRows: true,
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             columns: [
                 { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	

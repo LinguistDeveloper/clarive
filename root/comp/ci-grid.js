@@ -71,6 +71,7 @@
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
         sortable: true,
+        stripeRows: true,
         checkOnly: true
     });
 
@@ -78,6 +79,7 @@
         title: _('CI: %1', params.item),
         store: store_ci,
         sm: check_sm,
+        stripeRows: true,
         tbar: [ search_field,
             { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon' },

@@ -539,9 +539,10 @@ Baseliner.combo_project = function(params) {
 Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
     anchor: '100%',
     height: 200,
+    stripeRows: true,
     frame: true,
     clicksToEdit: 1,
-    name: 'array_field', 
+    name: 'array_field',
     hideHeaders: true,
     initComponent: function(){
         var self = this;
@@ -687,6 +688,7 @@ Baseliner.array_field = function( args ) {
             title: title,
             frame: true,
             clicksToEdit: 1,
+            stripeRows: true,
             viewConfig: {
                 scrollOffset: 2,
                 forceFit: true
@@ -1683,10 +1685,13 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        
        self.store_remote = store_remote;
        self.grid_remote = new Ext.grid.EditorGridPanel({
-           store: self.store_remote, cm: cm, selModel: sm,
+           store: self.store_remote,
+           cm: cm,
+           selModel: sm,
+           stripeRows: true,
            viewConfig: { forceFit: true }
        });
-       
+
        // ------- Local CPAN
        self.store_local = new Baseliner.JsonStore({
            url: '/feature/local_cpan',
@@ -1699,7 +1704,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        });
        var sm2 = new Ext.grid.CheckboxSelectionModel();
        self.grid_local = new Ext.grid.EditorGridPanel({
-           store: self.store_local, 
+           store: self.store_local,
+           stripeRows: true,
            viewConfig: { forceFit: true },
            selModel: sm2,
            cm : new Ext.grid.ColumnModel({ columns: [
@@ -1994,6 +2000,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     hideHeaders: false,
     disabled: false,
     frame: true,
+    stripeRows: true,
     enableDragDrop: true, // enable drag and drop of grid rows
     readOnly: false,
     constructor: function(c){
@@ -3174,6 +3181,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
     height: 250,
     frame: true,
+    stripeRows: true,
     enableDragDrop: true,
     use_row_editor: true,
     initComponent: function(){
