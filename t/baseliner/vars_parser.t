@@ -56,7 +56,7 @@ subtest 'parse_vars: throws when direct recursion' => sub {
 
     capture {
         like exception { $parser->parse_vars( '${foo}', { foo => '${foo}' } ) },
-          qr/Deep recursion in parse_vars for variable `foo`, path \${foo}/;
+          qr/Deep recursion in parse_vars for variable `foo`, path \$\{foo}/;
     };
 };
 
@@ -65,7 +65,7 @@ subtest 'parse_vars: throws when indirect recursion' => sub {
 
     capture {
         like exception { $parser->parse_vars( '${foo}', { foo => '${bar}', bar => '${foo}' } ) },
-          qr/Deep recursion in parse_vars for variable `foo`, path \${foo}/;
+          qr/Deep recursion in parse_vars for variable `foo`, path \$\{foo}/;
     };
 };
 
@@ -79,12 +79,12 @@ subtest 'parse_vars: throws when unknown variables' => sub {
     my $parser = _build_parser( throw => 1 );
 
     capture {
-        like exception { $parser->parse_vars( '${foo}', { blah => 'blah' } ) }, qr/Unresolved vars: 'foo' in \${foo}/;
+        like exception { $parser->parse_vars( '${foo}', { blah => 'blah' } ) }, qr/Unresolved vars: 'foo' in \$\{foo}/;
     };
 
     capture {
         like exception { $parser->parse_vars( '${foo} ${{bar}}', { blah => 'blah' } ) },
-          qr/Unresolved vars: 'bar', 'foo' in \${foo}/;
+          qr/Unresolved vars: 'bar', 'foo' in \$\{foo}/;
     };
 };
 
