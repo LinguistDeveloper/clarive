@@ -209,6 +209,52 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => s
     is $doc->{to_cl},   'topic';
 };
 
+subtest 'save_doc: correctly saved common environment entry in calendar fieldlet' => sub {
+    _setup();
+    my $id_rule = TestSetup->create_rule_form();
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => $status->mid
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic'
+    );
+
+    my $doc = {
+        'calendar' => [
+            {   'mid'             => '32446',
+                'allday'          => 0,
+                'plan_start_date' => '2016-03-09 00:00:00',
+                'rel_field'       => 'env',
+                'plan_end_date'   => '2016-03-26 00:00:00',
+                'id'              => '163',
+                'slotname'        => '*'
+            }
+        ],
+    };
+
+    my %p = ( mid => $topic_mid, custom_fields => [] );
+    my $meta = [ { id_field => 'calendar', meta_type => 'calendar' } ];
+    my $topic_ci = ci->new($topic_mid);
+
+    Baseliner::Model::Topic->new->save_doc( $meta, $topic_ci, $doc, %p );
+
+    ok( $doc->{calendar}->{'*'} );
+};
+
 subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' => sub {
     _setup();
     TestSetup->_setup_user();
