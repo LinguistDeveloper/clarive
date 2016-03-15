@@ -993,7 +993,7 @@ sub _dir { goto &Path::Class::dir }
 sub _slurp {
     my $file = shift;
     return unless -e $file;
-    open my $f, '<', $file or _throw _loc("Could not open file %1: %2", $file, $!);
+    CORE::open(my $f, '<', $file) or _throw _loc("Could not open file %1: %2", $file, $!);
     return join'',<$f>;
 }
 

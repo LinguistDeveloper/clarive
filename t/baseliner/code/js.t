@@ -246,7 +246,7 @@ subtest 'dispatches to fs: open/write/close' => sub {
     fh.close();
 EOF
 
-    my $data = _slurp "$tempdir/foo";
+    my $data = _slurp("$tempdir/foo");
 
     is $data, 'foobar';
 };
