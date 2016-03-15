@@ -71,7 +71,8 @@ sub topic_categories_to_rules {
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
         map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
-        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order} } @fieldlets;
+        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order}  ||
+                            0+$a->{params}{field_order_html} <=> 0+$b->{params}{field_order_html} } @fieldlets;
         #map { _log "===>". $_->{params}{field_order} } @fieldlets;
         my @fields;
         my $registers = map_registors();
