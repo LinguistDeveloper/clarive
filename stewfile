@@ -9,6 +9,8 @@ libmodule-install-perl
 libmodule-runtime-perl
 libb-hooks-parser-perl
 
+zip
+
 # Command-line utilities
 liblinux-distribution-perl
 
