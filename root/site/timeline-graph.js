@@ -66,24 +66,30 @@
 
     //Zoom +
     var btn_increaseZoom = new Ext.Button({ text: _('Zoom +'), handler: function(){
+
         diagram.commandHandler.increaseZoom();
+
     }});
 
     //Zoom -
     var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
+
         diagram.commandHandler.decreaseZoom();
+
     }});
 
     //PRINCIPAL PANEL
     var pn_diagram = new Ext.Panel({
+
         html: 'Diagram',
         anchor: '100% 100%',
         tbar:[ options_menu, '-', btn_decreaseZoom, btn_increaseZoom]
-    }
-    );
+
+    });
 
     //OVERVIEW PANEL
     var pn_overview = new Ext.Panel({
+
         title: _('Overview'),
         html: 'overview',
         bodyStyle:{"z-index":10},
@@ -92,15 +98,16 @@
         width: 250,
         animCollapse: true,
         collapsible: true,
-    }
-    );
+
+    });
 
     pn_overview.on('afterrender', function() {
+
         start();
         var left = pn_diagram.container.getWidth() - 250;
         pn_overview.setPosition(left,0);
-    }
-    );
+
+    });
 
     var start = function(){
 
@@ -253,7 +260,7 @@
                 height: 200,
                 modal: false,
                 closeAction: 'hide',
-                items: [new Baseliner.MonoTextArea({ value:  '\n'+'\n'+_('Data type')+': ' + obj.Eh.data_type +'\n' +_('Username')+': ' + obj.Eh.data_username +'\n' +_('Date')+': ' + obj.Eh.data_when +'\n'  +_('Details')+': '+'\n' +text+'\n' })]
+                items: [new Baseliner.MonoTextArea({ value:  '\n'+'\n'+_('Event type')+': ' + obj.Eh.data_type +'\n' +_('Username')+': ' + obj.Eh.data_username +'\n' +_('Date')+': ' + Cla.user_date(obj.Eh.data_when) +'\n'  +_('Details')+': '+'\n' +text+'\n' })]
               });
               win.show();
             }
@@ -465,41 +472,68 @@
             //This is the new part with the elements like comments, files updates and topics changes.
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if(event_details_text === true){
+
               sum_duration = create_intermidial_nodes_activity(object_node, res, sum_duration, start);
+
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //create links
             for (var i = 0; i < res.data.length; i++){
+
               source = "/identicon/"+res.data[i].username+".png";
-              if (res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+
+              if ((res.data[i].data_type == "create" || res.data[i].data_type == "change_status") && res.data[i].status ){
+
                 object_link.push({"from":res.data[i].old_status, "to":res.data[i].status, "source": source ,"text": _('Username') + " : "+res.data[i].username+ "\n" + _('Date') + ": "+Cla.user_date(res.data[i].when), "time":start[j], selected_text: ""+"\n"+ _('Username') + ": "+res.data[i].username+"\n"+ _('from') + ": "+res.data[i].old_status+" "+ _('to') + ": "+res.data[i].status+"\n"+ _('Date') + ": "+Cla.user_date(res.data[i].when)+"\n"+ _('Name') + ": "+"\n"  });
+                
                 j++;
+
               }
+
             }
-        diagram.model = new go.GraphLinksModel(object_node,object_link);
+
+			if(object_link.length > 0 && object_node.length > 0){
+
+				diagram.model = new go.GraphLinksModel(object_node,object_link);
+
+			}
+        
     });
     };
 
     function status_into_nodes(res) {
+
       var temp_status = [];
       var i;
       var j;
+
       for (i = 0; i < res.data.length; i++){
+
         if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+
           temp_status.push({ "old_status" : res.data[i].old_status, "status"  : res.data[i].status, "when" : res.data[i].when});
+
         }
       }
       for (i = 0; i < res.data.length; i++){
+
         if(res.data[i].data_type == "topic_modify" || res.data[i].data_type == "event_post" || res.data[i].data_type == "event_file"){
+
           j = 0;
+
           while ( j < temp_status.length){
+
             if( new Date(res.data[i].when) <= new Date(temp_status[j].when)){
+
               res.data[i].status = temp_status[j].status;
               res.data[i].old_status = temp_status[j].old_status;
               j = temp_status.length;
+
             }
+
             j++;
+
           }
         }
       }
@@ -559,6 +593,7 @@
       for(i = 0; i < res.data.length; i++){
 
         if(res.data[i].data_type == "create" || res.data[i].data_type == "change_status"){
+
           if(j === 0){
 
             start[j] = 1;
@@ -605,6 +640,7 @@
                 text[j] = number_text + " " + _('Year');
 
               }else{
+
                 //Month with 31 days
                 date_compare = (date.getMonth() + 1) - (date2.getMonth() + 1);
                 if((date_compare == 1 || date_compare == 3 || date_compare == 5 || date_compare == 7 || date_compare == 8 || date_compare == 10 || date_compare == 12) && sum_date >= MONTH){

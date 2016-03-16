@@ -8676,3 +8676,6 @@ msgstr "Número"
 
 msgid "Invalid JSON"
 msgstr "Formato JSON inválido"
+
+msgid "Event type"
+msgstr "Tipo de evento"
