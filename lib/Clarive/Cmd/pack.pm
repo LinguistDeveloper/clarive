@@ -112,7 +112,7 @@ sub run_dist {
         my $archive_path = File::Spec->catfile( $destdir, $archive );
         unlink $archive_path;
 
-        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $dist,
+        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s > /dev/null; cd -}, $archive_path,
           $exclude_str;
         system($cmd);
 
