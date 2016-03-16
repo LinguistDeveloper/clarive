@@ -111,8 +111,10 @@
         autoWidth: true,
         viewConfig: { forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask: _('Loading'),
-        columns: [
+          loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
+            columns: [
             { header: _('ID'), width: 50, dataIndex: '_id', sortable: true, 
                 renderer: function(v,m,row){ 
                     return row.data.expired 

@@ -252,8 +252,10 @@
         store: store_status,
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
-        columns: [
+         loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
+             columns: [
             { hidden: true, dataIndex:'id' },
             // check_status_sm,
             { header: _('Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
@@ -472,7 +474,9 @@
             store: store_status,
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
@@ -767,7 +771,9 @@
             enableHdMenu: false,
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+              loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
             columns: [
                 { hidden: true, dataIndex:'id' },
                   check_admin_status_sm,
@@ -925,8 +931,10 @@
             }),         
             iconCls: 'icon-grid',
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
-            columns: [
+              loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
+             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', hidden: true }, 
                 { header: _('From Status'), width: 60, dataIndex: 'status_from', renderer: render_status },
                 { width: 16, renderer: render_status_arrow },
@@ -1159,7 +1167,9 @@
         enableHdMenu: false,
         store: store_category,
         viewConfig: {forceFit: true, scrollOffset: 2},
-        loadMask:'true',
+         loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
@@ -1487,7 +1497,9 @@
         store: store_label,
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+          loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
         columns: [
             { hidden: true, dataIndex:'id' },
             check_labels_sm,

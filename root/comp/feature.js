@@ -137,7 +137,9 @@
                 selModel: self.sm, 
                 region:'center',
                 store: self.store, 
-                loadMask:'true',
+                 loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
                 autoScroll: true,
                 autoWidth: true,
                 autoSizeColumns: true,
@@ -280,7 +282,7 @@
             var self = this;
             if (self.sm.hasSelection()) {
                 self.repos(checkout, function(repos){
-                    self.el.mask();
+                    self.el.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;"></center>') );
                     Baseliner.ajaxEval('/feature/checkout', { repos: Ext.util.JSON.encode( repos ), checkout: checkout ? 1 : 0}, function(res){
                         self.el.unmask();
                         var log = res.log.join("\n");

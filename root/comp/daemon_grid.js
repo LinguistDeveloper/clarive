@@ -311,8 +311,10 @@
 	    store: store,
 	    viewConfig: {forceFit: true	},
 	    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-	    loadMask:'true',
-	    columns: [
+	   loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;margin-top:300px;"></center></div>'
+            },
+            columns: [
 		    { width: 40, sortable: false, renderer: render_icon },	
 		    { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },	
 		    { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },	

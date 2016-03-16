@@ -481,7 +481,9 @@
         }),
 
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask: true,
+         loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
         columns: [
             { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },	
             { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},	
@@ -507,7 +509,7 @@
     var first_load = true;
     grid.on("activate", function() {
         if( first_load ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
+            Baseliner.showLoadingMask( grid.getEl());
             first_load = false;
         }
     });

@@ -1,4 +1,7 @@
 (function(){
+
+var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
+
     var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
@@ -54,11 +57,13 @@
             title: _('Roles'),
             header: false,
             autoScroll: true,
-            autoWidth: true,
+           // autoWidth: true,
             store: store,
-            viewConfig: { forceFit: true },
+           // viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask: _('Loading'),
+              loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px;margin-top:300px"></center></div>'
+        },
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
@@ -150,7 +155,7 @@
                 '->'
                 ]
         });
-
+   
     store.load({params:{start:0 , limit: ps}}); 
 
     grid.getView().forceFit = true;
@@ -166,7 +171,9 @@
             store: st,
             autoScroll: true,
             viewConfig: { forceFit: true },
-            loadMask: true,
+             loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
             columns: [
                { header: _('Name'), width: 100, dataIndex: 'name', sortable: true  },
                { header: _('Key'), width: 100, dataIndex: 'key', sortable: true  }
@@ -198,9 +205,14 @@
     };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
+
             var row = grid.getStore().getAt(rowIndex);
             role_detail( row.get('id'), row.get('role') );
-        });		
         
+        });		
+
+    grid.on("load", function(grid, rowIndex, e ) {
+    
+    }); 
     return grid;
-})();
+});

@@ -1486,7 +1486,7 @@ if( Prefs.routing ) {
     }
     
     Baseliner.showLoadingMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask( msg || _('Loading'), 'x-mask-loading' ).setHeight( 99999 );
+        Baseliner._defaultLoadingMask = el.mask( String.format('<div class="ext-el-mask-msg" style="heigh:100%""><center><img src="/static/images/loading.gif" style="display: block;height:40px;width:40px; margin-top:50px;"></center>') );
         //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
         //    removeMask: true, msg : msg
         //});
@@ -1532,7 +1532,7 @@ if( Prefs.routing ) {
                 var loadingMask = cmp.el;
                 Baseliner._defaultLoadingMask = loadingMask;
                 Baseliner._activeMask[cmp.id] = loadingMask;
-                loadingMask.mask(msg,'x-mask-loading');
+                loadingMask.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center>') );
                 //loadingMask.show();
             }
         }

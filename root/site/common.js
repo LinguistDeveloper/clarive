@@ -1293,7 +1293,7 @@ Baseliner.loading_panel = function(msg){
             '<center>',
             '<img style="height:52px;width:52px;" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
-            msg,
+           // msg,
             '</div>',
             '</center>',
             '</div>' ].join('')
@@ -1735,7 +1735,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    },
    search_cpan: function(q){
        var self = this;
-       self.el.mask();
+       self.el.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center>') );
        $.ajax({
            type: 'GET',
            url: 'http://patch.vasslabs.com/cpan_search',
@@ -1765,7 +1765,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    download: function(){
        var self = this;
        var sels = self.grid_remote.getSelectionModel().getSelections();
-       self.el.mask( _('Downloading...') );
+       self.el.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Downloading...')+'</div>') );
        Ext.each( sels, function(sel){
            var url = sel.data.url;
            //url = url.replace(/http:\/\/cpan.metacpan.org\//, '');
@@ -1776,7 +1776,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                data: { url: sel.data.url },
                crossDomain: true,
                success: function(res, textStatus, jqXHR) {
-                   self.el.mask( _('Uploading...') );
+                   self.el.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Uploading...')+'</div>') ); 
                    // submit to server
                    /*
                    var arrBuf = new ArrayBuffer(res.length);
@@ -1804,7 +1804,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    del: function(){
        var self = this;
        var sels = self.grid_remote.getSelectionModel().getSelections();
-       self.el.mask( _('Deleting...') );
+       self.el.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Deleting...')+'</div>') );
        var files = [];
        Ext.each( sels, function(s){
            files.push( s.data.file );
@@ -1851,7 +1851,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    install : function(){
        var self = this;
        var sels = self.grid_local.getSelectionModel().getSelections();
-       self.el.mask( _('Installing...') );
+       self.el.mask( String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center><div class="x-mask-loading-msg">'+_('Installing...')+'</div>') ); 
        var files = [];
        Ext.each( sels, function(s){
            files.push( s.data.file );
@@ -4119,7 +4119,7 @@ Baseliner.datatable = function( el, opts, cb) {
             "infoPostFix":    "",
             "thousands":      ",",
             "lengthMenu":     _("Show _MENU_ entries"),
-            "loadingRecords": _("Loading..."),
+            "loadingRecords": _("LOADING"),
             "processing":     _("Processing..."),
             "search":         _("Search:"),
             "zeroRecords":    _("No matching records found"),

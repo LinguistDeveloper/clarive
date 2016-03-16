@@ -1,4 +1,6 @@
 (function(params){
+
+
    var new_role_form = new Ext.FormPanel({
         url: '/role/update',
         region: 'north',
@@ -113,7 +115,6 @@
     var action_tree = new Cla.Tree({
         title: _('Available Actions'),
         loader: treeLoader,
-        loadMask: true,
         useArrows: true,
         ddGroup: 'secondGridDDGroup',
         animate: true,
@@ -156,7 +157,7 @@
         },
         listeners: {
             'render': function() {
-                Baseliner.showLoadingMask( this.getEl() , _('Loading...') );
+                Baseliner.showLoadingMask( this.getEl());
             },
             'load': function() {
                 this.getEl().unmask();
@@ -300,7 +301,7 @@
     };
 
     grid_role.on('afterrender', function(){
-        Baseliner.showLoadingMask( grid_role.getEl() , _('Loading...') );
+        Baseliner.showLoadingMask( grid_role.getEl() , _('LOADING') );
         ////////// Setup the Drop Target - now that the window is shown
         var secondGridDropTarget = new Baseliner.DropTarget(grid_role.getView().scroller.dom, {
                 comp: grid_role,

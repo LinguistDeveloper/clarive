@@ -554,7 +554,9 @@
                 forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask: true,
+              loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
                 { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
@@ -912,8 +914,10 @@
                 forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
-            columns: [
+              loadMask  : {
+                msg : '<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" alt="loading" style="display: block;height:40px;width:40px;"></center></div>'
+            },
+             columns: [
                 { header: _('Id'), hidden: true, dataIndex: 'id' },
                 { header: _('Avatar'), hidden: false, width: 64, dataIndex: 'username', renderer: Baseliner.render_avatar },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },

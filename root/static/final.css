@@ -620,6 +620,63 @@ div[class*='ui-ci_box-'].search-item img {
    width: 16px;
 }
 
+.x-mask-loading div{ 
+    -moz-opacity:0.8;
+    opacity:.80;
+    filter:alpha(opacity=80);
+    background-color:#ffffff;
+    margin: 10px;
+    width:100%;
+    height:100%;
+    zoom:1;
+    background-position:center;
+    padding:100px 50 50 50;
+    background-image:url('/static/images/loading.gif') !important 40px 40px;
+    background-repeat: no-repeat;
+    background-size:32px;
+    line-height:50px;
+}
+
+.x-mask-loading-msg div{ 
+    text-align: center; 
+    text-transform: uppercase; 
+    font-weight: normal; 
+    font-size: 11px; 
+    color: #999; 
+    font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
+.ext-el-mask{
+    z-index:20000;
+    position:absolute;
+    -moz-opacity:0.8;
+    opacity:.80;
+    filter:alpha(opacity=80);
+    background-color:#ffffff;
+    width:100%;
+    height:100%;
+    zoom:1;}
+
+.ext-el-mask-msg{
+    z-index:20001;
+    position:absolute;
+    border:none;
+    background:transparent;
+    padding:20px;
+}
+.ext-el-mask-msg div{
+
+    padding:0 0 0 0;
+    background:transparent;
+    border:none;
+    font-weight: normal; 
+    color: #999;
+    font: 11px tahoma,arial,helvetica,sans-serif;
+    background-image:url('/static/images/loading.gif') !important 40px 40px;
+    background-repeat: no-repeat;
+    background-size:32px;
+    cursor:wait;
+}
 
 div#search-result-block img {
    height:16px;

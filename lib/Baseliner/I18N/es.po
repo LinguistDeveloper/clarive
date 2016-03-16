@@ -8551,6 +8551,8 @@ msgid "Error: Role already exists"
 msgstr "Error: El rol ya existe"
 
 msgid "Preformatted Text"
+
+msgid "'Preformatted Text'"
 msgstr "Texto con Preformato"
 
 msgid "Sort By"
@@ -8681,3 +8683,7 @@ msgstr "Campo 'Release field'"
 
 msgid "Roles (comma separated)"
 msgstr "Roles (separados por comas)"
+=======
+msgid "LOADING"
+msgstr "CARGANDO"
+>>>>>>> giving consistence to loading masks

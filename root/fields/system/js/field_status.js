@@ -75,7 +75,7 @@ params:
                     'afterrender':function(){
                         if(meta.readonly){
                             var el = this.el;
-                            var mask = el.mask();
+                            var mask = el.mask(String.format('<div class="ext-el-mask-msg"><center><img src="/static/images/loading.gif" style="display: block;height:52px;width:52px;"></center>') );
                             mask.setStyle('opacity', 0.2);
                             mask.setStyle('height', 5000);
                         }
