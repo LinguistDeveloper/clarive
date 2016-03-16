@@ -152,6 +152,131 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
     is_deeply $args, {output => '123'};
 };
 
+subtest 'semaphore key test with fork' => sub {
+    TestUtils->cleanup_cis();
+    mdb->rule->drop;
+    mdb->_test_sem->drop;
+
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Event',     'BaselinerX::Events',
+        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules'
+    );
+    { package DummyPKG; sub new { } };
+    Baseliner::Core::Registry->add(
+        'DummyPKG',
+        'service.test.op' => {
+            name => 'Test Op',
+            icon => '',
+            form => '/forms/tar_local.js',
+            job_service => 1,
+            handler => sub {
+                my ($self, $c, $config ) = @_;
+                my $stash = $c->stash;
+                mdb->_test_sem->update({},{ '$inc'=>{ cnt=>1 } }, { upsert=>1 });
+                Time::HiRes::usleep( int rand 500000 );
+                $stash->{sem_cnt} = mdb->_test_sem->find_one->{cnt};
+                mdb->_test_sem->update({},{ '$inc'=>{ cnt=>-1 } });
+                $stash->{sem_status} = $stash->{_sem}->released;
+                $stash->{is_ok} = exists $config->{meta};
+            }
+        }
+    );
+
+    my $id_rule = mdb->seq('id');
+    mdb->rule->insert(
+        {
+            id        => "$id_rule",
+            ts        => '2015-08-06 09:44:30',
+            rule_type => "independent",
+            rule_seq  => $id_rule,
+            rule_tree => JSON::encode_json(
+                [
+                    {
+                        "attributes" => {
+                            "key"  => "statement.perl.for",
+                            "text" => "FOR eval",
+                            "data" => {
+                                "varname" => "kk",
+                                "code"    => "1..10",
+                                "config"  => { "varname" => "x", "code" => "()" }
+                            },
+                        },
+                        "children" => [
+                            {
+                                "attributes" => {
+                                    'icon' =>
+                                      '/static/images/icons/script-local.png',
+                                    'palette'       => 0,
+                                    'disabled'      => 0,
+                                    'who'           => 'root',
+                                    'timeout'       => '',
+                                    'text'          => 'Find *.c',
+                                    'expanded'      => 1,
+                                    'semaphore_key' => 'test-sem',
+                                    'id'            => 'xnode-2995',
+                                    'ts'            => '2014-12-06T11:49:36',
+                                    'trap_timeout_action' => 'abort',
+                                    'parallel_mode'       => 'fork',
+                                    'name'          => 'Run a local script',
+                                    'active'        => 1,
+                                    'trap_rollback' => 1,
+                                    'error_trap'    => 'none',
+                                    'needs_rollback_mode' => 'none',
+                                    'note'                => '',
+                                    'run_rollback'        => 1,
+                                    'data_key'            => 'find_c_files',
+                                    'trap_timeout'        => 0,
+                                    'run_forward'         => 1,
+                                    "data"                => {
+                                        'stdin'          => '',
+                                        'output_capture' => [],
+                                        'errors'         => 'fail',
+                                        'rc_warn'        => '',
+                                        'args'           => [],
+                                        'path'           => 'ls',
+                                        'output_error'   => [],
+                                        'output_ok'      => [],
+                                        'environment'    => {},
+                                        'rc_ok'          => '',
+                                        'rc_error'       => '',
+                                        'output_files'   => [],
+                                        'output_warn'    => [],
+                                        'home'           => '',
+                                    },
+                                    "key" => "service.test.op",
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        attributes => {
+                            icon     => "/static/images/icons/time.png",
+                            key      => "statement.parallel.wait",
+                            active   => 1,
+                            name     => "WAIT for children",
+                            data_key => 'foo',
+                            data     => {
+                                parallel_stash_keys => [ 'is_ok', 'sem_status', 'sem_cnt' ]
+                            },
+                        },
+                        children => []
+                    }
+                ]
+            )
+        }
+    );
+    my $rules = _build_model();
+    $rules->compile_rules();
+    my $cr = Baseliner::CompiledRule->new( id_rule => $id_rule, @_ );
+    $cr->compile();
+    my $stash = { abc=>11 };
+    $cr->run(stash => $stash);
+    ok $stash->{foo}->[0]->{is_ok};
+    my $sum=0;
+    is $_->{sem_cnt}, 1 for @{ $stash->{foo} }
+};
+
 subtest 'meta key with attributes sent to service op' => sub {
     TestUtils->cleanup_cis();
     mdb->rule->drop;
