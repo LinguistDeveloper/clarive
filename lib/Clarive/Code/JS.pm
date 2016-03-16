@@ -16,7 +16,7 @@ use Baseliner::Mongo;
 use Baseliner::RuleFuncs;
 use Baseliner::RuleRunner;
 use BaselinerX::Type::Model::ConfigStore;
-use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case to_base_class _unbless :logging _load _dump _encode_json _decode_json _json_pointer _array);
+use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case to_base_class _unbless :logging _load _dump _encode_json _decode_json _json_pointer _array _file _dir);
 
 use Clarive::App;
 use Clarive::Code::Utils;
@@ -25,6 +25,8 @@ has dump_code     => qw(is rw isa Bool default 0);
 has enclose_code  => qw(is rw isa Bool default 0);
 has strict_mode   => qw(is rw isa Bool default 0);
 has allow_pragmas => qw(is rw isa Bool default 0);
+
+has current_file      => qw(is rw isa Str);
 
 has extend_cla    => qw(is rw isa HashRef default),sub{+{}};
 has global_ns     => qw(is rw isa HashRef default),sub{+{}};
@@ -123,7 +125,8 @@ sub eval_code {
     }
     catch {
         my $err = $_;
-        my $msg = "Error executing JavaScript: $err: $Clarive::Code::Utils::GLOBAL_ERR\n";
+        my $file = $self->current_file|| 'EVAL';
+        my $msg = "Error executing JavaScript ($file): $err: $Clarive::Code::Utils::GLOBAL_ERR\n";
         if( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
             $err_line--;
             my @lines = ( split "\n", $fullcode );
@@ -323,7 +326,7 @@ sub _generate_cla {
                 }, $1;
             }
             elsif( my $path = Clarive->app->plugins->locate_path( "modules/$id", "modules/$id.js") ) {
-                return scalar Util->_file($path)->slurp( iomode=>'<:utf8' );
+                return scalar _file($path)->slurp( iomode=>'<:utf8' );
             }
             else {
                 die sprintf(
@@ -535,7 +538,7 @@ sub _generate_ns {
         reg => {
             register => js_sub {
                 my ($key, $obj ) = @_;
-                my ($package) = caller;
+
                 Baseliner::Core::Registry->add( 'Clarive::Code::JS::Service', $key, $self->_serialize({}, $obj ) );
             },
             launch => js_sub {
@@ -893,6 +896,11 @@ sub _process_pragmas {
             $self->dump_code($1);
         }
     }
+}
+
+sub current_filename {
+    my $self = shift;
+    return _file( $self->current_file )->basename;
 }
 
 package Clarive::Code::JS::Service; {

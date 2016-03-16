@@ -37,20 +37,40 @@ sub locate_path {
     return undef;
 }
 
+sub locate_all_paths {
+    my $self = shift;
+    my @files = @_;
+
+    my @paths;
+    my @plugins = $self->all_plugins;
+
+    for my $dir ( @plugins ) {
+        for my $file ( @files ) {
+            my $path = _file( $dir, $file );
+            push @paths, "$path" if -e $path;
+        }
+    }
+    return @paths;
+}
+
 sub run_dir {
     my $self = shift;
     my ($dir,$opts) = @_;
 
     my $js;
-
-    for my $path ( map { _dir($_) } Clarive::Plugins->new->locate_path($dir) ) {
+    for my $path ( map { _dir($_) } $self->locate_all_paths($dir) ) {
         for my $file ( $path->children ) {
             my ($ext) = $file->basename =~ /\.(\w+)$/;
             if( $ext eq 'js' ) {
                 _debug( "Running plugin init: $file" );
+
                 require Clarive::Code::JS;
                 $js //= Clarive::Code::JS->new( %{ $opts->{js} || {} } );
-                $js->eval_code( scalar $file->slurp(iomode=>'<:utf8') );
+                $js->current_file( "$file" );
+
+                my $code = scalar $file->slurp(iomode=>'<:utf8');
+
+                $js->eval_code( $code );
             }
         }
     }
