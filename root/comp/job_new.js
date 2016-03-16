@@ -402,8 +402,6 @@
             combo_time.hide();
             button_submit.disable();
         }
-
-        Baseliner.hideLoadingMask( main_form.getEl() );
         main_form.doLayout();
     });
 
@@ -418,7 +416,6 @@
 
             if( cnt > 0 ) {
                 var job_date_v = str_date ? str_date : job_date.getRawValue()
-                Baseliner.showLoadingMask(main_form.getEl(), _("Loading available time for %1...", job_date_v ) );
                 var bl  = hidden_baseline.getValue();
                 var json_res = job_grid_data({ warn: false });
 
@@ -446,7 +443,6 @@
                             rel_cals = res.cals ? res.cals : [];
                             job_statistics.update( stats_tmpl({ eta: res.stats?res.stats.eta:'-', p_success:res.stats?res.stats.p_success:'-' }) );
                         } else {
-                            Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
                             Ext.Msg.alert( _('Error'), _('Error generating calendar windows: %1', res.msg ) );
                         }
@@ -630,6 +626,7 @@
         master_column_id : id_auto,
         autoExpandColumn: id_auto,
         cm: colModel,
+        loadMask:true,
         enableDragDrop: true,
         ddGroup: 'explorer_dd',
         viewConfig: {
@@ -670,26 +667,20 @@
                 _("Cannot promote/demote this entity type" ) );
             return true; 
         }
-        
         // find job type from radio. 
         //var job_type = main_form.getForm().getValues()['job_type'];
         //if( !job_type ) return;  // can't continue
         var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
         var bl_item = bl_hash[ bl ];
-                
         var bl_item = bl_hash[ transition_id ];
         if ( transition_id && bl_item == undefined ) {
             var transition_msg = combo_transitions.getRawValue();
             Ext.Msg.alert( _('Error'),
                 _("Changeset %1 cannot %2", '<b>' + data.text + '</b>', transition_msg ) );
-            // Ext.Msg.alert( _('Error'),
-            //     _("Cannot promote/demote changeset %1 to environment %2 (job type %3)", '<b>' + data.text + '</b>', bl, job_type ) );
-            Baseliner.hideLoadingMask( main_form.getEl() );
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
                 Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
-                Baseliner.hideLoadingMask( main_form.getEl() );
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {
@@ -708,7 +699,6 @@
         return (true); 
     };
     function add_node(data,project) {
-        Baseliner.showLoadingMask(main_form.getEl(), _("Calculating topic contents..." ) );
         jc_store_topics[ data.topic_mid ] = { text:data.text, data:data, project: project };
         topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
         var topics_json = '[' + topics.join(',') + ']';
@@ -1009,6 +999,7 @@
         url: '/job/submit',
         tab_icon: '/static/images/icons/job.png',
         //frame: true,
+        height:'50%',
         bodyStyle: { 'background-color': '#eee', padding: '10px 10px 10px 10px' },
         forceFit: true,
         labelWidth: 100,

@@ -110,7 +110,7 @@
     var grid = new Ext.grid.GridPanel({ 
         store: sms_store,
         width:800,
-        height:500,
+        height:600,
         header: false,
         stripeRows: true,
         autoScroll: true,
