@@ -88,7 +88,6 @@ sub run_dist {
       clarive/ui-tests
       clarive/rec-tests
     );
-    my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
     if (-d '.git') {
         `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
@@ -112,7 +111,10 @@ sub run_dist {
         my $archive_path = File::Spec->catfile( $destdir, $archive );
         unlink $archive_path;
 
-        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s > /dev/null; cd -}, $archive_path,
+        my $exclude_str = join ' ', map { "clarive/$_" } @exclude;
+        $exclude_str = '--exclude ' . $exclude_str if $exclude_str;
+
+        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $archive_path,
           $exclude_str;
         system($cmd);
 
@@ -122,6 +124,8 @@ sub run_dist {
         my $archive = "$dist.tar.gz";
         my $archive_path = File::Spec->catfile( $destdir, $archive );
         unlink $archive_path;
+
+        my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
         my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
           $exclude_str, $archive_path;
@@ -135,6 +139,7 @@ sub run_dist {
         exit 0;
     }
     else {
+        print 'ERROR', "\n";
         exit 1;
     }
 }
