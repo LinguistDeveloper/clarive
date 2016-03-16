@@ -17,7 +17,7 @@
         anchor:'100%',
         fieldLabel: _("Shift in days before today to show in chart. 0 or blank means today"),
         hidden: true,
-        minValue: '0',
+        maxValue: '0',
         height : 100,
         autoWidth: true
     });

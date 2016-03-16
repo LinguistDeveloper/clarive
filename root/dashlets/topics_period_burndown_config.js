@@ -1,18 +1,18 @@
 (function(params){
     var data = params.data || {};
     var days_before = new Ext.ux.form.SpinnerField({
-        value: data.days_before, 
+        value: data.days_before,
         name: "days_before",
         hidden: true,
         autoWidth: true,
-        minValue: '0',
+        maxValue: '0',
         anchor:'100%',
         fieldLabel: _("Shift in days before today to show in chart. 0 or blank means today")
     });
     days_before.hide();
 
     var days_after = new Ext.ux.form.SpinnerField({
-        value: data.days_after, 
+        value: data.days_after,
         name: "days_after",
         hidden: true,
         minValue: '0',
@@ -25,7 +25,7 @@
     var days_before_format_date = new Ext.form.DateField({
       fieldLabel: _('Shift in days from today to show in chart.'),
       name: 'days_before_format_date',
-      value: data.days_before_format_date, 
+      value: data.days_before_format_date,
       format: 'Y-m-d',
       width: 165,
       hidden: true
@@ -35,7 +35,7 @@
     var days_after_format_date = new Ext.form.DateField({
       fieldLabel: _('Shift in days from today to show in chart.'),
       name: 'days_after_format_date',
-      value: data.days_after_format_date, 
+      value: data.days_after_format_date,
       format: 'Y-m-d',
       width: 165,
       hidden: true

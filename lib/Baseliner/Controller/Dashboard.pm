@@ -1297,7 +1297,7 @@ sub topics_burndown : Local {
     my $today;
     my $days_from_format_date = $p->{days_from_format_date};
 
-    my $date = Class::Date->now() - ($days_from .'D');
+    my $date = Class::Date->now() + ($days_from .'D');
     if ($days_from_format_date){
         $today = $days_from_format_date;
     }else {
@@ -1480,7 +1480,7 @@ sub topics_period_burndown : Local {
         $start = Class::Date->new($days_before_format_date);
         $end = Class::Date->new($days_after_format_date);
     }else{
-        $start = Class::Date->now() - ($days_before .'D');
+        $start = Class::Date->now() + ($days_before .'D');
         $end = Class::Date->now() + ($days_after .'D');
     }
 
@@ -1525,7 +1525,7 @@ sub topics_period_burndown : Local {
         my $dt = DateTime->from_epoch( epoch => $date->epoch() );
         $dt->set_time_zone( _tz );
         my $fdate;
-        if ( $group !~ /day|quarter/ ) {    
+        if ( $group !~ /day|quarter/ ) {
             $dt->truncate( to => $group);
             $fdate = substr(''.$dt,0,10);
         } elsif ( $group eq 'quarter' ){
