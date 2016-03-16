@@ -647,7 +647,7 @@ div[class*='ui-ci_box-'].search-item img {
 }
 
 .ext-el-mask {
-    z-index:20000;
+    z-index:9000;
     position:absolute;
     -moz-opacity:0.8;
     opacity:.80;
@@ -659,7 +659,7 @@ div[class*='ui-ci_box-'].search-item img {
 }
 
 .ext-el-mask-msg {
-    z-index:20001;
+    z-index:9001;
     position:absolute;
     border:none;
     background:transparent;
@@ -681,7 +681,6 @@ div[class*='ui-ci_box-'].search-item img {
 div#search-result-block img {
     height:16px;
     width:16px;
-
 }
 
 #boot .dashboard-buttons-menu table.x-btn.x-btn-icon {
@@ -734,4 +733,3 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
-}

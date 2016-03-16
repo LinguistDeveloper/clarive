@@ -1402,7 +1402,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var custom_form = '';
         
         var do_submit = function(){
-            self.getEl().mask(_("Processing..."));
+            self.getEl().mask('');
             Baseliner.ajax_json( 
                 self.form_topic.url,
                 Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
@@ -1620,7 +1620,7 @@ Baseliner.Topic.delete_topic = function(opts){
 
 Baseliner.Topic.change_status_topic = function(opts){
     var self = opts['this'];
-    self.getEl().mask(_("Processing..."));
+    self.getEl().mask('');
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
             self.getEl().unmask();

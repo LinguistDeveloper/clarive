@@ -23,13 +23,13 @@
             });
         });
     }});
-    
     var btn_del = new Ext.Button({ icon:IC('delete_.png'), hidden: false, text:_('Delete'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
             Baseliner.ajax_json('/systemmessages/sms_del', { _id:sel.data._id, action:'del' }, function(res){
                 Baseliner.message(_('SMS'), _('Deleted message with id %1', sel.data._id) );
+                Baseliner.showLoadingMask( grid.getEl());
                 grid.store.reload();
             });
         }
@@ -40,6 +40,7 @@
             var sel = sm.getSelected();
             Baseliner.ajax_json('/systemmessages/sms_del', { _id:sel.data._id, action:'cancel' }, function(res){
                 Baseliner.message(_('SMS'), _('Cancelled message with id %1', sel.data._id) );
+                Baseliner.showLoadingMask( grid.getEl());
                 grid.store.reload();
             });
         }
@@ -100,18 +101,22 @@
     var render_read = function(v,m,row,ix){
         return String.format('<a href="javascript:Baseliner.sms_read({0},\'{1}\')">{2}</a>', ix, grid.id, _('Read (%1)',v?v.length:0) );
     };
-    var grid = new Ext.grid.GridPanel({ 
-        store: new Baseliner.JsonStore({ 
+    var first_load = true;
+    var ps = 60;
+    var sms_store =  new Baseliner.JsonStore({ 
             url:'/systemmessages/sms_list', root: 'data' , totalProperty:"totalCount", id:'_id', autoLoad: true,
             fields:['_id','title','text','more','read','t','expires','expired'] 
-        }),
+        });
+    var grid = new Ext.grid.GridPanel({ 
+        store: sms_store,
+        width:800,
+        height:500,
         header: false,
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         viewConfig: { forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask: true,
         columns: [
             { header: _('ID'), width: 50, dataIndex: '_id', sortable: true, 
                 renderer: function(v,m,row){ 
@@ -130,15 +135,23 @@
         autoSizeColumns: true
     });
     var card = new Ext.Panel({ layout:'card', items:[ grid,form ], activeItem:0 });
-    var win = new Baseliner.Window({ 
+    var win = new Baseliner.Window({
         title:_('System Messages'),
-        layout:'fit', width:800, height:600, 
-        //tbar: [ btn_grid, btn_compose, '-', '->', btn_clone, btn_cancel, btn_del, btn_new ],
-        tbar: [ btn_grid, btn_compose, 
-       // '-', 
-        '->', btn_clone, btn_del, btn_cancel, btn_new ],
+        layout:'fit',
+        width:800,
+        height:600,
+        tbar: [ btn_grid, btn_compose,'->', btn_clone, btn_del, btn_cancel, btn_new ],
         items: card
     });
+
+    grid.on("activate", function() {
+        Baseliner.showLoadingMask( grid.getEl());
+    });
+
+    sms_store.on("load", function() {
+        Baseliner.hideLoadingMaskFade(grid.getEl());
+    });
+
     win.show();
     return;
 })

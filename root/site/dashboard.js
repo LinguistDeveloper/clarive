@@ -15,7 +15,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var self = this;
         self.dashlets = {};
         var id_class = 'dashboard-' + self.body.id;
-        var dashlet_tpl=function(){/*            
+        var dashlet_tpl=function(){/*
             <td id="[%= id_div %]_td" rowspan=[%= rowspan %] colspan=[%= colspan%] style='padding:10px;text-align:top;vertical-align:top;'>
               <div style='width: 100%;background-color: #FFF;border-radius: 25px;'>
                 <div id="boot" style='width: 100%;padding:3px;background-color:#F7F7F7;font-weight:bold;margin-bottom:5px;'>
@@ -46,7 +46,8 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     setInterval(function () {
                         var obj = Ext.getCmp("[%= id_cmp %]");
                         if( obj ) obj.refresh_dashlet("[%= id_dashlet %]", true);
-                    }, [%= autorefresh %]);
+                    },
+                    [%= autorefresh %]);
                 };
             </script>
 
@@ -235,11 +236,11 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var dashlet = self.dashlets[ id_dashlet ];
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
-        if(div) div.innerHTML= "<center><div style='width: 100%;height: 100%;padding-top:40%'><img style='height:40px;width:40px;' src=/static/images/loading.gif /></center></center>";
+        if(div) div.innerHTML= " <div id='[%= id_div %]' style='width: 100%;'><center><div style='width: 100%;height: 100%;margin-top:20%'><img style='height:40px;width:40px;' src=/static/images/loading.gif /></div></center></div>"
         Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, project_id: self.project_id, topic_mid: self.topic_mid, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();
-            var last_update = now.format("YYYY-MM-DD HH:mm:ss");                            
+            var last_update = now.format("YYYY-MM-DD HH:mm:ss");
             if(update) update.innerHTML=last_update;
         });
     },
