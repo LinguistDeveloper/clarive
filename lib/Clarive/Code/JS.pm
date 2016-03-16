@@ -578,22 +578,44 @@ sub _generate_ns {
 
                 die "Class `$classname` already exists\n" if is_class_loaded( $package );
 
-                my $attributes = delete( $obj->{has} ) || {};
-                my $methods    = delete( $obj->{methods} ) || {};
+                my $icon         = $obj->{icon} || '/static/images/icons/ci.png';
+                my $form         = $obj->{form} || $self->current_filename;
+                my $attributes   = delete( $obj->{has} )     || {};
+                my $methods      = delete( $obj->{methods} ) || {};
                 my @method_names = keys %$methods;
-                my $roles      = delete( $obj->{roles} ) || [];
-                my $superclasses = delete( $obj->{superclasses} ) || [];
+
+                my @superclasses;
+
+                for my $superclass ( @{ delete( $obj->{superclasses} ) || [] } ) {
+                    my $classname = from_camel_class( $superclass );
+                    my $pkg = Util->_to_ci_class($classname);
+                    if( ! $classname ) {
+
+                    }
+                    elsif( ! Util->_package_is_loaded($pkg) ) {
+                        die "Error: could not find superclass `$superclass` ($pkg)";
+                    }
+                    push @superclasses, $pkg;
+                }
+
+                my @roles;
+
+                for my $role ( @{ delete( $obj->{roles} ) || [] } ) {
+                    my $pkg = 'Baseliner::Role::CI::' . $role;
+                    if( ! Util->_package_is_loaded($pkg) ) {
+                        die "Error: could not find role `$role` ($pkg)";
+                    }
+                    push @roles, $pkg;
+                }
 
                 my $class = Moose::Meta::Class->create( $package,
-                    roles        => ['Baseliner::Role::CI', ( map { 'Baseliner::Role::CI::' . $_ } @$roles ) ],
-                    superclasses => [
-                        map { 'BaselinerX::CI::' . from_camel_class( $_ ) } @$superclasses
-                    ],
+                    roles        => ['Baseliner::Role::CI', @roles ],
+                    superclasses => \@superclasses,
                     attributes   => [
                         map { Moose::Meta::Attribute->new( $_, %{ $attributes->{$_} } ) } keys %$attributes
                     ],
                     methods => {
-                        icon  => sub { '/static/images/icons/ci.png' },
+                        icon  => sub { $icon },
                         _lang => sub { 'js' },
                         _duk_methods => sub { +{ map { $_=>1 } @method_names } },
                         map {

@@ -14,6 +14,13 @@ use BaselinerX::CI::generic_server;
 use JavaScript::Duktape;
 use_ok 'Clarive::Code::Utils';
 
+subtest 'from_camel_class' => sub {
+    { package BaselinerX::CI::FooBar; use Moose; };
+    is from_camel_class('FooBar'), 'FooBar';
+    { package BaselinerX::CI::boo_foo; use Moose; };
+    is from_camel_class('BooFoo'), 'boo_foo';
+};
+
 subtest 'template_literals: kung foo' => sub {
 
     is template_literals(q{``}), q{''};

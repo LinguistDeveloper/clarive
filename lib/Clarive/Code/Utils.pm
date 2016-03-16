@@ -1,7 +1,7 @@
 package Clarive::Code::Utils;
 use strict;
 use warnings;
-use Class::Load qw(is_class_loaded);
+use Baseliner::Utils qw(_package_is_loaded);
 use Try::Tiny;
 
 use PadWalker qw(closed_over);
@@ -125,7 +125,7 @@ sub from_camel_class {
     my $snake = $camel =~ s{([A-Z])}{"_" . lc($1)}ger;
     $snake = substr($snake,1) if $snake =~ /^_/;
 
-    my ($classname) = grep { is_class_loaded( Util->to_ci_class($_) ) } ($camel,$snake);
+    my ($classname) = grep { _package_is_loaded( Util->to_ci_class($_) ) } ($camel,$snake);
 
     $classname;
 }
