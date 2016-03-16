@@ -77,16 +77,7 @@ sub run_dist {
 
     warn sprintf "Packing for %s-%s...\n", $self->os, $self->arch;
 
-    my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
-    my $archive = "$dist.tar.gz";
-
     my $base = $ENV{CLARIVE_BASE};
-
-    my $destdir = "/tmp/";
-    mkdir $destdir;
-
-    my $archive_path = File::Spec->catfile( $destdir, $archive );
-    unlink $archive_path;
 
     my @exclude = qw(
       clarive/.git
@@ -110,12 +101,37 @@ sub run_dist {
     `echo 'stew.snapshot' >> MANIFEST`;
     `echo 'clarive/VERSION' >> MANIFEST`;
 
-    my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
-      $exclude_str, $archive_path;
-    system($cmd);
+    my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
 
-    if ( -f $archive_path ) {
-        print $archive_path, "\n";
+    my $destdir = "/tmp/";
+    mkdir $destdir;
+
+    my $final_archive_path;
+    if ($self->os =~ m/windows|cygwin/i) {
+        my $archive = "$dist.zip";
+        my $archive_path = File::Spec->catfile( $destdir, $archive );
+        unlink $archive_path;
+
+        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $dist,
+          $exclude_str;
+        system($cmd);
+
+        $final_archive_path = $archive_path;
+    }
+    else {
+        my $archive = "$dist.tar.gz";
+        my $archive_path = File::Spec->catfile( $destdir, $archive );
+        unlink $archive_path;
+
+        my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
+          $exclude_str, $archive_path;
+        system($cmd);
+
+        $final_archive_path = $archive_path;
+    }
+
+    if ( -f $final_archive_path ) {
+        print $final_archive_path, "\n";
         exit 0;
     }
     else {
