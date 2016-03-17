@@ -1,14 +1,13 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::MonkeyMock;
-use TestEnv;
-use TestUtils;
 
-TestEnv->setup;
+use TestEnv;
+BEGIN { TestEnv->setup }
+use TestUtils;
 
 use Clarive::App;
 use Clarive::mdb;
@@ -34,6 +33,32 @@ subtest 'creates entry' => sub {
     my $entry = mdb->clarive->find_one;
 
     ok $entry && %$entry;
+};
+
+subtest 'creates empty flag when empty database' => sub {
+    _setup();
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my $entry = mdb->clarive->find_one;
+
+    ok $entry->{empty};
+};
+
+subtest 'does not create empty flag' => sub {
+    _setup();
+
+    mdb->event->insert({foo => 'bar'});
+
+    my $cmd = _build_cmd();
+
+    $cmd->run;
+
+    my $entry = mdb->clarive->find_one;
+
+    ok !exists $entry->{empty};
 };
 
 subtest 'does not create entry when exists' => sub {
@@ -131,10 +156,8 @@ subtest 'resets everything if reset flag and user says yes' => sub {
 sub _setup {
     Baseliner::Core::Registry->clear();
     TestUtils->register_ci_events();
-    mdb->clarive->drop;
 
-    mdb->master->drop;
-    mdb->master_doc->drop;
+    TestUtils->cleanup_db;
 }
 
 sub _build_cmd {

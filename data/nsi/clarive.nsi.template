@@ -130,7 +130,7 @@ Function PostInstall
     nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --install $\"${WebService}$\"                           \
                                --env $\"TZ=Europe/Madrid$\"                          \
                                --path /opt/clarive/clarive/bin/cla                   \
-                               --args $\"web-start --env $EnvName --init --migrate-yes$\"                      \
+                               --args $\"web-start --env $EnvName$\"                      \
                                --stdout $\"$INSTDIR\data\opt\clarive\logs\service.web.stdout.log$\" \
                                --stderr $\"$INSTDIR\data\opt\clarive\logs\service.web.stderr.log$\"'
     nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --start $\"${WebService}$\"'
