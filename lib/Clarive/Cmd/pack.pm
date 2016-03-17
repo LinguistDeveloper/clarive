@@ -19,6 +19,8 @@ has
   };
 has cygwin_dist  => qw(is rw isa Str);
 has clarive_dist => qw(is rw isa Str);
+has makensis     => qw(is rw isa Str);
+has nsis         => qw(is rw isa Str);
 
 sub run { &run_dist }
 
@@ -155,14 +157,27 @@ sub run_nsi {
         die "$method must be a .zip file" unless -f $self->$method && $self->$method =~ m/\.zip$/;
     }
 
+    if ($self->nsis) {
+        die "nsis does not exist" unless -f $self->nsis;
+
+        system(sprintf "unzip %s", $self->nsis);
+        $self->makensis("NSIS/makensis.exe");
+    }
+    elsif ($self->makensis) {
+        die "makensis does not exist" unless -f $self->makensis;
+    }
+    else {
+        die "Either path to nsis.zip or path to makensis.exe should be present";
+    }
+
     my $template = do { local $/; open my $fh, '<', "data/nsi/clarive.nsi.template" or die $!; <$fh> };
 
     my $version      = $self->version;
     my $cygwin_dist  = $self->cygwin_dist;
     my $clarive_dist = $self->clarive_dist;
 
-    chomp($cygwin_dist = `cygpath -w $cygwin_dist`);
-    chomp($clarive_dist = `cygpath -w $clarive_dist`);
+    chomp( $cygwin_dist  = `cygpath -w $cygwin_dist` );
+    chomp( $clarive_dist = `cygpath -w $clarive_dist` );
 
     $template =~ s{## VERSION ##}{$version}g;
     $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist}g;
@@ -172,7 +187,7 @@ sub run_nsi {
     print $fh $template;
     close $fh;
 
-    system("/cygdrive/c/Program\\ Files\\ \\(x86\\)/NSIS/makensis.exe clarive.nsi");
+    system($self->makensis, 'clarive.nsi');
 
     my $final_archive_path = "clarive_${version}_installer.exe";
 
