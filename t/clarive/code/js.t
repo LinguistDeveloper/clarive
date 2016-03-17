@@ -640,6 +640,14 @@ subtest 'exceptions catch external errors' => sub {
     ok !exception { $code->eval_code(q/try { fs.openFile('unknown') } catch(e) {}/) };
 };
 
+subtest 'exceptions catch class not found errors' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    like exception { $code->eval_code( q{ require('cla/ci').getClass('XYZ123') }) }, qr/class.*XYZ123/;
+};
+
 subtest 'returns js array' => sub {
     _setup();
 

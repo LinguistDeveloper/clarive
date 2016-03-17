@@ -124,9 +124,12 @@ sub eval_code {
         $js_duk->eval( $fullcode );
     }
     catch {
-        my $err = $_;
-        my $file = $self->current_file|| 'EVAL';
-        my $msg = "Error executing JavaScript ($file): $err: $Clarive::Code::Utils::GLOBAL_ERR\n";
+        ( my $err = $_ ) =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1};
+
+        my $file = $self->current_file || 'EVAL';
+
+        my $msg = "Error executing JavaScript ($file): $err";
+
         if( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
             $err_line--;
             my @lines = ( split "\n", $fullcode );
@@ -143,7 +146,7 @@ sub eval_code {
                 $msg .= sprintf "%d%s %s\n", $real_line, ( $line == $err_line ? '>>>' : ':  ' ), $lines[$line];
             }
         }
-        die $msg;
+        _fail "$msg";
     };
 }
 
@@ -591,12 +594,12 @@ sub _generate_ns {
 
                 for my $superclass ( @{ delete( $obj->{superclasses} ) || [] } ) {
                     my $classname = from_camel_class( $superclass );
-                    my $pkg = Util->_to_ci_class($classname);
+                    my $pkg = Util->to_ci_class($classname);
                     if( ! $classname ) {
-
+                        die "Error: could not find superclass `$superclass`\n";
                     }
                     elsif( ! Util->_package_is_loaded($pkg) ) {
-                        die "Error: could not find superclass `$superclass` ($pkg)";
+                        die "Error: could not find superclass `$superclass` ($pkg)\n";
                     }
                     push @superclasses, $pkg;
                 }
@@ -606,7 +609,7 @@ sub _generate_ns {
                 for my $role ( @{ delete( $obj->{roles} ) || [] } ) {
                     my $pkg = 'Baseliner::Role::CI::' . $role;
                     if( ! Util->_package_is_loaded($pkg) ) {
-                        die "Error: could not find role `$role` ($pkg)";
+                        die "Error: could not find role `$role` ($pkg)\n";
                     }
                     push @roles, $pkg;
                 }

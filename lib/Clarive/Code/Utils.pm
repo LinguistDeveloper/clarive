@@ -125,7 +125,10 @@ sub from_camel_class {
     my $snake = $camel =~ s{([A-Z])}{"_" . lc($1)}ger;
     $snake = substr($snake,1) if $snake =~ /^_/;
 
-    my ($classname) = grep { _package_is_loaded( Util->to_ci_class($_) ) } ($camel,$snake);
+    my @attempts = map { [$_, Util->to_ci_class($_)] } ( $camel, $snake );
+    my ($classname) = map{ $_->[0] } grep { _package_is_loaded( $_->[1] ) } @attempts;
+
+    die "Could not find a CI class named `$camel`\n" unless $classname;
 
     $classname;
 }
