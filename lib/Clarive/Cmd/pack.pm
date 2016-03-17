@@ -161,6 +161,9 @@ sub run_nsi {
     my $cygwin_dist  = $self->cygwin_dist;
     my $clarive_dist = $self->clarive_dist;
 
+    chomp($cygwin_dist = `cygpath -w $cygwin_dist`);
+    chomp($clarive_dist = `cygpath -w $clarive_dist`);
+
     $template =~ s{## VERSION ##}{$version}g;
     $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist}g;
     $template =~ s{## CLARIVE_DIST ##}{$clarive_dist}g;
@@ -169,7 +172,7 @@ sub run_nsi {
     print $fh $template;
     close $fh;
 
-    system("makensis.exe clarive.nsi");
+    system("/cygdrive/c/Program\\ Files\\ \\(x86\\)/NSIS/makensis.exe clarive.nsi");
 
     my $final_archive_path = "clarive_${version}_installer.exe";
 
