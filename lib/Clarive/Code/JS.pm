@@ -575,6 +575,13 @@ sub _generate_ns {
 
                 return $self->_map_instance($instance);
             },
+            isLoaded => js_sub {
+                my ($classname) = @_;
+
+                my $package = 'BaselinerX::CI::' . $classname;
+
+                return Util->_package_is_loaded( $package );
+            },
             create => js_sub {
                 my ($classname,$obj) = @_;
 

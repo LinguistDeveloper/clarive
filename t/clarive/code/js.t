@@ -751,6 +751,28 @@ subtest 'CI creation / use' => sub {
     }
 };
 
+subtest 'CI creation and isLoaded' => sub {
+    _setup();
+
+    {
+        my $code = _build_code( lang => 'js' );
+
+        ok $code->eval_code(q{
+            var ci = require('cla/ci');
+            ci.create("BarTestCI",{
+                superclasses: ['Status'],
+                has: { password: { is:'rw', isa:'Str', default: 'xxx' } },
+                methods: {
+                    foo : function(){ return 100 },
+                    connect: function(me){ return { aa: me.name(), bb: me.password() } }
+                }
+            });
+            ci.isLoaded('BarTestCI');
+        });
+    }
+};
+
+
 subtest 'bytecode call serialized from js to js' => sub {
     _setup();
 
