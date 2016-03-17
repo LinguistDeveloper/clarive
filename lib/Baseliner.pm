@@ -89,11 +89,22 @@ after 'setup_finalize' => sub {
     my $app = shift;
 
     my $precompile = $app->config->{rule_precompile};
+
     # Precompile rules?
     $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
 
+    # merge Baseliner config keys into Clarive
     for my $key ( keys %{Baseliner->config}) {
         Clarive->config->{$key}  = Baseliner->config->{$key};
+    }
+
+    if( Clarive->app->load_plugins ) {
+        require Clarive::Plugins;
+        my $plugins = Clarive::Plugins->new;
+        foreach my $public_path ( $plugins->locate_all_paths('public') ) {
+            # change static paths
+            push( @{ $app->config->{static}{include_path} }, $public_path );
+        }
     }
 };
 

@@ -20,13 +20,13 @@ sub eval_code {
 
         if( $self->benchmark ) {
             $t0=[gettimeofday];
-        } 
+        }
 
         my $ret = ( $js->eval_code( $code, $stash, $opts ) );
 
         if( $self->benchmark ) {
             $self->elapsed( tv_interval( $t0 ) );
-        } 
+        }
         return $ret;
     }
     else {
