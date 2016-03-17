@@ -17,6 +17,8 @@ has
 
     return $self->_slurp('VERSION');
   };
+has cygwin_dist  => qw(is rw isa Str);
+has clarive_dist => qw(is rw isa Str);
 
 sub run { &run_dist }
 
@@ -64,7 +66,7 @@ sub run_dist {
         $self->os($os);
     }
 
-    if (!$self->arch) {
+    if ( !$self->arch ) {
         my $arch;
         chomp( $arch //= `uname -m` );
         $arch = lc $arch;
@@ -89,7 +91,7 @@ sub run_dist {
       clarive/rec-tests
     );
 
-    if (-d '.git') {
+    if ( -d '.git' ) {
         `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
     }
     else {
@@ -106,7 +108,7 @@ sub run_dist {
     mkdir $destdir;
 
     my $final_archive_path;
-    if ($self->os =~ m/windows|cygwin/i) {
+    if ( $self->os =~ m/windows|cygwin/i ) {
         my $archive = "$dist.zip";
         my $archive_path = File::Spec->catfile( $destdir, $archive );
         unlink $archive_path;
@@ -114,8 +116,7 @@ sub run_dist {
         my $exclude_str = join ' ', map { "clarive/$_" } @exclude;
         $exclude_str = '--exclude ' . $exclude_str if $exclude_str;
 
-        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $archive_path,
-          $exclude_str;
+        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $archive_path, $exclude_str;
         system($cmd);
 
         $final_archive_path = $archive_path;
@@ -133,6 +134,44 @@ sub run_dist {
 
         $final_archive_path = $archive_path;
     }
+
+    if ( -f $final_archive_path ) {
+        print $final_archive_path, "\n";
+        exit 0;
+    }
+    else {
+        print 'ERROR', "\n";
+        exit 1;
+    }
+}
+
+sub run_nsi {
+    my $self = shift;
+
+    for (qw/cygwin clarive/) {
+        my $method = "${_}_dist";
+
+        die "$method required" unless $self->$method;
+        die "$method must be a .zip file" unless -f $self->$method && $self->$method =~ m/\.zip$/;
+    }
+
+    my $template = do { local $/; open my $fh, '<', "data/nsi/clarive.nsi.template" or die $!; <$fh> };
+
+    my $version      = $self->version;
+    my $cygwin_dist  = $self->cygwin_dist;
+    my $clarive_dist = $self->clarive_dist;
+
+    $template =~ s{## VERSION ##}{$version}g;
+    $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist}g;
+    $template =~ s{## CLARIVE_DIST ##}{$clarive_dist}g;
+
+    open my $fh, '>', 'clarive.nsi' or die $!;
+    print $fh $template;
+    close $fh;
+
+    system("makensis.exe clarive.nsi");
+
+    my $final_archive_path = "clarive_${version}_installer.exe";
 
     if ( -f $final_archive_path ) {
         print $final_archive_path, "\n";

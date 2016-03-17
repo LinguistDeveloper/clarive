@@ -1,0 +1,286 @@
+!include "MUI2.nsh"
+!include "ZipDLL.nsh"
+!include "nsDialogs.nsh"
+!include "LogicLib.nsh"
+!include "FileFunc.nsh"
+
+;Strings
+!define ProgramVersion "## VERSION ##"
+!define CompanyName "Clarive Software"
+!define ProgramName "Clarive"
+!define ProgramDescription "Lean Application Delivery"
+!define SupportLink "http://clarive.com"
+!define HelpLink "http://clarive.com"
+
+;Strings Registry
+!define CompanyRegistryKey "Software\${CompanyName}"
+!define ProgramRegistryKey "${CompanyRegistrykey}\${ProgramName}"
+!define UninstallRegistryKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ProgramName}"
+
+!define WebService "Clarive Web Server"
+!define DispatcherService "Clarive Dispatcher Server"
+
+!define CygwinDist "## CYGWIN_DIST ##"
+!define ClariveDist "## CLARIVE_DIST ##"
+
+Name "${CompanyName} - ${ProgramName}"
+OutFile "clarive_${ProgramVersion}_installer.exe"
+
+InstallDir "C:\${CompanyName}\${ProgramName}"
+
+; Save previously selected InstallDir to registry
+InstallDirRegKey HKCU "${ProgramRegistryKey}" "InstallLocation"
+
+BrandingText "${ProgramName} Installer"
+
+RequestExecutionLevel admin
+
+!define MUI_ICON "data\nsi\clarive_32x32.ico"
+!define MUI_UNICON "data\nsi\clarive_uninstall_32x32.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "data\nsi\header.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "data\nsi\header_uninstall.bmp"
+!define MUI_HEADERIMAGE_LEFT
+!define MUI_WELCOMEFINISHPAGE_BITMAP "data\nsi\welcome.bmp"
+
+!define MUI_ABORTWARNING
+
+!define MUI_LANGDLL_ALLLANGUAGES
+
+!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
+!define MUI_LANGDLL_REGISTRY_KEY "${ProgramRegistryKey}"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "${ProgramName} Installer Language"
+
+!define MUI_WELCOMEPAGE_TITLE "${CompanyName}"
+!define MUI_WELCOMEPAGE_TEXT "Welcome$\r$\nInstall$\r$\nYeah!"
+
+
+;--------------------------------
+;Pages
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "LICENSE"
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+Page custom ConfigurationPage ConfigurationPageLeave
+!insertmacro MUI_PAGE_INSTFILES
+Page custom PostInstall
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+;Variables
+Var Label
+Var Dialog
+Var EnvName
+Var EnvNameText
+Var Config
+Var ConfigText
+
+Function ConfigurationPage
+    !insertmacro MUI_HEADER_TEXT "Configure ${ProgramName}" "Set configuration variables."
+
+    nsDialogs::Create 1018
+    Pop $Dialog
+
+    ${If} $Dialog == error
+        Abort
+    ${EndIf}
+
+    ${NSD_CreateLabel} 0 0 100% 12u "Enter configuration file name:"
+    Pop $Label
+
+    ${NSD_CreateText} 0 13u 100% 13u "test"
+    Pop $EnvNameText
+
+    ${NSD_CreateLabel} 0 26u 100% 13u "Environmental file:"
+    Pop $Label
+
+    ${NSD_CreateText} 0 36u 100% -13u "lang: en_US.UTF-8$\r$\nport: 3000$\r$\n$\r$\nmongo:$\r$\n    dbname: test"
+    Pop $ConfigText
+
+    nsDialogs::Show
+FunctionEnd
+
+Function ConfigurationPageLeave
+
+    ${NSD_GetText} $ConfigText $Config
+    ${NSD_GetText} $EnvNameText $EnvName
+
+    ${If} $EnvName == ""
+        MessageBox MB_OK "Please enter environment file name"
+        Abort
+    ${EndIf}
+
+    ${If} $Config == ""
+        MessageBox MB_OK "Please enter configuration"
+        Abort
+    ${EndIf}
+
+FunctionEnd
+
+Function PostInstall
+
+    Delete "$INSTDIR\data\opt\clarive\config\$EnvName.yml"
+    FileOpen $8 "$INSTDIR\data\opt\clarive\config\$EnvName.yml" w
+    FileWrite $8 "$Config"
+    FileClose $8
+
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --remove $\"${WebService}$\"'
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --install $\"${WebService}$\"                           \
+                               --env $\"TZ=Europe/Madrid$\"                          \
+                               --path /opt/clarive/clarive/bin/cla                   \
+                               --args $\"web-start --env $EnvName --init --migrate-yes$\"                      \
+                               --stdout $\"$INSTDIR\data\opt\clarive\logs\service.web.stdout.log$\" \
+                               --stderr $\"$INSTDIR\data\opt\clarive\logs\service.web.stderr.log$\"'
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --start $\"${WebService}$\"'
+
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --remove $\"${DispatcherService}$\"'
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --install $\"${DispatcherService}$\"                    \
+                               --env $\"TZ=Europe/Madrid$\"                           \
+                               --path /opt/clarive/clarive/bin/cla                    \
+                               --args $\"disp-start --env $EnvName$\"                       \
+                               --stdout $\"$INSTDIR\data\opt\clarive\logs\service.disp.stdout.log$\" \
+                               --stderr $\"$INSTDIR\data\opt\clarive\logs\service.disp.stderr.log$\"'
+    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --start $\"${DispatcherService}$\"'
+
+FunctionEnd
+
+;--------------------------------
+;Languages
+
+!insertmacro MUI_LANGUAGE "English" ;first language is the default language
+!insertmacro MUI_LANGUAGE "Spanish"
+
+;--------------------------------
+;Reserve Files
+
+  ;If you are using solid compression, files that are required before
+  ;the actual installation should be stored first in the data block,
+  ;because this will make your installer start faster.
+
+!insertmacro MUI_RESERVEFILE_LANGDLL
+
+;--------------------------------
+;Installer Sections
+
+Section "Installation" SecDummy
+
+    SetOutPath "$INSTDIR"
+
+    File /oname=clarive.ico "${MUI_ICON}"
+
+    File "${CygwinDist}"
+    File "${ClariveDist}"
+
+    !insertmacro ZIPDLL_EXTRACT "${CygwinDist}" "$INSTDIR\" "<ALL>"
+
+    Delete "$INSTDIR\${CygwinDist}"
+
+    CreateDirectory $INSTDIR\data\opt\clarive
+    CreateDirectory $INSTDIR\data\opt\clarive\config
+    CreateDirectory $INSTDIR\data\opt\clarive\logs
+    !insertmacro ZIPDLL_EXTRACT "${ClariveDist}" "$INSTDIR\data\opt\clarive\" "<ALL>"
+
+    Delete "$INSTDIR\${ClariveDist}"
+
+    ;Store installation folder
+    WriteRegStr HKCU "${ProgramRegistryKey}" "InstallLocation" $INSTDIR
+    WriteRegStr HKCU "${ProgramRegistryKey}" "DisplayVersion" "${ProgramVersion}"
+
+    ;Create uninstaller
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayName" "${ProgramName} ${ProgramVersion} - ${ProgramDescription}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayIcon" "$INSTDIR\clarive.ico"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayVersion" "${ProgramVersion}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "Publisher" "${CompanyName}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "HelpLink" "${HelpLink}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "URLInfoAbout" "${SupportLink}"
+
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "QuietUninstallString" "$\"$INSTDIR\Uninstall.exe$\" /S"
+
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD HKLM "${UninstallRegistryKey}" "EstimatedSize" "$0"
+
+SectionEnd
+
+;--------------------------------
+;Installer Functions
+
+Function .onInit
+
+    IfSilent done 0 ; Jump to done if in silent mode
+
+    !insertmacro MUI_LANGDLL_DISPLAY
+
+    ReadRegStr $R0 HKLM "${UninstallRegistryKey}" "UninstallString"
+    StrCmp $R0 "" done
+
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+    "${ProgramName} is already installed. $\n$\nClick `OK` to remove the \
+    previous version or `Cancel` to cancel this upgrade." \
+    IDOK uninst
+    Abort
+
+uninst:
+    ClearErrors
+    ExecWait '$R0 _?=$INSTDIR'
+
+    IfErrors no_remove_uninstaller done
+    no_remove_uninstaller:
+
+done:
+
+FunctionEnd
+
+;--------------------------------
+;Descriptions
+
+  ;USE A LANGUAGE STRING IF YOU WANT YOUR DESCRIPTIONS TO BE LANGAUGE SPECIFIC
+
+  ;Assign descriptions to sections
+    !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+        !insertmacro MUI_DESCRIPTION_TEXT ${SecDummy} "A test section."
+    !insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+;--------------------------------
+;Uninstaller Section
+
+Section "Uninstall"
+
+    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --stop $\"${WebService}$\""
+    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --remove $\"${WebService}$\""
+
+    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --stop $\"${DispatcherService}$\""
+    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --remove $\"${DispatcherService}$\""
+
+    Delete "$INSTDIR\Uninstall.exe"
+
+    RMDir /r "$INSTDIR"
+
+    DeleteRegKey /ifempty HKCU "${ProgramRegistryKey}"
+    DeleteRegKey /ifempty HKCU "${CompanyRegistryKey}"
+
+    DeleteRegKey HKLM "${UninstallRegistryKey}"
+
+SectionEnd
+
+;--------------------------------
+;Uninstaller Functions
+
+Function un.onInit
+
+    !insertmacro MUI_UNGETLANGUAGE
+
+FunctionEnd
