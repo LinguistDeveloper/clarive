@@ -306,6 +306,9 @@ sub calendar_submit : Path('/job/calendar_submit') {
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
                 my $active = ( $cmd eq "A" );
                 $new_id = ''.mdb->seq('calendar_window');
+                if($cmd eq "A" and $id){
+                    mdb->calendar_window->remove({ id => $id });
+                }
                 mdb->calendar_window->insert({
                     id         => $new_id,
                     id_cal     => "$id_cal",
