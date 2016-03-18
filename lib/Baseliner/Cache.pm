@@ -13,6 +13,8 @@ has encoder => qw(is rw isa Object lazy 1 default), sub{
 has decoder => qw(is rw isa Object lazy 1 default), sub{ Sereal::Decoder->new };
 has expire_seconds => qw(is rw isa Num default), sub { 3600*24 }; # one expiration day by default
 
+use Clarive::mdb;
+
 sub dt {
     state $tz = Util->_tz();
     #DateTime::Tiny->now( time_zone=>$tz );
