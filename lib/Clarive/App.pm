@@ -1,6 +1,7 @@
 package Clarive::App;
 use Mouse;
 use v5.10;
+use Try::Tiny;
 
 has env          => qw(is rw required 0);
 has home         => qw(is rw required 1);
@@ -184,6 +185,21 @@ sub do_cmd {
 
     my $cmd_package = "Clarive::Cmd::$cmd_pkg";
     my $runsub = 'run';
+
+    # run from plugins?
+    for my $lang ( qw(js pl) ) {
+        if( my ($first) = $self->plugins->locate_all_paths( "cmd/$cmd.$lang" ) ) {
+            require Clarive::Code;
+            my $stash = {};
+            try {
+                Clarive::Code->new( lang=>$lang )->run_file($first, $stash );
+            } catch {
+                my $err = shift;
+                die $err;
+            };
+            exit 0;
+        }
+    }
 
     # load package
     my $second = 0;

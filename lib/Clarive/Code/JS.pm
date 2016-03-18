@@ -26,7 +26,7 @@ has enclose_code  => qw(is rw isa Bool default 0);
 has strict_mode   => qw(is rw isa Bool default 0);
 has allow_pragmas => qw(is rw isa Bool default 0);
 
-has current_file      => qw(is rw isa Str);
+has current_file      => qw(is rw isa Str), default=>'EVAL';
 
 has extend_cla    => qw(is rw isa HashRef default),sub{+{}};
 has global_ns     => qw(is rw isa HashRef default),sub{+{}};
@@ -126,7 +126,7 @@ sub eval_code {
     catch {
         ( my $err = $_ ) =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1};
 
-        my $file = $self->current_file || 'EVAL';
+        my $file = $self->current_file;
 
         my $msg = "Error executing JavaScript ($file): $err";
 
