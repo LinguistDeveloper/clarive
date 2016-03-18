@@ -17,7 +17,7 @@ use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
 use Baseliner::Model::Permissions;
-use Baseliner::Utils qw(_file _dir);
+use Baseliner::Utils qw(_file _dir _array);
 
 use_ok 'Baseliner::Controller::User';
 
