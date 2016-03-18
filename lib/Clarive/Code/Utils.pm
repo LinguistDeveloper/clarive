@@ -1,10 +1,6 @@
 package Clarive::Code::Utils;
 use strict;
 use warnings;
-use Baseliner::Utils qw(_package_is_loaded);
-use Try::Tiny;
-
-use PadWalker qw(closed_over);
 
 use Exporter::Tidy default => [
     qw(
@@ -17,8 +13,19 @@ use Exporter::Tidy default => [
         peek
         pv_address
         to_bytecode
+        _serialize
+        _map_ci
+        _map_methods
+        _map_instance
+        _to_json
+        _bc_sub
       )
 ];
+
+use Try::Tiny;
+use PadWalker qw(closed_over);
+
+use Baseliner::Utils qw(_array _package_is_loaded _to_camel_case _unbless);
 
 our $GLOBAL_ERR;
 
@@ -149,6 +156,159 @@ sub to_bytecode {
 
     my $buf_ptr = $duk->get_buffer( -1, my $len );
     return ( scalar peek( $buf_ptr, $len ), $len );
+}
+
+sub _serialize {
+    my ( $options, @docs ) = @_;
+
+    $options->{_seen} //= {};
+
+    my @result;
+    foreach my $doc (@docs) {
+        if ( ref $doc ) {
+            $options->{_seen}->{"$doc"}++;
+
+            if ( $options->{_seen}->{"$doc"} > 1 ) {
+                push @result, '__cycle_detected__';
+                next;
+            }
+        }
+
+        if ( Scalar::Util::blessed($doc) ) {
+            push @result, _map_instance( $doc );
+        }
+        elsif ( ref $doc eq 'CODE' ) {
+            push @result, _bc_sub( $doc );
+        }
+        elsif ( ref $doc eq 'ARRAY' ) {
+            my $array = [];
+            foreach my $el (@$doc) {
+                push @$array, scalar _serialize( $options, $el );
+            }
+
+            push @result, $array;
+        }
+        elsif ( ref $doc eq 'HASH' ) {
+            my $hash = {};
+            foreach my $key ( keys %$doc ) {
+                $hash->{$key} = _serialize( $options, $doc->{$key} );
+            }
+            push @result, $hash;
+        }
+        elsif ( $options->{convert_subs} && ref $doc eq 'CODE' ) {
+            return 'function() { ... }';
+        }
+        else {
+            push @result, $doc;
+        }
+    }
+
+    return wantarray ? @result : $result[0];
+}
+
+sub _bc_sub {
+    my $orig = shift;
+
+    my ($bytecode,$len) = to_bytecode( $Clarive::Code::JS::CURRENT_VM->duk, $orig );
+
+    sub {
+        my $self_ci = shift;
+        my @args = @_;
+        my $duk;
+
+        if( ref $_[0] ne 'JavaScript::Duktape::Vm' ) {
+            my $js = Clarive::Code::JS->new( save_vm=>1 );
+            #my $vm = JavaScript::Duktape->new;
+            #$vm->eval('(function(){ print(111) }())');
+            $js->eval_code('');
+            $duk = $js->_last_vm->duk;
+        } else {
+            $duk = $Clarive::Code::JS::CURRENT_VM->duk;
+        }
+
+        my $pv_ptr = pv_address( $bytecode );
+        $duk->push_external_buffer;
+        $duk->config_buffer( -1, $pv_ptr, $len);
+        $duk->load_function;
+        $duk->push_perl( _serialize({},$self_ci) );
+        $duk->push_perl( _serialize({},$_) ) for @args;
+        $duk->call(1 + @args );
+        my $ret = $duk->to_perl(-1);
+        $duk->pop;
+        return $ret;
+    }
+}
+
+sub _map_ci {
+    my $name = shift;
+
+    return js_sub {
+        my $instance = ci->$name->new(@_);
+
+        return _map_instance($instance);
+    }
+}
+
+sub _map_instance {
+    my ($instance) = @_;
+
+    return unless $instance;
+
+    my @methods = _map_methods($instance);
+
+    my $method_map = {};
+
+    foreach my $method (@methods) {
+        my $method_camelized = _to_camel_case($method);
+        $method_map->{$method_camelized} = js_sub {
+            _serialize( {}, $instance->$method(@_) );
+        };
+    }
+
+    return $method_map;
+}
+
+sub _map_methods {
+    my ($instance) = @_;
+
+    my @methods;
+
+    my @current_methods =
+      $instance->can('meta')
+      ? ( map { +{ name => $_->name, full => $_->fully_qualified_name } }
+          $instance->meta->get_all_methods )
+      : ( map { +{ name => [ /^.*::(.*?)$/ ]->[0], full => $_ } }
+          _array( Class::Inspector->methods( ref $instance, 'full', 'public' ) ) );
+
+    for my $method ( @current_methods ) {
+        my $name = $method->{name};
+
+        # Skip private methods
+        next if $name =~ m/^_/;
+
+        # Skip special methods like DESTROY
+        next if $name =~ m/^[A-Z]/;
+
+        my $full_name = $method->{full};
+
+        # Skip everything that comes from Moose
+        next if $full_name =~ m/^(?:Moose|UNIVERSAL)::/;
+
+        push @methods, $name;
+    }
+
+    return @methods;
+}
+
+sub _to_json {
+    my ($what) = @_;
+
+    return 'undefined' unless defined $what;
+
+    my $doc = _serialize( { convert_subs => 1 }, $what );
+    return $doc unless ref $doc;
+
+    JSON->new->pretty(1)->canonical(1)->encode($doc);
 }
 
 1;
