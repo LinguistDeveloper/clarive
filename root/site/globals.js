@@ -69,37 +69,6 @@ Cla.use = function(urls, callback, cache){
     }
 };
 
-Cla.timezone_list = [
-<%perl>
- use DateTime::TimeZone;
- my @tzs;
- for my $tz ( DateTime::TimeZone->all_names ) {
-    push @tzs, "['". $tz . "','" . $tz . "']"; 
- }
- print join ',', @tzs;
-</%perl>
-];
-
-Cla.country_list = [
-<%perl>
- use Locale::Country;
- use XML::Simple;
- my @countries;
- my $i = 0;
- my $xml = new XML::Simple;
- my $zones = $xml->XMLin("zones.xml");
-
- for my $country (all_country_names) {
-   my $code = country2code($country);
-   my $currency = $zones->{CcyNtry}[$i]{Ccy};
-   my $decimal = $zones->{CcyNtry}[$i]{Decimal};
-   $i++;
-    push @countries, "[" .'"'. $code .'"'. "," .'"' . $country .'"' . "," .'"' .  $currency .'"' . "," .'"' . $decimal .'"' ."]";
- }
-print join ',', @countries;
-</%perl>
-];
-
 Cla.moment_to_js_date_hash = {
     'DD-MM-YY' : 'd-m-Y',
     'DD-MM-YYYY' : 'd-m-Y',

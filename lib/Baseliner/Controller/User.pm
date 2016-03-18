@@ -9,6 +9,9 @@ use Capture::Tiny qw(capture);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
+use Locale::Country;
+use XML::Simple;
+use DateTime::TimeZone;
 
 use experimental 'switch', 'autoderef';
 
@@ -1201,6 +1204,52 @@ sub duplicate : Local {
             = { success => \0, msg => _loc('Error duplicating user') };
     };
 
+    $c->forward('View::JSON');
+}
+
+sub country_info : Local {
+    my ( $self, $c ) = @_;
+    my $params = $c->req->params;
+    my @countries;
+    my $i   = 0;
+    my $xml = new XML::Simple;
+    my $str;
+    try {
+        my $file = _file( $params->{file} );
+        if ( !-e $file ) {
+            _fail _loc('Error: File not found');
+        }
+        my $zones = $xml->XMLin( $params->{file} );
+        for my $country (all_country_names) {
+            my $code     = country2code($country);
+            my $currency = $zones->{CcyNtry}[$i]{Ccy} or _fail "Error to find the currency";
+            my $decimal  = $zones->{CcyNtry}[$i]{Decimal} or _fail "Error to find the decimal";
+            $i++;
+            my $data_country = [ $code, $country, $currency, $decimal ];
+            push @countries, $data_country;
+        }
+
+        $c->stash->{json} = { success => \1, msg => _loc('country info success'), data => \@countries };
+    }
+
+    catch {
+        my $err = shift;
+
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+
+    $c->forward('View::JSON');
+}
+
+sub timezone_list : Local {
+    my ( $self, $c ) = @_;
+    my @tzs;
+    my $timezone;
+    for my $tz ( DateTime::TimeZone->all_names ) {
+        $timezone = [$tz];
+        push @tzs, $timezone;
+    }
+    $c->stash->{json} = { data => \@tzs };
     $c->forward('View::JSON');
 }
 

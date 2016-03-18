@@ -203,6 +203,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 value: res.data.time_format_pref || Prefs.time_format || 'format_from_local',
                 data: time_formats
             });
+            Baseliner.ajaxEval('/user/timezone_list', {}, function(ret){
             
             var timezone = new Baseliner.ComboDouble({
                 fieldLabel: _('Timezone'), 
@@ -211,21 +212,21 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 data: [ 
                     ['server_timezone', _('Server Timezone (%1)', Prefs.server_timezone)], 
                     ['browser_timezone', _('My Browser Timezone (now is %1)', moment(Date().now).format('h:mma') )]
-                ].concat( Cla.timezone_list.map(function(tz){ 
-                    tz[1]=String.format(_("{0} (now is {1})"), tz[0], moment(Date().now).tz(tz[0]).format('h:mma')); 
+                ].concat( ret.data.map(function(tz){
+                    tz[0]=String.format(_("{0} (now is {1})"), tz[0], moment(Date().now).tz(tz[0]).format('h:mma'));
                     return tz;
                 }) )
             });
             var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Default Dashboard'), name:'dashboard', singleMode: true, 
                        allowBlank: true, baseParams: { username: true }, value: default_dashboard });
 
-            var countries = Cla.country_list;
+             Baseliner.ajaxEval('/user/country_info', {file : 'data/zones.xml'}, function(ret){
 
              var country = new Baseliner.ComboDouble({
                 fieldLabel: _('Country'),
                 name: 'country',
                 value: res.data.country || Prefs.country || 'es',
-                data:( Cla.country_list.map(function(c){
+                data:( ret.data.map(function(c){
                     return c;
                 }) )
             });
@@ -325,7 +326,10 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 items: [ preftabs ]
             });
             win.show(); 
+            });
         });
+    });
     }
+    
 });
 
