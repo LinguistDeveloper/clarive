@@ -27,15 +27,13 @@
         x_axis_label = _('Topics');
     }
 
-    Cla.ajax_json('/user/user_data', {  }, function(res){
-        decimal_zone = res.data.decimal;
-            });
-
     Cla.ajax_json('/dashboard/topics_by_field', { topic_mid: topic_mid, project_id: project_id, group_by: group_by,
                   condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, 
                   categories: categories, statuses: statuses, numberfield_group: numberfield_group, 
                   result_type: result_type, _ignore_conn_errors: true, sort_by_labels: sort_by_labels, 
                   max_legend_length: max_legend_length }, function(res){
+                    Cla.ajax_json('/user/user_data', {}, function(ret){
+                      decimal_zone = ret.data.decimal;
 
             c3.generate({
               bindto: '#'+id,
@@ -146,5 +144,6 @@
                   }
               }
         });
+      });
     });
 });
