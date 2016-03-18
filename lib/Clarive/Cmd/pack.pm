@@ -5,6 +5,7 @@ BEGIN { extends 'Clarive::Cmd' }
 
 use Cwd qw(getcwd);
 use File::Spec;
+use File::Copy qw(copy);
 
 our $CAPTION = 'Pack';
 
@@ -179,9 +180,15 @@ sub run_nsi {
     chomp( $cygwin_dist  = `cygpath -w $cygwin_dist` );
     chomp( $clarive_dist = `cygpath -w $clarive_dist` );
 
+    my ($cygwin_dist_basename) = $cygwin_dist =~ m/([^\\\/]+)$/;
+    my ($clarive_dist_basename) = $clarive_dist =~ m/([^\\\/]+)$/;
+
+    copy($cygwin_dist, $cygwin_dist_basename);
+    copy($clarive_dist, $clarive_dist_basename);
+
     $template =~ s{## VERSION ##}{$version}g;
-    $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist}g;
-    $template =~ s{## CLARIVE_DIST ##}{$clarive_dist}g;
+    $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist_basename}g;
+    $template =~ s{## CLARIVE_DIST ##}{$clarive_dist_basename}g;
 
     open my $fh, '>', 'clarive.nsi' or die $!;
     print $fh $template;
