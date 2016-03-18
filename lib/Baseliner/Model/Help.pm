@@ -55,6 +55,7 @@ sub build_doc_tree {
                 my $dir_has_markdown = $dir_or_file->parent->contains( $md_file );
                 if ( $dir_has_markdown ) {
                     my $data = $self->parse_body( $md_file, $docs_root, { rel=>$rel, %$opts } );
+                    next if exists $data->{active} && !$data->{active};
                     my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
                     $data->{rel} = "$rel";
                     $uniq_dirs{ $data->{uniq_id} } = 1;
@@ -90,6 +91,7 @@ sub build_doc_tree {
             }
             else {
                 my $data = $self->parse_body( $dir_or_file, $docs_root, { rel=>$rel, %$opts } );
+                next if exists $data->{active} && !$data->{active};
                 next if exists $uniq_dirs{ $data->{uniq_id} }; ## prevent dir markdown descriptors from showing up twice
                 next unless $self->doc_matches( $data, $query );
                 $data->{rel} = "$rel";
