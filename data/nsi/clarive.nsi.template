@@ -1,30 +1,34 @@
 !include "MUI2.nsh"
 !include "ZipDLL.nsh"
 !include "nsDialogs.nsh"
+!include "nsDialogs_createTextMultiline.nsh"
 !include "LogicLib.nsh"
 !include "FileFunc.nsh"
 
+Unicode true
+
 ;Strings
 !define ProgramVersion "## VERSION ##"
-!define CompanyName "Clarive Software"
-!define ProgramName "Clarive"
-!define ProgramDescription "Lean Application Delivery"
+!define CompanyName "Clarive"
+!define CompanyNameLegal "Clarive Software, Inc."
+!define ProgramName "Server"
+!define ProgramNameVersion "${ProgramName} ${ProgramVersion}"
 !define SupportLink "http://clarive.com"
 !define HelpLink "http://clarive.com"
 
 ;Strings Registry
 !define CompanyRegistryKey "Software\${CompanyName}"
-!define ProgramRegistryKey "${CompanyRegistrykey}\${ProgramName}"
-!define UninstallRegistryKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ProgramName}"
+!define ProgramRegistryKey "${CompanyRegistrykey}\${ProgramNameVersion}"
+!define UninstallRegistryKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ProgramNameVersion}"
 
-!define WebService "Clarive Web Server"
-!define DispatcherService "Clarive Dispatcher Server"
+!define WebService "Clarive Web Server - ${ProgramVersion}"
+!define DispatcherService "Clarive Dispatcher - ${ProgramVersion}"
 
 !define CygwinDist "## CYGWIN_DIST ##"
 !define ClariveDist "## CLARIVE_DIST ##"
 
-Name "${CompanyName} - ${ProgramName}"
-OutFile "clarive_${ProgramVersion}_installer.exe"
+Name "${CompanyNameLegal} - ${ProgramName}"
+OutFile "clarive_${ProgramVersion}_setup.exe"
 
 InstallDir "C:\${CompanyName}\${ProgramName}"
 
@@ -35,8 +39,8 @@ BrandingText "${ProgramName} Installer"
 
 RequestExecutionLevel admin
 
-!define MUI_ICON "data\nsi\clarive_32x32.ico"
-!define MUI_UNICON "data\nsi\clarive_uninstall_32x32.ico"
+!define MUI_ICON "data\nsi\clarive.ico"
+!define MUI_UNICON "data\nsi\clarive_uninstall.ico"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "data\nsi\header.bmp"
 !define MUI_HEADERIMAGE_UNBITMAP "data\nsi\header_uninstall.bmp"
@@ -49,11 +53,12 @@ RequestExecutionLevel admin
 
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
 !define MUI_LANGDLL_REGISTRY_KEY "${ProgramRegistryKey}"
-!define MUI_LANGDLL_REGISTRY_VALUENAME "${ProgramName} Installer Language"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "${ProgramName} Setup Language"
 
-!define MUI_WELCOMEPAGE_TITLE "${CompanyName}"
-!define MUI_WELCOMEPAGE_TEXT "Welcome$\r$\nInstall$\r$\nYeah!"
-
+!define MUI_WELCOMEPAGE_TITLE "${ProgramName} Install/Setup"
+!define MUI_WELCOMEPAGE_TEXT "This is the Clarive Server Install and Setup program. This program will install the Clarive Server components in this machine.$\r$\n$\r$\n\
+For more information, please visit http://docs.clarive.com/setup/windows/.$\r$\n$\r$\n\
+If you need help, please email support@clarive.com."
 
 ;--------------------------------
 ;Pages
@@ -62,9 +67,9 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
-Page custom ConfigurationPage ConfigurationPageLeave
 !insertmacro MUI_PAGE_INSTFILES
-Page custom PostInstall
+Page custom ConfigurationPage ConfigurationPageLeave
+Page custom PostInstall PostInstallLeave
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -87,16 +92,16 @@ Function ConfigurationPage
         Abort
     ${EndIf}
 
-    ${NSD_CreateLabel} 0 0 100% 12u "Enter configuration file name:"
+    ${NSD_CreateLabel} 0 0 100% 12u "Environment file name:"
     Pop $Label
 
-    ${NSD_CreateText} 0 13u 100% 13u "test"
+    ${NSD_CreateText} 0 12u 100% 12u "test"
     Pop $EnvNameText
 
-    ${NSD_CreateLabel} 0 26u 100% 13u "Environmental file:"
+    ${NSD_CreateLabel} 0 28u 100% 12u "Environment configuration (YAML format):"
     Pop $Label
 
-    ${NSD_CreateText} 0 36u 100% -13u "lang: en_US.UTF-8$\r$\nport: 3000$\r$\n$\r$\nmongo:$\r$\n    dbname: test"
+    ${NSD_CreateTextMultiline} 0 40u 100% -40u "lang: en_US.UTF-8$\r$\nport: 3000$\r$\n$\r$\nmongo:$\r$\n    dbname: test"
     Pop $ConfigText
 
     nsDialogs::Show
@@ -104,45 +109,180 @@ FunctionEnd
 
 Function ConfigurationPageLeave
 
-    ${NSD_GetText} $ConfigText $Config
     ${NSD_GetText} $EnvNameText $EnvName
+    ${NSD_GetText} $ConfigText $Config
 
     ${If} $EnvName == ""
-        MessageBox MB_OK "Please enter environment file name"
+        MessageBox MB_OK "Please enter Environment file name"
         Abort
     ${EndIf}
 
     ${If} $Config == ""
-        MessageBox MB_OK "Please enter configuration"
+        MessageBox MB_OK "Please enter Environment configuration"
         Abort
     ${EndIf}
 
 FunctionEnd
 
+Var StartWebServiceCheckbox
+Var StartWebServiceCheckbox_State
+Var StartDispatcherServiceCheckbox
+Var StartDispatcherServiceCheckbox_State
+
+Var InstallMenuShortCutsCheckbox
+Var InstallMenuShortCutsCheckbox_State
+
+!macro CreateServiceInstallBatchFile Type EnvName ServiceName
+
+    Delete "$INSTDIR\bin\service-${Type}-${EnvName}-install.bat"
+    FileOpen $0 "$INSTDIR\bin\service-${Type}-${EnvName}-install.bat" w
+    FileWrite $0 '"$INSTDIR\app\bin\cygrunsrv" --remove $\"${ServiceName} (${EnvName})$\"$\r$\n'
+    FileWrite $0 '"$INSTDIR\app\bin\cygrunsrv" --install $\"${ServiceName} (${EnvName})$\"                           \
+    --env $\"TZ=UTC$\"                          \
+    --path /opt/clarive/clarive/bin/cla                   \
+    --args $\"${Type}-start --env ${EnvName}$\"                      \
+    --stdout $\"$INSTDIR\app\opt\clarive\logs\service.${Type}.${EnvName}.stdout.log$\" \
+    --stderr $\"$INSTDIR\app\opt\clarive\logs\service.${Type}.${EnvName}.stderr.log$\"'
+    FileClose $0
+
+!macroend
+
+!macro CreateServiceActionBatchFile Type EnvName ServiceName Action
+
+    Delete "$INSTDIR\bin\service-${Type}-${EnvName}-${Action}.bat"
+    FileOpen $0 "$INSTDIR\bin\service-${Type}-${EnvName}-${Action}.bat" w
+    FileWrite $0 '"$INSTDIR\app\bin\cygrunsrv" --${Action} $\"${ServiceName} (${EnvName})$\"'
+    FileClose $0
+
+!macroend
+
 Function PostInstall
 
-    Delete "$INSTDIR\data\opt\clarive\config\$EnvName.yml"
-    FileOpen $8 "$INSTDIR\data\opt\clarive\config\$EnvName.yml" w
+    !insertmacro MUI_HEADER_TEXT "${ProgramName} Install/Setup is finished" ""
+
+    nsDialogs::Create 1018
+    Pop $Dialog
+
+    ${NSD_CreateCheckbox} 0 0 100% 12u "&Start Web Service"
+    Pop $StartWebServiceCheckbox
+    ${NSD_Check} $StartWebServiceCheckbox
+
+    ${NSD_CreateCheckbox} 0 12u 100% 24u "&Start Dispatcher Service"
+    Pop $StartDispatcherServiceCheckbox
+    ${NSD_Check} $StartDispatcherServiceCheckbox
+
+    ${NSD_CreateCheckbox} 0 48u 100% 12u "&Install Start Menu Shortcuts"
+    Pop $InstallMenuShortCutsCheckbox
+    ${NSD_Check} $InstallMenuShortCutsCheckbox
+
+    nsDialogs::Show
+
+    CreateDirectory $INSTDIR\bin
+
+    Delete "$INSTDIR\app\opt\clarive\config\$EnvName.yml"
+    FileOpen $8 "$INSTDIR\app\opt\clarive\config\$EnvName.yml" w
     FileWrite $8 "$Config"
     FileClose $8
 
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --remove $\"${WebService}$\"'
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --install $\"${WebService}$\"                           \
-                               --env $\"TZ=Europe/Madrid$\"                          \
-                               --path /opt/clarive/clarive/bin/cla                   \
-                               --args $\"web-start --env $EnvName$\"                      \
-                               --stdout $\"$INSTDIR\data\opt\clarive\logs\service.web.stdout.log$\" \
-                               --stderr $\"$INSTDIR\data\opt\clarive\logs\service.web.stderr.log$\"'
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --start $\"${WebService}$\"'
+    FileOpen $9 "$INSTDIR\Shell.bat" w
+    FileWrite $9 "@echo off$\r$\n"
+    FileWrite $9 "$\r$\n"
+    FileWrite $9 "C:$\r$\n"
+    FileWrite $9 "chdir $INSTDIR\app\bin$\r$\n"
+    FileWrite $9 "$\r$\n"
+    FileWrite $9 "SET PATH=$INSTDIR\app\opt\clarive\clarive\bin;$INSTDIR\app\opt\clarive\local\bin;%PATH%$\r$\n"
+    FileWrite $9 "bash --login -i$\r$\n"
+    FileClose $9
 
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --remove $\"${DispatcherService}$\"'
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --install $\"${DispatcherService}$\"                    \
-                               --env $\"TZ=Europe/Madrid$\"                           \
-                               --path /opt/clarive/clarive/bin/cla                    \
-                               --args $\"disp-start --env $EnvName$\"                       \
-                               --stdout $\"$INSTDIR\data\opt\clarive\logs\service.disp.stdout.log$\" \
-                               --stderr $\"$INSTDIR\data\opt\clarive\logs\service.disp.stderr.log$\"'
-    nsExec::ExecToStack '"$INSTDIR\data\bin\cygrunsrv" --start $\"${DispatcherService}$\"'
+    !insertmacro CreateServiceInstallBatchFile "web" "$EnvName" "${WebService}"
+    !insertmacro CreateServiceActionBatchFile "web" "$EnvName" "${WebService}" "start"
+    !insertmacro CreateServiceActionBatchFile "web" "$EnvName" "${WebService}" "stop"
+    !insertmacro CreateServiceActionBatchFile "web" "$EnvName" "${WebService}" "remove"
+
+    !insertmacro CreateServiceInstallBatchFile "disp" "$EnvName" "${DispatcherService}"
+    !insertmacro CreateServiceActionBatchFile "disp" "$EnvName" "${DispatcherService}" "start"
+    !insertmacro CreateServiceActionBatchFile "disp" "$EnvName" "${DispatcherService}" "stop"
+    !insertmacro CreateServiceActionBatchFile "disp" "$EnvName" "${DispatcherService}" "remove"
+
+    nsExec::Exec '"$INSTDIR\bin\service-web-$EnvName-remove.bat"'
+    nsExec::Exec '"$INSTDIR\bin\service-web-$EnvName-install.bat"'
+
+    nsExec::Exec '"$INSTDIR\bin\service-disp-$EnvName-remove.bat"'
+    nsExec::Exec '"$INSTDIR\bin\service-disp-$EnvName-install.bat"'
+
+    CreateShortCut "$INSTDIR\Server Config Files.lnk" "$INSTDIR\app\opt\clarive\config"
+    CreateShortCut "$INSTDIR\Server Log Files.lnk" "$INSTDIR\app\opt\clarive\logs"
+    CreateShortCut "$INSTDIR\Server Jobs.lnk" "$INSTDIR\app\opt\clarive\jobs"
+    CreateShortCut "$INSTDIR\Server Plugins.lnk" "$INSTDIR\app\opt\clarive\plugins"
+
+    WriteINIStr "$INSTDIR\Documentation.URL" "InternetShortcut" "URL" "http://docs.clarive.com"
+
+    ;Store installation folder
+    WriteRegStr HKCU "${ProgramRegistryKey}" "InstallLocation" $INSTDIR
+    WriteRegStr HKCU "${ProgramRegistryKey}" "DisplayVersion" "${ProgramVersion}"
+
+    ;Create uninstaller
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayName" "${CompanyName}: ${ProgramNameVersion}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayIcon" "$INSTDIR\clarive.ico"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "DisplayVersion" "${ProgramVersion}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "Publisher" "${CompanyNameLegal}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "HelpLink" "${HelpLink}"
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "URLInfoAbout" "${SupportLink}"
+
+    WriteRegStr HKLM "${UninstallRegistryKey}" \
+                     "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+    ;WriteRegStr HKLM "${UninstallRegistryKey}" \
+    ;                 "QuietUninstallString" "$\"$INSTDIR\Uninstall.exe$\" /S"
+
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD HKLM "${UninstallRegistryKey}" "EstimatedSize" "$0"
+
+FunctionEnd
+
+Function PostInstallLeave
+
+    ${NSD_GetState} $StartWebServiceCheckbox $StartWebServiceCheckbox_State
+    ${NSD_GetState} $StartDispatcherServiceCheckbox $StartDispatcherServiceCheckbox_State
+    ${NSD_GetState} $InstallMenuShortCutsCheckbox $InstallMenuShortCutsCheckbox_State
+
+    ${If} $StartWebServiceCheckbox_State == ${BST_CHECKED}
+
+        nsExec::Exec '"$INSTDIR\bin\service-web-$EnvName-start.bat"'
+
+    ${EndIf}
+
+    ${If} $StartDispatcherServiceCheckbox_State == ${BST_CHECKED}
+
+        nsExec::Exec '"$INSTDIR\bin\service-disp-$EnvName-start.bat"'
+
+    ${EndIf}
+
+    ${If} $InstallMenuShortCutsCheckbox_State == ${BST_CHECKED}
+
+        SetShellVarContext all
+
+        ; Menu ShortCuts
+        CreateDirectory "$SMPROGRAMS\${CompanyName}"
+        CreateDirectory "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Bin.lnk" "$INSTDIR\bin"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Server Config Files.lnk" "$INSTDIR\app\opt\clarive\config"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Server Log Files.lnk" "$INSTDIR\app\opt\clarive\logs"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Server Jobs.lnk" "$INSTDIR\app\opt\clarive\jobs"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Server Plugins.lnk" "$INSTDIR\app\opt\clarive\plugins"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Documentation.lnk" "$INSTDIR\Documentation.URL"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Shell.lnk" "$INSTDIR\Shell.bat"
+        CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+
+    ${EndIf}
 
 FunctionEnd
 
@@ -164,7 +304,7 @@ FunctionEnd
 ;--------------------------------
 ;Installer Sections
 
-Section "Installation" SecDummy
+Section "Clarive Server" SectionServer
 
     SetOutPath "$INSTDIR"
 
@@ -177,41 +317,14 @@ Section "Installation" SecDummy
 
     Delete "$INSTDIR\${CygwinDist}"
 
-    CreateDirectory $INSTDIR\data\opt\clarive
-    CreateDirectory $INSTDIR\data\opt\clarive\config
-    CreateDirectory $INSTDIR\data\opt\clarive\logs
-    !insertmacro ZIPDLL_EXTRACT "${ClariveDist}" "$INSTDIR\data\opt\clarive\" "<ALL>"
+    CreateDirectory $INSTDIR\app\opt\clarive
+    CreateDirectory $INSTDIR\app\opt\clarive\config
+    CreateDirectory $INSTDIR\app\opt\clarive\plugins
+    CreateDirectory $INSTDIR\app\opt\clarive\logs
+    CreateDirectory $INSTDIR\app\opt\clarive\jobs
+    !insertmacro ZIPDLL_EXTRACT "${ClariveDist}" "$INSTDIR\app\opt\clarive\" "<ALL>"
 
     Delete "$INSTDIR\${ClariveDist}"
-
-    ;Store installation folder
-    WriteRegStr HKCU "${ProgramRegistryKey}" "InstallLocation" $INSTDIR
-    WriteRegStr HKCU "${ProgramRegistryKey}" "DisplayVersion" "${ProgramVersion}"
-
-    ;Create uninstaller
-    WriteUninstaller "$INSTDIR\Uninstall.exe"
-
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "DisplayName" "${ProgramName} ${ProgramVersion} - ${ProgramDescription}"
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "DisplayIcon" "$INSTDIR\clarive.ico"
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "DisplayVersion" "${ProgramVersion}"
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "Publisher" "${CompanyName}"
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "HelpLink" "${HelpLink}"
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "URLInfoAbout" "${SupportLink}"
-
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
-    WriteRegStr HKLM "${UninstallRegistryKey}" \
-                     "QuietUninstallString" "$\"$INSTDIR\Uninstall.exe$\" /S"
-
-    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
-    IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM "${UninstallRegistryKey}" "EstimatedSize" "$0"
 
 SectionEnd
 
@@ -227,10 +340,9 @@ Function .onInit
     ReadRegStr $R0 HKLM "${UninstallRegistryKey}" "UninstallString"
     StrCmp $R0 "" done
 
-    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
-    "${ProgramName} is already installed. $\n$\nClick `OK` to remove the \
-    previous version or `Cancel` to cancel this upgrade." \
-    IDOK uninst
+    MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
+    "${ProgramNameVersion} is already installed. Remove previous installation? $\n$\nClick `Yes` to remove, `No` to install without removing, or `Cancel` to cancel this upgrade." \
+    IDYES uninst IDNO done
     Abort
 
 uninst:
@@ -251,7 +363,7 @@ FunctionEnd
 
   ;Assign descriptions to sections
     !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-        !insertmacro MUI_DESCRIPTION_TEXT ${SecDummy} "A test section."
+        !insertmacro MUI_DESCRIPTION_TEXT ${SectionServer} "Clarive Server files."
     !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
@@ -259,18 +371,21 @@ FunctionEnd
 
 Section "Uninstall"
 
-    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --stop $\"${WebService}$\""
-    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --remove $\"${WebService}$\""
+    nsExec::Exec '"$INSTDIR\bin\service-web-$EnvName-stop.bat"'
+    nsExec::Exec '"$INSTDIR\bin\service-web-$EnvName-remove.bat"'
 
-    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --stop $\"${DispatcherService}$\""
-    nsExec::Exec "$INSTDIR\data\bin\cygrunsrv --remove $\"${DispatcherService}$\""
+    nsExec::Exec '"$INSTDIR\bin\service-disp-$EnvName-stop.bat"'
+    nsExec::Exec '"$INSTDIR\bin\service-disp-$EnvName-remove.bat"'
 
     Delete "$INSTDIR\Uninstall.exe"
 
     RMDir /r "$INSTDIR"
 
-    DeleteRegKey /ifempty HKCU "${ProgramRegistryKey}"
-    DeleteRegKey /ifempty HKCU "${CompanyRegistryKey}"
+    SetShellVarContext all
+    RMDir /r "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}"
+    RMDir "$SMPROGRAMS\${CompanyName}"
+
+    DeleteRegKey HKCU "${ProgramRegistryKey}"
 
     DeleteRegKey HKLM "${UninstallRegistryKey}"
 
