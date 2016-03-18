@@ -17,7 +17,7 @@ sub generate {
 
             my $sem = Baseliner::Sem->new( key => $key );
             $sem->take;
-            return $cb->( _serialize($sem) );
+            return $cb->( _serialize({}, $sem) );
         },
     };
 }

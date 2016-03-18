@@ -118,6 +118,22 @@ sub generate {
               )
               : BaselinerX::Type::Model::ConfigStore->get( $key, value => 1 );
         },
+        eval => js_sub {
+            my ( $lang, $code ) = @_;
+            if( $lang =~ /perl|pl/ ) {
+                local $@;
+                my @ret = do { eval $code };
+                _fail "$@" if $@;
+                return @ret==1 ? _serialize({}, $ret[0]) : _serialize({}, \@ret);
+            }
+            elsif( $lang =~ /javascript|js/ ) {
+                my $ret = $js->eval_code($code);
+                return $ret;
+            }
+            else {
+                die "Could not eval, language not available: $lang\n";
+            }
+        },
     };
 }
 

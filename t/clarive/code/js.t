@@ -81,6 +81,24 @@ subtest 'require module underscore' => sub {
     is_deeply $arr, [1,2];
 };
 
+subtest 'cla.eval: run perl' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( q{
+        cla.eval('pl', `"9" x 6`)});
+
+    is $ret, '999999';
+};
+
+subtest 'cla.eval: run js' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( q{
+        cla.eval('js', `var x=10; x;`)});
+
+    is $ret, 10;
+};
+
 subtest 'dispatches to parseVars' => sub {
     my $code = _build_code( lang => 'js' );
 
