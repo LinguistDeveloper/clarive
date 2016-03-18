@@ -393,6 +393,41 @@ subtest 'avatar_upload: upload avatar for another user has admin action' => sub 
     ok -e "$tempdir/root/identicon/otheruser.png";
 };
 
+subtest 'country_info: get country info successful' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { file => 'data/zones.xml' } } );
+    my $controller = _build_controller();
+    $controller->country_info($c);
+
+    my @cnt = _array $c->stash->{json}->{data};
+
+    is scalar @cnt, '249';
+    cmp_deeply $c->stash, { json => { msg => 'country info success', success => \1, data => ignore() } };
+};
+
+subtest 'country_info: File not found' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { file => 'daa/zones.xml' } } );
+    my $controller = _build_controller();
+    $controller->country_info($c);
+
+    cmp_deeply $c->stash, { json => { msg => re(qr/Error: File not found/), success => \0 } };
+};
+
+subtest 'timezone_list: list the timezone' => sub {
+    _setup();
+
+    my $c          = _build_c();
+    my $controller = _build_controller();
+
+    $controller->timezone_list($c);
+    my @cnt = _array $c->stash->{json}->{data};
+
+    is scalar @cnt, '349';
+};
+
 done_testing;
 
 sub _build_c {
