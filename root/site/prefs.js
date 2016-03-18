@@ -213,7 +213,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     ['server_timezone', _('Server Timezone (%1)', Prefs.server_timezone)], 
                     ['browser_timezone', _('My Browser Timezone (now is %1)', moment(Date().now).format('h:mma') )]
                 ].concat( ret.data.map(function(tz){
-                    tz[0]=String.format(_("{0} (now is {1})"), tz[0], moment(Date().now).tz(tz[0]).format('h:mma'));
+                    tz[1]=String.format(_("{0} (now is {1})"), tz[0], moment(Date().now).tz(tz[0]).format('h:mma'));
                     return tz;
                 }) )
             });

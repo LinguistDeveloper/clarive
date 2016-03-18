@@ -1244,9 +1244,9 @@ sub country_info : Local {
 sub timezone_list : Local {
     my ( $self, $c ) = @_;
     my @tzs;
-    my $timezone;
+
     for my $tz ( DateTime::TimeZone->all_names ) {
-        $timezone = [$tz];
+       my $timezone = [$tz,''];
         push @tzs, $timezone;
     }
     $c->stash->{json} = { data => \@tzs };
