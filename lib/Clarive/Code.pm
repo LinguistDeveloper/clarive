@@ -14,7 +14,11 @@ sub run_file {
     my $self = shift;
     my ( $file, $stash ) = @_;
 
-    $self->current_file( $file );
+    my ($ext) = _file($file)->basename =~ /\.(\w+)$/;
+    my $lang = { pl=>'perl', t=>'perl' }->{$ext} // $ext;
+    $self->lang( $lang );
+
+    $self->current_file( "$file" );
 
     my $code = _file($file)->slurp( iomode=>'<:utf8' );
 
@@ -26,10 +30,12 @@ sub eval_code {
     my ( $code, $stash, $opts ) = @_;
 
     if ( $self->lang eq 'js' ) {
-        require Clarive::Code::JS;
-        my $js = Clarive::Code::JS->new( current_file=>$self->current_file );
-        my $t0;
 
+        require Clarive::Code::JS;
+
+        my $js = Clarive::Code::JS->new( current_file=>$self->current_file );
+
+        my $t0;
         if( $self->benchmark ) {
             $t0=[gettimeofday];
         }

@@ -864,7 +864,7 @@ subtest 'cla.register: register a menu' => sub {
     is( Baseliner::Core::Registry->get('menu.test')->name, 'FooMenu' );
 };
 
-subtest 'cla.launch: register and launch a service' => sub {
+subtest 'launch: register and launch a service' => sub {
     _setup();
 
     Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
@@ -882,6 +882,28 @@ subtest 'cla.launch: register and launch a service' => sub {
 
     is $ret, 99;
     is( Baseliner::Core::Registry->get('service.test')->name, 'FooService' );
+};
+
+subtest 't: testing more js' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code(q{
+        var t = require('cla/t');
+        t.ok(1,'this is ok');
+        t.is(11,11,'is 11');;
+        t.isnt(11,12);
+        t.subtest('another',function(){
+            t.like('hello',cla.regex('h.'));
+            t.unlike('foo',cla.regex('h.'));
+        });
+        t.pass('my test');
+        t.cmpDeeply([1,2],[1,2]);
+        t.cmpDeeply({aa:10, bb:20},{bb:20, aa:10});
+    });
 };
 
 done_testing;

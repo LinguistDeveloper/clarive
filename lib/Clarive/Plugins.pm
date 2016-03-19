@@ -5,75 +5,142 @@ use Baseliner::Utils qw(_dir _file _debug);
 use Path::Class ();
 has app => qw(is ro isa Any weak_ref 1 required 1), default=>sub{ Clarive->app };
 
-sub all_plugins {
-    my $self = shift;
-    my %options = @_;
-
-    my $home = $self->app->home;
-
-    my @plugins;
-
-    for my $dir ( _dir($self->app->plugins_home), _dir($home,'plugins') ) {
-        next unless -e $dir;
-        push @plugins, grep { -d } $dir->children;
-    }
-
-    $options{name_only} ?
-        map { _file($_)->basename } @plugins
-        : @plugins;
+sub _plugin_id {
+    shift;
+    _file($_[0])->basename;
 }
 
-sub locate_path {
+sub load_info {
+    my $self = shift;
+    my ($plugin_home) = @_;
+
+    my $info;
+
+    my $plugin_id = $self->_plugin_id( $plugin_home );
+
+    my $plugin_yml = _file( $plugin_home, 'plugin.yml' );
+
+    if( -e $plugin_yml ) {
+        $info = Util->_load( scalar $plugin_yml->slurp( iomode=>'<:utf8' ) );
+    } else {
+        $info->{name} = $plugin_id;
+    }
+
+    $info->{id} = $plugin_id;
+    $info->{version} //= '';
+
+    return $info;
+}
+
+sub all_plugins {
+    my $self = shift;
+    my %opts = @_;
+
+    my @plugins;
+    my @ids;
+
+    my $cla_home = $self->app->home;
+
+    for my $base ( _dir($self->app->plugins_home), _dir($cla_home,'plugins') ) {
+        next unless -e $base;
+
+        if( exists $opts{id} ) {
+            my $home = _dir($base,$opts{id});
+            return "$home" if -e $home;
+        }
+
+        for my $home ( $base->children ) {
+            next unless -d $home;
+
+            my $id = $self->_plugin_id($home);
+            next if $id =~ /^#/;
+
+            push @ids, $id;
+            push @plugins, $home;
+        }
+    }
+
+    return if exists $opts{id};
+
+    $opts{id_only} ? @ids : @plugins;
+}
+
+sub locate_plugin {
+    my $self = shift;
+    my $id = shift;
+
+    $self->all_plugins( id=>$id );
+}
+
+sub locate_first {
     my $self = shift;
     my @files = @_;
 
     my @plugins = $self->all_plugins;
-    for my $dir ( @plugins ) {
+
+    for my $plugin_home ( @plugins ) {
+
+        my $plugin_id = $self->_plugin_id($plugin_home);
+
         for my $file ( @files ) {
-            my $path = _file( $dir, $file );
-            return "$path" if -e $path;
+            my $path = _file( $plugin_home, $file );
+            return { path=>"$path", plugin=>$plugin_id } if -e $path;
         }
     }
     return undef;
 }
 
-sub locate_all_paths {
+sub locate_all {
     my $self = shift;
     my @files = @_;
 
     my @paths;
     my @plugins = $self->all_plugins;
 
-    for my $dir ( @plugins ) {
+    for my $plugin_home ( @plugins ) {
+
+        my $plugin_id = $self->_plugin_id($plugin_home);
+
         for my $file ( @files ) {
-            my $path = _file( $dir, $file );
-            push @paths, "$path" if -e $path;
+            my $path = _file( $plugin_home, $file );
+            push @paths, { path=>"$path", plugin=>$plugin_id } if -e $path;
         }
     }
     return @paths;
 }
 
-sub run_dir {
+sub for_each_file {
     my $self = shift;
-    my ($dir,$opts) = @_;
+    my ( $path_names, $cb ) = @_;
 
-    my $js;
-    for my $path ( map { _dir($_) } $self->locate_all_paths($dir) ) {
-        for my $file ( $path->children ) {
-            my ($ext) = $file->basename =~ /\.(\w+)$/;
-            if( $ext eq 'js' ) {
-                _debug( "Running plugin init: $file" );
+    for my $path_name ( Util->_array($path_names) ) {
+        for my $item ( $self->locate_all($path_name) ) {
+            my $path   = $item->{path};
+            my $plugin = $item->{plugin};
 
-                require Clarive::Code::JS;
-                $js //= Clarive::Code::JS->new( %{ $opts->{js} || {} } );
-                $js->current_file( "$file" );
-
-                my $code = scalar $file->slurp(iomode=>'<:utf8');
-
-                $js->eval_code( $code );
-            }
+            _dir($path)->recurse(
+                callback => sub {
+                    my $file = shift;
+                    return if -d $file;
+                    $cb->( "$file", $plugin );    # a false value stops this loop
+                }
+            );
         }
     }
+}
+
+sub run_dir {
+    my $self = shift;
+    my ( $dir, $opts ) = @_;
+
+    $self->for_each_file( $dir, sub {
+        my $file = shift;
+
+        _debug("Running plugin init: $file");
+
+        require Clarive::Code;
+        Clarive::Code->new->run_file("$file");
+    });
 }
 
 1;

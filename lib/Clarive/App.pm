@@ -186,13 +186,13 @@ sub do_cmd {
     my $cmd_package = "Clarive::Cmd::$cmd_pkg";
     my $runsub = 'run';
 
-    # run from plugins?
+    # run cmd from plugins?
     for my $lang ( qw(js pl) ) {
-        if( my ($first) = $self->plugins->locate_all_paths( "cmd/$cmd.$lang" ) ) {
+        if( my $first = $self->plugins->locate_first( "cmd/$cmd.$lang" ) ) {
             require Clarive::Code;
             my $stash = {};
             try {
-                Clarive::Code->new( lang=>$lang )->run_file($first, $stash );
+                Clarive::Code->new( lang=>$lang )->run_file( $first->{path}, $stash );
             } catch {
                 my $err = shift;
                 die $err;

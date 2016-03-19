@@ -30,20 +30,15 @@ sub generate {
                     }());
                 }, $1;
             }
-            elsif (
-                my $path = Clarive->app->plugins->locate_path(
-                    "modules/$id", "modules/$id.js"
-                )
-              )
-            {
-                return scalar _file($path)->slurp( iomode => '<:utf8' );
+            elsif ( my $item = Clarive->app->plugins->locate_first( "modules/$id.js", "modules/$id") ) {
+                return scalar _file( $item->{path} )->slurp( iomode => '<:utf8' );
             }
             else {
                 die sprintf(
                     "Could not find module `%s` in the following plugins: %s\n",
                     $id,
                     join( ',',
-                        Clarive->app > plugins->all_plugins( name_only => 1 ) )
+                        Clarive->app > plugins->all_plugins( id_only => 1 ) )
                 );
             }
         },
