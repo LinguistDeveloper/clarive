@@ -91,7 +91,7 @@ sub run_test {
                 };
 
                 # the output ( needs at least one newline )
-                return $out;
+                return $out || "\n";
             }
     });
 
@@ -100,10 +100,30 @@ sub run_test {
 
     my $plugins = $self->app->plugins;
 
-    $plugins->for_each_file('t', sub{
-        my ( $file,$plugin_name ) = @_;
-        push @test_files, "$file";
-    });
+    if( my @arg_files = @{ $opts{argv} || [] } ) {
+        for my $file ( @arg_files ) {
+            if( my $first = $plugins->locate_first( "t/$file" ) ) {
+                if( -d $first->{path} ) {
+                    dir($first->{path})->recurse( callback=>sub{
+                        my $f = shift;
+                        return if -d $f;
+                        say "Found test file: $f";
+                        push @test_files, $f;
+                    });
+                } else {
+                    say "Found test file: $first->{path}";
+                    push @test_files, $first->{path};
+                }
+            } else {
+                die "ERROR: Test file `$file` not found\n";
+            }
+        }
+    } else {
+        $plugins->for_each_file('t', sub{
+            my ( $file,$plugin_name ) = @_;
+            push @test_files, "$file";
+        });
+    }
 
     $harness->runtests( @test_files );
 }
