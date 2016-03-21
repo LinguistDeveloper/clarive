@@ -28,7 +28,7 @@ Unicode true
 !define CygwinDist "## CYGWIN_DIST ##"
 !define ClariveDist "## CLARIVE_DIST ##"
 
-Name "${CompanyNameLegal} - ${ProgramName}"
+Name "${ProgramName} by ${CompanyNameLegal}"
 OutFile "clarive_${ProgramVersion}_setup.exe"
 
 InstallDir "C:\${CompanyName}\${ProgramName}"
@@ -65,13 +65,14 @@ If you need help, please email support@clarive.com."
 ;Pages
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "LICENSE"
+!insertmacro MUI_PAGE_LICENSE "LICENSE.merged"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 Page custom ConfigurationPage ConfigurationPageLeave
 Page custom PostInstall PostInstallLeave
-Page custom ServiceStart
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW StartServices
+!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -172,8 +173,6 @@ Var InstallMenuShortCutsCheckbox_State
 !macroend
 
 Function PostInstall
-    LogSet on
-
     !insertmacro MUI_HEADER_TEXT "${ProgramName} Install/Setup is finished" ""
 
     nsDialogs::Create 1018
@@ -225,12 +224,6 @@ Function PostInstall
     !insertmacro CreateServiceActionBatchFile "disp" "$EnvName" "${DispatcherService}" "stop"
     !insertmacro CreateServiceActionBatchFile "disp" "$EnvName" "${DispatcherService}" "remove"
 
-    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-remove.bat"'
-    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-install.bat"'
-
-    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-remove.bat"'
-    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-install.bat"'
-
     CreateShortCut "$INSTDIR\Server Config Files.lnk" "$INSTDIR\app\opt\clarive\config"
     CreateShortCut "$INSTDIR\Server Log Files.lnk" "$INSTDIR\app\opt\clarive\logs"
     CreateShortCut "$INSTDIR\Server Jobs.lnk" "$INSTDIR\app\opt\clarive\jobs"
@@ -263,9 +256,9 @@ Function PostInstall
     ;WriteRegStr HKLM "${UninstallRegistryKey}" \
     ;                 "QuietUninstallString" "$\"$INSTDIR\Uninstall.exe$\" /S"
 
-    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
-    IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM "${UninstallRegistryKey}" "EstimatedSize" "$0"
+    ;${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    ;IntFmt $0 "0x%08X" $0
+    ;WriteRegDWORD HKLM "${UninstallRegistryKey}" "EstimatedSize" "$0"
 
 FunctionEnd
 
@@ -275,29 +268,12 @@ Function PostInstallLeave
     ${NSD_GetState} $StartDispatcherServiceCheckbox $StartDispatcherServiceCheckbox_State
     ${NSD_GetState} $InstallMenuShortCutsCheckbox $InstallMenuShortCutsCheckbox_State
 
-FunctionEnd
+    ;Banner::show /set 76 "Please wait..." "Final adjustments..."
 
-Function ServiceStart
+    ;Call StartServices
 
-    nsDialogs::Create 1018
-    Pop $Dialog
-
-    ${NSD_CreateLabel} 0 0 100% 48u "Installation is completed.$\r$\n$\r$\nVisit the http://localhost:3000 (or use other port configured previously)."
-    Pop $Label
-
-    nsDialogs::Show
-
-    ${If} $StartWebServiceCheckbox_State == ${BST_CHECKED}
-
-        !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-start.bat"'
-
-    ${EndIf}
-
-    ${If} $StartDispatcherServiceCheckbox_State == ${BST_CHECKED}
-
-        !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-start.bat"'
-
-    ${EndIf}
+    ;GetFunctionAddress $0 StartServices
+    ;BgWorker::CallAndWait
 
     ${If} $InstallMenuShortCutsCheckbox_State == ${BST_CHECKED}
 
@@ -316,6 +292,34 @@ Function ServiceStart
         CreateShortCut "$SMPROGRAMS\${CompanyName}\${ProgramNameVersion}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
     ${EndIf}
+
+    ;Banner::destroy
+
+FunctionEnd
+
+Function StartServices
+
+    Banner::show /set 76 "Please wait..." "Final adjustments..."
+
+    ;!insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-remove.bat"'
+    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-install.bat"'
+
+    ;!insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-remove.bat"'
+    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-install.bat"'
+
+    ${If} $StartWebServiceCheckbox_State == ${BST_CHECKED}
+
+        !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-start.bat"'
+
+    ${EndIf}
+
+    ${If} $StartDispatcherServiceCheckbox_State == ${BST_CHECKED}
+
+        !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-start.bat"'
+
+    ${EndIf}
+
+    Banner::destroy
 
 FunctionEnd
 

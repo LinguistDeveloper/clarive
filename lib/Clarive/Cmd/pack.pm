@@ -194,6 +194,7 @@ sub run_nsi {
     print $fh $template;
     close $fh;
 
+    system("cat LICENSE THIRD-PARTY-NOTICES >> LICENSE.merged");
     system($self->makensis, 'clarive.nsi');
 
     my $final_archive_path = "clarive_${version}_setup.exe";
