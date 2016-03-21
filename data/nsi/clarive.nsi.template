@@ -4,6 +4,7 @@
 !include "nsDialogs_createTextMultiline.nsh"
 !include "LogicLib.nsh"
 !include "FileFunc.nsh"
+!include "TextFunc.nsh"
 
 Unicode true
 
@@ -199,6 +200,11 @@ Function PostInstall
     Delete "$INSTDIR\app\opt\clarive\config\$EnvName.yml"
     FileOpen $8 "$INSTDIR\app\opt\clarive\config\$EnvName.yml" w
     FileWrite $8 "$Config"
+    FileClose $8
+
+    Delete "$INSTDIR\install.ini"
+    FileOpen $8 "$INSTDIR\install.ini" w
+    FileWrite $8 "env=$EnvName$\r$\n"
     FileClose $8
 
     FileOpen $9 "$INSTDIR\Shell.bat" w
@@ -399,11 +405,13 @@ FunctionEnd
 
 Section "Uninstall"
 
-    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-stop.bat"'
-    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$EnvName-remove.bat"'
+    ${ConfigRead} "$INSTDIR\install.ini" "env=" $R0
 
-    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-stop.bat"'
-    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$EnvName-remove.bat"'
+    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$R0-stop.bat"'
+    !insertmacro ExecLog '"$INSTDIR\bin\service-web-$R0-remove.bat"'
+
+    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$R0-stop.bat"'
+    !insertmacro ExecLog '"$INSTDIR\bin\service-disp-$R0-remove.bat"'
 
     Delete "$INSTDIR\Uninstall.exe"
 
