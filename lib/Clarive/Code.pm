@@ -9,6 +9,8 @@ has lang           => qw(default js is rw isa), enum([qw(js perl)]);
 has benchmark      => qw(is rw isa Bool default 0);
 has elapsed        => qw(is rw isa Num default 0);
 has current_file   => qw(is rw isa Str), default=>'EVAL';
+has app            => qw(is rw isa Maybe[Clarive::App] weak_ref 1);
+has options        => qw(is rw isa HashRef), default=>sub{ +{} };
 
 sub run_file {
     my $self = shift;
@@ -33,7 +35,7 @@ sub eval_code {
 
         require Clarive::Code::JS;
 
-        my $js = Clarive::Code::JS->new( current_file=>$self->current_file );
+        my $js = Clarive::Code::JS->new( app=>$self->app, options=>$self->options, current_file=>$self->current_file );
 
         my $t0;
         if( $self->benchmark ) {

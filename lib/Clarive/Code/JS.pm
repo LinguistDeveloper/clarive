@@ -18,6 +18,8 @@ use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case
 
 use Clarive::Code::Utils;
 
+has app           => qw(is rw isa Maybe[Clarive::App] weak_ref 1);
+has options       => qw(is rw isa HashRef), default => sub { +{} };
 has dump_code     => qw(is rw isa Bool default 0);
 has enclose_code  => qw(is rw isa Bool default 0);
 has strict_mode   => qw(is rw isa Bool default 0);
