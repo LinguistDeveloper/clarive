@@ -196,7 +196,7 @@ sub run_nsi {
 
     system($self->makensis, 'clarive.nsi');
 
-    my $final_archive_path = "clarive_${version}_installer.exe";
+    my $final_archive_path = "clarive_${version}_setup.exe";
 
     if ( -f $final_archive_path ) {
         print $final_archive_path, "\n";
