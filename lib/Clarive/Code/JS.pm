@@ -83,6 +83,12 @@ sub initialize {
     my $console_ns = Clarive::Code::JSModules::console->generate($stash,$self);
     $js_duk->set( console=>$console_ns );
 
+    if( $self->app ) {
+        require Clarive::Code::JSModules::process;
+        my $process_ns = Clarive::Code::JSModules::process->generate($stash,$self);
+        $js_duk->set( process=>$process_ns );
+    }
+
     # cla ns setup
     require Clarive::Code::JSModules::cla;
     my $cla_ns = Clarive::Code::JSModules::cla->generate($stash,$self);

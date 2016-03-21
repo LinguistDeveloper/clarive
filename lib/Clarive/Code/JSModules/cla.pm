@@ -49,7 +49,7 @@ sub generate {
 
             my $cnt = 0;
             foreach my $el (@$arr) {
-                $cb->( $el, ++$cnt );
+                js_sub(\&$cb)->( undef, $el, ++$cnt );
             }
 
             $cnt;
