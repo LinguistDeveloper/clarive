@@ -1,8 +1,8 @@
-Clarive | Baseliner uses third-party libraries or other resources that may
+Clarive uses third-party libraries or other resources that may
 be distributed under licenses different than the Clarive software.
 
 In the event that we accidentally failed to list a required notice,
-please bring it to our attention through any of the ways detailed here : 
+please bring it to our attention through any of the ways detailed here :
 
            support@clarive.com
 
@@ -52,7 +52,7 @@ License Notice for Silk Icons
 
     http://www.famfamfam.com/lab/icons/silk/
 
-    Version: 1.3 
+    Version: 1.3
 
     This work is licensed under a Creative Commons Attribution 2.5 License.
     This means you may use it for any purpose, and make any changes you like.
@@ -66,7 +66,7 @@ License Notice for Silk Icons
     which includes the set or a subset of the icons contained within.
 
 
-License Notice for ExtJS 
+License Notice for ExtJS
 ---------------------------------
 
     Ext JS - JavaScript Library
@@ -78,7 +78,7 @@ License Notice for ExtJS
 
     Open Source License
     ------------------------------------------------------------------------------------------
-    Ext JS is licensed under the terms of the Open Source GPL 3.0 license. 
+    Ext JS is licensed under the terms of the Open Source GPL 3.0 license.
 
     http://www.gnu.org/licenses/gpl.html
 
@@ -96,8 +96,8 @@ License Notice for ExtJS
 
     Commercial License
     ------------------------------------------------------------------------------------------
-    This is the appropriate option if you are creating proprietary applications and you are 
-    not prepared to distribute and share the source code of your application under the 
+    This is the appropriate option if you are creating proprietary applications and you are
+    not prepared to distribute and share the source code of your application under the
     GPL v3 license. Please visit http://www.sencha.com/license for more details.
 
 
@@ -153,20 +153,20 @@ License Notice for File Uploader
 
     This distribution also includes:
 
-        server/OctetStreamReader.java    
-        Dual Licensed under the MIT and GPL v.2        
-        
+        server/OctetStreamReader.java
+        Dual Licensed under the MIT and GPL v.2
+
         jQuery JavaScript Library
-        http://jquery.com/    
+        http://jquery.com/
         Copyright 2010, John Resig
         Dual licensed under the MIT or GPL Version 2 licenses.
         http://jquery.org/license
-        
+
         Sizzle.js - CSS selector engine used by jQuery
         http://sizzlejs.com/
         Copyright 2010, The Dojo Foundation
         Released under the MIT, BSD, and GPL Licenses.
-            
+
         QUnit - A JavaScript Unit Testing Framework
         http://docs.jquery.com/QUnit
         Copyright (c) 2009 John Resig, Jörn Zaefferer
@@ -178,7 +178,7 @@ License Notice for Fullcalendar
 ---------------------------------
 
     http://arshaw.com/fullcalendar/
-    
+
     Copyright (c) 2009 Adam Shaw
 
     Permission is hereby granted, free of charge, to any person obtaining
@@ -207,25 +207,25 @@ License Notice for GridTree
 
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, 
+    Redistribution and use in source and binary forms, with or without modification,
     are permitted provided that the following conditions are met:
 
-     Redistributions of source code must retain the above copyright notice, this 
+     Redistributions of source code must retain the above copyright notice, this
      list of conditions and the following disclaimer.
 
-     Redistributions in binary form must reproduce the above copyright notice, this 
-     list of conditions and the following disclaimer in the documentation and/or 
+     Redistributions in binary form must reproduce the above copyright notice, this
+     list of conditions and the following disclaimer in the documentation and/or
      other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE 
-    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License Notice for CLEditor
@@ -236,14 +236,44 @@ License Notice for CLEditor
 
     Copyright 2010, Chris Landowski, Premium Software, LLC
     Dual licensed under the MIT or GPL Version 2 licenses.
-    
+
 License Notice for CKEditor
 --------------------------------------
 
     http://ckeditor.com/about/license
-    
+
     © 2003 - 2013 CKSource - Frederico Knabben. All rights reserved
-   
+
+License Notice for D3.js
+------------------------
+
+    Copyright (c) 2010-2016, Michael Bostock
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+    * The name Michael Bostock may not be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL MICHAEL BOSTOCK BE LIABLE FOR ANY DIRECT,
+    INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+    OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 License Notice for C3.js
 ------------------------
 
@@ -268,4 +298,30 @@ License Notice for C3.js
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+License Notice for the Ace Editor
+---------------------------------
 
+    Copyright (c) 2010, Ajax.org B.V.
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+        * Redistributions of source code must retain the above copyright
+          notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above copyright
+          notice, this list of conditions and the following disclaimer in the
+          documentation and/or other materials provided with the distribution.
+        * Neither the name of Ajax.org B.V. nor the
+          names of its contributors may be used to endorse or promote products
+          derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
