@@ -1418,10 +1418,14 @@
 					btn_edit.disable();
 					btn_delete.enable();
                 }
-            }           
+            }
+        }
+        else {
+            var sel = grid.getStore().getAt( rowIndex );
+            if(sel) add_edit(sel);
         }
     });
-    
+
     grid.on('headerclick', function(grid, columnIndex, e) {
         if(columnIndex == 0){
             var notifications_checked = getNotifications();
