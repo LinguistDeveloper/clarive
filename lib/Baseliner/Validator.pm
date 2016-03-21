@@ -24,7 +24,6 @@ sub validate {
     foreach my $name ( keys %{ $self->fields } ) {
         my $field = $self->fields->{$name};
         my $value = $params->{$name};
-        $value = $value->[0] if $value && ref $value eq 'ARRAY';
 
         if ($self->_is_empty($value)) {
             if (exists $field->{default}) {

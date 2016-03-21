@@ -135,6 +135,19 @@ subtest 'validates with forcing value on error' => sub {
     is $vresult->{validated_params}->{foo}, 5;
 };
 
+subtest 'validates with more than one value in the array' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Str|ArrayRef' );
+
+    my $vresult = $validator->validate( { foo => [1,2,3] } );
+
+    is $vresult->{is_valid}, 1;
+    my $foo = $vresult->{validated_params}->{foo};
+    is scalar @$foo, 3;
+
+};
+
 done_testing;
 
 sub _build_validator {
