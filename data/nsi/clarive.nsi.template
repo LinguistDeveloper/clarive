@@ -138,11 +138,9 @@ Var InstallMenuShortCutsCheckbox_State
 
     ;LogText ${Command}
 
-    nsExec::ExecToStack '${Command}'
-    ;ExecWait '${Command}'
+    ExecDos::Exec '${Command}'
 
     Pop $0
-    Pop $1
 
     ;LogText "ExitCode=$0"
     ;LogText "Output=$1"
