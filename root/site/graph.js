@@ -1,7 +1,7 @@
 Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     mid: -1,
-    mode: 'tree', 
-    depth: 3, 
+    mode: 'tree',
+    depth: 3,
     unique: true,
     direction: 'related',
     linkDistance: 190,
@@ -9,7 +9,7 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         Baseliner.D3Graph.superclass.initComponent.call(this);
-         
+
         self.on('resize', function(p,w,h){
             if( this.svg ) {
                 //this.svg.trigger('resizeEnd');
@@ -23,24 +23,24 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     },
     redraw: function(){
         var self = this;
-        Baseliner.ajaxEval('/ci/json_tree', { 
-            mid:self.mid, 
-            direction: self.direction, 
-            depth: self.depth, 
+        Baseliner.ajaxEval('/ci/json_tree', {
+            mid:self.mid,
+            direction: self.direction,
+            depth: self.depth,
             condition: self.condition,
-            mode:self.mode, 
-            unique:self.unique, 
-            include_cl: self.include_cl, 
-            exclude_cl: 
-            self.exclude_cl 
+            mode:self.mode,
+            unique:self.unique,
+            include_cl: self.include_cl,
+            exclude_cl:
+            self.exclude_cl
         }, function(res){
-            
+
             var link = function(source){
                 Ext.each( source.children, function(chi){
                     self.links.push({ source: source.name, target: chi.name, type:"child" });
                     link( chi );
                 });
-            }
+            };
             link( res.data );
 
             self.nodes = {};
@@ -50,7 +50,7 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
               link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
               link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
             });
-            
+
             self.draw();
 
         });
@@ -59,10 +59,10 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
         var self = this;
         self.body.update('');
 
-        var id = self.body.id; 
+        var id = self.body.id;
         var height = self.body.getHeight();
         var width = self.body.getWidth();
-        
+
         self.force = d3.layout.force()
             .nodes(d3.values(self.nodes))
             .links(self.links)
@@ -70,7 +70,7 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
             .linkDistance( self.linkDistance )
             .charge( self.charge )
             .gravity( 0.05 )
-            .on("tick", function() { self.tick() })
+            .on("tick", function() { self.tick(); })
             .start();
 
         self.svg = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%')
@@ -149,9 +149,9 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
         self.bodyCfg = Ext.apply( { style:{ 'background-color':'#fff' } }, self.bodyCfg );
 
         Baseliner.JitRGraph.superclass.initComponent.call( this );
-        
+
         self.on( 'resize', function(panel,w,h,rw,rh){
-            //if( self._resize ) self._resize( args ); 
+            //if( self._resize ) self._resize( args );
             self.redraw();
         });
 
@@ -159,34 +159,35 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
 
         $jit.RGraph.Plot.NodeTypes.implement({
            'icon': {
-               'render': function(node, canvas) { 
-                   var ctx = canvas.getCtx(); 
-                   var pos = node.getPos().getc(); 
+               'render': function(node, canvas) {
+
+                   var ctx = canvas.getCtx();
+                   var pos = node.getPos().getc();
                    var img = self.images[ node.id ];
-                   if( !img ) { 
-                       img = new Image(); 
+                   if( !img ) {
+                       img = new Image();
                        img.src = node.data.icon;
                        self.images[ node.id ] = img;
                    }
-                   //img.onload = function(){ 
-                   ctx.drawImage(img, pos.x-8, pos.y-8 );
-                   //} 
+                   //img.onload = function(){
+                   ctx.drawImage(img, pos.x-8, pos.y-8, 16, 16);
+                   //}
                },
-               'contains': function(node, pos) { 
-                    var npos = node.pos.getc(true), 
-                        dim = node.getData('dim'); 
-                        return this.nodeHelper.square.contains(npos, pos, dim); 
-               } 
-           } 
+               'contains': function(node, pos) {
+                    var npos = node.pos.getc(true),
+                        dim = node.getData('dim');
+                        return this.nodeHelper.square.contains(npos, pos, dim);
+               }
+           }
         });
-        
+
     },
     redraw : function(){
         var self = this;
         self.body.update('');
         self.request(null, null, { onComplete:function(id, data){
             self.data = data;
-            self.do_tree( self.body ); 
+            self.do_tree( self.body );
         }});
     },
     do_tree : function( el ) {
@@ -213,7 +214,7 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
                 type: 'icon',
                 color: '#ddeeff'
             },
-            
+
             Edge: {
               color: '#C17878',
               lineWidth: 1.5
@@ -221,19 +222,19 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
 
             onBeforeCompute: function(node){
                 self.request( node.id, null, { onComplete:function(id, data){
-                    rgraph.op.sum( data, {  
+                    rgraph.op.sum( data, {
                         type: 'replot', //'replot', // fade:seq
                         fps: 30,
                         duration: 200,
                         hideLabels: true,
-                        onComplete: function(){  
+                        onComplete: function(){
                             //rgraph.refresh();
                             rgraph.compute('end');
-                        }  
+                        }
                     });
                 }});
             },
-            
+
             //Add the name of the node in the correponding label
             //and a click handler to move the graph.
             //This method is called once, on label creation.
@@ -259,12 +260,12 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
                 if (node._depth <= 1) {
                     style.fontSize = "0.8em";
                     style.color = "#111";
-                
+
                 } else {
                     style.fontSize = "0.7em";
                     style.color = "#333";
-                    //style['margin-top'] = '20px'; 
-                } 
+                    //style['margin-top'] = '20px';
+                }
                 //else {
                    // style.display = 'none';
                 //}
@@ -294,7 +295,7 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
         });
     },
     request : function( id, lev, onComplete) {
-        if( this.data ) 
+        if( this.data )
             onComplete.onComplete( id, this.data );
     }
 });
@@ -306,9 +307,9 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
         self.bodyCfg = Ext.apply({ style:{ 'background-color':'#000' } }, self.bodyCfg );
 
         Baseliner.Sunburst.superclass.initComponent.call( this );
-        
+
         self.on( 'resize', function(panel,w,h,rw,rh){
-            //if( self._resize ) self._resize( args ); 
+            //if( self._resize ) self._resize( args );
             self.redraw();
         });
         self.images = {}; // indexed by mid
@@ -316,13 +317,13 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
     redraw : function(){
         var self = this;
         self.body.update('');
-        self.gen_tree( self.body ); 
+        self.gen_tree( self.body );
         self.request(null, null, { onComplete:function(id, data){
             self.load_data( data );
         }});
     },
     request : function( id, lev, onComplete) {
-        if( this.data ) 
+        if( this.data )
             onComplete.onComplete( id, this.data );
     },
     load_data : function(data){
@@ -372,7 +373,7 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
             Tips: {
               enable: true,
               onShow: function(tip, node) {
-                var html = "<div class=\"tip-title\">" + node.name + "</div>"; 
+                var html = "<div class=\"tip-title\">" + node.name + "</div>";
                 var data = node.data;
                 if("days" in data) {
                   html += "<b>Last modified:</b> " + data.days + " days ago";
@@ -411,7 +412,7 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
               }
             },
             // Only used when Label type is 'HTML' or 'SVG'
-            // Add text to the labels. 
+            // Add text to the labels.
             // This method is only triggered on label creation
             onCreateLabel: function(domElement, node){
               var labels = self.jit.config.Label.type,
@@ -427,15 +428,16 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
             // or moved.
             onPlaceLabel: function(domElement, node){
               var labels = self.jit.config.Label.type;
+              var style;
               if (labels === 'SVG') {
                 var fch = domElement.firstChild;
-                var style = fch.style;
+                style = fch.style;
                 style.display = '';
                 style.cursor = 'pointer';
                 style.fontSize = "0.8em";
                 fch.setAttribute('fill', "#fff");
               } else if (labels === 'HTML') {
-                var style = domElement.style;
+                style = domElement.style;
                 style.display = '';
                 style.cursor = 'pointer';
                 style.fontSize = "0.8em";
@@ -445,7 +447,7 @@ Baseliner.Sunburst = Ext.extend( Ext.Panel, {
                 style.left = (left - w / 2) + 'px';
               }
             }
-       });   
+       });
 
     }
 });
@@ -457,9 +459,9 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
         self.bodyCfg = Ext.apply({ style:{ 'background-color':'#fff' } }, self.bodyCfg );
 
         Baseliner.ST.superclass.initComponent.call( this );
-        
+
         self.on( 'resize', function(panel,w,h,rw,rh){
-            //if( self._resize ) self._resize( args ); 
+            //if( self._resize ) self._resize( args );
             self.redraw();
         });
 
@@ -482,7 +484,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                           ctx.lineTo(algnPos.x + width / 2, algnPos.y + height);
                       }
                       ctx.stroke();
-                  } 
+                  }
               }
             }
         });
@@ -490,13 +492,13 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
     redraw : function(){
         var self = this;
         self.body.update('');
-        self.gen_tree( self.body ); 
+        self.gen_tree( self.body );
         self.request(null, null, { onComplete:function(id, data){
             self.load_data( data );
         }});
     },
     request : function( id, lev, onComplete) {
-        if( this.data ) 
+        if( this.data )
             onComplete.onComplete( id, this.data );
     },
     load_data : function(data){
@@ -543,7 +545,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 align:"center",
                 overridable: true
             },
-            
+
             Edge: {
                 type: 'bezier',
                 lineWidth: 2,
@@ -554,15 +556,15 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
             //Use this method to add event handlers and styles to
             //your node.
             onCreateLabel: function(label, node){
-                label.id = node.id;            
-                label.innerHTML = String.format('<table><tr><td style="vertical-align: top"><img src="{1}"></td><td style="vertical-align: top">{0}</td></tr></table>', node.name, node.data.icon );
+                label.id = node.id;
+                label.innerHTML = String.format('<table><tr><td style="vertical-align: top"><img src="{1}" width = "16" height = "16" /></td><td style="vertical-align: top">{0}</td></tr></table>', node.name, node.data.icon );
                 label.onclick = function(){
                     self.jit.onClick(node.id);
                 };
                 //set label styles
                 var style = label.style;
                 style.width = 140 + 'px';
-                style.height = 21 + 'px';            
+                style.height = 21 + 'px';
                 style.cursor = 'pointer';
                 style.color = '#000';
                 //style.backgroundColor = '#1a1a1a';
@@ -573,7 +575,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 //style.textDecoration = 'underline';
                 style.paddingTop = '3px';
             },
-            
+
             //This method is called right before plotting
             //a node. It's useful for changing an individual node
             //style properties before plotting it.
@@ -589,7 +591,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                     delete node.data.$color;
                 }
             },
-            
+
             //This method is called right before plotting
             //an edge. It's useful for changing an individual edge
             //style properties before plotting it.
@@ -605,18 +607,18 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                     delete adj.data.$lineWidth;
                 }
             },
-           
+
             //Add navigation capabilities:
             //zooming by scrolling and panning.
             Navigation: {
               enable: true,
               panning: true,
-              zooming: 20
+              zooming: false
             },
-            
-            request: function(nodeId, level, onComplete) {  
+
+            request: function(nodeId, level, onComplete) {
                 self.request( nodeId, level, onComplete );
-            }  
+            }
         });
     }
 });
@@ -625,7 +627,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     layout: 'card',
     activeItem : 0,
     mid: -1,
-    direction: 'related', 
+    direction: 'related',
     depth: 1,
     title: _('CI Graph'),
     header: false,
@@ -637,7 +639,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         Baseliner.CIGraph.superclass.constructor.call(this, Ext.apply({
             items: []
         },c));
-        
+
     },
     initComponent : function(){
         var self = this;
@@ -647,33 +649,33 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
 
         var btn_redraw = new Ext.Button({
             tooltip: _('Redraw'),
-            icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
+            icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw(); }
         });
         self.btn_to_img = new Ext.Button({
             tooltip: _('Generate Image'),
-            icon:'/static/images/icons/printer.png', hidden: Ext.isIE9m, handler: function(){ self.to_img() } 
+            icon:'/static/images/icons/printer.png', hidden: Ext.isIE9m, handler: function(){ self.to_img(); }
         });
         self.btn_st = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
             icon: '/static/images/icons/spacetree.png',
-            text: _('SpaceTree'), handler: function(){ self.load_st() }
+            text: _('SpaceTree'), handler: function(){ self.load_st(); }
         });
         self.btn_rg = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
             icon: '/static/images/icons/rgraph.png',
-            text: _('RGraph'), handler: function(){ self.load_rg() }
+            text: _('RGraph'), handler: function(){ self.load_rg(); }
         });
 
         // TODO Sunburst has issues, disabled for now
         self.btn_sunburst = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
             icon: '/static/images/icons/spacetree.png',
-            text: _('Sunburst'), handler: function(){ self.load_sunburst() }
+            text: _('Sunburst'), handler: function(){ self.load_sunburst(); }
         });
         self.btn_d3g = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/d3graph.png', hidden: Ext.isIE9m, 
-            text: _('d3G'), handler: function(){ self.load_d3g() }
+            icon: '/static/images/icons/d3graph.png', hidden: Ext.isIE9m,
+            text: _('d3G'), handler: function(){ self.load_d3g(); }
         });
         // depth
         self.field_depth = new Ext.ux.form.SpinnerField({ hidden: true, value: self.depth, width: 60 });
@@ -695,17 +697,17 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         self.include_cl_combo = new Baseliner.CIClassCombo({ fieldLabel:_('Include Classes'), value: self.include_cl });
         self.not_in_class_check = new Baseliner.CBox({
-            fieldLabel: _('Exclude selected classes?'), 
-            checked: self.not_in_class, 
+            fieldLabel: _('Exclude selected classes?'),
+            checked: self.not_in_class,
             default_value: false
         });
 
-        self.filter_win = new Cla.Window({ 
+        self.filter_win = new Cla.Window({
             height: 300, width: 600, layout:'form', autoScroll: true,
-            modal: true, closeAction: 'hide', 
-            tbar: [ 
+            modal: true, closeAction: 'hide',
+            tbar: [
                 '->',
-                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig } }),
+                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig; } }),
                 new Ext.Button({ text:_('Filter'), icon:IC('search-small'), handler: function(){ self.filter_win.hide(); } })
             ],
             items: [ self.include_cl_combo, self.not_in_class_check ]
@@ -736,15 +738,15 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             var tbar_bbar = self.toolbar == 'bottom' ? 'bbar' : 'tbar';
             self[tbar_bbar] = [
                 self.btn_st, self.btn_rg, self.btn_d3g,
-                '-', 
+                '-',
                 //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
-                self.lab_depth, self.field_depth, 
+                self.lab_depth, self.field_depth,
                 _('lim')+':', field_limit,
                 _('dir')+':', self.field_direction, '-',
                 self.show_filter,
-                '->', 
+                '->',
                 self.btn_to_img,
-                self.btn_recenter, btn_redraw 
+                self.btn_recenter, btn_redraw
             ];
         }
         self.title = _('%1: %2', self.title, self.mid );
@@ -763,9 +765,10 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         if( !ai ) return;
         var which = ai.which;
         self.remove( ai );
-        if( which != undefined ) {
-            self[ which ] = null; 
-            eval("self.load_" + which + "();");
+        if( which !== undefined ) {
+            self[ which ] = null;
+            self.load_ = self.load_[which];
+
         }
     },
     redraw : function(){
@@ -775,15 +778,15 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     window_show : function() {
         var graph_win = new Baseliner.Window({ title: this.title, layout:'fit', width: 1000, height: 600, items: this });
         graph_win.show();
-        return graph_win; 
+        return graph_win;
     },
     setActive : function(obj){
-        var self = this; 
-        var foo= function(){ self.getLayout().setActiveItem( obj ) };
+        var self = this;
+        var foo= function(){ self.getLayout().setActiveItem( obj ); };
         self.getLayout().setActiveItem ? foo() : self.on('afterrender', foo);
     },
     load_st : function(){
-        var self = this; 
+        var self = this;
         self.btn_st.toggle(true);
         self.field_depth.hide(); self.lab_depth.hide();
         self.btn_recenter.show();
@@ -795,20 +798,19 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.st = new Baseliner.ST({ request: function(id,lev,onComplete){
             var mid = id || self.mid;
             self.last_mid = mid;
-            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }', 
-                direction: self.direction, 
-                include_cl: self.include_cl, 
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }',
+                direction: self.direction,
+                include_cl: self.include_cl,
                 not_in_class: self.not_in_class,
                 condition: self.condition,
                 depth: 1, limit: self.limit }, function(res){
-                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-                    if( res.count < 1 ) { 
-                        Baseliner.warning( _('Empty'), self.filtering 
-                            ? _('No nodes available for current filter') : _('No nodes available') ); 
-                        onComplete.onComplete(id, res.data); 
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return; }
+                    if( res.count < 1 ) {
+                        Baseliner.warning( _('Empty'), self.filtering ? _('No nodes available for current filter') : _('No nodes available') );
+                        onComplete.onComplete(id, res.data);
                         return;
                     }
-                    onComplete.onComplete(id, res.data);    
+                    onComplete.onComplete(id, res.data);
                 });
         }});
         self.st.which = 'st';
@@ -816,7 +818,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.setActive( self.st );
     },
     load_sunburst : function(){
-        var self = this; 
+        var self = this;
         self.btn_sunburst.toggle(true);
         self.field_depth.hide(); self.lab_depth.hide();
         self.btn_recenter.show();
@@ -828,13 +830,13 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             var mid = id || self.mid;
             self.last_mid = mid;
             Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, direction: self.direction, root_node_data:'{ "$type":"none" }',
-                include_cl: self.include_cl, 
+                include_cl: self.include_cl,
                 not_in_class: self.not_in_class,
-                condition: self.condition, 
+                condition: self.condition,
                 depth: 2, limit: self.limit }, function(res){
-                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-                    if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
-                    onComplete.onComplete(id, res.data);    
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return; }
+                    if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return; }
+                    onComplete.onComplete(id, res.data);
                 });
         }});
         self.sunburst.which = 'sunburst';
@@ -842,7 +844,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         self.setActive( self.sunburst );
     },
     load_rg : function(){
-        var self = this; 
+        var self = this;
         self.btn_rg.toggle(true);
         self.field_depth.show(); self.lab_depth.show();
         self.btn_recenter.hide();
@@ -852,20 +854,20 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         }
         self.rg = new Baseliner.JitRGraph({ request: function(id,lev,onComplete){
             var mid = id || self.mid;
-            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, 
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid,
                 add_prefix: 0,
                 direction: self.direction,
-                include_cl: self.include_cl, 
+                include_cl: self.include_cl,
                 not_in_class: self.not_in_class,
-                condition: self.condition, 
+                condition: self.condition,
                 depth: self.depth, limit: self.limit }, function(res){
-                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return; }
                     if( res.count > self.limit ) {
                         Baseliner.confirm( _('High number of nodes (%1) can make browser sluggish. Continue?', res.count ), function(){
-                            onComplete.onComplete(id, res.data);    
+                            onComplete.onComplete(id, res.data);
                         });
                     } else {
-                        onComplete.onComplete(id, res.data);    
+                        onComplete.onComplete(id, res.data);
                     }
                 });
         }});
@@ -885,7 +887,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         var w = 960, h = 500;
         Baseliner.loadFile('/static/d3/d3.css', 'css' );
         self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction,
-                include_cl: self.include_cl, 
+                include_cl: self.include_cl,
                 not_in_class: self.not_in_class,
                 condition: self.condition
         });
@@ -904,7 +906,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
               onrendered: function(canvas) {
                   var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
                   var dw = ww.document;
-                  canvas.style['backgroundColor'] = '#000';
+                  canvas.style.backgroundColor = '#000';
                   var image = dw.createElement('image');
                   image.src = canvas.toDataURL("image/png");
                   dw.body.appendChild( image );
@@ -913,5 +915,5 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         // jquery version doesn't work: not everything is in the canvas, or d3 has no canvas apparently
         // $(self.getLayout().activeItem.el.dom).find('canvas').each(function(){ var canvas = this;
-    } 
+    }
 });
