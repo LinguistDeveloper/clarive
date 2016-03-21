@@ -469,9 +469,10 @@
 		       		</div>
 		       	</div>
 		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes, tag: params_view_diff.tag });
-    	panel.update(html);
+        if (panel.rendered) {
+        panel.update(html);
+        }
     }
-
 
     var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, generate_diff, function(res){
          Baseliner.error( _('Error'), _(res.msg) );
