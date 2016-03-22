@@ -1407,24 +1407,23 @@
     grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         var sel;
         var notifications_checked;
-        if(columnIndex == 0){
+        if (columnIndex == 0) {
             notifications_checked = getNotifications();
-            if (notifications_checked.length == 1){
+            if (notifications_checked.length == 1) {
                 init_buttons('enable');
-            }else{
-                if(notifications_checked.length == 0){
+            } else {
+                if (notifications_checked.length == 0) {
                     init_buttons('disable');
-                }else{
+                } else {
                     btn_start.enable();
                     btn_stop.enable();
                     btn_edit.disable();
                     btn_delete.enable();
                 }
             }
-        }
-        else {
-        	sel = grid.getStore().getAt(rowIndex);
-            if(sel){
+        } else {
+            sel = grid.getStore().getAt(rowIndex);
+            if (sel) {
                 add_edit(sel);
             }
         }
