@@ -42,8 +42,6 @@ subtest 'parse_vars: parses references in values' => sub {
     my $parser = _build_parser();
 
     is $parser->parse_vars( '${foo}', { foo => \'bar' } ), 'bar';
-    is_deeply $parser->parse_vars( '${foo}', { foo => { foo => 'bar' } } ), { foo => 'bar' };
-    is_deeply $parser->parse_vars( '${foo}', { foo => [qw/foo bar/] } ), [qw/foo bar/];
     is $parser->parse_vars( '${foo}', { foo => MongoDB::OID->new( value => 'bar' ) } ), 'bar';
 };
 
@@ -127,6 +125,15 @@ subtest 'parse_vars: resolves 2 empty vars in one string' => sub {
     my $parser = _build_parser( cleanup => 1 );
 
     is $parser->parse_vars( '${foo} ${foo}', {} ), ' ';
+};
+
+subtest 'parse_vars: throws when unexpected reference in var' => sub {
+    my $parser = _build_parser( cleanup => 1 );
+
+    capture {
+        like exception { $parser->parse_vars( '${foo}', { foo => { foo => 'bar' } } ), { foo => 'bar' } },
+          qr/Unexpected reference found in \${foo}/;
+    };
 };
 
 done_testing;
