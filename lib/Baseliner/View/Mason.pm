@@ -1,7 +1,7 @@
 package Baseliner::View::Mason;
-use strict;
-use warnings;
-use base 'CatalystX::Features::View::Mason';
+use Moose;
+
+BEGIN { extends 'CatalystX::Features::View::Mason' }
 
 __PACKAGE__->config(use_match => 0);
 

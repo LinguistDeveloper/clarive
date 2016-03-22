@@ -2012,7 +2012,8 @@ sub _export {
         renderer => sub {
             my (%params) = @_;
 
-            return $c->forward( $c->view('Mason'), 'render', [ '/reports/basic.html', \%params ] );
+            my $content = $c->forward( $c->view('Mason'), 'render', [ '/reports/basic.html', \%params ] );
+            return $content;
         }
     );
 
@@ -2026,7 +2027,7 @@ sub _export {
             total_rows => $p->{total_rows},
         );
 
-        if (Encode::is_utf8($content)) {
+        if (!Encode::is_utf8($content)) {
             $content = Encode::decode('UTF-8', $content);
         }
 
