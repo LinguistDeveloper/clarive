@@ -773,6 +773,11 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     width: 16px;
 }
 
+.x-panel-body.x-panel-body-noheader.x-panel-body-noborder .table-bordered.table-condensed.dashboard td > b > a > img {
+        height: 16px;
+        width: 16px;
+}
+
 .x-form-text.x-superboxselect.x-superboxselect-display-btns .x-superboxselect-item.x-superboxselect-item .ui-ci-class div > img {
     height: 16px;
     width: 16px;
