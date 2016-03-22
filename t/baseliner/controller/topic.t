@@ -293,13 +293,10 @@ subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
     my $c = _build_c( req => { params => { valuesqry=>'true', filter =>'{"statuses":["status-1"]}' ,query=>"$topic_mid $topic_mid_2" } } );
     $c->{username} = 'root'; # change context to root
 
-
-    use Baseliner::Utils;
-
     $controller->related($c);
 
     my $topics = $c->stash->{json}->{data};
-    
+
     is scalar @$topics, 2;
     is $c->stash->{json}->{totalCount}, 2;
 };
@@ -319,9 +316,6 @@ subtest 'related: valuesqry non return data when exist filter' => sub {
     my $controller = _build_controller();
     my $c = _build_c( req => { params => { valuesqry=>'', filter =>'{"statuses":["status-1"]}' ,query=>"$topic_mid $topic_mid_2" } } );
     $c->{username} = 'root'; # change context to root
-
-
-    use Baseliner::Utils;
 
     $controller->related($c);
 
@@ -371,7 +365,7 @@ subtest 'related: sends correct parameters to DataView' => sub {
     my $c = _build_c(
         req => {
             params => {
-                valuesqry     =>'',
+                valuesqry     => '',
                 categories    => [ 1, 2, 3 ],
                 statuses      => [ 4, 5, 6 ],
                 not_in_status => 'on',
@@ -390,8 +384,8 @@ subtest 'related: sends correct parameters to DataView' => sub {
     is_deeply \%params,
       {
         'filter'        => '{"foo":"bar"}',
-        'valuesqry'       =>'',
-        'where'         =>'',
+        'valuesqry'     => '',
+        'where'         => undef,
         'categories'    => [1, 2, 3],
         'dir'           => 'asc',
         'username'      => 'test',

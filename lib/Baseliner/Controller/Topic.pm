@@ -294,6 +294,7 @@ sub check_modified_on: Local {
 
 sub related : Local {
     my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
 
     my $categories    = $p->{categories};
@@ -301,9 +302,7 @@ sub related : Local {
     my $not_in_status = $p->{not_in_status};
     my $show_release  = $p->{show_release};
 
-    use Data::Dumper;
-    
-    my $where = '';
+    my $where;
     my $valuesqry = $p->{valuesqry};
     if ( $valuesqry && $valuesqry eq 'true' ) {
         $where = { mid => mdb->in( split /\s+/, join ' ', _array( delete $p->{query} ) ) };

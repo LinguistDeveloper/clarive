@@ -47,7 +47,7 @@ sub build_where {
     my $topic_mid  = $params{topic_mid};
 
     my $where         = $params{where} || {};
-    my $valuesqry     = $params{valuesqry} || {};
+    my $valuesqry     = $params{valuesqry};
     my $username      = $params{username} or _fail 'username required';
     my @categories    = _array $params{categories};
     my $category_type = $params{category_type};
@@ -58,7 +58,8 @@ sub build_where {
     my @priorities;
     my @labels;
     my @category_status_id;
-    if ($valuesqry && $valuesqry ne 'true' && $where){
+
+    if (!$valuesqry || $valuesqry ne 'true') {
         if ($filter) {
             delete $filter->{start};
             delete $filter->{limit};
