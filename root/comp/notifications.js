@@ -1396,49 +1396,51 @@
             search_field,' ',' ',
            	btn_add,
 			btn_edit,
-			btn_delete, 
+			btn_delete,
 			btn_start,
             btn_stop,
 			btn_tools_notify
         ],
 		bbar: ptool
     });
-	
+
     grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+        var sel = grid.getStore().getAt( rowIndex );
         if(columnIndex == 0){
             var notifications_checked = getNotifications();
             if (notifications_checked.length == 1){
                 init_buttons('enable');
             }else{
                 if(notifications_checked.length == 0){
-					init_buttons('disable');
+                    init_buttons('disable');
                 }else{
                     btn_start.enable();
-					btn_stop.enable();
-					btn_edit.disable();
-					btn_delete.enable();
+                    btn_stop.enable();
+                    btn_edit.disable();
+                    btn_delete.enable();
                 }
             }
         }
         else {
-            var sel = grid.getStore().getAt( rowIndex );
-            if(sel) add_edit(sel);
+            if(sel){
+                add_edit(sel);
+            }
         }
     });
 
     grid.on('headerclick', function(grid, columnIndex, e) {
+        var notifications_checked = getNotifications();
         if(columnIndex == 0){
-            var notifications_checked = getNotifications();
             if(notifications_checked.length == 0){
                 init_buttons('disable');
             }else{
-				btn_start.enable();
-				btn_stop.enable();
-				btn_edit.disable();
-				btn_delete.enable();
+                btn_start.enable();
+                btn_stop.enable();
+                btn_edit.disable();
+                btn_delete.enable();
             }
         }
     });
-	
+
     return grid;
 })

@@ -1170,8 +1170,8 @@
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],
         autoSizeColumns: true,
-        deferredRender:true,    
-        tbar: [ 
+        deferredRender:true,
+        tbar: [
                 btn_add_category,
                 btn_edit_category,
                 //'-',
@@ -1180,20 +1180,20 @@
                 btn_duplicate_category,
                 '->',
                 btn_tools_category
-        ]       
-    }); 
-    
+        ]
+    });
+
     grid_categories.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 1){
-            var categories_checked = getCategories();
-            var labels_checked = getLabels();
-            //filtrar_topics(labels_checked, categories_checked);
+        var sel = grid.getStore().getAt( rowIndex );
+        var categories_checked = getCategories();
+        var labels_checked = getLabels();
+        if (columnIndex == 1) {
             if (categories_checked.length == 1){
                 init_buttons_category('enable');
-            }else{
-                if(categories_checked.length == 0){
+            } else {
+                if (categories_checked.length == 0){
                     init_buttons_category('disable');
-                }else{
+                } else {
                     btn_delete_category.enable();
                     btn_edit_category.disable();
                     btn_duplicate_category.disable();
@@ -1202,16 +1202,16 @@
             }
         }
         else {
-            var sel = grid.getStore().getAt( rowIndex );
-            if(sel) add_edit_category(sel);
+            if(sel){
+                add_edit_category(sel);
+            }
         }
     });
-    
+
     grid_categories.on('headerclick', function(grid, columnIndex, e) {
         if(columnIndex == 1){
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            //filtrar_topics(labels_checked, categories_checked);
             if(categories_checked.length == 0){
                 init_buttons_category('disable');
             }else{
@@ -1221,8 +1221,7 @@
             }
         }
     });
-    
-    
+
     var btn_add_label = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
             if(label_box.getValue() != ''){
