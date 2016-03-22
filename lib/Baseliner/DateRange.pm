@@ -8,10 +8,12 @@ sub build_pair {
     my $self = shift;
     my ( $range, $offset ) = @_;
 
+    my $now = _now();
+
     $range ||= 'day';
 
-    my $from = Class::Date->new( substr( _now(), 0, 10 ) . ' 00:00:00' );
-    my $to   = Class::Date->new( substr( _now(), 0, 10 ) . ' 23:59:59' );
+    my $from = Class::Date->new( substr( $now, 0, 10 ) . ' 00:00:00' );
+    my $to   = Class::Date->new( substr( $now, 0, 10 ) . ' 23:59:59' );
 
     if ( $range eq 'day' ) {
         if ($offset) {
@@ -22,7 +24,7 @@ sub build_pair {
     elsif ( $range eq 'week' ) {
         my $start_of_week = 1;
 
-        $from = substr( _now(), 0, 10 ) . ' 00:00:00';
+        $from = substr( $now, 0, 10 ) . ' 00:00:00';
         $from = Class::Date->new($from);
 
         my $diff = $from->_wday - $start_of_week;
@@ -64,7 +66,7 @@ sub build_pair {
     }
 
     $to = Class::Date->new($to) unless ref $to;
-    $to = _now() if $to > Class::Date->new(_now());
+    $to = $now if $to > Class::Date->new($now);
 
     return ( "$from", "$to" );
 }
