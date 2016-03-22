@@ -93,8 +93,12 @@ Ext.onReady(function(){
                     menu: Ext.encode({})
                 },
                 function(res) {
-                    if( Cla.explorer && Cla.explorer.$tree_favorites ) Cla.explorer.$tree_favorites.refresh();
+                    //if( Cla.explorer && Cla.explorer.$tree_favorites ) Cla.explorer.$tree_favorites.refresh();
                     Cla.message( _('Favorite'), res.msg );
+                    Cla.explorer.$tree_favorites.refresh();
+                    win.destroy();
+                   
+
                 }
             );
         };
