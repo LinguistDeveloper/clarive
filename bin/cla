@@ -3,7 +3,7 @@
 #set -x
 
 BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-LOCALDIR="$BINDIR/../../local"
+LOCALDIR=`realpath "$BINDIR/../../local"`
 PERL="$LOCALDIR/bin/perl"
 if [ ! -e $PERL ]; then
     PERL=`which perl`
@@ -15,7 +15,7 @@ fi
 if [ "$CLARIVE_HOME" == "" ]; then
     export CLARIVE_HOME=`realpath "$BINDIR/../"`
 fi
-export LD_LIBRARY_PATH="$LOCALDIR/lib"
+export LD_LIBRARY_PATH="$LOCALDIR/lib:$LD_LIBRARY_PATH"
 
 export PERL5LIB=""
 export PERL_LOCAL_LIB_ROOT=""
