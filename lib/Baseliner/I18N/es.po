@@ -8550,8 +8550,6 @@ msgstr "El fichero tiene un formato no permitido: %1"
 msgid "Error: Role already exists"
 msgstr "Error: El rol ya existe"
 
-msgid "Preformatted Text"
-
 msgid "'Preformatted Text'"
 msgstr "Texto con Preformato"
 
