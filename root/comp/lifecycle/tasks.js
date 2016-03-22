@@ -26,7 +26,7 @@
                 forceFit: true
 		    },
 		    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		    loadMask:'true',
+		    loadMask: true,
 		    columns: [
 			    { header: _('Tarea'), width: 200, dataIndex: 'name', sortable: true, renderer: render_bold },	
 			    { header: _('Category'), width: 200, dataIndex: 'category', sortable: true, renderer: render_category },	

@@ -195,18 +195,18 @@ Cla.help_show = function(params) {
         items: [ docs_tree, doc_reader ]
     });
     help_win.mask = function(){
-        help_win.body.mask( String.format('<img style="height:52px;width:52px;" src="{0}" />', '/static/images/loading.gif' ) ).setHeight(9999);
-    }
+        help_win.body.mask('');
+     };
     help_win.unmask = function(){
         help_win.body.unmask();
-    }
+    };
     help_win.history_push = function(path){
         if( help_win.history[help_win.history.length-1] != path ) {// avoid dups
             help_win.history.push( path );
         }
         help_win.history_curr = help_win.history.length-1;
         check_btns();
-    }
+    };
         //help_win.getEl().fadeOut('l', { duration: .5 });
         //help_win.hide();
     help_win.show();

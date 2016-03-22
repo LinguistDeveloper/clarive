@@ -113,7 +113,6 @@
     var action_tree = new Cla.Tree({
         title: _('Available Actions'),
         loader: treeLoader,
-        loadMask: true,
         useArrows: true,
         ddGroup: 'secondGridDDGroup',
         animate: true,
@@ -156,7 +155,7 @@
         },
         listeners: {
             'render': function() {
-                Baseliner.showLoadingMask( this.getEl() , _('Loading...') );
+                Baseliner.showLoadingTreeMask( this.getEl());
             },
             'load': function() {
                 this.getEl().unmask();
@@ -180,7 +179,7 @@
         autoScroll: true,
         viewConfig: { forceFit: true },
         columns: [
-            { header: _('User'), width: 100, dataIndex: 'user', sortable: true },	
+            { header: _('User'), width: 100, dataIndex: 'user', sortable: true },
             { header: _('Scopes'), width: 100, dataIndex: 'projects', sortable: true, renderer: Baseliner.render_wrap }
         ]
     });
@@ -205,12 +204,12 @@
         autoScroll: true,
         viewConfig: { forceFit: true },
         columns: [
-            { header: _('Scopes'), width: 100, dataIndex: 'project', sortable: true },	
+            { header: _('Scopes'), width: 100, dataIndex: 'project', sortable: true },
             { header: _('Users'), width: 100, dataIndex: 'users', sortable: true, renderer: Baseliner.render_wrap }
         ]
     });
     role_projects.on('activate', function(){
-        if( params.id_role && store_role_projects.getCount() == 0 ) 
+        if( params.id_role && store_role_projects.getCount() == 0 )
             store_role_projects.load();
     });
 
@@ -256,18 +255,18 @@
         split: true,
         viewConfig: { forceFit: true },
         clicksToEdit: 1,
-        height: 300,
-        width: 350,
+        height: 450,
+        width: 650,
         cm: cm,
         sm: new Baseliner.RowSelectionModel({ singleSelect: true }),
-        tbar: [ 
+        tbar: [
             search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Remove Selection'),
                 icon:'/static/images/icons/delete_red.png',
                 cls: 'x-btn-text-icon',
                 handler: function() {
-                    var sm = grid_role.getSelectionModel();							
+                    var sm = grid_role.getSelectionModel();
                     if (sm.hasSelection()) {
                         var sel = sm.getSelected();
                         grid_role.getStore().remove(sel);
@@ -435,5 +434,5 @@
           ] 
     });
     
-    return role_panel; 
+    return role_panel;
 })

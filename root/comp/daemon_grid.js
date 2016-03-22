@@ -311,8 +311,7 @@
 	    store: store,
 	    viewConfig: {forceFit: true	},
 	    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-	    loadMask:'true',
-	    columns: [
+        columns: [
 		    { width: 40, sortable: false, renderer: render_icon },	
 		    { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },	
 		    { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },	
@@ -337,10 +336,10 @@
 			    params: {start: 0, limit: ps},
 			    emptyText: _('<Enter your search string>')
 		    }),' ',' ',
-		   
+
 		    btn_add,
 		    btn_edit,
-		    btn_delete, 
+		    btn_delete,
 		    btn_start,
 		    btn_stop,
 		    '->'
@@ -351,17 +350,27 @@
 	    init_buttons('enable');
     });
 
-    //grid.on("rowdblclick", function(grid, rowIndex, e ) {
-    //    var r = grid.getStore().getAt(rowIndex);
-    //    Baseliner.addNewTab('/daemon/edit?id_rel=' + r.get('id') , r.get('name') );
-    //});		
-    
-    // Después de que cargue la página:
-    store.load({params:{start:0 , limit: ps}}); 
+	var first_load = true;
+	grid.on("activate", function() {
+		if( first_load ) {
+			Baseliner.showLoadingMask( grid.getEl());
+			first_load = false;
+		}
+	});
 
-    return grid;
-})()
+	store.load({
+		params:{
+			start:0,
+			limit: ps
+		},
+		callback: function(){
+			Baseliner.hideLoadingMaskFade(grid.getEl());
+		}
+	});
 
+	grid.on('destroy', function(){
+		autorefresh.stop(task);
+	});
 
-
-
+	return grid;
+})

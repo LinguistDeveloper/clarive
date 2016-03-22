@@ -214,7 +214,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     load_data : function() {
         var self = this;
-        self.el.mask( _('Loading...'), 'x-mask-loading');
         if( ! self.store ) {
             if( Ext.isArray( self.topics ) && self.topics.length > 0 ) {
                 // create my own store
@@ -223,6 +222,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 });
                 self.store.on('load', function(){
                     self.load_workflow( self.topics );
+                    self.el.mask('');
                 });
                 self.store.load();
             } else {

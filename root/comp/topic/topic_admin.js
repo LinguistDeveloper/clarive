@@ -252,7 +252,7 @@
         store: store_status,
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { hidden: true, dataIndex:'id' },
             // check_status_sm,
@@ -472,7 +472,7 @@
             store: store_status,
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
@@ -767,7 +767,7 @@
             enableHdMenu: false,
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { hidden: true, dataIndex:'id' },
                   check_admin_status_sm,
@@ -925,7 +925,7 @@
             }),         
             iconCls: 'icon-grid',
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', hidden: true }, 
                 { header: _('From Status'), width: 60, dataIndex: 'status_from', renderer: render_status },
@@ -1159,7 +1159,7 @@
         enableHdMenu: false,
         store: store_category,
         viewConfig: {forceFit: true, scrollOffset: 2},
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
@@ -1487,7 +1487,7 @@
         store: store_label,
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { hidden: true, dataIndex:'id' },
             check_labels_sm,

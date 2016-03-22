@@ -32,7 +32,7 @@
                     forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { header: _('Project'), width: 120, dataIndex: 'name', sortable: true },	
                 { header: _('Parent'), width: 40, dataIndex: 'id_parent', sortable: true },	

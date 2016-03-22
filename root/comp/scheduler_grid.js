@@ -251,7 +251,7 @@
         selModel: new Ext.grid.RowSelectionModel({
             singleSelect: true
         }),
-        loadMask: 'true',
+        loadMask: true,
         columns: [{
             header: _('Name'),
             width: 300,

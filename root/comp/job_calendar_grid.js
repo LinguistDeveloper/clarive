@@ -180,7 +180,7 @@
                 }
             },
             selModel: checkSelectionModel, //new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 checkSelectionModel,
                 { header: _('Calendar'), width: 200, dataIndex: 'name', sortable: true, renderer: render_cal },	

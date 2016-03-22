@@ -161,23 +161,10 @@ Cla.topic_grid = function(params){
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
             store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
         }
-        //loading = new Ext.LoadMask(panel.el, {msg:"Please wait..."});
-        //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );
-        /*
-        loading = Ext.Msg.show({
-                title : _('Loading'),
-                msg : _('Loading'),
-                buttons: false,
-                closable:false,
-                wait: true,
-                modal: false,
-                minWidth: Ext.Msg.minProgressWidth,
-                waitConfig: {}
-            });
-            */
+        loading = Baseliner.showLoadingMask(panel.getEl());
     });
     store_topics.on('load',function(s){
-        if( loading ) loading.hide();
+        if( loading ) Baseliner.hideLoadingMask( panel.getEl());
         // get extra data
         var cd = s.reader.jsonData.config;
         if( cd ) custom_form_data = cd;
@@ -192,7 +179,6 @@ Cla.topic_grid = function(params){
         var sels = sm.getSelections().map(function(row){ return row.data.topic_mid });
         var change_it = function(){
             var statuses = sm.getSelections().map(function(row){ return row.data.category_status_id });
-            grid_topics.getEl().mask(_('Wait while %1 topic statuses are changed...', sels.length) );
             Cla.ajax_json( '/topic/change_status',{ mid: sels, new_status: obj.new_status, old_status: statuses }, function(res){
                 Cla.message( _('Change Status'), _('Status changed to %1 for %2 topics', obj.status_name, sels.length) );
                 grid_topics.store.reload();
@@ -1431,19 +1417,15 @@ Cla.topic_grid = function(params){
         filters: fields_filter
     });
 
-
+ 
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
-        //title: _('Topics'),
-        //header: false,
         plugins: [filters],
         stripeRows: true,
         autoScroll: true,
         stateful: true,
         stateId: state_id,
-        //enableHdMenu: false,
         store: store_topics,
-        //enableDragDrop: true,
         dropable: true,
         autoSizeColumns: true,
         width: '100%',
@@ -1451,7 +1433,6 @@ Cla.topic_grid = function(params){
         ddGroup: 'explorer_dd',
         viewConfig: {forceFit: force_fit},
         sm: !typeApplication ? check_sm : null,
-        //loadMask:'true',
         columns: columns,
         tbar: [],
         bbar: ptool
@@ -2097,7 +2078,6 @@ Cla.topic_grid = function(params){
 
     grid_topics.on('afterrender', function(){
 
-        grid_topics.loadMask = new Ext.LoadMask(grid_topics.bwrap, { msg: _('Loading'), store: store_topics });
         store_topics.load({
             params: {
                 start:0 , limit: ps,

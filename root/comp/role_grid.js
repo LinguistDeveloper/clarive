@@ -1,4 +1,6 @@
 (function(){
+
+
     var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
@@ -45,7 +47,7 @@
             + '</div>';
         ;
     }
-
+        var first_load = true;
         var ps = 60; //page_size
 
         // create the grid
@@ -54,11 +56,8 @@
             title: _('Roles'),
             header: false,
             autoScroll: true,
-            autoWidth: true,
             store: store,
-            viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask: _('Loading'),
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
@@ -150,11 +149,25 @@
                 '->'
                 ]
         });
+    grid.on("activate", function() {
+        if( first_load ) {
+            Baseliner.showLoadingMask( grid.getEl());
+            first_load = false;
+        }
+    });
 
-    store.load({params:{start:0 , limit: ps}}); 
+    store.load({
+        params:{
+            start:0,
+            limit: ps
+        },
+        callback: function(){
+            Baseliner.hideLoadingMaskFade(grid.getEl());
+        }
+    });
 
     grid.getView().forceFit = true;
-    
+
     grid.list_actions = function(ix,invalid){
         var row = grid.store.getAt(ix);
         var actions = [];
@@ -198,9 +211,15 @@
     };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
-            var row = grid.getStore().getAt(rowIndex);
-            role_detail( row.get('id'), row.get('role') );
-        });		
-        
+        var row = grid.getStore().getAt(rowIndex);
+        Baseliner.showLoadingMask( grid.getEl());
+        role_detail( row.get('id'), row.get('role'));
+        Baseliner.hideLoadingMaskFade(grid.getEl());
+    });
+
+    grid.on("load", function(grid, rowIndex, e ) {
+        Baseliner.hideLoadingMaskFade(grid.getEl());
+    });
+
     return grid;
-})();
+});

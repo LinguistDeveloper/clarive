@@ -59,13 +59,12 @@
             header: false,
             autoScroll: true,
             autoWidth: true,
-            wait: 'loading...',
+            loadMask: true,
             store: store,
             viewConfig: [{
                     forceFit: true
             }],
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
             columns: [
                 { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
                 { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },

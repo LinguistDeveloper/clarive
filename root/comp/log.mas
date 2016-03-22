@@ -47,7 +47,7 @@
                     forceFit: true
             }],
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: <% $c->stash->{columns}  %>,
             autoSizeColumns: true,
             deferredRender:true,

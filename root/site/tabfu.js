@@ -1484,21 +1484,23 @@ if( Prefs.routing ) {
                 '<div class="x-box-bl"><div class="x-box-br"><div class="x-box-bc"></div></div></div>',
                 '</div>'].join('');
     }
-    
+
     Baseliner.showLoadingMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask( msg || _('Loading'), 'x-mask-loading' ).setHeight( 99999 );
-        //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
-        //    removeMask: true, msg : msg
-        //});
-        //Baseliner._defaultLoadingMask.show();
+        Baseliner._defaultLoadingMask = el.mask('');
         return Baseliner._defaultLoadingMask;
     };
+
+    Baseliner.showLoadingTreeMask = function (el, msg){
+        Baseliner._defaultLoadingMask = el.mask('','ext-el-mask-msg-tree');
+        return Baseliner._defaultLoadingMask;
+    };
+
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         if( cmp ) {
             Baseliner.showLoadingMask(cmp, msg);
         }
     };
-    
+
     Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
             if( Ext.isObject( cmp ) ) {
@@ -1532,7 +1534,7 @@ if( Prefs.routing ) {
                 var loadingMask = cmp.el;
                 Baseliner._defaultLoadingMask = loadingMask;
                 Baseliner._activeMask[cmp.id] = loadingMask;
-                loadingMask.mask(msg,'x-mask-loading');
+                loadingMask.mask('');
                 //loadingMask.show();
             }
         }
@@ -1872,3 +1874,4 @@ Baseliner.whereami = function(cons){
 Cla.log = function(msg){
     console.log(msg); 
 }
+

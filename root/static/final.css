@@ -616,15 +616,71 @@ div[class*='ui-ci_box-'].search-item img {
 }
 
 .x-combo-list-inner .search-item td > img {
-   height:16px;
-   width: 16px;
+    height:16px;
+    width: 16px;
 }
 
+.x-mask-loading div{
+    -moz-opacity:0.8;
+    opacity:.80;
+    filter:alpha(opacity=80);
+    background-color:#ffffff;
+    margin: 10px;
+    width:100%;
+    height:100%;
+    zoom:1;
+    background-position:center;
+    padding:100px 50 50 50;
+    background-image:url('/static/images/loading.gif') !important 40px 40px;
+    background-repeat: no-repeat;
+    background-size:32px;
+    line-height:50px;
+}
+
+.x-mask-loading-msg div {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: normal;
+    font-size: 11px;
+    color: #999;
+    font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
+.ext-el-mask {
+    z-index:9000;
+    position:absolute;
+    -moz-opacity:0.8;
+    opacity:.80;
+    filter:alpha(opacity=80);
+    background-color:transparent;
+    width:100%;
+    height:100%;
+    zoom:1;
+}
+
+.ext-el-mask-msg {
+    z-index:9001;
+    position:absolute;
+    border:none;
+    background:transparent;
+}
+
+.ext-el-mask-msg div {
+    background: url("/static/images/loading.gif") no-repeat scroll 35px 5px / 40px auto;
+    border: none;
+    color: #999;
+    cursor: wait;
+    font: 11px tahoma,arial,helvetica,sans-serif;
+    padding: 50px 75px 25px 25px;
+}
+
+.ext-el-mask-msg-tree div {
+    margin-top:400px;
+}
 
 div#search-result-block img {
-   height:16px;
-   width:16px;
-
+    height:16px;
+    width:16px;
 }
 
 #boot .dashboard-buttons-menu table.x-btn.x-btn-icon {
@@ -677,4 +733,3 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
-}

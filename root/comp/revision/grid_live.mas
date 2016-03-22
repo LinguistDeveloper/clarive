@@ -90,7 +90,7 @@
         }),
 
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { header: _("Scope"), width: 120, dataIndex: 'ns', sortable: true },	
             { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
@@ -194,9 +194,7 @@
                 { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
             ]),
-            loadMask       : {
-                msg : _('Loading...')
-            },
+            loadMask: true,
             title      : _("Packages"),
             height     : 400,
             autoWidth: true,

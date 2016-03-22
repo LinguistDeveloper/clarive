@@ -76,7 +76,7 @@
                     forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { header: _('From'), width: 200, dataIndex: 'sender', sortable: true }, 
                 { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true }, 

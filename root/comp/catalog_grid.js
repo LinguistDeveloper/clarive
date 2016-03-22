@@ -225,7 +225,7 @@
         view: gview,
         store: store,
         sm: sm,
-        loadMask:'true',
+        loadMask: true,
         viewConfig: {
             forceFit: true
         },

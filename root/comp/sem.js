@@ -279,7 +279,7 @@
                 }
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.gif" width="16px"/>' } },    
             { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem }, 
@@ -337,7 +337,7 @@
                 forceFit: true
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask:'true',
+        loadMask: true,
         columns: [
             { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'key', sortable: false, menuDisabled: true },    
             { width: 30, dataIndex: 'status', sortable: false, renderer: render_status, menuDisabled: true},

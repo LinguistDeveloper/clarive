@@ -476,7 +476,6 @@
             },
             selModel: row_sel, 
             loadMask: true,
-            wait: _('Loading...'),
             columns: [
                 { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, hidden: true, renderer: render_job_exec },   
                 { header: _('Step'), width: 40, dataIndex: 'step', sortable: true },
@@ -586,7 +585,7 @@
     var first_time = true;
     grid.on('activate', function(){
         if( first_time ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
+            Baseliner.showLoadingMask( grid.getEl() );
             first_time = false;
             if( annotate_now ) {
                 annotation();

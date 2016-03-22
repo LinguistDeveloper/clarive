@@ -185,7 +185,7 @@ Ext.override(Ext.form.HtmlEditor, {
             }],
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             sm: check_sm_events,
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 check_sm_events,
                 { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	

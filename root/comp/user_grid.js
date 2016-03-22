@@ -355,7 +355,7 @@
                 forceFit: true
             },          
             height:200,
-            // loadMask: true,
+            loadMask: true,
             columns: [
                 check_roles_sm,
                 { hidden: true, dataIndex:'id' }, 
@@ -912,7 +912,7 @@
                 forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { header: _('Id'), hidden: true, dataIndex: 'id' },
                 { header: _('Avatar'), hidden: false, width: 64, dataIndex: 'username', renderer: Baseliner.render_avatar },

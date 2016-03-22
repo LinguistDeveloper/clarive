@@ -674,7 +674,7 @@
         var sel = sm.getSelected();
         if( sel ) {
             var cons_inproc = new Baseliner.MonoTextArea({ value:'' });
-            var cons_pan = new Ext.Panel({ layout:'fit', items: cons_inproc, wait: _('Loading...') });
+            var cons_pan = new Ext.Panel({ layout:'fit', items: cons_inproc, wait: _('LOADING') });
             var win = new Baseliner.Window({ title:_('Run In-process: %1', sel.data.name), 
                 layout: 'fit', width: 800, height: 600, items: cons_pan });
             cons_inproc.on('afterrender', function(){ 
@@ -1194,7 +1194,6 @@
         loadMask: true,
         stateful: true,
         stateId: state_id,
-        wait: _('Loading...'),
         store: store,
         view: gview,
         selModel: row_sel, 
@@ -1356,7 +1355,9 @@
 
         grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
+            Baseliner.showLoadingMask( grid.getEl());
             Baseliner.openLogTab(r.get('mid') , r.get('name') );
+            Baseliner.hideLoadingMaskFade(grid.getEl());
         });		
 
 
@@ -1401,12 +1402,12 @@
 
     grid.on("activate", function() {
         if( first_load ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
+            Baseliner.showLoadingMask( grid.getEl());
             first_load = false;
         }
     });
     store.load({params:{start:0 , limit: ps }, callback: function(){
-        Baseliner.hideLoadingMaskFade(grid.getEl());
+      Baseliner.hideLoadingMaskFade(grid.getEl());
     } }); 
 
     grid.on('destroy', function(){
