@@ -1184,10 +1184,10 @@
     });
 
     grid_categories.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        var sel = grid.getStore().getAt( rowIndex );
-        var categories_checked = getCategories();
-        var labels_checked = getLabels();
+        var sel;
+        var categories_checked;
         if (columnIndex == 1) {
+            categories_checked = getCategories();
             if (categories_checked.length == 1){
                 init_buttons_category('enable');
             } else {
@@ -1197,11 +1197,11 @@
                     btn_delete_category.enable();
                     btn_edit_category.disable();
                     btn_duplicate_category.disable();
-                    btn_admin_category.disable();
                 }
             }
         }
         else {
+            sel = grid.getStore().getAt( rowIndex );
             if(sel){
                 add_edit_category(sel);
             }
@@ -1209,9 +1209,9 @@
     });
 
     grid_categories.on('headerclick', function(grid, columnIndex, e) {
+        var categories_checked;
         if(columnIndex == 1){
-            var categories_checked = getCategories();
-            var labels_checked = getLabels();
+            categories_checked = getCategories();
             if(categories_checked.length == 0){
                 init_buttons_category('disable');
             }else{

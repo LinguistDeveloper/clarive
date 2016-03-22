@@ -1405,9 +1405,10 @@
     });
 
     grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        var sel = grid.getStore().getAt( rowIndex );
+        var sel;
+        var notifications_checked;
         if(columnIndex == 0){
-            var notifications_checked = getNotifications();
+            notifications_checked = getNotifications();
             if (notifications_checked.length == 1){
                 init_buttons('enable');
             }else{
@@ -1422,6 +1423,7 @@
             }
         }
         else {
+        	sel = grid.getStore().getAt(rowIndex);
             if(sel){
                 add_edit(sel);
             }
@@ -1429,8 +1431,9 @@
     });
 
     grid.on('headerclick', function(grid, columnIndex, e) {
-        var notifications_checked = getNotifications();
+        var notifications_checked;
         if(columnIndex == 0){
+        	notifications_checked = getNotifications();
             if(notifications_checked.length == 0){
                 init_buttons('disable');
             }else{
