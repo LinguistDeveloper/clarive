@@ -722,7 +722,10 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> Remove a wrong character in .img-main-logo-powered attrs
 .img-main-logo-powered {
     position:absolute;
     border:0px;
@@ -801,5 +804,3 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 #boot .table .dataTables_wrapper .row-fluid .dataTables_filter label {
     margin-top: 7px;
 }
->>>>>>> Modified the height and the margins of the tables in the dashlets
->>>>>>> Modified the height and the margins of the tables in the dashlets
