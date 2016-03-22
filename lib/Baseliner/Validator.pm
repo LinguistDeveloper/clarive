@@ -82,6 +82,14 @@ sub _is_empty {
     return 1 unless defined $value;
     return 1 unless length $value;
 
+    if (ref $value eq 'ARRAY') {
+        return 1 unless @$value;
+
+        for (@$value) {
+            return 1 if $self->_is_empty($_);
+        }
+    }
+
     return 0;
 }
 
