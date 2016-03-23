@@ -10,7 +10,8 @@ sub check_initialized {
     my $check = $init->check;
 
     if ( !$check ) {
-        if ( $self->opts->{args}->{init} ) {
+        my @collections = grep { !/system\.indexes/ } mdb->db->collection_names;
+        if ( $self->opts->{args}->{init} || @collections == 0 ) {
             $init->run;
         }
         else {

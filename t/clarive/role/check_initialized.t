@@ -1,34 +1,48 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use TestEnv;
+BEGIN { TestEnv->setup }
 
-TestEnv->setup;
-
-use boolean;
 use Clarive::mdb;
 
 subtest 'run_start: throws when initialization is needed' => sub {
-    _setup( no_system_init => 1 );
+    _setup();
+
+    mdb->event->insert( { foo => 'bar' } );
 
     like exception { _build_cmd() }, qr/System is not initialized/;
+};
+
+subtest 'run_start: runs initialization when --init flag' => sub {
+    _setup();
+
+    _build_cmd( opts => { args => { init => 1 } } );
+
+    ok( mdb->clarive->find_one );
+};
+
+subtest 'run_start: runs initialization automatically when empty database' => sub {
+    _setup();
+
+    _build_cmd();
+
+    ok( mdb->clarive->find_one );
 };
 
 sub _setup {
     my (%params) = @_;
 
-    mdb->clarive->drop;
-
-    mdb->clarive->insert( { initialized => true, migration => { version => '0100' } } ) unless $params{no_system_init};
+    my @collections = mdb->db->collection_names;
+    mdb->$_->drop for @collections;
 }
 
 sub _build_cmd {
     my (%params) = @_;
 
-    return TestCmd->new( app => $Clarive::app, opts => {} );
+    return TestCmd->new( app => $Clarive::app, opts => {}, %params );
 }
 
 done_testing;

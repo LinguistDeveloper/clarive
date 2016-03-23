@@ -5,6 +5,7 @@ BEGIN { extends 'Clarive::Cmd' }
 
 use Cwd qw(getcwd);
 use File::Spec;
+use File::Copy qw(copy);
 
 our $CAPTION = 'Pack';
 
@@ -17,6 +18,10 @@ has
 
     return $self->_slurp('VERSION');
   };
+has cygwin_dist  => qw(is rw isa Str);
+has clarive_dist => qw(is rw isa Str);
+has makensis     => qw(is rw isa Str);
+has nsis         => qw(is rw isa Str);
 
 sub run { &run_dist }
 
@@ -64,7 +69,7 @@ sub run_dist {
         $self->os($os);
     }
 
-    if (!$self->arch) {
+    if ( !$self->arch ) {
         my $arch;
         chomp( $arch //= `uname -m` );
         $arch = lc $arch;
@@ -77,16 +82,7 @@ sub run_dist {
 
     warn sprintf "Packing for %s-%s...\n", $self->os, $self->arch;
 
-    my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
-    my $archive = "$dist.tar.gz";
-
     my $base = $ENV{CLARIVE_BASE};
-
-    my $destdir = "/tmp/";
-    mkdir $destdir;
-
-    my $archive_path = File::Spec->catfile( $destdir, $archive );
-    unlink $archive_path;
 
     my @exclude = qw(
       clarive/.git
@@ -97,9 +93,8 @@ sub run_dist {
       clarive/ui-tests
       clarive/rec-tests
     );
-    my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
 
-    if (-d '.git') {
+    if ( -d '.git' ) {
         `git ls-files | sed -e 's#^#clarive/#' > MANIFEST`;
     }
     else {
@@ -110,15 +105,106 @@ sub run_dist {
     `echo 'stew.snapshot' >> MANIFEST`;
     `echo 'clarive/VERSION' >> MANIFEST`;
 
-    my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
-      $exclude_str, $archive_path;
-    system($cmd);
+    my $dist = sprintf 'clarive_%s_%s-%s', $self->version, $self->os, $self->arch;
 
-    if ( -f $archive_path ) {
-        print $archive_path, "\n";
+    my $destdir = "/tmp/";
+    mkdir $destdir;
+
+    my $final_archive_path;
+    if ( $self->os =~ m/windows|cygwin/i ) {
+        my $archive = "$dist.zip";
+        my $archive_path = File::Spec->catfile( $destdir, $archive );
+        unlink $archive_path;
+
+        my $exclude_str = join ' ', map { "clarive/$_" } @exclude;
+        $exclude_str = '--exclude ' . $exclude_str if $exclude_str;
+
+        my $cmd = sprintf q{cd ..; cat clarive/MANIFEST | zip -@ %s %s; cd -}, $archive_path, $exclude_str;
+        system($cmd);
+
+        $final_archive_path = $archive_path;
+    }
+    else {
+        my $archive = "$dist.tar.gz";
+        my $archive_path = File::Spec->catfile( $destdir, $archive );
+        unlink $archive_path;
+
+        my $exclude_str = join ' ', map { "--exclude '$_'" } @exclude;
+
+        my $cmd = sprintf q{cat MANIFEST | tar -C %s --transform 's#^#%s/#' %s -czf %s --files-from=-}, $base, $dist,
+          $exclude_str, $archive_path;
+        system($cmd);
+
+        $final_archive_path = $archive_path;
+    }
+
+    if ( -f $final_archive_path ) {
+        print $final_archive_path, "\n";
         exit 0;
     }
     else {
+        print 'ERROR', "\n";
+        exit 1;
+    }
+}
+
+sub run_nsi {
+    my $self = shift;
+
+    for (qw/cygwin clarive/) {
+        my $method = "${_}_dist";
+
+        die "$method required" unless $self->$method;
+        die "$method must be a .zip file" unless -f $self->$method && $self->$method =~ m/\.zip$/;
+    }
+
+    if ($self->nsis) {
+        die "nsis does not exist" unless -f $self->nsis;
+
+        system(sprintf "unzip %s", $self->nsis);
+        $self->makensis("NSIS/makensis.exe");
+    }
+    elsif ($self->makensis) {
+        die "makensis does not exist" unless -f $self->makensis;
+    }
+    else {
+        die "Either path to nsis.zip or path to makensis.exe should be present";
+    }
+
+    my $template = do { local $/; open my $fh, '<', "data/nsi/clarive.nsi.template" or die $!; <$fh> };
+
+    my $version      = $self->version;
+    my $cygwin_dist  = $self->cygwin_dist;
+    my $clarive_dist = $self->clarive_dist;
+
+    chomp( $cygwin_dist  = `cygpath -w $cygwin_dist` );
+    chomp( $clarive_dist = `cygpath -w $clarive_dist` );
+
+    my ($cygwin_dist_basename) = $cygwin_dist =~ m/([^\\\/]+)$/;
+    my ($clarive_dist_basename) = $clarive_dist =~ m/([^\\\/]+)$/;
+
+    copy($cygwin_dist, $cygwin_dist_basename);
+    copy($clarive_dist, $clarive_dist_basename);
+
+    $template =~ s{## VERSION ##}{$version}g;
+    $template =~ s{## CYGWIN_DIST ##}{$cygwin_dist_basename}g;
+    $template =~ s{## CLARIVE_DIST ##}{$clarive_dist_basename}g;
+
+    open my $fh, '>', 'clarive.nsi' or die $!;
+    print $fh $template;
+    close $fh;
+
+    system("cat LICENSE THIRD-PARTY-NOTICES >> LICENSE.merged");
+    system($self->makensis, 'clarive.nsi');
+
+    my $final_archive_path = "clarive_${version}_setup.exe";
+
+    if ( -f $final_archive_path ) {
+        print $final_archive_path, "\n";
+        exit 0;
+    }
+    else {
+        print 'ERROR', "\n";
         exit 1;
     }
 }

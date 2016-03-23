@@ -101,8 +101,8 @@ subtest 'get meta returns meta fields' => sub {
     my $fieldlets = TestSetup->_fieldlets();
     my @fields = map { $$_{attributes}{data}{id_field} } @$fieldlets;
     unshift @fields, ( 'created_by', 'modified_by', 'created_on', 'category', 'modified_on' );
-    my @fields_from_meta = map { $$_{id_field} } @$meta;
-    is_deeply \@fields_from_meta, [@fields];
+    my @fields_from_meta = sort map { $$_{id_field} } @$meta;
+    is_deeply \@fields_from_meta, [sort @fields];
 };
 
 subtest 'include into fieldlet gets its topic list' => sub {

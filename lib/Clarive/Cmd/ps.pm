@@ -6,6 +6,7 @@ use strict;
 use Proc::ProcessTable;
 use Proc::Exists 'pexists';
 use Path::Class;
+use experimental 'switch', 'autoderef';
 
 our $CAPTION = 'list server processes';
 

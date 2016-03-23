@@ -9,7 +9,7 @@ use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
 
-use experimental 'switch';
+use experimental 'switch', 'autoderef';
 
 register 'config.user.global' => {
     preference => 1,

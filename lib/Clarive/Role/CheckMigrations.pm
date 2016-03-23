@@ -16,11 +16,21 @@ sub check_migrations {
 
     my $check = $migra->check;
 
+    my $is_empty = 0;
+
+    if (my $clarive = mdb->clarive->find_one) {
+        $is_empty = $clarive->{empty} ? 1 : 0;
+
+        if ($is_empty) {
+            mdb->clarive->update( { _id => $clarive->{_id} }, { '$unset' => { 'empty' => '' } } );
+        }
+    }
+
     if ($check) {
         if ( $self->opts->{args}->{migrate} ) {
             $migra->run;
         }
-        elsif ( $self->opts->{args}->{'migrate-yes'} ) {
+        elsif ( $self->opts->{args}->{'migrate-yes'} || $is_empty ) {
             $migra->run(args => {yes => 1});
         }
         else {

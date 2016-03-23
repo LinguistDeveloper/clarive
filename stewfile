@@ -1,10 +1,16 @@
 # Toolchain
 perl
+libextutils-config-perl
+libextutils-helpers-perl
 libmodule-build-perl
 libmodule-build-tiny-perl
 libmodule-build-xsutil-perl
 libmodule-install-perl
 libmodule-runtime-perl
+libb-hooks-parser-perl
+
+zip
+unzip
 
 # Command-line utilities
 liblinux-distribution-perl

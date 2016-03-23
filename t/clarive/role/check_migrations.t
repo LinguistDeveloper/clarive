@@ -1,12 +1,10 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use TestEnv;
-
-TestEnv->setup;
+BEGIN { TestEnv->setup }
 
 use boolean;
 use Clarive::mdb;
@@ -17,18 +15,40 @@ subtest 'run_start: throws when migrations are needed' => sub {
     like exception { _build_cmd() }, qr/Migrations are not up to date/;
 };
 
+subtest 'run_start: runs migrations when --migrate-yes flag' => sub {
+    _setup();
+
+    _build_cmd( opts => { args => { 'migrate-yes' => 1 } } );
+
+    my $clarive = mdb->clarive->find_one;
+    ok($clarive);
+    ok scalar @{ $clarive->{migration}->{patches} };
+};
+
+subtest 'run_start: runs migrations automatically when empty database' => sub {
+    _setup( empty => 1 );
+
+    _build_cmd();
+
+    my $clarive = mdb->clarive->find_one;
+    ok($clarive);
+    ok scalar @{ $clarive->{migration}->{patches} };
+
+    ok !exists $clarive->{empty};
+};
+
 sub _setup {
     my (%params) = @_;
 
     mdb->clarive->drop;
 
-    mdb->clarive->insert( { initialized => true, migration => { version => '0100' } } ) unless $params{no_system_init};
+    mdb->clarive->insert( { initialized => true, migration => { version => '0100' }, %params } );
 }
 
 sub _build_cmd {
     my (%params) = @_;
 
-    return TestCmd->new( app => $Clarive::app, opts => {} );
+    return TestCmd->new( app => $Clarive::app, opts => {}, %params );
 }
 
 done_testing;

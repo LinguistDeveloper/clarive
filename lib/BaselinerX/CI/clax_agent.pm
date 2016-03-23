@@ -131,7 +131,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     }
     $query{crc} = $self->_crc32_from_file($local);
 
-    $url->query_form(%query) if %query;
+    $url->query_form( map { $_ => $query{$_} } sort keys %query ) if %query;
 
     my $response = $ua->post(
         $url => {

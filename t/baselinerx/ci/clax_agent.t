@@ -188,7 +188,7 @@ subtest 'put_file: sends request with attributes' => sub {
     my ( $url ) = $ua->mocked_call_args('post');
 
     my @stat = stat $local_file;
-    is $url, "http://bar:8888/tree/?time=$stat[9]&crc=3610a686";
+    is $url, "http://bar:8888/tree/?crc=3610a686&time=$stat[9]";
 };
 
 subtest 'put_file: sends request with directory' => sub {

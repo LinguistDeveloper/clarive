@@ -29,11 +29,12 @@ sub run {
         }
     }
 
-    my $clarive = mdb->clarive->find_one();
-
     if ( !$self->check ) {
         no warnings 'redefine';
         local *Baseliner::config = \&Clarive::config;
+
+        my @collections = grep { !/system\.indexes/ } mdb->db->collection_names;
+        my $is_empty = @collections ? 0 : 1;
 
         if ( !ci->user->find_one( { name => 'root' } ) ) {
             $self->_say('Creating root user', %opts);
@@ -54,7 +55,11 @@ sub run {
 
         my %defaults = ( initialized => true );
 
-        if ($clarive) {
+        if ($is_empty) {
+            $defaults{empty} = true;
+        }
+
+        if (my $clarive = mdb->clarive->find_one) {
             $self->_say('Updating clarive collection', %opts);
 
             mdb->clarive->update( { _id => $clarive->{_id} }, { '$set' => {%defaults} } );

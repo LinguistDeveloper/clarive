@@ -19,6 +19,11 @@ use Test::MockTime qw(set_absolute_time restore_time);
 use Test::TempDir::Tiny;
 use TestGit;
 
+sub cleanup_db {
+    my @collections = mdb->db->collection_names;
+    mdb->$_->drop for @collections;
+}
+
 sub cleanup_cis {
     my $class = shift;
 

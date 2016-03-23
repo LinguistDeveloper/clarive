@@ -34,5 +34,5 @@ bin/cla stew install . "${ARGV[@]}"
 if [[ "$OPT_DEV" == 1 ]]; then
     echo 'Installing development dependencies...'
 
-    bin/cla stew install clarive-dev
+    bin/cla stew install clarive-dev "${ARGV[@]}"
 fi

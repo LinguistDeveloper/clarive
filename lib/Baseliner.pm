@@ -367,7 +367,7 @@ sub user_languages {
     }
     else {
         # detect browser language
-        my $language = substr $c->req->headers->{'accept-language'},0,2;  # usually "en-US,en,..."
+        my $language = substr ($c->req->headers->{'accept-language'} // '', 0,2);  # usually "en-US,en,..."
         $language = 'en' unless $c->installed_languages->{$language}; # if it's not installed, choose English
         return( $language ); 
     }
