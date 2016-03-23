@@ -51,7 +51,6 @@ libmvs-jesftp-perl
 libpath-class-perl
 libperl-tidy-perl
 libregexp-grammars-perl
-libscalar-util-perl
 libsql-abstract-perl
 libsql-translator-perl
 libstring-crc32-perl
