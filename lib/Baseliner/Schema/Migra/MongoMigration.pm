@@ -68,6 +68,8 @@ sub topic_categories_to_rules {
     Util->_fail('System already has form rules. Remove them before migrating.')
             if mdb->rule->find({rule_type=>mdb->in('form','fieldlets') })->count;
     my @topic_category = mdb->category->find->all;
+    my $missing_fieldlets = 0;
+    my $filename = "FIELDLETS_TO_REGISTER_FEATURE";
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
         map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
@@ -249,9 +251,9 @@ sub topic_categories_to_rules {
                         map{ push @ret, $_->{name} if $_->{role} =~ /Baseliner::Role::.*::$name/} _array $b;
                     }
                     $data->{var_ci_role} = \@ret;
-                }          
+                }
             }
-            
+
             $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
@@ -260,11 +262,38 @@ sub topic_categories_to_rules {
              (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/lock_small.png')) {
                 $attributes->{icon} = '/static/images/icons/field.png';
             }
-            
+
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
                 _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
                 _log $data;
-                next;
+                my $fh;
+                if($missing_fieldlets == 0){
+                    open($fh, '>', $filename) or die "Could not create file '$filename' $!";
+                    say $fh "#Add under your feature lib/BaselinerX/Fieldlets.pm";
+                    say $fh "#To register the fieldlet before start clarive";
+                    say $fh "";
+                    say $fh "# Add the forms of the fieldlets";
+                    say $fh "# Change active to 1 in properties of each fieldlet if it is needed";
+                    say $fh "";
+                }else{
+                    open($fh, '>>', $filename) or die "Could not open file '$filename' $!";
+                    say $fh "";
+                }
+                #aqui es donde metemos ahora una nueva entrada al fichero
+                say $fh "# FIELDLET $data->{name_field} IN CATEGORY $topic_category->{name}";
+                my $name_fieldlet = "fieldlet_customized_" . $missing_fieldlets;
+                my $html_fieldlet = $fieldlet->{params}->{html} // '';
+                my $js_fieldlet = $fieldlet->{params}->{js} // '';
+                say $fh "register 'fieldlet." . $name_fieldlet . "' => {";
+                say $fh "    name        => _loc('" . $name_fieldlet . "'),";
+                say $fh "    html        => '" . $html_fieldlet . "',";
+                say $fh "    js          => '" . $js_fieldlet . "',";
+                say $fh "};";
+                close $fh;
+                $missing_fieldlets++;
+                $attributes->{key} = "fieldlet.". $name_fieldlet;
+                $attributes->{active} = '0';
+                #next;
             }
             
             $attributes->{data} = $data;
@@ -430,8 +459,8 @@ sub activity_to_status_changes {
         _log "Creation: Updated $cont/$total";
       }
       $cont++;
-    }  
-    _log "Creation: Updated $cont/$total";  
+    }
+    _log "Creation: Updated $cont/$total";
 
     $rs = mdb->activity->find({ event_key => 'event.topic.change_status'})->sort({ ts => 1 });
     $total = $rs->count;
@@ -466,7 +495,7 @@ sub activity_to_status_changes {
       if ( ($cont % 100) == 0 ) {
         _log "Status changes: Updated $cont/$total";
       }
-      $cont++;  
+      $cont++;
     }
     _log "Status changes: Updated $cont/$total";
 }
@@ -560,7 +589,7 @@ sub run {
         bali_sem_queue      => 'sem_queue',
         bali_sysoutdds      => 'sysoutdds',
         bali_user           => 'user',
-        
+
         #  bali_topic_image               => 'image',              # convert to asset
         # bali_file_version    => 'file_version',                  # asset
         # bali_job_stash       => 'job_stash',                     # asset
