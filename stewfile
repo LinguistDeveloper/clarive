@@ -2,6 +2,7 @@
 perl
 libextutils-config-perl
 libextutils-helpers-perl
+libextutils-depends-perl
 libmodule-build-perl
 libmodule-build-tiny-perl
 libmodule-build-xsutil-perl
