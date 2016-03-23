@@ -96,8 +96,6 @@ Ext.onReady(function(){
                     Cla.message( _('Favorite'), res.msg );
                     Cla.explorer.$tree_favorites.refresh();
                     win.destroy();
-                   
-
                 }
             );
         };

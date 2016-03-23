@@ -469,8 +469,9 @@
 		       		</div>
 		       	</div>
 		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes, tag: params_view_diff.tag });
+
         if (panel.rendered) {
-        panel.update(html);
+            panel.update(html);
         }
     }
 
