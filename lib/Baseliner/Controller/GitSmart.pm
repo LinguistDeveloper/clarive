@@ -286,7 +286,7 @@ sub _proxy_to_git_http {
 sub bl_change_granted {
     my $self = shift;
     my ( $c, $changes, $path ) = @_;
-    my ( $project_name, $repo_name ) = split '/', $path;
+    my ( $project_name, $repo_name ) = split '/', $path if ($path);
     my $my_project    = ci->search_ci( name => $project_name, collection => 'project' ) if ($project_name);
     my $my_repository = ci->search_ci( name => $repo_name,    collection => 'GitRepository' ) if ($repo_name);
     my @tags_modes = $my_repository->{tags_mode} ? ( split /,/, $my_repository->{tags_mode} ) : ();
