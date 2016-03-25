@@ -14,8 +14,31 @@ use TestGit;
 use Cwd qw(realpath);
 use JSON ();
 
+use Test::Fatal;
+
+
+use Test::MockSleep;
+use Test::TempDir::Tiny;
+
+use TestUtils ':catalyst';
+
+
+use POSIX ":sys_wait_h";
+use Baseliner::Role::CI;
+use Baseliner::Model::Topic;
+use Baseliner::RuleFuncs;
+use Baseliner::Core::Registry;
+use BaselinerX::Type::Event;
+use BaselinerX::Fieldlets;
+use Baseliner::Queue;
+
+use Baseliner::Model::Topic;
+use Clarive::mdb;
+use Class::Date;
+
+
 use Storable ();
-use Baseliner::Utils qw(_load);
+use Baseliner::Utils qw(_load _dump);
 use_ok 'Baseliner::Controller::GitSmart';
 
 subtest 'git: ignores requests with empty body' => sub {
@@ -452,26 +475,24 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
 subtest 'git: allows pushing system tags when user has permission and bl is complex (bl - poject)' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' ,tags_mode =>'release,project');
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
     my $sha = TestGit->commit($repo);
 
     TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
-  
+
     my $project = TestUtils->create_ci(
         'project',
         name         => 'Project',
         repositories => [ $repo->mid ],
-        moniker => '6.4'
+        moniker      => '6.4'
     );
 
     my $id_role = TestSetup->create_role(
         actions => [
-            {
-                action => 'action.git.repository_access',
+            {   action => 'action.git.repository_access',
                 bl     => '*'
             },
-             {
-                action => 'action.git.update_tags',
+            {   action => 'action.git.update_tags',
                 bl     => '*'
             }
         ]
@@ -479,21 +500,20 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $body =
-        "0094"
-      . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
-      . "0000";
+    my $body
+        = "0094"
+        . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+        . "0000";
     open my $fh, '<', \$body;
-
 
     my $stash = {
         git_config => {
             gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   =>  $repo->repo_dir . '/../'
+            home   => $repo->repo_dir . '/../'
         }
     };
-   
-   my $c = mock_catalyst_c(
+
+    my $c = mock_catalyst_c(
         username => $user->username,
         req      => { params => {}, body => $fh },
         stash    => $stash
@@ -501,7 +521,7 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $controller = _build_controller();
 
-    $controller->git( $c, 'Project', 'Repo','info', 'refs' );
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -514,32 +534,124 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
     is $data->{sha},    $sha;
 };
 
+subtest 'git: allows pushing system tags when user has permission and bl is complex (bl - release)' => sub {
+    _setup();
 
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'release,project' );
+    my $sha = TestGit->commit($repo);
 
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
 
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.git.repository_access',
+                bl     => '*'
+            },
+            {   action => 'action.git.update_tags',
+                bl     => '*'
+            }
+        ]
+    );
 
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
 
+    my $status              = TestUtils->create_ci( 'status', name => 'New', type => 'G' );
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        is_release => '1',
+        name       => 'Release',
+        id_rule    => $id_release_rule,
+        id_status  => $status->mid
+    );
 
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release 0.1',
+        status      => $status
+    );
 
+    my $body
+        = "0094"
+        . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+        . "0000";
+    open my $fh, '<', \$body;
 
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
 
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
 
+    my $controller = _build_controller();
 
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
 
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
+    is @events, 1;
 
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+    is $data->{branch}, '6.4-SUPPORT';
+    is $data->{ref},    'refs/tags/6.4-SUPPORT';
+    is $data->{sha},    $sha;
+};
 
-
-
-
-
-
-
-
-
-
-
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.release_version",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project1",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            }
+        ],
+    );
+}
 
 
 subtest 'git: creates repo ci when does not exist' => sub {
@@ -1221,8 +1333,13 @@ sub _create_rule {
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'BaselinerX::CI',          'BaselinerX::Events',
-        'Baseliner::Model::Rules'
+        'BaselinerX::CI',          'BaselinerX::Events', 'BaselinerX::Service::TopicServices',
+        'Baseliner::Model::Rules',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
+        'BaselinerX::LcController',
+        'BaselinerX::Type::Model::ConfigStore',
     );
 
     TestUtils->cleanup_cis;
@@ -1237,6 +1354,7 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
     mdb->event->drop;
+    mdb->category->drop;
 
     TestUtils->create_ci( 'user', name => 'foo' );
 }

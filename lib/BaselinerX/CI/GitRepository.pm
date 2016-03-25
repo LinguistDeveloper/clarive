@@ -667,6 +667,8 @@ sub _find_release_versions_by_projects {
     my $self = shift;
     my ($projects) = @_;
 
+    my @projects = _array $projects;
+
     my @release_versions;
 
     my @release_categories =
@@ -691,7 +693,7 @@ sub _find_release_versions_by_projects {
             {
                 is_release         => '1',
                 id_category_status => mdb->in(@id_statuses),
-                $project_field => mdb->in( map { $_->{mid} } @$projects )
+                $project_field => mdb->in( map { $_->{mid} } @projects )
             }
         )->all;
 
