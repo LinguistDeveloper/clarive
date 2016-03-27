@@ -70,9 +70,8 @@ subtest 'peek: get an SV address and make sure its there' => sub {
 subtest 'to_bytecode: turn js into bytecode' => sub {
     my $js = JavaScript::Duktape->new();
     $js->set( foo=>sub{
-        my $duk = shift;
         my $code = shift;
-        my ($bc,$len) = to_bytecode( $duk, $code );
+        my ($bc,$len) = to_bytecode( $js->duk, $code );
         my $bc_hex = unpack 'H*', $bc;
         is $len, length($bc);
         like $bc_hex, qr/^ff00/; # duktape bytecode always start with ff00 (but could change...)
@@ -94,7 +93,7 @@ subtest '_serialize: SCALAR' => sub{
 
 subtest '_serialize: CODE into js_sub' => sub{
     is( _serialize({}, sub{ 11 } )->(), 11 );
-    is( _serialize({}, sub{ shift } )->(undef,33), 33 );
+    is( _serialize({}, sub{ shift } )->(33), 33 );
 };
 
 subtest '_serialize: CODE into bytecode' => sub{
@@ -134,6 +133,71 @@ subtest 'serialize and unwrap a regexp' => sub{
     my $ser = _serialize({}, $doc );
     my ($re) = unwrap_types( $ser );
     like 'abc', $re;
+};
+
+subtest 'js_sub: wrap funcs' => sub{
+    my $vm = JavaScript::Duktape->new;
+    local $Clarive::Code::JS::CURRENT_VM = $vm;
+    $vm->set( each => Clarive::Code::Utils::js_sub(sub{
+        my $arr = shift;
+        my $cb = shift;
+        for(@$arr) {
+            $cb->($_);
+        }
+    }));
+    my $ret = $vm->eval('var x=0; each([11,22], function(i){ x+=i }); x');
+    is $ret, 33,
+};
+
+subtest 'js_sub: rewrap funcs' => sub{
+    my $vm = JavaScript::Duktape->new;
+    local $Clarive::Code::JS::CURRENT_VM = $vm;
+    $vm->set( each => Clarive::Code::Utils::js_sub(sub{
+        my $arr = shift;
+        my $cb = shift;
+        for(@$arr) {
+            Clarive::Code::Utils::js_sub(\&$cb)->($_);
+        }
+    }));
+    my $ret = $vm->eval('var x=0; each([11,22], function(i){ x+=i }); x');
+    is $ret, 33,
+};
+
+subtest 'js_sub: rewrap func with nested call' => sub{
+    my $vm = JavaScript::Duktape->new;
+    local $Clarive::Code::JS::CURRENT_VM = $vm;
+    $vm->set( inc => Clarive::Code::Utils::js_sub(sub{
+        return 1+ shift();
+    }));
+    $vm->set( each => Clarive::Code::Utils::js_sub(sub{
+        my $arr = shift;
+        my $cb = shift;
+        for(@$arr) {
+            Clarive::Code::Utils::js_sub(\&$cb)->($_);
+        }
+    }));
+    my $ret = $vm->eval(q{
+        var x=0; each([11,22], function(i){ x+=i; x=inc(x); }); x
+    });
+    is $ret, 35,
+};
+
+subtest 'js_sub: handle rewrap func with error in nested call' => sub{
+    my $vm = JavaScript::Duktape->new;
+    local $Clarive::Code::JS::CURRENT_VM = $vm;
+    $vm->set( inc => Clarive::Code::Utils::js_sub(sub{
+        die( "failing here" );
+    }));
+    $vm->set( each => Clarive::Code::Utils::js_sub(sub{
+        my $arr = shift;
+        my $cb = shift;
+        for(@$arr) {
+            Clarive::Code::Utils::js_sub(\&$cb)->($_);
+        }
+    }));
+    like exception { $vm->eval(q{
+        var x=0; each([11,22], function(i){ x+=i; x=inc(x); }); x
+    }) }, qr/failing here/;
 };
 
 done_testing;

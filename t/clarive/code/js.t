@@ -105,8 +105,7 @@ subtest 'exceptions catch internal errors' => sub {
     _setup();
 
     my $code = _build_code( lang => 'js' );
-
-    like exception { $code->eval_code( q/throw new Error('error!')/) }, qr/error!/;
+    like exception { $code->eval_code( q/throw new Error('foo error!')/) }, qr/foo error!/;
     ok !exception { $code->eval_code( q/try { throw new Error('error!') } catch(e) {}/) };
 };
 
@@ -117,8 +116,8 @@ subtest 'exceptions catch external errors' => sub {
 
     like exception { $code->eval_code(q{
             var fs = require("cla/fs");
-            fs.openFile('unknown')}) }, qr/Cannot open file unknown/;
-    ok !exception { $code->eval_code(q/try { fs.openFile('unknown') } catch(e) {}/) };
+            fs.openFile('cla-test-unknown')}) }, qr/Cannot open file cla-test-unknown/;
+    ok !exception { $code->eval_code(q/try { fs.openFile('cla-test-unknown') } catch(e) {}/) };
 };
 
 subtest 'exceptions catch class not found errors' => sub {
@@ -127,6 +126,76 @@ subtest 'exceptions catch class not found errors' => sub {
     my $code = _build_code( lang => 'js' );
 
     like exception { $code->eval_code( q{ require('cla/ci').getClass('XYZ123') }) }, qr/class.*XYZ123/;
+};
+
+subtest 'exceptions trap nested error' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    like exception { $code->eval_code( q{ cla.each([1,2],function(i){ cla.fooABC('foo') }); 11; }) }, qr/not callable/;
+};
+
+subtest 'exceptions throws double nested error' => sub {
+    my $code = _build_code( lang => 'js' );
+    $code->save_vm(1);
+
+    my $vm = $code->initialize;
+    $vm->set( barfoo => sub {
+        die 123;
+    });
+
+    my $ret;
+    like exception {
+        $code->eval_code(q{
+            cla.each([1,2],function(i){
+                barfoo();
+            });
+        });
+    }, qr/123/;
+};
+
+subtest 'exceptions trap try-catch nested error' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret;
+    ok !exception {
+        $ret = $code->eval_code(q{
+            cla.each([1,2],function(i){
+                try {
+                    cla.fooABC('foo');
+                } catch(e) {
+                }
+            });
+            11;
+        });
+    };
+    is $ret => 11;
+};
+
+subtest 'exceptions trap double try-catch nested error' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    $code->save_vm(1);
+
+    my $vm = $code->initialize;
+    $vm->set( barfoo => sub {
+        die 123;
+    });
+
+    my $ret;
+    ok !exception {
+        $ret = $code->eval_code(q{
+            t = require('cla/t');
+            cla.each([1,2],function(i){
+                try {
+                    barfoo();
+                } catch(e) {
+                    t.like( e+'', cla.regex('123') );
+                }
+            });
+            11;
+        });
+    };
+    is $ret => 11;
 };
 
 subtest 'returns js array' => sub {

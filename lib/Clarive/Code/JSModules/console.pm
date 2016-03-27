@@ -11,7 +11,7 @@ sub generate {
     my $js = shift;
 
     +{
-        log => js_sub { say map{ ref($_) ? _to_json($_) : $_ } @_ },
+        log => js_sub { say( map{ ref($_) ? _to_json($_) : $_ } @_ ) },
         info => js_sub { say map{ ref($_) ? _to_json($_) : $_ } @_ },
         warn => js_sub { say STDERR map{ ref($_) ? _to_json($_) : $_ } @_ },
         error => js_sub { say STDERR map{ ref($_) ? _to_json($_) : $_ } @_ },

@@ -49,7 +49,7 @@ sub generate {
 
             my $cnt = 0;
             foreach my $el (@$arr) {
-                js_sub(\&$cb)->( undef, $el, ++$cnt );
+                js_sub(\&$cb)->( $el, ++$cnt );
             }
 
             $cnt;
@@ -58,6 +58,7 @@ sub generate {
             my ( $lang, $fmt, @args ) = @_;
 
             my $handle = Baseliner::I18N->get_handle($lang);
+            die "cla.loc: invalid lang `$lang`\n" unless $handle;
             return $handle->maketext( $fmt, @args );
         },
         lastError => js_sub {

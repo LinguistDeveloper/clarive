@@ -78,7 +78,7 @@ sub _db_wrap_cursor {
             return unless $cb && ref $cb eq 'CODE';
 
             while ( my $doc = $cursor->next ) {
-                js_sub(\&$cb)->( undef, _unbless( $doc ) );   # unbless is much faster than _serialize()
+                js_sub(\&$cb)->( _unbless( $doc ) );   # unbless is much faster than _serialize()
             }
 
             return;

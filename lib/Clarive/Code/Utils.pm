@@ -121,15 +121,10 @@ sub unwrap_types {
 sub js_sub(&) {
     my $code = shift;
     sub {
-        my $duk = shift;
+        my $duk = $Clarive::Code::JS::CURRENT_VM && $Clarive::Code::JS::CURRENT_VM->duk;
         my @args = unwrap_types( @_ );
 
-        return try {
-            $code->(@args);
-        } catch {
-            $GLOBAL_ERR = shift;
-            die "$GLOBAL_ERR\n"; # this msg is probably silent within Duktape
-        };
+        $code->(@args);
     }
 }
 

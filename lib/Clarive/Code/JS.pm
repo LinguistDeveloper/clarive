@@ -8,7 +8,7 @@ use JSON ();
 use Storable ();
 use Try::Tiny;
 use Scalar::Util qw(blessed);
-use JavaScript::Duktape;
+use JavaScript::Duktape 1.0;
 
 use Baseliner::Mongo ();
 use BaselinerX::Type::Model::ConfigStore;
@@ -135,9 +135,9 @@ sub eval_code {
     return try {
         local $CURRENT_VM = $js_duk;
         $js_duk->eval( $fullcode );
-    }
-    catch {
-        ( my $err = $_ ) =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1};
+    } catch {
+        my $err = shift;
+        $err =~ s{^(.+) at .+/JS.pm line \d+\.$}{$1};
 
         my $file = $self->current_file;
 
