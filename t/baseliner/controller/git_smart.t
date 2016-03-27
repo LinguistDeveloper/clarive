@@ -1333,13 +1333,13 @@ sub _create_rule {
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'BaselinerX::CI',          'BaselinerX::Events', 'BaselinerX::Service::TopicServices',
+        'BaselinerX::CI',          'BaselinerX::Events', 
         'Baseliner::Model::Rules',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Fieldlets',
-        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
-        'BaselinerX::LcController',
-        'BaselinerX::Type::Model::ConfigStore',
+         'Baseliner::Model::Topic',
+        
+        
     );
 
     TestUtils->cleanup_cis;
