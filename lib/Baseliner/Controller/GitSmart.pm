@@ -286,7 +286,9 @@ sub _proxy_to_git_http {
 sub bl_change_granted {
     my $self = shift;
     my ( $c, $changes, $path ) = @_;
-    my ( $project_name, $repo_name ) = split '/', $path if ($path);
+    my  $project_name = ""; 
+    my  $repo_name = "";
+    ( $project_name, $repo_name ) = split '/', $path if ($path !~ m{\.git$} );
     my $my_project ={};
     my $my_repository = {};
     $my_project    = ci->search_ci( name => $project_name, collection => 'project' ) if ($project_name);
@@ -299,14 +301,14 @@ sub bl_change_granted {
 
     $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
 
-    if ( grep { $_ eq 'project' } @tags_modes ) {
+    if ( grep { $_ eq 'project' } @tags_modes && $my_project ) {
 
         $bls_project = $my_project->{moniker} . '-' . join '|' . $my_project->{moniker} . '-',
             grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
         $bls = $bls . '|' . $bls_project;
 
     }
-    if ( grep { $_ eq 'release' } @tags_modes ) {
+    if ( grep { $_ eq 'release' } @tags_modes && $my_project) {
 
         my @release_versions = BaselinerX::CI::GitRepository->_find_release_versions_by_projects($my_project);
         foreach my $version (@release_versions) {
