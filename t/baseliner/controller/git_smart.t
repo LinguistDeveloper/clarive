@@ -612,6 +612,70 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
     is $data->{sha},    $sha;
 };
 
+subtest 'git: allows pushing system tags when user has permission and is a raw git access ' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'release,project' );
+    my $sha = TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.git.repository_access',
+                bl     => '*'
+            },
+            {   action => 'action.git.update_tags',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my $body
+        = "0094"
+        . "0000000000000000000000000000000000000000 $sha refs/tags/SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+        . "0000";
+    open my $fh, '<', \$body;
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../',
+            force_authorization => 0
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is @events, 1;
+
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+    is $data->{branch}, 'SUPPORT';
+    is $data->{ref},    'refs/tags/SUPPORT';
+    is $data->{sha},    $sha;
+};
+
+
 sub _create_release_form {
     return TestSetup->create_rule_form(
         rule_tree => [
