@@ -450,14 +450,13 @@ sub tree_object_info {
     my ($self, %p)=@_;
     my $mid = $p{mid};
     #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
-    my $cnt = $p{parent} * 10;
     my @tree = (
         {
-            _id      => $cnt++,
+            _id      => $p{parent} . "1",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
-            item     => _loc('Depends On'), 
+            item     => _loc('Depends On'),
             type     => 'depend_from',
             class    => '-',
             classname    => '-',
@@ -466,11 +465,11 @@ sub tree_object_info {
             versionid  => '',
         },
         {
-            _id      => $cnt++,
+            _id      => $p{parent} . "2",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
-            item     => _loc('Depend On Me'), 
+            item     => _loc('Depend On Me'),
             type     => 'depend_to',
             class    => '-',
             classname    => '-',
@@ -479,11 +478,11 @@ sub tree_object_info {
             versionid  => '',
         },
         {
-            _id      => $cnt++,
+            _id      => $p{parent} . "3",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
-            item     => _loc('Requests'), 
+            item     => _loc('Requests'),
             type     => 'ci_request',
             class    => '-',
             classname    => '-',
