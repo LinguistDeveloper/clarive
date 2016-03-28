@@ -24,7 +24,6 @@ sub validate {
     foreach my $name ( keys %{ $self->fields } ) {
         my $field = $self->fields->{$name};
         my $value = $params->{$name};
-        $value = $value->[0] if $value && ref $value eq 'ARRAY';
 
         if ($self->_is_empty($value)) {
             if (exists $field->{default}) {
@@ -82,6 +81,14 @@ sub _is_empty {
 
     return 1 unless defined $value;
     return 1 unless length $value;
+
+    if (ref $value eq 'ARRAY') {
+        return 1 unless @$value;
+
+        for (@$value) {
+            return 1 if $self->_is_empty($_);
+        }
+    }
 
     return 0;
 }

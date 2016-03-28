@@ -29,6 +29,26 @@ subtest 'validates required empty fields' => sub {
     is_deeply $vresult, { is_valid => 0, errors => { foo => 'REQUIRED' }, validated_params => {} };
 };
 
+subtest 'validates required empty fields when arrays' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field('foo');
+
+    my $vresult = $validator->validate( { foo => [] } );
+
+    is_deeply $vresult, { is_valid => 0, errors => { foo => 'REQUIRED' }, validated_params => {} };
+};
+
+subtest 'validates required empty fields when arrays of empty values' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field('foo');
+
+    my $vresult = $validator->validate( { foo => [undef, ''] } );
+
+    is_deeply $vresult, { is_valid => 0, errors => { foo => 'REQUIRED' }, validated_params => {} };
+};
+
 subtest 'validates fields with defaults' => sub {
     my $validator = _build_validator();
 
@@ -135,10 +155,31 @@ subtest 'validates with forcing value on error' => sub {
     is $vresult->{validated_params}->{foo}, 5;
 };
 
+subtest 'validates with more than one value in the array' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Str|ArrayRef' );
+
+    my $vresult = $validator->validate( { foo => [ 1, 2, 3 ] } );
+
+    is $vresult->{is_valid}, 1;
+    my $foo = $vresult->{validated_params}->{foo};
+    is scalar @$foo, 3;
+
+};
+
+subtest 'validates with arrayref of elements' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'Int|ArrayRef[Int]' );
+
+    my $vresult = $validator->validate( { foo => [ 1, 'abc', 3 ] } );
+
+    is $vresult->{is_valid}, 0;
+};
+
 done_testing;
 
 sub _build_validator {
     return Baseliner::Validator->new;
 }
-
-1;
