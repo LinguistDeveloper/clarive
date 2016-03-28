@@ -36,7 +36,9 @@ my @WARNINGS;
 
 sub setup {
     my $class = shift;
-    my %opts  = @_;
+    my %opts = @_;
+
+    my $prev_dir = Cwd::getcwd();
 
     require Clarive::App;
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
@@ -46,27 +48,11 @@ sub setup {
     require Clarive::model;
     require Clarive::cache;
 
-    *Baseliner::app = sub {
-        {
-            _logger => sub { }
-        };
-    };
+    *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
+    *Baseliner::config   = sub { {} };
+    *Baseliner::app      = sub { };
 
-    $SIG{__WARN__} = sub {
-        push @WARNINGS, longmess( $_[0] );
-        warn @_;
-    };
-}
-
-END {
-    if ( $ENV{TEST_FATAL_WARNINGS} && @WARNINGS ) {
-        print STDERR "WARNINGS!\n";
-        for (@WARNINGS) {
-            print STDERR "$_\n";
-        }
-
-        exit 1;
-    }
+    chdir $prev_dir;
 }
 
 1;
