@@ -9,9 +9,9 @@ use Capture::Tiny qw(capture);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
-use Locale::Country;
+use Locale::Country qw(all_country_names country2code);
 use XML::Simple;
-use DateTime::TimeZone;
+use DateTime::TimeZone qw(all_names);
 
 use experimental 'switch', 'autoderef';
 
@@ -1209,17 +1209,16 @@ sub duplicate : Local {
 
 sub country_info : Local {
     my ( $self, $c ) = @_;
-    my $params = $c->req->params;
     my @countries;
     my $i   = 0;
-    my $xml = new XML::Simple;
+    my $xml = XML::Simple->new;
+    my $zones_file = $c->path_to("/data/zones.xml");
     my $str;
     try {
-        my $file = _file( $params->{file} );
-        if ( !-e $file ) {
+        if ( !-e $zones_file ) {
             _fail _loc('Error: File not found');
         }
-        my $zones = $xml->XMLin( $params->{file} );
+        my $zones = $xml->XMLin( "$zones_file" );
         for my $country (all_country_names) {
             my $code     = country2code($country);
             my $currency = $zones->{CcyNtry}[$i]{Ccy} or _fail "Error to find the currency";
@@ -1246,7 +1245,7 @@ sub timezone_list : Local {
     my @tzs;
 
     for my $tz ( DateTime::TimeZone->all_names ) {
-       my $timezone = [$tz,''];
+       my $timezone = [$tz,$tz];
         push @tzs, $timezone;
     }
     $c->stash->{json} = { data => \@tzs };
