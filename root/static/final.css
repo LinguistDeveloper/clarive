@@ -721,8 +721,12 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height:40px;
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 
-.img-main-logo-powered{
+=======
+>>>>>>> Remove a wrong character in .img-main-logo-powered attrs
+.img-main-logo-powered {
     position:absolute;
     border:0px;
     width:150px;
@@ -746,4 +750,62 @@ height: 16px;
 }
 .x-dd-drag-ghost{
     list-style:none
+}
+
+div[class*='dashboard-'] .form-inline select {
+    height: auto !important;
+}
+
+#boot input[type="search"] {
+    height: 26px !important;
+    padding-left: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+    vertical-align: baseline;
+}
+
+div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_length {
+    margin-top:5px !important;
+}
+
+.search-item.ui-ci-class span#boot div > img {
+    height: 16px;
+    width: 16px;
+}
+
+.x-panel-body.x-panel-body-noheader.x-panel-body-noborder .table-bordered.table-condensed.dashboard td > b > a > img {
+        height: 16px;
+        width: 16px;
+}
+
+.x-form-text.x-superboxselect.x-superboxselect-display-btns .x-superboxselect-item.x-superboxselect-item .ui-ci-class div > img {
+    height: 16px;
+    width: 16px;
+}
+
+#boot div.dataTables_info {
+    margin-top: 13px;
+}
+#boot .dataTables_paginate.paging_bootstrap.pagination {
+    margin-top: 13px;
+}
+
+#boot .dataTables_wrapper .row-fluid .dataTables_length select {
+    height: auto !important;
+}
+
+#boot .tab-content .row-fluid .dataTables_length label {
+    margin-top: 10px;
+}
+
+#boot .tab-content .row-fluid .dataTables_filter label {
+    margin-top: 7px;
+}
+
+#boot .table .dataTables_wrapper .row-fluid .dataTables_length label {
+    margin-top: 10px;
+}
+
+#boot .table .dataTables_wrapper .row-fluid .dataTables_filter label {
+    margin-top: 7px;
 }
