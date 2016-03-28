@@ -731,7 +731,7 @@ subtest 'tree_object_info: returns dependencies tree' => sub {
     _setup();
 
     my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
-    my $mid = $variable->{mid};
+    my $mid = $variable->mid;
 
     my $controller = _build_controller();
 
