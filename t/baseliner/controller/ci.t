@@ -731,6 +731,7 @@ subtest 'tree_object_info: returns dependencies tree' => sub {
     _setup();
 
     my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+
     my $mid = $variable->mid;
 
     my $controller = _build_controller();
@@ -741,6 +742,52 @@ subtest 'tree_object_info: returns dependencies tree' => sub {
     is $tree[0]->{_id}, $mid . "1";
     is $tree[1]->{_id}, $mid . "2";
     is $tree[2]->{_id}, $mid . "3";
+};
+
+subtest 'tree_object_depend: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $mid = $variable->mid;
+
+    my $variable2 = TestUtils->create_ci( 'variable', name => 'My other variable' );
+    my $mid2 = $variable2->mid;
+
+    mdb->master_rel->insert({ from_mid => $mid, to_mid => $mid2, rel_type => 'ci_ci'});
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_object_depend(parent => $mid, from => $mid, limit=>25, start=>0);
+
+    is $count, 1;
+    is scalar @tree, 1;
+};
+
+subtest 'tree_ci_request: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $mid = $variable->mid;
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $topic_mid = TestSetup->create_topic(project => $project, from_mid=>$mid, rel_type=>'ci_request', status=>$status_new);
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_ci_request(mid => $mid, parent => $mid);
+
+    is $count, 1;
+    is scalar @tree, 1;
 };
 
 subtest 'user_can_search: checks if user can search cis' => sub {
@@ -770,11 +817,22 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Events' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
+    );
 
     TestUtils->cleanup_cis();
 
     mdb->role->drop;
+    mdb->category->drop;
+    mdb->topic->drop;
+    mdb->rule->drop;
+    mdb->master_rel->drop;
 }
 
 done_testing;

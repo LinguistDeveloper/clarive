@@ -388,13 +388,12 @@ sub tree_object_depend {
     my @rels = mdb->master_rel->find_values( $dir => $where);
     my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _seq=>1 });
     my $total = $rs->count;
-    my $cnt = $p{parent} * 10;
     my @tree = map {
         my $data = $_;
         my $class = 'BaselinerX::CI::' . $data->{collection};
         my $bl = [ split /,/, $data->{bl} ];
         +{
-            _id        => ++$cnt,
+            _id        => $p{parent} . "1",
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $data->{mid},
@@ -416,17 +415,15 @@ sub tree_object_depend {
 
 sub tree_ci_request {
     my ($self, %p)=@_;
-    my $class = $p{class};
-    my $where = {};
+
     my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
     my @rs = mdb->topic->find(
         { from_mid=>"$p{mid}", rel_type=>'ci_request' },
     )->all;
     my $total = @rs;
-    my $cnt = $p{parent} * 10;
     my @tree = map {
         +{
-            _id          => ++$cnt,
+            _id          => $p{parent} . "1",
             _parent      => $p{parent} || undef,
             _is_leaf     => \1,
             mid          => $_->{mid},
@@ -435,10 +432,10 @@ sub tree_ci_request {
             type         => 'topic',
             class        => 'BaselinerX::CI::topic',
             bl           => $p{bl},
-            collection   => $_->{status}{name}, 
+            collection   => $_->{name_status},
             icon         => '/static/images/icons/topic_one.png',
             ts           => $_->{master_to}{ts},
-            data         => { %{ $_->{category} // {} } }, 
+            data         => { %{ $_->{category} // {} } },
             properties   => '',
             versionid    => '',
         }
