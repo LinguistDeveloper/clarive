@@ -727,6 +727,22 @@ subtest 'tree_objects: searches by mids' => sub {
 #    is $tree[0]->{name}, 'Your variable';
 #};
 
+subtest 'tree_object_info: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $mid = $variable->{mid};
+
+    my $controller = _build_controller();
+
+    my ( @tree ) = $controller->tree_object_info(mid => $mid, parent => $mid);
+
+    is scalar @tree, 3;
+    is $tree[0]->{_id}, $mid . "1";
+    is $tree[1]->{_id}, $mid . "2";
+    is $tree[2]->{_id}, $mid . "3";
+};
+
 subtest 'user_can_search: checks if user can search cis' => sub {
     _setup();
 
