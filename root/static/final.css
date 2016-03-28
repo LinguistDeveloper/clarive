@@ -721,6 +721,7 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height:40px;
 }
 
+
 .img-main-logo-powered{
     position:absolute;
     border:0px;
@@ -730,6 +731,19 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     top:-13px;
 }
 
+
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
+}
+
+table.table-bordered.table-condensed.dashboard td > div > img {
+height: 16px;
+}
+
+.x-panel-inline-icon{
+    background-size: 16px;
+}
+.x-dd-drag-ghost{
+    list-style:none
+}

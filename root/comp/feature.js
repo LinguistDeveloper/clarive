@@ -142,6 +142,7 @@
                 autoWidth: true,
                 autoSizeColumns: true,
                 viewConfig: { forceFit: true },
+                stripeRows: true,
                 tbar: [
                     { icon:'/static/images/icons/refresh.png', handler: function(){ self.store.reload() }, tooltip:_('Reload')  }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/local.png', handler: function(){ self.pull() } }, '-',

@@ -28,6 +28,7 @@
         store: store_events,
         border: false,
         height: 280,
+        stripeRows: true,
         viewConfig: { forceFit: true },
         columns:[
             check_sm_events,

@@ -57,6 +57,8 @@
             header: false,
             autoScroll: true,
             store: store,
+            stripeRows:true,
+            viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
@@ -178,6 +180,7 @@
         var agrid = new Ext.grid.GridPanel({ 
             store: st,
             autoScroll: true,
+            stripeRows: true,
             viewConfig: { forceFit: true },
             loadMask: true,
             columns: [

@@ -288,6 +288,7 @@
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
+        stripeRows: true,
         sortable: true,
         checkOnly: true
     });

@@ -55,7 +55,7 @@
         title:'<% $c->stash->{$componentId}{formLabel} %>',
         frame:true,
         clicksToEdit:1,
-
+        stripeRows: true,
         tbar: [{
             text: '<% $c->stash->{$componentId}{newLabel} %>',
             icon: '/static/ext/resources/images/default/dd/drop-add.gif',

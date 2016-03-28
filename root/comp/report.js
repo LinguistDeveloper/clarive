@@ -114,6 +114,7 @@
         autoSizeColumns: true,
         viewConfig: {forceFit: true},
         loadMask:'true',
+        stripeRows: true,
         tbar:   [
 				'->', 
                 btn_reports

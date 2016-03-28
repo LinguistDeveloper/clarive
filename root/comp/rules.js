@@ -531,6 +531,7 @@
         header: false,
         store: rules_store,
         cls: 'ui-comp-rules-grid',
+        stripeRows: true,
         columns:[
             { header: _('Rule'), width: 160, dataIndex: 'rule_name', sortable: true, renderer: render_rule },
             { header: _('Type'), hidden: true, width: 40, dataIndex: 'rule_type' },

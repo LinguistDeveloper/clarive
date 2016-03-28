@@ -225,7 +225,8 @@
         view: gview,
         store: store,
         sm: sm,
-        loadMask: true,
+        loadMask:'true',
+        stripeRows: true,
         viewConfig: {
             forceFit: true
         },

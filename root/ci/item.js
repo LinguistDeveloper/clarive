@@ -10,6 +10,7 @@
     });
     var tree = new Ext.grid.GridPanel({
         store: store,
+        stripeRows: true,
         viewConfig: {
             headersDisabled: false,
             //enableRowBody: true,

@@ -529,6 +529,7 @@
     var jc_grid = new Ext.grid.GridPanel({
         width: 800,
         height: 150,
+        stripeRows: true,
         enableDragDrop: true,
         ddGroup: 'explorer_dd',
         style: 'margin-top: 20px',

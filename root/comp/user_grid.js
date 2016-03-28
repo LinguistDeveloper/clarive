@@ -550,6 +550,7 @@
             autoScroll: true,
             autoWidth: true,
             store: store_user_roles_projects,
+            stripeRows: true,
             viewConfig: {
                 forceFit: true
             },

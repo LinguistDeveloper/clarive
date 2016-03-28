@@ -4,6 +4,7 @@ Baseliner.GridArrayField = Ext.extend( Ext.grid.EditorGridPanel, {
     clicksToEdit: 1,
     description: '',
     default_value: '*.*',
+    stripeRows: true,
     hideHeaders: true,
     initComponent: function(){
         var self = this;

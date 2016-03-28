@@ -178,6 +178,7 @@
         defaults: { sortable: true },
         autoScroll: true,
         viewConfig: { forceFit: true },
+        stripeRows: true,
         columns: [
             { header: _('User'), width: 100, dataIndex: 'user', sortable: true },
             { header: _('Scopes'), width: 100, dataIndex: 'projects', sortable: true, renderer: Baseliner.render_wrap }
@@ -202,6 +203,7 @@
         store: store_role_projects,
         defaults: { sortable: true },
         autoScroll: true,
+        stripeRows: true,
         viewConfig: { forceFit: true },
         columns: [
             { header: _('Scopes'), width: 100, dataIndex: 'project', sortable: true },
@@ -253,6 +255,7 @@
         autoScroll: true,
         store: action_store,
         split: true,
+        stripeRows: true,
         viewConfig: { forceFit: true },
         clicksToEdit: 1,
         height: 450,

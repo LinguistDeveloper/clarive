@@ -525,6 +525,7 @@
                 //store_rel.sort('collection');
                 var t = new Ext.grid.GridPanel({
                     store: store_rel,
+                    stripeRows: true,
                     viewConfig: { forceFit: true },
                     columns: [
                         { header:_(''), dataIndex:'ci_icon', width: 25, renderer: render_icon },

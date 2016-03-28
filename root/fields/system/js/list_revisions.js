@@ -36,6 +36,7 @@ params:
         readOnly:  Baseliner.eval_boolean(meta.readonly),
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
+        stripeRows: true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,

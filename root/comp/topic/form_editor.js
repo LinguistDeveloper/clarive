@@ -134,7 +134,8 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
             title: _('Fields category'),
             hideHeaders: true,
             enableDragDrop : true,
-            ddGroup : 'mygrid-dd' + id_drag_drop,  
+            ddGroup : 'mygrid-dd' + id_drag_drop,
+            stripeRows: true,
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,

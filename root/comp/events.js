@@ -132,7 +132,7 @@
         forceSelection: true
     });
 
-    var ptool = new Baseliner.PagingToolbar({            
+    var ptool = new Baseliner.PagingToolbar({
         store: store_events,
         pageSize: ps,
         plugins:[
@@ -144,15 +144,15 @@
         emptyMsg: _('There are no rows available')
     });
 
-    var grid = new Ext.ux.maximgb.tg.GridPanel({ 
+    var grid = new Ext.ux.maximgb.tg.GridPanel({
         renderTo: 'main-panel',
         store: store_events,
         master_column_id : '_id',
         autoExpandColumn: '_id',
         viewConfig: {
         forceFit: true,
-        //enableRowBody : true
         },
+        stripeRows: true,
         columns:[
             { id:'_id', header: _("ID"), width: 60, sortable: false, dataIndex: '_id' },
             { header: _('Timestamp'), width: 80, dataIndex: 'ts', renderer: Cla.render_date },

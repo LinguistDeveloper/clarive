@@ -22,6 +22,7 @@
 		    autoWidth: true,
 		    store: store,
 		    clicksToEdit: 'auto',
+		    stripeRows: true,
 		    viewConfig: {
                 forceFit: true
 		    },

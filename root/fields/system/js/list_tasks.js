@@ -187,6 +187,7 @@ params:
         layout: 'form',
         height: 300,
         hideHeaders: true,
+        stripeRows: true,
         viewConfig: {
             headersDisabled: true,
             forceFit: true
