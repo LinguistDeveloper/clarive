@@ -2,6 +2,7 @@
 perl
 libextutils-config-perl
 libextutils-helpers-perl
+libextutils-depends-perl
 libmodule-build-perl
 libmodule-build-tiny-perl
 libmodule-build-xsutil-perl
@@ -50,7 +51,6 @@ libmvs-jesftp-perl
 libpath-class-perl
 libperl-tidy-perl
 libregexp-grammars-perl
-libscalar-util-perl
 libsql-abstract-perl
 libsql-translator-perl
 libstring-crc32-perl
