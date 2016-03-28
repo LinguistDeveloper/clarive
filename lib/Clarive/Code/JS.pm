@@ -5,7 +5,6 @@ use Moose;
 BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }
 
 use JSON ();
-use Storable ();
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 use JavaScript::Duktape 1.0;
