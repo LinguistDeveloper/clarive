@@ -70,6 +70,7 @@ sub topic_categories_to_rules {
     my @topic_category = mdb->category->find->all;
     my $missing_fieldlets = 0;
     my $filename = "FIELDLETS_TO_REGISTER_FEATURE";
+    my @pending_register_fieldlets;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
         map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
@@ -266,47 +267,34 @@ sub topic_categories_to_rules {
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
                 _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
                 _log $data;
-                my $fh;
-                if($missing_fieldlets == 0){
-                    open($fh, '>', $filename) or die "Could not create file '$filename' $!";
-                    say $fh "#Add under your feature lib/BaselinerX/Fieldlets.pm";
-                    say $fh "#To register the fieldlet before start clarive";
-                    say $fh "";
-                    say $fh "# Add the forms of the fieldlets";
-                    say $fh "# Change active to 1 in properties of each fieldlet if it is needed";
-                    say $fh "";
-                }else{
-                    open($fh, '>>', $filename) or die "Could not open file '$filename' $!";
-                    say $fh "";
-                }
+
                 #aqui es donde metemos ahora una nueva entrada al fichero
-                say $fh "# FIELDLET $data->{name_field} IN CATEGORY $topic_category->{name}";
                 my $name_fieldlet = "fieldlet_customized_" . $missing_fieldlets;
                 my $html_fieldlet = $fieldlet->{params}->{html} // '';
                 my $js_fieldlet = $fieldlet->{params}->{js} // '';
-                say $fh "register 'fieldlet." . $name_fieldlet . "' => {";
-                say $fh "    name        => _loc('" . $name_fieldlet . "'),";
-                say $fh "    html        => '" . $html_fieldlet . "',";
-                say $fh "    js          => '" . $js_fieldlet . "',";
-                say $fh "};";
-                close $fh;
                 $missing_fieldlets++;
+
+                my $fieldlet_not_registed;
+                $fieldlet_not_registed->{name} = $name_fieldlet;
+                $fieldlet_not_registed->{html} = $html_fieldlet;
+                $fieldlet_not_registed->{js} = $js_fieldlet;
+                $fieldlet_not_registed->{category} = $topic_category->{name};
+                push @pending_register_fieldlets, $fieldlet_not_registed;
+
                 $attributes->{key} = "fieldlet.". $name_fieldlet;
                 $attributes->{active} = '0';
-                #next;
             }
-            
             $attributes->{data} = $data;
-            
             $attributes->{leaf} = \1;
             $attributes->{name} = $fieldlet->{params}->{name_field};
             $attributes->{palette} = \0;
             $attributes->{text} = $fieldlet->{params}->{name_field};
             $attributes->{ts} = mdb->ts;
             $attributes->{who} = 'root';
-              $f->{attributes} = $attributes;
+            $f->{attributes} = $attributes;
             $f->{children} = [];
-            push @fields, $f;    
+            push @fields, $f;
+
         }
         my $rule;
         $rule->{id} = mdb->seq('rule');
@@ -331,6 +319,27 @@ sub topic_categories_to_rules {
         mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
         _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
         generate_dsl($rule);
+    }
+    if(@pending_register_fieldlets){
+        my $fh;
+        open($fh, '>', $filename) or die "Could not create file '$filename' $!";
+        say $fh "#Add under your feature lib/BaselinerX/Fieldlets.pm";
+        say $fh "#To register the fieldlet before start clarive";
+        say $fh "";
+        say $fh "# Add the forms of the fieldlets";
+        say $fh "# Change active to 1 in properties of each fieldlet if it is needed";
+        say $fh "";
+        foreach my $reg_fieldlet (@pending_register_fieldlets){
+            say $fh "";
+            say $fh "# Fieldlet: $reg_fieldlet->{name} in category: $reg_fieldlet->{category}";
+            say $fh "register 'fieldlet." . $reg_fieldlet->{name} . "' => {";
+            say $fh "    name        => _loc('" . $reg_fieldlet->{name} . "'),";
+            say $fh "    html        => '" . $reg_fieldlet->{html} . "',";
+            say $fh "    js          => '" . $reg_fieldlet->{js} . "',";
+            say $fh "    show_in_palette => 0 ";
+            say $fh "};";
+        }
+        close $fh;
     }
 }
 
