@@ -256,6 +256,9 @@ sub _new_event {
     my $self = shift;
     my ( $ev, $key, $data, $module, $code ) = @_;
 
+    my $ts       = mdb->ts;
+    my $ts_hires = mdb->ts_hires;
+
     my $steps = delete $data->{_steps} || [qw/PRE RUN POST/];
 
     try {
@@ -322,7 +325,15 @@ sub _new_event {
         my $rules_post = $ev->rules_post_online($data);
         push @rule_log, _array( $rules_post->{rule_log} );
 
-        $self->_create_event_and_friends( $ev, $key, $module, $data, @rule_log );    #if defined $data->{mid};
+        $self->_create_event_and_friends(
+            event    => $ev,
+            key      => $key,
+            module   => $module,
+            data     => $data,
+            ts       => $ts,
+            ts_hires => $ts_hires,
+            rule_log => \@rule_log
+        );
     }
 
     return $data;
@@ -330,7 +341,15 @@ sub _new_event {
 
 sub _create_event_and_friends {
     my $self = shift;
-    my ( $ev, $key, $module, $ed, @event_log ) = @_;
+    my ( %params ) = @_;
+
+    my $ev       = $params{event};
+    my $key      = $params{key};
+    my $module   = $params{module};
+    my $ed       = $params{data};
+    my $ts       = $params{ts};
+    my $ts_hires = $params{ts_hires};
+    my $rule_log = $params{rule_log};
 
     my $ev_id = mdb->seq('event');
 
@@ -340,8 +359,8 @@ sub _create_event_and_friends {
     mdb->event->insert(
         {
             id           => $ev_id,
-            ts           => mdb->ts,
-            t            => mdb->ts_hires,
+            ts           => $ts,
+            t            => $ts_hires,
             event_key    => $key,
             event_data   => $event_data,
             event_status => 'new',
@@ -369,7 +388,7 @@ sub _create_event_and_friends {
                 event_id  => $ev_id,
                 mid       => $ed->{mid},
                 module    => $module,
-                ts        => mdb->ts,
+                ts        => $ts,
                 username  => $ed->{username},
                 text      => $ev->{text},
                 ev_level  => $ev->{ev_level},
@@ -378,7 +397,7 @@ sub _create_event_and_friends {
         );
     }
 
-    for my $log (@event_log) {
+    for my $log (@$rule_log) {
         my $stash_data = substr( _dump( $log->{ret} ),    0, 1_024_000 );    # 1MB
         my $log_output = substr( _dump( $log->{output} ), 0, 4_096_000 );    # 4MB
         my $dsl        = substr( $log->{dsl},             0, 1_024_000 );
@@ -387,8 +406,8 @@ sub _create_event_and_friends {
             id         => mdb->seq('event_log'),
             id_event   => $ev_id,
             id_rule    => $log->{id},
-            ts         => mdb->ts,
-            t          => mdb->ts_hires,
+            ts         => $ts,
+            t          => $ts_hires,
             stash_data => $stash_data,
             dsl        => $log->{dsl},
             log_output => $log_output,
