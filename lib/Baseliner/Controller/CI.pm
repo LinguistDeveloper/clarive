@@ -388,7 +388,7 @@ sub tree_object_depend {
     my @rels = mdb->master_rel->find_values( $dir => $where);
     my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _seq=>1 });
     my $total = $rs->count;
-    my $cnt = 0;
+    my $cnt = 10;
     my @tree = map {
         my $data = $_;
         my $class = 'BaselinerX::CI::' . $data->{collection};
@@ -450,7 +450,7 @@ sub tree_object_info {
     #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = (
         {
-            _id      => $p{parent} . "1",
+            _id      => $p{parent} . "0",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
@@ -463,7 +463,7 @@ sub tree_object_info {
             versionid  => '',
         },
         {
-            _id      => $p{parent} . "2",
+            _id      => $p{parent} . "1",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
@@ -476,7 +476,7 @@ sub tree_object_info {
             versionid  => '',
         },
         {
-            _id      => $p{parent} . "3",
+            _id      => $p{parent} . "2",
             _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
@@ -498,7 +498,7 @@ sub list_classes {
     $role //= 'Baseliner::Role::CI';
     my @ret;
     if(ref $role eq 'ARRAY'){
-        map { push @ret, packages_that_do( $_ )} _array $role;   
+        map { push @ret, packages_that_do( $_ )} _array $role;
     }else{
         push @ret, packages_that_do( $role );
     }
