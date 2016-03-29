@@ -323,11 +323,10 @@ sub topic_categories_to_rules {
     if(@pending_register_fieldlets){
         my $fh;
         open($fh, '>', $filename) or die "Could not create file '$filename' $!";
-        say $fh "#Add under your feature lib/BaselinerX/Fieldlets.pm";
-        say $fh "#To register the fieldlet before start clarive";
+        say $fh "# Add under your feature lib/BaselinerX/Fieldlets.pm";
+        say $fh "# to register the fieldlet and restart Clarive";
         say $fh "";
-        say $fh "# Add the forms of the fieldlets";
-        say $fh "# Change active to 1 in properties of each fieldlet if it is needed";
+        say $fh "# Change active to 1 in properties of each fieldlet of the followings if you want to use them";
         say $fh "";
         foreach my $reg_fieldlet (@pending_register_fieldlets){
             say $fh "";
