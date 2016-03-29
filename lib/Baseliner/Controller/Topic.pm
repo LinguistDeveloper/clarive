@@ -305,9 +305,9 @@ sub related : Local {
     my $where;
     my $valuesqry = $p->{valuesqry};
     if ( $valuesqry && $valuesqry eq 'true' ) {
-        $where = { mid => mdb->in( split /\s+/, _array( delete $p->{query} ) ) };
+        $where = { mid => mdb->in( split /\s+/, join ' ', _array( delete $p->{query} ) ) };
     }
-    my $search_query = $p->{query};
+    my $search_query =  $p->{query};
 
     my $filter = $p->{filter};
 
@@ -324,6 +324,8 @@ sub related : Local {
         statuses      => $statuses,
         not_in_status => $not_in_status && $not_in_status eq 'on',
         search_query  => $search_query,
+        valuesqry     => $valuesqry,
+        where         => $where,
         filter        => $filter,
         start         => $start,
         limit         => $limit,

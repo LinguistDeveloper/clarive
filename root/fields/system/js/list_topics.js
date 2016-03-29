@@ -30,7 +30,9 @@ params:
 	var id_required = Ext.id()
 	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
 	
-	if(data && data[ meta.id_field] ){
+	
+
+    if(data && data[ meta.id_field] ){
 		var eval_topics = data[ meta.id_field ];
 		for(i=0; i<eval_topics.length;i++){
 			topics.push(eval_topics[i].mid);
@@ -38,8 +40,9 @@ params:
 	}else{
 		topics = [];
 	}
-	
-    var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
+
+
+	var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field==undefined ? 'title' : meta.display_field;
     var tpl_cfg = meta.tpl_cfg || undefined;
     if (meta.dir == 'ASC') 

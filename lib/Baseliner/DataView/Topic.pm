@@ -6,7 +6,7 @@ use Hash::Merge qw(merge);
 use JSON ();
 use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
-use Baseliner::Utils qw(_fail _array);
+use Baseliner::Utils qw(_fail _log _array _dump);
 
 sub find {
     my $self = shift;
@@ -27,7 +27,6 @@ sub find {
     }
 
     my $where = $self->build_where(%params);
-
     my $rs = mdb->topic->find($where);
 
     if ($sort) {
@@ -48,6 +47,7 @@ sub build_where {
     my $topic_mid  = $params{topic_mid};
 
     my $where         = $params{where} || {};
+    my $valuesqry     = $params{valuesqry};
     my $username      = $params{username} or _fail 'username required';
     my @categories    = _array $params{categories};
     my $category_type = $params{category_type};
@@ -59,95 +59,97 @@ sub build_where {
     my @labels;
     my @category_status_id;
 
-    if ($filter) {
-        delete $filter->{start};
-        delete $filter->{limit};
+    if (!$valuesqry || $valuesqry ne 'true') {
+        if ($filter) {
+            delete $filter->{start};
+            delete $filter->{limit};
 
-        if ( my $categories = delete $filter->{categories} ) {
-            push @categories, _array $categories;
-        }
+            if ( my $categories = delete $filter->{categories} ) {
+                push @categories, _array $categories;
+            }
 
-        if ( my $statuses = delete $filter->{statuses} ) {
-            push @category_status_id, _array $statuses;
-        }
+            if ( my $statuses = delete $filter->{statuses} ) {
+                push @category_status_id, _array $statuses;
+            }
 
-        if ( my $priorities = delete $filter->{priorities} ) {
-            push @priorities, _array $priorities;
-        }
+            if ( my $priorities = delete $filter->{priorities} ) {
+                push @priorities, _array $priorities;
+            }
 
-        if ( my $labels = delete $filter->{labels} ) {
-            push @labels, _array $labels;
-        }
-    }
-
-    if(@category_status_id){
-        my @in = grep {!m/^\-/ } @category_status_id;
-        my @not_in = map { s/^.{1}//s; $_} grep { m/^\-/ } @category_status_id;
-
-        if (@statuses) {
-            if ($not_in_status) {
-                push(@not_in, @statuses);
-            }else {
-                push(@in, @statuses);
+            if ( my $labels = delete $filter->{labels} ) {
+                push @labels, _array $labels;
             }
         }
-        if (@not_in && @in){
-            $where->{'category_status.id'} = {'$nin' =>\@not_in, '$in' =>\@in};
-        }else{
-            $where->{'category_status.id'} = @not_in ? 
-                    mdb->nin(@not_in) : mdb->in(@in);
+
+        if(@category_status_id){
+            my @in = grep {!m/^\-/ } @category_status_id;
+            my @not_in = map { s/^.{1}//s; $_} grep { m/^\-/ } @category_status_id;
+
+            if (@statuses) {
+                if ($not_in_status) {
+                    push(@not_in, @statuses);
+                }else {
+                    push(@in, @statuses);
+                }
+            }
+            if (@not_in && @in){
+                $where->{'category_status.id'} = {'$nin' =>\@not_in, '$in' =>\@in};
+            }else{
+                $where->{'category_status.id'} = @not_in ? 
+                        mdb->nin(@not_in) : mdb->in(@in);
+            }
+        } else {
+            if (@statuses) {
+                $where->{'category_status.id'} = $not_in_status ?
+                        mdb->nin(@statuses) : mdb->in(@statuses);
+            }
         }
-    } else {
-        if (@statuses) {
-            $where->{'category_status.id'} = $not_in_status ?
-                    mdb->nin(@statuses) : mdb->in(@statuses);
+
+        if (@labels) {
+            $where->{'labels'} = mdb->in(@labels);
         }
-    }
 
-    if (@labels) {
-        $where->{'labels'} = mdb->in(@labels);
-    }
-
-    my @user_categories = map { $_->{id} }
-      Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
-    if (@categories) {
-        @user_categories = intersect( @categories, @user_categories );
-    }
-
-    my $perm = Baseliner::Model::Permissions->new;
-
-    my $is_root = $perm->is_root($username);
-    if ( $username && !$is_root ) {
-        $perm->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-
-    $where->{'category.id'} = mdb->in(@user_categories) if @categories;
-
-    if ($category_type) {
-        if ( $category_type eq 'release' ) {
-            $where->{'category.is_release'} = 1;
+        my @user_categories = map { $_->{id} }
+          Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
+        if (@categories) {
+            @user_categories = intersect( @categories, @user_categories );
         }
-        elsif ( $category_type eq 'changeset' ) {
-            $where->{'category.is_changeset'} = 1;
+
+        my $perm = Baseliner::Model::Permissions->new;
+
+        my $is_root = $perm->is_root($username);
+        if ( $username && !$is_root ) {
+            $perm->build_project_security( $where, $username, $is_root, @user_categories );
         }
-        else {
-            _fail 'Uknown category type';
+
+        $where->{'category.id'} = mdb->in(@user_categories) if @categories;
+
+        if ($category_type) {
+            if ( $category_type eq 'release' ) {
+                $where->{'category.is_release'} = 1;
+            }
+            elsif ( $category_type eq 'changeset' ) {
+                $where->{'category.is_changeset'} = 1;
+            }
+            else {
+                _fail 'Uknown category type';
+            }
         }
-    }
 
-    Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
+        Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
-    if ($filter) {
-        $where = merge $where, $filter;
-    }
-
-    if ( defined $search_query && length $search_query ) {
-        my @mids_in = _array( delete $where->{mid} );
-        push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
-        push @mids_in,
-          Baseliner::Model::Topic->new->run_query_builder( $search_query, $where, $username, build_query => 1 );
-        $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
+        if ($filter) {
+            $where = merge $where, $filter;
+        }
+       
+        if ( defined $search_query && length $search_query ) {
+            my @mids_in = _array( delete $where->{mid} );
+            push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
+            push @mids_in,
+              Baseliner::Model::Topic->new->run_query_builder( $search_query, $where, $username, build_query => 1 );
+            $where->{mid} = mdb->in(@mids_in) if @mids_in;
+        }
+    }   
 
     return $where;
 }

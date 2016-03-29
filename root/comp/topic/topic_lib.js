@@ -343,6 +343,7 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
         },
         removeItem: function(obj,v){
             obj.hidden_value = obj.getValue();
+            obj.store.load();
         }
 
     }

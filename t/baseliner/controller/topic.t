@@ -290,7 +290,7 @@ subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
     my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { valuesqry=>'true', query=>"$topic_mid $topic_mid_2" } } );
+    my $c = _build_c( req => { params => { valuesqry=>'true', filter =>'{"statuses":["status-1"]}' ,query=>"$topic_mid $topic_mid_2" } } );
     $c->{username} = 'root'; # change context to root
 
     $controller->related($c);
@@ -300,6 +300,31 @@ subtest 'related: valuesqry returns data for SuperBox in string mode' => sub {
     is scalar @$topics, 2;
     is $c->stash->{json}->{totalCount}, 2;
 };
+
+subtest 'related: valuesqry non return data when exist filter' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    $base_params->{parent} = [$topic_mid];
+
+    my ( undef, $topic_mid_2 ) = Baseliner::Model::Topic->new->update({ %$base_params, action=>'add' });
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { valuesqry=>'', filter =>'{"statuses":["status-1"]}' ,query=>"$topic_mid $topic_mid_2" } } );
+    $c->{username} = 'root'; # change context to root
+
+    $controller->related($c);
+
+    my $topics = $c->stash->{json}->{data};
+
+    is scalar @$topics, 0;
+    is $c->stash->{json}->{totalCount}, 0;
+};
+
 
 subtest 'related: valuesqry returns data for SuperBox in array mode' => sub {
     _setup();
@@ -340,6 +365,7 @@ subtest 'related: sends correct parameters to DataView' => sub {
     my $c = _build_c(
         req => {
             params => {
+                valuesqry     => '',
                 categories    => [ 1, 2, 3 ],
                 statuses      => [ 4, 5, 6 ],
                 not_in_status => 'on',
@@ -358,6 +384,8 @@ subtest 'related: sends correct parameters to DataView' => sub {
     is_deeply \%params,
       {
         'filter'        => '{"foo":"bar"}',
+        'valuesqry'     => '',
+        'where'         => undef,
         'categories'    => [1, 2, 3],
         'dir'           => 'asc',
         'username'      => 'test',
