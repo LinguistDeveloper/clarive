@@ -3,7 +3,7 @@
 #set -x
 
 BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-LOCALDIR=`realpath "$BINDIR/../../local"`
+LOCALDIR=`$BINDIR/realpath "$BINDIR/../../local"`
 PERL="$LOCALDIR/bin/perl"
 if [ ! -e $PERL ]; then
     PERL=`which perl`
