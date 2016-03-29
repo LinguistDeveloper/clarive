@@ -7,10 +7,64 @@ use Test::Deep;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
 use TestEnv;
+use Test::Exception;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
 use_ok 'BaselinerX::Service::FileManagement';
+
+
+subtest 'run_ship: file does not exist and mode local with die' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+
+    my $tmp = tempdir();
+    TestUtils->write_file( "foobar", "$tmp/foo" );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    dies_ok {$service->run_ship( $c,
+        { local_path => "$tmp/foo/bar", remote_path => 'remote/', backup_mode => 'none', server => $server, exist_mode_local => 'die' } ) } 'expecting to die';
+};
+
+subtest 'run_ship: file does not exist and mode local with not die' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+
+    my $tmp = tempdir();
+    TestUtils->write_file( "foobar", "$tmp/foo" );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    my $output = $service->run_ship( $c,
+        { local_path => "$tmp/foo/bar", remote_path => 'remote/', backup_mode => 'none', server => $server, exist_mode_local => 'not die' } );
+
+    is $output, '1';
+};
+
+
 
 subtest 'run_ship: copies file to remote' => sub {
     _setup();
