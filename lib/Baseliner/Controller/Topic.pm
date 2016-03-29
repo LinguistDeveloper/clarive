@@ -1958,44 +1958,18 @@ sub children : Local {
     $c->forward('View::JSON');
 }
 
-sub report_data_replace {
-    my ($self, $data, $show_desc ) = @_;
-    my @mids;
-    for( _array( $data->{rows} ) ) {
-        push @mids, $_->{topic_mid};
-        # find and replace report_data columns 
-        for my $col ( keys %{ $_->{report_data} || {} } ) {
-            $_->{ $col } = $_->{report_data}->{ $col };
-        }
-    }
-    if( $show_desc ) {
-        my @descs = mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ description=>1 })->all;
-        map {
-            $_->{description} = ( shift @descs )->{description};
-        } _array( $data->{rows} );
-        push @{ $data->{columns} }, { name=>'Description', id=>'description' };
-    }
-    return $data;
-}
-
 sub report_html : Local {
-    my ($self, $c ) = @_;
-    my $p = $c->req->params;
-    my $data = $p->{data_json};
-    $data = _decode_json $data;
-    $data = $self->report_data_replace( $data, $p->{show_desc} );
-    $c->stash->{data} = $data;
-    $c->stash->{template} = '/reports/basic.html';
+    my ( $self, $c ) = @_;
+
+    $c->res->content_type('text/html; charset=utf-8');
+    return $self->_export($c, 'html');
 }
 
 sub report_yaml : Local {
     my ($self, $c ) = @_;
-    my $p = $c->req->params;
-    my $data_json = $p->{data_json};
-    my $data = _decode_json $data_json;
-    my $yaml = _dump( $data );
-    $yaml = _utf8( $yaml );
-    $c->res->body( qq{<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n</head>\n<body>\n<pre>${yaml}</pre></body></html>} );
+
+    $c->res->content_type('text/plain; charset=utf-8');
+    return $self->_export($c, 'yaml');
 }
 
 sub report_csv : Local {
@@ -2004,155 +1978,66 @@ sub report_csv : Local {
     my $json = $p->{data_json};
     my $data = _decode_json $json;
 
-    my @csv;
-    if ($p->{params}) {
-        my $params = _decode_json $p->{params};
-        $params->{username} = $c->username;
-        $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
-        $params->{limit} = $p->{total_rows};
-    
-        my $rows = $self->get_items($params) ;
+    my $params = _decode_json $p->{params};
+    $params->{username} = $c->username;
+    $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
+    $params->{limit} = $p->{total_rows};
 
-        my @cols;
+    my $rows = $self->get_items($params) ;
 
-        my $charset = "iso-8859-1";
-        # Topics are related to categories, remove accents from category name to check for mongo fields and extract data.    
-        my @cats = map { +{ id => $_->{id}, name => lc(unac_string($_->{name}) )} } mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
-        push my @names_category, map {$_->{name}} @cats;
-        # _log "categories "._dump @cats;
+    my $exporter = Baseliner::Model::TopicExporter->new;
+    my $body = $exporter->export(
+        'csv', $rows->{data},
+        username   => $c->username,
+        title      => $p->{title},
+        params     => $p->{params},
+        columns => $data->{columns},
+        rows       => $p->{rows},
+        total_rows => $p->{total_rows},
+    );
 
-        my ($ref_in, $ref_out, $num_file, $numcomment);
-        for my $row (_array $rows->{data}){ 
-            my $main_category = $row->{category}->{name}|| $row->{category_name} ; 
-            my @cells;
-            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-                my $col_id = $col->{id};                
-    COMMENTS:   if ($col->{id} eq 'numcomment' && $params !~ /report/) {    # Look for all fields managed in this column
-                    if ( $col_id eq 'numcomment') {
-                        $col_id = 'referenced_in';                        
-                    } elsif ($col_id eq 'referenced_in') {
-                        $col_id = 'references_out';                       
-                    } elsif ($col_id eq 'references_out') {
-                        $col_id = 'num_file';                        
-                    } elsif ($col_id eq 'num_file' ) {
-                        $col_id = 'numcomment';
-                    }                       
-                }
-                my $v = $row->{ $col_id };
-                if( ref $v eq 'ARRAY' ) {
-                    if ($col->{id} eq 'projects') {
-                        my @projects;
-                        for (@{$v}){
-                            push @projects, ( split';', $_)[1];
-                        }
-                        @$v = @projects;
-                    }
-                    (my $du) = _array $v;
-                    if( ref $du eq 'HASH' && exists $du->{mid}) {
-                        $v = $du->{category}->{name}." #$du->{mid}";
-                    } elsif( ref $du eq 'HASH' ) {
-                        my @res;
-                        foreach ( keys $du ){
-                            push @res, "$_:$du->{$_}";
-                        }
-                        $v = join ';',@res;
-                    } else {       
-                        $v = join ',', @$v;
-                    }
-                } elsif( ref $v eq 'HASH' ) {
-                    if ($v && exists $v->{mid}){
-                        $v = $v->{category}->{name}." #$v->{mid}";
-                    } else {
-                        # $v = Util->hash_flatten($v);
-                        # $v = Util->_encode_json($v);
-                        # $v =~ s/{|}//g;
-                        my $result;
-                        for my $step (keys $v){
-                            $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
-                        }
-                        if($result) { $v = $result } else{ $v = ''; };
-                    }
-                };
-                if ( $v && ($v =~ /^[\d,]+$/) && $col_id) { # Look for related category for prepending if $v is a mid or several. 
-                    my $rel_category;
-                    ($col_id) = ($col->{id} =~ m/^(.*[^_])_.*$/) if $col_id ne 'topic_mid';
-                    if (!defined $col_id || !$row->{$col_id} ) { # Fields in database have not homegeneous format.
-                            $col_id = $col->{id}
-                    }  
-                    if ($col_id ) {
-                        if ($col_id !~ /agrupador/) {
-                            ($col_id) = lc ($col_id);
-                            ($col_id) =~ s/\s/_/;  
-                        }             
-                        if (ref $row->{$col_id} eq 'HASH' ){   
-                             $rel_category = $row->{$col_id}->{category}->{name};
-                             $v = $rel_category.' #'.$v if ($rel_category);
-                        } elsif ( ref $row->{$col_id} eq 'ARRAY' ){ 
-                            my @v = split ',', $v;
-                            my $i = 0;
-                            for ( @{$row->{$col_id}}) {
-                                (my $du) = _array $_;
-                                if( ref $du eq 'HASH' && exists $du->{category}) {
-                                    my $rel_category = $du->{category}->{name};
-                                    $v[$i] = $rel_category.' #'.$v[$i] ;
-                                }                            
-                                $i++;
-                            }
-                            $v = join (' ',@v);
-                        }
-                    }
-                }
-                $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
-                $v = _strip_html ($v); # HTML Code 
-                $v =~ s/\t//g if $v;
-                $v =~ s{"}{""}g if $v;
-                # utf8::encode($v);
-                # Encode::from_to($v,'utf-8','iso-8859-15');
-                if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
-                     push @cells, qq{"$v"};
-                } else { push @cells, qq{""} }; 
-            }
-            push @csv, join ';', @cells; 
-        }
-    } else {
-
-        my @cols;
-        for( grep { length $_->{name} } _array( $data->{columns} ) ) {
-            push @cols, qq{"$_->{name}"}; #"
-        }
-        push @csv, join ';', @cols;
-
-        for my $row ( _array( $data->{rows} ) ) {
-            my @cells;
-            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
-                my $v = $row->{ $col->{id} };
-                if( ref $v eq 'ARRAY' ) {
-                    $v = join ',', @$v;
-                } elsif( ref $v eq 'HASH' ) {
-                    $v = Util->hash_flatten($v);
-                    $v = Util->_encode_json($v);
-                    $v =~ s/{|}//g;
-                }
-                #_debug "V=$v," . ref $v;
-                $v =~ s{"}{""}g;
-                # utf8::encode($v);
-                # Encode::from_to($v,'utf-8','iso-8859-15');
-                push @cells, qq{"$v"};
-            }
-            push @csv, join ';', @cells;
-        }    
-    }
-    my $body = join "\n", @csv;
-    # I#6947 - chromeframe does not download csv with less than 1024: pad the file
-    my $len = length $body;
-    $body .= "\n" x ( 1024 - $len + 1 ) if $len < 1024;
-    utf8::encode($body);
-    Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
+}
 
+sub _export {
+    my $self = shift;
+    my ($c, $format) = @_;
+
+    my $p = $c->req->params;
+
+    my $exporter = Baseliner::Model::TopicExporter->new(
+        renderer => sub {
+            my (%params) = @_;
+
+            my $content = $c->forward( $c->view('Mason'), 'render', [ '/reports/basic.html', \%params ] );
+            return $content;
+        }
+    );
+
+    try {
+        my $content = $exporter->export(
+            $format, $p->{data_json},
+            username   => $c->username,
+            title      => $p->{title},
+            params     => $p->{params},
+            rows       => $p->{rows},
+            total_rows => $p->{total_rows},
+        );
+
+        if (!Encode::is_utf8($content)) {
+            $content = Encode::decode('UTF-8', $content);
+        }
+
+        $c->res->body($content);
+    } catch {
+        my $error = $_;
+
+        $c->res->status(500);
+        $c->res->body("Error: $error");
+    };
 }
 
 sub img : Local {

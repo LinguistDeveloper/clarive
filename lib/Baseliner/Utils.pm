@@ -40,6 +40,7 @@ use Exporter::Tidy default => [
     _parse_template
     _get_options
     _decode_json
+    _decode_json_safe
     _encode_json
     _check_parameters
     _bool
@@ -398,6 +399,12 @@ sub _decode_json {
     require JSON::XS;
     $json = encode_utf8($json) if is_utf8($json);
     return JSON::XS::decode_json($json); 
+}
+
+sub _decode_json_safe {
+    my $json = shift;
+
+    eval { _decode_json($json) } or do { +{} }
 }
 
 sub _encode_json {
