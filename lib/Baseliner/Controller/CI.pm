@@ -388,12 +388,13 @@ sub tree_object_depend {
     my @rels = mdb->master_rel->find_values( $dir => $where);
     my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _seq=>1 });
     my $total = $rs->count;
+    my $cnt = 0;
     my @tree = map {
         my $data = $_;
         my $class = 'BaselinerX::CI::' . $data->{collection};
         my $bl = [ split /,/, $data->{bl} ];
         +{
-            _id        => $p{parent} . "1",
+            _id        => $p{parent} . ++$cnt . "",
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $data->{mid},
