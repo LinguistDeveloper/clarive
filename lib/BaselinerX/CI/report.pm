@@ -43,7 +43,7 @@ sub root_reports {
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/topic.png',
+                    icon    => '/static/images/icons/report_default.png',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -156,7 +156,7 @@ sub reports_available {
             leaf => \1,
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/topic.png',
+                    icon    => $reg->icon,
                     url     => '/comp/topic/topic_report.js',
                     type    => 'eval',
                     title   => $name,
@@ -219,7 +219,7 @@ sub reports_from_rule {
                 leaf => \1,
                 data => {
                     click => {
-                        icon  => '/static/images/icons/topic.png',
+                        icon  => '/static/images/icons/rule.png',
                         url   => '/comp/topic/topic_report.js',
                         type  => 'eval',
                         title => $rule->{rule_name},
@@ -309,7 +309,7 @@ sub my_searches {
                 ],
                 data    => {
                     click   => {
-                        icon    => '/static/images/icons/topic.png',
+                        icon    => '/static/images/icons/report_default.png',
                         url     => '/comp/lifecycle/report_run.js',
                         type    => 'eval',
                         title   => $name,
@@ -354,7 +354,7 @@ sub public_searches {
 			menu    => [ ],
 			data    => {
 				click   => {
-					icon    => '/static/images/icons/topic.png',
+					icon    => '/static/images/icons/report_default.png',
 					url     => '/comp/lifecycle/report_run.js',
 					type    => 'eval',
 					title   => $folder->name,

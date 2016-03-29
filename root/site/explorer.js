@@ -176,8 +176,8 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     Baseliner.ajaxEval( '/lifecycle/favorite_add',
                         {
                             text: name.join(':'),
-                           url: node.attributes.url,
-                            iconCls: 'default_folders',
+                            url: node.attributes.url,
+                            icon: node.attributes.icon,
                             data: Ext.encode( node.attributes.data ),
                             menu: Ext.encode( node.attributes.menu )
                         },

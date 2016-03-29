@@ -2100,8 +2100,7 @@ Cla.topic_grid = function(params){
 
     panel.get_current_state = function(){
         return {
-            baseParams: store_topics.baseParams,
-            icon: '/static/images/icons/topic.png'
+            baseParams: store_topics.baseParams
         }
     }
 
