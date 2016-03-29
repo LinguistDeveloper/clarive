@@ -8266,13 +8266,10 @@ msgid "Advanced JSON/MongoDB condition for filter"
 msgstr "Condición avanzada JSON/MongoDB"
 
 msgid "Shift in days from today to start timeline. 0 or blank means one day"
-msgstr ""
-"Desplazamiento en días desde hoy para inicio del periodo. 0 o vacío para 1 "
-"día"
+msgstr "Desplazamiento en días desde hoy para inicio del periodo. 0 o vacío para 1 día"
 
 msgid "Shift in days from today to end timeline. 0 or blank means today"
-msgstr ""
-"Desplazamiento en días desde hoy para fin del periodo. 0 o vacío para HOY"
+msgstr "Desplazamiento en días desde hoy para fin del periodo. 0 o vacío para HOY"
 
 msgid "Date field in topics to use as X axis"
 msgstr "Campo de fecha en tópicos para el eje X"
@@ -8290,9 +8287,16 @@ msgid "User assigned to topics"
 msgstr "Usuario asignado a los tópicos"
 
 msgid "Shift in days from today to show in chart. 0 or blank means today"
-msgstr ""
-"Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío para "
-"HOY"
+msgstr "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío para HOY"
+
+msgid "Shift in days from today to show in chart."
+msgstr "Desplazamiento en días desde hoy para mostrar en el gráfico."
+
+msgid "Shift in days before today to show in chart. 0 or blank means today"
+msgstr "Desplazamiento en días antes de hoy para mostrar en el gráfico. 0 o vacío para HOY"
+
+msgid "Shift in days after today to show in chart. 0 or blank means today"
+msgstr "Desplazamiento en días después de hoy para mostrar en el gráfico. 0 o vacío para HOY"
 
 msgid "Date field with scheduled start date"
 msgstr "Campo de fecha con la fecha de inicio planificada"
@@ -8691,3 +8695,5 @@ msgstr "Roles (separados por comas)"
 msgid "LOADING"
 msgstr "CARGANDO"
 
+msgid "Date to be shown"
+msgstr "Fecha a mostrar"
