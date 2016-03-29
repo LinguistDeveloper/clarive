@@ -16,7 +16,7 @@ use v5.10;
 use experimental 'smartmatch', 'autoderef', 'switch';
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
-  
+
 register 'action.admin.topics' => { name=>'Admin topics' };
 register 'action.topics.view_graph' => { name=>'View related graph in topics' };
 
@@ -76,7 +76,7 @@ register 'registor.menu.topics' => {
                 icon     => $data->{status_icon}||'/static/images/icons/state.gif',
                 tab_icon => $data->{status_icon}||'/static/images/icons/state.gif',
            }
-       } sort { lc $a->{name} cmp lc $b->{name} } 
+       } sort { lc $a->{name} cmp lc $b->{name} }
            ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
 
        my $menus = {
@@ -179,16 +179,16 @@ sub get_items {
             #$f->{field} = join('_',@temp[0..$#temp-1]);
             $f->{category} = $temp[$#temp];
         }
-        my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;        
+        my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$p->{username}, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query}, sort=>$p->{sort}, sortdir=>$dir );
         $data = {
             data=>\@rows,
-            totalCount=>$cnt 
-        }  
+            totalCount=>$cnt
+        }
 
     } elsif( my $id = $p->{id_report_rule} ) {
         my $cr = Baseliner::CompiledRule->new( id_rule=>$p->{id_report_rule} );
-        my $stash = { 
+        my $stash = {
             report_data => { data=>[], count=>0 },
             report_params => {
                 %$p,
@@ -199,20 +199,20 @@ sub get_items {
             }
         };
         $cr->compile;
-        $cr->run( stash=>$stash ); 
+        $cr->run( stash=>$stash );
         my $report_data = ref $$stash{report_data} eq 'CODE' ? $$stash{report_data}->(%$p) : $$stash{report_data};
         _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
         $data = {
             data=>$report_data->{data},
             totalCount=>$report_data->{cnt} || []
         }
-       
+
     } else  {
         my ($info, @rows ) = Baseliner->model('Topic')->topics_for_user( $p );
 
         $data = {
-            data=>\@rows, 
-            totalCount=>$$info{count}, 
+            data=>\@rows,
+            totalCount=>$$info{count},
             last_query=>$$info{last_query},
         };
         #_log "data  "._dump $data;
@@ -225,7 +225,7 @@ sub get_items {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    $p->{status_new} = $p->{status_new}[0] if (ref $p->{status_new} eq 'ARRAY');     # Only for IE8 
+    $p->{status_new} = $p->{status_new}[0] if (ref $p->{status_new} eq 'ARRAY');     # Only for IE8
     $p->{username} = $c->username;
     my $return_options;   # used by event rules to return anything back to the form
     try  {
@@ -244,10 +244,10 @@ sub update : Local {
                 category       => $category,
                 title          => $title,
                 modified_on    => $modified_on,
-            };            
+            };
         }
         else{
-            $c->stash->{json} = { success => \0, fields_required=> \@field_name, return_options=>$return_options // {} };    
+            $c->stash->{json} = { success => \0, fields_required=> \@field_name, return_options=>$return_options // {} };
         }
     } catch {
         my $e = shift;
@@ -262,17 +262,17 @@ sub check_modified_on: Local {
     my $modified_before = \0;
     my $modified_rel = \0;
     my $topic_mid = $p->{topic_mid};
-    
+
     my $duration;
     my $strDate = $p->{modified};
-        
+
     use Class::Date;
     my $date_modified_on =  Class::Date->new( $strDate );
-    
+
     my $doc = mdb->topic->find_one({ mid=>"$topic_mid" });
     my $date_actual_modified_on = Class::Date->new( $doc->{modified_on} );
     my $who = $doc->{modified_by};
-    
+
     if ( $date_modified_on < $date_actual_modified_on ){
         $modified_before = $who;
         $duration = Util->to_dur( $date_actual_modified_on - $date_modified_on );
@@ -281,14 +281,14 @@ sub check_modified_on: Local {
         my $new_signature = $c->model('Topic')->rel_signature($topic_mid);
         $modified_rel = \1 if $old_signature ne $new_signature;
     }
-  
+
     $c->stash->{json} = {
         success                  => \1,
         modified_before          => $modified_before,
         modified_before_duration => $duration,
         modified_rel             => $modified_rel,
         msg                      => _loc( 'Prueba' ),
-    };      
+    };
     $c->forward('View::JSON');
 }
 
@@ -361,7 +361,7 @@ sub get_field_bodies {
         _debug "field file: $file";
         if( !ref $file || $file->is_dir ) {
             _error "********ERROR: field file is not valid: $file ($field->{js})";
-            next; 
+            next;
         }
         _fail _loc("Template not found: %1 (%2)", $field->{js}, $file ) unless -e $file;
         # CACHE check - consider using Mason -- has its own cache
@@ -417,45 +417,45 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
-     
+
     try {
         my $ret = {};
-        mdb->topic->find({ mid=>"$topic_mid" })->count or _fail(_loc('Topic #%1 not found. Deleted?', $topic_mid)); 
+        mdb->topic->find({ mid=>"$topic_mid" })->count or _fail(_loc('Topic #%1 not found. Deleted?', $topic_mid));
         my $meta = $c->model('Topic')->get_meta( $topic_mid );
         my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
 
         $meta = model->Topic->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data );
         $meta = $self->get_field_bodies( $meta );
-        
-        
+
+
         $ret->{topic_meta} = $meta;
-        
+
         if (exists $data->{ci_mid}){
             my $data_ci = _ci($data->{ci_mid})->{_ci};
             $data->{ci_parent} = $data_ci;
         }
-        
+
         $ret->{topic_data} = $data;
         $ret->{rel_signature} = $c->model('Topic')->rel_signature($topic_mid);
         $c->stash->{json} = $ret;
     } catch {
-        my $err = shift;   
+        my $err = shift;
         $c->stash->{json} = { success=>\0, msg=>$err };
     };
-    
+
     $c->forward('View::JSON');
 }
 
 sub new_topic : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    
+
     my $ret = try {
         my $id_category = $p->{new_category_id};
         my $name_category = $p->{new_category_name} || mdb->category->find_one({id=>"$p->{new_category_id}"})->{name};
         my ($st) = grep { $$_{type} eq 'I' } values +{ ci->status->statuses( id_category=>"$id_category" ) };
-        _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
+        _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) )
             unless $st;
         my $name_status = $st->{name};
         my $meta = $c->model('Topic')->get_meta( undef, $id_category, $c->username );
@@ -471,9 +471,9 @@ sub new_topic : Local {
             topic_data          => $data,
         };
     } catch {
-        { success=>\0, msg=>"".shift() } 
+        { success=>\0, msg=>"".shift() }
     };
-    
+
     $c->stash->{json} = $ret;
     $c->forward('View::JSON');
 }
@@ -490,7 +490,7 @@ sub init_values_topic : Private {
     $data->{created_on} = '';
     $data->{gdi_perfil_usuario_nombre} = '';
     $data->{gdi_perfil_usuario_apellidos} = '';
-    
+
     return $data;
 }
 
@@ -502,14 +502,14 @@ sub view : Local {
     my $topic_mid = $p->{topic_mid} || $p->{action};
     ($topic_mid) = _array( $topic_mid ) if ref $topic_mid eq 'ARRAY';
     my $id_category;
-    
+
     my $category;
-    
+
     try {
         my $topic_doc;
 
         $c->stash->{user_security} = $c->user_ci->{project_security};
-        $c->stash->{ii} = $p->{ii};    
+        $c->stash->{ii} = $p->{ii};
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
@@ -525,7 +525,7 @@ sub view : Local {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
                 my $is_root = Baseliner::Model::Permissions->is_root($c->username);
-                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
+                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));
                 $topic_doc = $topic_ci->get_doc;
 
             } catch {
@@ -545,51 +545,51 @@ sub view : Local {
         else{
             $c->stash->{HTMLbuttons} = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
         }
-        
+
         my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
         my %categories_delete = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
         my %categories_view = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
         my %categories_comment = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
         my %categories_activity = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
         my %categories_jobs = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
-        
+
         if($topic_mid || $c->stash->{topic_mid} ){
-     
+
             $c->stash->{category_id} = $topic_doc->{category}{id};
             # user seen
             for my $mid ( _array( $topic_mid ) ) {
                 mdb->master_seen->update({ username=>$c->username, mid=>$mid },{ username=>$c->username, mid=>$mid, type=>'topic', last_seen=>mdb->ts },{ upsert=>1 });
             }
-            
+
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
-            
+
             $c->stash->{dashboard} = $category->{dashboard};
             if ( $category->{is_changeset} ) {
                 my $menu = $self->get_menu_deploy( { topic_mid => $topic_mid, username => $c->username } );
                 $c->stash->{menu_deploy} = _encode_json($menu);
             }
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
-            
+
             if ( !$categories_view{$category->{id} } ) {
-                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
+                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
             if ( !Baseliner::Model::Permissions->user_can_topic_by_project( username => $c->username, mid => $topic_mid ) ) {
-                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
+                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
             $c->stash->{category_meta} = $category->{forms};
 
             # workflow category-status
-            my @statuses = 
+            my @statuses =
                 sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
-                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
+                grep { $_->{id_status} ne $topic_doc->{category_status}{id} }
                 Baseliner::Model::Topic->next_status_for_user(
                     id_category    => $category->{id},
                     id_status_from => $topic_doc->{category_status}{id},
                     username       => $c->username,
                     topic_mid      => $topic_mid
-                );            
+                );
             my %tmp;
             if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
@@ -597,8 +597,8 @@ sub view : Local {
             }
             else{
                 if ($c->is_root){
-                    $c->stash->{permissionEdit} = 1;     
-                    $c->stash->{permissionDelete} = 1;     
+                    $c->stash->{permissionEdit} = 1;
+                    $c->stash->{permissionDelete} = 1;
                 }else{
                     if (exists ($categories_edit{ $category->{id} })){
                         $c->stash->{permissionEdit} = 1;
@@ -635,13 +635,13 @@ sub view : Local {
                 $c->stash->{permissionJobs} = -1;
                 $c->stash->{permissionJobsLink} = -1;
             }
-            
+
             # used by the Change State menu in the topic
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
         } else {
             $id_category = $p->{new_category_id} // $p->{category_id};
             $c->stash->{category_id} //= $id_category;
-            
+
             my $category = mdb->category->find_one({ id=>"$id_category" });
             $c->stash->{category_meta} = $category->{forms};
             $c->stash->{category_name} = $category->{name};
@@ -652,7 +652,7 @@ sub view : Local {
 
             my @statuses =
                 sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
-                grep { $_->{id_status} ne $first_status->{id_status} } 
+                grep { $_->{id_status} ne $first_status->{id_status} }
                 Baseliner::Model::Topic->next_status_for_user(
                     id_category    => $id_category,
                     id_status_from => $first_status->{id_status},
@@ -660,7 +660,7 @@ sub view : Local {
                     topic_mid      => $topic_mid
                 );
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
-            
+
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
@@ -671,7 +671,7 @@ sub view : Local {
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
         }
-        
+
         if( $p->{html} ) {
             my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
             my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
@@ -717,7 +717,7 @@ sub title_row : Local {
     }else {
         _fail(_loc("Problem found opening topic %1. The error message is: %2", $mid, _loc('Topic not found')));
     }
-    
+
 }
 
 sub data_user_event : Local {
@@ -758,7 +758,7 @@ sub data_user_event : Local {
 sub comment : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->request->parameters;
-    
+
     if( $action eq 'add' ) {
         try{
             my $topic_mid = $p->{topic_mid};
@@ -774,8 +774,8 @@ sub comment : Local {
             my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
             my @users = Baseliner->model("Topic")->get_users_friend(
                     mid         => $topic_mid,
-                    id_category => $topic_row->{category}{id}, 
-                    id_status   => $topic_row->{category_status}{id}, 
+                    id_category => $topic_row->{category}{id},
+                    id_status   => $topic_row->{category_status}{id},
                     projects    => \@projects );
             my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
             my $notify = { #'project', 'category', 'category_status'
@@ -788,8 +788,8 @@ sub comment : Local {
             my @name_projects = map { ci->project->find_one({mid=>$_})->{name} } _array(mdb->topic->find_one({mid=>"$topic_mid"})->{_project_security}->{project});
 
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                
-                my $post = ci->post->new({   
+
+                my $post = ci->post->new({
                         topic        => $topic_mid,
                         content_type => $content_type,
                         created_by   => $c->username,
@@ -814,7 +814,7 @@ sub comment : Local {
 
                 # save the post
                 my $mid_post = $post->save;
-                $post->put_data( $text ); 
+                $post->put_data( $text );
                 event_new 'event.post.create' => {
                     username        => $c->username,
                     mid             => $topic_mid,
@@ -825,7 +825,7 @@ sub comment : Local {
                     subject         => $subject,
                     project        => \@name_projects,
                     old_post        => \@old_post,
-                    notify=>$notify 
+                    notify=>$notify
                 };
                 # mentioned people? event this...
                 while( $text =~ /\@([^\s\W\n]+)/gm ) {
@@ -839,7 +839,7 @@ sub comment : Local {
                             id_post         => $mid_post,
                             post            => $text,
                             notify_default  => [ $mentioned ],
-                            notify=>$notify 
+                            notify=>$notify
                         };
                     }
                 }
@@ -859,14 +859,14 @@ sub comment : Local {
                     notify_default  => \@users,
                     subject         => $subject,
                     project        => \@name_projects,
-                    notify=>$notify 
+                    notify=>$notify
                 };
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
                 $msg = _loc("Comment modified");
                 #$post->update(content_type=>$content_type );
             }
 
-            # modified_on 
+            # modified_on
             mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts, modified_by=>$c->username } });
             cache->remove({ mid=>"$topic_mid" }) if length $topic_mid;  # qr/:$topic_mid:/ )
             $c->stash->{json} = {
@@ -896,8 +896,8 @@ sub comment : Local {
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
                 my @users = Baseliner->model("Topic")->get_users_friend(
                     mid         => $mid_topic,
-                    id_category => $topic_row->{category}{id}, 
-                    id_status   => $topic_row->{category_status}{id}, 
+                    id_category => $topic_row->{category}{id},
+                    id_status   => $topic_row->{category_status}{id},
                     projects    => \@projects );
                 my $subject = _loc("@%1 deleted a post from #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title});
                 my $notify = { #'project', 'category', 'category_status'
@@ -913,7 +913,7 @@ sub comment : Local {
                     notify          => $notify
                 };
                 mdb->topic->update({ mid=>"$mid_topic" },{ '$set'=>{ modified_on=>mdb->ts, modified_by=>$c->username } });
-                cache->remove({ mid=>"$mid_topic" }) if length $mid_topic; # qr/:$mid_topic:/ ) 
+                cache->remove({ mid=>"$mid_topic" }) if length $mid_topic; # qr/:$mid_topic:/ )
             }
             $c->stash->{json} = {
                 msg     => _loc('Delete comment ok'),
@@ -931,7 +931,7 @@ sub comment : Local {
             my $post = ci->find($id_com);
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             # check if youre the owner
-            _fail _loc( "You're not the owner (%1) of the comment.", $post->created_by ) 
+            _fail _loc( "You're not the owner (%1) of the comment.", $post->created_by )
                 if $post->created_by ne $c->username;
             $c->stash->{json} = {
                 failure=>\0,
@@ -955,7 +955,7 @@ sub category_list : Local { #this is for ComboCategories
 
     my $return = {
         data => [
-            map { +{ id => $_->{id}, name => $_->{name} } } 
+            map { +{ id => $_->{id}, name => $_->{name} } }
             sort { lc $a->{name} cmp lc $b->{name} }
             @cats
         ],
@@ -972,19 +972,19 @@ sub list_category : Local {
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
     $dir ||= 'asc';
     $sort ||= 'name';
-    
+
     my $order = { dir=> $dir, sort=> $sort};
     my @rows;
-    
-    if( !$p->{categoryId} ){    
-        
+
+    if( !$p->{categoryId} ){
+
         my @categories;
         if( $p->{action} && $p->{action} eq 'create' ){
             @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order, all_fields=>1);
         } else {
             @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order, all_fields=>1);
         }
-        
+
         if(@categories){
             foreach my $category (@categories){
                 my @statuses = _array( $category->{statuses} );
@@ -993,7 +993,7 @@ sub list_category : Local {
                 my @fieldlets;
 
                 my $forms = $self->form_build( $category->{forms} );
-                
+
                 push @rows, {
                     id            => $category->{id},
                     category      => $category->{id},
@@ -1013,11 +1013,11 @@ sub list_category : Local {
                     fields        => \@fieldlets,
                     #priorities    => \@priorities
                 };
-            }  
+            }
         }
         $cnt = @rows;
     }else{
-        # Status list for combo and grid in workflow 
+        # Status list for combo and grid in workflow
         my $cat = mdb->category->find_one({ id=>mdb->in($p->{categoryId}) },{ statuses=>1 });
         my @statuses = sort { $a->seq <=> $b->seq } ci->status->search_cis( id_status=>mdb->in($$cat{statuses}) );
         for my $status ( @statuses ) {
@@ -1031,7 +1031,7 @@ sub list_category : Local {
         }
         $cnt = @rows;
     }
-    
+
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
@@ -1043,7 +1043,7 @@ sub list_label : Local {
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
     $dir = $dir && lc $dir eq 'desc' ? -1 : 1;
     $sort ||= 'name';
-    
+
     my @rows;
     my $rs = mdb->label->find->sort({ $sort => $dir});
     while( my $r = $rs->next ) {
@@ -1053,9 +1053,9 @@ sub list_label : Local {
             name        => $r->{name},
             color       => $r->{color}
           };
-    }  
-    
-    $cnt = $#rows + 1 ; 
+    }
+
+    $cnt = $#rows + 1 ;
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
@@ -1065,12 +1065,12 @@ sub update_topic_labels : Local {
     my $p = $c->req->params;
     my $topic_mid = $p->{topic_mid};
     my @label_ids = _array( $p->{label_ids} );
-    
+
     try{
         if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"},{ labels=>1, category=>1, category_status=>1 }) ) {
             my @current_labels = _array( $doc->{labels} );
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
-            
+
             my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
             my @users = Baseliner::Model::Topic->get_users_friend(
                 mid             => $topic_mid,
@@ -1084,12 +1084,12 @@ sub update_topic_labels : Local {
                 mid             => $topic_mid,
                 notify_default  => \@users,
                 subject         => $subject
-            };          
+            };
         } else {
             _fail _loc 'Topic not found: %1', $topic_mid;
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
-        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ ) 
+        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ )
     }
     catch{
         my $err = shift;
@@ -1097,14 +1097,14 @@ sub update_topic_labels : Local {
         _error( $msg );
         $c->stash->{json} = { msg=>$msg, success=>\0 }
     };
-     
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
-        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ 
+        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/
         my $doc = mdb->topic->find_one({mid=>"$topic_mid"});
         mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
         my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
@@ -1127,8 +1127,8 @@ sub delete_topic_label : Local {
     catch{
         $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
     };
-    
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 
@@ -1144,20 +1144,20 @@ sub update_project : Local {
         if( ref $project ) {
             my $meta = $c->model('Topic')->get_meta( $topic_mid );
             _fail _loc 'No metadata found for this topic (%1)', $topic_mid unless ref $meta eq 'ARRAY';
-            $field = [ 
-                sort { ($a->{field_order}//0) cmp ($b->{field_order}//0) } 
-                grep { !defined $_->{main_field} || $_->{main_field} }  # main_field tells me this is the one to drop on 
-                grep { ( !defined $_->{collection} || $_->{collection} eq 'project') && $_->{meta_type} eq 'project' } 
-                @$meta 
+            $field = [
+                sort { ($a->{field_order}//0) cmp ($b->{field_order}//0) }
+                grep { !defined $_->{main_field} || $_->{main_field} }  # main_field tells me this is the one to drop on
+                grep { ( !defined $_->{collection} || $_->{collection} eq 'project') && $_->{meta_type} eq 'project' }
+                @$meta
             ]->[0];
             _fail _loc 'No project field found for this topic (%1)', $topic_mid unless $field;
             # get current data
             my $id_field = $field->{id_field};
-            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ $id_field => 1 }); 
+            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ $id_field => 1 });
             _fail _loc 'Topic not found: %1', $topic_mid unless ref $doc;
             my $fdata = [ _array( $doc->{$id_field} ) ];
             push $fdata, $id_project;
-            $c->model('Topic')->update({ action=>'update', topic_mid=>$topic_mid, username=>$c->username, $id_field=>$fdata }); 
+            $c->model('Topic')->update({ action=>'update', topic_mid=>$topic_mid, username=>$c->username, $id_field=>$fdata });
         } else {
             _fail _loc 'Project not found: %1', $id_project;
         }
@@ -1166,20 +1166,20 @@ sub update_project : Local {
     catch{
         $c->stash->{json} = { msg=>_loc('Error adding project: %1', shift()), failure=>\1 }
     };
-     
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 sub filters_list : Local {
     my ($self, $c, $typeApplication) = @_;
     my $id = $c->req->params->{node};
-    
+
     my @tree;
     my $row;
     my $i=1;
- 
+
     my @views;
-    
+
     ####Defaults views################################################################
     push @views, {
         id  => $i++,
@@ -1193,7 +1193,7 @@ sub filters_list : Local {
         leaf    => 'true',
         uiProvider => 'Baseliner.CBTreeNodeUI_system'
     };
-    
+
     push @views, {
         id  => $i++,
         idfilter      => 1,
@@ -1205,9 +1205,9 @@ sub filters_list : Local {
         checked => \0,
         leaf    => 'true',
         uiProvider => 'Baseliner.CBTreeNodeUI_system'
-        
+
     };
-    
+
     if(!$typeApplication){
         push @views, {
             id  => $i++,
@@ -1222,7 +1222,7 @@ sub filters_list : Local {
             uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
-    
+
     push @views, {
         id  => $i++,
         idfilter      => 3,
@@ -1235,7 +1235,7 @@ sub filters_list : Local {
         leaf    => 'true',
         uiProvider => 'Baseliner.CBTreeNodeUI_system'
     };
-            
+
     push @views, {
         id  => $i++,
         idfilter      => 4,
@@ -1247,7 +1247,7 @@ sub filters_list : Local {
         checked => \0,
         leaf    => 'true',
         uiProvider => 'Baseliner.CBTreeNodeUI_system'
-    };            
+    };
     #################################################################################
 
     push @tree, {
@@ -1256,11 +1256,11 @@ sub filters_list : Local {
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@views
-    };   
-    
+    };
+
 
     # Filter: Categories ########################################################################################################
-        
+
     my @categories;
     my $category_id = $c->req->params->{category_id};
     my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username=>$c->username, type=>'view', all_fields=>1 );
@@ -1281,7 +1281,7 @@ sub filters_list : Local {
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
         }
-        
+
         push @tree, {
             id          => 'C',
             text        => _loc('Categories'),
@@ -1291,13 +1291,13 @@ sub filters_list : Local {
             children    => \@categories
         };
     }
-    
+
     # Filter: Labels ##############################################################################################################
     if(!$typeApplication){
-        my @labels; 
-    
+        my @labels;
+
         my @row = Baseliner::Model::Label->get_labels( $c->username );
-        
+
         #if($row->count() gt 0){
         if(@row){
             foreach ( @row ) {
@@ -1310,10 +1310,10 @@ sub filters_list : Local {
                     iconCls     => 'icon-no',
                     checked     => \0,
                     leaf        => 'true',
-                    uiProvider => 'Baseliner.CBTreeNodeUI'                
-                };	
-            }          
-            
+                    uiProvider => 'Baseliner.CBTreeNodeUI'
+                };
+            }
+
             push @tree, {
                 id          => 'L',
                 text        => _loc('Labels'),
@@ -1323,15 +1323,15 @@ sub filters_list : Local {
             };
         }
     }
-    
-    
+
+
     # Filter: Status #############################################################################################################
     my @statuses;
     my @id_categories = map { $_->{id} } @categories_permissions;
     my @cat_statuses = mdb->category->find_values( statuses=>{ id=>mdb->in(@id_categories) } );
 #_debug \@cat_statuses;
     my $where = { '$and'=>[{ id_status=>mdb->in(@cat_statuses)}] };
-    
+
     # intersect statuses with a reduced set?
     my $status_id = $c->req->params->{status_id};
 
@@ -1339,16 +1339,16 @@ sub filters_list : Local {
         my @status_id = _array( $status_id );
         push @{ $where->{'$and'} }, { id_status=>mdb->in(@status_id) };
     }
-    my $rs_status = ci->status->find($where)->sort({ seq=>1 });    
+    my $rs_status = ci->status->find($where)->sort({ seq=>1 });
     my $is_root = Baseliner->model('Permissions')->is_root( $c->username );
-    ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+    ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.
     my %tmp;
 
     if ( !$is_root ) {
         my %p;
         $p{categories} = \@id_categories;
-        map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
-                    Baseliner->model('Topic')->user_workflow( $c->username, %p );        
+        map { $tmp{$_->{id_status_from}} = $_->{id_category} }
+                    Baseliner->model('Topic')->user_workflow( $c->username, %p );
     };
 
     my %id_categories_hash = map { $_ => '1' } @id_categories;
@@ -1379,9 +1379,9 @@ sub filters_list : Local {
                     iconCls => 'icon-no',
                     checked => $checked,
                     leaf    => 'true',
-                    uiProvider => 'Baseliner.CBTreeNodeUI'                    
+                    uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
-        }  
+        }
         @statuses = sort { uc($a->{text}) cmp uc($b->{text}) } @statuses;
         push @tree, {
             id          => 'S',
@@ -1403,7 +1403,7 @@ sub view_filter : Local {
     my $action = $p->{action};
     my $name = $p->{name};
     my $filter = $p->{filter};
-  
+
     given ($action) {
         when ('add') {
             try{
@@ -1430,19 +1430,19 @@ sub view_filter : Local {
                 foreach my $id_view (_array $ids_view){
                     push @ids_view, $id_view;
                 }
-                  
+
                 my $rs = Baseliner->model('Baseliner::BaliTopicView')->search({ id => \@ids_view });
                 $rs->delete;
-                
+
                 $c->stash->{json} = { success => \1, msg=>_loc('Views deleted') };
             }
             catch{
                 $c->stash->{json} = { success => \0, msg=>_loc('Error deleting views') };
-            }            
+            }
         }
     }
-    
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 =head2 list_admin_category
@@ -1472,7 +1472,7 @@ sub list_admin_category : Local {
                 sort { $$a{seq} <=> $$b{seq} }
                 values +{ ci->status->statuses( id_category => '' . $p->{change_categoryId}, type => 'I' ) };
         }
-        
+
         for my $status ( @statuses ) {
             my $action = $c->model('Topic')->getAction($status->{type});
             push @rows, {
@@ -1499,21 +1499,21 @@ sub list_admin_category : Local {
 
         my @statuses = model->Topic->next_status_for_user(
             id_category    => $id_category,
-            id_status_from => $id_status, 
+            id_status_from => $id_status,
             username       => $c->username,
             topic_mid      => $topic_mid,
         );
 
         my $current_status = ci->status->find_one({ id_status=>"$id_status" }) or _fail( _loc('Status not found: %1', $id_status ) );
         my $status_name = _loc( $current_status->{name} );
-        push @rows, { 
+        push @rows, {
             id          => $id_status,
             name        => $status_name,
             status      => $id_status,
             status_name => $status_name,
             action      => Baseliner::Model::Topic->getAction($current_status->{type}),
         };
-        
+
         push @rows , map {
             my $action = model->Topic->getAction($_->{status_type});
             +{
@@ -1526,11 +1526,11 @@ sub list_admin_category : Local {
                 bl          => $_->{status_bl},
                 description => $_->{status_description},
             }
-        }  sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } @statuses;            
+        }  sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } @statuses;
         #} grep { $_->{id_status} ne $p->{statusId} } @statuses;
-        
+
     }
-        
+
     $c->stash->{json} = { data=>\@rows};
     $c->forward('View::JSON');
 }
@@ -1584,7 +1584,7 @@ sub upload : Local {
 
     if ($name_filter){
 
-        $name_filter =lc($name_filter); 
+        $name_filter =lc($name_filter);
 
         my @split_filter = split /,|\s+/, $name_filter;
         @split_filter = grep { $_ ne ''} @split_filter;
@@ -1630,7 +1630,7 @@ sub upload : Local {
             $message = _loc( "This type of file is not allowed: %1 ", $extension )
         };
     }
-    
+
     $c->stash->{json} = {success =>  $status, msg => $message};
 
     $c->forward('View::JSON');
@@ -1641,15 +1641,15 @@ sub file : Local {
     my ( $self, $c, $action ) = @_;
     my $p      = $c->req->params;
     my $topic_mid = $p->{topic_mid};
-    
+
     try {
-        my $msg; 
+        my $msg;
         if( $action eq 'delete' ) {
             for my $mid ( _array( $p->{asset_mid} ) ) {
                 my $ass = ci->find( $mid );
                 ref $ass or _fail _loc("File id %1 not found", $mid );
                 my $count = mdb->master_rel->find({ to_mid=>$ass->mid })->count;  # only used when assets are shared by 2+ topics
-                
+
                 my $topic = mdb->topic->find_one({ mid=> "$$p{topic_mid}" });
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
                 my @users = $c->model('Topic')->get_users_friend(
@@ -1658,7 +1658,7 @@ sub file : Local {
                     mid         => "$topic_mid",
                     projects    => \@projects
                 );
-                
+
                 if( $count < 2 ) {
                     _log "Deleting file " . $ass->mid;
                     my $subject = _loc("Deleted file %1", $ass->filename);
@@ -1669,7 +1669,7 @@ sub file : Local {
                         filename        => $ass->filename,
                         notify_default  => \@users,
                         subject         => $subject
-                    };                  
+                    };
                     $ass->delete;
                     $msg = _loc( "File deleted ok" );
                 } else {
@@ -1899,20 +1899,20 @@ sub kanban_status : Local {
         _fail( _loc('No categories found for topics') ) unless %cats;
         my @cat_status = _unique map { _array($$_{statuses}) } mdb->category->find({ id =>mdb->in(keys %cats) })->fields({ statuses=>1 })->all;
         _fail( _loc('No category status found for topics') ) unless @cat_status;
-        
+
         ## support multiple bls
         my %status_cis = map { $_->id_status => $_ } ci->status->search_cis;
-        
+
         my @statuses = map {
             my $st = $_;
-            my $bls = join ' ', map { $_->{moniker} } _array( $st->bls ); 
+            my $bls = join ' ', map { $_->{moniker} } _array( $st->bls );
             +{ id=>$$st{id_status}, name=>$$st{name}, seq=>$$st{seq}, bl=>$bls };
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
         # my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
         my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
-        
+
         my %workflow;
         my %status_mids;
         my %visible_status;  # list with destination to statuses to reduce cruft on top of kanban
@@ -1969,9 +1969,29 @@ sub kanban_config : Local {
 sub children : Local {
     my ($self, $c) = @_;
     my $mid = $c->req->params->{mid};
-    my @chi = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_topic' })->all; 
+    my @chi = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_topic' })->all;
     $c->stash->{json} = { success=>\1, msg=>'', children=>\@chi };
     $c->forward('View::JSON');
+}
+
+sub report_data_replace {
+    my ($self, $data, $show_desc ) = @_;
+    my @mids;
+    for( _array( $data->{rows} ) ) {
+        push @mids, $_->{topic_mid};
+        # find and replace report_data columns
+        for my $col ( keys %{ $_->{report_data} || {} } ) {
+            $_->{ $col } = $_->{report_data}->{ $col };
+        }
+    }
+    if( $show_desc ) {
+        my @descs = mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ description=>1 })->all;
+        map {
+            $_->{description} = ( shift @descs )->{description};
+        } _array( $data->{rows} );
+        push @{ $data->{columns} }, { name=>'Description', id=>'description' };
+    }
+    return $data;
 }
 
 sub report_html : Local {
@@ -1993,7 +2013,6 @@ sub report_csv : Local {
     my $p = $c->req->params;
     my $json = $p->{data_json};
     my $data = _decode_json $json;
-
     my $params = _decode_json $p->{params};
     $params->{username} = $c->username;
     $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
@@ -2012,6 +2031,151 @@ sub report_csv : Local {
         total_rows => $p->{total_rows},
     );
 
+    my @csv;
+    if ($p->{params}) {
+        my $params = _decode_json $p->{params};
+        $params->{username} = $c->username;
+        $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
+        $params->{limit} = $p->{total_rows};
+
+        my $rows = $self->get_items($params) ;
+
+        my @cols;
+
+        my $charset = "iso-8859-1";
+        # Topics are related to categories, remove accents from category name to check for mongo fields and extract data.
+        my @cats = map { +{ id => $_->{id}, name => lc(unac_string($_->{name}) )} } mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+        push my @names_category, map {$_->{name}} @cats;
+        # _log "categories "._dump @cats;
+
+        my ($ref_in, $ref_out, $num_file, $numcomment);
+        for my $row (_array $rows->{data}){
+            my $main_category = $row->{category}->{name}|| $row->{category_name} ;
+            my @cells;
+            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
+                my $col_id = $col->{id};
+    COMMENTS:   if ($col->{id} eq 'numcomment' && $params !~ /report/) {    # Look for all fields managed in this column
+                    if ( $col_id eq 'numcomment') {
+                        $col_id = 'referenced_in';
+                    } elsif ($col_id eq 'referenced_in') {
+                        $col_id = 'references_out';
+                    } elsif ($col_id eq 'references_out') {
+                        $col_id = 'num_file';
+                    } elsif ($col_id eq 'num_file' ) {
+                        $col_id = 'numcomment';
+                    }
+                }
+                my $v = $row->{ $col_id };
+                if( ref $v eq 'ARRAY' ) {
+                    if ($col->{id} eq 'projects') {
+                        my @projects;
+                        for (@{$v}){
+                            push @projects, ( split';', $_)[1];
+                        }
+                        @$v = @projects;
+                    }
+                    (my $du) = _array $v;
+                    if( ref $du eq 'HASH' && exists $du->{mid}) {
+                        $v = $du->{category}->{name}." #$du->{mid}";
+                    } elsif( ref $du eq 'HASH' ) {
+                        my @res;
+                        foreach ( keys $du ){
+                            push @res, "$_:$du->{$_}";
+                        }
+                        $v = join ';',@res;
+                    } else {
+                        $v = join ',', @$v;
+                    }
+                } elsif( ref $v eq 'HASH' ) {
+                    if ($v && exists $v->{mid}){
+                        $v = $v->{category}->{name}." #$v->{mid}";
+                    } else {
+                        # $v = Util->hash_flatten($v);
+                        # $v = Util->_encode_json($v);
+                        # $v =~ s/{|}//g;
+                        my $result;
+                        for my $step (keys $v){
+                            $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, " ;
+                        }
+                        if($result) { $v = $result } else{ $v = ''; };
+                    }
+                };
+                if ( $v && ($v =~ /^[\d,]+$/) && $col_id) { # Look for related category for prepending if $v is a mid or several.
+                    my $rel_category;
+                    ($col_id) = ($col->{id} =~ m/^(.*[^_])_.*$/) if $col_id ne 'topic_mid';
+                    if (!defined $col_id || !$row->{$col_id} ) { # Fields in database have not homegeneous format.
+                            $col_id = $col->{id}
+                    }
+                    if ($col_id ) {
+                        if ($col_id !~ /agrupador/) {
+                            ($col_id) = lc ($col_id);
+                            ($col_id) =~ s/\s/_/;
+                        }
+                        if (ref $row->{$col_id} eq 'HASH' ){
+                             $rel_category = $row->{$col_id}->{category}->{name};
+                             $v = $rel_category.' #'.$v if ($rel_category);
+                        } elsif ( ref $row->{$col_id} eq 'ARRAY' ){
+                            my @v = split ',', $v;
+                            my $i = 0;
+                            for ( @{$row->{$col_id}}) {
+                                (my $du) = _array $_;
+                                if( ref $du eq 'HASH' && exists $du->{category}) {
+                                    my $rel_category = $du->{category}->{name};
+                                    $v[$i] = $rel_category.' #'.$v[$i] ;
+                                }
+                                $i++;
+                            }
+                            $v = join (' ',@v);
+                        }
+                    }
+                }
+                $v = $main_category.' #'.$v if ($col_id eq'topic_mid' && $col->{name} ne 'MID');
+                $v = _strip_html ($v); # HTML Code
+                $v =~ s/\t//g if $v;
+                $v =~ s{"}{""}g if $v;
+                # utf8::encode($v);
+                # Encode::from_to($v,'utf-8','iso-8859-15');
+                if ($v || (defined $v && $v eq '0' &&  $params->{id_report} && $params->{id_report} =~ /\.statistics\./)) {
+                     push @cells, qq{"$v"};
+                } else { push @cells, qq{""} };
+            }
+            push @csv, join ';', @cells;
+        }
+    } else {
+
+        my @cols;
+        for( grep { length $_->{name} } _array( $data->{columns} ) ) {
+            push @cols, qq{"$_->{name}"}; #"
+        }
+        push @csv, join ';', @cols;
+
+        for my $row ( _array( $data->{rows} ) ) {
+            my @cells;
+            for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
+                my $v = $row->{ $col->{id} };
+                if( ref $v eq 'ARRAY' ) {
+                    $v = join ',', @$v;
+                } elsif( ref $v eq 'HASH' ) {
+                    $v = Util->hash_flatten($v);
+                    $v = Util->_encode_json($v);
+                    $v =~ s/{|}//g;
+                }
+                #_debug "V=$v," . ref $v;
+                $v =~ s{"}{""}g;
+                # utf8::encode($v);
+                # Encode::from_to($v,'utf-8','iso-8859-15');
+                push @cells, qq{"$v"};
+            }
+            push @csv, join ';', @cells;
+        }
+    }
+    my $body = join "\n", @csv;
+    # I#6947 - chromeframe does not download csv with less than 1024: pad the file
+    my $len = length $body;
+    $body .= "\n" x ( 1024 - $len + 1 ) if $len < 1024;
+    utf8::encode($body);
+    Encode::from_to($body,'utf-8','iso-8859-15');
+>>>>>>> changes because had differences between last merge and head
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
@@ -2081,28 +2245,28 @@ sub change_status : Local {
         my $change_status_before;
         my @results;
         my @statuses = _array( $p->{old_status} );
-        
+
         for my $mid ( _array( $p->{mid} ) ) {
             my $old_status = shift @statuses;
-            my $id_cats = ( 
-                mdb->topic->find_one({ mid=>"$mid" },{ category_status=>1 }) 
-                        or _fail(_loc("Topic #%1 not found. Deleted?", $mid))  
+            my $id_cats = (
+                mdb->topic->find_one({ mid=>"$mid" },{ category_status=>1 })
+                        or _fail(_loc("Topic #%1 not found. Deleted?", $mid))
             )->{category_status}{id};
 
             if ($old_status eq $id_cats ){
                 $change_status_before = \0;
-                
+
                 my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $mid, username => $c->username);
-                
+
                 if ($isValid){
-                    model->Topic->change_status( 
-                        change => 1, username => $c->username, 
-                        id_status => $p->{new_status}, id_old_status => $old_status, 
-                        mid => $mid, 
+                    model->Topic->change_status(
+                        change => 1, username => $c->username,
+                        id_status => $p->{new_status}, id_old_status => $old_status,
+                        mid => $mid,
                     );
                     push @results, { success=>\1, mid=>$mid, msg => _loc ('Changed status'), change_status_before=>$change_status_before };
                 }else{
-                    push @results, { success=>\0, mid=>$mid, msg => _loc ('Required field %1 is empty', $field_name) };    
+                    push @results, { success=>\0, mid=>$mid, msg => _loc ('Required field %1 is empty', $field_name) };
                 }
             }
             else{
@@ -2115,7 +2279,7 @@ sub change_status : Local {
         my $err = shift;
         _error( $err );
         { success=>\0, msg=>$err };
-    }; 
+    };
     $c->forward('View::JSON');
 }
 
@@ -2123,7 +2287,7 @@ sub grid_count : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     if( my $lq = $p->{lq} ) {
-        if($lq->{'$and'}){  
+        if($lq->{'$and'}){
             my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username});
             $lq->{'$and'} = $where->{'$and'};
         }
@@ -2158,14 +2322,14 @@ sub get_files : Local {
     for my $related ( @topics ) {
         my $cat_meta;
         my $cat_fields;
-        
+
         if ( !$cat_meta->{$related->{name_category}} ) {
             $cat_meta->{$related->{name_category}} = $related->get_meta;
             $cat_fields->{$related->{name_category}} = [
-                map { 
-                    { id_field => $_->{id_field}, name_field => $_->{name_field} } 
+                map {
+                    { id_field => $_->{id_field}, name_field => $_->{name_field} }
                 }
-                grep { 
+                grep {
                     'ALL' ~~ @doc_fields || $_->{id_field} ~~ @doc_fields
                 }
                 _array $cat_meta->{ $related->{name_category} }
@@ -2184,7 +2348,7 @@ sub get_files : Local {
                 if ( !( $read_action ~~ @user_read_actions_for_topic) ) {
                     ###### TODO: get all file types not just ucm
                     my ($field_meta) = grep {$_->{id_field} eq $field->{id_field}} _array($cat_meta->{ $related->{name_category} });
-                    if ( $field_meta->{ucmserver} ) {                    
+                    if ( $field_meta->{ucmserver} ) {
                         my $ucm = ci->new( $field_meta->{ucmserver} );
                         my $related_path = $topic_path.'/'.$related->{name_category}.'_'.$related->{mid};
                         _mkpath($related_path) if (!-d $related_path );
@@ -2221,17 +2385,17 @@ sub topic_fieldlet_nodes : Local {
      my $query = $p->{query};
 
      my @nodes = model->Topic->get_fieldlet_nodes( $id_category );
-     @nodes = map { 
+     @nodes = map {
         my $id = $$_{id_field} || $$_{id};
         $$_{fieldlet_name} = _array($id_category)==1 ? "$$_{name_field} [$id]" : "$$_{category_name}: $$_{name_field} [$id]";
         $$_{id_uniq} = Util->_md5();
         $_;
      } @nodes;
 
-     @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes; 
-     @nodes = Util->query_grep( query=>$query, fields=>['id_field','name_field','category_name'], rows=>\@nodes ) if length $query; 
+     @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes;
+     @nodes = Util->query_grep( query=>$query, fields=>['id_field','name_field','category_name'], rows=>\@nodes ) if length $query;
      $c->stash->{json} = { data=>\@nodes, totalCount=>scalar(@nodes) };
-     $c->forward('View::JSON');    
+     $c->forward('View::JSON');
 }
 
 =pod
@@ -2264,7 +2428,7 @@ sub topic_drop : Local {
     my ($from_mid,$to_mid);
     my $kmatches = 0;
     my @targets;
-    
+
     if ( $mid1 && $mid2 ) {
         try {
             PAIR: for my $pair ( [$mid1,$mid2],[$mid2,$mid1] ) {
@@ -2298,7 +2462,7 @@ sub topic_drop : Local {
                     push @mids, $from_mid;
 
                     # save operation for later
-                    push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
+                    push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{
                         Baseliner::Model::Topic->new->update(
                             {
                                 action    => 'update',
@@ -2323,10 +2487,10 @@ sub topic_drop : Local {
                 $c->stash->{json} //= { success => \0, msg =>$msg };
             }
             elsif( @targets > 1 ) {
-                # more than one possible field? 
+                # more than one possible field?
                 if( $p->{selected_id_field} ) {
                     # user told me which one
-                    map { $$_{oper}->() } grep { $$_{id_field} eq $p->{selected_id_field} && $$_{mid} eq $p->{selected_mid} } @targets; 
+                    map { $$_{oper}->() } grep { $$_{id_field} eq $p->{selected_id_field} && $$_{mid} eq $p->{selected_mid} } @targets;
                 } else {
                     # ask user
                     $c->stash->{json} = { success =>\1, targets=>[ map { my $r=$$_{fm}; $$r{mid}=$$_{mid}; $r } @targets ] };
@@ -2358,6 +2522,9 @@ sub list_status_changes : Local {
     $c->forward('View::JSON');
 }
 
+sub _build_data_view {
+    return Baseliner::DataView::Topic->new;
+}
 
 sub timeline_list_status_changes : Local {
     my ( $self, $c ) = @_;
