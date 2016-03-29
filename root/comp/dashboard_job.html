@@ -173,6 +173,8 @@
                 </thead>
                 <tbody>
 <%perl>
+    use experimental 'smartmatch';
+
     my @steps = ( 'CHECK', 'INIT', 'PRE', 'RUN', 'POST', 'END' );
     my $colors = { Success => '#00BB00', Warning => '#E0B500', Error => '#BB0000'};
     for my $step ( @steps ) {
