@@ -10,7 +10,7 @@ sub new {
 sub config_load {
     my ($self, $args) = @_;
     my %ret ;
-    
+
     my $env = $$args{env} or exists $$args{v} and warn "warn: env is not defined\n";
     my @files_base = ( 'config/clarive.yml', "$$args{base}/config/clarive.yml", 'config/global.yml', "$$args{base}/config/global.yml" );
     my @files;
@@ -24,17 +24,17 @@ sub config_load {
             push( @files, "config/$env.yml", "$$args{base}/config/$env.yml") if length $env;
         }
     }
-    
+
     push @files, $$args{config} if exists $$args{config};  # config is a free config file that goes last and precedes the environment
-    my @loaded_config_files; 
-    
+    my @loaded_config_files;
+
     # in case we put env or config, make sure at least one was found
     my $ffound=0;
     if( @files && !grep { -e } @files ) {
-        die "ERROR: Could not find files for environment/config parameters.\nAttempted to load one of these without luck:\n    " 
+        die "ERROR: Could not find files for environment/config parameters.\nAttempted to load one of these without luck:\n    "
             . join ("\n    ", @files) . "\n";
     }
-    
+
     my $found = 0;
     # clarive.yml has product defaults, global.yml is a User Defined base config
     for my $file ( @files_base, @files ) {   # most important last
@@ -64,10 +64,10 @@ sub merge_2level {
     my %ret ;
     for my $k1 ( keys %$h1 ) {
         if( ref $h1->{$k1} eq 'HASH' && ref $h2->{$k1} eq 'HASH' ) {
-            my $v2 = delete $h2->{$k1}; 
+            my $v2 = delete $h2->{$k1};
             $ret{ $k1 } = +{ %{ $h1->{$k1} }, %$v2 };
         } else {
-           $ret{ $k1 } = $h1->{$k1}; 
+           $ret{ $k1 } = $h1->{$k1};
         }
     }
     for my $k2 ( keys %$h2 ) {

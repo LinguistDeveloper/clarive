@@ -27,17 +27,17 @@ has version => qw(is ro isa Str lazy 1), default => sub{
         chomp $ver;
         close $ff;
         return $ver;
-    } 
+    }
     # determine version with a GIT DESCRIBE
     my $FULL_VERSION = do {
-        my $v = eval { 
+        my $v = eval {
             my $branch = `git rev-parse --abbrev-ref HEAD`;
             chomp $branch;
             my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
             my $version = $x[0];
             chomp $version;
             if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
-                ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ] 
+                ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ]
             } else {
                 [ "r$branch v$version", "${branch}_${version}", ''];
             }
@@ -56,8 +56,8 @@ around 'BUILDARGS' => sub {
     my $orig = shift;
     my $self = shift;
     my %args = ref $_[0] ? %{ $_[0] } : @_;
-    
-    # save orig 
+
+    # save orig
     my $arg_orig = $self->clone(\%args);
 
     # home and env need to be setup first
@@ -65,23 +65,23 @@ around 'BUILDARGS' => sub {
 
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
     $args{base} //= $ENV{CLARIVE_BASE} // ( $ENV{CLARIVE_HOME} ? "$ENV{CLARIVE_HOME}/.." : '..' );
-    
+
     require Cwd;
-    $args{home} = Cwd::realpath( $args{home} );  
-    $args{base} = Cwd::realpath( $args{base} );  
-    
+    $args{home} = Cwd::realpath( $args{home} );
+    $args{base} = Cwd::realpath( $args{base} );
+
     chdir $args{home};
-    
+
     require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( \%args );
-    
-    $config //= {} unless ref $config eq 'HASH'; 
-    
-    require Clarive::Util::TLC; 
+
+    $config //= {} unless ref $config eq 'HASH';
+
+    require Clarive::Util::TLC;
     if( my $site = $config->{join '', qw(l i c e n s e) } ) {
         my $lic = Clarive::Util::TLC::check( $site );
     }
-    
+
     $args{argv} = \@ARGV;
     $args{lang} //= $ENV{CLARIVE_LANG};
     $args{args} = $arg_orig;
@@ -90,7 +90,7 @@ around 'BUILDARGS' => sub {
     #Force legacy ENVs to $args{env}
     $ENV{BASELINER_ENV} = $args{env};
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
-    
+
     # make sure forked processes (dispatcher) will get ENV somehow
     $ENV{CLARIVE_ENV} //= $args{env};
     $ENV{CLARIVE_TRACE} //= 0;
@@ -104,10 +104,10 @@ around 'BUILDARGS' => sub {
     my %opts = ( %$parsed_config, %$parsed_args );
     $opts{config} = \%opts;    # this becomes Clarive->config later
     $opts{opts}   = $self->clone( \%opts );
-    
+
     warn "app args: " . $self->yaml( \%opts ) if $args{v};
-    
-    $self->$orig( \%opts ); 
+
+    $self->$orig( \%opts );
 };
 
 sub BUILD {
@@ -116,21 +116,21 @@ sub BUILD {
     # LANG to UTF-8
     $ENV{LANG} = $self->lang;
 
-    # verbose ? 
+    # verbose ?
     if( defined $self->opts->{v} ) {
         $self->verbose(1);
     }
-    # debug ? 
+    # debug ?
     if( defined $self->opts->{d} || $ENV{CLARIVE_DEBUG} ) {
         $self->debug(1);
     }
-    # carp_always ? 
+    # carp_always ?
     if( my $carpa = $self->carp_always ) {
         require Carp::Always;
         $ENV{CARP_TIDY_OFF} = 1 if $carpa > 1; # turn off Carp::Tidy filtering
     }
 
-    $Clarive::app = $self;  
+    $Clarive::app = $self;
 }
 
 sub yaml {
@@ -146,7 +146,7 @@ sub yaml_load {
 }
 
 sub json {
-    my ($self, $data) = @_; 
+    my ($self, $data) = @_;
     require JSON::XS;
     my $json = JSON::XS->new;
     $json->convert_blessed( 1 );
@@ -154,22 +154,22 @@ sub json {
 }
 
 around 'dump' => sub {
-    my ($orig, $self, $data) = @_; 
+    my ($orig, $self, $data) = @_;
     $data ? warn $self->yaml( $data ) : $self->$orig();
 };
 
 sub do_cmd {
     my ($self, %p)=@_;
     my ($cmd,$altcmd,$altrun,$cmd_pkg) = @p{ qw/cmd altcmd altrun cmd_pkg/ };
-    $cmd or die "ERROR: missing or invalid command"; 
-    
+    $cmd or die "ERROR: missing or invalid command";
+
     # merge config, args and specific cmd config: cmd config needs to come in between
     my %args   = %{ $self->args };
     my %config = %{ $self->opts };  # use opts since it's resolved fully
-    my %opts = ( %config, %{ ref $config{$cmd} eq 'HASH' ? $config{$cmd} : {} }, %args ); 
-    
+    my %opts = ( %config, %{ ref $config{$cmd} eq 'HASH' ? $config{$cmd} : {} }, %args );
+
     if( $cmd =~ /\./ ) {
-        $cmd_pkg = 'bali';   
+        $cmd_pkg = 'bali';
         $opts{service_name} = $cmd;
     }
     elsif( my @cmds = split '-', $cmd  ) {
@@ -213,7 +213,7 @@ sub do_cmd {
     if( ! $cmd_package->can( $runsub ) ) {
         die "ERROR: command $cmd not available (${cmd_package}::${runsub})\n";
     }
-    
+
     # run command
     if( $cmd_package->can('new') ) {
         # moose class command
@@ -241,7 +241,7 @@ sub merge_pushing {
     my ($self, $h1, $h2 ) = @_;
     my %merged;
     while( my($k2,$v2) = each %$h2 ) {
-        $merged{ $k2 } = $v2;  
+        $merged{ $k2 } = $v2;
     }
     while( my($k1,$v1) = each %$h1 ) {
         if( exists $merged{$k1} ) {
@@ -256,11 +256,11 @@ sub merge_pushing {
                 $merged{$k1} = $v2;
             }
             else {
-                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );  
+                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );
             }
         }
         else {
-            $merged{ $k1 } = $v1;  
+            $merged{ $k1 } = $v1;
         }
     }
     %merged;
@@ -278,7 +278,7 @@ sub hash_flatten {
         while( my ($k,$v) = each %$stash ) {
             %flat = $self->merge_pushing( \%flat, scalar $self->hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
         }
-    } 
+    }
     elsif( $refstash eq 'ARRAY' ) {
         my $cnt=0;
         for my $v ( @$stash ) {
@@ -296,7 +296,7 @@ sub hash_flatten {
         for my $k ( keys %flat ) {
             my $v = $flat{$k};
             if( ref $v eq 'ARRAY' ) {
-                $flat{$k}=join ',', @$v; 
+                $flat{$k}=join ',', @$v;
             }
         }
     }
@@ -313,7 +313,7 @@ sub parse_vars_raw {
     $parse_vars_raw_scope or local $parse_vars_raw_scope={};
     return () if $ref && exists $parse_vars_raw_scope->{"$data"};
     $parse_vars_raw_scope->{"$data"}=() if $ref;
-    
+
     if( $ref eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
@@ -346,12 +346,12 @@ sub parse_vars_raw {
             $str =~ s/\{\{$k\}\}/$v/g;
         }
         # cleanup or throw unresolved vars
-        if( $throw ) { 
+        if( $throw ) {
             if( my @unresolved = $str =~ m/\{\{(.+?)\}\}/gs ) {
                 die( sprintf "Unresolved vars: '%s' in %s", join( "', '", @unresolved ), $str );
             }
         } elsif( $cleanup ) {
-            $str =~ s/\{\{.+?\}\}//g; 
+            $str =~ s/\{\{.+?\}\}//g;
         }
         return $str;
     }
@@ -362,7 +362,7 @@ sub load_class {
     ( my $pkg = "$class.pm" ) =~ s{::}{\/}g;
     if( !exists $INC{$pkg} ) { # check if it's loaded
         #warn "LOAD=$pkg";
-        eval "use $class"; 
+        eval "use $class";
         die $@ if $@;
     }
     return 1;
