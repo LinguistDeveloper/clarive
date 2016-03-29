@@ -224,7 +224,7 @@ sub _build_dsl {
 
     my $rules_model = Baseliner::Model::Rules->new;
 
-    my $rule = mdb->rule->find_one( { id => $self->id_rule }, { id => 1, rule_tree => 1 } );
+    my $rule = mdb->rule->find_one( { id => $self->id_rule }, { id => 1, rule_tree => 1, rule_type => 1 } );
     _fail 'Rule not found' unless $rule;
 
     if ( my $version = $self->rule_version ) {

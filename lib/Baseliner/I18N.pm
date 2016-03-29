@@ -95,7 +95,7 @@ sub localize {
 
     my $handle = $class->_get_handle();
 
-    return $handle->maketext(@_);
+    return $handle->maketext(map { defined ? $_ : '' } @_);
 }
 
 sub parse_po {
