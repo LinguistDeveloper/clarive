@@ -68,10 +68,14 @@ sub topic_categories_to_rules {
     Util->_fail('System already has form rules. Remove them before migrating.')
             if mdb->rule->find({rule_type=>mdb->in('form','fieldlets') })->count;
     my @topic_category = mdb->category->find->all;
+    my $missing_fieldlets = 0;
+    my $filename = "FIELDLETS_TO_REGISTER_FEATURE";
+    my @pending_register_fieldlets;
     foreach my $topic_category (@topic_category){
         my @fieldlets = _array $topic_category->{fieldlets};
         map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
-        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order} } @fieldlets;
+        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order}  ||
+                            0+$a->{params}{field_order_html} <=> 0+$b->{params}{field_order_html} } @fieldlets;
         #map { _log "===>". $_->{params}{field_order} } @fieldlets;
         my @fields;
         my $registers = map_registors();
@@ -196,6 +200,8 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.html_editor';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
                 $attributes->{key} = 'fieldlet.ci_grid';
+            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/combo.js'){
+                $attributes->{key} = 'fieldlet.combo';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics_selector.js'){
               $attributes->{key} = 'fieldlet.system.list_topics';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
@@ -246,9 +252,9 @@ sub topic_categories_to_rules {
                         map{ push @ret, $_->{name} if $_->{role} =~ /Baseliner::Role::.*::$name/} _array $b;
                     }
                     $data->{var_ci_role} = \@ret;
-                }          
+                }
             }
-            
+
             $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
             $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
@@ -257,24 +263,38 @@ sub topic_categories_to_rules {
              (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/lock_small.png')) {
                 $attributes->{icon} = '/static/images/icons/field.png';
             }
-            
+
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
                 _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
                 _log $data;
-                next;
+
+                #aqui es donde metemos ahora una nueva entrada al fichero
+                my $name_fieldlet = "fieldlet_customized_" . $missing_fieldlets;
+                my $html_fieldlet = $fieldlet->{params}->{html} // '';
+                my $js_fieldlet = $fieldlet->{params}->{js} // '';
+                $missing_fieldlets++;
+
+                my $fieldlet_not_registed;
+                $fieldlet_not_registed->{name} = $name_fieldlet;
+                $fieldlet_not_registed->{html} = $html_fieldlet;
+                $fieldlet_not_registed->{js} = $js_fieldlet;
+                $fieldlet_not_registed->{category} = $topic_category->{name};
+                push @pending_register_fieldlets, $fieldlet_not_registed;
+
+                $attributes->{key} = "fieldlet.". $name_fieldlet;
+                $attributes->{active} = '0';
             }
-            
             $attributes->{data} = $data;
-            
             $attributes->{leaf} = \1;
             $attributes->{name} = $fieldlet->{params}->{name_field};
             $attributes->{palette} = \0;
             $attributes->{text} = $fieldlet->{params}->{name_field};
             $attributes->{ts} = mdb->ts;
             $attributes->{who} = 'root';
-              $f->{attributes} = $attributes;
+            $f->{attributes} = $attributes;
             $f->{children} = [];
-            push @fields, $f;    
+            push @fields, $f;
+
         }
         my $rule;
         $rule->{id} = mdb->seq('rule');
@@ -299,6 +319,26 @@ sub topic_categories_to_rules {
         mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
         _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
         generate_dsl($rule);
+    }
+    if(@pending_register_fieldlets){
+        my $fh;
+        open($fh, '>', $filename) or die "Could not create file '$filename' $!";
+        say $fh "# Add under your feature lib/BaselinerX/Fieldlets.pm";
+        say $fh "# to register the fieldlet and restart Clarive";
+        say $fh "";
+        say $fh "# Change active to 1 in properties of each fieldlet of the followings if you want to use them";
+        say $fh "";
+        foreach my $reg_fieldlet (@pending_register_fieldlets){
+            say $fh "";
+            say $fh "# Fieldlet: $reg_fieldlet->{name} in category: $reg_fieldlet->{category}";
+            say $fh "register 'fieldlet." . $reg_fieldlet->{name} . "' => {";
+            say $fh "    name        => _loc('" . $reg_fieldlet->{name} . "'),";
+            say $fh "    html        => '" . $reg_fieldlet->{html} . "',";
+            say $fh "    js          => '" . $reg_fieldlet->{js} . "',";
+            say $fh "    show_in_palette => 0 ";
+            say $fh "};";
+        }
+        close $fh;
     }
 }
 
@@ -427,8 +467,8 @@ sub activity_to_status_changes {
         _log "Creation: Updated $cont/$total";
       }
       $cont++;
-    }  
-    _log "Creation: Updated $cont/$total";  
+    }
+    _log "Creation: Updated $cont/$total";
 
     $rs = mdb->activity->find({ event_key => 'event.topic.change_status'})->sort({ ts => 1 });
     $total = $rs->count;
@@ -463,7 +503,7 @@ sub activity_to_status_changes {
       if ( ($cont % 100) == 0 ) {
         _log "Status changes: Updated $cont/$total";
       }
-      $cont++;  
+      $cont++;
     }
     _log "Status changes: Updated $cont/$total";
 }
@@ -557,7 +597,7 @@ sub run {
         bali_sem_queue      => 'sem_queue',
         bali_sysoutdds      => 'sysoutdds',
         bali_user           => 'user',
-        
+
         #  bali_topic_image               => 'image',              # convert to asset
         # bali_file_version    => 'file_version',                  # asset
         # bali_job_stash       => 'job_stash',                     # asset
