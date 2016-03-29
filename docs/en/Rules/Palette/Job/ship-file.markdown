@@ -17,6 +17,8 @@ icon: file.gif
 
 &nbsp; &nbsp;&nbsp; &nbsp;• Nature items: Files involved in current nature. <br />
 
+&nbsp; &nbsp;• **Exist Mode Local**: Choose kill the process if the file does not exist. <br />
+
 &nbsp; &nbsp;• **Rel mode**: Relative path to place files in local server. Options are: <br />
     
 &nbsp; &nbsp;&nbsp; &nbsp;• File only: To take only file names. <br />
