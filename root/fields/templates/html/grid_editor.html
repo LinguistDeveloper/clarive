@@ -8,6 +8,8 @@
     </tr>
 % }     
 <%perl>
+    use experimental 'smartmatch';
+
     my $json = $data->{$meta->{bd_field}} ;
     my @res;
     my $ix = 0;
