@@ -717,6 +717,8 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
 
 .img-main-logo-file{
     border:0px;
+    max-width:220px;
+    max-height:40px;
 }
 
 .img-main-logo-powered {
