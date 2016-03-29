@@ -9,16 +9,16 @@ or update the Clarive Software to version 6.4 in a simple way using the steps de
 # Prerrequisites
 
 The prerrequisites for the Clarive installation are
-specified in the [Technical Specifications](install/specs).
+specified in the [Technical Specifications](setup/specs).
 
 # Software Download
 
 The Clarive installable files are available here:
 
-    http://www.clarive.com/install
+<http://www.clarive.com/install>
 
 In case you don’t find a good version for your operating system,
-please contact our support at `support``@``clarive.com`
+please contact our support at `support@clarive.com`.
 
 Follow the steps specified in the install website.
 In this guide this information is extended for the users that need it.
@@ -28,9 +28,9 @@ In this guide this information is extended for the users that need it.
 Clarive runs on top of the MongoDB database.
 It could be downloaded from the website:
 
-    https://www.mongodb.org/downloads
+<https://www.mongodb.org/downloads>
 
-Choose the stable version 3.2.1.
+Choose the stable version 3.0.
 
 # New Installation
 
@@ -162,13 +162,17 @@ setParameter=failIndexKeyTooLong=false
 
 To start nginx as root:
 
-    nginx -c $CLARIVE_BASE/config/nginx.conf
+```bash
+cla exec nginx -c $CLARIVE_BASE/config/nginx.conf
+```
 
 ### Start MongoDB
 
 To start MongoDB:
 
+```bash
 mongod -f $CLARIVE_BASE/config/mongod.conf
+```
 
 ### Start Clarive
 

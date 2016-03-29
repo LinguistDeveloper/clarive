@@ -10,4 +10,4 @@ Service that allows to publish files in a repository. Form to configure has the 
 
  **Origen** Set the source file.
 
-One of the most interesting functions of this service is to publish reports in artifact repository. This process is described in [How to](howto/public-reports)
+One of the most interesting functions of this service is to publish reports in artifact repository. This process is described in [How to](how-to/publish-reports)

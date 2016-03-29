@@ -12,7 +12,7 @@ User included modules should be stored in the filesystem, under
 the `CLARIVE_BASE/plugins/[plugin-name]/modules` folder.
 
 To create the modules folder, we recommend
-creating a plugin first in your `CLARIVE_BASE` [location](install/directories)
+creating a plugin first in your `CLARIVE_BASE` [location](setup/directories)
 
 ```javascript
 // create the file plugins/myplugin/modules/myutil.js:

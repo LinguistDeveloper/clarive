@@ -14,7 +14,7 @@ file, and can be tested with the command:
 The command will look for the file `test-case.js`
 in the current installed plugins and test it.
 
-For more information, read the [section about plugin testing here.](devel/plugin)
+For more information, read the [section about plugin testing here.](devel/plugins)
 
 ### t.subtest(name, function(){ ... })
 

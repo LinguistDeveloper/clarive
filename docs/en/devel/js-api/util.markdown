@@ -2,11 +2,11 @@
 title: cla/util - general utilities namespace
 ---
 
-General utilities. 
+General utilities.
 
 ### util.dumpYAML(data)
 
-Dumps the `data` argument as [YAML](devel/yaml). 
+Dumps the `data` argument as [YAML](concepts/yaml).
 
 ```javascript
 var util = require("cla/util");
@@ -16,7 +16,7 @@ print( util.dumpYAML(data) );
 
 ### util.loadYAML()
 
-Loads `data` from a [YAML](devel/yaml) string. 
+Loads `data` from a [YAML](concepts/yaml) string.
 
 ```javascript
 var util = require("cla/util");
@@ -36,7 +36,7 @@ print( util.dumpJSON(data) );
 
 ### util.loadJSON()
 
-Loads `data` from a [JSON](https://en.wikipedia.org/wiki/JSON) string. 
+Loads `data` from a [JSON](https://en.wikipedia.org/wiki/JSON) string.
 
 ```javascript
 var util = require("cla/util");
@@ -46,7 +46,7 @@ print( util.loadJSON(json) );
 
 ### util.unaccent(str)
 
-Removes accents and other strange characters from a given string, 
+Removes accents and other strange characters from a given string,
 replacing them with their equivalent character without accent;
 
 ```javascript
@@ -56,7 +56,7 @@ print( util.unaccent("résumé") ); // returns "resume"
 
 ### util.benchmark(n,code)
 
-Executes the block of `code` a total of `n` times and prints the 
+Executes the block of `code` a total of `n` times and prints the
 timing results. This is useful to help debug performance issues
 test how performant a code is before using it in production.
 

@@ -1,5 +1,5 @@
 ---
-title: Public a report
+title: Publish a report
 index: 1
 icon: wrench.gif
 ---

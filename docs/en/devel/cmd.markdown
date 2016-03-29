@@ -97,8 +97,8 @@ You can also access the individual options as an
 object, which is actually much easier to manipulate
 than going though the `argv` array.
 
-    ```javascript
-    var myoption = process.args('myoption');
-    print( "User entered --myoption=" + myoption );
-    ```
+```javascript
+var myoption = process.args('myoption');
+print( "User entered --myoption=" + myoption );
+```
 
