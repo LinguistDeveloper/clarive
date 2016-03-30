@@ -17,10 +17,10 @@ subtest 'parse_vars: parses string' => sub {
 
     is $parser->parse_vars(), undef;
     is $parser->parse_vars(undef), undef;
-    is $parser->parse_vars(''), '';
+    is $parser->parse_vars(''),    '';
 
-    is $parser->parse_vars(undef, {}), undef;
-    is $parser->parse_vars('', {}), '';
+    is $parser->parse_vars( undef, {} ), undef;
+    is $parser->parse_vars( '',    {} ), '';
 
     is $parser->parse_vars('foo'), 'foo';
 
@@ -127,11 +127,17 @@ subtest 'parse_vars: resolves 2 empty vars in one string' => sub {
     is $parser->parse_vars( '${foo} ${foo}', {} ), ' ';
 };
 
-subtest 'parse_vars: throws when unexpected reference in var' => sub {
+subtest 'parse_vars: returns reference in var when single' => sub {
+    my $parser = _build_parser( cleanup => 1 );
+
+    is_deeply $parser->parse_vars( '${foo}', { foo => { foo => 'bar' } } ), { foo => 'bar' };
+};
+
+subtest 'parse_vars: throws when unexpected reference in var when used in string' => sub {
     my $parser = _build_parser( cleanup => 1 );
 
     capture {
-        like exception { $parser->parse_vars( '${foo}', { foo => { foo => 'bar' } } ), { foo => 'bar' } },
+        like exception { $parser->parse_vars( 'Hello, ${foo}!', { foo => { foo => 'bar' } } ) },
           qr/Unexpected reference found in \$\{foo\}/;
     };
 };
