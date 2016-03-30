@@ -937,3 +937,80 @@ textarea.x-form-textarea.x-form-field {
     height: 300px !important;
     width: 95% !important;
 }
+/*****************oversizing ******************************/
+
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top .x-panel.x-panel-noborder .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder {
+    padding-right: 5px;
+}
+.x-tab-panel-body.x-tab-panel-body-top {
+    width: auto !important;
+    border: 0;
+}
+.inbox_body .x-panel-body {
+    padding: 30px 30px 30px 30px;
+}
+.x-panel.role_form_column_body.x-form-label-left.x-column {
+    padding: 10px !important;
+}
+.role_form_column_body_items .x-form-element .x-form-text.x-form-field,
+.role_form_column_body_items .x-form-element .x-form-textarea.x-form-field,
+.role_form_column_body_items .x-form-element .x-form-field-wrap.x-form-field-trigger-wrap {
+    width: 93% !important;
+}
+
+.config_form_body_items .x-form-element .x-form-text.x-form-field {
+    width: 98% !important;
+}
+
+.x-form-element .x-form-textarea.x-form-field {
+    max-height: 206px;
+}
+
+.topic_admin_edit_window.x-form-label-left .x-panel-bwrap .x-panel-body {
+    margin-top: 20px;
+}
+
+.user_grid_edit_window {
+    border:1px solid #C1C1C1;
+    width: 99.5% !important;
+    padding-bottom:5px;
+}
+
+.role_grid_edit_window {
+    border:1px solid #C1C1C1;
+}
+
+.user_grid_edit_window_padding {
+    padding-bottom:5px;
+}
+
+ .x-tab-panel.role_grid_edit_window.x-border-panel {
+    width: 597px !important;
+
+}
+.x-panel.role_grid_edit_window.x-grid-panel.x-border-panel {
+    width: 660.5px !important;
+
+}
+/*
+.x-grid3-viewport{
+    border:1px solid #C1C1C1;
+    width: 382px;
+}*/
+
+ .daemon_grid_active_instances {
+    margin-left: 95px !important;
+    border: 1px solid #c1c1c1;
+}
+
+ .x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tl {
+    padding-left: 0px !important;
+}
+ .x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tr {
+    padding-right: 0px !important;
+}
+
+.x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable
+{
+margin: 0px 0 0;
+}

@@ -1,27 +1,49 @@
 (function(params){
    var new_role_form = new Ext.FormPanel({
-        url: '/role/update',
-        region: 'north',
-        frame: true,
-        labelWidth: 100, 
-        height: 110,
-        layout:'column',
-        defaults: { width: 250,  msgTarget: 'under' },
-        items: [
-            { columnWidth: .5,layout:'form', defaults:{ anchor:'100%' }, items:[
-                {  xtype: 'hidden', name: 'id', value: -1 }, 
-                {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
-                {  xtype: 'textarea', name: 'description', height: 60, fieldLabel: _('Description') }
-              ]
+    url: '/role/update',
+    region: 'north',
+    frame: true,
+    labelWidth: 100,
+    height: 109,
+    layout: 'column',
+    defaults: {
+        columnWidth: .5,
+        msgTarget: 'under',
+        layout: 'form',
+        cls: 'role_form_column_body',
+        itemCls: 'role_form_column_body_items'
+    },
+    items: [{
+        items: [{
+            xtype: 'hidden',
+            name: 'id',
+            value: -1
+        }, {
+            xtype: 'textfield',
+            name: 'name',
+            fieldLabel: _('Role Name'),
+            allowBlank: false
+        }, {
+            xtype: 'textarea',
+            name: 'description',
+            height: 60,
+            fieldLabel: _('Description')
+        }]
+    }, {
+        items: [{
+                xtype: 'textfield',
+                name: 'mailbox',
+                fieldLabel: _('Mailbox')
             },
-            { columnWidth: .5, layout:'form', defaults:{ anchor:'100%' }, bodyStyle:{ 'padding-left':'10px' }, items:[
-                {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') },
-                new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: true })
-              ]
-            }
-            // {  xtype: 'textfield', name: 'default_dashboard', fieldLabel: _('Default default_dashboard') }
+            new Baseliner.DashboardBox({
+                fieldLabel: _('Dashboards'),
+                name: 'dashboards',
+                anchor: '95%',
+                allowBlank: true
+            })
         ]
-    });
+    }]
+});
 
     var render_action = function(value,metadata,rec,rowIndex,colIndex,store) {
         var v = String.format('{0} (<code>{1}</code>)', _(value), rec.data.action );
@@ -221,6 +243,7 @@
         split: true,
         width: '45%',
         colapsible: true,
+        cls: 'role_grid_edit_window',
         activeTab: 0,
         items: [ action_tree, role_users, role_projects ]
     });
@@ -261,6 +284,7 @@
         height: 450,
         width: 650,
         cm: cm,
+        cls: 'role_grid_edit_window',
         sm: new Baseliner.RowSelectionModel({ singleSelect: true }),
         tbar: [
             search_grid, '->',

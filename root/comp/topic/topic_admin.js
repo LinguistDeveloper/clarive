@@ -239,9 +239,9 @@
     var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){
         return '<img src="/static/images/icons/right-arrow.png" />';
     };
-    
+
     var grid_status = new Ext.grid.GridPanel({
-        title : _('Statuses'),
+        title: _('Statuses'),
         sm: check_status_sm,
         height: 400,
         header: true,
@@ -250,27 +250,56 @@
         autoScroll: true,
         enableHdMenu: false,
         store: store_status,
-        viewConfig: {forceFit: true, scrollOffset: 2},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        viewConfig: {
+            forceFit: true,
+            scrollOffset: 2
+        },
+        selModel: new Ext.grid.RowSelectionModel({
+            singleSelect: true
+        }),
         loadMask: true,
-        columns: [
-            { hidden: true, dataIndex:'id' },
+        columns: [{
+                hidden: true,
+                dataIndex: 'id'
+            },
             // check_status_sm,
-            { header: _('Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
-            { header: _('Description'), dataIndex: 'description', sortable: true },
-            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
-            { header: _('Baseline'), dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
-            { header: _('Type'), dataIndex: 'type', width:50, sortable: true, renderer: render_status_type }
+            {
+                header: _('Status'),
+                dataIndex: 'name',
+                width: 100,
+                sortable: true,
+                renderer: render_status
+            }, {
+                header: _('Description'),
+                dataIndex: 'description',
+                sortable: true
+            }, {
+                header: _('Order'),
+                width: 40,
+                dataIndex: 'seq',
+                sortable: true
+            }, {
+                header: _('Baseline'),
+                dataIndex: 'bl',
+                sortable: true,
+                renderer: Baseliner.render_bl
+            }, {
+                header: _('Type'),
+                dataIndex: 'type',
+                width: 50,
+                sortable: true,
+                renderer: render_status_type
+            }
         ],
         autoSizeColumns: true,
-        deferredRender:true,    
-        tbar: [ 
-                // btn_add_status,
-                // btn_edit_status,
-                // btn_delete_status,
-                '->'
+        deferredRender: true,
+        tbar: [
+            // btn_add_status,
+            // btn_edit_status,
+            // btn_delete_status,
+            '->'
         ]
-    }); 
+    });
 
     grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 1){
@@ -342,9 +371,12 @@
             emptyText: _('select providers...'),
             autoLoad: true
         });
-
-        var combo_grid = Cla.ci_box({ name:'default_grid', isa:'report', fieldLabel:_('Default Grid'), value: rec ? rec.data.default_grid : '' });
-
+        var combo_grid = Cla.ci_box({
+            name: 'default_grid',
+            isa: 'report',
+            fieldLabel: _('Default Grid'),
+            value: rec ? rec.data.default_grid : ''
+        });
         // default form for Topic
         var store_form = new Baseliner.JsonStore({
             url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
@@ -421,36 +453,57 @@
             height: 30,
             menu: { items: [color_pick] }
         });
-        
-        // Main Edit for Categories
         var column1 = {
-            xtype:'panel',
-            columnWidth:0.50,
-            layout:'form',
-            defaults:{anchor:'96%'},
-            items: [
-                { xtype: 'hidden', name: 'id', value: -1 },
+            xtype: 'panel',
+            columnWidth: 0.50,
+            layout: 'form',
+            defaults: {
+                anchor: '98%'
+            },
+            items: [{
+                    xtype: 'hidden',
+                    name: 'id',
+                    value: -1
+                },
                 category_color,
                 category_name_field,
                 acronym,
-                ta,
-                {
+                ta, {
                     xtype: 'radiogroup',
                     fieldLabel: _('Type'),
-                    defaults: {xtype: "radio",name: "type"},
-                    items: [
-                        {boxLabel: _('Normal'), inputValue: 'N', checked: true},
-                        {boxLabel: _('Changeset'), inputValue: 'C'},
-                        {boxLabel: _('Release'), inputValue: 'R'}
-                    ]
+                    defaults: {
+                        xtype: "radio",
+                        name: "type"
+                    },
+                    items: [{
+                        boxLabel: _('Normal'),
+                        inputValue: 'N',
+                        checked: true
+                    }, {
+                        boxLabel: _('Changeset'),
+                        inputValue: 'C'
+                    }, {
+                        boxLabel: _('Release'),
+                        inputValue: 'R'
+                    }]
                 },
-                color_button,
-                { xtype: 'panel', style: { 'margin-top': '20px' }, defaults:{ anchor:'100%' }, layout: 'form', 
-                    items: [ combo_grid, combo_form, dashboard, combo_providers ] },
-                { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
-                    items:[
-                        { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
-                    ]
+                color_button, {
+                    xtype: 'panel',
+                    cls: 'topic_admin_edit_window',
+                    defaults: {
+                        anchor: '98%'
+                    },
+                    layout: 'form',
+                    items: [combo_grid, combo_form, dashboard, combo_providers]
+                }, {
+                    xtype: 'checkboxgroup',
+                    name: 'readonly',
+                    fieldLabel: _('Options'),
+                    items: [{
+                        xtype: 'checkbox',
+                        name: 'readonly',
+                        boxLabel: _('Readonly')
+                    }]
                 }
             ]
         };
