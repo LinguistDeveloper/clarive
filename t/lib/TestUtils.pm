@@ -134,17 +134,18 @@ sub mock_catalyst_c {
 }
 
 sub mock_time {
-    my ($time, $cb) = @_;
+    my ( $time, $cb ) = @_;
 
-    if ($time !~ m/^\d+$/) {
+    if ( $time !~ m/^\d+$/ ) {
         $time =~ s{ }{T};
         $time .= 'T00:00:00' unless $time =~ m/T\d\d:\d\d:\d\d$/;
     }
 
-    my @t = localtime(time);
+    my @t                     = localtime(time);
     my $gmt_offset_in_seconds = timegm(@t) - timelocal(@t);
+    $gmt_offset_in_seconds -= 3600 * $t[8];
 
-    my $epoch = $time =~ m/^\d+$/ ? $time : Time::Piece->strptime($time, '%Y-%m-%dT%TZ')->epoch;
+    my $epoch = $time =~ m/^\d+$/ ? $time : Time::Piece->strptime( $time, '%Y-%m-%dT%T' )->epoch;
     $epoch -= $gmt_offset_in_seconds;
 
     set_absolute_time($epoch);

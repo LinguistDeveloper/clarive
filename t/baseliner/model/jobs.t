@@ -9,6 +9,7 @@ use TestSetup;
 use JSON ();
 use Capture::Tiny qw(capture);
 use BaselinerX::CI::job;
+use BaselinerX::Type::Model::ConfigStore;
 
 use_ok 'Baseliner::Model::Jobs';
 
@@ -79,6 +80,8 @@ sub _setup {
 
     mdb->rule->drop;
     mdb->job_log->drop;
+
+    BaselinerX::Type::Model::ConfigStore->set( key => 'config.job.mask', value => '%s.%s-%08d' );
 }
 
 sub _create_job {

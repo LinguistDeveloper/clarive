@@ -132,7 +132,7 @@ subtest 'parse_vars: throws when unexpected reference in var' => sub {
 
     capture {
         like exception { $parser->parse_vars( '${foo}', { foo => { foo => 'bar' } } ), { foo => 'bar' } },
-          qr/Unexpected reference found in \${foo}/;
+          qr/Unexpected reference found in \$\{foo\}/;
     };
 };
 

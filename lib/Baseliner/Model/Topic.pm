@@ -758,7 +758,7 @@ sub update {
                     }
                     $return_options->{reload_tab} = 1 if $workflow;
 
-                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title // '');
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
@@ -771,14 +771,16 @@ sub update {
                 return $return;
             } 
             => sub { # catch
+                my $error = shift;
+
                 if( length $topic_mid ) {  # check, sometimes it's just a new topic failing
                     mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
                     mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
                     mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
                     mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
-                    _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
+                    _throw _loc( 'Error adding Topic %1: %2', $topic_mid, $error );
                 } else {
-                    _throw _loc( 'Error adding Topic: %1', shift() );
+                    _throw _loc( 'Error adding Topic: %1', $error );
                 }
             }; # event_new
         } ## end when ( 'add' )
