@@ -48,10 +48,18 @@ sub commit {
 
     my $cmd = '';
     if ($params{action} eq 'add') {
-        $cmd = qq{echo '$params{content}' >> $params{file}; git add .};
+        open my $fh, '>>', "$dir/$params{file}" or die $!;
+        print $fh $params{content};
+        print $fh "\n";
+        close $fh;
+        $cmd = qq{git add .};
     }
     elsif ($params{action} eq 'replace') {
-        $cmd = qq{echo '$params{content}' > $params{file}; git add .};
+        open my $fh, '>', "$dir/$params{file}" or die $!;
+        print $fh $params{content};
+        print $fh "\n";
+        close $fh;
+        $cmd = qq{git add .};
     }
     else {
         $cmd = $params{action};

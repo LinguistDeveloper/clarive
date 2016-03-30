@@ -122,6 +122,42 @@ subtest 'git: creates correct event on first push' => sub {
       };
 };
 
+subtest 'git: truncates diff if it is too big' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $sha = TestGit->commit($repo, content => 'x' x (1024 * 1024));
+
+    my $controller = _build_controller();
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/heads/master\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    my $event = $events[0];
+    my $event_data  = _load $event->{event_data};
+
+    is length $event_data->{diff}, 512000;
+};
+
 subtest 'git: creates correct event on push' => sub {
     _setup();
 
