@@ -3404,6 +3404,12 @@ msgstr "Estado"
 msgid "Add Comment"
 msgstr "Comentar"
 
+msgid "Edit Comment"
+msgstr "Editar Comentario"
+
+msgid "Add Comment: %1"
+msgstr "Comentar: %1"
+
 msgid "Activity"
 msgstr "Actividad"
 

@@ -1,5 +1,5 @@
 Baseliner.Topic = {};
-    
+
 Baseliner.Topic.rt = Ext.data.Record.create([
     {name: 'id_project'},
     {name: 'project'}
@@ -30,10 +30,10 @@ Cla.style_topic_node = function(n){
     if(n.attributes.topic_name ) {
         var tn = n.attributes.topic_name;
         n.setIconCls('no-icon');  // no icon on this node
-        if( !tn.category_color ) 
+        if( !tn.category_color )
             tn.category_color = '#999';
         var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-        n.setText( String.format( '{0}<span title="{4}"  style="font-weight:bold;">{1} #{2}: {3}</span><span title="{4}">{4}</span>', 
+        n.setText( String.format( '{0}<span title="{4}"  style="font-weight:bold;">{1} #{2}: {3}</span><span title="{4}">{4}</span>',
                     span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
         n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
     } else if(n.attributes.category_name ) {
@@ -71,11 +71,11 @@ Baseliner.topic_title = function( mid, category, color, literal_only, id, opts) 
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
     if(!id) id = Ext.id();
     if (literal_only){
-        return uppers + ' #' + mid;   
+        return uppers + ' #' + mid;
     }else if( opts && opts.new_tab ) {
         return String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{0}">{1}: {2}</span></span>', color, _('New'), _(category), pad_for_tab, id )
     }else{
-        return color 
+        return color
             ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab, id )
             : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab, id )
             ;
@@ -134,13 +134,13 @@ Baseliner.user_seen_row = function(grid,mid){
     grid.getStore().commitChanges();
     grid.getView().refresh();
 };
-    
+
 /*
     parameters:
          {
             mid:
             category_name:
-            category_color: 
+            category_color:
             category_icon:
             is_changeset: 1|0
             is_release: 1|0
@@ -148,8 +148,8 @@ Baseliner.user_seen_row = function(grid,mid){
 */
 Baseliner.topic_name = function(args) {
         var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
-        if( ! mid ) 
-            mid = args.topic_mid; 
+        if( ! mid )
+            mid = args.topic_mid;
         var midh = mid ? '#' + mid : '';
 
         var uppers = '';
@@ -180,7 +180,7 @@ Baseliner.topic_name = function(args) {
         var top,bot,img;
         top=2, bot=4, img=2;
 
-        if( ! color ) 
+        if( ! color )
             color = '#999';
 
         // set default icons
@@ -203,13 +203,13 @@ Baseliner.topic_name = function(args) {
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
-        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored("{0}","{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';  
+        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored("{0}","{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';
         var cursor = args.link ? 'cursor:pointer' : '';
 
-        var ret = args.mini 
-            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0} topic-name-{6}" mid="{7}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span class="topic-name-{6}" mid="{7}" style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>', 
+        var ret = args.mini
+            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0} topic-name-{6}" mid="{7}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span class="topic-name-{6}" mid="{7}" style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>',
                 cls, [style,args.style].join(';'), cat_name, midh, on_click, cursor, args.parent_id, mid )
-            : String.format('<span id="boot" class="topic-name-{6}" mid="{7}" onclick=\'{4}\'><span class="{0} topic-name-{6}" mid="{7}" style="{1};{5}">{2} {3}</span></span>', 
+            : String.format('<span id="boot" class="topic-name-{6}" mid="{7}" onclick=\'{4}\'><span class="{0} topic-name-{6}" mid="{7}" style="{1};{5}">{2} {3}</span></span>',
                 cls, [style,args.style].join(';'), cat_name, midh, on_click, cursor, args.parent_id, mid );
         return ret;
 };
@@ -219,26 +219,26 @@ Baseliner.store.Topics = function(c) {
 
     if (c.display_field){
         fields.push(c.display_field);
-        delete c.display_field;  
+        delete c.display_field;
     }
 
     if (c.tpl_cfg){
         var column_tpl = c.tpl_cfg.split(';');
-        for (i=0;i<column_tpl.length;i++) {        
+        for (i=0;i<column_tpl.length;i++) {
             var col_name = column_tpl[i].split(':');
             fields.push(col_name[0]);
         }
     }
 
     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: {},
-        id: 'mid', 
+        id: 'mid',
         url: '/topic/related',
-        fields: fields 
+        fields: fields
     }, c));
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
@@ -274,7 +274,7 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
                 var width_column;
                 var name_column;
                 if (properties[0] == 'mid'){
-                    width_column = properties[1] ? properties[1] : '75'; 
+                    width_column = properties[1] ? properties[1] : '75';
                     header.push('<div class="titulo" style="width:' + width_column + 'px;">&nbsp;');
                     name_column = _(properties[0]).toUpperCase();
                     header.push( name_column );
@@ -306,7 +306,7 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
             str_header = header.join('');
             str_body = body.join('');
 
-            self.tpl = new Ext.XTemplate( 
+            self.tpl = new Ext.XTemplate(
                 '<tpl>',
                 '<div class="tabla">',
                 str_header,
@@ -314,14 +314,14 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
                 str_body,
                 '</tpl>',
                 '</div>',
-                '</tpl>');        
+                '</tpl>');
         }else{
             self.tpl = new Ext.XTemplate( '<tpl for=".">',
                 '<div class="x-combo-list-item">',
                 '<span class="bl-label" style="background: {color}">{short_name}</span>',
                 ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
                 '<span style="padding-left:4px"><b>{title}</b></span>',
-                '</div></tpl>' );            
+                '</div></tpl>' );
         }
 
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
@@ -330,11 +330,11 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
             ( self.display_field ? '&nbsp;{'+self.display_field+'}' : '' ),
             // '<span style="padding-left:4px">{title}</span>',
             '</div></tpl>' );
-        
+
         Baseliner.TopicBox.superclass.initComponent.call(this);
     },
-    // }, 
-    listeners:{ 
+    // },
+    listeners:{
         additem: function(obj,v){
             if(obj.getValue()){
                 obj.hidden_value = obj.getValue();
@@ -351,7 +351,7 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
     //     var self = this;
     //     var mids = [];
     //     self.store.each(function(row){
-    //         mids.push( row.data.mid ); 
+    //         mids.push( row.data.mid );
     //     });
     //     return mids;
     // }
@@ -363,7 +363,7 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
 Baseliner.model.Topics = function(c) {
     //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-        '<span id="boot" style="width:200px"><span class="label" ', 
+        '<span id="boot" style="width:200px"><span class="label" ',
         ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
         ' >{name}</span></span>',
         '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
@@ -375,7 +375,7 @@ Baseliner.model.Topics = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         //emptyText: _('Enter or select topics'),
         triggerAction: 'all',
         resizable: true,
@@ -418,16 +418,16 @@ Baseliner.Topic.StoreProject = Ext.extend(Ext.data.Store, {
         }, config);
         Baseliner.Topic.StoreProject.superclass.constructor.call(this, config);
     }
-}); 
+});
 
 Baseliner.Topic.StoreStatus = Ext.extend(Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topicadmin/list_status',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'description' },
@@ -442,17 +442,17 @@ Baseliner.Topic.StoreStatus = Ext.extend(Baseliner.JsonStore, {
         }, config);
         Baseliner.Topic.StoreStatus.superclass.constructor.call(this, config);
     }
-}); 
-    
+});
+
 Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
             baseParams:{cmb:'category'},
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list_category',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'acronym' },
@@ -477,11 +477,11 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
 Baseliner.Topic.StoreCategoryStatus = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list_category',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'type' },
@@ -496,12 +496,12 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Baseliner.JsonStore, {
 
 Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
-        var fields = [ 
+        var fields = [
             {  name: 'topic_mid' },
             {  name: 'topic_name' },
             {  name: 'title' },
             //{  name: 'description' },
-            {  name: 'created_on', type: 'date', dateFormat: 'c' },        
+            {  name: 'created_on', type: 'date', dateFormat: 'c' },
             {  name: 'created_by' },
             {  name: 'numcomment' },
             {  name: 'category_id' },
@@ -510,7 +510,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             {  name: 'is_changeset' },
             {  name: 'category_name' },
             {  name: 'calevent' },
-            {  name: 'projects' },          
+            {  name: 'projects' },
             {  name: 'labels' },
             {  name: 'status' },
             {  name: 'progress' },
@@ -536,7 +536,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             {  name: 'current_job' },
             {  name: 'user_seen' },
             {  name: 'sw_edit'},
-            {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
+            {  name: 'modified_on', type: 'date', dateFormat: 'c' },
             {  name: 'modified_by' }
         ];
 
@@ -549,9 +549,9 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
         }
 
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list',
             fields: fields
         },config);
@@ -563,11 +563,11 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
 Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list_label',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'color' }
@@ -580,17 +580,17 @@ Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
 Baseliner.Topic.StorePriority = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list_priority',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
                 {  name: 'deadline_min' },
-                {  name: 'expr_deadline' }          
+                {  name: 'expr_deadline' }
             ]
         },config);
         Baseliner.Topic.StorePriority.superclass.constructor.call(this, config);
@@ -634,11 +634,11 @@ Baseliner.Topic.data_user_event = function( username ) {
 Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             url: '/topic/list_users',
-            fields: [ 
+            fields: [
                 {  name: 'id' },
                 {  name: 'username' },
                 {  name: 'realname' }
@@ -649,8 +649,8 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
 });
 
 // if id_com is undefined, then its add, otherwise it's an edit
-Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
-    var win_comment;    
+Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_id) {
+    var win_comment;
     /* rgo: works good, but we leave the old HtmlEditor for now TODO put CLEditor instead, with less buttons maybe?
     var comment_field = new Baseliner.CLEditor({
          listeners: { 'aftereditor': function(){ comment_field.cleditor.focus() } }
@@ -681,15 +681,18 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
                 function(res) {
                     btn_submit.enable();
-                    if( ! res.failure ) { 
+                    if( ! res.failure ) {
                        Baseliner.message(_('Success'), res.msg );
                        win_comment.close();
-                       if( Ext.isFunction(cb)){
-                            cb( res.id_com );
-                       } else if(cb != null){
-                            var my_self = Ext.getCmp(cb);
-                            $( my_self.detail.body.dom ).load( '/topic/view', 
-                                { topic_mid: my_self.topic_mid, ii: my_self.ii, html: 1, 
+                       if( Ext.isFunction(cb_or_parent_id)){
+                           // it's a callback
+                            cb_or_parent_id( res.id_com );
+                       } else if(cb_or_parent_id != null){
+                           // it's a parent id
+                            var my_self = Ext.getCmp(cb_or_parent_id);
+                            if( !my_self ) return;
+                            $( my_self.detail.body.dom ).load( '/topic/view',
+                                { topic_mid: my_self.topic_mid, ii: my_self.ii, html: 1,
                                     categoryId: my_self.new_category_id, topic_child_data : true },
                                 function( responseText, textStatus, req ){
                                     var success = textStatus == 'success';
@@ -703,7 +706,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                                         my_self.detail.body.setStyle('height', null);
                                     }
                                 });
-                            my_self.detail.body.setStyle('overflow', 'auto');                           
+                            my_self.detail.body.setStyle('overflow', 'auto');
                        }
                     } else {
                        Baseliner.error( _('Error'), res.msg );
@@ -733,27 +736,38 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
             var com = code_field.getEl().dom;
             code = CodeMirror(function(elt) {
                 com.parentNode.replaceChild( elt, com );
-            }, { 
+            }, {
                 value: comment_field.getValue(),
                 lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true
             });
         }
     };
-    var cardcom = new Ext.Panel({ 
-        layout: 'card', 
+    var cardcom = new Ext.Panel({
+        layout: 'card',
         activeItem: 0,
         items: [ comment_field, code_field ]
     });
 
-    win_comment = new Ext.Window({
-        title: _('Add Comment'),
+    if( title === null || title === undefined ) {
+        if( !Ext.isFunction(cb_or_parent_id) ) {
+            var my_topic = Ext.getCmp(cb_or_parent_id);
+            title = my_topic.title;
+        }
+    } else {
+        title = title.length == 0
+                   ? '#'+topic_mid
+                   : title;
+    }
+
+    win_comment = new Cla.Window({
+        title: _('Add Comment: %1', title),
         layout: 'fit',
         height: 450,
         width: 700,
         closeAction: 'close',
         maximizable: true,
         autoHeight: true,
-        bbar: [ 
+        bbar: [
             btn_html,
             btn_code, '->', btn_submit],
         items: cardcom
@@ -764,6 +778,8 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 Baseliner.error( _('Error'), res.msg );
             } else {
                 comment_field.setValue( res.text );
+                btn_submit.setText( _('Edit Comment') );
+                win_comment.title = _('Edit Comment');
                 win_comment.show();
             }
         });
@@ -785,7 +801,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.form_is_loaded = false;
         self.ii = self.id;  // used by the detail page
         self.toggle_group = 'form_btns_' + self.ii;
-        self.id_title = Ext.id(); // so that we can set the tooltip to the tab 
+        self.id_title = Ext.id(); // so that we can set the tooltip to the tab
 
         self.btn_save_form = new Ext.Button({
             text: _('Save'),
@@ -795,26 +811,26 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             hidden: true,
             handler: function(){ return self.save_topic() }
         });
-    
+
         self.btn_delete_form = new Ext.Button({
             text: _('Delete'),
             icon:'/static/images/icons/delete_.png',
             cls: 'x-btn-icon-text',
             // type: 'submit',
             hidden: self.permDelete,
-            handler: function(a){ 
+            handler: function(a){
                 // console.dir(a);
                 // alert("han pulsado el botón");
                 return self.delete_topic();
             }
         });
-    
+
         // Detail Panel
-        self.detail = new Ext.Panel({ 
+        self.detail = new Ext.Panel({
             padding: 15,
             layout:'fit'
         });
-        
+
         Baseliner.Topic.file_del = function( topic_mid, mid, id_row ) {
             Baseliner.ajaxEval( '/topic/file/delete', { asset_mid: mid, topic_mid: topic_mid }, function(res) {
                 if( res.success ) {
@@ -826,7 +842,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         };
-    
+
         self._cis = [];
         var ci_graph;
         var show_graph = function(){
@@ -835,67 +851,67 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.add( ci_graph );
             self.getLayout().setActiveItem( ci_graph );
         };
-    
-    
+
+
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
             icon:'/static/images/icons/comment_new.gif',
             cls: 'x-btn-icon-text',
             hidden: !self.permComment,
             handler: function() {
-                Baseliner.Topic.comment_edit( params.topic_mid, null, function(id_com){ self.detail_reload() });
+                Baseliner.Topic.comment_edit( params.topic_mid, self.title, null, function(id_com){ self.detail_reload() });
             }
         });
-    
+
         self.btn_detail = new Ext.Toolbar.Button({
             icon:'/static/images/icons/detail.png',
             tooltip:_('Detail View'),
             cls: 'x-btn-icon',
-            enableToggle: true, 
+            enableToggle: true,
             hidden: self.topic_mid==undefined,
-            pressed: self.topic_mid!=undefined, 
-            allowDepress: false, 
-            handler: function(){ self.show_detail() }, 
+            pressed: self.topic_mid!=undefined,
+            allowDepress: false,
+            handler: function(){ self.show_detail() },
             toggleGroup: self.toggle_group
         });
-        
+
         self.btn_edit = new Ext.Toolbar.Button({
             name: 'edit',
             text:_('Edit'),
             icon:'/static/images/icons/edit.gif',
             cls: 'x-btn-text-icon',
-            enableToggle: true, 
+            enableToggle: true,
             pressed: self.topic_mid==undefined,
-            handler: function(){ 
-                //if( self.btn_edit.toggle ) return; 
-                return self.show_form() }, 
+            handler: function(){
+                //if( self.btn_edit.toggle ) return;
+                return self.show_form() },
             allowDepress: false, toggleGroup: self.toggle_group
         });
-        
+
         var obj_deploy_items_menu = Ext.util.JSON.decode(self.menu_deploy) || { menu: [] };
 
         self.menu_deploy = [];
 
         for(i=0; i < obj_deploy_items_menu.menu.length;i++){
-            var topic = { 
-                text: _(obj_deploy_items_menu.menu[i].text), 
-                topic_mid: self.topic_mid, 
+            var topic = {
+                text: _(obj_deploy_items_menu.menu[i].text),
+                topic_mid: self.topic_mid,
                 id: obj_deploy_items_menu.menu[i].eval.id,
-                id_project: obj_deploy_items_menu.menu[i].eval.id_project, 
-                state_id: obj_deploy_items_menu.menu[i].id_status_from, 
-                promotable: obj_deploy_items_menu.promotable, 
-                demotable: obj_deploy_items_menu.demotable, 
-                deployable: obj_deploy_items_menu.deployable, 
+                id_project: obj_deploy_items_menu.menu[i].eval.id_project,
+                state_id: obj_deploy_items_menu.menu[i].id_status_from,
+                promotable: obj_deploy_items_menu.promotable,
+                demotable: obj_deploy_items_menu.demotable,
+                deployable: obj_deploy_items_menu.deployable,
                 job_type: obj_deploy_items_menu.menu[i].eval.job_type,
                 state_to: obj_deploy_items_menu.menu[i].eval.state_to
             };
-            self.menu_deploy.push({ 
-                text: _(obj_deploy_items_menu.menu[i].text), 
+            self.menu_deploy.push({
+                text: _(obj_deploy_items_menu.menu[i].text),
                 icon: obj_deploy_items_menu.menu[i].icon,
                 topic: topic,
-                handler: function(obj){ 
+                handler: function(obj){
                     Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
-                } 
+                }
             });
         }
 
@@ -910,48 +926,48 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
 
         var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
-        
+
         self.status_items_menu = [];
         for(i=0; i < obj_status_items_menu.length;i++){
-            self.status_items_menu.push({ 
-                text: _(obj_status_items_menu[i].status_name), 
-                id_status_to: obj_status_items_menu[i].id_status, 
-                id_status_from: obj_status_items_menu[i].id_status_from, 
-                handler: function(obj){ self.change_status(obj) } 
+            self.status_items_menu.push({
+                text: _(obj_status_items_menu[i].status_name),
+                id_status_to: obj_status_items_menu[i].id_status,
+                id_status_from: obj_status_items_menu[i].id_status_from,
+                handler: function(obj){ self.change_status(obj) }
             });
         }
-    
+
         self.status_menu = new Ext.menu.Menu({
             items: self.status_items_menu
         });
 
-        
+
         self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.gif'), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
-        
+
         self.btn_docgen = new Ext.Toolbar.Button({
             icon:'/static/images/icons/document.png',
             tooltip: _('Generate Document'),
-            handler: function(){ self.show_docgen() }, 
+            handler: function(){ self.show_docgen() },
             hidden: self.viewDocs==undefined?true:!self.viewDocs
         });
-            
+
         self.btn_kanban = new Ext.Toolbar.Button({
             icon:'/static/images/icons/kanban.png',
             cls: 'x-btn-icon',
-            enableToggle: true, 
+            enableToggle: true,
             tooltip: _('Show Kanban'),
-            handler: function(){ self.show_kanban() }, 
+            handler: function(){ self.show_kanban() },
             hidden: self.viewKanban==undefined?true:!self.viewKanban,
             allowDepress: false, toggleGroup: self.toggle_group
         });
-            
+
         self.btn_life_cicle = new Ext.Toolbar.Button({
             icon: IC('diagram'),
             cls: 'x-btn-icon',
-            enableToggle: true, 
+            enableToggle: true,
             tooltip: _('Open life cycle'),
             handler: function(){ self.show_life_cicle() },
             //hidden: self.viewKanban==undefined?true:!self.viewKanban,
@@ -961,7 +977,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_timeline = new Ext.Toolbar.Button({
             icon: IC('timeline'),
             cls: 'x-btn-icon',
-            enableToggle: true, 
+            enableToggle: true,
             tooltip: _('Open timeline'),
             handler: function(){ self.show_timeline() },
             allowDepress: false, toggleGroup: self.toggle_group
@@ -974,12 +990,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             hidden: self.permGraph==undefined?true:!self.permGraph,
             enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: self.toggle_group
         });
-            
+
         self.loading_panel = Baseliner.loading_panel();
-    
+
         var tb;
         var typeToolBar = ''; //'GDI';
-        
+
         tb = self.create_toolbar();
 
         self.detail.on( 'render', function() {
@@ -995,7 +1011,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_deploy.show();
                 }
             }
-            
+
             if (self.topic_mid > 0 && !self.activarEdit) {
                 self.detail_reload();
             }
@@ -1016,7 +1032,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_delete_form.show();
             }
         });
-        
+
         if( !self.permEdit ) {
             self.btn_edit.hide();
         }
@@ -1024,36 +1040,36 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.hide();
         }
         if( ! params.title ) {
-            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category||params.category_name, params.category_color, null, self.id_title ) ) 
+            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category||params.category_name, params.category_color, null, self.id_title ) )
         }
-        
+
         self.title = params.title;
         self.tbar = tb;
         self.defaults = {border: false};
         self.items = [ self.loading_panel, self.detail ];
-        
+
         Baseliner.TopicMain.superclass.initComponent.call(this);
-        self.on('afterrender', function(){      
+        self.on('afterrender', function(){
             new Ext.KeyMap( self.el, {
                 key: 's', ctrl: true, scope: self.el,
                 stopEvent: true,
-                fn: function(){  
+                fn: function(){
                     if( self.btn_save_form && !self.btn_save_form.hidden && !self.btn_save_form.disabled ) {
-                        self.save_topic(); 
+                        self.save_topic();
                     }
                     return false;
                 }
             });
         });
-        self.on('beforeclose', function(){ 
-            self.close_answer=''; 
-            return self.closing() 
+        self.on('beforeclose', function(){
+            self.close_answer='';
+            return self.closing()
         });
-        self.on('beforedestroy', function(){ 
-              if( self.close_answer ) return true; 
-              self.closing('destroy'); 
+        self.on('beforedestroy', function(){
+              if( self.close_answer ) return true;
+              self.closing('destroy');
               return true; // destroy cannot be stopped
-        }); 
+        });
     },
     is_dirty : function(){
         var self = this;
@@ -1082,7 +1098,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         return true; // self.form_topic.getForm().isDirty();
     },
     closing : function(mode){
-        var self = this; 
+        var self = this;
         if( self.btn_save_form && !self.btn_save_form.hidden && self.is_dirty() ) {
             self.close_check(mode);
             return false;
@@ -1101,13 +1117,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
            fn: function(btn){
                if( btn=='cancel' ) {
                    return;
-               } 
+               }
                else if( btn=='yes' && mode=='destroy' ) {
-                   self.save_topic({ return_on_save : true }); 
+                   self.save_topic({ return_on_save : true });
                }
                else if( btn=='yes' ) {
                    self.close_answer = 'yes';  // avoid firing again on destroy
-                   self.save_topic({ close_on_save : true }); 
+                   self.save_topic({ close_on_save : true });
                }
                else {
                    self.close_answer = 'no';
@@ -1134,7 +1150,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     load_form : function(rec) {
         var self = this;
         rec.html_buttons = self.html_buttons;
-        
+
         if( rec._cis ) {
             self._cis = rec._cis;
         } else {
@@ -1187,7 +1203,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             }else{
                 if( !dontshow ) self.getLayout().setActiveItem( self.form_topic );
                 self.btn_save_form.show();
-                
+
                 if(self.topic_mid){
                     if( self.permComment ) {
                         self.btn_comment.show();
@@ -1200,7 +1216,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_comment.hide();
                     self.btn_detail.hide();
                     self.btn_delete_form.hide();
-                }                
+                }
             }
         } else {
             Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: self.new_category_id, new_category_name: self.new_category_name, ci: self.ci, dni: self.dni, clonar: self.clonar}, function(rec) {
@@ -1268,12 +1284,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         Baseliner.ajaxEval('/site/lifecycle-graph.js', {id_category: self.id_category}, function(res){
             Cla.use('/static/gojs/go-debug.js', function(){
                 self.w = new Ext.Panel({
-                    layout: 'card',  
+                    layout: 'card',
                     background: "#000000",
                     activeItem: 0,
                     items: [res]
                 });
-                
+
                 //self.on('afterrender', function() {
                     self.add(self.w);
                     self.getLayout().setActiveItem( self.w );
@@ -1293,7 +1309,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     activeItem: 0,
                     items: [res]
                 });
-                
+
                 //self.on('afterrender', function() {
                     self.add(self.w);
                     self.getLayout().setActiveItem( self.w );
@@ -1307,10 +1323,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( self.kanban ) {
             self.getLayout().setActiveItem( self.kanban );
             return;
-        }  
+        }
         Baseliner.ajaxEval('/topic/children', { mid: self.topic_mid, _whoami: 'show_kanban' }, function(res){
             var topics = res.children;
-            self.kanban = new Baseliner.Kanban({ 
+            self.kanban = new Baseliner.Kanban({
                 //background: '#888',
                 title: self.title,
                 topic_mid: self.topic_mid,
@@ -1335,7 +1351,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.getLayout().setActiveItem( self.detail );
         var info = Baseliner.tabInfo[self.id];
         if( info!=undefined ) info.params.swEdit = 0;
-        
+
         if(self.status_menu.items.length > 0){
             self.btn_change_status.show();
         }
@@ -1348,7 +1364,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         else{
             self.btn_deploy.hide();
         }
-        
+
         self.btn_save_form.hide();
         if( self.view_is_dirty ) {
             self.btn_detail.toggle(true);
@@ -1364,7 +1380,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         // using jquery cos the self.detail.load() method callback is not consistent in IE8
         if (self.topic_mid && self.swEdit==1){ self.swEdit = 0};
-        $( self.detail.body.dom ).load( '/topic/view', 
+        if( !self.detail.body.dom ) return;  // is the topic there still?
+        $( self.detail.body.dom ).load( '/topic/view',
             { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
             function( responseText, textStatus, req ){
                 var success = textStatus == 'success';
@@ -1383,8 +1400,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.detail.body.setStyle('height', null);
                     $( self.detail.body.dom ).find('.field-dashlet').each(function(a,b){
                         var field = $(this);
-                        Cla.ajax_json( field.attr('js_file'), { 
-                            topic_mid: self.topic_mid, id_div: field.attr('id'), 
+                        Cla.ajax_json( field.attr('js_file'), {
+                            topic_mid: self.topic_mid, id_div: field.attr('id'),
                             data: Ext.util.JSON.decode( field.attr('dashlet_data') ) }, function(){});
                     });
                 }
@@ -1395,25 +1412,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         self.form_topic.on_submit();
         if( !opts ) opts = {};
-        
+
         var form_data = self.form_topic.getValues();
         self.original_record = form_data; // reset save status for is_dirty
         var form2 = self.form_topic.getForm();
         var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
-        
+
         var do_submit = function(){
             self.getEl().mask('');
             Baseliner.ajax_json( 
                 self.form_topic.url,
-                Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
+                Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data),
                 // success
                 function(res){
                     self.getEl().unmask();
                     self.getTopToolbar().enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
-                    }                    
+                    }
                     Baseliner.message(_('Success'), res.msg );
                     self.reload_parent_grid();
                     if( opts.close_on_save ) {
@@ -1423,7 +1440,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if( opts.return_on_save ) {
                         return;
                     }
-                        
+
                     var mid = res.topic_mid;
                     form2.findField("topic_mid").setValue( mid );
                     var status_hidden_field = form2.findField("status");
@@ -1434,17 +1451,17 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if ( res.return_options.reload == 1 ) {
                     // if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
-                        self.view_is_dirty = true;                     
+                        self.view_is_dirty = true;
                         /*
                         var status_combo = form2.findField("status_new");
                         if( status_combo && status_combo.store ) {
                             status_hidden_field.setValue( status_combo.getValue() );
-                            status_combo.store.load({ 
-                                params: { 
+                            status_combo.store.load({
+                                params: {
                                     statusId: status_combo.getValue(),
                                     categoryId: form2.findField("category").getValue()
-                                } 
-                            }); 
+                                }
+                            });
                         }
                         */
                         self.show_form();
@@ -1457,9 +1474,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                             'statusId': res.topic_status,
                                             'statusName': form2.findField("status_new").getRawValue()
                                         }
-                            });                            
+                            });
                         }
-                       
+
                         form2.findField("status").setValue(res.topic_status);
                         self.topic_mid = res.topic_mid;
                         if( self.permComment ) {
@@ -1470,12 +1487,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         if( self.permDelete ) {
                             self.btn_delete_form.show();
                         }
-                        
+
                         if(action == 'add'){
                             if ( !opts.no_refresh ) {
                                 self.form_is_loaded = false;
                                 self.show_form();
-                                self.view_is_dirty = true; 
+                                self.view_is_dirty = true;
                             }
                             var tabpanel = Ext.getCmp('main-panel');
                             var objtab = tabpanel.getActiveTab();
@@ -1485,13 +1502,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             var info = Baseliner.panel_info( objtab );
                             info.params.topic_mid = res.topic_mid;
                             info.title = title;
-                            self.setTitle( title );    
+                            self.setTitle( title );
                         }
                         self.view_is_dirty = true;
                         if( Ext.isFunction(opts.success) ) opts.success(res);
-                        
+
                         self.modified_on = res.modified_on;
-                        
+
                     }
                 },
                 // failure
@@ -1508,32 +1525,32 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     //}else{
                         // self.form_is_loaded = false;
                         // self.show_form();
-                        // self.view_is_dirty = true;  
+                        // self.view_is_dirty = true;
                         Baseliner.error(_('Error'), res.msg );
                     //}
 
-                    
+
                     if( Ext.isFunction(opts.failure) ) opts.failure(res);
                 }
             );
         };
-        
+
         if ( self.form_topic.is_valid() ) {
             self.getTopToolbar().disable();
             self.btn_delete_form.disable();
-            
+
             if(action == 'update'){
                 var rel_signature = self.form_topic.rec ? self.form_topic.rec.rel_signature : '';
                 Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
-                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?", res.modified_before, res.modified_before_duration) 
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?", res.modified_before, res.modified_before_duration)
                                               : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?")
                                               : null;
-                                
+
                             if (msg_confirm){
                                 Ext.Msg.confirm( _('Confirmation'), msg_confirm,
-                                    function(btn){ 
+                                    function(btn){
                                         if(btn=='yes') {
                                             do_submit();
                                         }else{
@@ -1555,7 +1572,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             }
                         }
                     }
-                );            
+                );
             }else{
                 do_submit();
             }
@@ -1565,9 +1582,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         if( self.topic_mid == undefined ) return;
         Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic?'),
-            function(btn){ 
+            function(btn){
                 if(btn=='yes') {
-                    Baseliner.Topic.delete_topic({ topic_mids: self.topic_mid, success:function(){ 
+                    Baseliner.Topic.delete_topic({ topic_mids: self.topic_mid, success:function(){
                         self.reload_parent_grid();
                         self.destroy();
                     }});
@@ -1578,7 +1595,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     reload_parent_grid : function(){
         var self = this;
         if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
-            self._parent_grid = Ext.getCmp( self._parent_grid ); 
+            self._parent_grid = Ext.getCmp( self._parent_grid );
         }
         if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
             self._parent_grid.getStore().reload();
@@ -1614,7 +1631,7 @@ Baseliner.Topic.delete_topic = function(opts){
                 if( Ext.isFunction(opts.failure) ) opts.failure(res);
             }
         }
-    
+
     );
 };
 
@@ -1627,12 +1644,12 @@ Baseliner.Topic.change_status_topic = function(opts){
             //if ( res.success ) {
                 if(res.change_status_before){
                     Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),
-                        function(btn){ 
+                        function(btn){
                             if(btn=='yes') {
                                 Baseliner.refreshCurrentTab();
                             }
                         }
-                    );                    
+                    );
                 }else{
                     Baseliner.message( _('Success'), res.msg );
                     if( Ext.isFunction(opts.success) ) opts.success(res);
@@ -1647,7 +1664,7 @@ Baseliner.Topic.change_status_topic = function(opts){
             self.getEl().unmask();
             Baseliner.error( _('Error'), res.msg );
             if( Ext.isFunction(opts.failure) ) opts.failure(res);
-        }        
+        }
     );
 };
 
@@ -1675,13 +1692,13 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
                 delete qe.combo.lastQuery;
             }
         };
-        
+
         self.tpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="search-item">',
             '<span class="bl-label" style="background: {color}">{short_name}</span>',
             '<span style="padding-left:4px"><b>{title}</b></span>',
             '</div></tpl>' );
-        
+
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
 });
@@ -1692,14 +1709,14 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             checkOnly: true,
             singleSelect: false
         });
-        
+
         var render_text_field = function(v){
             if( !v ) v ='';
             return '<pre>'+v+'</pre>';
         };
-        
+
         var cols = [ sm ];
-        
+
         var store_fields = ['mid'];
         var cols_keys = ['name', 'title'];
         var cols_templates = {
@@ -1725,7 +1742,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         cols.push( ct );
                     } else {
                         // if we dont have the field, create a text column with it
-                        
+
                         var col_s = ck.split(',');
                         store_fields.push( col_s[0] || ck );
                         ct = { header: col_s[1] || _(ck), dataindex: col_s[0] || ck, renderer: render_text_field };
@@ -1752,13 +1769,13 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
 
         Baseliner.TopicGrid.superclass.constructor.call( this, Ext.apply({
             height: 150,
-            enableDragDrop: true,   
-            pageSize: 10, // used by the combo             
+            enableDragDrop: true,
+            pageSize: 10, // used by the combo
             store: store,
             frame: true,
             bodyStyle: {
                 'background-color': 'white',
-                'overflow-y': 'auto' 
+                'overflow-y': 'auto'
             },
             viewConfig: {
                 headersDisabled: true,
@@ -1773,19 +1790,19 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.combo_store = self.combo_store || new Baseliner.store.Topics({});
         if( self.topic_grid == undefined ) self.topic_grid = {};
         self.combo = new Baseliner.TopicCombo({
-            store: self.combo_store, 
+            store: self.combo_store,
             height: 80,
             width: 300,
             pageSize: parseInt(self.pageSize),
-            singleMode: true, 
+            singleMode: true,
             fieldLabel: _('Topic'),
             name: 'topic',
-            hiddenName: 'topic', 
+            hiddenName: 'topic',
             allowBlank: true,
-            disabled: self.readOnly ? self.readOnly : false 
+            disabled: self.readOnly ? self.readOnly : false
         });
         self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
-        
+
         self.store.on('add', function(){ self.fireEvent( 'change', self ) });
         self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
 
@@ -1798,8 +1815,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         self.getStore().remove( sel );
                     });
                 } else {
-                    Baseliner.error( _('ERROR'), _('Select at least one row'));    
-                };                
+                    Baseliner.error( _('ERROR'), _('Select at least one row'));
+                };
             }
         });
         var btn_reload = new Ext.Button({
@@ -1814,7 +1831,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             self.add_to_grid( rec.data );
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
-        
+
         self.refresh(true);
         self.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
@@ -1822,8 +1839,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             //var title = Baseliner.topic_title( r.get('mid'), _(r.get( 'categories' ).name), r.get('color') );
             var title = Baseliner.topic_title( r.get('mid'), _(r.get('name')), r.get('color') );
             Baseliner.show_topic( r.get('mid'), title, { topic_mid: r.get('mid'), title: title, _parent_grid: undefined } );
-            
-        });        
+
+        });
         self.on('afterrender', function(){
             var ddrow = new Baseliner.DropTarget(self.container, {
                 comp: self,
@@ -1844,7 +1861,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         }
                     }
                 }
-            }); 
+            });
         });
         Baseliner.TopicGrid.superclass.initComponent.call( this );
     },
@@ -1853,7 +1870,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         var val = self.value;
         if( initial ) {
             if( Ext.isArray( val ) ) {
-                // self.value may be an array of full records or just mids, try to detect it 
+                // self.value may be an array of full records or just mids, try to detect it
                 var mids = [];
                 Ext.each( val, function(r){
                     if( Ext.isObject( r ) ) {
@@ -1872,12 +1889,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         });
                     });
                 }
-            }        
+            }
         } else {
             // we have data in the grid, reload
             var mids = [];
             self.store.each( function(row){
-                mids.push( row.data.mid ); 
+                mids.push( row.data.mid );
             });
             if( mids.length == 0 ) return;
             var p = { mids: mids, topic_child_data : true, _whoami: 'TopicGrid.refresh2' };
@@ -1894,7 +1911,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var mids = [];
         self.store.each(function(row){
-            mids.push( row.data.mid ); 
+            mids.push( row.data.mid );
         });
         return mids;
     },
@@ -1925,7 +1942,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             category_name,
             d.color,
             Baseliner.topic_name({
-                mid: d.mid, 
+                mid: d.mid,
                 mini: true,
                 size: true ? '9' : '11',
                 category_name: category_name,
@@ -1934,11 +1951,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 //is_changeset: d.is_changeset,
                 //is_release: d.is_release
             }) );
-    }, 
+    },
     is_valid : function(){
         var self = this;
         return self.store.getCount() > 0 ;
-    }   
+    }
 });
 
 Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
@@ -1970,12 +1987,12 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         if( data == undefined ) data = {};
         self.on_submit_events = [];
         self.field_map = {};
-        
+
         var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
-        this.id = unique_id_form; 
+        this.id = unique_id_form;
         this.bodyStyle = { 'padding': '5px 50px 5px 10px' };
         this.items = [ { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 } ];
-        
+
         Baseliner.TopicForm.superclass.initComponent.call(this);
         /*
         self.on('afterrender', function(){
@@ -2001,31 +2018,31 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         if( rec.topic_meta == undefined ) return;
         ///*****************************************************************************************************************************
         var fields = rec.topic_meta;
-        
+
         for( var i = 0; i < fields.length; i++ ) {
             var field = fields[i];
             self.field_map[ field.id_field ] = field;
             // rgo: use this to set a tooltip on the tab with the topic title, probably best if we
             //   get the ext id of the tab here then set the tooltip with bootstrap
-            // if( field.meta_goal=='title' || ( field.id_field=='title' ) ) { 
+            // if( field.meta_goal=='title' || ( field.id_field=='title' ) ) {
             //     if( self.id_title ) {
             //         $( '#' + self.id_title ).attr('title', data[field.id_field]);
             //     }
             // }
-            if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;         
+            if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
             if( field.body ) {// some fields only have an html part
                 var func = Baseliner.field_cache[ field.body[0] ];
                 if( !func || field.body[2]>0 ) {
                     var func = Baseliner.eval_response( field.body[1],{},'',true );
                     Baseliner.field_cache[ field.body[0] ] = func;
                 }
-                if( !func ) continue; 
-                var fieldlet = func({ 
-                    form: self, topic_data: data, topic_meta:  field, value: '', 
-                    _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, 
-                    html_buttons: rec.html_buttons 
+                if( !func ) continue;
+                var fieldlet = func({
+                    form: self, topic_data: data, topic_meta:  field, value: '',
+                    _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin,
+                    html_buttons: rec.html_buttons
                 });
-                
+
                 if( !fieldlet ) continue; // invalid field?
 
                 if( fieldlet.xtype == 'hidden' ) {
@@ -2049,9 +2066,9 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     //         var mask = this.el.mask();
                     //         mask.setStyle('opacity', 0);
                     //         mask.setStyle('height', 5000);
-                    //     };            
-                    // });                    
-                    
+                    //     };
+                    // });
+
                     // help text underneath field
                     var add_undertext = function(cont){
                         if( field.undertext ) {
@@ -2060,11 +2077,11 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     }
                     if( fieldlet.items ) {
                         if( fieldlet.on_submit ) self.on_submit_events.push( fieldlet.on_submit );
-                        placeholder.add( fieldlet.items ); 
+                        placeholder.add( fieldlet.items );
                         add_undertext(placeholder);
                         self.add ( placeholder );
                     } else {
-                        placeholder.add( fieldlet ); 
+                        placeholder.add( fieldlet );
                         add_undertext(placeholder);
                         self.add( placeholder );
                     }
@@ -2076,7 +2093,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         self.on( 'afterrender', function(){
             var form2 = self.getForm();
             var id_category = rec.new_category_id ? rec.new_category_id : data.id_category;
-        
+
             var obj_combo_category = form2.findField("category");
             var obj_store_category;
             if(obj_combo_category){
@@ -2088,8 +2105,8 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             }
 
             var obj_combo_status = form2.findField("status_new");
-            var obj_store_category_status;                
-            
+            var obj_store_category_status;
+
             if( rec.new_category_id != undefined ) {
                 if(obj_combo_status){
                     obj_store_category_status = obj_combo_status.getStore();
@@ -2099,7 +2116,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     });
                     obj_store_category_status.load({
                         params:{ 'change_categoryId': id_category }
-                    });                         
+                    });
                 }
                 form2.findField("topic_mid").setValue(-1);
             }else {
@@ -2110,24 +2127,24 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     });
                     obj_store_category_status.load({
                             params:{ 'categoryId': id_category, 'statusId': data ? data.id_category_status : '', 'statusName': data ? data.name_status : '' }
-                    });                         
+                    });
                 }
             }
-            
+
             var obj_combo_priority = form2.findField("priority");
             var obj_store_category_priority;
-        
+
             if(obj_combo_priority){
                 obj_store_category_priority = obj_combo_priority.getStore();
                 obj_store_category_priority.on("load", function() {
-                    obj_combo_priority.setValue(data ? data.id_priority : '');                            
-                });                    
+                    obj_combo_priority.setValue(data ? data.id_priority : '');
+                });
                 obj_store_category_priority.load({params:{'active':1, 'category_id': id_category}});
             }
             self.doLayout();
         });
         self.is_loaded = true;
-    }, 
+    },
     is_ready : function(){  // if field has is_ready attribute and is true
         var self = this;
         if( !self.is_loaded ) return false;
@@ -2169,13 +2186,13 @@ Baseliner.TopicFieldsCombo = Ext.extend( Ext.form.ComboBox, {
             self.hiddenName = self.name;
         }
         self.store = new Baseliner.JsonStore({
-            root: 'data', remoteSort: false, id: 'id_uniq', totalProperty: 'totalCount', 
+            root: 'data', remoteSort: false, id: 'id_uniq', totalProperty: 'totalCount',
             baseParams: { id_category: self.id_category },
-            url: '/topic/topic_fieldlet_nodes', fields: ['id','id_uniq','id_field', 'key','name_field','fieldlet_name','category_name'] 
+            url: '/topic/topic_fieldlet_nodes', fields: ['id','id_uniq','id_field', 'key','name_field','fieldlet_name','category_name']
         });
-        
+
         self.store.load({ callback: function(store) {
-            var ix = self.store.find( self.valueField, self.value ); 
+            var ix = self.store.find( self.valueField, self.value );
             if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
         } });
         Baseliner.TopicFieldsCombo.superclass.initComponent.call(this);
@@ -2189,28 +2206,28 @@ Baseliner.jobs_for_topic = function(args) {
         if( div ) {
             Ext.each( res, function(job){
                 if ( args.link == 1 ) {
-                    //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
+                    //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job );
                     jh += function(){/*
                         <div style="margin-left: 20px">
                             <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
                                 '[%= name %]')">
                                     [%= name %] ([%= username%])
-                               </a> 
+                               </a>
                                - [%= _(status) %]  <small>[%= endtime %]</small>
                             </p>
                             <hr />
-                        </div> 
+                        </div>
                     */}.tmpl( job );
                 } else {
                     jh += function(){/*
                         <div style="margin-left: 20px">
                             <p>[%= name %] ([%= username%]) - [%= _(status) %]  <small>[%= endtime %]</small></p>
-                        </div> 
-                    */}.tmpl( job );                    
+                        </div>
+                    */}.tmpl( job );
                 }
             });
-            div.innerHTML = res.length 
-                ? jh 
+            div.innerHTML = res.length
+                ? jh
                 : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No jobs found') + '</span>';
         }
     });
@@ -2233,11 +2250,11 @@ Baseliner.activity_for_topic = function(args) {
                             [%= Cla.user_date(ts) %]
                         </small>
                     </p>
-                <hr /></div> 
+                <hr /></div>
                 */}.tmpl( ev );
             });
-            div.innerHTML = res.length 
-                ? html 
+            div.innerHTML = res.length
+                ? html
                 : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No activity found') + '</span>';
         }
     });
@@ -2269,7 +2286,7 @@ Baseliner.comments_for_topic = function(args) {
 
 [% if ( can_edit ) { %]
 
-                    | <a href="javascript:Baseliner.Topic.comment_edit( '[%= topic_mid %]', '[%= id %]', '[%= parent %]')">[%= _("edit") %]</a>
+                    | <a href="javascript:Baseliner.Topic.comment_edit( '[%= topic_mid %]', null, '[%= id %]', '[%= parent %]')">[%= _("edit") %]</a>
 [% } %]
 [% if ( can_delete ) { %]
                     | <a href="javascript:Baseliner.Topic.comment_delete('[%= topic_mid %]', '[%= id %]', '[%= id_div_com %]')">[%= _("delete") %]</a>
@@ -2280,8 +2297,8 @@ Baseliner.comments_for_topic = function(args) {
                 </div>
                 */}.tmpl( com );
             });
-            div.innerHTML = res.length 
-                ? html 
+            div.innerHTML = res.length
+                ? html
                 : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No comments found') + '</span>';
         }
     });
