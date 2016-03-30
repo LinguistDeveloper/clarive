@@ -155,7 +155,7 @@
         },
         listeners: {
             'render': function() {
-                Baseliner.showLoadingTreeMask( this.getEl());
+                Baseliner.showLoadingMask( this.getEl());
             },
             'load': function() {
                 this.getEl().unmask();
