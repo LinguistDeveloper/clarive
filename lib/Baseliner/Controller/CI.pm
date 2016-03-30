@@ -137,18 +137,18 @@ sub tree_roles {
 
     my $permissions = _build_permissions();
 
-    my $cnt = 1;
+    my $cnt = 0;
     my @tree;
     for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
         my $role = $_->{role};
         my $name = $_->{name};
 
-        next unless $permissions->user_can_view_ci_group($user, $name);
+        next unless $permissions->user_can_view_ci_group( $user, $name );
 
         $role = 'Generic' if $name eq '';
         push @tree,
           {
-            _id        => $cnt++,
+            _id        => $cnt,
             _parent    => undef,
             _is_leaf   => \0,
             type       => 'role',
@@ -162,6 +162,8 @@ sub tree_roles {
             tags       => [],
             properties => undef,
           };
+
+        $cnt++;
     }
 
     return @tree;
@@ -173,42 +175,42 @@ sub tree_classes {
     my $role      = $p{role}      or _fail 'role required';
     my $role_name = $p{role_name} or _fail 'role_name required';
     my $user      = $p{user}      or _fail 'user required';
-    my $parent = $p{parent} || 0;
-
-    my $cnt = substr( _nowstamp(), -6 ) . ( $parent * 1 );
+    my $parent    = $p{parent} || 0;
 
     my $permissions = $self->_build_permissions;
 
     my @tree;
 
-    foreach my $package (packages_that_do($role)) {
+    my $cnt = 0;
+    foreach my $package ( packages_that_do($role) ) {
         my $item       = $package;
         my $collection = $package->collection;
 
-        my $ci_form    = $self->form_for_ci( $item, $collection );
+        my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
 
-        next unless $permissions->user_can_view_ci($user, $item);
+        next unless $permissions->user_can_view_ci( $user, $item );
 
-            $cnt++;
-            push @tree,
-              {
-                _id             => ++$cnt,
-                _parent         => $p{parent} || undef,
-                _is_leaf        => \0,
-                type            => 'class',
-                item            => $item,
-                collection      => $collection,
-                ci_form         => $ci_form,
-                class           => $package,
-                classname       => $package,
-                icon            => $package->icon,
-                has_bl          => $package->has_bl,
-                has_description => $package->has_description,
-                versionid       => '',
-                ts              => '-',
-                properties      => '',
-              };
+        push @tree,
+          {
+            _id             => $cnt,
+            _parent         => $p{parent} || undef,
+            _is_leaf        => \0,
+            type            => 'class',
+            item            => $item,
+            collection      => $collection,
+            ci_form         => $ci_form,
+            class           => $package,
+            classname       => $package,
+            icon            => $package->icon,
+            has_bl          => $package->has_bl,
+            has_description => $package->has_description,
+            versionid       => '',
+            ts              => '-',
+            properties      => '',
+          };
+
+        $cnt++;
     }
 
     return sort { lc $a->{class} cmp lc $b->{class} } @tree;
@@ -373,125 +375,147 @@ sub tree_objects {
 }
 
 sub tree_object_depend {
-    my ($self, %p)=@_;
-    my $class = $p{class};
+    my ( $self, %p ) = @_;
+
+    my $parent = $p{parent} // '';
+    my $class  = $p{class};
+    my $from   = $p{from};
+    my $to     = $p{to};
+    my $limit  = $p{limit};
+    my $start  = $p{start};
+
     my $where = {};
     my $dir;
-    if( defined $p{from} ) {
-        $where->{from_mid} = "$p{from}";
+    if ( defined $from ) {
+        $where->{from_mid} = "$from";
         $dir = 'to_mid';
     }
-    elsif( defined $p{to} ) {
-        $where->{to_mid} = $p{to};
+    elsif ( defined $to ) {
+        $where->{to_mid} = $to;
         $dir = 'from_mid';
     }
-    my @rels = mdb->master_rel->find_values( $dir => $where);
-    my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _seq=>1 });
+    my @rels = mdb->master_rel->find_values( $dir => $where );
+    my $rs = mdb->master_doc->find( { mid => mdb->in(@rels) } )->limit($limit)->skip($start)->sort( { _seq => 1 } );
     my $total = $rs->count;
-    my $cnt = 10;
-    my @tree = map {
-        my $data = $_;
+
+    my @tree;
+
+    my $cnt = 0;
+    foreach my $data ( $rs->all ) {
         my $class = 'BaselinerX::CI::' . $data->{collection};
-        my $bl = [ split /,/, $data->{bl} ];
-        +{
-            _id        => $p{parent} . ++$cnt . "",
-            _parent    => $p{parent} || undef,
-            _is_leaf   => \0,
-            mid        => $data->{mid},
-            item       => ( $data->{name} // $data->{name} // $data->{collection} ),
-            type       => 'object',
-            class      => $class,
-            classname  => $class,
-            bl         => $bl,
-            collection => $data->{rel_type},
-            icon       => $class->icon,
-            ts         => $data->{ts},
-            data       => $data,
-            properties => $data->{yaml},
-            versionid    => $data->{versionid},
-            }
-    } $rs->all;
-    ( $total, @tree );
+        my $bl = [ split /,/, ( $data->{bl} // '' ) ];
+
+        push @tree,
+          {
+            _id       => $parent . '-' . $cnt,
+            _parent   => $parent || undef,
+            _is_leaf  => \0,
+            mid       => $data->{mid},
+            item      => ( $data->{name} // $data->{name} // $data->{collection} ),
+            type      => 'object',
+            class     => $class,
+            classname => $class,
+            bl        => $bl,
+            collection => $data->{rel_type} // $data->{collection},
+            moniker => $data->{moniker},
+            modified_by => $data->{modified_by},
+            icon        => $class->icon,
+            ts          => $data->{ts},
+            data        => $data,
+            properties  => $data->{yaml},
+            versionid   => $data->{versionid},
+          };
+
+        $cnt++;
+    }
+
+    return ( $total, @tree );
 }
 
 sub tree_ci_request {
-    my ($self, %p)=@_;
+    my ( $self, %p ) = @_;
 
-    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
-    my @rs = mdb->topic->find(
-        { from_mid=>"$p{mid}", rel_type=>'ci_request' },
-    )->all;
+    my $parent = $p{parent} // '';
+    my $bl     = $p{bl};
+    my $mid    = $p{mid};
+
+    my @rs = mdb->topic->find( { from_mid => "$mid", rel_type => 'ci_request' } )->all;
     my $total = @rs;
+
     my @tree = map {
         +{
-            _id          => $p{parent} . "1",
-            _parent      => $p{parent} || undef,
-            _is_leaf     => \1,
-            mid          => $_->{mid},
-            item         => $_->{category}{name} . ' #' . $_->{mid},
-            title        => $_->{title},
-            type         => 'topic',
-            class        => 'BaselinerX::CI::topic',
-            bl           => $p{bl},
-            collection   => $_->{name_status},
-            icon         => '/static/images/icons/topic_one.png',
-            ts           => $_->{master_to}{ts},
-            data         => { %{ $_->{category} // {} } },
-            properties   => '',
-            versionid    => '',
-        }
+            _id        => $parent . '-0',
+            _parent    => $parent || undef,
+            _is_leaf   => \1,
+            mid        => $_->{mid},
+            item       => $_->{category}{name} . ' #' . $_->{mid},
+            title      => $_->{title},
+            type       => 'topic',
+            class      => 'BaselinerX::CI::topic',
+            bl         => $bl,
+            collection => 'topic',
+            icon       => '/static/images/icons/topic_one.png',
+            ts         => $_->{master_to}{ts},
+            data       => { %{ $_->{category} // {} } },
+            properties => '',
+            versionid  => '',
+          }
     } @rs;
-    ( $total, @tree );
+
+    return ( $total, @tree );
 }
 
 sub tree_object_info {
-    my ($self, %p)=@_;
+    my ( $self, %p ) = @_;
+
+    my $parent = $p{parent} // '';
     my $mid = $p{mid};
-    #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+
+    my $cnt  = 0;
     my @tree = (
         {
-            _id      => $p{parent} . "0",
-            _parent  => $p{parent} || undef,
-            _is_leaf => \0,
-            mid      => $mid,
-            item     => _loc('Depends On'),
-            type     => 'depend_from',
-            class    => '-',
-            classname    => '-',
-            icon     => '/static/images/ci/out.png',
-            ts       => '-',
-            versionid  => '',
+            _id       => $parent . '-' . $cnt++,
+            _parent   => $parent || undef,
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => _loc('Depends On'),
+            type      => 'depend_from',
+            class     => '-',
+            classname => '-',
+            icon      => '/static/images/ci/out.png',
+            ts        => '',
+            versionid => '',
         },
         {
-            _id      => $p{parent} . "1",
-            _parent  => $p{parent} || undef,
-            _is_leaf => \0,
-            mid      => $mid,
-            item     => _loc('Depend On Me'),
-            type     => 'depend_to',
-            class    => '-',
-            classname    => '-',
-            icon     => '/static/images/ci/in.png',
-            ts       => '-',
-            versionid  => '',
+            _id       => $parent . '-' . $cnt++,
+            _parent   => $parent || undef,
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => _loc('Depend On Me'),
+            type      => 'depend_to',
+            class     => '-',
+            classname => '-',
+            icon      => '/static/images/ci/in.png',
+            ts        => '',
+            versionid => '',
         },
         {
-            _id      => $p{parent} . "2",
-            _parent  => $p{parent} || undef,
-            _is_leaf => \0,
-            mid      => $mid,
-            item     => _loc('Requests'),
-            type     => 'ci_request',
-            class    => '-',
-            classname    => '-',
-            icon     => '/static/images/icons/topic.png',
-            ts       => '-',
-            versionid  => '',
+            _id       => $parent . '-' . $cnt++,
+            _parent   => $parent || undef,
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => _loc('Requests'),
+            type      => 'ci_request',
+            class     => '-',
+            classname => '-',
+            icon      => '/static/images/icons/topic.png',
+            ts        => '',
+            versionid => '',
         },
     );
+
     return @tree;
 }
-
 
 sub list_classes {
     my ($self, $role ) = @_;
