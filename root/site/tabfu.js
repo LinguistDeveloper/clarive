@@ -1490,11 +1490,6 @@ if( Prefs.routing ) {
         return Baseliner._defaultLoadingMask;
     };
 
-    Baseliner.showLoadingTreeMask = function (el, msg){
-        Baseliner._defaultLoadingMask = el.mask('','ext-el-mask-msg-tree');
-        return Baseliner._defaultLoadingMask;
-    };
-
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         if( cmp ) {
             Baseliner.showLoadingMask(cmp, msg);

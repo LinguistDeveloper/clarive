@@ -70,8 +70,7 @@ Ext.onReady(function() {
         id: 'lf',
         url: '/login',
         frame: false,
-        style: 'background: #d8d0e1',
-        bodyStyle: 'padding:5px 5px 0; background: transparent; border-color:#c1c1c1;',
+        bodyStyle: 'padding:5px 5px 0; background: transparent; border-color:transparent;',
         cls: 'centered',
         labelAlign: 'right',
         timeout: 120, // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something
