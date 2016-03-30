@@ -109,6 +109,8 @@ sub create_topic {
     my $class = shift;
     my (%params) = @_;
 
+    my $ts = mdb->ts;
+
     my $id_form = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $username = delete $params{username} || 'developer';
@@ -138,6 +140,8 @@ sub create_topic {
             %params
         }
     );
+
+    mdb->topic->update( { mid => "$topic_mid" }, { '$set' => { created_on => $ts } } );
 
     return $topic_mid;
 }
