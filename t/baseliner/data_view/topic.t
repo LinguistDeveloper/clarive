@@ -45,7 +45,7 @@ subtest 'build_where: builds correct where project_security' => sub {
 
     my $where = $view->build_where( username => $developer->username );
 
-    is_deeply $where,
+    cmp_deeply $where,
       {
         '$or' => [
             {
@@ -53,7 +53,7 @@ subtest 'build_where: builds correct where project_security' => sub {
                     '$in' => [ $project->mid ]
                 },
                 'category.id' => {
-                    '$in' => [ $id_category1, $id_category2, ]
+                    '$in' => bag($id_category1, $id_category2)
                 }
             },
             {

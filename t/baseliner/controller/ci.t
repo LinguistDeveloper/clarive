@@ -1,10 +1,10 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
@@ -12,7 +12,6 @@ use TestSetup;
 
 use Clarive::ci;
 use Clarive::mdb;
-use Baseliner::Core::Registry;
 
 # This is needed for tests, so Moose can find all the classes
 use BaselinerX::CI::balix_agent;
@@ -125,7 +124,7 @@ subtest 'grid: set save to false when no collection' => sub {
     my $id_role = TestSetup->create_role( actions => [] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $c = _build_c(username => $user->username);
+    my $c = _build_c( username => $user->username );
 
     my $controller = _build_controller();
 
@@ -306,9 +305,8 @@ subtest 'edit: sets save to true when has admin permission' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions =>
-          [ { action => 'action.ci.admin.Variable.variable' } ] );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Variable.variable' } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
 
@@ -408,7 +406,7 @@ subtest 'load: sets CI when user has permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.view.Variable.variable'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.view.Variable.variable' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
@@ -433,7 +431,7 @@ subtest 'load: sets CI when user has admin permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
@@ -458,7 +456,7 @@ subtest 'new_ci: loads ci when admin rights' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
@@ -481,12 +479,15 @@ subtest 'delete: deletes ci' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
 
-    my $c = _build_c( req => { params => { collection => 'variable', mids => [$variable->mid] } }, username => $user->username );
+    my $c = _build_c(
+        req      => { params => { collection => 'variable', mids => [ $variable->mid ] } },
+        username => $user->username
+    );
 
     my $controller = _build_controller();
 
@@ -512,7 +513,10 @@ subtest 'delete: throws error when no permission to delete ci' => sub {
 
     my $variable = TestUtils->create_ci('variable');
 
-    my $c = _build_c( req => { params => { collection => 'variable', mids => [$variable->mid] } }, username => $user->username );
+    my $c = _build_c(
+        req      => { params => { collection => 'variable', mids => [ $variable->mid ] } },
+        username => $user->username
+    );
 
     my $controller = _build_controller();
 
@@ -523,7 +527,7 @@ subtest 'export: exports ci to yaml' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -548,12 +552,13 @@ subtest 'export: exports ci to json' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
 
-    my $c = _build_c( req => { params => { format => 'json', mids => [ $variable->mid ] } }, username => $user->username );
+    my $c =
+      _build_c( req => { params => { format => 'json', mids => [ $variable->mid ] } }, username => $user->username );
 
     my $controller = _build_controller();
 
@@ -573,7 +578,7 @@ subtest 'export: exports ci to csv' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [{action => 'action.ci.admin'}] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -657,7 +662,7 @@ subtest 'tree_objects: returns cis with filtering by json condition' => sub {
 
     my $controller = _build_controller();
 
-    my ( $count, @tree ) = $controller->tree_objects(filter => '{"name":"My variable"}');
+    my ( $count, @tree ) = $controller->tree_objects( filter => '{"name":"My variable"}' );
 
     is $count, 1;
     is scalar @tree, 1;
@@ -688,7 +693,7 @@ subtest 'tree_objects: sorts by direction' => sub {
 
     my $controller = _build_controller();
 
-    my ( $count, @tree ) = $controller->tree_objects(dir => 'desc');
+    my ( $count, @tree ) = $controller->tree_objects( dir => 'desc' );
 
     is $count, 2;
     is scalar @tree, 2;
@@ -704,7 +709,7 @@ subtest 'tree_objects: searches by mids' => sub {
 
     my $controller = _build_controller();
 
-    my ( $count, @tree ) = $controller->tree_objects(mids => [$ci1->mid]);
+    my ( $count, @tree ) = $controller->tree_objects( mids => [ $ci1->mid ] );
 
     is $count, 1;
     is scalar @tree, 1;
@@ -726,6 +731,152 @@ subtest 'tree_objects: searches by mids' => sub {
 #    is scalar @tree, 1;
 #    is $tree[0]->{name}, 'Your variable';
 #};
+
+subtest 'tree_object_info: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+
+    my $mid = $variable->mid;
+
+    my $controller = _build_controller();
+
+    my (@tree) = $controller->tree_object_info( mid => $mid, parent => $mid );
+
+    is scalar @tree, 3;
+
+    cmp_deeply \@tree,
+      [
+        {
+            _id       => "$mid-0",
+            _parent   => "$mid",
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => ignore(),
+            type      => 'depend_from',
+            class     => '-',
+            classname => '-',
+            icon      => ignore(),
+            ts        => '',
+            versionid => '',
+        },
+        {
+            _id       => "$mid-1",
+            _parent   => "$mid",
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => ignore(),
+            type      => 'depend_to',
+            class     => '-',
+            classname => '-',
+            icon      => ignore(),
+            ts        => '',
+            versionid => '',
+        },
+        {
+            _id       => "$mid-2",
+            _parent   => "$mid",
+            _is_leaf  => \0,
+            mid       => $mid,
+            item      => ignore(),
+            type      => 'ci_request',
+            class     => '-',
+            classname => '-',
+            icon      => ignore(),
+            ts        => '',
+            versionid => '',
+        },
+      ];
+};
+
+subtest 'tree_object_depend: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $mid = $variable->mid;
+
+    my $variable2 = TestUtils->create_ci( 'variable', name => 'My other variable' );
+    my $mid2 = $variable2->mid;
+
+    mdb->master_rel->insert( { from_mid => $mid, to_mid => $mid2, rel_type => 'ci_ci' } );
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_object_depend( parent => $mid, from => $mid, limit => 25, start => 0 );
+
+    is $count, 1;
+    cmp_deeply \@tree, [
+        {
+            '_id'      => "$mid-0",
+            '_parent'  => "$mid",
+            '_is_leaf' => \0,
+
+            'icon'        => ignore(),
+            'class'       => 'BaselinerX::CI::variable',
+            'properties'  => undef,
+            'versionid'   => '1',
+            'classname'   => 'BaselinerX::CI::variable',
+            'mid'         => "$mid2",
+            'modified_by' => undef,
+            'bl'          => [ '*' ],
+            'type'        => 'object',
+            'collection'  => 'variable',
+            'moniker'     => undef,
+            'data'        => ignore(),
+            'item'        => 'My other variable',
+            'ts'          => ignore(),
+        }
+    ];
+};
+
+subtest 'tree_ci_request: returns dependencies tree' => sub {
+    _setup();
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
+    my $mid = $variable->mid;
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $topic_mid =
+      TestSetup->create_topic( project => $project, from_mid => $mid, rel_type => 'ci_request', status => $status_new );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_ci_request( mid => $mid, parent => $mid );
+
+    is $count, 1;
+    is scalar @tree, 1;
+
+    cmp_deeply \@tree,
+      [
+        {
+            '_id'        => "$mid-0",
+            '_parent'    => $mid,
+            '_is_leaf'   => \1,
+            'bl'         => undef,
+            'class'      => 'BaselinerX::CI::topic',
+            'collection' => 'topic',
+            'data'       => ignore(),
+            'icon'       => ignore(),
+            'item'       => "Category #$topic_mid",
+            'mid'        => $topic_mid,
+            'properties' => '',
+            'title'      => 'New Topic',
+            'ts'         => undef,
+            'type'       => 'topic',
+            'versionid'  => '',
+        }
+      ];
+};
 
 subtest 'user_can_search: checks if user can search cis' => sub {
     _setup();
@@ -754,11 +905,19 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Events' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',          'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+    );
 
     TestUtils->cleanup_cis();
 
     mdb->role->drop;
+    mdb->category->drop;
+    mdb->topic->drop;
+    mdb->rule->drop;
+    mdb->master_rel->drop;
 }
 
 done_testing;
