@@ -61,30 +61,22 @@ params:
             });
         }
         // set value
-        status_box.setValue( data.name_status ) ;            
+        status_box.setValue( data.name_status ) ;
     });	
     var comp = status_box;
-    
+
     if( meta.readonly  ) {
-        var status_cont = new Ext.Panel({ 
-            fieldLabel:_('Status'), 
+        var status_cont = new Ext.Panel({
+            fieldLabel:_('Status'),
             allowBlank: false,
             border: false,
-            items: status_box, layout:'fit',
-                listeners: {
-                    'afterrender':function(){
-                        if(meta.readonly){
-                            this.el.mask('');
-                            mask.setStyle('opacity', 0.2);
-                            mask.setStyle('height', 5000);
-                        }
-                    }
-                }
+            items: status_box,
+            layout:'fit'
         });
         comp = status_cont;
     }
 	return [
-		{ xtype: 'hidden', name: 'status', value: data ? data.id_category_status : -1 },		
+		{ xtype: 'hidden', name: 'status', value: data ? data.id_category_status : -1 },
 		comp
     ]
 })

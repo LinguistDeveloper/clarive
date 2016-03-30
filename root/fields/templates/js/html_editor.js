@@ -23,7 +23,7 @@ params:
         width: '99%',
         value: data ? data[meta.bd_field] : '',
         height: meta.height ? parseInt(meta.height) : 397,
-        submitValue: false, 
+        submitValue: false,
         readOnly: Baseliner.eval_boolean(meta.readonly)
     });
 
@@ -36,7 +36,7 @@ params:
 
     return [
         {   xtype: 'panel',
-            border: false,  
+            border: false,
             name: meta.id_field,
             margin: 0, padding: 0,
             fieldLabel: _(meta.name_field),
@@ -44,16 +44,6 @@ params:
             hidden: Baseliner.eval_boolean(meta.hidden),
             //style: 'margin-bottom: 15px',
             readOnly : readonly,
-            listeners: {
-                'afterrender':function(){
-                    var disable = Baseliner.eval_boolean(meta.readonly);
-                    if(disable){
-                        this.el.mask('');
-                        mask.setStyle('opacity', 0.6);
-                        mask.setStyle('height', 5000);
-                    }
-                }
-            },
             items: editor,
             get_save_data : function(){
                 return editor.getValue();
@@ -66,10 +56,10 @@ params:
                     this.getEl().applyStyles('border: none; margin_bottom: 0px');
                     this.on_change_lab.style.display = 'none';
                 }
-                                                
-                                
+
+
                 return is_valid;
-            }               
-        }               
+            }
+        }
     ]
 });
