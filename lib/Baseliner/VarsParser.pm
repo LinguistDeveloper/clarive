@@ -113,7 +113,7 @@ sub _parse_vars {
     #    my $array_ref = parse_vars('${foo}', {foo => [1, 2, 3]});
     #
     if ( $str =~ m/^$RE_WITH_CAPTURES$/ ) {
-        $str = $self->_parse_var_top( $1, $2 || $3, $vars );
+        $str = $self->_parse_var( $1, $2 || $3, $vars );
     }
 
     # Otherwise we just stringify everything
