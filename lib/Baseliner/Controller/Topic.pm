@@ -2175,7 +2175,6 @@ sub report_csv : Local {
     $body .= "\n" x ( 1024 - $len + 1 ) if $len < 1024;
     utf8::encode($body);
     Encode::from_to($body,'utf-8','iso-8859-15');
->>>>>>> changes because had differences between last merge and head
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
