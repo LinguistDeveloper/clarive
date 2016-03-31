@@ -126,10 +126,10 @@ sub build_where {
 
         if ($category_type) {
             if ( $category_type eq 'release' ) {
-                $where->{'category.is_release'} = 1;
+                $where->{'category.is_release'} = '1';
             }
             elsif ( $category_type eq 'changeset' ) {
-                $where->{'category.is_changeset'} = 1;
+                $where->{'category.is_changeset'} = '1';
             }
             else {
                 _fail 'Uknown category type';
