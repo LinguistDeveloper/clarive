@@ -19,7 +19,7 @@ subtest 'run_ship: copies file to remote' => sub {
 
     my $service = _build_service();
 
-    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'ship' } );
 
     my $tmp = tempdir();
     TestUtils->write_file( "foobar", "$tmp/foo" );
@@ -54,7 +54,7 @@ subtest 'run_ship: copies file with special symbols' => sub {
 
     my $service = _build_service();
 
-    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'ship' } );
 
     my $tmp = tempdir();
     my $filepath = "$tmp/foo bar \$baz";

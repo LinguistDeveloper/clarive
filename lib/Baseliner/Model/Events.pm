@@ -194,7 +194,8 @@ sub find_by_mid {
 
     my @events = mdb->event->find( { mid => "$mid" } )->sort( { ts => -1 } )->all;
 
-    my @filtered_events = grep { (defined $_->{ev_level} && $_->{ev_level} == 0) || $_->{level} >= $min_level } @events;
+    my @filtered_events =
+      grep { ( defined $_->{ev_level} && $_->{ev_level} == 0 ) || ( $_->{level} // 0 ) >= $min_level } @events;
 
     my @elems;
     foreach my $event (@filtered_events) {

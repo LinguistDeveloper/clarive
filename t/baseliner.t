@@ -1,17 +1,12 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
-use TestEnv;
-use TestUtils ':catalyst';
 
-BEGIN {
-    TestEnv->setup;
-}
+use TestEnv;
+BEGIN { TestEnv->setup }
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -19,14 +14,16 @@ use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 
 # mock Baseliner subs
-our $config = {}; 
+our $config = {};
 require Baseliner;
-sub Baseliner::config { $config };  # XXX had to monkey patch this one so config works
+no warnings 'redefine';
+sub Baseliner::config { $config };    # XXX had to monkey patch this one so config works
 
 subtest 'core encrypt-decrypt working' => sub {
     Baseliner->config->{decrypt_key} = '11111';
-    my $enc = Baseliner->encrypt( '123' );
-    is '123', Baseliner->decrypt( $enc );
+
+    my $enc = Baseliner->encrypt('123');
+    is(Baseliner->decrypt($enc), '123');
 };
 
 done_testing;

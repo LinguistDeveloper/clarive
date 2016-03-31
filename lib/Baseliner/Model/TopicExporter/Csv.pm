@@ -52,7 +52,7 @@ sub export {
                 }
                 elsif ( ref $du eq 'HASH' ) {
                     my @res;
-                    foreach ( keys $du ) {
+                    foreach ( keys %$du ) {
                         push @res, "$_:$du->{$_}";
                     }
                     $v = join ';', @res;
@@ -70,7 +70,7 @@ sub export {
                     # $v = Util->_encode_json($v);
                     # $v =~ s/{|}//g;
                     my $result;
-                    for my $step ( keys $v ) {
+                    for my $step ( keys %$v ) {
                         $result .= "$v->{$step}->{slotname} End: $v->{$step}->{plan_end_date}, ";
                     }
                     if   ($result) { $v = $result }

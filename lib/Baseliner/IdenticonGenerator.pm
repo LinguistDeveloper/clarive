@@ -3,6 +3,7 @@ use Moose;
 
 use Try::Tiny;
 use Image::Identicon;
+use Capture::Tiny qw(capture);
 use Baseliner::Utils qw(_file);
 
 has default_icon => qw(is ro required 1);

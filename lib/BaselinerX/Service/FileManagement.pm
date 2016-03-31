@@ -409,7 +409,7 @@ sub run_ship {
         }
         _fail _loc "Could not instanciate CI for server `%1`", $server unless ref $server;
         my $remote_path = $server->parse_vars( "$remote_path_orig" );
-        my $server_str = "$user\@".$server->name;
+        my $server_str = join '@', ($user // ''), $server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
         # $agent -> throw_errors(1);  # TODO needed, but may fail sometimes...

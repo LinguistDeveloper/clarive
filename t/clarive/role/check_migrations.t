@@ -7,6 +7,7 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 
 use boolean;
+use Capture::Tiny qw(capture);
 use Clarive::mdb;
 
 subtest 'run_start: throws when migrations are needed' => sub {
@@ -18,7 +19,9 @@ subtest 'run_start: throws when migrations are needed' => sub {
 subtest 'run_start: runs migrations when --migrate-yes flag' => sub {
     _setup();
 
-    _build_cmd( opts => { args => { 'migrate-yes' => 1 } } );
+    capture {
+        _build_cmd( opts => { args => { 'migrate-yes' => 1 } } );
+    };
 
     my $clarive = mdb->clarive->find_one;
     ok($clarive);
@@ -28,7 +31,9 @@ subtest 'run_start: runs migrations when --migrate-yes flag' => sub {
 subtest 'run_start: runs migrations automatically when empty database' => sub {
     _setup( empty => 1 );
 
-    _build_cmd();
+    capture {
+        _build_cmd();
+    };
 
     my $clarive = mdb->clarive->find_one;
     ok($clarive);

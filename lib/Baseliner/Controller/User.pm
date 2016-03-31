@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Try::Tiny;
 use File::Copy ();
 use GD::Image;
+use Capture::Tiny qw(capture);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
@@ -1105,7 +1106,8 @@ sub avatar_upload : Local {
 
         File::Copy::copy( $fh, "$avatar" ) or _fail "Error saving uploaded avatar: $!";
 
-        my $image = GD::Image->new("$avatar") or _fail "Error initializing GD object: $!";
+        my $image;
+        capture { $image = GD::Image->new("$avatar") or _fail "Error initializing GD object: $!" };
 
         # TODO: this probably should be configurable in global config
         my $width  = 32;

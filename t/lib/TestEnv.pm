@@ -43,9 +43,8 @@ sub setup {
     require Clarive::model;
     require Clarive::cache;
 
-    *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
-    *Baseliner::config   = sub { {} };
-    *Baseliner::app      = sub { };
+    *Baseliner::config = sub { {} };
+    *Baseliner::app    = sub { {_logger => sub {}}};
 }
 
 1;

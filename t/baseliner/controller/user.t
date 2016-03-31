@@ -1,17 +1,18 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
 use TestSetup;
 
+use Capture::Tiny qw(capture);
 use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
@@ -20,16 +21,16 @@ use Baseliner::Utils qw(_file _dir);
 
 use_ok 'Baseliner::Controller::User';
 
-subtest
-    'infoactions: non admin user is not allowed to query other users action'
-    => sub {
+subtest 'infoactions: non admin user is not allowed to query other users action' => sub {
     _setup();
 
     my $controller = _build_controller();
     my $c = _build_c( req => { params => { username => 'root' } } );
+
     $controller->infoactions($c);
+
     cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
-    };
+};
 
 subtest 'infoactions: same user is allowed to query his own actions' => sub {
     _setup();
@@ -392,6 +393,8 @@ subtest 'avatar_upload: upload avatar for another user has admin action' => sub 
     ok -e "$tempdir/root/identicon/otheruser.png";
 };
 
+done_testing;
+
 sub _build_c {
     mock_catalyst_c(
         username => 'test',
@@ -415,5 +418,3 @@ sub _setup {
 sub _build_controller {
     Baseliner::Controller::User->new( application => '' );
 }
-
-done_testing;
