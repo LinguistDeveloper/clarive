@@ -19,7 +19,8 @@ params:
 
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var allowBlank = meta.allowBlank == 'false' || meta.allowBlank == '0' || meta.allowBlank == 0 ? false: true;
+    var allowBlank = meta.id_field == 'title' ? false : ( meta.allowBlank == 'false' || meta.allowBlank == '0'
+                    || meta.allowBlank == 0 ? false: true );
 
     var height = meta.height ? meta.height : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_HEIGHT: DEFAULT_TEXTFIELD_HEIGHT );
     var maxLength = meta.maxLength ? meta.maxLength : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_MAX_LENGTH : DEFAULT_TEXTFIELD_MAX_LENGTH );
