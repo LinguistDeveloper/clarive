@@ -1,73 +1,87 @@
 (function(params){
     var data = params.data || {};
-    var days_before = new Ext.ux.form.SpinnerField({ 
-        value: data.days_before, 
+    var days_before = new Ext.ux.form.SpinnerField({
+        value: data.days_before,
         name: "days_before",
         hidden: true,
         autoWidth: true,
+        maxValue: '0',
         anchor:'100%',
         fieldLabel: _("Shift in days before today to show in chart. 0 or blank means today")
     });
+    days_before.hide();
 
-    var days_after = new Ext.ux.form.SpinnerField({ 
-        value: data.days_after, 
+    var days_after = new Ext.ux.form.SpinnerField({
+        value: data.days_after,
         name: "days_after",
         hidden: true,
+        minValue: '0',
         autoWidth: true,
         anchor:'100%',
         fieldLabel: _("Shift in days after today to show in chart. 0 or blank means today")
     });
+    days_after.hide();
 
-      var days_before_format_date = new Ext.form.DateField({
+    var days_before_format_date = new Ext.form.DateField({
       fieldLabel: _('Shift in days from today to show in chart.'),
       name: 'days_before_format_date',
-      value: data.days_before_format_date, 
+      value: data.days_before_format_date,
       format: 'Y-m-d',
       width: 165,
       hidden: true
     });
+    days_before_format_date.hide();
 
-      var days_after_format_date = new Ext.form.DateField({
+    var days_after_format_date = new Ext.form.DateField({
       fieldLabel: _('Shift in days from today to show in chart.'),
       name: 'days_after_format_date',
-      value: data.days_after_format_date, 
+      value: data.days_after_format_date,
       format: 'Y-m-d',
       width: 165,
       hidden: true
     });
+    days_after_format_date.hide();
+
+    if(data.rdoMethod === 'dateselection'){
+      days_before_format_date.show();
+      days_after_format_date.show();
+    }else{
+      days_after.show();
+      days_before.show();
+    };
 
     var selector = new  Ext.Container({
           id: 'selection_method',
           layout: 'hbox',
           fieldLabel: _('Selection method to introduce the date'),
-          value: data.selection_method,
+          value: data.rdoMethod,
           items: [
               {
                   xtype: 'radiogroup',
                   id: 'rdogrpMethod',
                   items: [
-                      { id: 'dateselection', boxLabel: _('Date'), name: 'rdoMethod', inputValue: 'dateselection'},
-                      { id: 'numberselection', boxLabel: 'Number', name: 'rdoMethod', width: 20, inputValue: 'numberSelection' }
-                     
+                      { id: 'dateselection', boxLabel: _('Date'), name: 'rdoMethod', width: 20, inputValue: 'dateselection', checked: data.rdoMethod === 'dateselection'},
+                      { id: 'numberselection', boxLabel: _('Number'), name: 'rdoMethod', width: 20, inputValue: 'numberSelection', checked: data.rdoMethod === 'numberSelection'}
                   ],
+
                   listeners: {
                       'change': function(rg,checked){
-                           
                             if(checked.id == 'dateselection'){
-                                
-
                                 days_before.hide();
                                 days_after.hide();
+                                days_before_format_date.setValue(days_before_format_date.originalValue);
+                                days_after_format_date.setValue(days_after_format_date.originalValue);
                                 days_before_format_date.show();
                                 days_after_format_date.show();
-                                  days_before.setValue('');
+                                days_before.setValue('');
                                 days_after.setValue('');
                                 
 
                             }else if (checked.id == 'numberselection'){
-                                
                                 days_before_format_date.hide();
                                 days_after_format_date.hide();
+                                days_after.setValue(days_after.originalValue);
+                                days_before.setValue(days_before.originalValue);
                                 days_after.show();
                                 days_before.show();
                                 days_before_format_date.setValue('');
