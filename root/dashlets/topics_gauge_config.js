@@ -153,7 +153,7 @@
                 ccategory,
                 cstatus,
                 { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-                { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition, anchor: '100%' }
+                { xtype:'textfield', vtype: 'json', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition, anchor: '100%' }
               ]
             },
             { layout:'form', 
@@ -193,7 +193,7 @@
                 ccategory_max,
                 cstatus_max,
                 { xtype : "checkbox", name : "not_in_status_max", checked: data.not_in_status_max=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-                { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition_max', value: data.condition_max, anchor: '100%' }
+                { xtype:'textfield', vtype: 'json', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition_max', value: data.condition_max, anchor: '100%' }
               ]
             },
             { layout:'form', 

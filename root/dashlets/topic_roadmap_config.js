@@ -53,7 +53,7 @@
                 { xtype : "checkbox", name : "not_in_bls", checked: data.not_in_bls=='on' ? true : false, boxLabel : _('Exclude selected environments?') },
                 ccategory,
                 { xtype : "checkbox", name : "not_in_category", checked: data.not_in_category=='on' ? true : false, boxLabel : _('Exclude selected categories?') },
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
+                { xtype:'textfield', vtype: 'json', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
                 { xtype:'textarea', height: 80, anchor:'100%', fieldLabel: _('Label Mask'), name: 'label_mask', 
                     value: data.label_mask || '<b>${category.acronym}#${topic.mid}</b> ${topic.title}' }
               ]
