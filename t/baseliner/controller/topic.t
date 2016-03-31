@@ -2097,6 +2097,78 @@ subtest 'update: new topics have menu_deploy in stash' => sub {
     ok exists $stash->{menu_deploy};    # this only shows up in case of failure
 };
 
+subtest 'view: strips html from fields' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $id_changeset_rule = _create_changeset_form(rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "description",
+                        "fieldletType" => "fieldlet.system.description",
+                        "id_field"     => "description",
+                    },
+                    "key" => "fieldlet.system.description",
+                    name  => 'Description',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "content",
+                        "fieldletType" => "fieldlet.html_editor",
+                        "id_field"     => "content",
+                    },
+                    "key" => "fieldlet.html_editor",
+                    name  => 'Content',
+                }
+            },
+        ]);
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
+
+    my $topic_mid = TestSetup->create_topic(
+        status      => $status,
+        id_category => $id_changeset_category,
+        title       => "Topic",
+        description => 'Hello <script>alert("hi")</script>there!',
+        content => 'Bye, <script>alert("hi")</script>bye!',
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 1
+            }
+        }
+    );
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    my $topic_data = $stash->{topic_data};
+
+    is $topic_data->{description}, 'Hello there!';
+    is $topic_data->{content},     'Bye, bye!';
+};
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 
@@ -2167,6 +2239,7 @@ sub _create_changeset_form {
                     name  => 'Release',
                 }
             },
+            @{$params{rule_tree} || []}
         ],
     );
 }

@@ -22,6 +22,17 @@ package Clarive::Features {
 package Clarive::Feature {
     use Mouse;
     has path => qw(is ro isa Str required 1);
+    has id => qw(is ro isa Str lazy 1), default => sub {
+        my $self = shift;
+
+        my $full_path = Path::Class::dir( $self->path );
+        return $full_path->relative( $full_path->parent )->stringify;
+    };
+    has root => qw(is ro isa Str lazy 1), default => sub {
+        my $self = shift;
+
+        return Path::Class::dir($self->path . '/root')->stringify;
+    };
     sub id {  [ (Path::Class::dir(shift->path)->basename =~ /^(.*)\.(.*?)$/ ) ]->[0] }
     sub path_to { 
         my $self = shift;

@@ -4,11 +4,22 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
+use Test::LongString;
 use TestEnv;
 
 BEGIN { TestEnv->setup }
 
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line);
+use Baseliner::Utils qw(
+  _pointer
+  query_grep
+  _unique
+  _array
+  _to_camel_case
+  parse_vars
+  _trend_line
+  _strip_html
+  _strip_html_editor
+);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -268,6 +279,132 @@ subtest '_trend_line: calculates trend with special cases' => sub {
     is_deeply _trend_line( x => [], y => [] ), [];
     is_deeply _trend_line( x => [ 0, 0, 0, 0, 0 ], y => [ 0, 0, 0, 0, 0 ] ),
       [ '0.00', '0.00', '0.00', '0.00', '0.00', ];
+};
+
+subtest '_strip_html: strips html' => sub {
+    is _strip_html('<b>Bold</b>'), 'Bold';
+    is _strip_html('<b><script>alert!</script>Bold</b>', rules => {b => []}), '<b>Bold</b>';
+};
+
+subtest '_strip_html_editor: strips html preserving allowed html formatting' => sub {
+    my $html = <<'EOF';
+    <span style="font-weight: bold;">1</span>
+    <br>
+    <span style="font-style: italic;">2</span>
+    <br>
+    <span style="text-decoration: underline;">3</span>
+    <br>
+    <span style="text-decoration: line-through;">4</span>
+    <br>
+    <sub>5</sub>
+    <br>
+    <sup>6</sup>
+    <span style="font-family: Narrow;">
+        <br>7<br>
+        <font size="5">8<br>
+        </font>
+    </span>
+    <div>
+        <span style="font-family: Narrow;">
+            <font size="5">9<br>
+                <span style="color: rgb(204, 102, 0);">10<br>
+                    <span style="background-color: rgb(153, 0, 0);">11<br>
+                    </span>
+                </span>
+            </font>
+        </span>12<span style="font-family: Narrow;">
+            <font size="5">
+                <span style="color: rgb(204, 102, 0);">
+                    <span style="background-color: rgb(153, 0, 0);">
+                        <br>
+                    </span>
+                </span>
+            </font>
+        </span>
+        <ul>
+            <li>
+                <span style="font-family: Narrow;">
+                    <font size="5">
+                        <span style="color: rgb(204, 102, 0);">
+                            <span style="background-color: rgb(153, 0, 0);">13</span>
+                        </span>
+                    </font>
+                </span>
+            </li>
+        </ul>
+        <ol>
+            <li>
+                <span style=" font-family: Narrow;">
+                    <font size="5">
+                        <span style=" color: rgb(204, 102, 0);">
+                            <span style=" background-color: rgb(153, 0, 0);">14</span>
+                        </span>
+                    </font>
+                </span>
+            </li>
+        </ol>
+        <span style=" font-family: Narrow;">
+            <font size="5">
+                <span style=" color: rgb(204, 102, 0);">
+                    <span style=" background-color: rgb(153, 0, 0);">
+                        <br>
+                    </span>
+                </span>
+            </font>
+        </span>
+        <div style="text-align: center;">
+            <span style="color: rgb(204, 102, 0);">
+                <font size="5">
+                    <span style="font-family: Narrow;">123123<br>
+                        <br>
+                    </span>
+                </font>
+            </span>
+            <div style="text-align: left;">
+                <hr>
+                <img src="http://123">
+                <br>
+                <font size="5">12312</font>
+                <br>
+            </div>
+            <span style="color: rgb(204, 102, 0);">
+                <font size="5">
+                    <span style="font-family: Narrow;">
+                    </span>
+                </font>
+            </span>
+            <span style=" font-family: Narrow;">
+                <font size="5">
+                    <span style=" color: rgb(204, 102, 0);">
+                        <span style=" background-color: rgb(153, 0, 0);">
+                        </span>
+                    </span>
+                </font>
+            </span>
+            <a href="http://123">123123</a>
+            <br>
+            <span style=" font-family: Narrow;">
+                <font size="5">
+                    <span style=" color: rgb(204, 102, 0);">
+                        <span style=" background-color: rgb(153, 0, 0);">
+                        </span>
+                    </span>
+                </font>
+            </span>
+        </div>
+    </div>
+    <div>
+        <span style="font-family: Narrow;">
+        </span>
+    </div>
+EOF
+
+    $html =~ s{^\s+}{}g;
+    $html =~ s{\s+$}{}g;
+    $html =~ s{>\s+<}{><}g;
+
+    is_string _strip_html_editor($html), $html;
+
 };
 
 done_testing;

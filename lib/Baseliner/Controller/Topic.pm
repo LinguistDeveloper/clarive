@@ -357,7 +357,7 @@ sub get_field_bodies {
     # load comp body for each field
     for my $field ( _array( $meta ) ) {
         next unless length $field->{js};
-        my $file = Baseliner->path_to( 'root', $field->{js} );
+        my $file = Clarive->path_to( 'root', $field->{js} );
         _debug "field file: $file";
         if( !ref $file || $file->is_dir ) {
             _error "********ERROR: field file is not valid: $file ($field->{js})";
@@ -496,7 +496,9 @@ sub init_values_topic : Private {
 
 sub view : Local {
     my ($self, $c) = @_;
+
     my $p = $c->request->parameters;
+
     my $topic_mid = $p->{topic_mid} || $p->{action};
     ($topic_mid) = _array( $topic_mid ) if ref $topic_mid eq 'ARRAY';
     my $id_category;
@@ -676,6 +678,18 @@ sub view : Local {
             $meta = $self->get_field_bodies( $meta );
             $meta = model->Topic->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data );
 
+            foreach my $field (@$meta) {
+                next
+                  unless $field->{key}
+                  && ( $field->{key} eq 'fieldlet.html_editor'
+                    || $field->{key} eq 'fieldlet.system.description' );
+
+                my $name  = $field->{id_field};
+                my $value = $data->{$name};
+
+                $data->{$name} = _strip_html_editor($value);
+            }
+
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
             $data->{admin_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>$write_action );
@@ -686,7 +700,9 @@ sub view : Local {
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {
-        $c->stash->{json} = { success=>\0, msg=>_loc("Problem found opening topic %1. The error message is: %2", $topic_mid, shift()) };
+        my $error = shift;
+
+        $c->stash->{json} = { success=>\0, msg=>_loc("Problem found opening topic %1. The error message is: %2", $topic_mid, $error) };
         $c->forward('View::JSON');
     };
 }

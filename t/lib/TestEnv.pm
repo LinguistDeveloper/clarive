@@ -21,6 +21,7 @@ sub config  { {} }
 sub version { '' }
 
 use Test::MockTime ();
+use Path::Class ();
 use Baseliner::Core::Registry;
 
 BEGIN { $ENV{BALI_FAST}++ }
@@ -30,7 +31,7 @@ BEGIN {
     $Baseliner::_logger = sub { };
     $Baseliner::config  = sub { {} };
 
-    sub Clarive::config { { mongo => { dbname => 'acmetest' } } }
+    sub Clarive::config { { mongo => { dbname => 'acmetest' }, root => Path::Class::dir('root')->absolute } }
 }
 
 sub setup {
