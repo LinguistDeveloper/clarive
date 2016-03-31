@@ -52,6 +52,7 @@ use Exporter::Tidy default => [
     _damn
     _parameters
     _strip_html
+    _strip_html_editor
     is_number
     _dump
     _load
@@ -136,6 +137,7 @@ use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use experimental 'switch', 'autoderef';
 use DateTime::TimeZone;
+use HTML::Restrict;
 use Baseliner::I18N;
 use Baseliner::VarsParser;
 
@@ -723,13 +725,37 @@ sub _replace_tags {
 }
 
 sub _strip_html {
-    my $d = shift;
-    return $d unless length $d;
-    use HTML::Restrict;
+    my ($d, %options) = @_;
 
-    my $hr = HTML::Restrict->new();
+    return $d unless length $d;
+
+    my $hr = HTML::Restrict->new(%options);
     my $clean_text = $hr->process($d);
-    $clean_text;
+
+    return $clean_text;
+}
+
+sub _strip_html_editor {
+    my ($d, %options) = @_;
+
+    return _strip_html(
+        $d,
+        rules => {
+            a    => ['href'],
+            br   => [],
+            sub  => [],
+            sup  => [],
+            span => ['style'],
+            div  => ['style'],
+            b    => [],
+            font => ['size'],
+            ul   => [],
+            li   => [],
+            ol   => [],
+            img  => ['src'],
+            hr   => [],
+        }
+    );
 }
 
 sub _check_parameters {
@@ -1010,10 +1036,10 @@ sub _mason {
     my $body;
     @mason_features or @mason_features = map {
         [ $_->id => _dir( $_->root )->stringify ]
-    } Baseliner->features->list;
+    } Clarive->features->list;
     require File::Spec;
     require HTML::Mason::Interp;
-    my $comp_root = $p{comp_root} ? [[root=>"$p{comp_root}"]] : [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
+    my $comp_root = $p{comp_root} ? [[root=>"$p{comp_root}"]] : [ @mason_features, [ root=>"". Clarive->config->{root} ] ];
     my $data_dir = File::Spec->catdir( _tmp_dir(), 'mason', sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
         ( $p{utf8} ? (preamble => "use utf8;") : () ),
