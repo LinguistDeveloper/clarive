@@ -133,6 +133,43 @@ subtest 'build_where: builds correct where categories from filter' => sub {
     is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
 };
 
+subtest 'build_where: builds correct where category_name from filter' => sub {
+    _setup();
+
+    my $name_category1 = 'Category1';
+    my $name_category2 = 'Category2';
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category1 =
+      TestSetup->create_category( name => $name_category1, id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => $name_category2, id_rule => $id_rule, id_status => $status->mid );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category1.view',
+            },
+            {
+                action => 'action.topics.category2.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $view = _build_view();
+
+    my $where = $view->build_where( username => $developer->username, filter => { category_name => [$name_category1] } );
+
+    is_deeply $where->{'category_name'}, { '$in' => [$name_category1] };
+};
+
+
+
+
 subtest 'build_where: builds correct where statuses' => sub {
     _setup();
 

@@ -139,6 +139,11 @@ sub build_where {
         Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
         if ($filter) {
+            foreach my $cond (keys %$filter) {
+                if (ref $filter->{$cond} eq 'ARRAY') {
+                    $filter->{$cond} = mdb->in($filter->{$cond});
+                }
+            }
             $where = merge $where, $filter;
         }
        
