@@ -40,7 +40,7 @@
                   id: 'rdogrpMethod',
                   items: [
                       { id: 'dateselection', boxLabel: _('Date'), name: 'rdoMethod', inputValue: 'dateselection', checked: data.rdoMethod === 'dateselection'},
-                      { id: 'numberselection', boxLabel: 'Number', name: 'rdoMethod', width: 20, inputValue: 'numberSelection', checked: data.rdoMethod === 'numberSelection' }
+                      { id: 'numberselection', boxLabel: _('Number'), name: 'rdoMethod', width: 20, inputValue: 'numberSelection', checked: data.rdoMethod === 'numberSelection' }
                      
                   ],
                   listeners: {

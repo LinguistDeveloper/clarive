@@ -8697,3 +8697,7 @@ msgstr "CARGANDO"
 
 msgid "Date to be shown"
 msgstr "Fecha a mostrar"
+
+msgid "Number"
+msgstr "Número"
+
