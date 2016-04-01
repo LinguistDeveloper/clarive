@@ -54,9 +54,7 @@ subtest 'infoactions: root user is allowed to query any user actions' => sub {
     cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
-subtest
-    'infodetail: non admin user is not allowed to query other users detail'
-    => sub {
+subtest 'infodetail: non admin user is not allowed to query other users detail' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -67,10 +65,9 @@ subtest
 
     $controller->infodetail($c);
     cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
-    };
+};
 
-subtest 'infodetail: non admin user is not allowed to query role details' =>
-    sub {
+subtest 'infodetail: non admin user is not allowed to query role details' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -82,7 +79,7 @@ subtest 'infodetail: non admin user is not allowed to query role details' =>
 
     $controller->infodetail($c);
     cmp_deeply $c->stash, { json => { msg => re(qr/not authorized/) } };
-    };
+};
 
 subtest 'infodetail: same user is allowed to query his own details' => sub {
     _setup();
@@ -151,7 +148,7 @@ subtest 'avatar: generates avatar for specific user' => sub {
     $c->mock('serve_static_file');
 
     my $controller = _build_controller();
-    $controller->avatar($c, 'user', 'foo.png');
+    $controller->avatar( $c, 'user', 'foo.png' );
 
     my ($file) = $c->mocked_call_args('serve_static_file');
 
@@ -200,7 +197,7 @@ subtest 'avatar: returns default avatar when generation fails' => sub {
 
     my $controller = _build_controller();
     $controller = Test::MonkeyMock->new($controller);
-    $controller->mock( _build_identicon_generator => sub { $identicon_generator } );
+    $controller->mock( _build_identicon_generator => sub {$identicon_generator} );
     $controller->avatar($c);
 
     my ($file) = $c->mocked_call_args('serve_static_file');
@@ -237,7 +234,7 @@ subtest 'avatar_refresh: shows error when no avatar was present' => sub {
     $controller->avatar_refresh($c);
 
     cmp_deeply $c->stash,
-      { json => { success => \0, msg => re(qr/Error removing previous avatar '.*?': No such file or directory/) } };
+        { json => { success => \0, msg => re(qr/Error removing previous avatar '.*?': No such file or directory/) } };
 };
 
 subtest 'avatar_refresh: throws when refreshing avatar for another user' => sub {
@@ -248,7 +245,7 @@ subtest 'avatar_refresh: throws when refreshing avatar for another user' => sub 
     my $controller = _build_controller();
 
     like exception { $controller->avatar_refresh( $c, 'otheruser' ) },
-      qr/Cannot change avatar for user otheruser: user test not administrator/;
+        qr/Cannot change avatar for user otheruser: user test not administrator/;
 };
 
 subtest 'avatar_refresh: removes avatar for another when root' => sub {
@@ -272,13 +269,7 @@ subtest 'avatar_refresh: removes avatar for another user has admin action' => su
     _setup();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.admin.users',
-            }
-        ]
-    );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.admin.users', } ] );
     my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
 
     my $tempdir = tempdir();
@@ -306,12 +297,12 @@ subtest 'avatar_upload: returns an error when upload fails' => sub {
     $controller->avatar_upload($c);
 
     cmp_deeply $c->stash,
-      {
+        {
         'json' => {
             'msg'     => re(qr/Error saving uploaded avatar: /),
             'success' => \0
         }
-      };
+        };
 };
 
 subtest 'avatar_upload: saves avatar' => sub {
@@ -329,12 +320,12 @@ subtest 'avatar_upload: saves avatar' => sub {
     ok -e "$tempdir/root/identicon/root.png";
 
     cmp_deeply $c->stash,
-      {
+        {
         'json' => {
             'msg'     => 'Changed user avatar',
             'success' => \1
         }
-      };
+        };
 };
 
 subtest 'avatar_upload: throws when uploading avatar for another user' => sub {
@@ -345,7 +336,7 @@ subtest 'avatar_upload: throws when uploading avatar for another user' => sub {
     my $controller = _build_controller();
 
     like exception { $controller->avatar_upload( $c, 'otheruser' ) },
-      qr/Cannot change avatar for user otheruser: user test not administrator/;
+        qr/Cannot change avatar for user otheruser: user test not administrator/;
 };
 
 subtest 'avatar_upload: uploads avatar for another when root' => sub {
@@ -368,13 +359,7 @@ subtest 'avatar_upload: upload avatar for another user has admin action' => sub 
     _setup();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.admin.users',
-            }
-        ]
-    );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.admin.users', } ] );
     my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
 
     my $tempdir = tempdir();
@@ -396,7 +381,7 @@ subtest 'avatar_upload: upload avatar for another user has admin action' => sub 
 subtest 'country_info: get country info successful' => sub {
     _setup();
 
-    my $c = _build_c( req => { params => { file => 'data/zones.xml' } } );
+    my $c = _build_c( path_to => $ENV{CLARIVE_HOME} );
     my $controller = _build_controller();
     $controller->country_info($c);
 
@@ -409,8 +394,9 @@ subtest 'country_info: get country info successful' => sub {
 subtest 'country_info: File not found' => sub {
     _setup();
 
-    my $c = _build_c( req => { params => { file => 'daa/zones.xml' } } );
+    my $c = _build_c( path_to => '/foo' );
     my $controller = _build_controller();
+
     $controller->country_info($c);
 
     cmp_deeply $c->stash, { json => { msg => re(qr/Error: File not found/), success => \0 } };
@@ -428,7 +414,6 @@ subtest 'timezone_list: list the timezone' => sub {
     is scalar @cnt, '349';
 };
 
-done_testing;
 
 sub _build_c {
     mock_catalyst_c(
@@ -453,3 +438,5 @@ sub _setup {
 sub _build_controller {
     Baseliner::Controller::User->new( application => '' );
 }
+
+done_testing;
