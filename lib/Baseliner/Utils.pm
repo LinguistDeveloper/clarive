@@ -102,6 +102,7 @@ use Exporter::Tidy default => [
     _to_camel_case
     _unbless
     _trend_line
+    _truncate
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2316,6 +2317,21 @@ sub _trend_line {
 
     my @line = map { sprintf( "%.2f", $b + $m * $x[$_] ) } 0 .. scalar(@x) - 1;
     return \@line;
+}
+
+sub _truncate {
+    my ( $str, $max_length, $append ) = @_;
+
+    $append //= '[...]';
+
+    die "max_length $max_length is less then the length of '$append'" if $max_length < length($append);
+
+    if ( length($str) + length($append) > $max_length ) {
+        $str = substr( $str, 0, $max_length - length($append) );
+        $str .= $append if $append;
+    }
+
+    return $str;
 }
 
 1;

@@ -20,6 +20,7 @@ use Baseliner::Utils qw(
   _strip_html
   _strip_html_editor
 );
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -404,7 +405,14 @@ EOF
     $html =~ s{>\s+<}{><}g;
 
     is_string _strip_html_editor($html), $html;
+};
 
+subtest '_truncate: truncates string' => sub {
+    is _truncate( 'foobar',    5 ), '[...]';
+    is _truncate( 'foobarbaz', 6 ), 'f[...]';
+    is _truncate( 'foobar', 5,  '...' ), 'fo...';
+    is _truncate( 'foobar', 5,  '' ),    'fooba';
+    is _truncate( 'foobar', 10, '' ),    'foobar';
 };
 
 done_testing;

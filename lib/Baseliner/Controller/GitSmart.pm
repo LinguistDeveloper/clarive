@@ -8,7 +8,7 @@ use Path::Class;
 use URI::Escape 'uri_unescape';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
-use Baseliner::Utils;
+use Baseliner::Utils qw(_truncate _debug _error _throw _file _html_escape _loc);
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
 
@@ -139,6 +139,9 @@ sub _run_post_event {
     my $repo_id = $repo->mid;
     my $g = Girl::Repo->new( path => $repo->repo_dir );
 
+    my $config = $c->stash->{git_config};
+    my $max_diff_size = $config->{max_diff_size} // 500 * 1024;
+
     foreach my $change (@$changes) {
         my $new_sha   = $change->{new};
         my $old_sha   = $change->{old};
@@ -150,6 +153,9 @@ sub _run_post_event {
 
         my $commit = $g->commit($new_sha);
         my $diff   = $self->_diff( $g, $old_sha, $new_sha );
+
+        $diff = _truncate($diff, $max_diff_size);
+
         my $title  = $commit->message;
 
         my $rev_mid = $self->_create_or_find_rev( $new_sha, $repo_id, $commit, $ref_short );

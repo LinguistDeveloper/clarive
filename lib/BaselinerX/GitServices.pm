@@ -23,6 +23,7 @@ register 'config.git' => {
         { id=>'path', label=>'Path to git binary', default=>'/usr/bin/git'  },
         { id=>'show_changes_in_tree', label=>'Show tags in the Lifecycle tree', default=>'1' },
         { id=>'hide_used_commits', label=>'Hide commits already added to changeset', default=>'1' },
+        { id=>'max_diff_size', label=>'Truncate diff if its length exceeds this number', default=>500 * 1024 },
     ]
 };
 
