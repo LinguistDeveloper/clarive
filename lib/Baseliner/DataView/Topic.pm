@@ -126,10 +126,10 @@ sub build_where {
 
         if ($category_type) {
             if ( $category_type eq 'release' ) {
-                $where->{'category.is_release'} = 1;
+                $where->{'category.is_release'} = '1';
             }
             elsif ( $category_type eq 'changeset' ) {
-                $where->{'category.is_changeset'} = 1;
+                $where->{'category.is_changeset'} = '1';
             }
             else {
                 _fail 'Uknown category type';
@@ -139,6 +139,11 @@ sub build_where {
         Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 
         if ($filter) {
+            foreach my $cond (keys %$filter) {
+                if (ref $filter->{$cond} eq 'ARRAY') {
+                    $filter->{$cond} = mdb->in($filter->{$cond});
+                }
+            }
             $where = merge $where, $filter;
         }
        
