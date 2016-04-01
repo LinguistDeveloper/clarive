@@ -405,6 +405,7 @@ EOF
     $html =~ s{>\s+<}{><}g;
 
     is_string _strip_html_editor($html), $html;
+};
 
 subtest '_truncate: truncates string' => sub {
     is _truncate( 'foobar',    5 ), '[...]';
