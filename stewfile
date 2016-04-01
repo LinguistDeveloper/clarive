@@ -12,6 +12,7 @@ libb-hooks-parser-perl
 
 zip
 unzip
+file
 
 # Command-line utilities
 liblinux-distribution-perl
@@ -60,6 +61,7 @@ libterm-size-any-perl
 libtext-unaccent-pureperl-perl
 libtie-ixhash-perl
 libjavascript-duktape-perl
+libfile-libmagic-perl
 
 # Daemons/Processes
 libproc-background-perl
