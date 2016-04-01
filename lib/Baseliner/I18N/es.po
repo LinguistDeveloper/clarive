@@ -8701,3 +8701,5 @@ msgstr "Fecha a mostrar"
 msgid "Number"
 msgstr "Número"
 
+msgid "Invalid JSON"
+msgstr "Formato JSON inválido"

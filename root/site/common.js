@@ -4348,5 +4348,5 @@ Ext.apply(Ext.form.VTypes, {
 
         return false;
     },
-    'jsonText': 'Invalid JSON'
+    'jsonText': _('Invalid JSON')
 });
