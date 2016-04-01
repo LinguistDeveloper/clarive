@@ -1219,7 +1219,7 @@ sub country_info : Local {
             _fail _loc('Error: File not found');
         }
         my $zones = $xml->XMLin( "$zones_file" );
-        for my $country (all_country_names) {
+        for my $country (all_country_names()) {
             my $code     = country2code($country);
             my $currency = $zones->{CcyNtry}[$i]{Ccy} or _fail "Error to find the currency";
             my $decimal  = $zones->{CcyNtry}[$i]{Decimal} or _fail "Error to find the decimal";
