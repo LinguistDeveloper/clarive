@@ -88,6 +88,7 @@ params:
             name: meta.id_field,
             height: meta.height || 250,
             value: data[ meta.id_field ],
+            display_field: display_field,
 			enableDragDrop:  Baseliner.eval_boolean(meta.readonly),
 			readOnly:  readonly,
 			hidden: Baseliner.eval_boolean(meta.hidden),

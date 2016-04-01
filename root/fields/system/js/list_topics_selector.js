@@ -87,6 +87,7 @@ params:
             value: data[ meta.id_field ],
             enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
             readOnly:  readonly,
+            display_field: display_field,
             hidden: Baseliner.eval_boolean(meta.hidden),
             allowBlank: readonly ? true : meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
         });
