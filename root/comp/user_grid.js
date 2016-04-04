@@ -354,7 +354,7 @@
             viewConfig: {
                 forceFit: true
             },          
-            height:200,
+            height:150,
             cls:'user_grid_edit_window',
             loadMask: true,
             columns: [
@@ -402,7 +402,7 @@
             enableDrag: true,
             containerScroll: true,
             autoScroll: true,
-            height:200,         
+            height:150,         
             rootVisible: true,
             preloadChildren: true,
             cls:'user_grid_edit_window',
@@ -587,7 +587,7 @@
     }],
     autoSizeColumns: true,
     deferredRender: true,
-    height: 200,
+    height: 150,
     bbar: [
         btn_delete_row,
         btn_delete_all
@@ -787,7 +787,7 @@
 
         win = new Ext.Window({
             title: _(title),
-            autoHeight: true,
+            height: 600,
             width: 730,
             closeAction: 'close',
             modal: true,

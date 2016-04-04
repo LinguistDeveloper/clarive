@@ -526,6 +526,7 @@
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
+            cls:'topic_admin_edit_panels',
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
@@ -567,7 +568,8 @@
             title: _('General'),
             frame: true,
             border: false,
-            padding: 10,
+            autoHeight: true,
+            padding: '15px 10px',
             url:'/topicadmin/update_category',
             layout: {
                 type: 'column',
@@ -821,6 +823,7 @@
             viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
+            cls: 'topic_admin_edit_panels',
             columns: [
                 { hidden: true, dataIndex:'id' },
                   check_admin_status_sm,
@@ -882,6 +885,7 @@
             stripeRows: true,
             autoScroll: true,
             autoWidth: true,
+            cls:'topic_admin_edit_panels',
             viewConfig: { forceFit: true, scrollOffset: 2 },            
             height:190,
             columns: [
@@ -977,6 +981,7 @@
                 groupTextTpl: '{[ values.rs[0].data["role"] ]}'
             }),         
             iconCls: 'icon-grid',
+            cls: 'topic_admin_edit_panels',
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
             columns: [
@@ -1208,6 +1213,7 @@
         sm: check_categories_sm,
         height: 400,
         header: true,
+        cls:'topic_admin_grids',
         stripeRows: true,
         autoScroll: true,
         enableHdMenu: false,
@@ -1538,6 +1544,7 @@
         stripeRows: true,
         enableHdMenu: false,
         store: store_label,
+        cls:'topic_admin_grids',
         viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
@@ -1660,9 +1667,7 @@
         frame:true,
         title: 'Simple Form with FieldSets',
         bodyCssClass: 'topic-admin-panel',
-        bodyStyle: {'padding':'5px 5px 0' },
         width: 400,
-
         items: [
                 
         {
@@ -1672,7 +1677,7 @@
             layout:'form'
             ,border:false
             ,xtype:'panel'
-            ,bodyStyle:'padding:10px 10px 10px 10px'
+            ,bodyCssClass: 'topic_admin_paddings'
         }
         ,items:[
             
@@ -1701,7 +1706,7 @@
             layout:'form'
             ,border:false
             ,xtype:'panel'
-            ,bodyStyle:'padding:10px 10px 10px 10px'
+             ,bodyCssClass: 'topic_admin_paddings'
         }
         ,items:[{
             // left column

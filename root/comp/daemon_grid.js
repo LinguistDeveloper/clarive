@@ -203,6 +203,7 @@
         title = 'Create daemon';
 
         schedule_service = Baseliner.combo_services({
+            cls:'daemon_grid_active_instances',
             hiddenName: 'service'
         });
 
@@ -296,6 +297,7 @@
         win = new Ext.Window({
             title: _(title),
             width: 550,
+            cls:'daemon_grid_edit_window',
             autoHeight: true,
             items: form_daemon
         });

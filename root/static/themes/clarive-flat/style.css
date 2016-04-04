@@ -337,8 +337,12 @@ button.x-btn-text {
 }
 
 /* rgo: upload fieldlet border */
-div.x-panel.x-grid-panel.ux-maximgb-tg-panel {
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel{
     border: 1px solid #ccc;
+}
+
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel,
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel .x-panel-bwrap .x-panel-tbar .x-toolbar.x-small-editor.x-toolbar-layout-ct .x-toolbar-ct{
     max-width:99%;
 }
 
@@ -942,6 +946,12 @@ textarea.x-form-textarea.x-form-field {
 .x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top .x-panel.x-panel-noborder .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder {
     padding-right: 5px;
 }
+
+
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top,
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top .x-panel.x-panel-noborder .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder.x-box-layout-ct {
+    background-color:  #f1f1f1 !important;
+}
 .x-tab-panel-body.x-tab-panel-body-top {
     width: auto !important;
     border: 0;
@@ -970,18 +980,34 @@ textarea.x-form-textarea.x-form-field {
     margin-top: 20px;
 }
 
+.topic_admin_grids {
+   border:1px solid #C1C1C1;
+   padding: 0px 0px 0px 0px;
+}
+
+.topic_admin_edit_panels {
+   border:1px solid #C1C1C1;
+   width: 99.5% !important;
+}
+
+.topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body {
+   height: 190px !important; 
+}
+
+.topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body .x-grid3 .x-grid3-viewport .x-grid3-scroller  {
+  width: 99.2% !important;
+}
 .user_grid_edit_window {
     border:1px solid #C1C1C1;
     width: 99.5% !important;
     padding-bottom:5px;
 }
 
-.role_grid_edit_window {
-    border:1px solid #C1C1C1;
-}
-
 .user_grid_edit_window_padding {
     padding-bottom:5px;
+}
+.role_grid_edit_window {
+    border:1px solid #C1C1C1;
 }
 
  .x-tab-panel.role_grid_edit_window.x-border-panel {
@@ -992,14 +1018,9 @@ textarea.x-form-textarea.x-form-field {
     width: 660.5px !important;
 
 }
-/*
-.x-grid3-viewport{
-    border:1px solid #C1C1C1;
-    width: 382px;
-}*/
 
  .daemon_grid_active_instances {
-    margin-left: 95px !important;
+    margin-left: 85px !important;
     border: 1px solid #c1c1c1;
 }
 

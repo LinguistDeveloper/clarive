@@ -855,7 +855,7 @@
 			
 			win_recipients = new Ext.Window({
 				title: _(title),
-				autoHeight: true,
+				height: '100%',
 				width: 730,
 				closeAction: 'close',
 				modal: true,
