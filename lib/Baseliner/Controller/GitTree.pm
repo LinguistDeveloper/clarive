@@ -7,6 +7,8 @@ use Try::Tiny;
 use Baseliner::Sugar;
 use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape _warn);
 
+use Git;
+use File::LibMagic;
 require Git::Wrapper;
 require Girl;
 
@@ -324,17 +326,22 @@ sub newjob : Local {
 }
 
 sub is_binary_file {
-    my ($self, %params ) = @_;
-    my $isBinary = 0;
-    my $g = $params{gitApi};
+    my ( $self, %params ) = @_;
+
+    my $g           = $params{gitApi};
     my $commit_file = $params{commit_file};
-    my $filename = $params{filename};
-    try{
-        my $cmd = "git --git-dir $g->{path} diff --no-index --numstat /dev/null $filename";
-        my $res = `$cmd`;
-        $isBinary = $res =~ m/-\s*-/;
-    }catch{ };
-    return $isBinary;
+    my $filename    = $params{filename};
+
+    my $repo = Git->repository( Directory => $g->path );
+
+    my ( $fh, $c ) = $repo->command_output_pipe( 'cat-file', '-p', "HEAD:$filename" );
+
+    my $magic = File::LibMagic->new;
+    my $info  = $magic->info_from_handle($fh);
+
+    $repo->command_close_pipe( $fh, $c );
+
+    return $info->{description} !~ m/ascii|text/i;
 }
 
 sub view_file : Local {

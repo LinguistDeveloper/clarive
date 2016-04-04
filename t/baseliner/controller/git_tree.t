@@ -1,40 +1,26 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
-use TestEnv;
-use TestUtils ':catalyst';
 
-TestEnv->setup;
+use TestEnv;
+BEGIN { TestEnv->setup }
+use TestUtils ':catalyst';
 
 use Clarive::ci;
 use Clarive::mdb;
 use Baseliner::Core::Registry;
-use Baseliner::Controller::GitTree;
 use BaselinerX::Type::Model::ConfigStore;
-
-local *Baseliner::model = sub {
-    shift;
-    my ($model) = @_;
-
-    if ( $model eq 'ConfigStore' ) {
-        require BaselinerX::Type::Model::ConfigStore;
-        return BaselinerX::Type::Model::ConfigStore->new;
-    }
-
-    return Clarive::model($model);
-    die "unknown model '$model'";
-};
 
 my $RE_sha8 = '[a-f0-9]{8}';
 my $RE_sha  = '[a-f0-9]{40}';
 sub re_sha8 { re(qr/^$RE_sha8$/) }
 sub re_sha  { re(qr/^$RE_sha$/) }
 sub re_date { re(qr/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d$/) }
+
+use_ok 'Baseliner::Controller::GitTree';
 
 subtest 'get_commits_history: returns validation errors' => sub {
     _setup();
@@ -422,6 +408,36 @@ subtest 'view_file: returns file content' => sub {
       };
 };
 
+subtest 'view_file: returns special content when binary' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit(
+        $repo,
+        file    => 'binary.img',
+        content => do { local $/; open my $fh, '<', 'root/static/spinner.gif' or die $!; <$fh> }
+    );
+
+    my $controller = _build_controller();
+
+    my $params = { repo_mid => $repo->mid, filename => 'binary.img', sha => $sha };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->view_file($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            'msg'          => 'Success viewing file',
+            'success'      => \1,
+            'file_content' => "It's a Binary file (view method not applicable)",
+            'rev_num'      => re_sha8()
+        }
+      };
+};
+
 subtest 'get_file_blame: returns validation errors' => sub {
     _setup();
 
@@ -461,6 +477,36 @@ subtest 'get_file_blame: returns blame' => sub {
       {
         json => {
             'msg'      => re(qr/^\^[a-f0-9]{7} \(vti .*?\) This is a howto\.$/),
+            'success'  => \1,
+            'suported' => \1
+        }
+      };
+};
+
+subtest 'get_file_blame: returns special blame when binary' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit(
+        $repo,
+        file    => 'binary.img',
+        content => do { local $/; open my $fh, '<', 'root/static/spinner.gif' or die $!; <$fh> }
+    );
+
+
+    my $controller = _build_controller();
+
+    my $params = { repo_mid => $repo->mid, filename => 'binary.img', sha => $sha };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->get_file_blame($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            'msg'      => "It's a Binary file (blame method not applicable)",
             'success'  => \1,
             'suported' => \1
         }
@@ -531,6 +577,8 @@ subtest 'view_diff_file: returns diff' => sub {
 };
 
 subtest 'view_diff_file: returns diff when file has only one line' => sub {
+    _setup();
+
     my $repo = TestUtils->create_ci_GitRepository();
 
     my $sha = TestGit->commit( $repo, file => 'fich.txt', content => 'primera linea', message => 'primer commit' );
@@ -548,7 +596,6 @@ subtest 'view_diff_file: returns diff when file has only one line' => sub {
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
-    $controller->view_diff_file($c);
     $controller->view_diff_file($c);
 
     is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code}, "-primera linea\n+segunda linea\n";
@@ -583,6 +630,32 @@ subtest 'view_diff_file: returns diff when the change is in finally line' => sub
 
     is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code},
       " Primera linea \n-Segunda linea\n+Modif Segunda linea\n";
+};
+
+subtest 'view_diff_file: returns special diff for binary files' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit(
+        $repo,
+        file    => 'binary.img',
+        content => do { local $/; open my $fh, '<', 'root/static/spinner.gif' or die $!; <$fh> }
+    );
+
+    my $controller = _build_controller();
+
+    my $params = { file => 'binary.img', repo_mid => $repo->mid, sha => $sha };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->view_diff_file($c);
+
+    cmp_deeply $c->stash->{json}->{changes}[0]->{code_chunks}[0],
+      {
+        stats => '-0,0 +0,0',
+        code  => "It's a Binary file (diff method not applicable)"
+      };
 };
 
 subtest 'view_diff: returns validation errors' => sub {
@@ -890,6 +963,8 @@ subtest 'get_commits_search: returns empty result when nothing found' => sub {
       };
 };
 
+done_testing;
+
 sub _build_controller {
     Baseliner::Controller::GitTree->new( application => '' );
 }
@@ -899,4 +974,3 @@ sub _setup {
     TestUtils->register_ci_events();
     TestUtils->cleanup_cis;
 }
-done_testing;
