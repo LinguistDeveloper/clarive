@@ -176,7 +176,7 @@ sub error_trap {
         }
 
         if( $mode eq 'ignore' ) {
-            $job->logger->debug( _loc "Ignored error trapped in rule: %1", $err );    
+            $job->logger->info( _loc "Ignored error trapped in rule: %1", $err );
             return;
         };
 
