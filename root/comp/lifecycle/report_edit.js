@@ -73,7 +73,7 @@
         
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'], ['EMPTY', 'EMPTY'], ['NOT EMPTY', 'NOT EMPTY'] ];
-        var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'] ];
+        var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'], ['$in', 'IN'], ['$nin', 'NOT IN'] ];
         var oper_by_type = oper_all;
         var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
         var ftype = attr.field || attr.where;

@@ -396,6 +396,74 @@ subtest 'get_where: builds correct string not like where' => sub {
     cmp_deeply $where, { title => { '$not' => qr/foo/i } };
 };
 
+subtest 'get_where: builds correct string in where' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+
+    my $where = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'type'     => 'where_field',
+                    'text'     => "Title",
+                    'children' => [
+                        {
+                            'where'    => 'string',
+                            'oper'     => '$in',
+                            'type'     => 'value',
+                            'children' => [],
+                            'field'    => 'string',
+                            'icon'     => '/static/images/icons/where.png',
+                            'value'    => 'foo,bar,baz',
+                            'text'     => 'IN foo'
+                        }
+                    ],
+                    'id_field' => 'title',
+                }
+            ]
+        }
+    );
+
+    cmp_deeply $where, { title => { '$in' => [qw/foo bar baz/] } };
+};
+
+subtest 'get_where: builds correct string not in where' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+
+    my $where = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'type'     => 'where_field',
+                    'text'     => "Title",
+                    'children' => [
+                        {
+                            'where'    => 'string',
+                            'oper'     => '$nin',
+                            'type'     => 'value',
+                            'children' => [],
+                            'field'    => 'string',
+                            'icon'     => '/static/images/icons/where.png',
+                            'value'    => 'foo,bar,baz',
+                            'text'     => 'NOT IN foo'
+                        }
+                    ],
+                    'id_field' => 'title',
+                }
+            ]
+        }
+    );
+
+    cmp_deeply $where, { title => { '$nin' => [qw/foo bar baz/] } };
+};
+
 done_testing;
 
 sub _setup {
