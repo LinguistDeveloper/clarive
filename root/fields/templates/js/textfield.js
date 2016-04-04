@@ -16,16 +16,15 @@ params:
     var DEFAULT_TEXTPLAIN_HEIGHT = 400;
     var DEFAULT_TEXTFIELD_HEIGHT = 30 ;
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
-
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var allowBlank = meta.allowBlank == 'false' || meta.allowBlank == '0' || meta.allowBlank == 0 ? false: true;
+    var allowBlank = meta.key == 'fieldlet.system.title' ? false : Baseliner.eval_boolean(meta.allowBlank, true);
 
     var height = meta.height ? meta.height : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_HEIGHT: DEFAULT_TEXTFIELD_HEIGHT );
     var maxLength = meta.maxLength ? meta.maxLength : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_MAX_LENGTH : DEFAULT_TEXTFIELD_MAX_LENGTH );
 
     var style = { 'font-size': '16px',  
-            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
+            'font-weight': meta.font_weight || ( meta.key == 'fieldlet.system.title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';    
     return [
