@@ -898,12 +898,17 @@ sub sync : Local {
                         push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
                     }
                 }
-                elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
-                    my $ix = $1;
-                    $ci_data{ $k } = $ci_pre_mid[ $ix ];
-                }
                 else {
                     $ci_data{ $k } = $v;
+                }
+            }
+
+            foreach my $k (keys %$data) {
+                my $v = $data->{$k};
+
+                if( $v =~ /^ci_pre:([0-9]+)$/ ) {
+                    my $ix = $1;
+                    $ci_data{ $k } = $ci_pre_mid[ $ix ];
                 }
             }
 
