@@ -6,23 +6,24 @@ with 'Baseliner::Role::CI::Asset';
 sub icon { '/static/images/icons/post.png' }
 
 has content_type => qw(is rw isa Any default text);
-has created_on   => qw(is rw isa Any), default=>sub{ mdb->ts };
+has created_on => qw(is rw isa Any), default => sub { mdb->ts };
 
 has_ci 'topic';
 
 sub rel_type {
-    { 
-        topic => [ to_mid => 'topic_post' ] ,
-    };
+    { topic => [ to_mid => 'topic_post' ], };
 }
 
-sub text { 
-    my ($self)=@_;
+sub text {
+    my $self = shift;
+
     my $d = $self->get_data;
+    return '' unless $d;
+
     my $txt = $d->slurp;
-    $txt = Util->_utf8($txt); # probably needed for every GridFS data? or just a slurp thing? maybe use a better file reader
-    return $d ? $txt : '';
-} 
+
+    return Encode::decode( 'UTF-8', $txt );
+}
 
 1;
 
