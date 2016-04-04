@@ -522,6 +522,19 @@ subtest '_json_pointer: set' => sub {
     my $stash = { aa => { bb => 22 } };
     Util->_json_pointer( $stash, '/aa/bb', 33 );
     is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
+
+subtest '_json_pointer: set existing' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
+};
+
+subtest '_json_pointer: set new' => sub {
+    my $stash = { foo=>'bar' };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is $stash->{foo}, 'bar', 'preserved ok';
+    is $stash->{aa}{bb}, 33, 'stored';
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33, 'retrieve' );
 };
 
 subtest '_json_pointer: get/set arrays' => sub {
@@ -543,10 +556,16 @@ subtest '_json_pointer: set non-pointers' => sub {
     is( $stash->{'/aa/bb'}, 88 );
 };
 
-subtest '_json_pointer now supports ARRAY as pointer' => sub {
+subtest '_json_pointer supports ARRAY as pointer' => sub {
     my $stash = { aa=>{ bb=>22 } };
     Util->_json_pointer($stash,[qw(aa bb)],33);
     is ( Util->_json_pointer($stash,[qw(aa bb)]), 33 );
+};
+
+subtest '_json_pointer returns undef if ARRAY not found but value exists' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,[qw(aa bb)],33);
+    is ( Util->_json_pointer($stash,[qw(aa bb cc)]), undef );
 };
 
 subtest '_probe_one_row: basic one term' => sub {
