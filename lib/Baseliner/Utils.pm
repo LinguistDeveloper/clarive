@@ -2281,7 +2281,7 @@ sub _pointer {
     my ($pointer, $data, %options) = @_;
 
     my $p = $data;
-    my @parts = split /\./, $pointer;
+    my @parts = ref $pointer eq 'ARRAY' ? @$pointer : split /\./, $pointer;
 
     for (my $i = 0; $i < @parts; $i++) {
         my $part = $parts[$i];
@@ -2332,7 +2332,9 @@ sub _json_pointer {
 
     return $data if ! length $key;
 
-    if( substr($key,0,1) ne '/' || ( my $is_double = substr($key,0,2) eq '//' ) ) {
+    my $is_ref_key = ref($key) eq 'ARRAY';
+
+    if( !$is_ref_key && ( substr($key,0,1) ne '/' || ( my $is_double = substr($key,0,2) eq '//' ) ) ) {
         $key = substr($key,1) if $is_double;
         return $data->{$key} if @_ == 2;
         return $data->{$key} = $val;
@@ -2357,7 +2359,11 @@ sub _json_pointer {
         };
         return $is_setting ? $rec->( $slot, $keys, $val, $is_setting ) : $rec->( $slot, $keys, $is_setting );
     };
-    $rec->($data, [grep { length } split /\//, $key], $val, $is_setting );
+    $rec->(
+        $data,
+        [ grep { length } ( $is_ref_key ? @$key : split( /\//, $key ) ) ],
+        $val, $is_setting
+    );
 }
 
 sub _to_camel_case {
