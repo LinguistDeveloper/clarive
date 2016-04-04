@@ -44,6 +44,7 @@
         permDelete: permDelete,
         permComment: permComment,
         viewKanban: viewKanban,
+        viewTimeline: viewTimeline,
         html_buttons: html_buttons,
         status_items_menu: status_items_menu,
         menu_deploy: menu_deploy,

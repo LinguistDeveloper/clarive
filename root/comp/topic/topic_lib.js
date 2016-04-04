@@ -979,7 +979,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             enableToggle: true,
             tooltip: _('Open timeline'),
             handler: function(){ self.show_timeline() },
-            hidden: self.viewTimeline == undefined ? true : self.viewTimeline,
+            hidden: self.viewTimeline == undefined ? true : !self.viewTimeline,
             allowDepress: false, toggleGroup: self.toggle_group
         });
 

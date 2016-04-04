@@ -524,7 +524,6 @@ sub view : Local {
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
-                $c->stash->{viewTimeline} = $c->stash->{permissionActivity};
                 my $is_root = Baseliner::Model::Permissions->is_root($c->username);
                 $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));
                 $topic_doc = $topic_ci->get_doc;
@@ -532,13 +531,11 @@ sub view : Local {
             } catch {
                 my $err = shift;
                 $c->stash->{viewKanban} = 0;
-                $c->stash->{viewTimeline} = 0;
                 $c->stash->{viewDocs} = 0;
                 _fail $err;
             };
         } else {
             $c->stash->{viewKanban} = 0;
-            $c->stash->{viewTimeline} = 0;
             $c->stash->{viewDocs} = 0;
         }
 
@@ -622,6 +619,12 @@ sub view : Local {
                 $c->stash->{permissionActivity} = 1;
             } else {
                 $c->stash->{permissionActivity} = 0;
+            }
+
+            if($c->stash->{permissionActivity} || $c->is_root ){
+                $c->stash->{viewTimeline} = 1;
+            } else {
+                $c->stash->{viewTimeline} = 0;
             }
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
