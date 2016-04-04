@@ -1682,6 +1682,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     allowBlank: false,
     lazyRender: false,
     pageSize: true,
+    displayField: 'name',
     triggerAction: 'all',
     itemSelector: 'div.search-item',
     initComponent: function(){
@@ -1695,6 +1696,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
         self.tpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="search-item">',
             '<span class="bl-label" style="background: {color}">{short_name}</span>',
+            ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
             '<span style="padding-left:4px"><b>{title}</b></span>',
             '</div></tpl>' );
 
@@ -1797,6 +1799,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             fieldLabel: _('Topic'),
             name: 'topic',
             hiddenName: 'topic',
+            display_field: self.display_field ? self.display_field : "",
             allowBlank: true,
             disabled: self.readOnly ? self.readOnly : false
         });
