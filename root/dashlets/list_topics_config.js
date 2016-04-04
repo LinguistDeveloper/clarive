@@ -67,7 +67,7 @@
                     [_('Any')]
                   ] 
                 }),
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
+                { xtype:'textfield', vtype: 'json', anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
               ]
             }
           ]

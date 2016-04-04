@@ -89,7 +89,7 @@
                 ccategory,
                 cstatus,
                 { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-                { xtype:'textfield', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
+                { xtype:'textfield', vtype: 'json', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
               ]
             }
           ]

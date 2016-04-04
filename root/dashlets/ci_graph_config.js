@@ -48,7 +48,7 @@
         toolbar_mode,
         include_cl,
         not_in_class,
-        { xtype:'textarea', height: '80px', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
+        { xtype:'textarea', vtype: 'json', height: '80px', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
     ])
 })
 

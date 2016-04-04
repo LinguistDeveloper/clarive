@@ -131,7 +131,8 @@
         fieldLabel: _('Custom JSON query'),
         name: 'query',
         value: data.query,
-        anchor: '100%'
+        anchor: '100%',
+        vtype: 'json'
     });
     var closed_statuses = new Baseliner.StatusBox({
         name: 'closed_statuses',

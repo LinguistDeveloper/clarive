@@ -4283,7 +4283,7 @@ Baseliner.generic_list_fields = function(params,opts){
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
     });
     var filter_name = _(opts.filter_name) || _('Advanced Filter JSON');
-    var json_field = new Ext.form.TextArea({ name:'filter', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
+    var json_field = new Ext.form.TextArea({ name:'filter', vtype: 'json', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
     var display_field = new Ext.form.TextField({ name:'display_field', fieldLabel: _('Display Field'), anchor:'100%', value: data.display_field==undefined?'title':data.display_field });
     var ret = [ 
         value_combo, 
@@ -4328,3 +4328,25 @@ Ext.override(Ext.LoadMask, {
     msg : '',
     msgCls : 'ext-el-mask-msg'
   });
+
+Ext.override(Ext.form.Field, {
+    msgTarget: 'under'
+});
+
+Ext.apply(Ext.form.VTypes, {
+    'json': function(v) {
+        var json;
+        try {
+            json = Ext.util.JSON.decode(v);
+        } catch (e) {
+            return false;
+        };
+
+        if (typeof json === 'object') {
+            return true;
+        }
+
+        return false;
+    },
+    'jsonText': _('Invalid JSON')
+});

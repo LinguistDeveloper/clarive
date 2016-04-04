@@ -89,7 +89,7 @@
                 ccategory,
                 { xtype : "checkbox", name : "not_in_category", checked: data.not_in_category=='on' ? true : false, boxLabel : _('Exclude selected categories?') },
                 { xtype : "checkbox", name : "show_jobs", checked: Baseliner.eval_boolean(data.show_jobs), boxLabel : _('Show Jobs?') },
-                { xtype:'textarea', height: 80, anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
+                { xtype:'textarea', vtype: 'json', height: 80, anchor:'100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
                 { xtype:'textarea', height: 80, anchor:'100%', fieldLabel: _('Label Mask'), name: 'label_mask', 
                     value: data.label_mask || '${category.acronym}#${topic.mid} ${topic.title}' }
               ]
