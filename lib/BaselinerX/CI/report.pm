@@ -792,6 +792,11 @@ sub get_where {
                                 $cond = $val->{value};
                             }
                         }
+                        elsif ( $val->{oper} =~ /^(\$in|\$nin)$/ ) {
+                            my @variants = split /\s*,\s*/, $val->{value};
+
+                            $cond = { $val->{oper} => [@variants] };
+                        }
                         else {
                             if ( $val->{oper} ) {
                                 $cond = { $val->{oper} => $val->{value} };
