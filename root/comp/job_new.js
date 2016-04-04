@@ -1027,7 +1027,7 @@
                     border: false,
                     defaults: {
                         border: false,
-                        anchor: '100%'
+                        anchor: '95%'
                     },
                     items: [
                         hidden_job_type,

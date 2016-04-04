@@ -16,9 +16,6 @@
     overflow: hidden;
     cursor: text;
 }
-.x-superboxselect-display-btns {
-    padding-right: 15px !important;
-}
 .x-superboxselect-btns {
     position: absolute;
     right: 1px;
