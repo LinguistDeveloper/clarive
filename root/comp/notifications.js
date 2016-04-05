@@ -610,11 +610,11 @@
             name: 'subject',
             value: rec && rec.data ? rec.data.subject : '',
             disabled: !has_subject,
-            anchor: '100%',
+            anchor: '98%',
             fieldLabel: _('Subject'),
             height: 30
         });
-        
+
         var chk_subject = new Ext.form.Checkbox({
             name:'chk_subject',
             boxLabel:_('Default'),
@@ -919,10 +919,10 @@
         };
 		
 		var grid_recipients = new Ext.grid.GridPanel({
-			style: 'border: solid #ccc 1px',
+			cls: 'notifications_grid_recipients',
 			store: store_recipients,
 			layout: 'form',
-			height: 300,
+			height: 200,
 			hideHeaders: true,
 			stripeRows: true,
 			viewConfig: {
@@ -1144,8 +1144,8 @@
 
         win = new Ext.Window({
             title: _(title),
-            autoHeight: true,
             width: 730,
+            autoScroll: true,
             closeAction: 'close',
             modal: true,
             items: form_notification

@@ -1078,3 +1078,7 @@ textarea.x-form-textarea.x-form-field {
 .login_form {
    margin:10px;
 }
+
+.notifications_grid_recipients {
+   border: solid #ccc 1px;
+}
