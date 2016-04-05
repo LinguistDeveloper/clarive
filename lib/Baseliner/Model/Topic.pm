@@ -343,42 +343,43 @@ sub build_sort {
 }
 
 sub build_where_clause_with_reg_exp {
-    my ( $self, $query, $username ) = @_;
+    my ( $self, $query, $username, $id_project ) = @_;
+
+    my %opts = (id_project =>$id_project);
     my $where = {};
-    $self->run_query_builder( $query, $where, $username );
+
+    $self->run_query_builder( $query, $where, $username, %opts );
     return $where;
 }
 
 sub run_query_builder {
     my ( $self, $query, $where, $username, %opts ) = @_;
     my @mids_in;
-    my @mids_query;
     my $id_project = $opts{id_project};
-
-#$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-
-    if ( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {    # special queries handled by query_build later
-        if ( $id_project eq '' ) {
+    my @mids_query;
+    if ( !$opts{build_query} && $query !~ /\+|\-|\"|\:|\/|\*|\?/ ) {
+        if ( !$id_project ) {
             @mids_query = map { $_->{obj}{mid} }
                 _array( mdb->topic->search( query => $query, project => { mid => 1 } )->{results} );
-            push @mids_in, @mids_query > 0 ? @mids_query : -1;
         }
         else {
             my @mids = map { $_->{from_mid} }
                 mdb->master_rel->find( { rel_type => 'topic_project', to_mid => $id_project } )->all;
             @mids_query = map { $_->{mid} }
                 mdb->topic->find( { '$text' => { '$search' => $query }, mid => { '$in' => \@mids } } )->all;
-            push @mids_in, @mids_query > 0 ? @mids_query : -1;
-
         }
     }
-    else {
+
+    if ( @mids_query == 0 ) {
         $self->build_field_query( $query, $where, $username, fields => $opts{fields} );
-        if ( $id_project ne '' ) {
+        if ($id_project) {
             @mids_query = map { $_->{from_mid} }
                 mdb->master_rel->find( { rel_type => 'topic_project', to_mid => $id_project } )->all;
             push @mids_in, @mids_query > 0 ? @mids_query : -1;
         }
+    }
+    else {
+        push @mids_in, @mids_query > 0 ? @mids_query : -1;
     }
     return @mids_in;
 }
@@ -399,16 +400,17 @@ sub topics_for_user {
     my @filter_categories     = _array( $p->{categories} );
     my @filter_statuses     = _array( $p->{statuses} );
     my @filter_labels     = _array( $p->{labels} );
-    my $where = $p->{where} // {};
-    my $perm = Baseliner::Model::Permissions->new;
-    my $username = $p->{username} or die 'username required';
-    my $is_root = $perm->is_root( $username );
-    my @topic_list = _array($p->{topic_list});
-    my $id_project = $p->{id_project};
+    my $where             = $p->{where} // {};
+    my $perm              = Baseliner::Model::Permissions->new;
+    my $username          = $p->{username} or die 'username required';
+    my $is_root           = $perm->is_root($username);
+    my @topic_list        = _array( $p->{topic_list} );
+    my $id_project        = $p->{id_project};
+    my %opts              = (id_project => $id_project);
     my ( @mids_in, @mids_nin, @mids_or );
-    if( length($query) ) {
-        @mids_in = $self->run_query_builder($query,$where,$username,id_project => $id_project);
 
+    if ( length($query) ) {
+        @mids_in = $self->run_query_builder( $query, $where, $username, %opts );
     }
     
     my ($select,$order_by, $as, $group_by);
@@ -523,14 +525,11 @@ sub topics_for_user {
             mdb->master_rel->find( $rel_where )->fields({ $dir->[1] => 1 })->all;
     }
 
-    #*****************************************************************************************************************************
-    
-    #Filtro cuando viene por la parte del lifecycle.
-    if($p->{id_project} && !($p->{query}) ){
-        my @topics_project = map { $$_{from_mid} } 
-            mdb->master_rel->find({ to_mid=>"$$p{id_project}", rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
-        push @mids_in, 'xxx' if !@topics_project;  # FIXME
+    if ( $id_project && !($query) ) {
+        my @topics_project = map { $$_{from_mid} }
+            mdb->master_rel->find( { to_mid => "$id_project", rel_type => 'topic_project' } )->all;
+        push @mids_in, grep {length} @topics_project;
+        push @mids_in, 'xxx' if !@topics_project;
     }
 # _debug( $where );
     if( @mids_in || @mids_nin ) {
@@ -629,7 +628,7 @@ sub topics_for_user {
             }
         };
     }
-    return { count=>$cnt, last_query=>$where, sort=>$order_by, query=>$query }, @rows ;
+    return { count => $cnt, last_query => $where, sort => $order_by, query => $query, id_project => $opts{id_project} }, @rows;
 }
 
 

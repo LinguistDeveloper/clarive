@@ -148,7 +148,7 @@ sub list : Local {
     } elsif( my $id = $p->{id_report_rule} ) {
         $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}};
     } else {
-        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query}, query=>$p->{query}, username=>$p->{username} };
+        $c->stash->{json} = { data=>$data->{data}, totalCount=>$data->{totalCount}, last_query=>$data->{last_query}, query=>$p->{query}, username=>$p->{username}, id_project=>$data->{id_project}};
     }
    $c->forward('View::JSON');
 }
@@ -214,9 +214,8 @@ sub get_items {
             data=>\@rows,
             totalCount=>$$info{count},
             last_query=>$$info{last_query},
+            id_project=>$$info{id_project}
         };
-        #_log "data  "._dump $data;
-
     }
 
     return $data;
@@ -2148,9 +2147,10 @@ sub change_status : Local {
 sub grid_count : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
+
     if( my $lq = $p->{lq} ) {
-        if($lq->{'$and'}){
-            my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username});
+        if($lq->{'$and'}){  
+            my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username}, $p->{id_project});
             $lq->{'$and'} = $where->{'$and'};
         }
         my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
