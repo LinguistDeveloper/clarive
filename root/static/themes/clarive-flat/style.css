@@ -1070,3 +1070,11 @@ textarea.x-form-textarea.x-form-field {
    font-size: 11px;
    font-family: Tahoma, Arial;
 }
+
+.surr-win {
+   height: auto !important;
+}
+
+.login_form {
+   margin:10px;
+}

@@ -309,40 +309,53 @@ if( Prefs.routing ) {
 
 
     Baseliner.surrogate = function() {
-       var login_form = new Ext.FormPanel({
+        var login_form = new Ext.FormPanel({
             url: '/auth/surrogate',
             frame: true,
-            labelWidth: 100, 
+            autoHeight: true,
+            autoWidth: true,
+            labelWidth: 80,
             timeout: 120,
-            defaults: { width: 150 },
-            buttons: [
-                { text: '<% _loc('Change User') %>',
-                  handler: function() { Baseliner.doLoginForm(login_form) }
-                },
-                { text: '<% _loc('Reset') %>',
-                  handler: function() {
-                                login_form.getForm().findField('login').focus('',100);
-                                login_form.getForm().reset()
-                           }
+            bodyCssClass:'login_form',
+            defaults: { 
+                width: 150
+            },
+            buttons: [{
+                text: '<% _loc(' Change User ') %>',
+                handler: function() {
+                    Baseliner.doLoginForm(login_form)
                 }
-            ],
-            items: [ 
-                {  xtype: 'textfield', name: 'login', fieldLabel: "<% _loc('Username') %>", selectOnFocus: true }
-            ]
+            }, {
+                text: '<% _loc(' Reset ') %>',
+                handler: function() {
+                    login_form.getForm().findField('login').focus('', 100);
+                    login_form.getForm().reset()
+                }
+            }],
+            items: [{
+                xtype: 'textfield',
+                name: 'login',
+                fieldLabel: "<% _loc('Username') %>",
+                selectOnFocus: true
+            }]
         });
-        var win_surr = new Ext.Window({ layout: 'fit', 
+        var win_surr = new Ext.Window({
+            layout: 'fit',
             id: 'surr-win',
-            autoScroll: true, title: "<% _loc('Surrogate') %>",
-            height: 110, width: 300, 
-            items: [ login_form ]
-            });
+            bodyCssClass: 'surr-win',
+            autoScroll: false,
+            title: "<% _loc('Surrogate') %>",
+            items: [login_form]
+        });
         win_surr.show();
         var map = new Ext.KeyMap("surr-win", [{
-            key : [10, 13],
-            scope : win_surr,
-            fn : function() { Baseliner.doLoginForm(login_form) }
-        }]); 
-        login_form.getForm().findField('login').focus('',100);
+            key: [10, 13],
+            scope: win_surr,
+            fn: function() {
+                Baseliner.doLoginForm(login_form)
+            }
+        }]);
+        login_form.getForm().findField('login').focus('', 100);
     };
 
     Baseliner.login = function(params) {
