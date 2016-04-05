@@ -34,41 +34,27 @@ service 'create_tags' => {
     handler => \&create_tags_handler
 };
 
-sub create_tags_handler {
-    my ( $self, $c, $config ) = @_;
-
-    my $ref        = $config->{'ref'};
-    my $existing   = $config->{'existing'} || 'detect';
-    my $tag_filter = join '|', split ',', ($config->{'tag_filter'} // '');
-
-    my $git = $self->git;
-
-    if ( !$ref ) {
-        ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
-    }
-
+sub create_tag_format {
+    my $self = shift;
     my @tags;
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
-
-    my @tags_modes = $self->tags_mode ? (split /,/, $self->tags_mode) : ();
+    my @tags_modes = $self->tags_mode ? ( split /,/, $self->tags_mode ) : ();
 
     if ( grep { $_ eq 'project' } @tags_modes ) {
-        my @projects =
-          map { ci->new( $_->{mid} ) } $self->related(
+        my @projects = map { ci->new( $_->{mid} ) } $self->related(
             where     => { collection => 'project' },
             docs_only => 1
-          );
+        );
 
-        _fail _loc('Projects are required when creating baselines '
-          . 'for repositories with tags_mode project')
-          unless @projects;
+        _fail _loc( 'Projects are required when creating baselines ' . 'for repositories with tags_mode project' )
+            unless @projects;
 
         foreach my $bl (@bls) {
             push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
         }
 
         if ( grep { $_ eq 'release' } @tags_modes ) {
-            my @release_versions = $self->_find_release_versions_by_projects(\@projects);
+            my @release_versions = $self->_find_release_versions_by_projects( \@projects );
 
             foreach my $release_version (@release_versions) {
                 foreach my $bl (@bls) {
@@ -80,6 +66,25 @@ sub create_tags_handler {
     else {
         @tags = @bls;
     }
+
+    return @tags;
+}
+
+
+sub create_tags_handler {
+    my ( $self, $c, $config ) = @_;
+    my $repo = $self;
+    my $ref        = $config->{'ref'};
+    my $existing   = $config->{'existing'} || 'detect';
+    my $tag_filter = join '|', split ',', ($config->{'tag_filter'} // '');
+
+    my $git = $self->git;
+
+    if ( !$ref ) {
+        ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
+    }
+
+    my @tags = $self->create_tag_format($repo);   
 
     @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
 

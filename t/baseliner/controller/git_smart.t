@@ -393,7 +393,6 @@ subtest 'git: forbids pushing system tags' => sub {
     is @events, 0;
 
     my $error = $c->res->body;
-
     like $error, qr/Cannot update internal tag TAG/;
 };
 
@@ -575,12 +574,13 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
         project     => $project,
         id_category => $id_release_category,
         title       => 'Release 0.1',
-        status      => $status
+        status      => $status,
+        release_version =>'3.0'        
     );
 
     my $body
         = "0094"
-        . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+        . "0000000000000000000000000000000000000000 $sha refs/tags/3.0-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
         . "0000";
     open my $fh, '<', \$body;
 
@@ -599,7 +599,7 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $controller = _build_controller();
 
-    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+    $controller->git( $c, , '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -607,15 +607,15 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $event = $events[0];
     my $data  = _load $event->{event_data};
-    is $data->{branch}, '6.4-SUPPORT';
-    is $data->{ref},    'refs/tags/6.4-SUPPORT';
+    is $data->{branch}, '3.0-SUPPORT';
+    is $data->{ref},    'refs/tags/3.0-SUPPORT';
     is $data->{sha},    $sha;
 };
 
 subtest 'git: allows pushing system tags when user has permission and is a raw git access ' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'release,project' );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'RAWREPO', tags_mode => '' );
     my $sha = TestGit->commit($repo);
 
     my $project = TestUtils->create_ci(
@@ -681,12 +681,10 @@ sub _create_release_form {
         rule_tree => [
             {   "attributes" => {
                     "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.release_version",
-                        "id_field"     => "status_new",
+                        id_field       => 'release_version',
+                        "fieldletType" => "fieldlet.system.release_version",               
                     },
-                    "key" => "fieldlet.system.status_new",
+                    "key" => "fieldlet.system.release_version",
                 }
             },
             {   "attributes" => {
@@ -695,18 +693,6 @@ sub _create_release_form {
                         "fieldletType" => "fieldlet.system.projects",
                         "id_field"     => "project",
                         "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
-            },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project1",
                         meta_type      => 'project',
                         collection     => 'project',
                     },

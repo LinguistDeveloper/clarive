@@ -67,7 +67,7 @@ sub git : Path('/git/') {
     my $repo = $self->_resolve_repo($c, $path);
     return unless $repo;
 
-    my $changes = $self->_parse_changes($c,$path);
+    my $changes = $self->_parse_changes($c,$repo);
     return unless $changes;
 
     return unless $self->_run_pre_event($c, $repo, $changes);
@@ -86,13 +86,13 @@ sub git : Path('/git/') {
 
 sub _parse_changes {
     my $self = shift;
-    my ($c,$path) = @_;
+    my ($c,$repo) = @_;
 
     my $fh = $c->req->body;
 
     my @changes = $self->_build_parser()->parse_fh($fh);
 
-    return unless $self->bl_change_granted($c, \@changes,$path);
+    return unless $self->bl_change_granted($c, \@changes,$repo);
 
     return \@changes;
 }
@@ -285,47 +285,17 @@ sub _proxy_to_git_http {
 
 sub bl_change_granted {
     my $self = shift;
-    my ( $c, $changes, $path ) = @_;
-    my $project_name = "";
-    my $repo_name    = "";
-    ( $project_name, $repo_name ) = split '/', $path if ( $path !~ m{\.git$} );
-    my $my_project    = {};
-    my $my_repository = {};
-    $my_project    = ci->search_ci( name => $project_name, collection => 'project' )       if ($project_name);
-    $my_repository = ci->search_ci( name => $repo_name,    collection => 'GitRepository' ) if ($repo_name);
-    my @tags_modes = $my_repository->{tags_mode} ? ( split /,/, $my_repository->{tags_mode} ) : ();
+    my ( $c, $changes, $repo ) = @_;
 
-    my $bls_project;
-    my $bls_release;
-    my $bls;
+    my @bl = $repo->create_tag_format($repo);
+    my $bls = join( "|", @bl );
 
-    $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
-
-    if ( grep { $_ eq 'project' } @tags_modes && $my_project ) {
-
-        $bls_project = $my_project->{moniker} . '-' . join '|' . $my_project->{moniker} . '-',
-            grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
-        $bls = $bls . '|' . $bls_project;
-
-    }
-    if ( grep { $_ eq 'release' } @tags_modes && $my_project ) {
-
-        my @release_versions = BaselinerX::CI::GitRepository->_find_release_versions_by_projects($my_project);
-        foreach my $version (@release_versions) {
-
-            $bls_release = $version . '-' . join '|' . $version . '-',
-                grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
-
-            $bls = $bls . '|' . $bls_release;
-        }
-
-    }
     foreach my $change (@$changes) {
 
         my $ref = $change->{ref};
 
         if ( $bls && $ref =~ /refs\/tags\/($bls)/ ) {
-            my $tag      = $1;
+            my $tag = $1;
             my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
                 username => $c->username,
                 action   => 'action.git.update_tags',
@@ -340,6 +310,7 @@ sub bl_change_granted {
 
     return 1;
 }
+
 
 
 sub access_granted {
