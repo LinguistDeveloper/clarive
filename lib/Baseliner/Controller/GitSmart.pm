@@ -286,12 +286,12 @@ sub _proxy_to_git_http {
 sub bl_change_granted {
     my $self = shift;
     my ( $c, $changes, $path ) = @_;
-    my  $project_name = ""; 
-    my  $repo_name = "";
-    ( $project_name, $repo_name ) = split '/', $path if ($path !~ m{\.git$} );
-    my $my_project ={};
+    my $project_name = "";
+    my $repo_name    = "";
+    ( $project_name, $repo_name ) = split '/', $path if ( $path !~ m{\.git$} );
+    my $my_project    = {};
     my $my_repository = {};
-    $my_project    = ci->search_ci( name => $project_name, collection => 'project' ) if ($project_name);
+    $my_project    = ci->search_ci( name => $project_name, collection => 'project' )       if ($project_name);
     $my_repository = ci->search_ci( name => $repo_name,    collection => 'GitRepository' ) if ($repo_name);
     my @tags_modes = $my_repository->{tags_mode} ? ( split /,/, $my_repository->{tags_mode} ) : ();
 
@@ -308,7 +308,7 @@ sub bl_change_granted {
         $bls = $bls . '|' . $bls_project;
 
     }
-    if ( grep { $_ eq 'release' } @tags_modes && $my_project) {
+    if ( grep { $_ eq 'release' } @tags_modes && $my_project ) {
 
         my @release_versions = BaselinerX::CI::GitRepository->_find_release_versions_by_projects($my_project);
         foreach my $version (@release_versions) {
@@ -319,7 +319,7 @@ sub bl_change_granted {
             $bls = $bls . '|' . $bls_release;
         }
 
-    } 
+    }
     foreach my $change (@$changes) {
 
         my $ref = $change->{ref};
