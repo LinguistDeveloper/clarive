@@ -689,7 +689,8 @@ sub stmts_load : Local {
         if ($load_versions) {
             my $rs      = mdb->rule_version->find( { id_rule => "$id_rule" } )->sort( { ts => -1 } );
             my $current = $rs->next;
-            my $text    = ' was: ' . $current->{was} if $current && $current->{was};
+            my $text = '';
+            $text = ' was: ' . $current->{was} if $current && $current->{was};
             @tree = (
                 {
                     text => $current

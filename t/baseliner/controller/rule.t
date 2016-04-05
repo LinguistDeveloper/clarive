@@ -1,16 +1,17 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+
 use TestEnv;
-use TestUtils ':catalyst', 'mock_time';
 BEGIN { TestEnv->setup }
+use TestUtils ':catalyst', 'mock_time';
 use TestSetup;
 
 use JSON ();
+use Capture::Tiny qw(capture);
 
 use_ok 'Baseliner::Controller::Rule';
 
@@ -21,7 +22,7 @@ subtest 'stmts_load: returns error when no rule id' => sub {
 
     my $controller = _build_controller();
 
-    $controller->stmts_load($c);
+    capture { $controller->stmts_load($c) };
 
     is_deeply $c->stash,
       {

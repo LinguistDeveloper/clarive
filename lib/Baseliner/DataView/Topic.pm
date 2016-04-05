@@ -167,7 +167,9 @@ sub _parse_filter {
 
     return $filter if ref $filter eq 'HASH';
 
-    return eval { JSON::decode_json($filter) } or do { +{} };
+    my $result = eval { JSON::decode_json($filter) };
+    $result //= {};
+    return $result;
 }
 
 1;
