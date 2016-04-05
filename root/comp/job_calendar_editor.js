@@ -167,74 +167,91 @@
         picker.clearSelectedDates();
         picker.setSelectedDates(_dates);        
     }
-    
+
     var cal_windows = new Ext.Panel({
         layout: 'column',
-        anchor:'90%',
+        anchor: '90%',
         frame: true,
         title: _('Calendar Windows'),
-        hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
-        style: 'margin-top: 20px', 
+        hidden: (id_cal == -1 ? true : false),
+        cls:'job_calendar_edit_cal_windows',
         autoHeight: true,
         autoWidth: true,
-        defaults: { width: 900 },
+        defaults: {
+            width: 900
+        },
         height: 450,
-        items: [
-        { layout: 'column', columnWidth: 0.7, anchor: '90%', items: [    
-            cal_slots,
-            ]},
-        { layout: 'column', columnWidth: 0.3, anchor: '90%' ,style: 'align: middle; margin:50px 5px 15px 10px', //margin-left: 5px'
-        frame: true,
-        autoHeight: true,
-        autoWidth: true,
-        maxWidth: 150,
-        defaults: { height: 300, width: 100 },
-        items: [               
-                {
+        items: [{
+            layout: 'column',
+            columnWidth: 0.7,
+            anchor: '90%',
+            items: [
+                cal_slots,
+            ]
+        }, {
+            layout: 'column',
+            columnWidth: 0.3,
+            anchor: '90%',
+            cls:'job_calendar_edit_cal_windows_column',
+            frame: true,
+            autoHeight: true,
+            autoWidth: true,
+            maxWidth: 150,
+            defaults: {
+                height: 300,
+                width: 100
+            },
+            items: [{
                     xtype: 'datepickerplus',
-                    value: _CurrentDate,    
-                    noOfMonth : 1, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
-                    //noOfMonthPerRow : 2, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
+                    value: _CurrentDate,
+                    noOfMonth: 1,
                     multiSelection: true,
                     allowMouseWheel: false,
                     showWeekNumber: true,
                     weekendText: '',
-                    // disabledDates: [new Date(2008,4,5).format(dform).replace(/\./g,"\\."),new Date(2008,4,6).format(dform).replace(/\./g,"\\."),new Date(2008,4,7).format(dform).replace(/\./g,"\\.")],
                     showActiveDate: false,
                     summarizeHeader: true,
-                    // prevNextDaysView:"nomark",
-                    // prevNextDaysView:false,
-                    // listeners:{'beforeweekclick':function(){ return false; }} ,
-                    // listeners:{'beforemousewheel':function(){ return false; }} ,
-                    listeners:{
-                        'beforedateclick':function(picker,t){   
-                            this.currentDateRef = t;                            
-                        },                      
-                        'beforerender':function(picker){
-                            _setSelectedWeek(picker, _CurrentDate);     
+                    listeners: {
+                        'beforedateclick': function(picker, t) {
+                            this.currentDateRef = t;
                         },
-                        'afterdateclick':function(picker,t){
-                            //_selectWeek(this, this.currentDateRef);
+                        'beforerender': function(picker) {
+                            _setSelectedWeek(picker, _CurrentDate);
+                        },
+                        'afterdateclick': function(picker, t) {
                             _setSelectedWeek(picker, t);
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, date: fecha}});
+                            Ext.get(id).load({
+                                url: '/job/calendar_slots',
+                                params: {
+                                    panel: id,
+                                    id_cal: id_cal,
+                                    date: fecha
+                                }
+                            });
                         },
-                        'afterweekclick':function(picker,t){
-                            _setSelectedWeek(picker, t);    
+                        'afterweekclick': function(picker, t) {
+                            _setSelectedWeek(picker, t);
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, date: fecha}});
-                        }                       
-                        
-                    } 
+                            Ext.get(id).load({
+                                url: '/job/calendar_slots',
+                                params: {
+                                    panel: id,
+                                    id_cal: id_cal,
+                                    date: fecha
+                                }
+                            });
+                        }
+
+                    }
                 }
-                
-            ]}
-        ]
-                
+
+            ]
+        }]
+
     });
 
     var panel = new Ext.Panel({
-        //layout: 'border',
         id: id2,
         style: 'padding: 5px',
         autoScroll: true,

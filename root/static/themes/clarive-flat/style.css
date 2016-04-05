@@ -1082,3 +1082,11 @@ textarea.x-form-textarea.x-form-field {
 .notifications_grid_recipients {
    border: solid #ccc 1px;
 }
+
+.job_calendar_edit_cal_windows_column {
+   margin:50px 5px 15px 10px;
+}
+
+.job_calendar_edit_cal_windows {
+   margin-top: 20px
+}
