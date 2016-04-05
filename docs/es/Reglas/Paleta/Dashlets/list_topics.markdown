@@ -23,8 +23,36 @@ icon: report_default
 <br />
 ###  Lista de campos a visualizar en el grid
 * Permite personalizar las columnas que se muestras en la tabla.
-* Para añadir una columna a la tabla basta con incluir su ID en este campo. El ID vinen dado en la regla del formulario.
+
 * Para separar las columnas se utiliza el **;**
+
+*  El formato para añadir una columna sería:
+            
+        ID,nombre,tipo,ancho,total,currency,símbolo; 
+
+
+&nbsp; &nbsp;• **ID** : Viene dado en la regla del formulario. <br />
+&nbsp; &nbsp;• **nombre** : Nombre que se le quiera asignar al ID. <br />
+&nbsp; &nbsp;• **tipo** : Tipo de campo que queramos mostrar. Puede ser: <br />
+&nbsp; &nbsp; &nbsp;• **text** <br />
+&nbsp; &nbsp; &nbsp;• **number** <br />
+&nbsp; &nbsp; &nbsp;• **checkbox** <br />
+&nbsp; &nbsp; &nbsp;• **ci** <br />
+&nbsp; &nbsp;• **ancho** : Asigna el ancho de la columna.
+
+* En el caso que usemos el valor number en tipo, podremos usar los campos total,currency y símbolo.
+
+&nbsp; &nbsp;• **total** : Puede tener los siguientes valores: <br />
+&nbsp; &nbsp; &nbsp;• **sum** : Muestra la suma de todos los valores. <br />
+&nbsp; &nbsp; &nbsp;• **max** : Muestra el máximo valor. <br />
+&nbsp; &nbsp; &nbsp;• **min** : Muestra el mínimo valor. <br />
+&nbsp; &nbsp; &nbsp;• **count** : Muestra la cantidad de filas. <br />
+
+&nbsp; &nbsp;• **currency** : Indicamos que nos muestre la separación por comas o por puntos dependiendo del país que le hayamos asignado en `Preferencias` <br />
+
+&nbsp; &nbsp;• **símbolo** : Símbolo de la moneda que queramos mostrar. <br />
+  
+		Ejemplo de uso: numero,Mi numero,number,,sum,currency,€;
 
 <br />
 ### Número máximo de tópicos a listar

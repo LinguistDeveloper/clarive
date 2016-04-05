@@ -13,6 +13,7 @@ icon: prefs
 ### General
 - **Idioma de la interfaz** - Establece el idioma de la interfaz de la herramienta. <br />
 - **Zona horaria** - Establece la zona horaria preferida del usuario. <br />
+- **Country** - Establece el país del usuario. <br />
 - **Zona horaria del navegador** - Informa de la zona horaria desde donde se está accediendo a Clarive. <br />
 - **Zona horaria del servidor** - Informa de la zona horaria donde está alojado el servidor. <br />
 - **Formato de la fecha** - Permite seleccionar el formato de la fecha preferido por el usuario. <br />
