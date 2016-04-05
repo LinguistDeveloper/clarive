@@ -1,3 +1,70 @@
+---------------------------------------------- 6.4.5 ----------------------------------------------
+[ENHANCEMENTS]
+
+- #31339 Disable Create button in topic category grids if the user does not have permissions for creation
+- #31874 Chequeo de variables
+- #31966 Bootstrap on Cygwin
+- #32177 Escape html when displaying text fields
+- #32327 Add the posibility to execute different versions of rules
+- #32423 Improve masks in Clarive
+- #32462 Prepare UI infrastructure
+- #32481 New git service/rule operation for branch creation
+- #32499 Export Dashlet list_topics
+- #32558 Clax improvements
+- #32587 Change Clarive logo by feature
+- #32596 Category and Status filter in list_topic fieldlets
+- #32597 Review fieldlet sections in topics
+- #32612 Modernize UI CSS style
+- #32623 Topic Burndown NG dashlet improvements
+- #32647 Colorfull icons in not-menu locations
+- #32650 Adapt icons size in Topic CI graph
+- #32665 Review new clarive-flat theme
+- #32671 Export/Import rules reports
+- #32732 Add mongo index
+- #32748 Report Improvements
+- #32805 topic comment window behavior
+- #32807 cmd line dash options and --no-xxxxx
+- #32839 Open Notification config with one click
+- #32850 Improvements in lifecycle panel
+- #32872 Migrate to perl 5.22
+- #32896 Remove unused masks
+- #32902 Improve mask in topic edit panel
+- #32909 Allow references when single var in parse_vars
+- #32915 Validate JSON in dashboards
+- #32937 Display Field in list_topic_selector grid mode
+- #32943 "IN" String Operation in reports
+
+[FIXES]
+
+- #31831 New job and change status topic's option are not present creating a new topic
+- #32601 Last line not shown in revision viewer
+- #32653 Help's Scroll bar in Firefox doesn't work propertly
+- #32663 Fix activity history
+- #32666 Make sure release detection works when release is a multiple value
+- #32674 Fix state/reports/kanban/mini buttons
+- #32730 Running rule as WS results into an error
+- #32736 Reports are not loaded
+- #32750 Filtering in list_topics should be applied only to new topics
+- #32771 Rules are incorrectly saved when they are passed dsl
+- #32781 Fix migration: fieldlet order taking into account field_order_html
+- #32790 Reports EMPTY/NOT EMPTY doesn't take into account empty arrays
+- #32810 fix logo is too big problem
+- #32821 LD_LIBRARY_PATH is not inherited
+- #32826 Burndown working in CRM
+- #32845 Fix edit calendar edition
+- #32847 dashlet.topic.number_of_topics is not filtering with multuple categories
+- #32858 List Rows in dashboards should be shown properly
+- #32864 Time races in tests and DST issue
+- #32874 Alphanumeric mid not working in tree_object_info
+- #32888 Fix smartmatch in templates
+- #32911 Mongo dies on every push with tags
+- #32926 Error using Advancecd JSON Filter in Topic Selector
+- #32927 Title should be mandatory
+- #32931 Ignored error trapped in rule
+- #32933 Cannot delete field from topic_selector
+- #32938 No branch info when dropping a branch into revisions box
+- #32942 Unicode in posts
+
 ---------------------------------------------- 6.4.4 ----------------------------------------------
 [ENHANCEMENTS]
 
