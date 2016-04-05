@@ -497,7 +497,8 @@ subtest 'topics_for_user: returns topics' => sub {
         },
         'query' => undef,
         'sort'  => { 'modified_on' => -1 },
-        'count' => 2
+        'count' => 2,
+        'id_project' => undef
       };
 
     is scalar @rows, 2;
@@ -900,6 +901,7 @@ subtest 'run_query_builder: Topic with query that exist in the project' => sub {
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
     my $where = {};
+    my %opts = (id_project => $project->mid);
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
     my $topic1 = TestSetup->create_topic(
@@ -923,13 +925,13 @@ subtest 'run_query_builder: Topic with query that exist in the project' => sub {
     
     my $model = _build_model();
 
-    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid );
+    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, %opts );
 
     is scalar @topics, 1;
     is $topics[0], $topic2;
 };
 
-subtest 'run_query_builder: Topic that does not exist ' => sub {
+subtest 'topics_for_user: topic that does not exist' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form(
@@ -965,13 +967,14 @@ subtest 'run_query_builder: Topic that does not exist ' => sub {
                     },
                     "key" => "fieldlet.system.title",
                     text  => 'Title',
-                }
+                    }
             }
         ],
     );
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $other_project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
@@ -983,21 +986,21 @@ subtest 'run_query_builder: Topic that does not exist ' => sub {
         title       => 'Topic1'
     );
     my $topic2 = TestSetup->create_topic(
-        project     => $project,
+        project     => $other_project,
         id_category => $id_category,
         status      => $status,
         title       => 'Topic2'
     );
-    my $where = {};
+
     my $model = _build_model();
 
-    my (@topics) = $model->run_query_builder( 'Topic3', $where, $user->username );
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => 'Topic3' } );
 
-    is $topics[0], '-1';
+    is scalar @rows, 0;
 
 };
 
-subtest 'run_query_builder: topic that exist in other project ' => sub {
+subtest 'topics_for_user: topic that exist in other project' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form(
@@ -1047,12 +1050,12 @@ subtest 'run_query_builder: topic that exist in other project ' => sub {
         status      => $status,
         title       => 'Topic2'
     );
-    my $where = {};
+
     my $model = _build_model();
 
-    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid );
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => $topic2 } );
 
-    is $topics[0], '-1';
+    is scalar @rows, 0;
 
 };
 
