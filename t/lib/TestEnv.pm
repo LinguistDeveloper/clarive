@@ -20,6 +20,7 @@ sub debug   { }
 sub config  { {} }
 sub version { '' }
 
+use Carp qw(longmess);
 use Test::MockTime ();
 use Path::Class ();
 use Baseliner::Core::Registry;
@@ -34,9 +35,11 @@ BEGIN {
     sub Clarive::config { { mongo => { dbname => 'acmetest' }, root => Path::Class::dir('root')->absolute } }
 }
 
+my @WARNINGS;
+
 sub setup {
     my $class = shift;
-    my %opts = @_;
+    my %opts  = @_;
     require Clarive::App;
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
     require Clarive::mdb;
@@ -44,7 +47,27 @@ sub setup {
     require Clarive::cache;
 
     *Baseliner::config = sub { {} };
-    *Baseliner::app    = sub { {_logger => sub {}}};
+    *Baseliner::app = sub {
+        {
+            _logger => sub { }
+        };
+    };
+
+    $SIG{__WARN__} = sub {
+        push @WARNINGS, longmess( $_[0] );
+        warn @_;
+    };
+}
+
+END {
+    if ($ENV{TEST_FATAL_WARNINGS} && @WARNINGS) {
+        print STDERR "WARNINGS!\n";
+        for (@WARNINGS) {
+            print STDERR "$_\n";
+        }
+
+        exit 1;
+    }
 }
 
 1;
