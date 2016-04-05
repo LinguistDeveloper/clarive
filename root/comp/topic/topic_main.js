@@ -10,6 +10,7 @@
     $category_meta
     $permissionComment
     $viewKanban
+    $viewTimeline
     $HTMLbuttons => 0
     $status_items_menu => undef
     $menu_deploy => undef
@@ -26,6 +27,7 @@
     var permGraph = <% $permissionGraph ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
     var viewKanban = <% $viewKanban ? 'true' : 'false' %>;
+    var viewTimeline = <% $viewTimeline ? 'true' : 'false' %>;
     var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     var status_items_menu = '<% $status_items_menu %>';
     var menu_deploy = '<% $menu_deploy %>';
@@ -42,6 +44,7 @@
         permDelete: permDelete,
         permComment: permComment,
         viewKanban: viewKanban,
+        viewTimeline: viewTimeline,
         html_buttons: html_buttons,
         status_items_menu: status_items_menu,
         menu_deploy: menu_deploy,

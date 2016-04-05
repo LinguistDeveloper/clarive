@@ -3287,6 +3287,88 @@ sub status_changes {
     return @status_changes;
 }
 
+sub timeline_status_changes {
+    my $self = shift;
+    my ( $topic_mid ) = @_;
+
+    $topic_mid = $topic_mid->{mid} if ref $topic_mid;
+
+    my @events;
+
+    my $rs = mdb->activity->find( { mid => "$topic_mid" } )->sort( { ts => 1 } );
+
+    my $first;
+
+    my $count = 0;
+
+    for my $ev ( $rs->all ) {
+        try {
+            my $ed = $ev->{vars};
+            $ev->{ts} =~ tr/ /T/;
+            if ( $ev->{event_key} eq 'event.topic.change_status' ) {
+                if(!$count){
+                    $first = $ed->{old_status};
+                    $count = 1;
+                }
+                push @events, {
+                    data_type  => "change_status",
+                    old_status => $ed->{old_status},
+                    status     => $ed->{status},
+                    username   => $ed->{username},
+                    when       => $ev->{ts}
+                };
+            } elsif ( $ev->{event_key} =~ /^event.topic.modify/ ) {
+                push @events, {
+                    data_type  => "topic_modify",
+                    old_status => "",
+                    status     => "",
+                    text       => $ev->{text},
+                    new_value  => $ed->{new_value},
+                    old_value  => $ed->{old_value},
+                    username   => $ed->{username},
+                    field      => $ed->{field},
+                    when       => $ev->{ts}
+                };
+            } elsif ( $ev->{event_key} =~ /^event.post/ ) {
+                push @events, {
+                    data_type  => "event_post",
+                    old_status => "",
+                    status     => "",
+                    text       => $ev->{text},
+                    post       => $ed->{post},
+                    username   => $ed->{username},
+                    when       => $ev->{ts}
+                };
+            } elsif ( $ev->{event_key} =~ /^event.file/ ) {
+                push @events, {
+                    data_type  => "event_file",
+                    old_status => "",
+                    status     => "",
+                    text       => $ev->{text},
+                    filename   => $ed->{filename},
+                    username   => $ed->{username},
+                    when       => $ev->{ts}
+                };
+            }
+        }
+        catch {};
+    }
+
+    my $topic_doc = mdb->topic->find_one( { mid => "$topic_mid" } );
+    $topic_doc->{created_on} =~ tr/ /T/;
+
+    unshift @events,
+        {
+        data_type  => "create",
+        old_status => _loc("Created"),
+        status     => $first,
+        username   => $topic_doc->{created_by},
+        when       => $topic_doc->{created_on}
+        };
+
+    return @events;
+}
+
 sub get_users_friend {
     my ( $self, %p ) = @_;
 

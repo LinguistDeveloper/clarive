@@ -979,6 +979,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             enableToggle: true,
             tooltip: _('Open timeline'),
             handler: function(){ self.show_timeline() },
+            hidden: self.viewTimeline == undefined ? true : !self.viewTimeline,
             allowDepress: false, toggleGroup: self.toggle_group
         });
 
@@ -1302,7 +1303,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
 
         Cla.use(['/static/gojs/go-debug.js'], function(){
-            Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title}, function(res){
+            Baseliner.ajaxEval('/site/timeline-graph.js', {mid: self.topic_mid, title: self.title, self: self}, function(res){
                 self.w = new Ext.Panel({
                     layout: 'card',
                     activeItem: 0,

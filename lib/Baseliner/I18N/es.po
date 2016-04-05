@@ -979,6 +979,25 @@ msgstr ""
 msgid "User does not have permission to perform the operation"
 msgstr "El usuario no tiene permiso para realiza la operación"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 msgid "User %1 does not have permission to drop into field %2"
 msgstr "El usuario %1 no tiene permiso para relacionar el campo %2"
 
@@ -987,6 +1006,33 @@ msgstr "No hay campos editables o coincidentes que se encuentran en los tópicos
 
 msgid "No drop fields available in topics %1 or %2"
 msgstr "No hay campos disponibles para relacionar en tópicos %1 o %2"
+
+msgid "Average"
+msgstr "Media"
+
+msgid "Sum Total"
+msgstr "Suma Total"
+
+msgid "Sort by labels"
+msgstr "Ordenar por leyenda"
+
+msgid "Type of number"
+msgstr "Tipo de valor numérico"
+
+msgid "Currency symbol to be shown"
+msgstr "Símbolo monetario a mostrar"
+
+msgid "Grouper number field"
+msgstr "Campo numérico agrupador"
+
+msgid "Agregate grouper field by"
+msgstr "Agregar el campo agrupador por"
+
+msgid "Show real dates instead of 'ago' format"
+msgstr "Ver fechas reales en lugar del formato 'desde'"
+
+msgid "Checked"
+msgstr "Marcado"
 
 msgid "Requested By"
 msgstr "Solicitante"
@@ -3296,27 +3342,6 @@ msgstr "Categorías"
 
 msgid "Topics"
 msgstr "Tópicos"
-
-msgid "Average"
-msgstr "Media"
-
-msgid "Sum Total"
-msgstr "Suma Total"
-
-msgid "Sort by labels"
-msgstr "Ordenar por leyenda"
-
-msgid "Type of number"
-msgstr "Tipo de valor numérico"
-
-msgid "Currency symbol to be shown"
-msgstr "Símbolo monetario a mostrar"
-
-msgid "Grouper number field"
-msgstr "Campo numérico agrupador"
-
-msgid "Agregate grouper field by"
-msgstr "Agregar el campo agrupador por"
 
 msgid "Label added"
 msgstr "Etiqueta añadida"
@@ -8680,11 +8705,14 @@ msgstr "Opciones configuradas"
 msgid "Default value"
 msgstr "Valor por defecto"
 
-msgid "Show real dates instead of 'ago' format"
-msgstr "Ver fechas reales en lugar del formato 'desde'"
+msgid "Event details"
+msgstr "Detalles de eventos"
 
-msgid "Checked"
-msgstr "Marcado"
+msgid "Data type"
+msgstr "Tipo de datos"
+
+msgid "Data type is not defined"
+msgstr "El tipo de datos no esta definido"
 
 msgid "Release field"
 msgstr "Campo 'Release field'"
@@ -8703,3 +8731,6 @@ msgstr "Número"
 
 msgid "Invalid JSON"
 msgstr "Formato JSON inválido"
+
+msgid "Event type"
+msgstr "Tipo de evento"
