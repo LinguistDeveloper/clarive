@@ -242,10 +242,6 @@ sub dsl_build {
         push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
         push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};  
 
-        if( my $semaphore_key = $attr->{semaphore_key} ) {
-            # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
-            push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
-        }
         my $timeout = $attr->{timeout};
         my $rb_close_me = 0;
         if( !$run_forward && !$run_rollback ) {
@@ -287,6 +283,10 @@ sub dsl_build {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = $stash->{job_step};', $needs_rollback_key || $name_id) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
+            if( my $semaphore_key = $attr->{semaphore_key} ) {
+                # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
+                push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
+            }
             my $key = $attr->{key};
             use Baseliner::Model::Registry;
             my $reg = Baseliner::Model::Registry->get( $key );
@@ -308,10 +308,10 @@ sub dsl_build {
                 $children = [map { {%{$_ || {}}, level => $level + 1}} _array $children];
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
+            push @dsl, sprintf( '$stash->{_sem}->release if $stash->{_sem};') if $attr->{semaphore_key};
             push @dsl, '});' if $error_trap; # current_task close
             push @dsl, '});' if $parallel_mode; # current_task close
             push @dsl, '});' if $closure; # current_task close
-            push @dsl, sprintf( '$stash->{_sem}->release if $stash->{_sem};') if $attr->{semaphore_key};
         } else {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;

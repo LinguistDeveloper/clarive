@@ -1,11 +1,11 @@
 =head1 Baseliner::Sem
 
-UNIX semaphores.  
+UNIX semaphores.
 
 This module is useful for online semaphores, because
 it won't go to the database.
 
-The number of slots is set to 1 by default. 
+The number of slots is set to 1 by default.
 
     my $sem = Baseliner::Sem->new( key=>'abcde' );
     $sem->take;
@@ -32,9 +32,11 @@ Possible statuses for the queue:
 =cut
 package Baseliner::Sem;
 use Moose;
+
+use Try::Tiny;
+use Sys::Hostname;
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
 
 has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
@@ -48,7 +50,7 @@ has must_release => qw(is rw isa Bool default 0);
 has released     => qw(is rw isa Bool default 0);
 has pid          => qw(is rw isa Any), default => sub { $$ };
 has disp_id => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
-has session => qw(is rw isa Any), default => sub{ 
+has session => qw(is rw isa Any), default => sub{
     my $actual_conection;
     my @conn = mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog};
     for my $elem (_array @conn){
@@ -104,15 +106,15 @@ sub enqueue {
     # now add request to queue
     my $seq = $self->seq;
     my $id_queue = mdb->oid;
-    my $doc = { 
+    my $doc = {
         _id        => $id_queue,
         key        => $self->key,
         who        => $self->who,
-        seq        => 0+$seq, 
-        ts         => Time::HiRes::time(), 
+        seq        => 0+$seq,
+        ts         => Time::HiRes::time(),
         caller     => "$package ($line)",
         active     => '1',
-        pid        => $$, 
+        pid        => $$,
         ts_request => mdb->ts,
         hostname   => $self->disp_id,
         status     => 'waiting',
@@ -123,7 +125,7 @@ sub enqueue {
     $self->id_queue( $id_queue );
 }
 
-sub take { 
+sub take {
     my ($self, %p) =@_;
     my ($package, $filename, $line) = caller;
     $self->must_release(0);
@@ -136,16 +138,16 @@ sub take {
 
     alarm $p{timeout} if length $p{timeout};
     local $SIG{ALRM} = sub{ _fail(_loc('Timeout wating for semaphore: %1s',$p{timeout})) } if length $p{timeout};
-    
+
     # wait until the daemon grants me out
     my $updated = 0;
     my $cont = 0;
     TAKEN: while ( !$updated ) {
         # 10 seconds for every message
-        my $print_msgs = !( ($cont-1) % int(10/$wait_interval) );  
+        my $print_msgs = !( ($cont-1) % int(10/$wait_interval) );
         _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $cont && $print_msgs;
-        
-        # check the current queue 
+
+        # check the current queue
         my $doc = mdb->sem->find_one({ key=>$self->key });
         _fail _loc('Cancelled semaphore %1 due to missing record', $self->key) unless $doc;
         my $maxslots = $doc->{maxslots} // 0;
@@ -153,7 +155,7 @@ sub take {
         my (@active_queues);
         for my $que ( _array($doc->{queue}) ){
             my $s = $que->{status};
-            my $qid = "$$que{_id}"; 
+            my $qid = "$$que{_id}";
             push @active_queues, $que;
             if( $s eq 'waiting' ) {
                 # minseq enforces that semaphores are consumed in order
@@ -187,11 +189,11 @@ sub take {
         } elsif ( $cont > 0 ) {
             if ( @active_queues ) {
                 _debug("Found ".scalar @active_queues." running queues. Checking if they are alive..") if $print_msgs;
-                
+
                 my @conn = mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog};
                 my %active_sessions;
                 map { $active_sessions{$_->{connectionId}} = 1  if $_->{connectionId} } _array(@conn);
-                
+
                 #my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->get_collection( '$cmd.sys.inprog' )->find_one({'$all'=>1})->{inprog});
                 for my $qitem ( @active_queues ) {
                     if( !$active_sessions{ $qitem->{session} } ) {
@@ -222,7 +224,7 @@ sub take {
         } elsif ( $cont == 0 ) {
             $cont++;
         }
-        
+
         select(undef, undef, undef, $wait_interval );
     }
 
@@ -233,11 +235,11 @@ sub take {
 sub maxslots {
     my ($self)=@_;
     my $doc = mdb->sem->find_one({ key=>$self->key },{ maxslots=>1 });
-    return 1 unless $doc; 
+    return 1 unless $doc;
     return 0+( $doc->{maxslots} // 1 );
 }
 
-sub release { 
+sub release {
     my ($self, %p) =@_;
     return if $self->released;
     return if $self->pid != $$;  # fork protection: avoid child working on parent sems
@@ -265,7 +267,7 @@ sub release {
     $self->released(1);
 }
 
-sub purge { 
+sub purge {
     my ($self, %p) =@_;
     mdb->sem->update({ key=>$self->key }, { '$pull'=>{queue=>{} } });
 }
