@@ -59,7 +59,7 @@ elif [ "$1" == "prove" ]; then
         ARGV[0]=t;
     fi
 
-    prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
+    perl $LOCALDIR/bin/prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
 elif [ "$1" == "proveui" ]; then
     shift
 
@@ -69,11 +69,11 @@ elif [ "$1" == "proveui" ]; then
         ARGV[0]=tselenium;
     fi
 
-    prove -Ilib -It/lib -Itselenium/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib  -I$CLARIVE_HOME/tselenium/lib -r "${ARGV[@]}"
+    perl $LOCALDIR/bin/prove -Ilib -It/lib -Itselenium/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib  -I$CLARIVE_HOME/tselenium/lib -r "${ARGV[@]}"
 elif [ "$1" == "cover" ]; then
     shift
 
-    prove -Ilib -It/lib -e 'perl -MDevel::Cover' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
+    perl $LOCALDIR/bin/prove -Ilib -It/lib -e 'perl -MDevel::Cover' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
     cover
 else
     $PERL $BINDIR/cla-cmd "$@"
