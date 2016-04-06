@@ -129,7 +129,7 @@
         frame: true,
         autoHeight: true,
         autoWidth: true,
-        defaults: { height: 300, width: 300 },
+        defaults: { height: 20, width: 300 },
         maxWidth: 400,
         //width: 720,             
         autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } },

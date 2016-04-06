@@ -1083,10 +1083,30 @@ textarea.x-form-textarea.x-form-field {
    border: solid #ccc 1px;
 }
 
+.job-calendar th {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: capitalize;
+    height: 30px !important;
+    text-align: center;
+}
+
 .job_calendar_edit_cal_windows_column {
-   margin:50px 5px 15px 10px;
+    margin:50px 5px 15px 10px;
 }
 
 .job_calendar_edit_cal_windows {
-   margin-top: 20px
+    margin-top: 20px
 }
+
+.x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
+.x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
+    border: 0px solid #c1c1c1;
+    padding-left: 10px;
+}
+
+.x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
+.x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text {
+    padding-left: 10px;
+}
+
