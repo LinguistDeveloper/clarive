@@ -156,7 +156,7 @@ sub dashboard {
                     'mid'         => mdb->in( @topics_created_during, @topics_created_before ),
                     'vars.status' => mdb->in(@closed_statuses),
                     'ts'          => $date_query_during_period,
-                }
+                },
             },
             { '$group' => { _id => $group_by, mids => { '$addToSet' => '$mid' }, total => { '$sum' => 1 } } }
         ]
@@ -165,7 +165,7 @@ sub dashboard {
     # Make sure when topics are closed/reopen several times a day
     # or during several days, we remove those duplications
     my %seen;
-    foreach my $closed_topic ( @{ $closed_topics_aggr[0] } ) {
+    foreach my $closed_topic ( sort { $b->{_id} cmp $a->{_id} } @{ $closed_topics_aggr[0] } ) {
         my $mids = $closed_topic->{mids};
 
         my @filtered_mids;

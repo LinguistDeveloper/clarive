@@ -782,7 +782,9 @@ subtest 'burndown: understands several status changes' => sub {
             mid       => $topic_mid,
             id_status => $status_finished->mid
         );
+    };
 
+    mock_time '2016-01-02 01:00:00', sub {
         Baseliner::Model::Topic->new->change_status(
             change    => 1,
             mid       => $topic_mid,
