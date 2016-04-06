@@ -421,7 +421,6 @@
 
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
 
-                            role_panel.destroy();
                         },
                         failure: function(form, action) { Baseliner.message( _("Error: Role already exists")), _("Failure") + ":" + action.result.msg; }
                     });
