@@ -30,27 +30,13 @@ sub list_notifications : Local {
     my $where = {};
 
     if ($query) {
-        my @mids_query;
-        if ( $query !~ /\+|\-|\"|\.|\/|\*|\?/ ) {    # special queries handled by query_build later
-            @mids_query
-                = map { $_->{obj}{_id} }
-                _array(
-                mdb->notification->search( query => $query, limit => 1000, project => { _id => 1 } )->{results} );
-        }
-
-        if ( @mids_query == 0 ) {
-            $where = mdb->query_build(
-                query  => $query,
-                fields => [
-                    qw(id event_key action data.recipients.TO data.recipients.TO.Fields data.recipients.TO.Roles.name data.scopes.category.name data.scopes.category_status.name data.scopes.project.name data.scopes.field
-                        is_active username template_path subject digest_time digest_date digest_freq)
-                ]
-            );
-
-        }
-        else {
-            $where->{_id} = { '$in' => \@mids_query };
-        }
+        $where = mdb->query_build(
+            query  => $query,
+            fields => [
+                qw(id event_key data.recipients.TO data.recipients.TO.Fields data.recipients.TO.Roles.name data.scopes.category.name data.scopes.category_status.name data.scopes.project.name data.scopes.field
+                    username template_path subject digest_time digest_date digest_freq)
+            ]
+        );
     }
 
     my $rs = mdb->notification->find($where);
