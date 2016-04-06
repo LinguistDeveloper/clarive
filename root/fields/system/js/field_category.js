@@ -35,7 +35,7 @@ params:
         store: store_category,
         allowBlank: false,
 		readOnly: meta ? meta.readonly : true,
-        hidden: meta ? Baseliner.eval_boolean(meta.hidden) : true,
+        hidden: meta ? Baseliner.eval_boolean(!meta.active) : true,
         listeners:{
             'select': function(cmd, rec, idx){
                 var ff;

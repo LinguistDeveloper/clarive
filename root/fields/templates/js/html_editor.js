@@ -41,7 +41,7 @@ params:
             margin: 0, padding: 0,
             fieldLabel: _(meta.name_field),
             allowBlank: allow,
-            hidden: Baseliner.eval_boolean(meta.hidden),
+            hidden: Baseliner.eval_boolean(!meta.active),
             //style: 'margin-bottom: 15px',
             readOnly : readonly,
             items: editor,

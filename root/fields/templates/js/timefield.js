@@ -23,7 +23,7 @@ params:
 			format: meta.format,
 			value: data ? eval('data.' + meta.bd_field): '',
 			readOnly: Baseliner.eval_boolean(meta.readonly),
-			hidden: Baseliner.eval_boolean(meta.hidden)
+			hidden: Baseliner.eval_boolean(!meta.active)
 		}
     ]
 })

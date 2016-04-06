@@ -42,7 +42,7 @@ params:
         anchor: data.anchor,
         value: data ? data.name_status : '',
         readOnly: Baseliner.eval_boolean(meta.readonly),
-        hidden: Baseliner.eval_boolean(meta.hidden),
+        hidden: Baseliner.eval_boolean(!meta.active),
         singleMode: true
     });
     

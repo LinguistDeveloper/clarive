@@ -36,7 +36,7 @@ params:
 			//height: 30,
 			allowBlank: Baseliner.eval_boolean(meta.allowBlank),
 			readOnly: Baseliner.eval_boolean(meta.readonly),
-			hidden: Baseliner.eval_boolean(meta.hidden)
+			hidden: Baseliner.eval_boolean(!meta.active)
 		}
     ]
 })

@@ -44,7 +44,7 @@ params:
         value: value || meta['default_value'],
         forceSelection: true,
         selectOnFocus: true,
-        hidden: Baseliner.eval_boolean(meta.hidden),
+        hidden: Baseliner.eval_boolean(!meta.active),
         disabled: Baseliner.eval_boolean(meta.readonly),
         allowBlank: Baseliner.eval_boolean(meta.allowBlank)
     });  

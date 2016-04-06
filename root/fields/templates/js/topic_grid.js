@@ -34,7 +34,7 @@ params:
         name: meta.id_field, 
         value: data[ meta.id_field ],
         readOnly:  readonly,
-        hidden: Baseliner.eval_boolean(meta.hidden),
+        hidden: Baseliner.eval_boolean(!meta.active),
         allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
     };
     if( meta.filter!=undefined ) {
