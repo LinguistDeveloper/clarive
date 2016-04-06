@@ -5,6 +5,7 @@
 - #31874 Chequeo de variables
 - #31966 Bootstrap on Cygwin
 - #32177 Escape html when displaying text fields
+- #32196 Graphic topic's history part I (past)
 - #32327 Add the posibility to execute different versions of rules
 - #32423 Improve masks in Clarive
 - #32462 Prepare UI infrastructure
@@ -52,6 +53,7 @@
 - #32821 LD_LIBRARY_PATH is not inherited
 - #32826 Burndown working in CRM (#32755)
 - #32845 Fix edit calendar edition (#32840)
+- #32834 Semaaphores should be inside of parallel mode
 - #32847 dashlet.topic.number_of_topics is not filtering with multuple categories
 - #32858 List Rows in dashboards should be shown properly
 - #32864 Time races in tests and DST issue
@@ -64,6 +66,13 @@
 - #32933 Cannot delete field from topic_selector
 - #32938 No branch info when dropping a branch into revisions box
 - #32942 Unicode in posts
+- #32956 Correctly create build_dir on cygwin in stew
+- #32957 Cannot create topics
+- #32964 Fix failing tests on Cygwin
+- #32965 New role doesn't save properly
+- #32505 Wrong numbers in timeline graph
+- #32914 Fix various warnings
+- #32925 Git diff can not detect binary files in bare repositories
 
 ---------------------------------------------- 6.4.4 ----------------------------------------------
 [ENHANCEMENTS]
