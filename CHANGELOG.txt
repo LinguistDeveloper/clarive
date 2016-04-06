@@ -73,6 +73,8 @@
 - #32505 Wrong numbers in timeline graph
 - #32914 Fix various warnings
 - #32925 Git diff can not detect binary files in bare repositories
+- #32969 Update stew with version ordering fix
+- #32973 Fix wrong rebase of CSV export
 
 ---------------------------------------------- 6.4.4 ----------------------------------------------
 [ENHANCEMENTS]
