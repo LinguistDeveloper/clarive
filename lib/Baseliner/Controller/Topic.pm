@@ -671,6 +671,7 @@ sub view : Local {
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
             $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
+            $c->stash->{viewTimeline} = $c->stash->{permissionActivity};
             $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
             my $has_permission_link = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.job.monitor' );
             $c->stash->{permissionJobsLink} = 1 if exists $categories_jobs{$id_category} && $has_permission_link;
