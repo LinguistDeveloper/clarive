@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use lib 't/lib';
+use utf8;
 
 use Test::More;
 use Test::Fatal;
@@ -20,7 +20,7 @@ use Baseliner::Utils qw(
   _strip_html
   _strip_html_editor
 );
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -413,6 +413,13 @@ subtest '_truncate: truncates string' => sub {
     is _truncate( 'foobar', 5,  '...' ), 'fo...';
     is _truncate( 'foobar', 5,  '' ),    'fooba';
     is _truncate( 'foobar', 10, '' ),    'foobar';
+};
+
+subtest '_md5: calculates md5 of a string' => sub {
+    like _md5(), qr/^[a-f0-9]{32}$/;
+    like _md5('hello'), qr/^[a-f0-9]{32}$/;
+    like _md5('hello', 'there'), qr/^[a-f0-9]{32}$/;
+    like _md5('привет', 'there'), qr/^[a-f0-9]{32}$/;
 };
 
 done_testing;

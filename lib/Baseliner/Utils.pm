@@ -1444,6 +1444,7 @@ sub _md5 {
         return $md5->hexdigest;
     } else {
         my $str = @_ ? join( '#',@_ ) : _now . rand() . $$ ;
+        $str = Encode::encode('UTF-8', $str) if Encode::is_utf8($str);
         return Digest::MD5::md5_hex( $str );
     }
 }
