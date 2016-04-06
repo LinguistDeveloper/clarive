@@ -2,16 +2,18 @@
     $save => 0;
 </%args>
 (function(params){
+    var can_save = Cla.eval_boolean(<% $save %>);
+
     var menu_services = new Ext.Button({
         text: _('Services'),
         icon:'/static/images/icons/service.png',
         cls: 'x-btn-icon-text',
+        disabled: !can_save,
         menu: { items:[] }
     });
 
     var load_form = function(opts){
         if( opts.rec == undefined ) opts.rec = {};            // master row record
-        var can_save = Cla.eval_boolean(<% $save %>);
         var mid = opts.mid;
         var ci_form = opts.ci_form; 
         var has_bl = Cla.eval_boolean( opts.rec.has_bl );
@@ -165,9 +167,12 @@
             }
         });
 
+        var text_button = can_save ?  _('Edit') : _('View');
+        var text_img = can_save ? '/static/images/icons/edit.png' : '/static/images/icons/views.png';
+
         var btn_edit = new Ext.Button({
-            text: _('Edit'),
-            icon:'/static/images/icons/edit.png',
+            text: text_button,
+            icon: text_img,
             cls: 'x-btn-icon-text',
             pressed: true, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
             handler: function(){ cardpanel.getLayout().setActiveItem(form) }
@@ -193,6 +198,7 @@
             text: _('Calendar'),
             icon:'/static/images/icons/calendar.png',
             cls: 'x-btn-icon-text',
+            disabled: !can_save,
             pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
             handler: show_calendar
         });
@@ -233,6 +239,7 @@
             defaults: {
                allowBlank: false,
                anchor: '100%',
+               disabled: !can_save,
             },
             bodyStyle: {
                 'background-color': 'white',
