@@ -554,6 +554,7 @@ subtest 'topics_by_field: counts topics by status' => sub {
 
     my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic', status => $status_new);
     my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2', status => $status_in_progress);
+    my $topic_mid3 = TestSetup->create_topic(project => $project, title => 'My Topic3', status => $status_in_progress);
 
     my $controller = _build_controller();
 
@@ -567,9 +568,9 @@ subtest 'topics_by_field: counts topics by status' => sub {
             'success'     => \1,
             'topics_list' => {
                 'New'         => [ ignore() ],
-                'In Progress' => [ ignore() ]
+                'In Progress' => [ ignore(), ignore() ]
             },
-            'data' => [ [ 'In Progress', 1 ], [ 'New', 1 ] ],
+            'data' => [ [ 'In Progress', 2 ], [ 'New', 1 ] ],
             'colors' => {
                 'New'         => undef,
                 'In Progress' => undef
