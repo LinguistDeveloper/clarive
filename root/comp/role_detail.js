@@ -421,23 +421,25 @@
     var panel_title = params.id_role ? _('Role: %1', params.role ) : _('New Role');
     var role_panel = new Ext.Panel({
         layout: 'border',
-        tab_icon:IC('role'),
+        tab_icon: IC('role'),
         tbar: [
-            '->',
-            {  text: _('Save'),
+            '->', {
+                text: _('Save'),
                 cls: 'ui-comp-role-edit-save',
                 icon: IC('save'),
-                handler: function(){ 
+                handler: function() {
                     var ff = new_role_form.getForm();
-                    if( ! ff.isValid() ) return;
+                    if (!ff.isValid()) return;
                     action_store.clearFilter();
                     var actions_json = action_grid_data();
                     ff.submit({
-                        params: { role_actions: actions_json },
-                        success: function(form, action) { 
+                        params: {
+                            role_actions: actions_json
+                        },
+                        success: function(form, action) {
                             ff.findField("id").setValue(action.result.id);
-                            var grid = Ext.getCmp( params.id_grid ); 
-                            if( grid ) {
+                            var grid = Ext.getCmp(params.id_grid);
+                            if (grid) {
                                 grid.getStore().load();
                             }
 
@@ -446,19 +448,26 @@
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
 
                         },
-                        failure: function(form, action) { Baseliner.message( _("Error: Role already exists")), _("Failure") + ":" + action.result.msg; }
+                        failure: function(form, action) {
+                            Baseliner.message(_("Error: Role already exists")), _("Failure") + ":" + action.result.msg;
+                        }
                     });
                 }
-            },
-            {  text: _('Close') , cls: 'ui-comp-role-edit-close', icon: IC('close'), handler: function(){  role_panel.destroy() } }
+            }, {
+                text: _('Close'),
+                cls: 'ui-comp-role-edit-close',
+                icon: IC('close'),
+                handler: function() {
+                    role_panel.destroy()
+                }
+            }
         ],
         title: panel_title,
-          items : [
-              new_role_form,
-              grid_role,
-              role_navigator
-          ] 
+        items: [
+            new_role_form,
+            grid_role,
+            role_navigator
+        ]
     });
-    
     return role_panel;
 })
