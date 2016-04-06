@@ -37,6 +37,7 @@ params:
            value: data[meta.id_field]!=undefined ? data[meta.id_field] : (meta.default_value!=undefined? meta.default_value: data[meta.id_field]),
            allowBlank: Baseliner.eval_boolean(meta.allowBlank),
            disabled: Baseliner.eval_boolean(meta.readonly),
+           filter: meta.filter ? meta.filter : '',
            showClass: meta.show_class==undefined ? false : meta.show_class,
            order_by: meta.order_by ? meta.order_by : undefined,
        }, ci) )
