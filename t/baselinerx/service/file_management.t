@@ -7,14 +7,14 @@ use Test::Deep;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
 use TestEnv;
-use Test::Exception;
+use Test::Fatal;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
 use_ok 'BaselinerX::Service::FileManagement';
 
 
-subtest 'run_ship: file does not exist and mode local with die' => sub {
+subtest 'run_ship: file does not exist and mode local with fail' => sub {
     _setup();
 
     my $job = _mock_job();
@@ -30,15 +30,26 @@ subtest 'run_ship: file does not exist and mode local with die' => sub {
 
     my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
     $server = Test::MonkeyMock->new($server);
-    $server->mock( connect => sub { $agent } );
+    $server->mock( connect => sub {$agent} );
 
-    $agent->mock( server => sub { $server } );
+    $agent->mock( server => sub {$server} );
+    my $user_ci = TestUtils->create_ci('user');
 
-    dies_ok {$service->run_ship( $c,
-        { local_path => "$tmp/foo/bar", remote_path => 'remote/', backup_mode => 'none', server => $server, exist_mode_local => 'die' } ) } 'expecting to die';
+    like exception {
+        $service->run_ship(
+            $c,
+            {   local_path       => "$tmp/foo/bar",
+                remote_path      => 'remote/',
+                backup_mode      => 'none',
+                server           => $server,
+                exist_mode_local => 'fail',
+                user             => $user_ci
+            }
+        );
+    }, qr/Error: File does not exist with fail mode/;
 };
 
-subtest 'run_ship: file does not exist and mode local with not die' => sub {
+subtest 'run_ship: file does not exist and mode local with skip' => sub {
     _setup();
 
     my $job = _mock_job();
@@ -54,17 +65,24 @@ subtest 'run_ship: file does not exist and mode local with not die' => sub {
 
     my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
     $server = Test::MonkeyMock->new($server);
-    $server->mock( connect => sub { $agent } );
+    $server->mock( connect => sub {$agent} );
 
-    $agent->mock( server => sub { $server } );
+    $agent->mock( server => sub {$server} );
+    my $user_ci = TestUtils->create_ci('user');
 
-    my $output = $service->run_ship( $c,
-        { local_path => "$tmp/foo/bar", remote_path => 'remote/', backup_mode => 'none', server => $server, exist_mode_local => 'not die' } );
+    my $output = $service->run_ship(
+        $c,
+        {   local_path       => "$tmp/foo/bar",
+            remote_path      => 'remote/',
+            backup_mode      => 'none',
+            server           => $server,
+            exist_mode_local => 'skip',
+            user             => $user_ci
+        }
+    );
 
     is $output, '1';
 };
-
-
 
 subtest 'run_ship: copies file to remote' => sub {
     _setup();
