@@ -10,36 +10,45 @@ use experimental 'switch';
 BEGIN {  extends 'Catalyst::Controller' }
 
 sub list_notifications : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ( $start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= '_id';
-    $dir ||= 'desc';
-    if($dir eq 'desc'){
+    $dir  ||= 'desc';
+    if ( $dir eq 'desc' ) {
         $dir = -1;
-    }else{
+    }
+    else {
         $dir = 1;
     }
 
-    $start||= 0;
+    $start ||= 0;
     $limit ||= 30;
-    
-    my $page = to_pages( start=>$start, limit=>$limit );
 
-    my $where={};
-    
-    if( $query ) {
+    my $page = to_pages( start => $start, limit => $limit );
+
+    my $where = {};
+
+    if ($query) {
         my @mids_query;
-        if( $query !~ /\+|\-|\"|\.|\/|\*|\?/ ) {  # special queries handled by query_build later
-            @mids_query = map { $_->{obj}{_id} } 
-            _array( mdb->notification->search( query=>$query, limit=>1000, project=>{_id=>1})->{results} );
+        if ( $query !~ /\+|\-|\"|\.|\/|\*|\?/ ) {    # special queries handled by query_build later
+            @mids_query
+                = map { $_->{obj}{_id} }
+                _array(
+                mdb->notification->search( query => $query, limit => 1000, project => { _id => 1 } )->{results} );
         }
 
-        if( @mids_query == 0) {
-            $where = mdb->query_build(query => $query, fields=>[qw(id event_key action data.recipients.TO data.recipients.TO.Fields data.recipients.TO.Roles.name data.scopes.category.name data.scopes.category_status.name data.scopes.project.name data.scopes.field
-                is_active username template_path subject digest_time digest_date digest_freq)]);
+        if ( @mids_query == 0 ) {
+            $where = mdb->query_build(
+                query  => $query,
+                fields => [
+                    qw(id event_key action data.recipients.TO data.recipients.TO.Fields data.recipients.TO.Roles.name data.scopes.category.name data.scopes.category_status.name data.scopes.project.name data.scopes.field
+                        is_active username template_path subject digest_time digest_date digest_freq)
+                ]
+            );
 
-        } else {
+        }
+        else {
             $where->{_id} = { '$in' => \@mids_query };
         }
     }
@@ -47,25 +56,27 @@ sub list_notifications : Local {
     my $rs = mdb->notification->find($where);
     $rs->skip($start);
     $rs->limit($limit) unless $limit eq '-1';
-    $rs->sort({$sort => $dir});
-    
+    $rs->sort( { $sort => $dir } );
+
     my @rows;
-    while( my $r = $rs->next ) {
-        my $data = Baseliner::Model::Notification->new->encode_data($r->{data});
-        push @rows, {
-            id              => $r->{_id}->{value},
-            event_key       => $r->{event_key},
-            data            => $data,
-            action          => $r->{action},
-            is_active       => $r->{is_active},
-            template_path   => $r->{template_path},
-            subject         => $r->{subject},
-        };        
+    while ( my $r = $rs->next ) {
+        my $data = Baseliner::Model::Notification->new->encode_data( $r->{data} );
+        push @rows,
+            {
+            id            => $r->{_id}->{value},
+            event_key     => $r->{event_key},
+            data          => $data,
+            action        => $r->{action},
+            is_active     => $r->{is_active},
+            template_path => $r->{template_path},
+            subject       => $r->{subject},
+            };
     }
     $cnt = mdb->notification->count();
-    $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
+    $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward("View::JSON");
 }
+
 
 sub list_events : Local {
     my ( $self, $c ) = @_;
