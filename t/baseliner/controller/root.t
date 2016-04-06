@@ -6,7 +6,13 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use TestEnv;
-BEGIN { TestEnv->setup; }
+my $root;
+BEGIN {
+    use File::Basename qw(dirname);
+    $root = Cwd::realpath( dirname(__FILE__) );
+    TestEnv->setup;
+}
+
 use TestUtils ':catalyst';
 
 use Clarive::ci;
@@ -47,6 +53,37 @@ subtest 'authentication with api_key when option is not enabled' => sub {
     my $c = _build_c( req => { params => { username=>'test', api_key=>$api_key } }, authenticate=>{} );
     $c->stash->{api_key_authentication} = 0;
     ok ! $controller->auto($c);
+};
+
+subtest 'serve_file: correct file content_type for file' => sub {
+    _setup();
+
+    _register_auth_fail_events();
+
+    my $controller = Baseliner::Controller::Root->new( application => '' );
+    my $c = _build_c( );
+    $c->stash->{serve_file} = "$root/../../data/acmetest.yml";
+    $c->stash->{serve_filename} = 'file.txt';
+    $controller->serve_file($c);
+
+    is( $c->res->{content_type}, 'application/download;charset=utf-8' );
+    like( $c->res->{headers}{'Content-Disposition'}, qr/file.txt/ );
+};
+
+subtest 'serve_file: correct file contents for a body' => sub {
+    _setup();
+
+    _register_auth_fail_events();
+
+    my $controller = Baseliner::Controller::Root->new( application => '' );
+    my $c = _build_c( );
+    $c->stash->{serve_body} = "foobar";
+    $c->stash->{serve_filename} = 'file.txt';
+    $controller->serve_file($c);
+
+    is( $c->res->{content_type}, 'application/download;charset=utf-8' );
+    like( $c->res->{headers}{'Content-Disposition'}, qr/file.txt/ );
+    is $c->res->body, 'foobar';
 };
 
 subtest 'denies session when in maintenance mode' => sub {

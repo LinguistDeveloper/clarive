@@ -306,11 +306,13 @@ sub headers {
 
 sub header {
     my $self = shift;
-    my $header = shift;
+    my ( $key, $value ) = @_;
 
     $self->{headers} ||= FakeHeaders->new;
 
-    return $self->{headers}{$header};
+    return @_ > 1
+      ? ( $self->{headers}->{$key} = $value )
+      : $self->{headers}->{$key};
 }
 
 sub status {
@@ -508,9 +510,18 @@ sub new {
 
 sub header {
     my $self = shift;
+    my ( $key, $value ) = @_;
+
+    return @_ > 1
+      ? ( $self->{headers}->{$key} = $value )
+      : $self->{headers}->{$key};
+}
+
+sub remove_header {
+    my $self = shift;
     my ($key) = @_;
 
-    return $self->{headers}->{$key};
+    return delete $self->{headers}->{$key};
 }
 
 1;
