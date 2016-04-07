@@ -69,17 +69,6 @@ Cla.use = function(urls, callback, cache){
     }
 };
 
-Cla.timezone_list = [
-<%perl>
- use DateTime::TimeZone;
- my @tzs;
- for my $tz ( DateTime::TimeZone->all_names ) {
-    push @tzs, "['". $tz . "','" . $tz . "']"; 
- }
- print join ',', @tzs;
-</%perl>
-];
-
 Cla.moment_to_js_date_hash = {
     'DD-MM-YY' : 'd-m-Y',
     'DD-MM-YYYY' : 'd-m-Y',

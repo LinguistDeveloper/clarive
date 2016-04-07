@@ -19,6 +19,9 @@ has language_pref       => qw(is rw isa Any), default=>Clarive->config->{default
 has date_format_pref    => qw(is rw isa Str default format_from_local);
 has time_format_pref    => qw(is rw isa Str default format_from_local);
 has timezone_pref    => qw(is rw isa Str default server_timezone);
+has country            => qw(is rw isa Str default es);
+has currency        => qw(is rw isa Str default EUR);
+has decimal         => qw(is rw isa Str default Comma);
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
@@ -79,6 +82,10 @@ sub general_prefs_save {
     $self->date_format_pref($data->{date_format_pref});
     $self->time_format_pref($data->{time_format_pref});
     $self->timezone_pref($data->{timezone_pref});
+    $self->country($data->{country});
+    $self->currency($data->{currency});
+    $self->decimal($data->{decimal});
+
     $self->dashboard($data->{dashboard});
     $self->save;
     { msg => 'ok'};
