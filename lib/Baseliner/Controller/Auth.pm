@@ -228,7 +228,7 @@ sub authenticate : Private {
         # default realm authentication:
         $auth = $c->authenticate( { id => $login, password => $password } );
 
-        if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
+        if ( lc( $c->config->{authentication}->{default_realm} // '' ) eq 'none' ) {
 
             # User (internal) auth when realm is 'none'
             if ( !$password ) {

@@ -16,7 +16,7 @@ use BaselinerX::Type::Event;
 use BaselinerX::CI;
 use Baseliner::Controller::Auth;
 
-subtest 'authenticate: without password in event.auth.attempt' => sub {
+subtest 'authenticate: creates correct event event.auth.attempt' => sub {
     _setup();
 
     my $ci = ci->user->new( name => 'foo', password => 'admin' );
@@ -25,59 +25,64 @@ subtest 'authenticate: without password in event.auth.attempt' => sub {
     my $controller = _build_controller();
 
     my $c = _build_c(
-        authenticate => { id => 'foo', password => 'admin' },
-        model =>
-            { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+        authenticate => { id          => 'foo', password => 'admin' },
+        model        => { ConfigStore => FakeConfigStore->new() },
+        stash        => {
+            login    => 'foo',
+            password => 'admin',
+        }
     );
-    $c->stash->{login}    = 'foo';
-    $c->stash->{password} = 'admin';
+
     $controller->authenticate($c);
 
-    cmp_deeply $c->stash, {
-        login    => 'foo',
-        password => 'admin',
+    my $events = _build_events_model();
 
-    };
+    my $rv = $events->find_by_key('event.auth.attempt');
 
-    my $events = _build_model();
-    my $rv;
-    $rv = $events->find_by_key('event.auth.attempt');
-
-    is $rv->[0]->{login},    'foo';
-    is $rv->[0]->{password}, undef;
-
+    cmp_deeply $rv->[0],
+      {
+        'event_key'  => 'event.auth.attempt',
+        'event_data' => ignore(),
+        'ts'         => ignore(),
+        'realm'      => '',
+        'username'   => 'foo',
+        'mid'        => undef,
+        'rules_exec' => {
+            'event.auth.attempt' => {
+                'post-online' => 0,
+                'pre-online'  => 0
+            }
+        },
+        'id'           => ignore(),
+        'module'       => ignore(),
+        'event_status' => 'new',
+        'login'        => 'foo',
+        'login_data'   => { 'login_ok' => undef },
+        't'            => ignore(),
+        '_id'          => ignore(),
+      };
 };
 
-subtest 'authenticate: user does not found' => sub {
+subtest 'authenticate: creates correct event event.auth.attempt when user not found' => sub {
     _setup();
 
-    my $ci = ci->user->new( name => 'foo', password => 'admin' );
-    $ci->save;
+    my $c = _build_c(
+        authenticate => { id          => 'foo', password => 'admin' },
+        model        => { ConfigStore => FakeConfigStore->new() },
+        stash        => {
+            login    => 'foo',
+            password => 'admin',
+        }
+    );
 
     my $controller = _build_controller();
-
-    my $c = _build_c(
-        authenticate => { id => 'foo', password => 'admin' },
-        model =>
-            { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-    );
-    $c->stash->{login}    = 'bar';
-    $c->stash->{password} = 'admin';
     $controller->authenticate($c);
 
-    cmp_deeply $c->stash, {
-        login    => 'bar',
-        password => 'admin',
+    my $events = _build_events_model();
 
-    };
+    my $rv = $events->find_by_key('event.auth.attempt');
 
-    my $events = _build_model();
-    my $rv;
-    $rv = $events->find_by_key('event.auth.attempt');
-
-    is $rv->[0]->{login},    'bar (user not exists)';
-    is $rv->[0]->{password}, undef;
-
+    is $rv->[0]->{login}, 'foo (user not exists)';
 };
 
 subtest 'login: returns validation errors' => sub {
@@ -292,9 +297,7 @@ subtest 'login: allows local logins when in maintenance mode' => sub {
       };
 };
 
-sub _build_c {
-    mock_catalyst_c(@_);
-}
+done_testing;
 
 sub _setup {
     TestUtils->cleanup_cis;
@@ -316,11 +319,13 @@ sub _build_controller {
     return Baseliner::Controller::Auth->new( application => '' );
 }
 
-sub _build_model {
+sub _build_events_model {
     return Baseliner::Model::Events->new();
 }
 
-done_testing;
+sub _build_c {
+    mock_catalyst_c(@_);
+}
 
 package FakeConfigStore;
 
