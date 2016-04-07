@@ -344,7 +344,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             });
         }
         // add search box
-        if( node.attributes && node.attributes.has_query ) {
+        if( node.attributes && node.attributes.has_query && node.isExpanded()) {
             var query = node.attributes.data.query;
             var query_box = new Baseliner.SearchSimple({ 
                 width: 180,
@@ -366,10 +366,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         }
                         this.triggers[0].show();
                     }
-                    if( node.isExpanded() ) 
-                        self.refresh();
-                    else
-                        node.expand();
+                    self.refresh();
                     tree_menu.hide();
                 }
             });
