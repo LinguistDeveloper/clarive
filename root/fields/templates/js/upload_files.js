@@ -30,7 +30,7 @@ params:
 		disabled: readonly,
         id_field    : meta.id_field,
         form : form,
-        ext_fich : meta.extension
+        ext_fich : meta.extension ? meta.extension : ''
     });
     return [
         up
