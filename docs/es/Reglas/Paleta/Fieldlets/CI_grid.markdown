@@ -6,80 +6,88 @@ icon: grid
 * Permite añadir una tabla de CIs en el formulario.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
-<br />
+
 ### Ubicación del fieldlet
-* Indica en que parte de la vista se pondrá el fieldlet. <br />
+* Indica en que parte de la vista se pondrá el fieldlet.
 
-&nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario. <br />
+**Cabecera** - Se muestra en la parte central del formulario.
 
-&nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
+**Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
 
 
-<br />
+
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
 * El valor máximo permitido es de 12 (100% de anchura).
 
-<br />
+
 ### Ocultar en el modo lectura
 * Indica si el campo se quiere ocultar en modo lectura.
 
-<br />
+
 ### Ocultar en el modo edición
 * Indica si el campo se quiere ocultar en modo edición.
 
-<br />
+
 ### Campo obligatorio
 * Indica si el campo tiene que ser completado obligatoriamente.
 
 
-<br />
+
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico: <br />
+* Permite definir la apariencia de la tabla en el tópico:
 
-&nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
+**Único** - Permite seleccionar unicamente una opción.
 
-&nbsp; &nbsp;• **Múltiple** - Permite al usuario añadir tantas opciones como desee. <br />
+**Múltiple** - Permite al usuario añadir tantas opciones como desee.
 
-&nbsp; &nbsp;• **Tabla** - Las opciones seleccionadas se muestran en una tabla.
+**Tabla** - Las opciones seleccionadas se muestran en una tabla.
 
 
-<br />
+
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
 * Por defecto, es el titulo lo que se muestra.
 
-<br />
+
 ### Filtro avanzado JSON
 * Permite añadir un filtro avanzado JSON.
 * En este ejemplo solo mostrará un proyecto para mostrar:
-        {"name":"Nombre_proyecto"} 
-        {"moniker":"Alias_del_proyecto"} 
+
+        {"name":"Nombre_proyecto"}
+        {"moniker":"Alias_del_proyecto"}
 
 
-&nbsp;&nbsp;• Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
+
+• Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
+
+* También es posible aplicar intervalos para limitar los resultados. Para ello es necesario hacer uso de los comandos *lt* y *gt* propios de MongoDB.
+* Así para mostrar solo proyectos creados durante un intervalo de tiempo bastaria con construir la siguiente query:
+
+        {"ts": {"$gt":"2016-03-22","$lt":"2016-04-08" } }
 
 
-<br />
+
+
 ### Método de selección
 * Permite filtrar las posibles opciones seleccionables. <br />
 
-&nbsp; &nbsp;• **Selección por rol** <br />
+**Selección por rol**
 
-&nbsp; &nbsp;• **Selección por clase**
+**Selección por clase**
 
 
-<br />
+
 ### Roles
 * Se muestra una lista con los roles.
 * Si la opción *Selección por clase* está activada, el valor de este campo tiene que ser **CI**.
 
 
-<br />
+
 ### Clase CI
 * La selección de este campo solo está disponible si está activado la *selección por clase*
 * Especifica la clase de CI que se va a mostrar en las opciones.
 
-<br />
+
 ### Mostrar clase
 * Indica si se quiere mostrar la clase de elemento en el formulario.
