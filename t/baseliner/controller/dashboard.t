@@ -399,7 +399,7 @@ subtest 'list_topics: filters by user Current' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
+    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => '1'} } );
 
     $controller->list_topics($c);
 
@@ -429,7 +429,7 @@ subtest 'list_topics: filters by user Current when no topics' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => 'Current'} } );
+    my $c = _build_c( username => $developer->username, req => { params => {assigned_to => '1'} } );
 
     $controller->list_topics($c);
 

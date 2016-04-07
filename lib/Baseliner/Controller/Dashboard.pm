@@ -1237,9 +1237,9 @@ sub list_topics : Local {
             _error "JSON condition malformed (" . $condition . "): " . shift;
         }
     }
-
-    if ( $filter_user && $filter_user ne 'Any' ) {
-        if ( $filter_user eq _loc('Current') ) {
+    
+    if ( $filter_user && $filter_user ne '0' ) {
+        if ( $filter_user eq '1' ) {
             $main_conditions->{assigned_to_me} = 1;
         }
     }
