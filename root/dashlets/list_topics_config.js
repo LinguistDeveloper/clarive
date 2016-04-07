@@ -27,7 +27,7 @@
         mode: 'local',
         forceSelection: true,
         triggerAction: 'all', 
-        fieldLabel: _('Assigned to'),
+        fieldLabel: _('User assigned to topics'),
         autoLoad: true,
         anchor: '100%',
     });
