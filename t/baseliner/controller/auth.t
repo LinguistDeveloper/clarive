@@ -16,6 +16,70 @@ use BaselinerX::Type::Event;
 use BaselinerX::CI;
 use Baseliner::Controller::Auth;
 
+subtest 'authenticate: without password in event.auth.attempt' => sub {
+    _setup();
+
+    my $ci = ci->user->new( name => 'foo', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => 'foo', password => 'admin' },
+        model =>
+            { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+    $c->stash->{login}    = 'foo';
+    $c->stash->{password} = 'admin';
+    $controller->authenticate($c);
+
+    cmp_deeply $c->stash, {
+        login    => 'foo',
+        password => 'admin',
+
+    };
+
+    my $events = _build_model();
+    my $rv;
+    $rv = $events->find_by_key('event.auth.attempt');
+
+    is $rv->[0]->{login},    'foo';
+    is $rv->[0]->{password}, undef;
+
+};
+
+subtest 'authenticate: user does not found' => sub {
+    _setup();
+
+    my $ci = ci->user->new( name => 'foo', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => 'foo', password => 'admin' },
+        model =>
+            { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+    $c->stash->{login}    = 'bar';
+    $c->stash->{password} = 'admin';
+    $controller->authenticate($c);
+
+    cmp_deeply $c->stash, {
+        login    => 'bar',
+        password => 'admin',
+
+    };
+
+    my $events = _build_model();
+    my $rv;
+    $rv = $events->find_by_key('event.auth.attempt');
+
+    is $rv->[0]->{login},    'bar (user not exists)';
+    is $rv->[0]->{password}, undef;
+
+};
+
 subtest 'login: returns validation errors' => sub {
     _setup();
 
@@ -237,6 +301,8 @@ sub _setup {
     mdb->user_login_attempts->drop;
 
     mdb->config->drop;
+    mdb->event->drop;
+    mdb->event_log->drop;
 
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Auth' );
 
@@ -248,6 +314,10 @@ sub _build_controller {
     my (%params) = @_;
 
     return Baseliner::Controller::Auth->new( application => '' );
+}
+
+sub _build_model {
+    return Baseliner::Model::Events->new();
 }
 
 done_testing;

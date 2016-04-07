@@ -175,13 +175,9 @@ sub authenticate : Private {
         login      => $login,
         realm      => $realm,
         username   => $username,
-        password   => $password,
         login_data => { login_ok => undef }
     };
-    if ( ci->user->find_one( { name => "$username" } ) || $username eq 'local/root' ) {
-        $auth_stash->{password} = "*******";
-    }
-    else {
+    if ( !ci->user->find_one( { name => "$username" } ) && $username ne 'local/root' ) {
         $auth_stash->{login} = $login . " (user not exists)";
     }
     event_new 'event.auth.attempt' => $auth_stash;
