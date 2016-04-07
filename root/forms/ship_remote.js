@@ -54,10 +54,12 @@
         ]
     });
     var exist_mode_local = new Baseliner.ComboDouble({
-        fieldLabel: _('Exist Mode Local'), name:'exist_mode_local', value: data.exist_mode_local || 'skip',
+        fieldLabel: _('Exist Mode Local'),
+        name: 'exist_mode_local',
+        value: data.exist_mode_local || 'skip',
         data: [
-          ['skip',_('Skip, if file does not exist')],
-          ['fail',_('Fail, if file does not exist')],
+            ['skip', _('Skip if no files were found')],
+            ['fail', _('Fail if no files were found')],
         ],
 
     });

@@ -8738,8 +8738,11 @@ msgstr "Tipo de evento"
 msgid "Exist Mode Local"
 msgstr "Existe Modo Local"
 
-msgid "Skip, if file does not exist"
-msgstr "Ignorar, si el fichero no existe"
+msgid "Skip if no files were found"
+msgstr "Ignorar si los ficheros no existen"
 
-msgid "Fail, if file does not exist"
-msgstr "Fallar, si el fichero no existe"
+msgid "Fail if no files were found"
+msgstr "Fallar si los ficheros no existen"
+
+msgid "Error: No local files were found"
+msgid "Error: Los ficheros locales no fueron encontrados"

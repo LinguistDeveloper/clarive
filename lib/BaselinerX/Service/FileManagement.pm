@@ -561,9 +561,11 @@ sub run_ship {
                 $log->warn( _loc("Error doing a chmod '%1' to file '%2': %3", $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
         }
-        if($exist_mode_local eq 'fail' && $cnt == 0){
-            _fail _loc("Error: File does not exist with fail mode");
+
+        if ( $exist_mode_local eq 'fail' && $cnt == 0 ) {
+            _fail _loc("Error: No local files were found");
         }
+
         $log->warn( _loc( "Could not find any file locally to ship to '%1'", $server_str ), $config )
             unless $cnt > 0;
     }

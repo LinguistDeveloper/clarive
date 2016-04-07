@@ -13,8 +13,7 @@ use TestUtils;
 
 use_ok 'BaselinerX::Service::FileManagement';
 
-
-subtest 'run_ship: file does not exist and mode local with fail' => sub {
+subtest 'run_ship: fails when no local files were found in fail local mode' => sub {
     _setup();
 
     my $job = _mock_job();
@@ -24,21 +23,21 @@ subtest 'run_ship: file does not exist and mode local with fail' => sub {
     my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
 
     my $tmp = tempdir();
-    TestUtils->write_file( "foobar", "$tmp/foo" );
 
     my $agent = _mock_agent();
 
     my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
     $server = Test::MonkeyMock->new($server);
-    $server->mock( connect => sub {$agent} );
+    $server->mock( connect => sub { $agent } );
 
-    $agent->mock( server => sub {$server} );
+    $agent->mock( server => sub { $server } );
     my $user_ci = TestUtils->create_ci('user');
 
     like exception {
         $service->run_ship(
             $c,
-            {   local_path       => "$tmp/foo/bar",
+            {
+                local_path       => "$tmp/foo/bar",
                 remote_path      => 'remote/',
                 backup_mode      => 'none',
                 server           => $server,
@@ -46,10 +45,10 @@ subtest 'run_ship: file does not exist and mode local with fail' => sub {
                 user             => $user_ci
             }
         );
-    }, qr/Error: File does not exist with fail mode/;
+    }, qr/Error: No local files were found/;
 };
 
-subtest 'run_ship: file does not exist and mode local with skip' => sub {
+subtest 'run_ship: does not fail when no local files were found in skip local mode' => sub {
     _setup();
 
     my $job = _mock_job();
@@ -59,29 +58,29 @@ subtest 'run_ship: file does not exist and mode local with skip' => sub {
     my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
 
     my $tmp = tempdir();
-    TestUtils->write_file( "foobar", "$tmp/foo" );
 
     my $agent = _mock_agent();
 
     my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
     $server = Test::MonkeyMock->new($server);
-    $server->mock( connect => sub {$agent} );
+    $server->mock( connect => sub { $agent } );
 
-    $agent->mock( server => sub {$server} );
+    $agent->mock( server => sub { $server } );
     my $user_ci = TestUtils->create_ci('user');
 
-    my $output = $service->run_ship(
-        $c,
-        {   local_path       => "$tmp/foo/bar",
-            remote_path      => 'remote/',
-            backup_mode      => 'none',
-            server           => $server,
-            exist_mode_local => 'skip',
-            user             => $user_ci
-        }
-    );
-
-    is $output, '1';
+    ok !exception {
+        $service->run_ship(
+            $c,
+            {
+                local_path       => "$tmp/foo/bar",
+                remote_path      => 'remote/',
+                backup_mode      => 'none',
+                server           => $server,
+                exist_mode_local => 'skip',
+                user             => $user_ci
+            }
+          )
+    };
 };
 
 subtest 'run_ship: copies file to remote' => sub {
