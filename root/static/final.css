@@ -804,3 +804,8 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 #boot .table .dataTables_wrapper .row-fluid .dataTables_filter label {
     margin-top: 7px;
 }
+
+.more_info td > img { 
+    height: 16px;
+    width: 16px;
+}
