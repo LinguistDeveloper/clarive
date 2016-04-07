@@ -209,6 +209,18 @@ subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => s
     is $doc->{to_cl},   'topic';
 };
 
+subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $doc = mdb->master_rel->find_one( { from_mid => "$topic_mid" } );
+    is $doc->{from_cl}, 'topic';
+    is $doc->{to_cl},   'project';
+};
+
 subtest 'save_doc: correctly saved common environment entry in calendar fieldlet' => sub {
     _setup();
     my $id_rule = TestSetup->create_rule_form();
@@ -253,18 +265,6 @@ subtest 'save_doc: correctly saved common environment entry in calendar fieldlet
     Baseliner::Model::Topic->new->save_doc( $meta, $topic_ci, $doc, %p );
 
     ok( $doc->{calendar}->{'*'} );
-};
-
-subtest 'save_data: check master_rel for from_cl and to_cl from set_projects' => sub {
-    _setup();
-    TestSetup->_setup_user();
-
-    my $base_params = TestSetup->_topic_setup();
-
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $doc = mdb->master_rel->find_one( { from_mid => "$topic_mid" } );
-    is $doc->{from_cl}, 'topic';
-    is $doc->{to_cl},   'project';
 };
 
 subtest 'update: creates correct event.topic.create' => sub {
@@ -866,7 +866,7 @@ subtest 'topics_for_user: returns topics filtered by labels' => sub {
     is $rows[0]->{title}, 'Topic one';
 };
 
-subtest 'run_query_builder: Topic with query that exist in the project' => sub {
+subtest 'run_query_builder: finds topics by query in a project' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form(
@@ -900,8 +900,6 @@ subtest 'run_query_builder: Topic with query that exist in the project' => sub {
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-    my $where = {};
-    my %opts = (id_project => $project->mid);
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
     my $topic1 = TestSetup->create_topic(
@@ -922,10 +920,11 @@ subtest 'run_query_builder: Topic with query that exist in the project' => sub {
         status      => $status,
         title       => 'Topic3'
     );
-    
+
     my $model = _build_model();
 
-    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, %opts );
+    my $where = {};
+    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid);
 
     is scalar @topics, 1;
     is $topics[0], $topic2;

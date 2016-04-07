@@ -406,13 +406,12 @@ sub topics_for_user {
     my $is_root           = $perm->is_root($username);
     my @topic_list        = _array( $p->{topic_list} );
     my $id_project        = $p->{id_project};
-    my %opts              = (id_project => $id_project);
     my ( @mids_in, @mids_nin, @mids_or );
 
     if ( length($query) ) {
-        @mids_in = $self->run_query_builder( $query, $where, $username, %opts );
+        @mids_in = $self->run_query_builder( $query, $where, $username, id_project => $id_project);
     }
-    
+
     my ($select,$order_by, $as, $group_by);
     if( !$sort ) {
         $order_by = { 'modified_on' => $dir };
@@ -628,7 +627,7 @@ sub topics_for_user {
             }
         };
     }
-    return { count => $cnt, last_query => $where, sort => $order_by, query => $query, id_project => $opts{id_project} }, @rows;
+    return { count => $cnt, last_query => $where, sort => $order_by, query => $query, id_project => $id_project }, @rows;
 }
 
 
