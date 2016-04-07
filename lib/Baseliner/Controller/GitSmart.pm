@@ -287,7 +287,7 @@ sub bl_change_granted {
     my $self = shift;
     my ( $c, $changes, $repo ) = @_;
 
-    my @bl = $repo->create_tag_format($repo);
+    my @bl = $repo->get_system_tags($repo);
     my $bls = join( "|", @bl );
 
     foreach my $change (@$changes) {

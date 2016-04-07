@@ -34,7 +34,7 @@ service 'create_tags' => {
     handler => \&create_tags_handler
 };
 
-sub create_tag_format {
+sub get_system_tags {
     my $self = shift;
     my @tags;
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
@@ -84,7 +84,7 @@ sub create_tags_handler {
         ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
     }
 
-    my @tags = $self->create_tag_format($repo);   
+    my @tags = $self->get_system_tags($repo);   
 
     @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
 

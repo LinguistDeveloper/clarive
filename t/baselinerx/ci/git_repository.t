@@ -1187,7 +1187,83 @@ subtest 'commits_for_branch: gets tag from bl' => sub {
     like $commits[2], qr/^[a-z0-9]{40} first$/;
 };
 
+subtest 'get_system_tags: get tagas without project just bl ' => sub {
+    _setup();
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'bl' );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'COMUN' );
+
+    my @tags = $repo->get_system_tags($repo);
+
+    is $tags[0], "SUPPORT";
+    is $tags[1], "TEST";
+    is $tags[2], "COMUN";
+};
+
+subtest 'get_system_tags: get tagas with project' => sub {
+    _setup();
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '1.0'
+    );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my @tags = $repo->get_system_tags($repo);
+
+    is $tags[0], "1.0-SUPPORT";
+
+};
+
+subtest 'get_system_tags: get tagas with release,project' => sub {
+    _setup();
+    use Data::Dumper;
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '3.0'
+    );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my $status              = TestUtils->create_ci( 'status', name => 'New', type => 'G' );
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        is_release => '1',
+        name       => 'Release',
+        id_rule    => $id_release_rule,
+        id_status  => $status->mid
+    );
+
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $release_mid = TestSetup->create_topic(
+        project         => $project,
+        id_category     => $id_release_category,
+        title           => 'Release 0.1',
+        status          => $status,
+        username        => $user->name,
+        release_version => '1.0'
+    );
+
+    my @tags = $repo->get_system_tags($repo);
+
+    is $tags[0],'3.0-SUPPORT';
+    is $tags[1],'1.0-SUPPORT';
+
+};
+
 done_testing;
+
 
 sub _create_ci_project {
     return TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', @_ );
