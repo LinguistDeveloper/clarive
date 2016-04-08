@@ -21,7 +21,9 @@
 %   }
     </ul>
 %   }
-% } else {
+% }
+
+% if ($meta->{section} ne 'details' && !$meta->{hidden} ) {
 %   my @revs = _array( $data->{$meta->{id_field}} );
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
