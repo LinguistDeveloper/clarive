@@ -8734,3 +8734,15 @@ msgstr "Formato JSON inválido"
 
 msgid "Event type"
 msgstr "Tipo de evento"
+
+msgid "Exist Mode Local"
+msgstr "Existe Modo Local"
+
+msgid "Skip if no files were found"
+msgstr "Ignorar si los ficheros no existen"
+
+msgid "Fail if no files were found"
+msgstr "Fallar si los ficheros no existen"
+
+msgid "Error: No local files were found"
+msgstr "Error: Los ficheros locales no fueron encontrados"

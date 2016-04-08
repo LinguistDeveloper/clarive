@@ -375,7 +375,6 @@ sub run_ship {
     my $job_mode = $stash->{job_mode};
     my $task  = $stash->{current_task_name};
     my $job_exec = $job->exec;
-
     my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_path';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_path';
     my $user        = $config->{user};
@@ -391,6 +390,7 @@ sub run_ship {
     my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'nb_after'; 
     my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
     my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
+    my $exist_mode_local = $config->{exist_mode_local} // 'skip';
     my $recursive = $config->{recursive} // 0;
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
@@ -561,6 +561,11 @@ sub run_ship {
                 $log->warn( _loc("Error doing a chmod '%1' to file '%2': %3", $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
         }
+
+        if ( $exist_mode_local eq 'fail' && $cnt == 0 ) {
+            _fail _loc("Error: No local files were found");
+        }
+
         $log->warn( _loc( "Could not find any file locally to ship to '%1'", $server_str ), $config )
             unless $cnt > 0;
     }

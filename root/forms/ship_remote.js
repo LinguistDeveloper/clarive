@@ -53,8 +53,19 @@
           ['rollback_force',_('Must Rollback from local files')]
         ]
     });
+    var exist_mode_local = new Baseliner.ComboDouble({
+        fieldLabel: _('Exist Mode Local'),
+        name: 'exist_mode_local',
+        value: data.exist_mode_local || 'skip',
+        data: [
+            ['skip', _('Skip if no files were found')],
+            ['fail', _('Fail if no files were found')],
+        ],
+
+    });
+
     var exist_mode = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Exist Mode'), name:'exist_mode', value: data.exist_mode || 'skip', 
+        fieldLabel: _('Exist Mode Remote'), name:'exist_mode', value: data.exist_mode || 'skip',
         data: [
           ['skip',_('Skip, if file already sent by any task in job chain')],  // add skip local (instead of global chain)
           ['reship',_('Reship, even file has already been shipped to node')]   // add copy from dir to dir remotely, and checksum mode 
@@ -66,6 +77,7 @@
         recursive,
         local_mode,
         local_path,
+        exist_mode_local,
         rel_path,
         anchor_path,
         { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, name: 'remote_path', value: data.remote_path },

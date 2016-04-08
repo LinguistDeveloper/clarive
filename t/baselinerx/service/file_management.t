@@ -7,10 +7,81 @@ use Test::Deep;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
 use TestEnv;
+use Test::Fatal;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
 use_ok 'BaselinerX::Service::FileManagement';
+
+subtest 'run_ship: fails when no local files were found in fail local mode' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+
+    my $tmp = tempdir();
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+    my $user_ci = TestUtils->create_ci('user');
+
+    like exception {
+        $service->run_ship(
+            $c,
+            {
+                local_path       => "$tmp/foo/bar",
+                remote_path      => 'remote/',
+                backup_mode      => 'none',
+                server           => $server,
+                exist_mode_local => 'fail',
+                user             => $user_ci
+            }
+        );
+    }, qr/Error: No local files were found/;
+};
+
+subtest 'run_ship: does not fail when no local files were found in skip local mode' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+
+    my $tmp = tempdir();
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+    my $user_ci = TestUtils->create_ci('user');
+
+    ok !exception {
+        $service->run_ship(
+            $c,
+            {
+                local_path       => "$tmp/foo/bar",
+                remote_path      => 'remote/',
+                backup_mode      => 'none',
+                server           => $server,
+                exist_mode_local => 'skip',
+                user             => $user_ci
+            }
+          )
+    };
+};
 
 subtest 'run_ship: copies file to remote' => sub {
     _setup();
