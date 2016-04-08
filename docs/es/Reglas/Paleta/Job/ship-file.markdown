@@ -25,6 +25,8 @@ icon: file.gif
 
 &nbsp; &nbsp;&nbsp; &nbsp;• **Elementos de Naturaleza**: Ficheros involucrados en la naturaleza actual. <br />
 
+&nbsp; &nbsp;• **Existe modo local**: Selecciona si se quiere parar la regla si el fichero no existe. <br />
+
 
 <br />
 ### Ruta Relativa
