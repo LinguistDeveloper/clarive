@@ -16,6 +16,75 @@ use BaselinerX::Type::Event;
 use BaselinerX::CI;
 use Baseliner::Controller::Auth;
 
+subtest 'authenticate: creates correct event event.auth.attempt' => sub {
+    _setup();
+
+    my $ci = ci->user->new( name => 'foo', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id          => 'foo', password => 'admin' },
+        model        => { ConfigStore => FakeConfigStore->new() },
+        stash        => {
+            login    => 'foo',
+            password => 'admin',
+        }
+    );
+
+    $controller->authenticate($c);
+
+    my $events = _build_events_model();
+
+    my $rv = $events->find_by_key('event.auth.attempt');
+
+    cmp_deeply $rv->[0],
+      {
+        'event_key'  => 'event.auth.attempt',
+        'event_data' => ignore(),
+        'ts'         => ignore(),
+        'realm'      => '',
+        'username'   => 'foo',
+        'mid'        => undef,
+        'rules_exec' => {
+            'event.auth.attempt' => {
+                'post-online' => 0,
+                'pre-online'  => 0
+            }
+        },
+        'id'           => ignore(),
+        'module'       => ignore(),
+        'event_status' => 'new',
+        'login'        => 'foo',
+        'login_data'   => { 'login_ok' => undef },
+        't'            => ignore(),
+        '_id'          => ignore(),
+      };
+};
+
+subtest 'authenticate: creates correct event event.auth.attempt when user not found' => sub {
+    _setup();
+
+    my $c = _build_c(
+        authenticate => { id          => 'foo', password => 'admin' },
+        model        => { ConfigStore => FakeConfigStore->new() },
+        stash        => {
+            login    => 'foo',
+            password => 'admin',
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->authenticate($c);
+
+    my $events = _build_events_model();
+
+    my $rv = $events->find_by_key('event.auth.attempt');
+
+    is $rv->[0]->{login}, 'foo (user not exists)';
+};
+
 subtest 'login: returns validation errors' => sub {
     _setup();
 
@@ -228,15 +297,15 @@ subtest 'login: allows local logins when in maintenance mode' => sub {
       };
 };
 
-sub _build_c {
-    mock_catalyst_c(@_);
-}
+done_testing;
 
 sub _setup {
     TestUtils->cleanup_cis;
     mdb->user_login_attempts->drop;
 
     mdb->config->drop;
+    mdb->event->drop;
+    mdb->event_log->drop;
 
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Auth' );
 
@@ -250,7 +319,13 @@ sub _build_controller {
     return Baseliner::Controller::Auth->new( application => '' );
 }
 
-done_testing;
+sub _build_events_model {
+    return Baseliner::Model::Events->new();
+}
+
+sub _build_c {
+    mock_catalyst_c(@_);
+}
 
 package FakeConfigStore;
 
