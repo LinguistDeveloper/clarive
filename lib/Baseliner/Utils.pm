@@ -138,6 +138,7 @@ use Scalar::Util qw(looks_like_number);
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 use experimental 'switch', 'autoderef';
 use DateTime::TimeZone;
+use Digest::MD5 ();
 use HTML::Restrict;
 use Baseliner::I18N;
 use Baseliner::VarsParser;
@@ -1436,7 +1437,6 @@ glob or IO::File.
 =cut
 sub _md5 {
     my ($in) = @_;
-    require Digest::MD5;
     $in = $in->open('r') if ref($in) eq 'Path::Class::File';
     if( ref($in) =~ /GLOB|IO::File/ ) {
         my $md5 = Digest::MD5->new;
