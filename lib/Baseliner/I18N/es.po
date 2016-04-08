@@ -8745,4 +8745,4 @@ msgid "Fail if no files were found"
 msgstr "Fallar si los ficheros no existen"
 
 msgid "Error: No local files were found"
-msgid "Error: Los ficheros locales no fueron encontrados"
+msgstr "Error: Los ficheros locales no fueron encontrados"
