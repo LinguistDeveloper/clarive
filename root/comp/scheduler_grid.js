@@ -66,25 +66,25 @@
         hidden: true,
         cls: 'x-btn-text-icon',
         handler: function() {
-        var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            var r = sm.getSelected();
-            Baseliner.ajaxEval('/scheduler/toggle_activation', {
-                    id: r.data.id,
-                    status: r.data.status
-                },
-                function(response) {
-                    if (response.success) {
-                        Baseliner.message(_('SUCCESS'), _(response.msg));
-                        store.load({
-                            params: {
-                                limit: default_page_size
-                            }
-                        });
-                    } else {
-                        Baseliner.message(_('ERROR'), _(response.msg));
-                    }
-                });
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var r = sm.getSelected();
+                Baseliner.ajaxEval('/scheduler/toggle_activation', {
+                        id: r.data.id,
+                        status: r.data.status
+                    },
+                    function(response) {
+                        if (response.success) {
+                            Baseliner.message(_('SUCCESS'), _(response.msg));
+                            store.load({
+                                params: {
+                                    limit: default_page_size
+                                }
+                            });
+                        } else {
+                            Baseliner.message(_('ERROR'), _(response.msg));
+                        }
+                    });
             }
         }
     });
