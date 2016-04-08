@@ -36,6 +36,7 @@ service 'create_tags' => {
 
 sub get_system_tags {
     my $self = shift;
+
     my @tags;
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
     my @tags_modes = $self->tags_mode ? ( split /,/, $self->tags_mode ) : ();
@@ -47,7 +48,7 @@ sub get_system_tags {
         );
 
         _fail _loc( 'Projects are required when creating baselines ' . 'for repositories with tags_mode project' )
-            unless @projects;
+          unless @projects;
 
         foreach my $bl (@bls) {
             push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
@@ -70,10 +71,9 @@ sub get_system_tags {
     return @tags;
 }
 
-
 sub create_tags_handler {
     my ( $self, $c, $config ) = @_;
-    my $repo = $self;
+
     my $ref        = $config->{'ref'};
     my $existing   = $config->{'existing'} || 'detect';
     my $tag_filter = join '|', split ',', ($config->{'tag_filter'} // '');
@@ -84,7 +84,7 @@ sub create_tags_handler {
         ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
     }
 
-    my @tags = $self->get_system_tags($repo);   
+    my @tags = $self->get_system_tags;
 
     @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
 

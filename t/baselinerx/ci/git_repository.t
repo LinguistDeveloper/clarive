@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
@@ -209,14 +208,12 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'release,project' );
     TestGit->commit($repo);
 
-    my $project = _create_ci_project( repositories => [ $repo->mid ] );
-    my $project2 = _create_ci_project(moniker => 'project2');
+    my $project  = _create_ci_project( repositories => [ $repo->mid ] );
+    my $project2 = _create_ci_project( moniker      => 'project2' );
 
-    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $status_not_final =
-      TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_final =
-      TestUtils->create_ci( 'status', name => 'Closed', type => 'F' );
+    my $status_new       = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_not_final = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_final     = TestUtils->create_ci( 'status', name => 'Closed',      type => 'F' );
 
     my $id_role = TestSetup->create_role();
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
@@ -241,7 +238,7 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
         title           => 'Release',
         status          => $status_not_final,
         release_version => '1.1',
-        project         => [$project, $project2],
+        project         => [ $project, $project2 ],
         username        => $user->name,
     );
     TestSetup->create_topic(
@@ -279,13 +276,13 @@ subtest 'update_baselines: moves baselines up in promote' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
-    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+    my $sha_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
 
     $repo->update_baselines(
-        job  => {},
-        bl   => 'TEST',
-        type => 'promote',
-        revisions => [ $sha_rev ]
+        job       => {},
+        bl        => 'TEST',
+        type      => 'promote',
+        revisions => [$sha_rev]
     );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
@@ -301,17 +298,17 @@ subtest 'update_baselines: returns refs' => sub {
     my $repo = TestUtils->create_ci_GitRepository();
 
     my $prev_sha = TestGit->commit($repo);
-    my $prev_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $prev_sha);
+    my $prev_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $prev_sha );
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $top_sha = TestGit->commit($repo);
-    my $top_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $top_sha);
+    my $top_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $top_sha );
 
     my $retval = $repo->update_baselines(
-        job  => {},
-        bl   => 'TEST',
-        type => 'promote',
-        revisions => [ $top_rev ]
+        job       => {},
+        bl        => 'TEST',
+        type      => 'promote',
+        revisions => [$top_rev]
     );
 
     cmp_deeply $retval,
@@ -324,7 +321,7 @@ subtest 'update_baselines: returns refs' => sub {
       };
 
     is $retval->{'*'}->{previous}->sha, $prev_rev->sha;
-    is $retval->{'*'}->{current}->sha, $top_rev->sha;
+    is $retval->{'*'}->{current}->sha,  $top_rev->sha;
 };
 
 subtest 'update_baselines: moves baselines down in demote' => sub {
@@ -337,12 +334,12 @@ subtest 'update_baselines: moves baselines down in demote' => sub {
     my $old_sha  = TestGit->commit($repo);
     my $old_sha2 = TestGit->commit($repo);
 
-    my $old_sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $old_sha2);
+    my $old_sha2_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $old_sha2 );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    $repo->update_baselines( job => {}, bl => 'TEST', type => 'demote', revisions => [ $old_sha2_rev ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'demote', revisions => [$old_sha2_rev] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -360,9 +357,9 @@ subtest 'update_baselines: moves baselines up in static' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $sha = TestGit->commit($repo);
-    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
+    my $sha_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
 
-    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [ $sha_rev ] );
+    $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [$sha_rev] );
 
     my $tag_sha = TestGit->rev_parse( $repo, 'TEST' );
 
@@ -415,7 +412,8 @@ subtest 'update_baselines: throws when tags_mode is project but no projects' => 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'TEST' );
 
-    like exception { $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
+    like
+      exception { $repo->update_baselines( job => {}, bl => 'TEST', type => 'static', revisions => [], ref => $sha ) },
       qr/Projects are required/;
 };
 
@@ -434,7 +432,7 @@ subtest 'update_baselines: updates tags for every project' => sub {
     my $new_sha = TestGit->commit($repo);
 
     $repo->update_baselines(
-        job       => { projects => [ $project ] },
+        job       => { projects => [$project] },
         bl        => 'TEST',
         type      => 'promote',
         revisions => [],
@@ -455,13 +453,13 @@ subtest 'update_baselines: updates tags for every release' => sub {
 
     my $project = _create_ci_project( moniker => 'project', repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
 
     my $new_sha = TestGit->commit($repo);
-    my $new_sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $new_sha);
+    my $new_sha_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $new_sha );
 
     my $id_release_rule = _create_release_form();
 
@@ -495,7 +493,7 @@ subtest 'update_baselines: updates tags for every release' => sub {
     );
 
     $repo->update_baselines(
-        job       => { projects => [ $project ] },
+        job       => { projects => [$project] },
         bl        => 'TEST',
         type      => 'promote',
         revisions => [$new_sha_rev],
@@ -516,13 +514,13 @@ subtest 'update_baselines: returns correct results' => sub {
     my $project = _create_ci_project( moniker => 'project-with-dashes', repositories => [ $repo->mid ] );
 
     my $sha = TestGit->commit($repo);
-    my $rev = TestUtils->create_ci('GitRevision', sha => $sha, repo => $repo);
+    my $rev = TestUtils->create_ci( 'GitRevision', sha => $sha, repo => $repo );
     TestGit->tag( $repo, tag => 'project-with-dashes-TEST' );
     my $top_sha = TestGit->commit($repo);
-    my $top_rev = TestUtils->create_ci('GitRevision', sha => $top_sha, repo => $repo);
+    my $top_rev = TestUtils->create_ci( 'GitRevision', sha => $top_sha, repo => $repo );
 
     my $retval = $repo->update_baselines(
-        job       => { projects => [ $project ] },
+        job       => { projects => [$project] },
         bl        => 'TEST',
         type      => 'promote',
         revisions => [],
@@ -538,8 +536,8 @@ subtest 'update_baselines: returns correct results' => sub {
         }
       };
 
-    is $retval->{$project->mid}->{previous}->sha, $rev->sha;
-    is $retval->{$project->mid}->{current}->sha, $top_rev->sha;
+    is $retval->{ $project->mid }->{previous}->sha, $rev->sha;
+    is $retval->{ $project->mid }->{current}->sha,  $top_rev->sha;
 };
 
 subtest 'update_baselines: updates tags only for project related to the repository' => sub {
@@ -549,8 +547,8 @@ subtest 'update_baselines: updates tags only for project related to the reposito
 
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = _create_ci_project( repositories => [ $repo->mid ] );
-    my $other_project = _create_ci_project( moniker => 'other' );
+    my $project       = _create_ci_project( repositories => [ $repo->mid ] );
+    my $other_project = _create_ci_project( moniker      => 'other' );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'project-TEST' );
@@ -558,8 +556,7 @@ subtest 'update_baselines: updates tags only for project related to the reposito
     TestGit->commit($repo);
 
     $repo->update_baselines(
-        job =>
-          { projects => [ $project, $other_project ] },
+        job       => { projects => [ $project, $other_project ] },
         bl        => 'TEST',
         type      => 'static',
         revisions => [],
@@ -596,14 +593,14 @@ subtest 'top_revision: returns top revision ignoring dates' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha  = TestGit->commit($repo, datetime => '2015-01-01 00:00:00');
-    my $sha1 = TestGit->commit($repo, datetime => '2015-01-02 00:00:00');
-    my $sha2 = TestGit->commit($repo, datetime => '2015-01-03 00:00:00');
+    my $sha  = TestGit->commit( $repo, datetime => '2015-01-01 00:00:00' );
+    my $sha1 = TestGit->commit( $repo, datetime => '2015-01-02 00:00:00' );
+    my $sha2 = TestGit->commit( $repo, datetime => '2015-01-03 00:00:00' );
     TestGit->tag( $repo, tag => 'TEST' );
 
-    my $sha3 = TestGit->commit($repo, datetime => '2015-01-04 00:00:00');
-    my $sha4 = TestGit->commit($repo, datetime => '2015-01-05 00:00:00');
-    my $sha5 = TestGit->commit($repo, datetime => '2015-01-01 00:00:00');
+    my $sha3 = TestGit->commit( $repo, datetime => '2015-01-04 00:00:00' );
+    my $sha4 = TestGit->commit( $repo, datetime => '2015-01-05 00:00:00' );
+    my $sha5 = TestGit->commit( $repo, datetime => '2015-01-01 00:00:00' );
 
     my $rev = $repo->top_revision(
         revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => $sha5 } ],
@@ -862,7 +859,7 @@ subtest 'group_items_for_revisions: returns top revision items in release,projec
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_release_rule = _create_release_form();
 
@@ -900,7 +897,7 @@ subtest 'group_items_for_revisions: returns top revision items in release,projec
         project     => $project,
         release     => $release_mid,
         revisions   => [ $sha->mid, $sha2->mid ],
-        username        => $user->name,
+        username    => $user->name,
     );
 
     my $ci = TestUtils->create_ci('topic');
@@ -1012,14 +1009,14 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
-    my $sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha2);
+    my $sha_rev  = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+    my $sha2_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
     my $id_release_rule = _create_release_form();
 
@@ -1055,7 +1052,7 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode'
 
     my $dir = tempdir();
 
-    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [$sha_rev, $sha2_rev] );
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [ $sha_rev, $sha2_rev ] );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -1071,14 +1068,14 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode 
 
     my $project = _create_ci_project( repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => '1.0-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    my $sha_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha);
-    my $sha2_rev = TestUtils->create_ci('GitRevision', repo => $repo, sha => $sha2);
+    my $sha_rev  = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha );
+    my $sha2_rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
     my $id_release_rule = _create_release_form();
 
@@ -1113,7 +1110,7 @@ subtest 'checkout: checkouts items into directory with release,project tag_mode 
 
     my $dir = tempdir();
 
-    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [$sha_rev, $sha2_rev] );
+    $repo->checkout( dir => $dir, bl => 'TEST', project => $project, revisions => [ $sha_rev, $sha2_rev ] );
 
     opendir( my $dh, $dir ) || die "can't opendir $dir $!";
     my @files = grep { !/^\./ } readdir($dh);
@@ -1187,7 +1184,7 @@ subtest 'commits_for_branch: gets tag from bl' => sub {
     like $commits[2], qr/^[a-z0-9]{40} first$/;
 };
 
-subtest 'get_system_tags: get tagas without project just bl ' => sub {
+subtest 'get_system_tags: get tags without project just bl ' => sub {
     _setup();
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'bl' );
 
@@ -1197,12 +1194,28 @@ subtest 'get_system_tags: get tagas without project just bl ' => sub {
 
     my @tags = $repo->get_system_tags($repo);
 
-    is $tags[0], "SUPPORT";
-    is $tags[1], "TEST";
-    is $tags[2], "COMUN";
+    is_deeply \@tags, [qw/SUPPORT TEST COMUN/];
 };
 
-subtest 'get_system_tags: get tagas with project' => sub {
+subtest 'get_system_tags: get tags with project' => sub {
+    _setup();
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '1.0'
+    );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my @tags = $repo->get_system_tags($repo);
+
+    is_deeply \@tags, [qw/1.0-SUPPORT/];
+};
+
+subtest 'get_system_tags: get tags with release,project but without release' => sub {
     _setup();
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
 
@@ -1217,13 +1230,12 @@ subtest 'get_system_tags: get tagas with project' => sub {
 
     my @tags = $repo->get_system_tags($repo);
 
-    is $tags[0], "1.0-SUPPORT";
-
+    is_deeply \@tags, [qw/1.0-SUPPORT/];
 };
 
-subtest 'get_system_tags: get tagas with release,project' => sub {
+subtest 'get_system_tags: get tags with release,project' => sub {
     _setup();
-    use Data::Dumper;
+
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'release,project' );
 
     my $project = TestUtils->create_ci(
@@ -1257,13 +1269,10 @@ subtest 'get_system_tags: get tagas with release,project' => sub {
 
     my @tags = $repo->get_system_tags($repo);
 
-    is $tags[0],'3.0-SUPPORT';
-    is $tags[1],'1.0-SUPPORT';
-
+    is_deeply \@tags, [qw/3.0-SUPPORT 1.0-SUPPORT/];
 };
 
 done_testing;
-
 
 sub _create_ci_project {
     return TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', @_ );
@@ -1366,10 +1375,8 @@ sub _setup {
     TestUtils->cleanup_cis;
 
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',
-        'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',          'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
     );
 
