@@ -229,7 +229,7 @@
     var button_kill_schedule = new Ext.Toolbar.Button({
         text: _('Kill'),
         hidden: true,
-        icon: '/static/images/silk/clock_stop.png',
+        icon: '/static/images/icons/close.png',
         cls: 'x-btn-text-icon',
         handler: kill_schedule_handler
     });
