@@ -33,8 +33,50 @@ sub list_notifications : Local {
         $where = mdb->query_build(
             query  => $query,
             fields => [
-                qw(id event_key data.recipients.TO data.recipients.TO.Fields data.recipients.TO.Roles.name data.scopes.category.name data.scopes.category_status.name data.scopes.project.name data.scopes.field
-                    username template_path subject digest_time digest_date digest_freq)
+                qw(
+                id
+                event_key
+                data.recipients
+                data.recipients.TO
+                data.recipients.TO.Fields
+                data.recipients.TO.Users
+                data.recipients.TO.Users.mid
+                data.recipients.TO.Users.name
+                data.recipients.TO.Roles.mid
+                data.recipients.TO.Roles.name
+                data.recipients.TO.Actions
+                data.recipients.TO.Owner
+                data.recipients.TO.Emails
+                data.recipients.BCC.Fields
+                data.recipients.BCC.Users
+                data.recipients.BCC.Users.mid
+                data.recipients.BCC.Users.name
+                data.recipients.BCC.Roles.mid
+                data.recipients.BCC.Roles.name
+                data.recipients.BCC.Actions
+                data.recipients.BCC.Owner
+                data.recipients.BCC.Emails
+                data.recipients.CC
+                data.recipients.CC.Fields
+                data.recipients.CC.Users
+                data.recipients.CC.Users.mid
+                data.recipients.CC.Users.name
+                data.recipients.CC.Roles.mid
+                data.recipients.CC.Roles.name
+                data.recipients.CC.Actions
+                data.recipients.CC.Owner
+                data.recipients.CC.Emails
+                data.scopes.category.name
+                data.scopes.category_status.name
+                data.scopes.project.name
+                data.scopes.field
+                username
+                template_path
+                subject
+                digest_time
+                digest_date
+                digest_freq)
+
             ]
         );
     }
