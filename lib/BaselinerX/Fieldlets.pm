@@ -72,7 +72,7 @@ register 'fieldlet.ci_list' => {
     name        => _loc('CI List'),
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/system/js/list_ci.js',
-    form        => '/fields/templates/config/ci_grid.js',
+    form        => '/fields/templates/config/ci_list.js',
     icon        => '/static/images/icons/grid.png',
     section_allowed => ['more','head']
 };
