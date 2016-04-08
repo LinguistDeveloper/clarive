@@ -65,7 +65,28 @@
         text: _('Activate'),
         hidden: true,
         cls: 'x-btn-text-icon',
-        handler: toggle_activation_handler
+        handler: function() {
+        var sm = grid.getSelectionModel();
+        if (sm.hasSelection()) {
+            var r = sm.getSelected();
+            Baseliner.ajaxEval('/scheduler/toggle_activation', {
+                    id: r.data.id,
+                    status: r.data.status
+                },
+                function(response) {
+                    if (response.success) {
+                        Baseliner.message(_('SUCCESS'), _(response.msg));
+                        store.load({
+                            params: {
+                                limit: default_page_size
+                            }
+                        });
+                    } else {
+                        Baseliner.message(_('ERROR'), _(response.msg));
+                    }
+                });
+            }
+        }
     });
 
     var button_new_schedule = new Ext.Toolbar.Button({
@@ -323,25 +344,37 @@
         var r = sm.getSelected();
         if (r == undefined) return;
 
-        if (r.data.status == 'IDLE' || r.data.status == 'KILLED') {
+        if (r.data.status == 'IDLE') {
+            button_delete_schedule.show();
             button_run_schedule.show();
+            button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
             button_toggle_activation.setIcon('/static/images/icons/stop.png');
-            button_delete_schedule.show();
             button_toggle_activation.show();
+        } else if (r.data.status == 'KILLED') {
+            button_delete_schedule.show();
+            button_run_schedule.show();
             button_kill_schedule.hide();
+            button_toggle_activation.hide();
         } else if (r.data.status == 'INACTIVE') {
+            button_delete_schedule.show();
+            button_run_schedule.hide();
+            button_kill_schedule.hide();
             button_toggle_activation.setText(_('Activate'));
             button_toggle_activation.setIcon('/static/images/icons/start.png');
             button_toggle_activation.show();
-            button_delete_schedule.show();
-            button_run_schedule.show();
-            button_kill_schedule.hide();
         } else if (r.data.status == 'RUNNING') {
-            button_toggle_activation.hide();
             button_delete_schedule.hide();
             button_run_schedule.hide();
             button_kill_schedule.show();
+            button_toggle_activation.hide();
+        } else if (r.data.status == 'RUNNOW') {
+            button_delete_schedule.hide();
+            button_run_schedule.hide();
+            button_kill_schedule.hide();
+            button_toggle_activation.setText(_('Deactivate'));
+            button_toggle_activation.setIcon('/static/images/icons/stop.png');
+            button_toggle_activation.show();
         }
         button_edit_schedule.show();
         button_duplicate_schedule.show();
@@ -536,29 +569,7 @@
         win.show();
     };
 
-    var toggle_activation_handler = function() {
-        var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            var r = sm.getSelected();
-            Baseliner.ajaxEval('/scheduler/toggle_activation', {
-                    id: r.data.id,
-                    status: r.data.status
-                },
-                function(response) {
-                    if (response.success) {
-                        Baseliner.message(_('SUCCESS'), _(response.msg));
-                        store.load({
-                            params: {
-                                limit: default_page_size
-                            }
-                        });
-                    } else {
-                        Baseliner.message(_('ERROR'), _(response.msg));
-                    }
-                }
-            );
-        }
-    };
+    
 
     var time_validator = function(time) {
         var regexp = /^(2[0-3])|[01][0-9]:[0-5][0-9]$/;
