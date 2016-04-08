@@ -1431,7 +1431,6 @@ sub service_run : Local {
     my $collection = (split("::", $class))[-1];
     require Baseliner::Core::Logger::Quiet;
     my $logger = Baseliner::Core::Logger::Quiet->new;
-    my $ret;
 
     my $permissions = $self->_build_permissions;
 
@@ -1439,7 +1438,7 @@ sub service_run : Local {
         unless $permissions->user_can_admin_ci( $c->username, $collection );
 
     $c->stash->{json} = try {
-        my $service = $c->registry->get( $p->{key} );
+        my $service = Baseliner::Core::Registry->get( $p->{key} );
         my $service_js_output = $service->js_output;
 
         local $ENV{BASELINER_LOGCOLOR} = 0;
