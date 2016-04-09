@@ -362,7 +362,6 @@ sub related {
 sub get_with_condition {
     my ( $self, $c, $config ) = @_;
 
-    _warn $c;
     my $categories = $config->{categories} || [];
     my $statuses = $config->{statuses} || [];
     my $not_in_status = $config->{not_in_status};
@@ -382,8 +381,8 @@ sub get_with_condition {
 
     $where = $condition;
 
-    if ( $filter_user && $filter_user ne 'Any') {
-        if ( $filter_user eq _loc('Current')) {
+    if ( $filter_user && $filter_user ne '0') {
+        if ( $filter_user eq '1') {
             $filter_user = $c->username;
         }
         my $ci_user = ci->user->find_one({ name=>$filter_user });
@@ -404,18 +403,19 @@ sub get_with_condition {
     if ( _array($statuses) ) {
         my @local_statuses = _array($statuses);
         if ( $not_in_status ) {
-            @local_statuses = map { $_ * -1 } @local_statuses;
+            my $list_not_in = '!' .join (',!' ,map { $_ } @local_statuses);
+            @local_statuses = split (',',$list_not_in);
             $main_conditions->{'statuses'} = \@local_statuses;
         } else {
             $main_conditions->{'statuses'} = \@local_statuses;
         }
     }
     my $username = $c->{username} || 'root';
-    my $perm = Baseliner->model('Permissions');
+    my $perm = Baseliner::Model::Permissions->new();
 
     my @user_categories =  map {
         $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+    } Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
 
     if ( _array($categories) ) {
         use Array::Utils qw(:all);
@@ -425,12 +425,12 @@ sub get_with_condition {
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner::Model::Permissions->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $main_conditions->{'categories'} = \@user_categories;
 
-    my ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    my ($cnt, @topics) = Baseliner::Model::Topic->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
 
     my @topic_cis = map {$_->{mid}} @topics;
     @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
