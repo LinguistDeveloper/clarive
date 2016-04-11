@@ -1,11 +1,13 @@
 use strict;
 use warnings;
-use lib 't/lib';
+use utf8;
 
 use Test::More;
 use Test::Fatal;
 use Test::LongString;
 use TestEnv;
+
+use File::Temp qw(tempfile);
 
 BEGIN { TestEnv->setup }
 
@@ -20,7 +22,7 @@ use Baseliner::Utils qw(
   _strip_html
   _strip_html_editor
 );
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5);
 use Clarive::mdb;
 
 ####### _pointer 
@@ -413,6 +415,35 @@ subtest '_truncate: truncates string' => sub {
     is _truncate( 'foobar', 5,  '...' ), 'fo...';
     is _truncate( 'foobar', 5,  '' ),    'fooba';
     is _truncate( 'foobar', 10, '' ),    'foobar';
+};
+
+subtest '_md5: calculates md5 of a random string when no args' => sub {
+    my $md5_1 = _md5();
+    my $md5_2 = _md5();
+
+    isnt $md5_1, $md5_2;
+};
+
+subtest '_md5: calculates md5 of a string' => sub {
+    like _md5('hello'), qr/^[a-f0-9]{32}$/;
+    like _md5('hello', 'there'), qr/^[a-f0-9]{32}$/;
+    like _md5('привет', 'there'), qr/^[a-f0-9]{32}$/;
+};
+
+subtest '_md5: calculates md5 of a file' => sub {
+    my $fh = tempfile();
+    print $fh 'hello';
+    seek $fh, 0, 0;
+
+    is _md5($fh), '5d41402abc4b2a76b9719d911017c592';
+};
+
+subtest '_md5: calculates md5 of a with unicode' => sub {
+    my $fh = tempfile();
+    print $fh Encode::encode('UTF-8', 'привет');
+    seek $fh, 0, 0;
+
+    is _md5($fh), '608333adc72f545078ede3aad71bfe74';
 };
 
 done_testing;
