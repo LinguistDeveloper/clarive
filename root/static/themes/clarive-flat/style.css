@@ -931,3 +931,9 @@ table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMont
 .x-panel.x-column .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
     border: none;
 }
+
+.x-panel-body.variables
+textarea.x-form-textarea.x-form-field {
+    height: 300px !important;
+    width: 95% !important;
+}

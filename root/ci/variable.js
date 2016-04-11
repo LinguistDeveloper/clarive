@@ -101,6 +101,7 @@
     var variables = new Baseliner.VariableForm({
         name: 'variables',
         fieldLabel: _('Default'),
+        bodyCssClass:'variables',
         height: 400,
         hidden: params.rec.mid==undefined,
         variable_name: params.rec.name, 
