@@ -932,16 +932,7 @@ table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMont
     border: none;
 }
 
-.x-column-inner
-.x-form-element
-.x-form-item
 .x-panel-body.variables
-.x-panel-body.x-panel-body-noheader.x-panel-body-noborder
-.x-panel-body.x-panel-body-noheader.x-panel-body-noborder.x-column-layout-ct
-.x-panel-bwrap
-.x-panel.x-panel-noborder
-.x-panel.x-panel-noborder.x-form-label-right
-.x-panel.x-panel-noborder.x-form-label-right.x-column
 textarea.x-form-textarea.x-form-field {
     height: 300px !important;
     width: 95% !important;
