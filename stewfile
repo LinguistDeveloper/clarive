@@ -12,6 +12,7 @@ libb-hooks-parser-perl
 
 zip
 unzip
+tar
 file
 
 # Command-line utilities
