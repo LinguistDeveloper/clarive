@@ -6,7 +6,7 @@
 <%perl>
     my ($is_release, @parent_topics) = $c->model('Topic')->field_parent_topics($meta,$data);
 </%perl>
-%  if( @parent_topics ) {
+%  if( @parent_topics && !($meta->{hidden}+0) ) {
       <ul class="nav nav-list">
         <li class="nav-header">
             <% _loc($meta->{name_field}) %>

@@ -45,6 +45,7 @@ params:
 	var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field==undefined ? 'title' : meta.display_field;
     var tpl_cfg = meta.tpl_cfg || undefined;
+    var hidden =  Baseliner.eval_boolean(!meta.active);
     if (meta.dir == 'ASC') 
         {order_sort =1} 
     else {order_sort = -1}
@@ -91,7 +92,7 @@ params:
             display_field: display_field,
 			enableDragDrop:  Baseliner.eval_boolean(meta.readonly),
 			readOnly:  readonly,
-			hidden: Baseliner.eval_boolean(meta.hidden),
+			hidden: hidden,
 			allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
         });
 		
@@ -108,7 +109,7 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: single_mode,
-			hidden: Baseliner.eval_boolean(meta.hidden),
+			hidden: hidden,
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });

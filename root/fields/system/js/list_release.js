@@ -44,7 +44,7 @@ params:
 		store: release_box_store,
 		disabled: Baseliner.eval_boolean(meta.readonly),
 		singleMode: true,
-		hidden: Baseliner.eval_boolean(meta.hidden),
+		hidden: Baseliner.eval_boolean(!meta.active),
         display_field: display_field,
         tpl_cfg: tpl_cfg,
         hidden_value: row_mids 

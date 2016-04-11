@@ -3,7 +3,7 @@
     $data
 </%args>
 
-% if( _array( $data->{$meta->{id_field}} ) ) {
+% if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden}+0)) {
     <tr>
         <td colspan=2>
             <ul class="nav nav-list">

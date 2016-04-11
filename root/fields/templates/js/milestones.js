@@ -59,7 +59,7 @@ params:
         value: value || '',
         readOnly: readonly,
         disabled: readonly,
-        hidden : Baseliner.eval_boolean(meta.hidden),
+        hidden : Baseliner.eval_boolean(!meta.active),
         enableDragDrop: !readonly,
         use_row_editor: !readonly
     });

@@ -50,7 +50,7 @@ params:
                     this.preventMark = false;
                 }
             },
-            hidden: Baseliner.eval_boolean(meta.hidden),
+            hidden: Baseliner.eval_boolean(!meta.active),
             msgTarget: 'under'
         }
     ]

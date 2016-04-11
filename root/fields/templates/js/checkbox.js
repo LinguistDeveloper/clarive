@@ -18,7 +18,7 @@ params:
         name: meta.id_field,
         checked: Baseliner.eval_boolean(data[meta.id_field] || meta.default_value, false),
         disabled: Baseliner.eval_boolean(meta.readonly),
-        hidden: Baseliner.eval_boolean(meta.hidden),
+        hidden: Baseliner.eval_boolean(!meta.active),
         anchor: meta.anchor || '100%',
         width: meta.width || '100%',
         labelSeparator: '',

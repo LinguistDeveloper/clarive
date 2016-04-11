@@ -40,7 +40,7 @@
     
 </%perl>
 
-% if(@filter_topics_by_status){
+% if(@filter_topics_by_status && !$meta->{hidden}){
 	<div id='boot' style="clear:left;" >
 		<b><%$meta->{name_field}%></b><br>
 		<div id="<%$graph_id%>" 
