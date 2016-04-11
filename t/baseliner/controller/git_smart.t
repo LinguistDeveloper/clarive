@@ -16,12 +16,10 @@ use JSON ();
 
 use Test::Fatal;
 
-
 use Test::MockSleep;
 use Test::TempDir::Tiny;
 
 use TestUtils ':catalyst';
-
 
 use POSIX ":sys_wait_h";
 use Baseliner::Role::CI;
@@ -35,7 +33,6 @@ use Baseliner::Queue;
 use Baseliner::Model::Topic;
 use Clarive::mdb;
 use Class::Date;
-
 
 use Storable ();
 use Baseliner::Utils qw(_load _dump);
@@ -129,8 +126,8 @@ subtest 'git: creates correct event on first push' => sub {
 
     is @events, 1;
 
-    my $event = $events[0];
-    my $event_data  = _load $event->{event_data};
+    my $event      = $events[0];
+    my $event_data = _load $event->{event_data};
 
     cmp_deeply $event_data,
       {
@@ -149,7 +146,7 @@ subtest 'git: truncates diff if it is too big' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
-    my $sha = TestGit->commit($repo, content => 'x' x (1024 * 1024));
+    my $sha = TestGit->commit( $repo, content => 'x' x ( 1024 * 1024 ) );
 
     my $controller = _build_controller();
 
@@ -175,8 +172,8 @@ subtest 'git: truncates diff if it is too big' => sub {
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
-    my $event = $events[0];
-    my $event_data  = _load $event->{event_data};
+    my $event      = $events[0];
+    my $event_data = _load $event->{event_data};
 
     is length $event_data->{diff}, 512000;
 };
@@ -470,7 +467,6 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
     is $data->{sha},    $sha;
 };
 
-
 subtest 'git: allows pushing system tags when user has permission and bl is complex (bl - poject)' => sub {
     _setup();
 
@@ -488,10 +484,12 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $id_role = TestSetup->create_role(
         actions => [
-            {   action => 'action.git.repository_access',
+            {
+                action => 'action.git.repository_access',
                 bl     => '*'
             },
-            {   action => 'action.git.update_tags',
+            {
+                action => 'action.git.update_tags',
                 bl     => '*'
             }
         ]
@@ -499,10 +497,9 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $body
-        = "0094"
-        . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
-        . "0000";
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
     open my $fh, '<', \$body;
 
     my $stash = {
@@ -548,10 +545,12 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $id_role = TestSetup->create_role(
         actions => [
-            {   action => 'action.git.repository_access',
+            {
+                action => 'action.git.repository_access',
                 bl     => '*'
             },
-            {   action => 'action.git.update_tags',
+            {
+                action => 'action.git.update_tags',
                 bl     => '*'
             }
         ]
@@ -571,17 +570,16 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
     );
 
     my $release_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_release_category,
-        title       => 'Release 0.1',
-        status      => $status,
-        release_version =>'3.0'        
+        project         => $project,
+        id_category     => $id_release_category,
+        title           => 'Release 0.1',
+        status          => $status,
+        release_version => '3.0'
     );
 
-    my $body
-        = "0094"
-        . "0000000000000000000000000000000000000000 $sha refs/tags/3.0-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
-        . "0000";
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/3.0-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
     open my $fh, '<', \$body;
 
     my $stash = {
@@ -599,7 +597,7 @@ subtest 'git: allows pushing system tags when user has permission and bl is comp
 
     my $controller = _build_controller();
 
-    $controller->git( $c, , '.git', 'info', 'refs' );
+    $controller->git( $c,, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -627,10 +625,12 @@ subtest 'git: allows pushing system tags when user has permission and is a raw g
 
     my $id_role = TestSetup->create_role(
         actions => [
-            {   action => 'action.git.repository_access',
+            {
+                action => 'action.git.repository_access',
                 bl     => '*'
             },
-            {   action => 'action.git.update_tags',
+            {
+                action => 'action.git.update_tags',
                 bl     => '*'
             }
         ]
@@ -640,16 +640,15 @@ subtest 'git: allows pushing system tags when user has permission and is a raw g
 
     TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
 
-    my $body
-        = "0094"
-        . "0000000000000000000000000000000000000000 $sha refs/tags/SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
-        . "0000";
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
     open my $fh, '<', \$body;
 
     my $stash = {
         git_config => {
-            gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   => $repo->repo_dir . '/../',
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir . '/../',
             force_authorization => 0
         }
     };
@@ -662,7 +661,7 @@ subtest 'git: allows pushing system tags when user has permission and is a raw g
 
     my $controller = _build_controller();
 
-    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+    $controller->git( $c, '.git', 'info', 'refs' );
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
@@ -675,19 +674,20 @@ subtest 'git: allows pushing system tags when user has permission and is a raw g
     is $data->{sha},    $sha;
 };
 
-
 sub _create_release_form {
     return TestSetup->create_rule_form(
         rule_tree => [
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         id_field       => 'release_version',
-                        "fieldletType" => "fieldlet.system.release_version",               
+                        "fieldletType" => "fieldlet.system.release_version",
                     },
                     "key" => "fieldlet.system.release_version",
                 }
             },
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         "bd_field"     => "project",
                         "fieldletType" => "fieldlet.system.projects",
@@ -702,7 +702,6 @@ sub _create_release_form {
         ],
     );
 }
-
 
 subtest 'git: creates repo ci when does not exist' => sub {
     _setup();
@@ -802,7 +801,7 @@ subtest 'git: creates rev ci when does not exist' => sub {
     ok $rev_cis[0]->{name};
     ok $rev_cis[0]->{moniker};
     like $rev_cis[0]->{repo}, qr/GitRepository-\d+/;
-    is $rev_cis[0]->{sha}, $sha;
+    is $rev_cis[0]->{sha},    $sha;
 };
 
 subtest 'git: does not create rev ci when exists' => sub {
@@ -843,7 +842,7 @@ subtest 'git: calls pre-online event with correct params' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
-    my $sha      = TestGit->commit($repo->repo_dir);
+    my $sha = TestGit->commit( $repo->repo_dir );
 
     TestUtils->create_ci( 'GitRevision', sha => $sha );
 
@@ -1383,13 +1382,12 @@ sub _create_rule {
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'BaselinerX::CI',          'BaselinerX::Events', 
+        'BaselinerX::CI',          'BaselinerX::Events',
         'Baseliner::Model::Rules',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Fieldlets',
-         'Baseliner::Model::Topic',
-        
-        
+        'Baseliner::Model::Topic',
+
     );
 
     TestUtils->cleanup_cis;
