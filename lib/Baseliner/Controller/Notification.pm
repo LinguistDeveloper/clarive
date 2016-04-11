@@ -2,6 +2,7 @@ package Baseliner::Controller::Notification;
 use Moose;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Notification;
 use Try::Tiny;
 use v5.10;
 use experimental 'switch';
@@ -9,59 +10,101 @@ use experimental 'switch';
 BEGIN {  extends 'Catalyst::Controller' }
 
 sub list_notifications : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ( $start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= '_id';
-    $dir ||= 'desc';
-    if($dir eq 'desc'){
+    $dir  ||= 'desc';
+    if ( $dir eq 'desc' ) {
         $dir = -1;
-    }else{
+    }
+    else {
         $dir = 1;
     }
 
-    $start||= 0;
+    $start ||= 0;
     $limit ||= 30;
-    
-    my $page = to_pages( start=>$start, limit=>$limit );
 
-    my $where={};
-    
-    if( $query ) {
-        my @mids_query;
-        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
-            @mids_query = map { $_->{obj}{_id} } 
-            _array( mdb->notification->search( query=>$query, limit=>1000, project=>{_id=>1})->{results} );
-        }
-        if( @mids_query == 0 ) {
-            $where = mdb->query_build(query => $query, fields=>[qw(id event_key action data is_active username template_path subject digest_time digest_date digest_freq)]);
-        } else {
-            $where->{_id} = { '$in' => \@mids_query };
-        }
+    my $page = to_pages( start => $start, limit => $limit );
+
+    my $where = {};
+
+    if ($query) {
+        $where = mdb->query_build(
+            query  => $query,
+            fields => [
+                qw(
+                id
+                event_key
+                data.recipients
+                data.recipients.TO
+                data.recipients.TO.Fields
+                data.recipients.TO.Users
+                data.recipients.TO.Users.mid
+                data.recipients.TO.Users.name
+                data.recipients.TO.Roles.mid
+                data.recipients.TO.Roles.name
+                data.recipients.TO.Actions
+                data.recipients.TO.Owner
+                data.recipients.TO.Emails
+                data.recipients.BCC.Fields
+                data.recipients.BCC.Users
+                data.recipients.BCC.Users.mid
+                data.recipients.BCC.Users.name
+                data.recipients.BCC.Roles.mid
+                data.recipients.BCC.Roles.name
+                data.recipients.BCC.Actions
+                data.recipients.BCC.Owner
+                data.recipients.BCC.Emails
+                data.recipients.CC
+                data.recipients.CC.Fields
+                data.recipients.CC.Users
+                data.recipients.CC.Users.mid
+                data.recipients.CC.Users.name
+                data.recipients.CC.Roles.mid
+                data.recipients.CC.Roles.name
+                data.recipients.CC.Actions
+                data.recipients.CC.Owner
+                data.recipients.CC.Emails
+                data.scopes.category.name
+                data.scopes.category_status.name
+                data.scopes.project.name
+                data.scopes.field
+                username
+                template_path
+                subject
+                digest_time
+                digest_date
+                digest_freq)
+
+            ]
+        );
     }
 
     my $rs = mdb->notification->find($where);
     $rs->skip($start);
     $rs->limit($limit) unless $limit eq '-1';
-    $rs->sort({$sort => $dir});
-    
+    $rs->sort( { $sort => $dir } );
+
     my @rows;
-    while( my $r = $rs->next ) {
-        my $data = Baseliner->model('Notification')->encode_data($r->{data});
-        push @rows, {
-            id              => $r->{_id}->{value},
-            event_key       => $r->{event_key},
-            data            => $data,
-            action          => $r->{action},
-            is_active       => $r->{is_active},
-            template_path   => $r->{template_path},
-            subject         => $r->{subject},
-        };        
+    while ( my $r = $rs->next ) {
+        my $data = Baseliner::Model::Notification->new->encode_data( $r->{data} );
+        push @rows,
+            {
+            id            => $r->{_id}->{value},
+            event_key     => $r->{event_key},
+            data          => $data,
+            action        => $r->{action},
+            is_active     => $r->{is_active},
+            template_path => $r->{template_path},
+            subject       => $r->{subject},
+            };
     }
     $cnt = mdb->notification->count();
-    $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
+    $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward("View::JSON");
 }
+
 
 sub list_events : Local {
     my ( $self, $c ) = @_;
@@ -161,10 +204,10 @@ sub save_notification : Local {
     my %scope;
     my $recipient;
     my $data;
-    
+
     try{
         if($p->{event}){
-            if (Baseliner->registry->get( $p->{event} )->notify){
+            if (Baseliner::Core::Registry->get( $p->{event} )->notify){
                 my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
         
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
@@ -173,7 +216,7 @@ sub save_notification : Local {
         $data->{scopes} = \%scope;
         $data->{recipients} = _decode_json($p->{recipients});
         #convert data to mongo style
-        $data = Baseliner->model('Notification')->decode_data(_dump $data);
+        $data = Baseliner::Model::Notification->new->decode_data(_dump $data);
         my $id_notification = $p->{notification_id} eq '-1' ? '' : $p->{notification_id};
         my $notification = mdb->notification->update(
             {
@@ -199,7 +242,6 @@ sub save_notification : Local {
         _error( $err );        
         $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )}; 
     };
-    
     $c->forward('View::JSON');
 }
 
@@ -303,7 +345,7 @@ sub export : Local {
     $c->forward('View::JSON');  
 }
 
-sub import : Local {
+sub import_notification : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
