@@ -60,12 +60,10 @@
     }, function(res) {
         Cla.ajax_json('/user/user_data', {}, function(ret) {
             decimal_zone = ret.data.decimal;
-
             var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
             var div = document.getElementById(id);
             var totals = {};
-
-            html = html + '<table class="table display stripe order-column compact" style="font-size: 85%;width: 100%" id="<% $iid %>"><thead><tr>';
+            html = html + '<table class="table display stripe order-column compact dashboard-table" id="<% $iid %>"><thead><tr>';
 
             Ext.each(columns, function(col) {
                 if (col.width) {
@@ -172,10 +170,14 @@ function insert_name_html(html, topic) {
 
 function insert_project_html(topic, html) {
     var proj_names = new Array();
-    Ext.each(topic.projects, function(proj) {
-        var tokens = proj.split(';');
-        proj_names.push(tokens[1]);
-    })
+    var projects_all = topic.projects;
+    if( projects_all ) {
+        var topic_projects = projects_all.split(',');
+        Ext.each(topic_projects, function(proj){
+            var tokens = proj.split(';');
+            proj_names.push(tokens[1]);
+        })
+    }
     if (proj_names.length > 1) {
         html = html + '<li>' + proj_names.join('</li><li>') + '</li>';
     } else {
@@ -187,7 +189,8 @@ function insert_project_html(topic, html) {
 function insert_ci_html(topic, res, html, col) {
     if (topic[col.name]) {
         var value_list = [];
-        Ext.each(topic[col.name], function(value) {
+        var topics = topic[col.name].split(',');
+        Ext.each(topics, function(value) {
             value_list.push(res.cis[value]);
         })
         if (value_list.length > 1) {

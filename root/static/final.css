@@ -478,6 +478,13 @@ a {
     -webkit-touch-callout: none;
 }
 
+.dashboard-table {
+    font-size: 85%;
+    width: 100%;
+    list-style-type:none;
+    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 .dashboard-buttons:hover {
     opacity: 1.0;
     filter: alpha(opacity=100);
