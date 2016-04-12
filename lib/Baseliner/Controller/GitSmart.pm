@@ -67,7 +67,7 @@ sub git : Path('/git/') {
     my $repo = $self->_resolve_repo($c, $path);
     return unless $repo;
 
-    my $changes = $self->_parse_changes($c);
+    my $changes = $self->_parse_changes($c,$repo);
     return unless $changes;
 
     return unless $self->_run_pre_event($c, $repo, $changes);
@@ -86,13 +86,13 @@ sub git : Path('/git/') {
 
 sub _parse_changes {
     my $self = shift;
-    my ($c) = @_;
+    my ($c,$repo) = @_;
 
     my $fh = $c->req->body;
 
     my @changes = $self->_build_parser()->parse_fh($fh);
 
-    return unless $self->bl_change_granted($c, \@changes);
+    return unless $self->bl_change_granted($c, \@changes,$repo);
 
     return \@changes;
 }
@@ -285,23 +285,24 @@ sub _proxy_to_git_http {
 
 sub bl_change_granted {
     my $self = shift;
-    my ($c, $changes) = @_;
+    my ( $c, $changes, $repo ) = @_;
 
-    my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
+    my @bl = $repo->get_system_tags($repo);
+    my $bls = join( "|", @bl );
 
     foreach my $change (@$changes) {
+
         my $ref = $change->{ref};
 
-        if ($bls && $ref =~ /refs\/tags\/($bls)/) {
-            my $tag      = $1;
+        if ( $bls && $ref =~ /refs\/tags\/($bls)/ ) {
+            my $tag = $1;
             my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
                 username => $c->username,
                 action   => 'action.git.update_tags',
                 bl       => $tag
             );
-            if (!$can_tags) {
-                $self->process_error($c, 'Push Error',
-                    _loc('Cannot update internal tag %1', $tag));
+            if ( !$can_tags ) {
+                $self->process_error( $c, 'Push Error', _loc( 'Cannot update internal tag %1', $tag ) );
                 return;
             }
         }
@@ -309,6 +310,8 @@ sub bl_change_granted {
 
     return 1;
 }
+
+
 
 sub access_granted {
     my $self = shift;

@@ -14,8 +14,28 @@ use TestGit;
 use Cwd qw(realpath);
 use JSON ();
 
+use Test::Fatal;
+
+use Test::MockSleep;
+use Test::TempDir::Tiny;
+
+use TestUtils ':catalyst';
+
+use POSIX ":sys_wait_h";
+use Baseliner::Role::CI;
+use Baseliner::Model::Topic;
+use Baseliner::RuleFuncs;
+use Baseliner::Core::Registry;
+use BaselinerX::Type::Event;
+use BaselinerX::Fieldlets;
+use Baseliner::Queue;
+
+use Baseliner::Model::Topic;
+use Clarive::mdb;
+use Class::Date;
+
 use Storable ();
-use Baseliner::Utils qw(_load);
+use Baseliner::Utils qw(_load _dump);
 use_ok 'Baseliner::Controller::GitSmart';
 
 subtest 'git: ignores requests with empty body' => sub {
@@ -106,8 +126,8 @@ subtest 'git: creates correct event on first push' => sub {
 
     is @events, 1;
 
-    my $event = $events[0];
-    my $event_data  = _load $event->{event_data};
+    my $event      = $events[0];
+    my $event_data = _load $event->{event_data};
 
     cmp_deeply $event_data,
       {
@@ -126,7 +146,7 @@ subtest 'git: truncates diff if it is too big' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
-    my $sha = TestGit->commit($repo, content => 'x' x (1024 * 1024));
+    my $sha = TestGit->commit( $repo, content => 'x' x ( 1024 * 1024 ) );
 
     my $controller = _build_controller();
 
@@ -152,8 +172,8 @@ subtest 'git: truncates diff if it is too big' => sub {
 
     my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
 
-    my $event = $events[0];
-    my $event_data  = _load $event->{event_data};
+    my $event      = $events[0];
+    my $event_data = _load $event->{event_data};
 
     is length $event_data->{diff}, 512000;
 };
@@ -370,7 +390,6 @@ subtest 'git: forbids pushing system tags' => sub {
     is @events, 0;
 
     my $error = $c->res->body;
-
     like $error, qr/Cannot update internal tag TAG/;
 };
 
@@ -447,6 +466,242 @@ subtest 'git: allows pushing system tags when user has permission' => sub {
     is $data->{ref},    'refs/tags/TAG';
     is $data->{sha},    $sha;
 };
+
+subtest 'git: allows pushing system tags when user has permission and bl is complex (bl - poject)' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
+    my $sha = TestGit->commit($repo);
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            },
+            {
+                action => 'action.git.update_tags',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/6.4-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, 'Project', 'Repo', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is @events, 1;
+
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+    is $data->{branch}, '6.4-SUPPORT';
+    is $data->{ref},    'refs/tags/6.4-SUPPORT';
+    is $data->{sha},    $sha;
+};
+
+subtest 'git: allows pushing system tags when user has permission and bl is complex (bl - release)' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'release,project' );
+    my $sha = TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            },
+            {
+                action => 'action.git.update_tags',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my $status              = TestUtils->create_ci( 'status', name => 'New', type => 'G' );
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        is_release => '1',
+        name       => 'Release',
+        id_rule    => $id_release_rule,
+        id_status  => $status->mid
+    );
+
+    my $release_mid = TestSetup->create_topic(
+        project         => $project,
+        id_category     => $id_release_category,
+        title           => 'Release 0.1',
+        status          => $status,
+        release_version => '3.0'
+    );
+
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/3.0-SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c,, '.git', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is @events, 1;
+
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+    is $data->{branch}, '3.0-SUPPORT';
+    is $data->{ref},    'refs/tags/3.0-SUPPORT';
+    is $data->{sha},    $sha;
+};
+
+subtest 'git: allows pushing system tags when user has permission and is a raw git access ' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'RAWREPO', tags_mode => '' );
+    my $sha = TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.git.repository_access',
+                bl     => '*'
+            },
+            {
+                action => 'action.git.update_tags',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
+
+    my $body = "0094"
+      . "0000000000000000000000000000000000000000 $sha refs/tags/SUPPORT\x00 report-status side-band-64k agent=git/2.6.4"
+      . "0000";
+    open my $fh, '<', \$body;
+
+    my $stash = {
+        git_config => {
+            gitcgi              => '../local/libexec/git-core/git-http-backend',
+            home                => $repo->repo_dir . '/../',
+            force_authorization => 0
+        }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    my $controller = _build_controller();
+
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is @events, 1;
+
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+    is $data->{branch}, 'SUPPORT';
+    is $data->{ref},    'refs/tags/SUPPORT';
+    is $data->{sha},    $sha;
+};
+
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'release_version',
+                        "fieldletType" => "fieldlet.system.release_version",
+                    },
+                    "key" => "fieldlet.system.release_version",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            }
+        ],
+    );
+}
 
 subtest 'git: creates repo ci when does not exist' => sub {
     _setup();
@@ -546,7 +801,7 @@ subtest 'git: creates rev ci when does not exist' => sub {
     ok $rev_cis[0]->{name};
     ok $rev_cis[0]->{moniker};
     like $rev_cis[0]->{repo}, qr/GitRepository-\d+/;
-    is $rev_cis[0]->{sha}, $sha;
+    is $rev_cis[0]->{sha},    $sha;
 };
 
 subtest 'git: does not create rev ci when exists' => sub {
@@ -587,7 +842,7 @@ subtest 'git: calls pre-online event with correct params' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
-    my $sha      = TestGit->commit($repo->repo_dir);
+    my $sha = TestGit->commit( $repo->repo_dir );
 
     TestUtils->create_ci( 'GitRevision', sha => $sha );
 
@@ -1128,7 +1383,11 @@ sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
         'BaselinerX::CI',          'BaselinerX::Events',
-        'Baseliner::Model::Rules'
+        'Baseliner::Model::Rules',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+
     );
 
     TestUtils->cleanup_cis;
@@ -1143,6 +1402,7 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
     mdb->event->drop;
+    mdb->category->drop;
 
     TestUtils->create_ci( 'user', name => 'foo' );
 }

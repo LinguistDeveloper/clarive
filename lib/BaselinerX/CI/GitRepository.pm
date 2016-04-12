@@ -34,6 +34,43 @@ service 'create_tags' => {
     handler => \&create_tags_handler
 };
 
+sub get_system_tags {
+    my $self = shift;
+
+    my @tags;
+    my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
+    my @tags_modes = $self->tags_mode ? ( split /,/, $self->tags_mode ) : ();
+
+    if ( grep { $_ eq 'project' } @tags_modes ) {
+        my @projects = map { ci->new( $_->{mid} ) } $self->related(
+            where     => { collection => 'project' },
+            docs_only => 1
+        );
+
+        _fail _loc( 'Projects are required when creating baselines ' . 'for repositories with tags_mode project' )
+          unless @projects;
+
+        foreach my $bl (@bls) {
+            push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
+        }
+
+        if ( grep { $_ eq 'release' } @tags_modes ) {
+            my @release_versions = $self->_find_release_versions_by_projects( \@projects );
+
+            foreach my $release_version (@release_versions) {
+                foreach my $bl (@bls) {
+                    push @tags, $self->bl_to_tag( $bl, $release_version );
+                }
+            }
+        }
+    }
+    else {
+        @tags = @bls;
+    }
+
+    return @tags;
+}
+
 sub create_tags_handler {
     my ( $self, $c, $config ) = @_;
 
@@ -47,39 +84,7 @@ sub create_tags_handler {
         ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
     }
 
-    my @tags;
-    my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
-
-    my @tags_modes = $self->tags_mode ? (split /,/, $self->tags_mode) : ();
-
-    if ( grep { $_ eq 'project' } @tags_modes ) {
-        my @projects =
-          map { ci->new( $_->{mid} ) } $self->related(
-            where     => { collection => 'project' },
-            docs_only => 1
-          );
-
-        _fail _loc('Projects are required when creating baselines '
-          . 'for repositories with tags_mode project')
-          unless @projects;
-
-        foreach my $bl (@bls) {
-            push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
-        }
-
-        if ( grep { $_ eq 'release' } @tags_modes ) {
-            my @release_versions = $self->_find_release_versions_by_projects(\@projects);
-
-            foreach my $release_version (@release_versions) {
-                foreach my $bl (@bls) {
-                    push @tags, $self->bl_to_tag( $bl, $release_version );
-                }
-            }
-        }
-    }
-    else {
-        @tags = @bls;
-    }
+    my @tags = $self->get_system_tags;
 
     @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
 
@@ -667,6 +672,8 @@ sub _find_release_versions_by_projects {
     my $self = shift;
     my ($projects) = @_;
 
+    my @projects = _array $projects;
+
     my @release_versions;
 
     my @release_categories =
@@ -691,7 +698,7 @@ sub _find_release_versions_by_projects {
             {
                 is_release         => '1',
                 id_category_status => mdb->in(@id_statuses),
-                $project_field => mdb->in( map { $_->{mid} } @$projects )
+                $project_field => mdb->in( map { $_->{mid} } @projects )
             }
         )->all;
 
