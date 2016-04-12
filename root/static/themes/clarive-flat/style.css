@@ -1006,18 +1006,6 @@ textarea.x-form-textarea.x-form-field {
 .user_grid_edit_window_padding {
     padding-bottom:5px;
 }
-.role_grid_edit_window {
-    border:1px solid #C1C1C1;
-}
-
- .x-tab-panel.role_grid_edit_window.x-border-panel {
-    width: 597px !important;
-
-}
-.x-panel.role_grid_edit_window.x-grid-panel.x-border-panel {
-    width: 660.5px !important;
-
-}
 
  .daemon_grid_active_instances {
     margin-left: 85px !important;
