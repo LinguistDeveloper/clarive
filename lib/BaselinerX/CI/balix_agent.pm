@@ -254,6 +254,8 @@ method get_data( :$remote ) {
     return $self->_get_file( $remote );
 }
 
+method sync_dir { _throw 'sync_dir not supported' }
+
 ####### private
 
 sub _send_file {

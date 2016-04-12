@@ -29,6 +29,7 @@ requires 'get_dir';
 requires 'mkpath';
 requires 'rmpath';
 requires 'chmod';
+requires 'sync_dir';
 
 requires 'execute';
 

@@ -288,6 +288,8 @@ sub get_dir {}
 sub mkpath {}
 sub rmpath {}
 
+method sync_dir { _throw 'sync_dir not supported' }
+
 sub _msgid {
     Data::UUID->new->create_from_name_b64( 'clarive', 'worker-agent');
 }
