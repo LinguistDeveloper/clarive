@@ -2,17 +2,18 @@ use strict;
 use warnings;
 use utf8;
 
+use Test::More;
 use Test::Deep;
 use Test::Fatal;
 use Test::LongString;
-use Test::More;
-use File::Temp qw(tempfile);
 use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
 
+use Cwd qw(getcwd);
+use File::Temp qw(tempfile);
 use Baseliner::Utils qw(
   _pointer
   query_grep
@@ -28,8 +29,9 @@ use Baseliner::Utils qw(
   _decode_json_safe
   _is_binary
   _file
+  _chdir
+  _timeout
 );
-
 use Clarive::mdb;
 
 ####### _pointer
@@ -624,6 +626,149 @@ subtest '_is_binary: return true when path is from a binary file' => sub {
     my $is_binary = Util->_is_binary( path=> $tar_file );
 
     ok $is_binary;
+};
+
+subtest '_timeout: returns the scalar return value' => sub {
+    my $output = _timeout(
+        3,
+        sub {
+            return 'foo';
+        },
+        'alarm timeout'
+    );
+
+    is $output, 'foo';
+};
+
+subtest '_timeout: returns the list return value' => sub {
+    my @output = _timeout(
+        3,
+        sub {
+            return (1, 2, 3);
+        },
+        'alarm timeout'
+    );
+
+    is_deeply \@output, [1, 2, 3];
+};
+
+subtest '_timeout: rethrows exception' => sub {
+    like exception {
+        _timeout(
+            3 => sub {
+                die 'foo';
+            },
+            'error timeout'
+        );
+    }, qr/foo/;
+};
+
+subtest '_timeout: throws when timeout with default message' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                sleep(2);
+            }
+        );
+    }, qr/timeout/;
+};
+
+subtest '_timeout: throws when timeout' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                sleep(2);
+            },
+            'error timeout'
+        );
+    }, qr/error timeout/;
+};
+
+subtest '_timeout: supports nested timeouts with outer timeout' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                _timeout(
+                    5 => sub {
+                        sleep 2;
+                    },
+                    'internal timeout'
+                );
+            },
+            'external timeout'
+        );
+    }, qr/external timeout/;
+};
+
+subtest '_timeout: supports nested timeouts with inner timeout' => sub {
+    my $e;
+
+    _timeout 10 => sub {
+        $e = exception {
+            _timeout(
+                1 => sub {
+                    sleep 2;
+                },
+                'internal timeout'
+            );
+        }
+    };
+
+    like $e, qr/internal timeout/;
+};
+
+subtest '_chdir: returns scalar return value' => sub {
+    my $tmp = tempdir();
+
+    my $output = _chdir(
+        $tmp => sub {
+            return 'foo';
+        }
+    );
+
+    is $output, 'foo';
+};
+
+subtest '_chdir: returns list return value' => sub {
+    my $tmp = tempdir();
+
+    my @output = _chdir(
+        $tmp => sub {
+            return ( 1, 2, 3 );
+        }
+    );
+
+    is_deeply \@output, [ 1, 2, 3 ];
+};
+
+subtest '_chdir: changes back to previous directory' => sub {
+    my $cwd = getcwd();
+    my $tmp = tempdir();
+    my $cwd_new;
+
+    my @output = _chdir(
+        $tmp => sub {
+            $cwd_new = getcwd();
+        }
+    );
+
+    isnt( $cwd_new, $cwd );
+    is( $cwd, getcwd() );
+};
+
+subtest '_chdir: changes back to previous directory in case of error' => sub {
+    my $cwd = getcwd();
+    my $tmp = tempdir();
+
+    like exception {
+        _chdir(
+            $tmp => sub {
+                die "Error";
+            }
+        );
+    }, qr/Error/;
+
+    is $cwd, getcwd();
 };
 
 done_testing;
