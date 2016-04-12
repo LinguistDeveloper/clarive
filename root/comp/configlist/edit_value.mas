@@ -1,39 +1,54 @@
 //////////////// Edit Config Value Create / Edit Window
 
 var edit_config = function(rec) {
-    
-    var config_name = '';
-    var xtype = 'textarea';
-    var input_type = 'text';
-    if( rec!= undefined ) {
-        config_name = rec.get('config_name')==null
-            ? '' : rec.get('config_name') + ": ";
-        config_name += rec.get('config_label')==null
-            ? rec.get('key') : rec.get('config_label') ;
-        if( rec.get('config_type') == 'password' ) {
-            input_type = 'password';	
-            xtype = 'textfield';	
-        }
-    }
-    var form = new Ext.form.FormPanel({
-        baseCls: 'x-plain',
-        labelWidth: 100,
-        url:'/configlist/update',
-        items: [
-            { xtype:'textfield', fieldLabel: '<% _loc('Key') %>' , name: 'key', anchor:'100%', allowBlank: false },
-            { xtype:'textfield', fieldLabel: '<% _loc('Scope') %>' , name: 'ns', anchor:'100%', value:'/' },
-            { xtype:'textfield', fieldLabel: '<% _loc('Baseline') %>' , name: 'bl', anchor:'100%', value:'*' },
-            { xtype:'textfield', fieldLabel: '<% _loc('Default Value') %>' , name: 'config_default', anchor:'100%', value:'*', readOnly:true },
-            //{ xtype: 'label', text: 'Valor:' },
-            { xtype: xtype, fieldLabel: '<% _loc('Value') %>' ,
-                hideLabel: input_type=='password' ? false : true,
-                name: 'value',
-                anchor: input_type=='password' ? '' : '100% -98',
-                inputType: input_type 
+
+        var config_name = '';
+        var xtype = 'textarea';
+        var input_type = 'text';
+        if (rec != undefined) {
+            config_name = rec.get('config_name') == null ? '' : rec.get('config_name') + ": ";
+            config_name += rec.get('config_label') == null ? rec.get('key') : rec.get('config_label');
+            if (rec.get('config_type') == 'password') {
+                input_type = 'password';
+                xtype = 'textfield';
             }
-        ]
-    });
-    
+        }
+
+    var form = new Ext.form.FormPanel({
+    baseCls: 'x-plain',
+    labelWidth: 100,
+    url: '/configlist/update',
+    itemCls: 'config_form_body_items',
+    defaults: {
+    xtype: 'textfield'
+    },
+    items: [{
+            fieldLabel: '<% _loc('Key ') %>',
+            name: 'key',
+            allowBlank: false
+        }, {
+            fieldLabel: '<% _loc('Scope ') %>',
+            name: 'ns',
+            value: '/'
+        }, {
+            fieldLabel: '<% _loc('Baseline ') %>',
+            name: 'bl',
+            value: '*'
+        }, {
+            fieldLabel: '<% _loc('Default Value ') %>',
+            name: 'config_default',
+            value: '*',
+            readOnly: true
+        }, {
+            xtype: xtype,
+            fieldLabel: '<% _loc('Value ') %>',
+            hideLabel: input_type == 'password' ? false : true,
+            name: 'value',
+            anchor: input_type == 'password' ? '' : '99% -98',
+            inputType: input_type
+        }
+    ]
+});
 
     var baselines = new Ext.data.SimpleStore({ 
        fields: ['bl', 'name'], 
@@ -44,7 +59,7 @@ var edit_config = function(rec) {
         layout: 'fit',
         plain: true,
         bodyStyle:'padding:5px;',
-        height: 350,
+        height: 400,
         width: 650,
         maximizable: true,
         closeAction: 'close',

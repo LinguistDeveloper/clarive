@@ -337,8 +337,12 @@ button.x-btn-text {
 }
 
 /* rgo: upload fieldlet border */
-div.x-panel.x-grid-panel.ux-maximgb-tg-panel {
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel{
     border: 1px solid #ccc;
+}
+
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel,
+div.x-panel.x-grid-panel.ux-maximgb-tg-panel .x-panel-bwrap .x-panel-tbar .x-toolbar.x-small-editor.x-toolbar-layout-ct .x-toolbar-ct{
     max-width:99%;
 }
 
@@ -790,10 +794,10 @@ body .x-grid3 .x-grid3-row {
 /* selected rows in a grid */
 body .x-grid3 .x-grid3-row-selected {
     padding:0;
-    border-top: 2px solid #ffffff;
-    border-bottom: 2px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
+    border-top: 2px solid #e9e9e9;
+    border-bottom: 2px solid #e9e9e9;
+    border-left: 1px solid #e9e9e9;
+    border-right: 1px solid #e9e9e9;
     background: #e9e9e9 !important;  /* more pink: faf2fa */
 }
 
@@ -812,11 +816,11 @@ body .x-grid3 .x-grid3-row-over {
 
 /* rgo: selecting a tree node */
 .x-tree-node .x-tree-node-over {
-    background: #fcfafa;
+    background: #e9e9e9;
 }
 
 .x-tree-node .x-tree-selected {
-    background: #faf2fa;
+    background: #e9e9e9;
 }
 
 /* rgo: left column checkbox selector in CI grid */
@@ -937,3 +941,160 @@ textarea.x-form-textarea.x-form-field {
     height: 300px !important;
     width: 95% !important;
 }
+/*****************oversizing ******************************/
+
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top .x-panel.x-panel-noborder .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder {
+    padding-right: 5px;
+}
+
+
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top,
+.x-window-body .x-tab-panel .x-tab-panel-bwrap .x-tab-panel-body.x-tab-panel-body-top .x-panel.x-panel-noborder .x-panel-bwrap .x-panel-body.x-panel-body-noheader.x-panel-body-noborder.x-box-layout-ct {
+    background-color:  #f1f1f1 !important;
+}
+.x-tab-panel-body.x-tab-panel-body-top {
+    width: auto !important;
+    border: 0;
+}
+.inbox_body .x-panel-body {
+    padding: 30px 30px 30px 30px;
+}
+.x-panel.role_form_column_body.x-form-label-left.x-column {
+    padding: 10px !important;
+}
+.role_form_column_body_items .x-form-element .x-form-text.x-form-field,
+.role_form_column_body_items .x-form-element .x-form-textarea.x-form-field,
+.role_form_column_body_items .x-form-element .x-form-field-wrap.x-form-field-trigger-wrap {
+    width: 93% !important;
+}
+
+.config_form_body_items .x-form-element .x-form-text.x-form-field {
+    width: 98% !important;
+}
+
+.x-form-element .x-form-textarea.x-form-field {
+    max-height: 206px;
+}
+
+.topic_admin_edit_window.x-form-label-left .x-panel-bwrap .x-panel-body {
+    margin-top: 20px;
+}
+
+.topic_admin_grids {
+   border:1px solid #C1C1C1;
+   padding: 0px 0px 0px 0px;
+}
+
+.topic_admin_edit_panels {
+   border:1px solid #C1C1C1;
+   width: 99.5% !important;
+}
+
+.topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body {
+   height: 190px !important; 
+}
+
+.topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body .x-grid3 .x-grid3-viewport .x-grid3-scroller  {
+  width: 99.2% !important;
+}
+.user_grid_edit_window {
+    border:1px solid #C1C1C1;
+    width: 99.5% !important;
+    padding-bottom:5px;
+}
+
+.user_grid_edit_window_padding {
+    padding-bottom:5px;
+}
+
+ .daemon_grid_active_instances {
+    margin-left: 85px !important;
+    border: 1px solid #c1c1c1;
+}
+
+ .x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tl {
+    padding-left: 0px !important;
+}
+ .x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tr {
+    padding-right: 0px !important;
+}
+
+.x-panel.daemon_grid_active_instances.x-grid-panel .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable{
+    margin: 0px 0 0;
+}
+
+.x-panel-body.topic_admin_paddings.x-panel-body-noheader.x-panel-body-noborder {
+    padding:0px 10px 5px 5px;
+}
+/*
+.x-toolbar-left-row .x-toolbar-cell .x-form-field-wrap.x-form-field-trigger-wrap {
+    width: 98% !important;
+}*/
+
+.job_new_main_form {
+   background-color: #eee;
+}
+.job_new_main_form_general {
+   background-color: #eee;
+   padding: 10px 10px 10px 10px;
+}
+
+.job_new_main_form_job_statistics_column  {
+   margin-left: 20px;
+}
+
+.job_new_main_form_when_column {
+   background-color: #eee;
+   padding: 0 25px 0 0;
+}
+
+.job_new_main_form_time_column {
+   margin: 20 0 20 0;
+   padding: 15 15 15 15;
+}
+
+.job_new_main_form_time_column_advice {
+   margin-left: 165px;
+   font-size: 11px;
+   font-family: Tahoma, Arial;
+}
+
+.surr-win {
+   height: auto !important;
+}
+
+.login_form {
+   margin:10px;
+}
+
+.notifications_grid_recipients {
+   border: solid #ccc 1px;
+}
+
+.job-calendar th {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: capitalize;
+    height: 30px !important;
+    text-align: center;
+}
+
+.job_calendar_edit_cal_windows_column {
+    margin:50px 5px 15px 10px;
+}
+
+.job_calendar_edit_cal_windows {
+    margin-top: 20px
+}
+
+.x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
+.x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
+    border: 0px solid #c1c1c1;
+    padding-left: 10px;
+}
+
+.x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
+.x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text {
+    padding-left: 10px;
+}
+

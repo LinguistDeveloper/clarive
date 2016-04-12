@@ -999,64 +999,109 @@
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         tab_icon: '/static/images/icons/job.png',
-        //frame: true,
-        height:'50%',
-        bodyStyle: { 'background-color': '#eee', padding: '10px 10px 10px 10px' },
+        height: '50%',
+        bodyCssClass: 'job_new_main_form_general',
         forceFit: true,
         labelWidth: 100,
         tbar: tb,
-        //labelAlign: 'top',
         labelAlign: 'right',
         defaults: {
             border: false,
             msgTarget: 'under'
         },
-        items: [
-            { layout:'column', bodyBorder: false, padding: 10, border: false, frame: false, bodyStyle: { 'background-color': '#eee'}, 
-                defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
-                { layout:'form', columnWidth: .5, border:false, defaults:{ border:false, anchor: '100%' }, items:[
-                    hidden_job_type,
-                    hidden_baseline,
-                    hidden_baseline_to,
-                    hidden_state_to,
-                    combo_transitions,
-                    combo_chain,
-                    combo_versions
-                ]},
-                { columnWidth:.5, style: { 'margin-left': '20px' }, 
-                    defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
-                    job_statistics
-                ]}
-            ]},
-            {
+        items: [{
+                layout: 'column',
+                bodyBorder: false,
+                padding: 10,
+                border: false,
+                frame: false,
+                bodyCssClass: 'job_new_main_form',
+                defaults: {
+                    bodyBorder: false,
+                    border: false,
+                    bodyCssClass: 'job_new_main_form',
+                },
+                items: [{
+                    layout: 'form',
+                    columnWidth: .5,
+                    border: false,
+                    defaults: {
+                        border: false,
+                        anchor: '95%'
+                    },
+                    items: [
+                        hidden_job_type,
+                        hidden_baseline,
+                        hidden_baseline_to,
+                        hidden_state_to,
+                        combo_transitions,
+                        combo_chain,
+                        combo_versions
+                    ]
+                }, {
+                    columnWidth: .5,
+                    cls:'job_new_main_form_job_statistics_column',
+                    defaults: {
+                        bodyBorder: false,
+                        border: false,
+                        bodyCssClass: 'job_new_main_form'
+                    },
+                    items: [
+                        job_statistics
+                    ]
+                }]
+            }, {
                 layout: 'column',
                 fieldLabel: _('When'),
-                columns: 3, bodyStyle: { 'background-color': '#eee'},
-                bodyBorder: false, 
-                defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
-                items: [
-                    { width: 225, layout:'form', items: job_date, labelWidth: 40  },
-                    { width: 470, layout:'form', items: combo_time , labelWidth: 40 },
-                    time_not_available,
-                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color':'#eee', 'margin-left':5 } },
-                    { width: 30, layout:'form', items: button_refresh_cals, labelWidth: 40  }
+                columns: 3,
+                bodyCssClass: 'job_new_main_form',
+                bodyBorder: false,
+                defaults: {
+                    bodyBorder: false,
+                    bodyCssClass: 'job_new_main_form_when_column',
+                },
+                items: [{
+                        width: 225,
+                        layout: 'form',
+                        items: job_date,
+                        labelWidth: 40
+                    }, {
+                        width: 470,
+                        layout: 'form',
+                        items: combo_time,
+                        labelWidth: 40
+                    },
+                    time_not_available, {
+                        width: 30,
+                        layout: 'form',
+                        items: button_show_cals,
+                        labelWidth: 40,
+                        bodyCssClass: 'job_new_main_form',
+                        bodyStyle: {
+                            'margin-left': 5
+                        }
+                    }, {
+                        width: 30,
+                        layout: 'form',
+                        items: button_refresh_cals,
+                        labelWidth: 40
+                    }
                 ]
             },
-            check_no_cal,
-            { 
-                xtype:'fieldset', 
-                style: { 'margin': '20 0 20 0' , 'padding': '15 15 15 15' },
+            check_no_cal, {
+                xtype: 'fieldset',
+                cls:'job_new_main_form_time_column',
                 labelWidth: 135,
                 items: [
-                    combo_search,
-                    { xtype: 'label', 
+                    combo_search, {
+                        xtype: 'label',
                         hidden: !show_job_search_combo,
-                        style:'margin-left: 165px; font-size: 11px; font-family: Tahoma, Arial;', text:  _('Live search requires a minimum of %1 characters.', min_chars ) },
+                        cls: 'job_new_main_form_time_column_advice',
+                        text: _('Live search requires a minimum of %1 characters.', min_chars)
+                    },
                     jc_grid
                 ]
             },
-            //combo_search,
-            //{ xtype: 'container', style: 'height: 20px', fieldLabel:'x', html:  _('Live search requires a minimum of %1 characters.', min_chars ) },
             comments
         ]
     });

@@ -606,8 +606,15 @@
 		});		
 		
         var has_subject = rec && rec.data && rec.data.subject !=undefined && rec.data.subject.length>0;
-        var subject = new Ext.form.TextField({ name:'subject', value: rec && rec.data ? rec.data.subject : '', 
-                disabled: !has_subject, anchor:'100%', fieldLabel:_('Subject'), height: 30 });
+        var subject = new Ext.form.TextField({
+            name: 'subject',
+            value: rec && rec.data ? rec.data.subject : '',
+            disabled: !has_subject,
+            anchor: '98%',
+            fieldLabel: _('Subject'),
+            height: 30
+        });
+
         var chk_subject = new Ext.form.Checkbox({
             name:'chk_subject',
             boxLabel:_('Default'),
@@ -855,7 +862,7 @@
 			
 			win_recipients = new Ext.Window({
 				title: _(title),
-				autoHeight: true,
+				height: '100%',
 				width: 730,
 				closeAction: 'close',
 				modal: true,
@@ -912,10 +919,10 @@
         };
 		
 		var grid_recipients = new Ext.grid.GridPanel({
-			style: 'border: solid #ccc 1px',
+			cls: 'notifications_grid_recipients',
 			store: store_recipients,
 			layout: 'form',
-			height: 300,
+			height: 200,
 			hideHeaders: true,
 			stripeRows: true,
 			viewConfig: {
@@ -1044,60 +1051,68 @@
 				});
 			}
 		}
-		
-		var form_notification = new Ext.FormPanel({
-			frame: true,
-			padding: 15,
-			items: [
-				{
-					layout:'column',
-					defaults:{
-						layout:'form'
-					},
-					items:[
-						{
-							columnWidth: 0.70,
-							items: cb_events
-						},
-						{
-							columnWidth: 0.30,
-							labelWidth: 5,
-							items:
-								{
-									xtype: 'radiogroup',
-									cls: 'x-check-group-alt',
-									name: 'rd_actions',
-									items: actions
-								}
-						}
-					]
-				},
-				cb_templates,
-                {
-                    id: 'pnl_subject',
-                    layout:'column',
-                    defaults:{ layout:'form' },
-                    items:[ { columnWidth: 0.85, items: subject },
-                        { columnWidth: 0.15, labelWidth: 5, items: chk_subject }
-                    ]
+
+        var form_notification = new Ext.FormPanel({
+            frame: true,
+            padding: 15,
+            items: [{
+                    layout: 'column',
+                    defaults: {
+                        layout: 'form'
+                    },
+                    items: [{
+                        columnWidth: 0.70,
+                        items: cb_events
+                    }, {
+                        columnWidth: 0.30,
+                        labelWidth: 5,
+                        items: {
+                            xtype: 'radiogroup',
+                            cls: 'x-check-group-alt',
+                            name: 'rd_actions',
+                            items: actions
+                        }
+                    }]
                 },
-				{
-					xtype: 'panel',
-					fieldLabel: _('Recipients'),
-					items: grid_recipients
-				},
-				{ xtype: 'hidden', name: 'notification_id', value: rec && rec.data ? rec.data.id : -1 }
-			],
-			buttons: [
-				{  text: _('Close') ,
-				icon:'/static/images/icons/close.png',
-				 handler: function(){  win.close(); } },
-				{  text: _('Save') , 
-				icon:'/static/images/icons/save.png',
-			     //text: _('Accept') , 
-				handler: function(){  save_notification(); } }
-			]			
-		});	
+                cb_templates, {
+                    id: 'pnl_subject',
+                    layout: 'column',
+                    defaults: {
+                        layout: 'form'
+                    },
+                    items: [{
+                        columnWidth: 0.85,
+                        items: subject
+                    }, {
+                        columnWidth: 0.15,
+                        labelWidth: 5,
+                        items: chk_subject
+                    }]
+                }, {
+                    xtype: 'panel',
+                    fieldLabel: _('Recipients'),
+                    items: grid_recipients
+                }, {
+                    xtype: 'hidden',
+                    name: 'notification_id',
+                    value: rec && rec.data ? rec.data.id : -1
+                }
+            ],
+            buttons: [{
+                text: _('Close'),
+                icon: '/static/images/icons/close.png',
+                handler: function() {
+                    win.close();
+                }
+            }, {
+                text: _('Save'),
+                icon: '/static/images/icons/save.png',
+                //text: _('Accept') , 
+                handler: function() {
+                    save_notification();
+                }
+            }]
+        });
         
         if(rec){
             var ff = form_notification.getForm();
@@ -1126,19 +1141,19 @@
 			
             title = 'Edit notification';
         }
-		
+
         win = new Ext.Window({
             title: _(title),
-            autoHeight: true,
             width: 730,
+            autoScroll: true,
             closeAction: 'close',
             modal: true,
             items: form_notification
         });
-		
+
         win.show();
     };
-	
+
     var btn_start = new Baseliner.Grid.Buttons.Start({
         handler: function() {
             var notifications_checked = getNotifications();

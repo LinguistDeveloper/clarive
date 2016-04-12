@@ -956,97 +956,94 @@
         var name_field_form;
         name_field_form = new Baseliner.FormPanel({
             frame: true,
-            buttons: [
-                {
-                    text: _('OK'),
-                    handler: function() {
-                        var form = name_field_form.getForm();
+            bodyCssClass:'login_form',
+            buttons: [{
+                text: _('OK'),
+                handler: function() {
+                    var form = name_field_form.getForm();
 
-                        var ok = true;
-                        form.items.each(function() {
-                            var valid = this.validate();
+                    var ok = true;
+                    form.items.each(function() {
+                        var valid = this.validate();
 
-                            if (ok && !valid) {
-                                ok = false;
-                            }
-                        });
-
-                        if (ok) {
-                            var name_field = form.findField('name_field').getValue();
-                            var id_field = form.findField('id_field').getValue();
-
-                            if (!id_field) {
-                                id_field = Baseliner.name_to_id( name_field );
-                            }
-
-                            node.attributes.data = {
-                                "id_field": id_field,
-                                "bd_field": id_field,
-                                "fieldletType":node.attributes.key,
-                                "editable":"1",
-                                "hidden":"0"
-                            };
-                            node.setText(name_field);
-
-                            submitted = true;
-                            win.close();
+                        if (ok && !valid) {
+                            ok = false;
                         }
-                    }
-                },
-                {
-                    text: _('Cancel'),
-                    handler: function() {
-                        node.remove(true);
+                    });
+
+                    if (ok) {
+                        var name_field = form.findField('name_field').getValue();
+                        var id_field = form.findField('id_field').getValue();
+
+                        if (!id_field) {
+                            id_field = Baseliner.name_to_id(name_field);
+                        }
+
+                        node.attributes.data = {
+                            "id_field": id_field,
+                            "bd_field": id_field,
+                            "fieldletType": node.attributes.key,
+                            "editable": "1",
+                            "hidden": "0"
+                        };
+                        node.setText(name_field);
+
+                        submitted = true;
                         win.close();
                     }
                 }
-            ],
+            }, {
+                text: _('Cancel'),
+                handler: function() {
+                    node.remove(true);
+                    win.close();
+                }
+            }],
             defaults: {
                 msgTarget: 'under'
             },
-            items: [
-                { xtype: 'textfield',
-                    allowBlank: false,
-                    fieldLabel: _('Name'),
-                    name: 'name_field',
-                    value: defaults.name_field,
-                    anchor: '95%',
-                    listeners: {
-                       change: function(field, newVal, oldVal) {
-                            var id = Baseliner.name_to_id(newVal);
+            items: [{
+                xtype: 'textfield',
+                allowBlank: false,
+                fieldLabel: _('Name'),
+                name: 'name_field',
+                value: defaults.name_field,
+                anchor: '95%',
+                listeners: {
+                    change: function(field, newVal, oldVal) {
+                        var id = Baseliner.name_to_id(newVal);
 
-                            var id_field = name_field_form.getForm().findField('id_field');
-                            id_field.setValue(id);
-                       }
-                    },
-                },
-                { xtype: 'textfield',
-                    allowBlank: false,
-                    fieldLabel: _('ID'),
-                    name: 'id_field',
-                    anchor: '95%',
-                    validator: function(val) {
-                        var rv = Baseliner.validate_id(val);
-                        if (!rv) {
-                            return _loc("Invalid value. Use only 'a-z' and '_'")
-                        }
-
-                        var exists = false;
-                        root.eachChild(function(node){
-                            var data = node.attributes.data;
-                            if (data.id_field == val) {
-                                exists = true;
-                            };
-                        });
-
-                        if (!exists) {
-                            return true;
-                        }
-
-                        return _loc('Field with this id already exists');
+                        var id_field = name_field_form.getForm().findField('id_field');
+                        id_field.setValue(id);
                     }
                 },
-            ]
+            }, {
+                xtype: 'textfield',
+                allowBlank: false,
+                fieldLabel: _('ID'),
+                name: 'id_field',
+                anchor: '95%',
+                validator: function(val) {
+                    var rv = Baseliner.validate_id(val);
+                    if (!rv) {
+                        return _loc("Invalid value. Use only 'a-z' and '_'")
+                    }
+
+                    var exists = false;
+                    root.eachChild(function(node) {
+                        var data = node.attributes.data;
+                        if (data.id_field == val) {
+                            exists = true;
+                        };
+                    });
+
+                    if (!exists) {
+                        return true;
+                    }
+
+                    return _loc('Field with this id already exists');
+                }
+            }, ]
         });
 
         var win = new Ext.Window({
@@ -1066,7 +1063,7 @@
             }
         });
         win.show();
-    }
+    };
 
     var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type, old_ts, icon ) {
         var drop_handler = function(e) {

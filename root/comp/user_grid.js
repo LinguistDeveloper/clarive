@@ -354,7 +354,8 @@
             viewConfig: {
                 forceFit: true
             },          
-            height:200,
+            height:150,
+            cls:'user_grid_edit_window',
             loadMask: true,
             columns: [
                 check_roles_sm,
@@ -368,7 +369,13 @@
             control_buttons();
         });     
     
-        var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+        var blank_image = new Ext.BoxComponent({
+             autoEl: {
+                 tag: 'img',
+                 src: Ext.BLANK_IMAGE_URL
+             },
+             height: 10
+         });
     
         var treeRoot = new Ext.tree.AsyncTreeNode({
             text: _('All'),
@@ -395,9 +402,10 @@
             enableDrag: true,
             containerScroll: true,
             autoScroll: true,
-            height:200,         
+            height:150,         
             rootVisible: true,
             preloadChildren: true,
+            cls:'user_grid_edit_window',
             root: treeRoot
         });
         
@@ -543,32 +551,48 @@
                 });
             }
         })
-        
+
         var grid_user_roles_projects = new Ext.grid.GridPanel({
-            title: _('Roles/Projects User'),
-            stripeRows: true,
-            autoScroll: true,
-            autoWidth: true,
-            store: store_user_roles_projects,
-            stripeRows: true,
-            viewConfig: {
-                forceFit: true
-            },
-            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask: true,
-            columns: [
-                { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
-                { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
-                { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
-            ],
-            autoSizeColumns: true,
-            deferredRender:true,
-            height:200,
-            bbar: [
-                btn_delete_row,
-                btn_delete_all
-            ]
-        });
+    title: _('Roles/Projects User'),
+    stripeRows: true,
+    autoScroll: true,
+    //autoWidth: true,
+    store: store_user_roles_projects,
+    stripeRows: true,
+    viewConfig: {
+        forceFit: true
+    },
+    selModel: new Ext.grid.RowSelectionModel({
+        singleSelect: true
+    }),
+    loadMask: true,
+    cls: 'user_grid_edit_window',
+    columns: [{
+        header: _('Role'),
+        width: 120,
+        dataIndex: 'role',
+        sortable: true,
+        renderer: render_rol_field
+    }, {
+        header: _('Description'),
+        width: 350,
+        dataIndex: 'description',
+        sortable: true
+    }, {
+        header: _('Namespace'),
+        width: 150,
+        dataIndex: 'projects',
+        sortable: false,
+        renderer: render_projects
+    }],
+    autoSizeColumns: true,
+    deferredRender: true,
+    height: 150,
+    bbar: [
+        btn_delete_row,
+        btn_delete_all
+    ]
+});
 
         grid_user_roles_projects.on('cellclick', function(grid, rowIndex, columnIndex, e) {
             if(columnIndex == 1){
@@ -580,7 +604,7 @@
             name: form_user,
             url: '/user/update',
             frame: true,
-            
+            cls:'user_grid_edit_window_padding' ,
             items   : [
             {
             layout:'column'
@@ -763,7 +787,7 @@
 
         win = new Ext.Window({
             title: _(title),
-            autoHeight: true,
+            height: 600,
             width: 730,
             closeAction: 'close',
             modal: true,

@@ -173,7 +173,7 @@
 								    Baseliner.message( _('ERROR'), response.msg );
 							    }
 						    }
-					    
+
 					    );
 				    }
 			    } );
@@ -182,125 +182,128 @@
 
 
     var add_edit = function(rec) {
-	    var win;
-	    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
-	    
-	    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+        var blank_image;
+        var tf;
+        var title;
+        var schedule_service;
+        var instances;
+        var win;
+        var form_daemon;
 
-	    // var combo_host = new Ext.form.ComboBox({
-		   //  mode: 'local',
-		   //  value: 'localhost',
-		   //  triggerAction: 'all',
-		   //  forceSelection: true,
-		   //  editable: true,
-		   //  fieldLabel: _('Host'),
-		   //  name: 'hostname',
-		   //  hiddenName: 'hostname',
-		   //  displayField: 'name',
-		   //  valueField: 'value',
-		   //  //En un futuro se cargaran los distintos Host
-		   //  store: 	new Baseliner.JsonStore({
-				 //    fields : ['name', 'value'],
-				 //    data   : [{name : 'localhost',   value: 'localhost'}]
-			  //   })
-	    // });
+        blank_image = new Ext.BoxComponent({
+            autoEl: {
+                tag: 'img',
+                src: Ext.BLANK_IMAGE_URL
+            },
+            widht: 10
+        });
 
-// 		var instances = new Ext.form.TextField({
-//             name: 'instances',
-//             fieldLabel: _('Active instances'),
-//             width: 150,
-// //            value: rec.instances,
-//             labelWidth: 250
-//         });
-		var tf = Baseliner.cols_templates['textfield'];
+        tf = Baseliner.cols_templates['textfield'];
 
-		var instances = new Baseliner.GridEditor({
-		    title: _('Active instances'),
-		    height: 200,
-		    witdth: 400,
-		    name: 'instances',
-		    records: rec && rec.data ? rec.data.instances: [],
-		    preventMark: false,        
-		    columns: [
-		        Ext.apply({ dataIndex:'instance', header: _('Instances') }, tf() )
-		    ],
-		    viewConfig: { forceFit: true }
-		});
+        title = 'Create daemon';
 
-	    var title = 'Create daemon';
-	    
-	    var form_daemon = new Baseliner.FormPanel({
-		    frame: true,
-		    url:'/daemon/update',
-		    buttons: [
-			    {
-			    text: _('Save'),
-			    icon: '/static/images/icons/save.png',
-			    type: 'submit',
-			    handler: function() {
-				    var form = form_daemon.getForm();
-    
-				    if (form.isValid()) {
-				    	var params = form_daemon.getValues();
-					    if(form.getValues()['id'] == -1){
-					    	params.action = 'add';
-					    }else{
-					    	params.action = 'update';
-					    }
+        schedule_service = Baseliner.combo_services({
+            cls:'daemon_grid_active_instances',
+            hiddenName: 'service'
+        });
 
-				    	Baseliner.ajax_json('/daemon/update', params , function(f,a){
-					           Baseliner.message(_('Success'), f.msg );
-					           store.load();
-					           win.close();
-				        });
-				    }
+        instances = new Baseliner.GridEditor({
+            title: _('Active instances'),
+            name: 'instances',
+            cls:'daemon_grid_active_instances',
+            records: rec && rec.data ? rec.data.instances : [],
+            preventMark: false,
+            columns: [
+                Ext.apply({
+                    dataIndex: 'instance',
+                    header: _('Instances')
+                }, tf())
+            ],
+            viewConfig: {
+                forceFit: true
+            }
+        });
+        form_daemon = new Baseliner.FormPanel({
+            frame: true,
+            url: '/daemon/update',
+            buttons: [{
+                text: _('Save'),
+                icon: '/static/images/icons/save.png',
+                type: 'submit',
+                handler: function() {
+                    var form = form_daemon.getForm();
 
-			    }
-			    },
-			    {
-			    text: _('Close'),
-			    icon: '/static/images/icons/close.png',
-			    handler: function(){ 
-					    win.close();
-				    }
-			    }
-		    ],
-		    defaults: { width: 400 },
-		    items: [
-			    { xtype: 'hidden', name: 'id', value: -1 },
-			    schedule_service,
-				instances,
-			    {
-			    xtype: 'radiogroup',
-			    id: 'stategroup',
-			    fieldLabel: _('State'),
-			    defaults: {xtype: "radio",name: "state"},
-			    items: [
-				    {boxLabel: _('Active'), inputValue: 1},
-				    {boxLabel: _('Not Active'), inputValue: 0, checked: true}
-			    ]
-			    }
-		    ]
-	    });
+                    if (form.isValid()) {
+                        var params = form_daemon.getValues();
+                        if (form.getValues()['id'] == -1) {
+                            params.action = 'add';
+                        } else {
+                            params.action = 'update';
+                        }
 
-	    if(rec){
-		    var ff = form_daemon.getForm();
-		    ff.loadRecord( rec );
-		    var rb_state = Ext.getCmp("stategroup");
-		    rb_state.setValue(rec.data.active);
-		    title = 'Edit daemon';
-		    schedule_service.disable();
-	    }
-	    
-	    win = new Ext.Window({
-		    title: _(title),
-		    width: 550,
-		    autoHeight: true,
-		    items: form_daemon
-	    });
-	    win.show();		
+                        Baseliner.ajax_json('/daemon/update', params, function(f, a) {
+                            Baseliner.message(_('Success'), f.msg);
+                            store.load();
+                            win.close();
+                        });
+                    }
+
+                }
+            }, {
+                text: _('Close'),
+                icon: '/static/images/icons/close.png',
+                handler: function() {
+                    win.close();
+                }
+            }],
+            defaults: {
+                width: 400
+            },
+            items: [{
+                    xtype: 'hidden',
+                    name: 'id',
+                    value: -1
+                },
+                schedule_service,
+                instances, {
+                    xtype: 'radiogroup',
+                    id: 'stategroup',
+                    fieldLabel: _('State'),
+                    defaults: {
+                        xtype: "radio",
+                        name: "state"
+                    },
+                    items: [{
+                        boxLabel: _('Active'),
+                        inputValue: 1
+                    }, {
+                        boxLabel: _('Not Active'),
+                        inputValue: 0,
+                        checked: true
+                    }]
+                }
+            ]
+        });
+
+        if (rec) {
+            var ff = form_daemon.getForm();
+            ff.loadRecord(rec);
+            var rb_state = Ext.getCmp("stategroup");
+            rb_state.setValue(rec.data.active);
+            title = 'Edit daemon';
+            schedule_service.disable();
+        }
+
+        win = new Ext.Window({
+            title: _(title),
+            width: 550,
+            cls:'daemon_grid_edit_window',
+            autoHeight: true,
+            items: form_daemon
+        });
+        win.show();
     };
-    
+
     // create the grid
     var grid = new Ext.grid.GridPanel({
     	renderTo: 'main-panel',
@@ -311,7 +314,6 @@
 	    store: store,
 	    viewConfig: {forceFit: true	},
 	    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-	    loadMask:'true',
 	    stripeRows: true,
 	    columns: [
 		    { width: 40, sortable: false, renderer: render_icon },	

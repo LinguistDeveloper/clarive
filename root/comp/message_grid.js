@@ -30,7 +30,7 @@ Ext.override(Ext.form.HtmlEditor, {
      */
     setReadOnly: function(readOnly){
         if(readOnly){
-            this.syncValue();			
+            this.syncValue();
             this.el.dom.readOnly = true;
         } else {
             if(this.rendered){
@@ -111,34 +111,42 @@ Ext.override(Ext.form.HtmlEditor, {
             border: '0px',
             frameborder: 0,
             style: { 'background-color': '#fff' },
-            src: '' 
+            src: ''
         }
      });
-    
+
     var show_message_body = function(id_message) {
         var iframe = Ext.getDom( message_body.getId() );
         iframe.src = '/message/body/' + id_message;
         iframe.height = 280;
     };
     var message_form = new Ext.FormPanel({
-        //url: '/role/update',
-        title: _('Message'),
-        region: 'south',
-        collapsible: true,
-        split: true,
-        resizeable: true,
-        height: 350,
-        frame: true,
-        labelWidth: 100, 
-        defaults: { width: 850 },
-        items: [
-            {  xtype: 'hidden', name: 'id', value: -1 }, 
-            {  xtype: 'textfield', name: 'subject', fieldLabel: _('Subject'), readOnly: true }, 
-            message_body
-            //{  xtype: 'htmleditor', name: 'body', readOnly: true, height: 220, fieldLabel: _('Message') }
-        ]
-    });
-
+    //url: '/role/update',
+    title: _('Message'),
+    region: 'south',
+    collapsible: true,
+    split: true,
+    resizeable: true,
+    height: 350,
+    width: 880,
+    cls: 'inbox_body',
+    labelWidth: 100,
+    defaults: {
+        width: 850
+    },
+    items: [{
+            xtype: 'hidden',
+            name: 'id',
+            value: -1
+        }, {
+            xtype: 'textfield',
+            name: 'subject',
+            fieldLabel: _('Subject'),
+            readOnly: true
+        },
+        message_body
+    ]
+});
     var message_view = function(id, id_message) {
         //////////////// Single message Data Load Event
         message_data_store.on('load', function(obj, rec, options ) {
