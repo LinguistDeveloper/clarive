@@ -1,15 +1,14 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 
 use TestEnv;
-use TestUtils ':catalyst';
 BEGIN { TestEnv->setup }
 use TestSetup;
+use TestUtils ':catalyst';
 
 use Capture::Tiny qw(capture);
 

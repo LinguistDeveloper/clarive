@@ -1,11 +1,11 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
 use Test::Deep;
+
 use TestEnv;
+BEGIN { TestEnv->setup }
 
 use Baseliner::Validator;
 

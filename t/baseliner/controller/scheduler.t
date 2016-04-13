@@ -1,17 +1,14 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
-use TestEnv;
-use TestUtils ':catalyst';
 
-BEGIN {
-    TestEnv->setup;
-}
+use TestEnv;
+BEGIN { TestEnv->setup }
+use TestUtils ':catalyst';
 
 use Baseliner::Core::Registry;
 use Baseliner::Controller::Scheduler;

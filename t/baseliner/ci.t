@@ -1,16 +1,16 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
 use Test::Fatal;
 
 use TestEnv;
-BEGIN { TestEnv->setup; }
+BEGIN { TestEnv->setup }
 use TestUtils;
 
 use_ok 'Baseliner::CI';
+use_ok 'BaselinerX::CI::status';
 
 subtest 'new: throws when no args' => sub {
     _setup();

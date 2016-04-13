@@ -2371,10 +2371,7 @@ sub _setup {
         'Baseliner::Model::Rules',            'BaselinerX::LcController',
         'BaselinerX::Type::Model::ConfigStore',
     );
-
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
+    TestUtils->cleanup_cis;
 
     mdb->topic->drop;
     mdb->category->drop;

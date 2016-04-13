@@ -304,8 +304,8 @@ sub _build_uri {
     if ( $self->port_num ) {
         $uri .= ':' . $self->port_num;
     }
-    elsif ( Baseliner->config->{ssh_port} ) {
-        $uri .= ':' . Baseliner->config->{ssh_port} // 22;
+    elsif ( Clarive->config->{ssh_port} ) {
+        $uri .= ':' . Clarive->config->{ssh_port} // 22;
     }
 
     return $uri;

@@ -1,13 +1,11 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
-use TestEnv;
-use TestUtils ':catalyst';
 
 use Carp;
+use Cwd ();
 my $root;
 
 BEGIN {
@@ -15,9 +13,11 @@ BEGIN {
     $root = Cwd::realpath( dirname(__FILE__) );
 }
 
+use TestEnv;
 BEGIN {
     TestEnv->setup( base => "$root/../../data/app-base", home => "$root/../../data/app-base/app-home" );
 }
+use TestUtils ':catalyst';
 
 use_ok 'Baseliner::Controller::Help';
 

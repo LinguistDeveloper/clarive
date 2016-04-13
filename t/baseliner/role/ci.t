@@ -1,14 +1,12 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
 use Test::Fatal;
-use TestEnv;
-use TestUtils;
 
+use TestEnv;
 BEGIN { TestEnv->setup; }
+use TestUtils;
 
 use Baseliner::CI;
 use Clarive::ci;

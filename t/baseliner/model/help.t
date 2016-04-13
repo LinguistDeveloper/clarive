@@ -1,12 +1,9 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
 use TestEnv;
-use TestUtils ':catalyst';
-use Baseliner::Utils qw(_dir _file);
 
 my $root;
 
@@ -15,6 +12,9 @@ BEGIN {
     $root = Cwd::realpath( dirname(__FILE__) );
     TestEnv->setup( base => "$root/../../data/app-base", home => "$root/../../data/app-base/app-home" );
 }
+
+use TestUtils ':catalyst';
+use Baseliner::Utils qw(_dir _file);
 
 use_ok 'Baseliner::Model::Help';
 

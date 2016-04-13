@@ -687,7 +687,7 @@ sub _parse_template_mason {
 
 sub my_hostname {
    require Sys::Hostname;
-   return Clarive->config->{hostname} || Baseliner->config->{hostname} || lc( Sys::Hostname::hostname() ); 
+   return Clarive->config->{hostname} || lc( Sys::Hostname::hostname() ); 
 }
 
 sub _notify_address {

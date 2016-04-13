@@ -4,11 +4,9 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestSetup qw(_setup_clear);
-
-TestEnv->setup;
 
 use File::Temp qw(tempfile);
 

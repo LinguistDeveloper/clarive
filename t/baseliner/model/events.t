@@ -4,16 +4,14 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 
 use JSON ();
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
 use BaselinerX::Type::Statement;
-
-TestEnv->setup;
 
 $Clarive::_no_cache++;
 $Baseliner::_no_cache++;

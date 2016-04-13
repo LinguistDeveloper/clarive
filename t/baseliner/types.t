@@ -1,12 +1,12 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
+
 use TestEnv;
-use TestUtils;
 BEGIN { TestEnv->setup; }
+use TestUtils;
 
 use BaselinerX::CI::GitRepository;
 use Moose::Util::TypeConstraints;

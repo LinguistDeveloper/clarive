@@ -3,11 +3,9 @@ use warnings;
 
 use Test::More;
 
-use lib 't/lib';
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestUtils;
-
-TestEnv->setup;
 
 use Baseliner::Role::CI;
 use BaselinerX::Type::Statement;

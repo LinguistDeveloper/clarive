@@ -1,11 +1,10 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use TestEnv;
-use TestUtils ':catalyst';
 BEGIN { TestEnv->setup }
+use TestUtils ':catalyst';
 use TestGit;
 
 use_ok 'Baseliner::GitSmartParser';

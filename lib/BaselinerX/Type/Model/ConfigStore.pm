@@ -95,7 +95,7 @@ sub get {
     #    config_get('mykey')->{xxx}
     #    config_get('mykey.xxx')
     #
-    my $v = Baseliner->config->{ $key };
+    my $v = Clarive->config->{ $key };
     if( ! defined $v ) {
         my $config_eval = sprintf 'Baseliner->config->{%s}', join('}{', split /\./, $key );
         $v =  eval $config_eval; 

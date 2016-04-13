@@ -2,17 +2,14 @@ use strict;
 use warnings;
 
 use Test::More;
-
-use lib 't/lib';
 use TestEnv;
-use Baseliner::Core::Registry;
-
-TestEnv->setup;
+BEGIN { TestEnv->setup }
 
 $Clarive::_no_cache++;
 $Baseliner::_no_cache++;
 
 use Baseliner::Role::CI;
+use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
 
 use_ok 'Baseliner::Model::Activity';

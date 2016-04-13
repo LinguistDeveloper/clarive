@@ -1,13 +1,13 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+
 use TestEnv;
-use TestUtils ':catalyst', 'mock_time';
 BEGIN { TestEnv->setup }
+use TestUtils ':catalyst', 'mock_time';
 use TestSetup;
 
 use Test::MonkeyMock;

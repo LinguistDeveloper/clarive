@@ -22,17 +22,14 @@ sub version { '' }
 
 use Carp qw(longmess);
 use Test::MockTime ();
-use Path::Class ();
+use Path::Class    ();
 use Baseliner::Core::Registry;
 
 BEGIN { $ENV{BALI_FAST}++ }
 
 BEGIN {
-    $Baseliner::logger  = sub { };
-    $Baseliner::_logger = sub { };
-    $Baseliner::config  = sub { {} };
-
-    sub Clarive::config { { mongo => { dbname => 'acmetest' }, root => Path::Class::dir('root')->absolute } }
+    $Baseliner::logger  = $Clarive::logger  = sub { };
+    $Baseliner::_logger = $Clarive::_logger = sub { };
 }
 
 my @WARNINGS;
@@ -40,13 +37,15 @@ my @WARNINGS;
 sub setup {
     my $class = shift;
     my %opts  = @_;
+
     require Clarive::App;
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
+    Clarive->config->{root} = Path::Class::dir('root')->absolute;
+
     require Clarive::mdb;
     require Clarive::model;
     require Clarive::cache;
 
-    *Baseliner::config = sub { {} };
     *Baseliner::app = sub {
         {
             _logger => sub { }
@@ -60,7 +59,7 @@ sub setup {
 }
 
 END {
-    if ($ENV{TEST_FATAL_WARNINGS} && @WARNINGS) {
+    if ( $ENV{TEST_FATAL_WARNINGS} && @WARNINGS ) {
         print STDERR "WARNINGS!\n";
         for (@WARNINGS) {
             print STDERR "$_\n";
