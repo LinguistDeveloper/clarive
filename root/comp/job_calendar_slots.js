@@ -56,7 +56,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
     }
 </%perl>
 </TABLE>
-<TABLE border="0" width="100%" cellpadding="2">
+<TABLE border="0" width="100%" cellpadding="2" id="days_week">
         <TR>
 <%perl> 
     foreach my $dd ( 0..6 ) {
@@ -72,7 +72,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 
 </TABLE>
 </FORM>
-<TABLE border="0" width="100%" cellpadding="2">
+<TABLE border="0" width="100%" cellpadding="2" id="leyend_key">
 <TR>
         <TD width=20 class="slot_N" height=20>&nbsp;</TD>
         <TD width=100><% _loc("Normal") %></TD>
@@ -96,8 +96,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 <TR>
         <TD width=20 class="slot_N_off" height=20>&nbsp;</TD>
         <TD width=100><% _loc("Normal") . " <i>(" . _loc("No Job") .")</i>" %></TD>
-
-        <TD width=10>&nbsp;</TD>
+                <TD width=10>&nbsp;</TD>
 
         <TD width=20 class="slot_U_off">&nbsp;</TD>
         <TD width=100><% _loc("Urgent") . " <i>(" . _loc("No Job") .")</i>" %></TD>

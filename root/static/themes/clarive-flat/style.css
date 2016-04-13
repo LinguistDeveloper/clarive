@@ -1071,6 +1071,93 @@ textarea.x-form-textarea.x-form-field {
    border: solid #ccc 1px;
 }
 
+.x-date-picker {
+    border: 1px solid #000;
+
+}
+
+/*********  Job calendar *********/
+
+.job-calendar form {
+
+    margin-bottom: 5px;
+}
+
+.job-calendar #days_week {
+    text-align: center;
+}
+.job-calendar #leyend_key {
+    text-align: left;
+}
+
+.job_calendar_edit_cal_windows .x-date-picker.x-column {
+        width: auto !important;
+}
+
+..x-date-multiselect {
+  width: auto;
+}
+.job_calendar_edit_cal_windows .x-date-pickerplus {
+  width: 100% !important;
+}
+
+.job_calendar_edit_cal_windows .x-date-inner th {
+  background-color: #D8D8D8;
+}
+
+.x-date-pickerplus .x-date-right a {
+    margin-right: 4px;
+}
+
+.job_calendar_edit_cal_windows .x-date-bottom, .job_calendar_edit_cal_windows .x-date-mp-btns {
+  background: #D8D8D8;
+}
+
+.job_calendar_edit_cal_windows .x-date-middle, .job_calendar_edit_cal_windows  .x-date-left, .job_calendar_edit_cal_windows  .x-date-right {
+  background: #6B6B6B;
+}
+
+.job_calendar_edit_cal_windows table.x-btn {
+  border: 1px solid transparent;
+}
+
+.job_calendar_edit_cal_windows .x-date-inner .x-date-active a > em > span {
+    color: #000000;
+}
+
+.job_calendar_edit_cal_windows .x-date-prevday .x-datepickerplus-weekends  a > em > span{
+    color: #D8D8D8;
+}
+
+.job_calendar_edit_cal_windows .x-date-inner .x-date-today a {
+    border-color: #000000;
+}
+
+.job_calendar_edit_cal_windows .x-date-weeknumber em > span {
+    color: #6B6B6B;
+}
+
+.job_calendar_edit_cal_windows  .x-date-multiselect th.x-date-weeknumber-header a:hover,
+.job_calendar_edit_cal_windows .x-date-multiselect .x-date-weeknumber-cell a:hover {
+    background-color: #D8D8D8 !important;
+}
+.job_calendar_edit_cal_windows .x-datepickerplus-nationalholidays {
+  background-color: transparent !important;
+}
+
+.job_calendar_edit_cal_windows .x-date-mp-btns button {
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #000;
+}
+.job_calendar_edit_cal_windows .x-date-mp-btns button:hover {
+  background-color: #fff;
+}
+
+.job_calendar_edit_cal_windows td.x-date-mp-sel a {
+  background: #D8D8D8;
+}
+
 .job-calendar th {
     font-size: 12pt;
     font-weight: bold;
@@ -1097,6 +1184,9 @@ textarea.x-form-textarea.x-form-field {
 .x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text {
     padding-left: 10px;
 }
+
+
+/*********  User preferences window  *********/
 
 .prefs_window .x-form-element .x-form-field-wrap {
     margin: 5px 0 3px 0px;
