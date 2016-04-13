@@ -384,7 +384,7 @@ table.x-btn.x-btn-over.x-btn-menu-active {
 
 /* Menu */
 div.x-menu.x-menu-floating.x-layer {
-    border: 1px solid #999; 
+    border: 1px solid #999;
 }
 
 /* x-btn-tl tc tr ml mc mr bl bc br */
@@ -394,8 +394,8 @@ div.x-menu.x-menu-floating.x-layer {
     background-position: 0 0 !important;
 }
 
-.x-toolbar .x-btn-click td, 
-.x-toolbar .x-btn-menu-active td, 
+.x-toolbar .x-btn-click td,
+.x-toolbar .x-btn-menu-active td,
 .x-toolbar .x-btn-pressed td {
     background: transparent;
     background-position: 0 0 !important;
@@ -841,7 +841,7 @@ body {
 }*/
 
 .rule-op-edit-form {
-    padding: 4px; 
+    padding: 4px;
     background-color: #f5f5f5;
 }
 
@@ -991,7 +991,7 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body {
-   height: 190px !important; 
+   height: 190px !important;
 }
 
 .topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body .x-grid3 .x-grid3-viewport .x-grid3-scroller  {
@@ -1115,4 +1115,66 @@ textarea.x-form-textarea.x-form-field {
 .edit_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct{
    width: 99.8% !important;
    height: auto;
+}
+
+.prefs_window .x-form-element .x-form-field-wrap {
+    margin: 5px 0 3px 0px;
+}
+
+.prefs_window .x-form-text.x-superboxselect.x-superboxselect-display-btns {
+  width:452px !important;
+}
+
+.prefs_window .x-panel-footer .x-panel-footer-noborder .x-panel-btns {
+  width: 611px;
+}
+
+.prefs_window .x-tab-strip-top .x-tab-strip-active .x-tab-right {
+  background-color: #ffffff !important;
+}
+
+.prefs_window .x-tab-panel-header {
+    background-color: #ffffff !important;
+    padding: 0px;
+}
+
+.prefs_window .qq-upload-button {
+    margin-top: 10px;
+}
+
+.prefs_window .x-form-label-right label.x-form-item-label {
+    width: 142px !important;
+}
+
+
+.prefs_window .api_tab label.x-form-item-label {
+    margin-top: 9px;
+    text-align: right;
+    width: 100px !important;
+    margin-left: 44px;
+    margin-right: 7px;
+}
+
+.prefs_window .api_tab textarea.x-form-textarea {
+    width: 75% !important;
+    height: 20px !important;
+    border: none;
+    margin-top: 9px;
+  }
+
+.prefs_window .avatar_tab label.x-form-item-label {
+    text-align: right;
+    margin-left: 43px;
+    margin-top: 8px;
+  }
+
+.prefs_window .avatar_tab div.x-form-element {
+    padding-left:155px !important;
+}
+
+.prefs_window .avatar_tab .upload_avatar {
+    width: 513px;
+    vertical-align: middle;
+    margin-top: -5px;
+    float: left;
 }

@@ -111,10 +111,8 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 });
             };
             var api_key_field = new Ext.form.TextArea({
-                height: 50,
-                anchor: '90%',
                 fieldLabel: _('API Key'),
-                value: api_key
+                value: api_key,
             });
 
             var data_language = language_prefs(res, Prefs);
@@ -360,7 +358,7 @@ function prefs_form(language, timezone, country, currency, decimal, date_format,
                 xtype: 'panel',
                 layout: 'form',
                 border: false,
-                bodyStyle: 'margin-top: 5px',
+                bodyStyle: 'margin-top: 5px;margin-bottom: 6px',
                 fieldLabel: _('Current Server Timezone'),
                 html: _('<b>%1</b>', Prefs.server_timezone)
             },
@@ -427,9 +425,10 @@ function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_fiel
             frame: false,
             border: false,
             title: _('Avatar'),
+            cls: 'avatar_tab',
             bodyStyle: {
                 'background-color': '#fff',
-                padding: '10px 10px 10px 10px'
+                padding: '15px 10px 10px 10px'
             },
             items: [{
                 xtype: 'container',
@@ -444,17 +443,19 @@ function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_fiel
                 handler: gen_avatar
             }, {
                 xtype: 'container',
+                cls:'upload_avatar',
                 fieldLabel: _('Upload avatar'),
                 items: [upload]
             }]
         }, {
             title: _('API'),
+            cls: 'api_tab',
             layout: 'form',
             frame: false,
             border: false,
             bodyStyle: {
                 'background-color': '#fff',
-                padding: '10px 10px 10px 10px'
+                padding: '7px 10px 10px 10px'
             },
             items: [
                 api_key_field, {
@@ -483,7 +484,8 @@ function window_prefs(username, preftabs) {
         title: username ? _('Preferences for %1', username) : _('Preferences'),
         layout: 'fit',
         width: 650,
-        height: 320,
+        height: 380,
+        cls: 'prefs_window',
         items: [preftabs]
     });
     return win;
