@@ -459,8 +459,9 @@
 
     var time_not_available = new Ext.form.Label({
         hidden: true,
+        cls:'no_calendar_windows',
         fieldLabel: _('Time'), style: 'color: red; font-weight: bold; font-family: Calibri, OpenSans, Helvetica Neue, Arial, sans-serif;',
-        text: _('no calendar windows available for selected date')
+        text: _('No calendar windows available for selected date')
     });
 
     var render_icon = function( v ) {
@@ -1061,12 +1062,12 @@
                     bodyCssClass: 'job_new_main_form_when_column',
                 },
                 items: [{
-                        width: 225,
+                        cls: 'new_job_date_combo',
                         layout: 'form',
                         items: job_date,
                         labelWidth: 40
                     }, {
-                        width: 470,
+                        cls: 'new_job_time_combo',
                         layout: 'form',
                         items: combo_time,
                         labelWidth: 40

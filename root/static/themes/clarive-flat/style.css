@@ -1040,7 +1040,7 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_job_statistics_column  {
-   margin-left: 20px;
+   margin-left: 0px;
 }
 
 .job_new_main_form_when_column {
@@ -1049,8 +1049,8 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_time_column {
-   margin: 20 0 20 0;
-   padding: 15 15 15 15;
+   margin: 20px 0 20px 0;
+   padding: 15px 15px 15px 15px;
 }
 
 .job_new_main_form_time_column_advice {
@@ -1076,6 +1076,48 @@ textarea.x-form-textarea.x-form-field {
 
 }
 
+<<<<<<< HEAD
+=======
+/********* New job tab ***********/
+
+.new_job_time_combo {
+    clear:both;
+    width: 470px;
+    margin-right: 10px;
+}
+
+.new_job_date_combo {
+    width: 225px;
+    margin-bottom: 5px;
+}
+
+.job_new_main_form .x-form-item {
+    margin-bottom: 10px;
+
+}
+
+.job_new_main_form_general .x-form-item .x-form-element .x-form-check-wrap {
+    margin-left:10px;
+}
+
+.job_new_main_form_job_statistics_column .job_new_main_form {
+        width: 98% !important;
+}
+
+.new_job_time_combo .job_new_main_form_when_column div.x-form-element, 
+.new_job_date_combo .job_new_main_form_when_column div.x-form-element {
+    padding-left: 46px !important;
+}
+
+.new_job_date_combo .job_new_main_form_when_column input.x-form-text.x-form-field {
+    width: 100px !important;
+}
+
+label.no_calendar_windows {
+    margin: 5px 10px 0px 0px;
+}
+
+>>>>>>> Style improvements in New job tab
 /*********  Job calendar *********/
 
 .job-calendar form {
@@ -1101,7 +1143,11 @@ textarea.x-form-textarea.x-form-field {
   width: 100% !important;
 }
 
+<<<<<<< HEAD
 .job_calendar_edit_cal_windows .x-date-inner th {
+=======
+.job_calendar_edit_cal_windows .x-date-weeknumber-header th {
+>>>>>>> Style improvements in New job tab
   background-color: #D8D8D8;
 }
 
@@ -1328,5 +1374,6 @@ textarea.x-form-textarea.x-form-field {
     width: 513px;
     vertical-align: middle;
     margin-top: -5px;
+
     float: left;
 }
