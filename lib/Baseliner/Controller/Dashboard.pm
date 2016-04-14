@@ -1238,8 +1238,8 @@ sub list_topics : Local {
         }
     }
 
-    if ( $filter_user && $filter_user ne 'Any' ) {
-        if ( $filter_user eq _loc('Current') ) {
+    if ( $filter_user && $filter_user ne 'any' ) {
+        if ( $filter_user eq 'current' ) {
             $main_conditions->{assigned_to_me} = 1;
         }
     }
