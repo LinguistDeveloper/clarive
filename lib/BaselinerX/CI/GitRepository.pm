@@ -606,17 +606,23 @@ sub close_branch {
 
 method commits_for_branch( :$branch, :$project ) {
     my $git = $self->git;
+    my $revision_mode = $self->revision_mode;
+    my @rev_list;
 
-    my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
+    if( $revision_mode eq 'diff' ){
+        my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
+        $tag = $self->bl_to_tag($tag, $project);
 
-    $tag = $self->bl_to_tag($tag, $project);
+        # check if tag exists
+        my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
+        Util->_fail( Util->_loc('Error: could not find tag %1 in repository. Repository tags are configured?', $tag) ) unless $bl_exists;
+        my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=1', $tag );
+        @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $tag."...".$branch );
+        push @rev_list, $commit_tag;
+    } else {
+        @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $branch);
+    }
 
-    # check if tag exists
-    my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
-    Util->_fail( Util->_loc('Error: could not find tag %1 in repository. Repository tags are configured?', $tag) ) unless $bl_exists;
-    my @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $tag."...".$branch );
-    my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=1', $tag );
-    push @rev_list, $commit_tag;
     return @rev_list;
 }
 
