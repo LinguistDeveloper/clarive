@@ -147,7 +147,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     var change_dashboard_form = prefs_form(language, timezone, country, currency, decimal, date_format, time_format, dashboard, username, Prefs, language_pref, opts);
 
 
-                    var preftabs = tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey, save_apikey);
+                    var preftabs = tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey);
                     var win = window_prefs(username, preftabs);
                     win.show();
                 });
