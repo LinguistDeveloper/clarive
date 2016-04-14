@@ -8842,3 +8842,48 @@ msgstr "Variable Stash de Entrada"
 
 msgid "Zip File Path"
 msgstr "Ruta del Fichero Zip"
+
+msgid "Topic mid"
+msgstr "mid del Tópico"
+
+msgid "Field Name"
+msgstr "Nombre del Campo"
+
+msgid "Field Name"
+msgstr "Nombre del Campo"
+
+msgid "Repository mid"
+msgstr "mid del Repositorio"
+
+msgid "Tag Name"
+msgstr "Nombre de la Etiqueta"
+
+msgid "Tag Filter"
+msgstr "Filtro de Etiqueta"
+
+msgid "Tags separated by commas"
+msgstr "Etiquetas separadas por comas"
+
+msgid "Date (or blank for CURRENT date)"
+msgstr "Fecha (o vacío para fecha ACTUAL)"
+
+msgid "Query type"
+msgstr "Tipo de Query"
+
+msgid "Filter statuses"
+msgstr "Filtrar Estados"
+
+msgid "Filter categories"
+msgstr "Filtrar Categorías"
+
+msgid "Do not exclude event mid"
+msgstr "No excluir mid de evento"
+
+msgid "LDAP user"
+msgstr "Usuario LDAP"
+
+msgid "LDAP port"
+msgstr "Puerto LDAP"
+
+msgid "LDAP base"
+msgstr "Base LDAP"
