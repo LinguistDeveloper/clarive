@@ -33,6 +33,7 @@ params:
     var combo =  new Ext.form.ComboBox({
         name: meta.id_field,
         xtype: 'combo',
+        cls:'combo_box_fieldlet',
         fieldLabel: _(meta.name_field),
         store: store,
         triggerAction: 'all',
