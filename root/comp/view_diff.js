@@ -114,11 +114,11 @@
 			           <h3>[%= _('Revision') %] [%= rev_num %] [%= tag %]</h3>
 			           <table class="table table-bordered table-condensed" style="width: 60%">
 			           <thead>
-			           <tr><th width="33%">[%= _('User') %]</th><th width="33%" style="white-space: nowrap">[%= _('Last Updated') %]</th><th width="33%">[%= _('Comment') %]</th></tr>
+			           <tr><th width="33%">[%= _('Commit Owner') %]</th><th width="33%" style="white-space: nowrap">[%= _('Last Updated') %]</th><th width="33%">[%= _('Comment') %]</th></tr>
 			           </thead>
 			           <tbody>
 			           <tr>
-			           		<td style="white-space: nowrap"><img style="width: 16px" src="/user/avatar/[%= author %]/image.png" />
+			           		<td style="white-space: nowrap">
 			           			&nbsp;[%= author %]
 			           		</td>
 			           		<td style="white-space: nowrap">
