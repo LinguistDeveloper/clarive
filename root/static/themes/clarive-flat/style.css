@@ -891,6 +891,7 @@ color: #000 !important;
 .x-date-middle .x-btn .x-btn-text {
     color:#fff;
 }
+
 /*.x-date-middle .x-btn .x-btn-text {
    /* background-color: #fff;
     color: #000;
@@ -1118,86 +1119,122 @@ label.no_calendar_windows {
 >>>>>>> Style improvements in New job tab
 /*********  Job calendar *********/
 
-.job-calendar form {
+.job-calendar form,
+.job-calendar form  {
 
     margin-bottom: 5px;
 }
 
-.job-calendar #days_week {
+.job-calendar #days_week,
+.x-menu-date-item {
     text-align: center;
 }
-.job-calendar #leyend_key {
+.job-calendar #leyend_key,
+.x-menu-date-item {
     text-align: left;
 }
 
-.job_calendar_edit_cal_windows .x-date-picker.x-column {
+.job_calendar_edit_cal_windows .x-date-picker.x-column,
+.x-menu-date-item .x-date-picker.x-column {
         width: auto !important;
 }
 
-.x-date-multiselect {
+.x-date-multiselect,
+.x-menu-date-item {
   width: auto;
 }
-.job_calendar_edit_cal_windows .x-date-pickerplus {
+.job_calendar_edit_cal_windows .x-date-pickerplus,
+.x-menu-date-item .x-date-pickerplus  {
   width: 100% !important;
 }
 
-.job_calendar_edit_cal_windows .x-date-inner th {
+.job_calendar_edit_cal_windows .x-date-weeknumber-header th,
+.x-menu-date-item  .x-date-weeknumber-header th {
   background-color: #D8D8D8;
 }
 
-.x-date-pickerplus .x-date-right a {
+.x-date-pickerplus .x-date-right a,
+.x-menu-date-item .x-date-right a {
+
     margin-right: 4px;
 }
 
-.job_calendar_edit_cal_windows .x-date-bottom, .job_calendar_edit_cal_windows .x-date-mp-btns {
+.job_calendar_edit_cal_windows .x-date-bottom,
+.job_calendar_edit_cal_windows .x-date-mp-btns,
+.x-menu-date-item .x-date-bottom,
+.x-menu-date-item .x-date-mp-btns {
   background: #D8D8D8;
 }
 
-.job_calendar_edit_cal_windows .x-date-middle, .job_calendar_edit_cal_windows  .x-date-left, .job_calendar_edit_cal_windows  .x-date-right {
+.job_calendar_edit_cal_windows .x-date-middle,
+.job_calendar_edit_cal_windows  .x-date-left,
+.job_calendar_edit_cal_windows  .x-date-right,
+.x-menu-date-item .x-date-middle,
+.x-menu-date-item  .x-date-left,
+.x-menu-date-item  .x-date-right {
   background: #6B6B6B;
 }
 
-.job_calendar_edit_cal_windows table.x-btn {
+.job_calendar_edit_cal_windows table.x-btn,
+.x-menu-date-item table.x-btn {
   border: 1px solid transparent;
 }
 
-.job_calendar_edit_cal_windows .x-date-inner .x-date-active a > em > span {
+.job_calendar_edit_cal_windows .x-date-inner .x-date-active a > em > span,
+.x-menu-date-item .x-date-inner .x-date-active a > em > span {
     color: #000000;
 }
 
-.job_calendar_edit_cal_windows .x-date-prevday .x-datepickerplus-weekends  a > em > span{
+.job_calendar_edit_cal_windows .x-date-prevday .x-datepickerplus-weekends  a > em > span,
+.x-menu-date-item .x-date-prevday .x-datepickerplus-weekends  a > em > span {
     color: #D8D8D8;
 }
 
-.job_calendar_edit_cal_windows .x-date-inner .x-date-today a {
+.job_calendar_edit_cal_windows .x-date-inner .x-date-today a,
+.x-menu-date-item .x-date-inner .x-date-today a {
     border-color: #000000;
 }
 
-.job_calendar_edit_cal_windows .x-date-weeknumber em > span {
+.job_calendar_edit_cal_windows .x-date-weeknumber em > span,
+.x-menu-date-item .x-date-weeknumber em > span {
     color: #6B6B6B;
 }
 
 .job_calendar_edit_cal_windows  .x-date-multiselect th.x-date-weeknumber-header a:hover,
-.job_calendar_edit_cal_windows .x-date-multiselect .x-date-weeknumber-cell a:hover {
+.job_calendar_edit_cal_windows .x-date-multiselect .x-date-weeknumber-cell a:hover,
+..x-menu-date-item  .x-date-multiselect th.x-date-weeknumber-header a:hover,
+..x-menu-date-item .x-date-multiselect .x-date-weeknumber-cell a:hover {
     background-color: #D8D8D8 !important;
 }
-.job_calendar_edit_cal_windows .x-datepickerplus-nationalholidays {
+
+.job_calendar_edit_cal_windows .x-datepickerplus-nationalholidays,
+.x-menu-date-item .x-datepickerplus-nationalholidays {
   background-color: transparent !important;
 }
 
-.job_calendar_edit_cal_windows .x-date-mp-btns button {
+.job_calendar_edit_cal_windows .x-date-mp-btns button,
+.x-menu-date-item .x-date-mp-btns button {
   border: 1px solid transparent;
   background-color: transparent;
   color: #000;
 }
-.job_calendar_edit_cal_windows .x-date-mp-btns button:hover {
+
+
+.x-menu-date-item .x-btn.x-btn-over td > em > button {
+    color:#000;
+}
+
+.job_calendar_edit_cal_windows .x-date-mp-btns button:hover,
+.x-menu-date-item .x-date-mp-btns button:hover {
   background-color: #fff;
 }
 
-.job_calendar_edit_cal_windows td.x-date-mp-sel a {
+.job_calendar_edit_cal_windows td.x-date-mp-sel a,
+.x-menu-date-item td.x-date-mp-sel a {
   background: #D8D8D8;
 }
 
+.job-calendar th,
 .job-calendar th {
     font-size: 12pt;
     font-weight: bold;
@@ -1206,20 +1243,26 @@ label.no_calendar_windows {
     text-align: center;
 }
 
+.job_calendar_edit_cal_windows_column,
 .job_calendar_edit_cal_windows_column {
     margin:50px 5px 15px 10px;
 }
 
+.job_calendar_edit_cal_windows,
 .job_calendar_edit_cal_windows {
     margin-top: 20px
 }
 
+.x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
+.x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
 .x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
 .x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
     border: 0px solid #c1c1c1;
     padding-left: 10px;
 }
 
+.x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
+.x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
 .x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
 .x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text {
     padding-left: 10px;
@@ -1519,11 +1562,7 @@ label.no_calendar_windows {
 }
 
 
-/************* HTML/Description editor fieldlet  ********/
-
-<<<<<<< HEAD
 /*********  Environment planner fieldlet *********/
-=======
 .cleditorToolbar {
   background: #F5F5F5 !important;
   border-bottom: 1px solid #D3D0D0;
@@ -1541,12 +1580,8 @@ label.no_calendar_windows {
 
 #boot .well {
     margin-top: 5px;
-<<<<<<< HEAD
-  }
-=======
-  }
+}
 
 input.combo_box_fieldlet {
   height: 18px !important;
 }
->>>>>>> Improvements in edit job window and new height for combo box fieldlets
