@@ -6879,7 +6879,7 @@ msgid "Backup Existing Files or Fail"
 msgstr "Copia de seguridad de archivos existentes.  Falla si no es posible"
 
 msgid "Keep Relative Path from job directory"
-msgstr "Mantenenga la ruta relativa desde el directorio de trabajo"
+msgstr "Mantener la ruta relativa desde el directorio de trabajo"
 
 msgid "Rollback Mode"
 msgstr "Modo Marcha atrás"
@@ -6898,7 +6898,7 @@ msgstr "Modo existe"
 
 msgid "Skip, if file already sent by any task in job chain"
 msgstr ""
-"Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cadena "
+"Ignorar, si el fichero ha sido mandado por cualquier tarea en la cadena "
 "de pase"
 
 msgid "Reship, even file has already been shipped to node"
@@ -6935,7 +6935,7 @@ msgid "Template Toolkit"
 msgstr "Herramientas de la plantilla"
 
 msgid "Template Stash Var"
-msgstr "variables Stash de la plantilla"
+msgstr "Variables Stash de la Plantilla"
 
 msgid "Input File"
 msgstr "Fichero de entrada"
@@ -7639,7 +7639,7 @@ msgid "Driver"
 msgstr "Driver"
 
 msgid "Stash Variable"
-msgstr "variable de Stash"
+msgstr "Variable de Stash"
 
 msgid "Fail Mode"
 msgstr "Modo de Fallo"
@@ -8755,3 +8755,90 @@ msgstr "Modo de Compilación"
 
 msgid "Authentication"
 msgstr "Autenticación"
+
+msgid "Message Level"
+msgstr "Nivel de Mensaje"
+
+msgid "Expression"
+msgstr "Expresión"
+
+msgid "Repeatable"
+msgstr "Repetible"
+
+msgid "Notify"
+msgstr "Notificar"
+
+msgid "Shortcut ID"
+msgstr "ID Acceso directo"
+
+msgid "Source Key"
+msgstr "Clave de Fuente"
+
+msgid "Stash Data"
+msgstr "Datos del Stash"
+
+msgid "Children Stash Keys to Export"
+msgstr "Claves de Stash Hijos a Exportar"
+
+msgid "Old Statuses"
+msgstr "Anteriores Estados"
+
+msgid "New Status"
+msgstr "Nuevo Estado"
+
+msgid "Scheduled Time"
+msgstr "Tiempo Planificado"
+
+msgid "Expiration Time"
+msgstr "Tiempo de Expiración"
+
+msgid "Title of the Topic"
+msgstr "Título del Tópico"
+
+msgid "Category (id or name)"
+msgstr "Categoría (id o name)"
+
+msgid "Status (id or name)"
+msgstr "Estado (id o name)"
+
+msgid "Owner of the Topic (Blank for 'clarive')"
+msgstr "Dueño del Tópico (Blank para 'clarive')"
+
+msgid "Topic data. Type id_field in Key and string or variable (${variable}) in Value"
+msgstr "Datos del Tópico. Escribir id_field en Clave y string o variable (${variable}) en Valor"
+
+msgid "Select CI Classes"
+msgstr "Seleccionar Clases CI"
+
+msgid "Exist Mode Remote"
+msgstr "Existe Modo Remoto"
+
+msgid "Copy File Attributes"
+msgstr "Copiar Atributos de Archivo"
+
+msgid "Expires"
+msgstr "Expira"
+
+msgid "Include Files"
+msgstr "Incluir Archivos"
+
+msgid "Exclude Files"
+msgstr "Excluir Archivos"
+
+msgid "Clean Path Mode"
+msgstr "Limpiar Modo de Ruta"
+
+msgid "Variables to Update"
+msgstr "Variables a Actualizar"
+
+msgid "Accept any server certificate"
+msgstr "Aceptar cualquier certificado de servidor"
+
+msgid "Input Type"
+msgstr "Tipo de Entrada"
+
+msgid "Input Stash Variable"
+msgstr "Variable Stash de Entrada"
+
+msgid "Zip File Path"
+msgstr "Ruta del Fichero Zip"
