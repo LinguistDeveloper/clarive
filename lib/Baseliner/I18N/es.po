@@ -8783,9 +8783,6 @@ msgstr "Claves de Stash Hijos a Exportar"
 msgid "Old Statuses"
 msgstr "Anteriores Estados"
 
-msgid "New Status"
-msgstr "Nuevo Estado"
-
 msgid "Scheduled Time"
 msgstr "Tiempo Planificado"
 
@@ -8845,9 +8842,6 @@ msgstr "Ruta del Fichero Zip"
 
 msgid "Topic mid"
 msgstr "Mid del Tópico"
-
-msgid "Field Name"
-msgstr "Nombre del Campo"
 
 msgid "Field Name"
 msgstr "Nombre del Campo"
