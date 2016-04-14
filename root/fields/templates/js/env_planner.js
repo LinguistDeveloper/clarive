@@ -1,3 +1,4 @@
+
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
@@ -11,6 +12,7 @@
     
     var geditor = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
+        cls:'planner',
         allowBlank: readonly ? true : allow,
         name: meta.id_field,
         id_field: meta.id_field,

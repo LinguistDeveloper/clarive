@@ -1293,7 +1293,6 @@ label.no_calendar_windows {
     width: 513px;
     vertical-align: middle;
     margin-top: -5px;
-<<<<<<< HEAD
     float: left;
 }
 
@@ -1390,17 +1389,28 @@ label.no_calendar_windows {
 /*********  Grid Editor fieldlet *********/
 
 .grid_editor_look .x-row-editor-body,
-.grid_editor_look .x-row-editor-footer {
+.grid_editor_look .x-row-editor-footer,
+.milestone_table .x-row-editor-body,
+.milestone_table .x-row-editor-footer,
+.planner .x-row-editor-body,
+.planner .x-row-editor-footer {
     background: #F5F5F5;
     padding-bottom: 14px;
     padding-top: 3px;
 }
 .grid_editor_look .x-grid-panel .x-panel-mc .x-panel-body,
-.grid_editor_look.x-panel-mc .x-panel-body {
+.grid_editor_look .x-panel-mc .x-panel-body,
+.milestone_table .x-grid-panel .x-panel-mc .x-panel-body,
+.milestone_table .x-panel-mc .x-panel-body,
+.planner .x-grid-panel .x-panel-mc .x-panel-body,
+.planner .x-panel-mc .x-panel-body {
     padding: 0;
 }
 
-.grid_editor_look .x-row-editor .x-btns {
+.grid_editor_look .x-row-editor .x-btns,
+.milestone_table .x-row-editor .x-btns,
+.planner .x-row-editor .x-btns
+ {
     position: relative;
     background: #f5f5f5;
     border-bottom: 1px solid #D3D0D0;
@@ -1411,54 +1421,93 @@ label.no_calendar_windows {
 
 }
 
-.grid_editor_look .x-row-editor .x-btns .x-plain-body {
+.grid_editor_look .x-row-editor .x-btns .x-plain-body,
+.milestone_table .x-row-editor .x-btns .x-plain-body,
+.planner .x-row-editor .x-btns .x-plain-body  {
     height: auto;
     background: #f5f5f5;
 }
 
-.grid_editor_look .x-row-editor .x-btns .x-plain-bwrap {
+.grid_editor_look .x-row-editor .x-btns .x-plain-bwrap,
+.milestone_table .x-row-editor .x-btns .x-plain-bwrap,
+.planner .x-row-editor .x-btns .x-plain-bwrap {
     background: #f5f5f5;
     padding: 0;
 }
 
 
-.grid_editor_look .x-row-editor-footer {
+.grid_editor_look .x-row-editor-footer,
+.milestone_table .x-row-editor-footer,
+.planner .x-row-editor-footer {
     border-bottom: 1px solid #D3D0D0;
     width: 1621px !important;
 /*    border-left: 1px solid #D3D0D0;
     border-right: 1px solid #D3D0D0;*/
 }
 
-.grid_editor_look .x-panel-body {
+/*.grid_editor_look .x-panel-body,
+.milestone_table .x-panel-body,
+.planner .x-panel-body {
     padding: 0px;
-}
+}*/
 
-.grid_editor_look .x-btn-small.x-btn-icon-small-left {
+.grid_editor_look .x-btn-small.x-btn-icon-small-left,
+.milestone_table .x-btn-small.x-btn-icon-small-left,
+.planner .x-btn-small.x-btn-icon-small-left {
     border: 1px solid #F5F5F5;
 }
 
-.grid_editor_look table.x-btn.x-btn-over {
+.grid_editor_look table.x-btn.x-btn-over,
+.milestone_table table.x-btn.x-btn-over,
+.planner table.x-btn.x-btn-over {
         border: 1px solid #bbb;
 }
 
-.grid_editor_look  .x-row-editor .x-small-editor {
+.grid_editor_look  .x-row-editor .x-small-editor,
+.milestone_table  .x-row-editor .x-small-editor,
+.planner  .x-row-editor .x-small-editor {
     width: 100% !important;
 }
 
-.grid_editor_look .x-row-editor-body .x-column-layout-ct {
+.grid_editor_look .x-row-editor-body .x-column-layout-ct,
+.milestone_table .x-row-editor-body .x-column-layout-ct,
+.planner .x-row-editor-body .x-column-layout-ct {
     width: 1621px !important;
 }
 
-.grid_editor_look .x-row-editor-body {
+.grid_editor_look .x-row-editor-body,
+.milestone_table .x-row-editor-body,
+.planner .x-row-editor-body {
     width: 1621px !important;
+    padding-left: 8px;
 }
 
-.grid_editor_look .x-row-editor-header {
+.grid_editor_look .x-grid3-body,
+.grid_editor_look .x-grid3-row,
+.grid_editor_look .x-grid3-row-selected,
+.milestone_table .x-grid3-body,
+.milestone_table .x-grid3-row,
+.milestone_table .x-grid3-row-selected,
+.planner .x-grid3-body,
+.planner .x-grid3-row,
+.planner .x-grid3-row-selected {
+  width: auto !important;
+}
+
+
+.grid_editor_look .x-row-editor-header,
+.milestone_table .x-row-editor-header,
+.planner .x-row-editor-header {
     background:#F5F5F5;
 }
 
-.grid_editor_look .x-grid3-header-inner .x-grid3-header-offset table {
-    max-width: 1628px !important;
+.grid_editor_look .x-grid3-header-inner .x-grid3-header-offset table,
+.milestone_table .x-grid3-header-inner .x-grid3-header-offset table,
+.planner .x-grid3-header-inner .x-grid3-header-offset table {
+    /*max-width: 1628px !important;*/
     width: 100% !important;
-
 }
+
+
+
+/*********  Environment planner fieldlet *********/
