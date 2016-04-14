@@ -1076,8 +1076,6 @@ textarea.x-form-textarea.x-form-field {
 
 }
 
-<<<<<<< HEAD
-=======
 /********* New job tab ***********/
 
 .new_job_time_combo {
@@ -1509,5 +1507,26 @@ label.no_calendar_windows {
 }
 
 
+/************* HTML/Description editor fieldlet  ********/
 
+<<<<<<< HEAD
 /*********  Environment planner fieldlet *********/
+=======
+.cleditorToolbar {
+  background: #F5F5F5 !important;
+  border-bottom: 1px solid #D3D0D0;
+}
+
+.cleditorGroup {
+    margin-left: 5px;
+}
+
+/************* Markdown editor fieldlet  ********/
+
+.x-form-element textarea.wmd-input {
+    margin-bottom: 10px;
+  }
+
+#boot .well {
+    margin-top: 5px;
+  }
