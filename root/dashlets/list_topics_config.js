@@ -10,8 +10,8 @@
     var store_values = new Ext.data.SimpleStore({
         fields: ['assigned_to', 'name'],
         data:[ 
-            [ '0', _('Any') ],
-            [ '1', _('Current') ],
+            [ 'any', _('Any') ],
+            [ 'current', _('Current') ],
         ]
     });
 
