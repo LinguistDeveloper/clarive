@@ -8339,7 +8339,7 @@ msgid "Which bls do you want to see"
 msgstr "Qué entornos quieres ver?"
 
 msgid "Maximum number of jobs to list"
-msgstr "Número máximos de pases a listar"
+msgstr "Número máximo de pases a listar"
 
 msgid "Do you want the data to be shown by bl?"
 msgstr "Quieres que los datos se muestren por entorno?"
@@ -8571,13 +8571,13 @@ msgid "Import/Export"
 msgstr "Importar/Exportar"
 
 msgid "Selection method to introduce the date"
-msgstr "Metodo de seleccion para introducir la fecha"
+msgstr "Método de selección para introducir la fecha"
 
 msgid "Show class"
 msgstr "Mostrar clase"
 
 msgid "The file you want to upload do not have extension"
-msgstr "El fichero que desea subir no tiene extension"
+msgstr "El fichero que desea subir no tiene extensión"
 
 msgid "This type of file is not allowed: %1 "
 msgstr "El fichero tiene un formato no permitido: %1"
@@ -8885,5 +8885,50 @@ msgstr "Usuario LDAP"
 msgid "LDAP port"
 msgstr "Puerto LDAP"
 
-msgid "LDAP base"
-msgstr "Base LDAP"
+msgid "Default View"
+msgstr "Vista por Defecto"
+
+msgid "Show Jobs?"
+msgstr "Mostrar Jobs?"
+
+msgid "Graph Type"
+msgstr "Tipo de Gráfico"
+
+msgid "Override CI with current context?"
+msgstr "Sobreescribir CI con el Contexto Actual?"
+
+msgid "CI as Graph Starting Point"
+msgstr "CI como Punto de Inicio de Gráfico"
+
+msgid "Show Toolbar?"
+msgstr "Mostrar Barra de Herramientas?"
+
+msgid "Include Classes"
+msgstr "Incluir Clases"
+
+msgid "Exclude selected classes?"
+msgstr "Excluir Clases Seleccionadas?"
+
+msgid "Sample Snippets"
+msgstr "Snippets Ejemplo"
+
+msgid "Data Url (optional)"
+msgstr "Url Datos (opcional)"
+
+msgid "HTML Code"
+msgstr "Código HTML"
+
+msgid "JS Code"
+msgstr "Código JS"
+
+msgid "Number of days before today to list jobs"
+msgstr "Número de días antes de hoy para listar jobs"
+
+msgid "Show totals row?"
+msgstr "Mostrar fila de totales?"
+
+msgid "Repeat the animation"
+msgstr "Repetir la animación"
+
+msgid "Max characters in legend (0 = no limit)"
+msgstr "Máximo de caracteres en leyenda (0 = sin límite)"
