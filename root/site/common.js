@@ -4199,7 +4199,6 @@ Baseliner.generic_fields = function(params){
         fieldLabel: _('Row width'),
         emptyText: _('Select one'),
         data:[ 
-            [ '0', '0' ],
             [ '1', '1' ],
             [ '2', '2' ],
             [ '3', '3' ],
