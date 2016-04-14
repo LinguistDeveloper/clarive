@@ -275,16 +275,15 @@ sub check_modified_on: Local {
     use Class::Date;
     my $date_modified_on =  Class::Date->new( $strDate );
 
-    my $doc = mdb->topic->find_one({ mid=>"$topic_mid" });
-    my $date_actual_modified_on = Class::Date->new( $doc->{modified_on} );
-    my $who = $doc->{modified_by};
-
+    my $ci = ci->topic->find_one({ mid=>"$topic_mid" });
+    my $date_actual_modified_on = Class::Date->new( $ci->{ts} );
+    my $who = $ci->{modified_by};
     if ( $date_modified_on < $date_actual_modified_on ){
         $modified_before = $who;
         $duration = Util->to_dur( $date_actual_modified_on - $date_modified_on );
     } else {
         my $old_signature = $p->{rel_signature};
-        my $new_signature = $c->model('Topic')->rel_signature($topic_mid);
+        my $new_signature = Baseliner::Model::Topic->new->rel_signature($topic_mid);
         $modified_rel = \1 if $old_signature ne $new_signature;
     }
 
