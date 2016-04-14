@@ -8844,7 +8844,7 @@ msgid "Zip File Path"
 msgstr "Ruta del Fichero Zip"
 
 msgid "Topic mid"
-msgstr "mid del Tópico"
+msgstr "Mid del Tópico"
 
 msgid "Field Name"
 msgstr "Nombre del Campo"
@@ -8853,7 +8853,7 @@ msgid "Field Name"
 msgstr "Nombre del Campo"
 
 msgid "Repository mid"
-msgstr "mid del Repositorio"
+msgstr "Mid del Repositorio"
 
 msgid "Tag Name"
 msgstr "Nombre de la Etiqueta"
@@ -8877,7 +8877,7 @@ msgid "Filter categories"
 msgstr "Filtrar Categorías"
 
 msgid "Do not exclude event mid"
-msgstr "No excluir mid de evento"
+msgstr "No Excluir mid de Evento"
 
 msgid "LDAP user"
 msgstr "Usuario LDAP"
@@ -8932,3 +8932,9 @@ msgstr "Repetir la animación"
 
 msgid "Max characters in legend (0 = no limit)"
 msgstr "Máximo de caracteres en leyenda (0 = sin límite)"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Not in statuses"
+msgstr "No en Estados"
