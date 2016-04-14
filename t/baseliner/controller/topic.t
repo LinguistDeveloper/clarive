@@ -2169,6 +2169,60 @@ subtest 'view: strips html from fields' => sub {
     is $topic_data->{content},     'Bye, bye!';
 };
 
+subtest 'check_modified_on: check topic was modified before' => sub {
+
+    _setup();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $controller = _build_controller();
+
+    my $modified = Class::Date->now() - '5m';
+    my $signature = '';
+
+    my $c = _build_c( req => { params => { topic_mid => $topic_mid, modified => $modified, rel_signature => $signature } } );
+    $controller->check_modified_on($c);
+    cmp_deeply(
+        $c->stash->{json},
+        {
+            'success'                  => \1,
+            'modified_before_duration' => "5m 0s",
+            'modified_rel'             => ignore(),
+            'modified_before'          => "test",
+            'msg'                      => "Test"
+        }
+    );
+};
+
+subtest 'check_modified_on: check topic was not modified before' => sub {
+
+    _setup();
+    TestSetup->_setup_user();
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $controller = _build_controller();
+
+    my $modified = Class::Date->now() + '5m';
+    my $signature = '';
+
+    my $c = _build_c( req => { params => { topic_mid => $topic_mid, modified => $modified, rel_signature => $signature } } );
+    $controller->check_modified_on($c);
+    cmp_deeply(
+    $c->stash->{json},
+        {
+            'success'                  => \1,
+            'modified_before_duration' => undef,
+            'modified_rel'             => ignore(),
+            'modified_before'          => \0,
+            'msg'                      => "Test"
+        }
+    );
+};
+
+
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 
