@@ -7,10 +7,14 @@ use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
 use TestEnv;
+use TestSetup;
 BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
 
 use Clarive::mdb;
+
+use Baseliner::CI;
+use Baseliner::Role::CI;
 
 use_ok 'Baseliner::Controller::Role';
 
@@ -219,14 +223,99 @@ subtest 'update: does not update role with same name as another' => sub {
     );
 };
 
+subtest 'delete: consult user ' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    $controller->update($c);
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+    use Data::Dumper;
+
+    my $role = mdb->role->find_one( { role => 'Developer' } );
+
+    my $user = TestSetup->create_user( id_role => $role->{id}, project => $project );
+
+    $c = _build_c( req => { params => { id_role => $role->{id}, delete_confirm => '0' } } );
+    $controller->delete($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success => \1,
+                msg     => "developer<br>",
+                user_number => '1'
+            }
+        }
+    );
+};
+
+
+subtest 'delete: user delete' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    $controller->update($c);
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
+
+    my $project = TestUtils->create_ci(
+        'project',
+        name         => 'Project',
+        repositories => [ $repo->mid ],
+        moniker      => '6.4'
+    );
+    use Data::Dumper;
+
+    my $role = mdb->role->find_one( { role => 'Developer' } );
+
+    my $user = TestSetup->create_user( id_role => $role->{id}, project => $project );
+    
+    $c = _build_c( req => { params => { id_role => $role->{id}, consult_role => '0', name => 'Developer'} } );
+    $controller->delete($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success => \1,
+                msg     => "Role 'Developer' modified"
+            }
+        }
+    );
+};
+
+
 sub _setup {
+
+   TestUtils->setup_registry(
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
+        'BaselinerX::CI',          'BaselinerX::Events',
+        'Baseliner::Model::Rules',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+
+    );    
+
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
     mdb->role->drop;
 
-    TestUtils->setup_registry();
+    TestUtils->register_ci_events();
+
 }
 
 sub _build_controller {

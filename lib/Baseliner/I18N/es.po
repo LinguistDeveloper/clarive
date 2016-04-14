@@ -8761,3 +8761,6 @@ msgstr "Crear Copia"
 
 msgid "Creation Mode"
 msgstr "Modo de Creación"
+
+msgid "Please, select the role to delete"
+msgstr "Por favor, seleccione el rol a borrar"
