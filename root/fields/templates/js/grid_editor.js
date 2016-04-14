@@ -28,6 +28,7 @@ params:
         hidden: Baseliner.eval_boolean(!meta.active),
         //style: 'margin-bottom: 10px',
         name: meta.id_field,
+        cls:'grid_editor_look',
         id_field: meta.id_field,
         bd_field: meta.bd_field,
         records: records, 
