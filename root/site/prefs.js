@@ -103,16 +103,11 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     }
                 });
             };
-            var save_apikey = function() {
-                Baseliner.ci_call('user', 'save_api_key', {
-                    api_key_param: api_key_field.getValue()
-                }, function(res) {
-                    Baseliner.message(_('API Key'), res.msg);
-                });
-            };
+
             var api_key_field = new Ext.form.TextArea({
                 fieldLabel: _('API Key'),
                 value: api_key,
+                readOnly: true
             });
 
             var data_language = language_prefs(res, Prefs);
@@ -402,7 +397,7 @@ function prefs_form(language, timezone, country, currency, decimal, date_format,
     return change_dashboard_form;
 }
 
-function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey, save_apikey) {
+function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey) {
     var preftabs = new Ext.TabPanel({
         activeTab: 0,
         plugins: [new Ext.ux.panel.DraggableTabs()],
@@ -458,21 +453,14 @@ function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_fiel
                 padding: '7px 10px 10px 10px'
             },
             items: [
-                api_key_field, {
+                {
                     xtype: 'button',
                     fieldLabel: _('Generate API Key'),
                     width: 150,
                     scale: 'large',
                     text: _('Generate API Key'),
                     handler: gen_apikey
-                }, {
-                    xtype: 'button',
-                    fieldLabel: _('Save API Key'),
-                    width: 150,
-                    scale: 'large',
-                    text: _('Save Current API Key'),
-                    handler: save_apikey
-                }
+                }, api_key_field
             ]
         }]
     });
