@@ -243,8 +243,3 @@ __END__
 <soap:Body>
 <approve xmlns="http://localhost:3000/ci-soap/job"></approve>
 </soap:Body></soap:Envelope>
-
-
-
-
-

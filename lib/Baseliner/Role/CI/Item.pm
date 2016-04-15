@@ -208,4 +208,3 @@ sub moniker_from_tree_or_name {
 }
 
 1;
-

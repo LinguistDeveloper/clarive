@@ -238,4 +238,3 @@ sub query_from_field {
 }
 
 1;
-

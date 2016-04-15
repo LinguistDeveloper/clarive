@@ -11,5 +11,3 @@ sub icon { '/static/images/ci/appserver.png' }
 # has_ci 'update_script';
 
 1;
-
-

@@ -116,5 +116,3 @@ sub fatpack_perl_code {
 }
 
 1;
-
-

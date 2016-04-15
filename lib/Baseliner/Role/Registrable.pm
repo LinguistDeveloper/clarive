@@ -26,4 +26,3 @@ sub get_children {
 }
 
 1;
-

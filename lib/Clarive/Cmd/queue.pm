@@ -134,4 +134,3 @@ sub _format_conf_yaml {
     return $cy;
 }
 1;
-

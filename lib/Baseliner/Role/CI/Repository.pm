@@ -51,6 +51,3 @@ sub method_scan {
 }
 
 1;
-
-
-

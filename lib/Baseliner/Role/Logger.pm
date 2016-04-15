@@ -60,4 +60,3 @@ has data => (is=>'rw', isa=>'Any' );   # XXX should be a HASHREF, per BaselinerX
 #requires 'last_message';
 
 1;
-

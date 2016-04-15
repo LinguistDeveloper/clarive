@@ -8,7 +8,7 @@ BEGIN {
         our $script_home = $Bin . '/..';
         chdir $script_home;
         require Cwd;
-        $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
+        $script_home = Cwd::realpath( $script_home );  # clean up the script_home path
         $ENV{CLARIVE_HOME} //= $script_home;
     }
     if( ! $ENV{CLARIVE_BASE} ) {
@@ -18,14 +18,14 @@ BEGIN {
 }
 
 our $FULL_VERSION = do {
-    my $v = eval { 
+    my $v = eval {
         my $branch = `git rev-parse --abbrev-ref HEAD`;
         chomp $branch;
         my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
         my $version = $x[0];
         chomp $version;
         if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
-            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha}, $+{ver} ] 
+            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha}, $+{ver} ]
         } else {
             [ "r$branch v$version", "${branch}_${version}", '', $branch ];
         }
@@ -39,7 +39,7 @@ say "Packing Clarive release $release...";
 # create base dir structure
 mkdir "release";
 my $home = "release/$release";
-mkdir $home; 
+mkdir $home;
 for my $dir ( qw(bin features root config etc) ) {
     mkdir "$home/$dir";
 }

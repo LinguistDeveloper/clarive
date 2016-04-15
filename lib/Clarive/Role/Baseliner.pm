@@ -102,4 +102,3 @@ sub bali_config {
 }
 
 1;
-

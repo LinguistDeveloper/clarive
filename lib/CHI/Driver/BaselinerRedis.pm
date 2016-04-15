@@ -22,5 +22,3 @@ sub _verify_redis_connection {
 }
 
 1;
-
-

@@ -6,5 +6,3 @@ with 'Baseliner::Role::CI::Infrastructure';
 sub icon { '/static/images/icons/catalog.gif' }
 
 1;
-
-

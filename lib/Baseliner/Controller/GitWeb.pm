@@ -333,5 +333,3 @@ __DATA__
     our $projects_list = "" if ( !-e $projects_list );
 
 }
-
-

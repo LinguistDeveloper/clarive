@@ -904,4 +904,3 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
 }
-

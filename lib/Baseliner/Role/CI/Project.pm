@@ -7,4 +7,3 @@ sub icon { '/static/images/ci/project.png' }
 has repository => qw(is rw isa Any);
 
 1;
-

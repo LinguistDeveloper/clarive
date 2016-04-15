@@ -51,4 +51,3 @@ for my $url ( @ARGV) {
     print "Median: ".median(@data)."\n";
     print "Req/s: ".( $loop/$total)."\n";
 }
-

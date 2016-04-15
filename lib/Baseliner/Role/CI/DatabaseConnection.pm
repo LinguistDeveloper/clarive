@@ -7,5 +7,3 @@ with 'Baseliner::Role::CI::Infrastructure';
 sub icon { '/static/images/icons/dbconn.png' }
 
 1;
-
-

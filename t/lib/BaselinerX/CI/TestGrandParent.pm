@@ -15,4 +15,3 @@ sub rel_type {
 }
 
 1;
-

@@ -31,4 +31,3 @@ done_testing;
 sub _build_identicon_generator {
     Baseliner::IdenticonGenerator->new( default_icon => 'root/static/images/icons/user.png' );
 }
-

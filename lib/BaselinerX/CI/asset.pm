@@ -87,6 +87,3 @@ method checkout( :$dir ) {
 }
 
 1;
-
-
-

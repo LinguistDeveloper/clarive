@@ -1400,5 +1400,3 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 }
 
 1;
-
-

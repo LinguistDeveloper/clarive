@@ -101,4 +101,3 @@ sub oracle_adjust {
     spit( $filename, @sql );
 
 }
-

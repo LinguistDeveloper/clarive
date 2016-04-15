@@ -122,4 +122,3 @@ sub process_json_opts {
     }
     return %opt;
 }
-

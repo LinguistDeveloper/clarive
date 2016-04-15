@@ -44,4 +44,3 @@ for my $feature ( @ARGV ) {
     print "Feature $feature created successfully in ". $dir->absolute ."\n";
     $dir->recurse( callback => sub { my $d = shift; print " $d\n"; } );
 }
-

@@ -37,4 +37,3 @@ after load_data => sub {
 };
 
 1;
-
