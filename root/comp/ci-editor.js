@@ -136,6 +136,7 @@
                         from_mid: opts.mid, 
                         collection: opts.collection,
                         field: children,
+                        disabled: !can_save,
                         columns: ['mid','name','version','collection','rel_type'] });
                     cardpanel.add( depend_panel );
                     cardpanel.getLayout().setActiveItem( depend_panel );
