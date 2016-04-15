@@ -1,5 +1,5 @@
 package Baseliner::Mouse;
-use strict; 
+use strict;
 use v5.14;
 use Mouse::Exporter;
 use Mouse ();
@@ -56,7 +56,7 @@ sub has_ci {
         $options{is}  ||= 'rw';
         $options{traits} ||= ['CI'];
     }
- 
+
     $meta->add_attribute( $name, %options, );
 }
 
@@ -78,7 +78,7 @@ sub has_cis {
         $options{is}  ||= 'rw';
         $options{traits} ||= ['CI'];
     }
- 
+
     $meta->add_attribute( $name, %options, );
 }
 
@@ -104,30 +104,30 @@ sub has_array {
     #$options{handles} //= { qw(elements elements push push map map grep grep first first get get join join count count is_empty is_empty sort sort), };
     $options{handles} //= {};
     $options{handles}{"${name}_$_"} = $_ for qw/elements push map grep first join count is_empty/;
- 
+
     $meta->add_attribute( $name, %options, );
 }
 
 =head2 service
 
 Usage:
-    
+
     service do_something => sub {
         my ($self,$c,$config) = @_;
-        # my handler stuff... 
-    }; 
-    
+        # my handler stuff...
+    };
+
 OR:
 
     service do_something => {
-        config  => '...', 
+        config  => '...',
         handler => sub {
             my ($self,$c,$config) = @_;
-            # my handler stuff... 
+            # my handler stuff...
         },
-    }; 
-   
-Service key names will be constructed using the packages basename 
+    };
+
+Service key names will be constructed using the packages basename
 + the key supplied:
 
     BaselinerX::CI::nature;
@@ -136,7 +136,7 @@ Service key names will be constructed using the packages basename
 
 Results in:
 
-    'service.nature.scan' 
+    'service.nature.scan'
 
 =cut
 sub service {

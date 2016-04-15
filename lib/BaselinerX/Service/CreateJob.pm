@@ -10,8 +10,8 @@ use Class::Date;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.create' => { 
-    name => 'Create a Job', 
+register 'service.job.create' => {
+    name => 'Create a Job',
     job_service  => 1,
     form => '/forms/create_job.js',
     handler => \&run_create, };
@@ -76,7 +76,7 @@ sub run_create {
         $err =~ s{DBIx.*\(\):}{}g;
         $err =~ s{ at./.*line.*}{}g;
         _fail(_loc( "Error creating job: %1", "$err" ));
-    };    
+    };
 }
 
 no Moose;

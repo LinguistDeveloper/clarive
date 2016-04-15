@@ -2,7 +2,7 @@ package Baseliner::Utils;
 
 =head1 NAME
 
-Baseliner::Utils 
+Baseliner::Utils
 
 =head1 DESCRIPTION
 
@@ -10,7 +10,7 @@ Some utilities shared by different Baseliner modules and plugins.
 
 =head1 METHODS
 
-=cut 
+=cut
 
 use Exporter::Tidy default => [
     qw(
@@ -116,7 +116,7 @@ logging => [qw(
     _debug _fail _log _info _fixascii_sql _throw _loc _error _whereami _warn
 )],
 basic => [qw(
-    _array _file _dir _now _ci _load :logging 
+    _array _file _dir _now _ci _load :logging
 )],
 common => [qw(
     _decode_json _encode_json _to_utf8 _from_json _to_json :basic
@@ -126,7 +126,7 @@ common => [qw(
 use strict;
 use utf8;
 use v5.10;
-use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : (); 
+use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : ();
 use Class::Date;
 use YAML::XS;
 use List::Util qw(sum);
@@ -160,10 +160,10 @@ sub ns_split {
         return ( '', $1 );   # /packagename
     }
     elsif( $ns =~ m{^(.*)/$} ) {
-        return ( $1, '' );  # application/ 
+        return ( $1, '' );  # application/
     }
     else {
-        return ( '', $ns );  
+        return ( '', $ns );
     }
 }
 
@@ -199,18 +199,18 @@ sub _stash_load {
 sub _load {
     my @args = @_;
     return try {
-        my $str = $args[0]; 
+        my $str = $args[0];
         if ( $str ) {
             utf8::encode( $str ) if utf8::valid( $str );  # TODO consider using _to_utf8 - a decode may be needed before
             $str =~ s{!!perl/code }{}g;
             my $obj = YAML::XS::Load( $str );
             return $obj;
-        } 
-    } catch { 
+        }
+    } catch {
         my $err = shift;
         local $Baseliner::Utils::caller_level = 2;
         _log( "_load error: " . $err );
-        _fail( $err ) if $Baseliner::Utils::YAML_LOAD_FAIL; 
+        _fail( $err ) if $Baseliner::Utils::YAML_LOAD_FAIL;
         require YAML::Syck;
         YAML::Syck::Load( @args );
     };
@@ -218,11 +218,11 @@ sub _load {
 
 sub _dump {
     my @args = @_;
-    return try { 
+    return try {
         my $str = YAML::XS::Dump( @args );
         Encode::_utf8_on( $str );
         $str;
-    } catch { 
+    } catch {
         _error( "_dump error: " . shift() );
         require YAML::Syck;
         YAML::Syck::Dump( @args );
@@ -236,9 +236,9 @@ sub _loc {
 
 sub _loc_decoded { return _utf8( _loc(@_) ) }
 sub _loc_ansi { return _utf8_to_ansi( _loc(@_) ) }
-sub _loc_unaccented { 
+sub _loc_unaccented {
     require Text::Unaccent::PurePerl;
-    Text::Unaccent::PurePerl::unac_string( _loc_ansi(@_) ) 
+    Text::Unaccent::PurePerl::unac_string( _loc_ansi(@_) )
 }
 
 sub _utf8 {
@@ -246,22 +246,22 @@ sub _utf8 {
     is_utf8($msg) ? $msg : decode_utf8($msg);
 }
 
-sub _unac { 
+sub _unac {
     require Text::Unaccent::PurePerl;
-    my $s = "$_[0]"; $s = Text::Unaccent::PurePerl::unac_string( $s ); 
+    my $s = "$_[0]"; $s = Text::Unaccent::PurePerl::unac_string( $s );
     return $s;
 }
 
-sub _guess_utf8 { 
+sub _guess_utf8 {
     require Encode::Guess;
     Encode::Guess->import('utf8');
-    ref guess_encoding( $_[0] ) 
+    ref guess_encoding( $_[0] )
 }
 
 sub _utf8_to_ansi {
     return $_[0] unless _guess_utf8( $_[0] );
     my $ret = "$_[0]";
-    Encode::from_to( $ret, 'utf8', 'iso8859-1' );    
+    Encode::from_to( $ret, 'utf8', 'iso8859-1' );
     return $ret;
 }
 
@@ -290,7 +290,7 @@ sub _log_me {
     } else {
         $log_out = 1;
     }
-    
+
     if( $log_out ) {
         my $first = shift @msgs;
         if( my $rf = ref $first ) {
@@ -301,20 +301,20 @@ sub _log_me {
         my $msg = join '', '('.uc(substr($lev,0,1)).')', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
         #if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
             #$cat_log->$lev( $msg );
-        if( ( ( $^O ne 'Win32' && -t STDOUT ) || $ENV{BASELINER_LOGCOLOR} ) && !$Baseliner::no_log_color) { 
+        if( ( ( $^O ne 'Win32' && -t STDOUT ) || $ENV{BASELINER_LOGCOLOR} ) && !$Baseliner::no_log_color) {
             if( $lev eq 'error' ) {
-                print STDERR color('red') , $msg , color('reset'), "\n"; 
+                print STDERR color('red') , $msg , color('reset'), "\n";
             } elsif( $lev eq 'debug' ) {
-                print STDERR color('cyan') , $msg , color('reset'), "\n"; 
+                print STDERR color('cyan') , $msg , color('reset'), "\n";
             } elsif( $lev eq 'warn' ) {
-                print STDERR color('yellow') , $msg , color('reset'), "\n"; 
+                print STDERR color('yellow') , $msg , color('reset'), "\n";
             } elsif( $lev eq 'info' ) {
-                print STDERR color('green') , $msg , color('reset'), "\n"; 
+                print STDERR color('green') , $msg , color('reset'), "\n";
             } else {
-                print STDERR $msg , "\n"; 
+                print STDERR $msg , "\n";
             }
         } else {
-            print STDERR $msg , "\n"; 
+            print STDERR $msg , "\n";
         }
     }
 }
@@ -330,7 +330,7 @@ sub icon_path {
     my $home = '/static/images/icons/';
     return $path =~ /\// ? $path
         : ( $path =~ /\./ ? $home . $path
-                          : $home . $path . '.png' ); 
+                          : $home . $path . '.png' );
 }
 
 sub job_icon {
@@ -380,13 +380,13 @@ use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
 my $t0 = [gettimeofday];
 
 sub _logt0 {
-    $t0 = [gettimeofday]; 
+    $t0 = [gettimeofday];
 }
 
 sub _logts {
     return unless any { $_ } @_;
     my $inter = sprintf( "%.04f", tv_interval( $t0 ) );
-    $t0 = [gettimeofday]; 
+    $t0 = [gettimeofday];
     my ($cl,$fi,$li) = caller(0);
     my $logger = $Baseliner::_logger;
     if( ref $logger eq 'CODE' ) { # logger override
@@ -402,7 +402,7 @@ sub _decode_json {
     my $json = shift;
     require JSON::XS;
     $json = encode_utf8($json) if is_utf8($json);
-    return JSON::XS::decode_json($json); 
+    return JSON::XS::decode_json($json);
 }
 
 sub _decode_json_safe {
@@ -415,7 +415,7 @@ sub _encode_json {
     my $data = shift;
     require JSON::XS;
     #$data = encode_utf8($data) if is_utf8($data);
-    return decode_utf8( JSON::XS::encode_json($data) ); 
+    return decode_utf8( JSON::XS::encode_json($data) );
 }
 
 sub _throw {
@@ -445,21 +445,21 @@ sub _whereami {
 
 sub _say {
     print @_,"\n" if( $Baseliner::DEBUG );
-} 
+}
 
 sub _tz {
     my $tz = try { Baseliner->config->{time_zone} } catch {''};
     $tz || DateTime::TimeZone->new( name => 'local' )->name() || 'UTC';
 }
 
-sub _dt { 
+sub _dt {
     require DateTime;
     DateTime->now(time_zone=>_tz);  }
 
 # same as _now, but with hi res in debug mode
 sub _now_log {
     if( Clarive->debug ) {
-        my @t=split /\./, Time::HiRes::time(); 
+        my @t=split /\./, Time::HiRes::time();
         return sprintf "%s.%03d", Class::Date::date( $t[0]), substr $t[1], 0, 3;
     } else {
         return _now();
@@ -488,7 +488,7 @@ sub _cut {
     return join $separator, @s[ 0..$top ];
 }
 
-# date natural parsing 
+# date natural parsing
 use DateTime::Format::Natural;
 sub parse_date {
     my ( $format, $date ) = @_;
@@ -501,7 +501,7 @@ sub parse_dt {
     my ( $format, $date ) = @_;
     require DateTime::Format::Strptime;
     my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
-    my $dt = try { 
+    my $dt = try {
         $parser->parse_datetime( "$date" );
     } catch {
         _fail( _loc( "Could not parse date %1 with format %2", $date, $format ) );
@@ -533,7 +533,7 @@ sub query_grep {
     }
     return @ret;
 }
-    
+
 sub _probe_one_row {
     my $mode = shift;
     my $row = shift;
@@ -628,7 +628,7 @@ sub _array_all {
 sub _array_or_commas {
     my (@arr) = @_;
     my @ret = map { ref($_) ? ( map { ref $_ ? $_ : split(/,/,$_) } _array($_) ) : split( /,/, $_) } @arr;
-    return @ret==1 && ref $ret[0] eq 'ARRAY' ? _array($ret[0]) : @ret; 
+    return @ret==1 && ref $ret[0] eq 'ARRAY' ? _array($ret[0]) : @ret;
 }
 
 sub is_number {
@@ -655,16 +655,16 @@ sub _parse_template {
     my ( $template, %vars ) = @_;
     my $type = $vars{text_template_type} || 'FILE'; # could use STRING
     require Text::Template;
-    my $tt = Text::Template->new( 
+    my $tt = Text::Template->new(
                     TYPE => $type,
                     SOURCE => $template ) or _throw _loc("Could not open template file %1", $template);
-    my $body = $tt->fill_in( 
+    my $body = $tt->fill_in(
         HASH=> \%vars,
-        BROKEN => sub { 
-            my %p=@_; 
-            _throw _loc("Error loading template '%1': '%2'",$p{template},$p{text} ); 
+        BROKEN => sub {
+            my %p=@_;
+            _throw _loc("Error loading template '%1': '%2'",$p{template},$p{text} );
         },
-        DELIMITERS => [ '<%','%>' ] 
+        DELIMITERS => [ '<%','%>' ]
     );
     return $body;
 }
@@ -687,11 +687,11 @@ sub _parse_template_mason {
 
 sub my_hostname {
    require Sys::Hostname;
-   return Clarive->config->{hostname} || lc( Sys::Hostname::hostname() ); 
+   return Clarive->config->{hostname} || lc( Sys::Hostname::hostname() );
 }
 
 sub _notify_address {
-    my $host = Baseliner->config->{web_host} || my_hostname(); 
+    my $host = Baseliner->config->{web_host} || my_hostname();
     my $port = Baseliner->config->{web_port} || $ENV{BASELINER_PORT} || $ENV{CATALYST_PORT} || 3000;
     return "http://$host:$port";
 }
@@ -706,7 +706,7 @@ sub _get_options {
         }
         else {
             $opt = Encode::encode_utf8($opt) if Encode::is_utf8($opt);
-            push @{ $hash{$last_opt} }, $opt; 
+            push @{ $hash{$last_opt} }, $opt;
         }
     }
     # convert single option => scalar
@@ -769,7 +769,7 @@ sub _check_parameters {
 
 sub _bool {
     my ($v,$default)=@_;
-    $default //= 0; 
+    $default //= 0;
     return !defined $v ? $default
         : ref $v eq 'SCALAR' ? !!$$v
         : "$v" eq 'true' ? 1
@@ -828,7 +828,7 @@ sub _mktmp {
 
 =head2 _tmp_file( prefix=>'myprefix', extension=>'zip' )
 
-Returns a temp file name, creating the temp directory if needed. 
+Returns a temp file name, creating the temp directory if needed.
 
 =cut
 sub _tmp_file {
@@ -841,13 +841,13 @@ sub _tmp_file {
         _mkpath( $dir );
     }
     # file selection
-    my $file = $p->{filename} 
-        ? File::Spec->catfile($dir,$p->{filename}) 
+    my $file = $p->{filename}
+        ? File::Spec->catfile($dir,$p->{filename})
         : do {
             $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
             $p->{prefix} =~ s/\W/_/g;
             $p->{extension} ||='log';
-            File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} ); 
+            File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
         };
     ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
@@ -878,7 +878,7 @@ sub _damn {
         # recurse
         if( ref($blessed) eq 'HASH' ) {
             $damned = {};
-            for my $k ( keys %$blessed ) { 
+            for my $k ( keys %$blessed ) {
                 $damned->{$k} = _damn( $blessed->{$k} );
             }
         }
@@ -928,7 +928,7 @@ sub _fail {
     if( $Baseliner::logger ) {
         _debug( "FAIL: $cl;$li: @_" ); # if we are in a job, be a little more discrete
     } else {
-        _error( "FAIL: $cl;$li: @_" ) 
+        _error( "FAIL: $cl;$li: @_" )
     }
     _throw( @_ ) if $ENV{BASELINER_THROW} || ($ENV{BASELINER_DEBUG} && $ENV{BASELINER_DEBUG} > 1);
     die join(' ',@_) . "\n";
@@ -974,7 +974,7 @@ sub query_sql_build {
             my $val = $_;
             my $col = $_;
             if( $val eq 'ARRAY' ) {
-                $val = $val->[0]; 
+                $val = $val->[0];
                 $col = $val->[1];
             }
             $val => $col;
@@ -1008,8 +1008,8 @@ sub build_master_search {
     $query =~ s{\?}{_}g;
     # take care of keeping quoted terms together
     my $no_spaces = sub{ (my$r=$_[0])=~ s/\s+//g; $r };  # quote terms cannot have spaces, so that they don't get splited on term split
-    $query =~ s/"(.*?)"/$no_spaces->($1)/eg;   
-    my @terms = grep { defined($_) && length($_) } map { Util->_unac($_) } split /\s+/, lc $query; # split terms and all lowercase 
+    $query =~ s/"(.*?)"/$no_spaces->($1)/eg;
+    my @terms = grep { defined($_) && length($_) } map { Util->_unac($_) } split /\s+/, lc $query; # split terms and all lowercase
     my $clean_terms = sub { s/[^\w|:|,|-]//g for @_; @_  };  # terms can only have a few special chars
     my @terms_normal = $clean_terms->(  grep(!/^\+|^\-/,@terms) ); # ORed
     my @terms_plus = $clean_terms->( grep(/^\+/,@terms) ); # ANDed
@@ -1034,7 +1034,7 @@ sub _slurp {
 
 our @mason_features;
 sub _mason {
-    my ( $template, %p ) = @_; 
+    my ( $template, %p ) = @_;
     my $body;
     @mason_features or @mason_features = map {
         [ $_->id => _dir( $_->root )->stringify ]
@@ -1080,7 +1080,7 @@ sub _markdown {
 
 sub _uacc {
     my @l = @_;
-    sub { 
+    sub {
         my $a = shift;
         if ($a) {
             return push @l, $a unless $a ~~ @l;
@@ -1163,7 +1163,7 @@ sub _to_json {
 }
 
 sub _from_json {
-    goto &JSON::XS::decode_json;   
+    goto &JSON::XS::decode_json;
 }
 
 =head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
@@ -1171,7 +1171,7 @@ sub _from_json {
 Write a zip file.
 
     prefix     => zipfile name prefix
-    base       => basepath to be subtracted from each file 
+    base       => basepath to be subtracted from each file
     pathprefix => basepath to be appended to each file, in case they are
                 already relative
 
@@ -1183,7 +1183,7 @@ sub zip_files {
     my $zip = Archive::Zip->new();
     for my $file ( _array $p{files} ) {
         my $filepath;
-        $p{base} and $filepath = _file($file)->relative( $p{base} ); 
+        $p{base} and $filepath = _file($file)->relative( $p{base} );
         $p{pathprefix} and do {
             $filepath = $file;
             $file = File::Spec->catfile( $p{pathprefix}, $file );
@@ -1192,11 +1192,11 @@ sub zip_files {
         if (-d $file) {
             $zip->addTree ($file, $filepath) == $Archive::Zip::AZ_OK
             or _throw "Error adding directory $file: $!";
-            
-        } elsif (grep /compressed/, qx{file $file}) { #evitar fallo en caso de fichero comprimido   
+
+        } elsif (grep /compressed/, qx{file $file}) { #evitar fallo en caso de fichero comprimido
 
             $zip->addFile( $file, $filepath )->desiredCompressionLevel(0);
-        } else {   
+        } else {
             $zip->addFileOrDirectory( $file, $filepath );
         }
         $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
@@ -1206,17 +1206,17 @@ sub zip_files {
 }
 sub zip_tree {
 my (%p) =@_;
-    my $source = $p{source} // _throw _loc 'Missing parameter source'; 
+    my $source = $p{source} // _throw _loc 'Missing parameter source';
     my $zipfile = $p{to} // _throw _loc 'Missing parameter zipfile';
 my $base = $p{base} // $source;
     my $verbose = $p{verbose};
 
     # open and close to reset file and attempt write
-         open my $ff, '>', $zipfile 
+         open my $ff, '>', $zipfile
          or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
         close $ff;
 require Archive::Zip;
-    _fail _loc 'Could not find dir `%1` to zip', $source 
+    _fail _loc 'Could not find dir `%1` to zip', $source
         unless -e $source;
  # build local zip
 my $zip = Archive::Zip->new() or _throw $!;
@@ -1229,7 +1229,7 @@ my $zip = Archive::Zip->new() or _throw $!;
         if (grep /compressed/, qx{file $source}) {
             $zip->addFile ($source)->desiredCompressionLevel(0)
         } else {
-           $zip->addFileOrDirectory($source); 
+           $zip->addFileOrDirectory($source);
         }
     }
 $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
@@ -1258,10 +1258,10 @@ sub merge_pushing {
     my %merged;
     for my $k2 ( keys %$h2 ) {
         my $v2 = $h2->{$k2};
-        $merged{ $k2 } = $v2;  
+        $merged{ $k2 } = $v2;
     }
     for my $k1 ( keys %$h1 ) {
-        my $v1 = $h1->{$k1};    
+        my $v1 = $h1->{$k1};
         if( exists $merged{$k1} ) {
             my $v2 = delete $merged{$k1};
             if( !defined $v2 ) {
@@ -1274,11 +1274,11 @@ sub merge_pushing {
                 $merged{$k1} = $v2;
             }
             else {
-                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );  
+                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );
             }
         }
         else {
-            $merged{ $k1 } = $v1;  
+            $merged{ $k1 } = $v1;
         }
     }
     %merged;
@@ -1300,7 +1300,7 @@ sub hash_flatten {
             my $v = $stash->{$k};
             %flat = merge_pushing( \%flat, scalar hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
         }
-    } 
+    }
     elsif( $refstash eq 'ARRAY' ) {
         my $cnt=0;
         for my $v ( @$stash ) {
@@ -1321,7 +1321,7 @@ sub hash_flatten {
         for my $k ( keys %flat ) {
             my $v = $flat{$k};
             if( ref $v eq 'ARRAY' ) {
-                $flat{$k}=join ',', @$v; 
+                $flat{$k}=join ',', @$v;
             }
         }
     }
@@ -1368,7 +1368,7 @@ sub hash_shallow {
     elsif( $r eq 'ARRAY' ) {
         my @res;
         for( @$h ) {
-            push @res => hash_shallow( $_, $ret );        
+            push @res => hash_shallow( $_, $ret );
         }
         return [ grep { defined } @res ];
     }
@@ -1396,7 +1396,7 @@ Timeout:
 Only 5 seconds (default) are allowed for this operation
 to complete, otherwise it will die.
 
-Set C<$Baseliner::Utils::parse_vars_timeout> to change 
+Set C<$Baseliner::Utils::parse_vars_timeout> to change
 the timeout secs (or zero to disable);
 
 =cut
@@ -1527,7 +1527,7 @@ sub _utf8_on_all {
 }
 
 # decode sequences of octets in utf8 into Perl's internal form,
-# which is utf-8 with utf8 flag set if needed.  
+# which is utf-8 with utf8 flag set if needed.
 sub _to_utf8 {
     my $str = shift;
     return undef unless defined $str;
@@ -1627,7 +1627,7 @@ sub to_ci_class {
 sub is_ci_or_fail {
     my ($obj,$name)=@_;
     my $msg = _loc('Invalid or missing CI: %1', $name);
-    _fail($msg) unless _blessed($obj) && $obj->does('Baseliner::Role::CI'); 
+    _fail($msg) unless _blessed($obj) && $obj->does('Baseliner::Role::CI');
     return 1;
 }
 
@@ -1678,7 +1678,7 @@ sub _reload_dir {
             _fail( _loc('Error while reloading %1: %2', $f, $@ ) );
         }
     });
-    return @reloaded; 
+    return @reloaded;
 }
 
 sub _load_yaml_from_comment {
@@ -1701,7 +1701,7 @@ sub ago {
     # }
     $date = Class::Date->new( $date );
     my $d = $now - $date;
-    my $v = 
+    my $v =
         $d <= -$__day ? _loc('in %1 days', - int $d/$__day )
       : $d <= -$__day && $d > 2*-$__day ? _loc('in 1 day' )
       : $d < 0 ? _loc('today')
@@ -1748,7 +1748,7 @@ sub async_request {
             $r->header( 'Content-Type' => 'application/json' );
             $r->content( _to_json( $_[2] ) );
             $r;
-        } 
+        }
         elsif( $_[1] eq 'yaml' ) {
             my $r = HTTP::Request->new( POST=>$_[0] );
             $r->header( 'Content-Type' => 'application/yaml' );
@@ -1762,14 +1762,14 @@ sub async_request {
     };
     # make sure the offline request is with this same user
     my $cookie = Baseliner->app->req->headers->{cookie};
-    $request->header( 'cookie' => $cookie );  
+    $request->header( 'cookie' => $cookie );
     my $uri = $request->uri;
     my $cf = Baseliner->config;
     my $host = $cf->{web_queue} // $ENV{BALI_WEB_QUEUE};
-    $host //= $cf->{web_host} && $cf->{web_port} 
-        ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
+    $host //= $cf->{web_host} && $cf->{web_port}
+        ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} )
         : _throw(_loc("async_request: missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
-        
+
     my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
     my %headers = map { $_ => $request->header( $_ ) } $request->{_headers}->header_field_names;
     # create run token, put it in headers, put it in session
@@ -1810,7 +1810,7 @@ sub _get_dotted_keys {
     my @keys;
 
     for my $key ( keys %$var ) {
-        if ( $key && $key =~ /\./ ) {  
+        if ( $key && $key =~ /\./ ) {
             push @keys, { parent => $parent, key => $key};
         };
         my $ref = ref $var->{$key};
@@ -1826,30 +1826,30 @@ sub _get_dotted_keys {
 =head2 package_and_instance
 
 Little finder of packages not loaded. Lists and loads them temporarily from root
-and features. 
-    
+and features.
+
 Just a list of files and package names (deduced from filename):
 
-    package_and_instance( 'lib/Baseliner/Parser/Grammar' ) 
+    package_and_instance( 'lib/Baseliner/Parser/Grammar' )
 
-A instance + method call, with params, if any 
+A instance + method call, with params, if any
 
-    package_and_instance( 'lib/Baseliner/Parser/Grammar','grammar', [ param1=>val1 ... ], [  meth param1... ] ) 
+    package_and_instance( 'lib/Baseliner/Parser/Grammar','grammar', [ param1=>val1 ... ], [  meth param1... ] )
 
-If method name is "new", only the instance created with C<new> is returned. 
+If method name is "new", only the instance created with C<new> is returned.
 
 Returns HASHREF:
 
     $file => { package=>Package::Name, file=>$file, instance=>$self, ret=>$return_value_from_method }
 
-TODO 
+TODO
 
     - recursivity
 
 =cut
 sub package_and_instance {
     my ($path,$method, $new_params, $method_params) = @_;
-    local %INC = %INC; 
+    local %INC = %INC;
     my $root = Baseliner->path_to('/')->stringify;
     +{ map {
         my $f = $_;
@@ -1867,13 +1867,13 @@ sub package_and_instance {
     } <$root/$path/* $root/features/*/lib/$path/*> }
 }
 
-=head2 tar_dir 
+=head2 tar_dir
 
 Tar a directory
 
     source_dir => directory to tar
     tarfile    => full path to tar file
-    files      => [] 
+    files      => []
     include    => []
     exclude    => []
     attributes => [
@@ -1883,7 +1883,7 @@ Tar a directory
 =cut
 sub tar_dir {
     my (%p) =@_;
-    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
     my $tarfile = $p{tarfile} // _fail _loc 'Missing parameter tarfile';
     my $verbose = $p{verbose};
     my %files = map { $_ => 1 } _array $p{files};
@@ -1891,15 +1891,15 @@ sub tar_dir {
     my @exclude = _array $p{exclude};
     my %attributes = map { $_->{regex} => $_ } _array( $p{attributes} );
     # open and close to reset file and attempt write
-    open my $ff, '>', $tarfile 
+    open my $ff, '>', $tarfile
        or _fail _loc 'Could not create tar file `%1`: %2', $tarfile, $!;
     close $ff;
-    
-    require Archive::Tar; 
-    
-    _fail _loc 'Could not find dir `%1` to tar', $source_dir 
+
+    require Archive::Tar;
+
+    _fail _loc 'Could not find dir `%1` to tar', $source_dir
         unless -e $source_dir;
-    
+
     # build local tar
     my $tar = Archive::Tar->new or _throw $!;
     my $dir = Util->_dir( $source_dir );
@@ -1910,25 +1910,25 @@ sub tar_dir {
         return if %files && ( !exists $files{$rel} && !exists $files{"./$rel"} ); # check if file is in list
         my $stat = $f->stat;
         my $type = $f->is_dir ? 'd' : 'f';
-        my %attr = $type eq 'f' 
+        my %attr = $type eq 'f'
             ? ( mtime=>$stat->mtime, mode=>$stat->mode )
             : ( mtime => $stat->mtime, mode=>$stat->mode );
         # look for attributes
         while( my($re,$re_attr) = each %attributes ){
             if( "$f" =~ $re && $type =~ $type && ref $re_attr eq 'HASH' ) {
                 say "tar_dir: found attributes for file `$f`" if $verbose;
-                %attr = ( %attr, %$re_attr ); 
+                %attr = ( %attr, %$re_attr );
                 $attr{mode} = oct( $attr{mode} ) if length $re_attr->{mode};
             }
         }
-        
+
         for my $in ( @include ) {
             return if "$f" !~ $in;
         }
         for my $ex ( @exclude ) {
             return if "$f" =~ $ex;
         }
-        
+
         if( $f->is_dir ) {
             # directory with empty data
             say "tar_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
@@ -1940,8 +1940,8 @@ sub tar_dir {
         } else {
             # file
             say "tar_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
-            my $tf = Archive::Tar::File->new( 
-                data=>"$rel", scalar($f->slurp), 
+            my $tf = Archive::Tar::File->new(
+                data=>"$rel", scalar($f->slurp),
                 { type=>0, %attr }
             );
             $tar->add_files( $tf );
@@ -1952,20 +1952,20 @@ sub tar_dir {
     return 1;
 }
 
-=head2 zip_dir 
+=head2 zip_dir
 
 Zip a directory
 
     source_dir => directory to zip
     zipfile    => full path to zip file
-    files      => [] 
+    files      => []
     include    => []
     exclude    => []
 
 =cut
 sub zip_dir {
     my ($self, %p) =@_;
-    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
     my $zipfile = $p{zipfile} // _fail _loc 'Missing parameter tarfile';
     my $verbose = $p{verbose};
     my %files = map { $_ => 1 } _array $p{files};
@@ -1973,15 +1973,15 @@ sub zip_dir {
     my @exclude = _array $p{exclude};
 
     # open and close to reset file and attempt write
-    open my $ff, '>', $zipfile 
+    open my $ff, '>', $zipfile
        or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
     close $ff;
-    
-    
-    _fail _loc 'Could not find dir `%1` to zip', $source_dir 
+
+
+    _fail _loc 'Could not find dir `%1` to zip', $source_dir
         unless -e $source_dir;
-    
-    use Archive::Zip qw( :ERROR_CODES :CONSTANTS ); 
+
+    use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
     # build local tar
     my $zip = Archive::Zip->new or _throw $!;
     my $dir = Util->_dir( $source_dir );
@@ -1998,14 +1998,14 @@ sub zip_dir {
         for my $ex ( @exclude ) {
             return if "$f" =~ $ex;
         }
-        
+
         if( $f->is_dir ) {
             # directory with empty data
             my $dir_member = $zip->addDirectory( ''.$rel );
         } else {
             # file
             $zip->addFile( ''.$f, ''.$rel, COMPRESSION_LEVEL_BEST_COMPRESSION  );
-            
+
         }
     });
     say "zip_dir: writing zip file `$zipfile`" if $verbose;
@@ -2024,16 +2024,16 @@ of N elements from an array:
     Util->foreach_block( 10, sub {
         # will be called 4 times
         my $ix = shift;
-        _log \@_;   
+        _log \@_;
     }, @xx );
 
-Useful for limiting a call to a function to N 
+Useful for limiting a call to a function to N
 elements in an array (ie DBIC IN clauses).
 
 =cut
 sub foreach_block {
     my ($blk,$code,@arr) = @_;
-    
+
     require POSIX;
     my $top = POSIX::ceil(@arr/$blk-1);
     for( 0..$top ) {
@@ -2062,11 +2062,11 @@ sub in_range {
    #$range =~ s/-+/../g;
    #my @rg = map { $_ =~ s/-+./../g ? eval $_ : $_ } grep { length } split /,+/, $range;
    my @rg = grep { length } split /,+/, $range;
-   List::MoreUtils::any { 
+   List::MoreUtils::any {
            /^(.+)-+$/ ? $v >= $1 :
            /^-+(.+)$/ ? $v <= $1 :
-           /^(.+)-+(.+)$/ ? ($v >= $1 && $v <= $2) : 
-        $v == $_ 
+           /^(.+)-+(.+)$/ ? ($v >= $1 && $v <= $2) :
+        $v == $_
    } @rg;
 }
 
@@ -2133,7 +2133,7 @@ sub to_dur {
     my $s2=$s-($m*60);
     # localze the time letters (english: y d h m s, french: a j h m s, spanish: a d h m s, ...)
     my @letters = map { '%d'.substr(_loc($_),0,1) } qw(Year Month Day hour minute second);
-    my $tot = 
+    my $tot =
           $y ? sprintf(join(' ',@letters),$y,$M2,$d2,$h2,$m2,$s2)
         : $M ? sprintf(join(' ',@letters[-5..-1]),$M2,$d2,$h2,$m2,$s2)
         : $d ? sprintf(join(' ',@letters[-4..-1]),$d2,$h2,$m2,$s2)
@@ -2185,8 +2185,8 @@ sub stat_mode {
             $occurances = $count;
         }
     }
- 
-    return $mode; 
+
+    return $mode;
 }
 
 sub hide_passwords {
@@ -2208,36 +2208,36 @@ sub hide_passwords {
 
 sub _reg_line {
     my %p = @_;
-    
+
     my @x = _array($p{x});
     my @y = _array($p{y});
     my ($m, $d, $b, @xy, @x2, @xy_res, @x_res_sq, @y_res_sq) = (0); #vars,+ arrays
-    my $n = $#x + 1; 
+    my $n = $#x + 1;
     my $sum_x = Sum(@x);
     my $sum_y = Sum(@y);
     foreach my $i (0..$#x) #need one loop
-        {                 
-        $x2[$i]=$x[$i]*$x[$i]; #needed for summation of x[i]**2  
+        {
+        $x2[$i]=$x[$i]*$x[$i]; #needed for summation of x[i]**2
         $xy[$i]=$x[$i]*$y[$i]; #needed for summation of x[i]*y[i]
         $xy_res[$i] = abs($y[$i] - ($sum_x/$n))*abs($x[$i] - ($sum_x/$n)); #needed for summation of residuals of x[i]*y[i] in r2
         $y_res_sq[$i] = (abs($y[$i] - ($sum_y/$n)))**2; #needed for summa+tions in y-sigma and r2 calcs
         $x_res_sq[$i] = (abs($x[$i] - ($sum_y/$n)))**2; #needed for summa+tions in x-sigma and r2 calcs
-        }       
+        }
     my $y_sigma = $#y ? sqrt(Sum(@y_res_sq)/($#y)) : 0; #calculate the sigma of data in+ y-array
     my $x_sigma = $#x ? sqrt(Sum(@x_res_sq)/($#x)) : 0; #calculate the sigma of data in+ x-array
     $d = ($n*Sum(@x2)) - (Sum(@x)*Sum(@x)); #calculate the deviation
     $m = $d ? (($n*Sum(@xy))-(Sum(@x)*Sum(@y)))/$d : 0; #calculate the slope
     $b = $d ? ((Sum(@x2)*Sum(@y)) - (Sum(@xy)*Sum(@x)))/$d : 0; #calculate the inte+rcept
     _debug "Slope = $m,  Intercept = $b";
-    
+
     my @line = map { sprintf("%.2f",$b+$m*$x[$_]) } 0..scalar(@x)-1;
     return \@line;
-    
+
     sub Sum #quick function for doing summing called many many times above
-    {   
+    {
         my $sum = 0;
-        $sum += $_ for @_; 
-        return $sum;       
+        $sum += $_ for @_;
+        return $sum;
     }
 }
 

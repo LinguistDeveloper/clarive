@@ -43,14 +43,14 @@ register 'event.ws.soap_ready' => {
     vars => [],
 };
 
-sub begin : Private {  
+sub begin : Private {
      my ($self,$c,$meth,$id_rule) = @_;
-     if( length $id_rule ) { 
+     if( length $id_rule ) {
          my $rule = $self->rule_from_url( $id_rule );
          if( $rule->{authtype} eq 'none' ) {
-             $c->stash->{auth_skip} = 1 
+             $c->stash->{auth_skip} = 1
          } else {
-             $c->stash->{auth_logon_type} = $meth; 
+             $c->stash->{auth_logon_type} = $meth;
              $c->stash->{api_key_authentication} = 1;
          }
      }
@@ -160,7 +160,7 @@ sub import_rule {
         $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
     }
     # rule tree should be stored as JSON to avoid import/export discrepancies while migrating it to YAML
-    $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree}) if ref $rule->{rule_tree}; 
+    $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree}) if ref $rule->{rule_tree};
     $rule->{id} = mdb->seq('rule');
     $rule->{rule_seq} = 0+ mdb->seq('rule_seq');
     $rule->{rule_active} = '1';
@@ -174,7 +174,7 @@ sub import_yaml : Local {
     my $data = $p->{data};
     my $type = $p->{type};
     _fail _loc('Missing data') if !length $data;
-    
+
     try {
         my $rule = $self->import_rule( data=>$data );
         $c->stash->{json} = { success=>\1, name=>$rule->{rule_name} };
@@ -191,7 +191,7 @@ sub import_file : Local {
 
     my $filename = $p->{qqfile};
     my $type     = $p->{type} // 'yaml';
-    
+
     my $f = _file( $c->req->body );
     _log "Importing rule from file: " . $filename;
     try {
@@ -279,7 +279,7 @@ sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     $p->{destination} = 'grid';
-    my @rules = Baseliner->model('Rules')->get_rules_info($p); 
+    my @rules = Baseliner->model('Rules')->get_rules_info($p);
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -291,7 +291,7 @@ sub compile_wsdl {
         require XML::Compile::SOAP::Daemon::CGI;
         require XML::Compile::WSDL11;
         require XML::Compile::SOAP::Util;
-        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{ 
+        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{
                     #server_type => 'BEA',
                     WSURL=>'http://fakeurl:8080/rule/soap/fake_for_compile',
                 }) );
@@ -325,7 +325,7 @@ sub palette : Local {
 
     my @tree;
     my $cnt = 1;
-    
+
     my $if_icon = '/static/images/icons/if.gif';
     my %types = (
         if     => { icon=>'/static/images/icons/if.gif' },
@@ -338,9 +338,9 @@ sub palette : Local {
     #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #);
-    my @control = 
-        sort { ($a->{text}//'') cmp ($b->{text}//'') } 
-        grep { !$query || join(',',grep{defined}%$_) =~ $query } 
+    my @control =
+        sort { ($a->{text}//'') cmp ($b->{text}//'') }
+        grep { !$query || join(',',grep{defined}%$_) =~ $query }
         map {
             my $key = $_;
             my $s = $c->registry->get( $key );
@@ -353,14 +353,14 @@ sub palette : Local {
             $n->{on_drop} = !!$s->{on_drop};
             $n->{on_drop_js} = $s->{on_drop_js};
             $n->{nested} = $s->{nested} // 0;
-            $n->{icon} = $s->icon // ( !$s->{type} 
+            $n->{icon} = $s->icon // ( !$s->{type}
                 ? '/static/images/icons/help.png'
-                : do{ 
+                : do{
                     my $type = $types{ $s->{type} };
                     "/static/images/icons/$s->{type}.gif";
                 });
             $n;
-        } 
+        }
         Baseliner->registry->starts_with( 'statement.' );
         push @tree, {
             icon     => '/static/images/icons/controller.png',
@@ -381,7 +381,7 @@ sub palette : Local {
         icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => \1,
-        children=> [ 
+        children=> [
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', grep{defined}values %$_) =~ $query }
           map {
@@ -395,11 +395,11 @@ sub palette : Local {
                 palette => \1,
                 text=>$n->{name} // $service_key,
             }
-        } 
+        }
         grep {
             $_->{job_service}
         }
-        map { 
+        map {
             $c->registry->get( $_ );
         }
         @services ]
@@ -413,7 +413,7 @@ sub palette : Local {
         #icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => length $query ? \1 : \0,
-        children=> [ 
+        children=> [
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', grep{defined}values %$_) =~ $query }
           map {
@@ -427,11 +427,11 @@ sub palette : Local {
                 palette => \1,
                 text=>$n->{name} // $service_key,
             }
-        } 
+        }
         grep {
             ! $_->{job_service}
         }
-        map { 
+        map {
             $c->registry->get( $_ );
         }
         @services ]
@@ -446,7 +446,7 @@ sub palette : Local {
         icon => '/static/images/icons/dashboard.png',
         draggable => \0,
         expanded => \1,
-        children=> [ 
+        children=> [
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', grep{defined}values %$_) =~ $query }
           map {
@@ -460,15 +460,15 @@ sub palette : Local {
                 palette   => \1,
                 text      => $n->{name} // $n->{key},
             }
-        } 
-        map { 
+        }
+        map {
             $c->registry->get( $_ );
         }
         @dashlets ]
     };
 
 
-    my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
+    my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all;
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -476,7 +476,7 @@ sub palette : Local {
         icon => '/static/images/icons/rule.png',
         draggable => \0,
         expanded => \1,
-        children=> [ 
+        children=> [
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', values %$_) =~ $query }
           map {
@@ -502,7 +502,7 @@ sub palette : Local {
         draggable => \0,
         expanded => \1,
         children=> [
-            grep { !$query || join(',',grep{defined}%$_) =~ $query }  
+            grep { !$query || join(',',grep{defined}%$_) =~ $query }
             map {
                 my $n = $_;
                 my $service_key = $n->{key};
@@ -521,9 +521,9 @@ sub palette : Local {
                     cls => "ui-comp-palette-$name",
                     id => "ui-comp-palette-$name",
                 }
-            } 
+            }
             grep { $_->{show_in_palette} }
-            map { 
+            map {
                 $c->registry->get( $_ );
             } @fieldlets
         ]
@@ -576,17 +576,17 @@ sub local_stmts_save {
     my $doc = mdb->rule->find_one({ id=>''.$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
     my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
     # check json valid
-    my $stmts = try { 
+    my $stmts = try {
         _decode_json( $p->{stmts} );
     } catch {
-        _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
+        _fail _loc "Corrupt or incorrect json rule tree: %1", shift();
     };
-    
+
     my $ts = mdb->ts;
     #_debug $stmts;
     # check if DSL is buildable
     my $rule_runner = Baseliner::RuleRunner->new;
-    my $detected_errors = try { 
+    my $detected_errors = try {
         my $dsl = $rule_runner->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
         _debug "Caching rule $id_rule for further use";
         mdb->grid->remove({id_rule=> "$id_rule"});
@@ -595,7 +595,7 @@ sub local_stmts_save {
     } catch {
         my $err = shift;
         _warn( $err );
-        $error_checking_dsl = 1; 
+        $error_checking_dsl = 1;
         return $err if $ignore_dsl_errors;
         _fail _loc "Error testing DSL build: %1", $err;
     };
@@ -750,11 +750,11 @@ sub edit_key : Local {
     my $p = $c->req->params;
     try {
         my $key = $p->{key} or _fail 'Missing key parameter';
-        my $r = $c->registry->get( $key ); 
+        my $r = $c->registry->get( $key );
         _fail _loc "Key %1 not found in registry", $key unless $r;
         my $form = $r->form;
         my $config = $r->config;
-        my $params = $c->registry->get_params($key); 
+        my $params = $c->registry->get_params($key);
         delete $params->{$_} for qw(data_gen dsl handler);  ## these are code ref
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
@@ -803,7 +803,7 @@ sub dsl : Local {
             $data = {
                 job_step   => 'CHECK',
                 elements   => [],
-                changesets => [], 
+                changesets => [],
             };
         } elsif( $rule_type eq 'event' ) {
             my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
@@ -811,10 +811,10 @@ sub dsl : Local {
             my $event_data = { map { $_ => '' } _array( $event->vars ) };
             $data = $event_data;
         } else {
-            # loose rule 
+            # loose rule
             $data = {};
         }
-        my $dsl = Baseliner::Model::Rules->new->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
+        my $dsl = Baseliner::Model::Rules->new->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} );
         $c->stash->{json} = { success=>\1, dsl=>$dsl, data_yaml => _dump( $data ) };
     } catch {
         my $err = shift; _error $err;
@@ -918,8 +918,8 @@ sub default : Path {
             my $rule_runner = Baseliner::RuleRunner->new;
             my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
-            $ret = defined $stash->{ws_response} 
-                ? $stash->{ws_response} 
+            $ret = defined $stash->{ws_response}
+                ? $stash->{ws_response}
                 : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
         } catch {
             my $err = shift;
@@ -927,7 +927,7 @@ sub default : Path {
             my $msg = "Error in Rule WS call '$id_rule/$meth': $json\n$err";
             _error $msg;
             event_new 'event.ws.rule_error', { msg=>$msg };
-            # $ret = { msg=>"$err", success=>\0 }; 
+            # $ret = { msg=>"$err", success=>\0 };
             $ret = +{
                 Fault => { faultcode => '999', faultstring => "$err", faultactor => "$wsurl", },
                 _RETURN_CODE => 404,
@@ -940,7 +940,7 @@ sub default : Path {
         my $doc = $self->rule_from_url( $id_rule );
         my $wsdl_body = Util->parse_vars( $doc->{wsdl}, $stash );
         $stash->{ws_operation} = $args[0];
-        
+
         if( !length $body ) {
             # wsdl only
             $c->res->body( $wsdl_body );
@@ -954,12 +954,12 @@ sub default : Path {
                     default_callback => sub {
                         my ($soap, $request_data, $cgi_request) = @_;
                         if( ref $request_data eq 'HASH' ) {
-                            # if we have SOAP:Header, may break parse_vars with toString errors, 
+                            # if we have SOAP:Header, may break parse_vars with toString errors,
                             #   so strip out '{xxxx}' keys used by the LibXML soap header translation
                             #   SOAP:Header could be included in the wsdl, but that's not its place:
                             #   http://stackoverflow.com/questions/5726127/adding-soap-implicit-headers-to-wsdl
                             #   the recommendation: strip header data out, so we do it:
-                            my %rr = map { $_ => $$request_data{$_} } 
+                            my %rr = map { $_ => $$request_data{$_} }
                                 grep !/^\{/, keys %$request_data;
                             $stash->{ws_request} = \%rr;
                         } else {
@@ -978,19 +978,19 @@ sub default : Path {
                     my @warns;
                     # store warnings for later
                     local $SIG{__WARN__} = sub { push @warns, @_; };
-                    
+
                     # run the WSDL in CGI mode
                     $self->cgi_to_response($c, sub {
                         my $query = CGI->new;
                         $daemon->runCgiRequest(query => $query);
-                    }); 
-                
+                    });
+
                     # call event
                     my $body = $c->res->body;
                     my $ev_data = { soap_body=>"$body" };
                     my $event_stash = event_new 'event.ws.soap_ready' => $ev_data;
                     $c->res->body( $event_stash->{soap_body} );
-                    
+
                     # print WS warnings now
                     _warn _loc('SOAP WS warnings detected: %1', join("\n",@warns)) if @warns;
                 }
@@ -1009,9 +1009,9 @@ sub default : Path {
                 }
                 $c->res->status(500);
             };
-            
+
         }
-         
+
     } else {
         $run_rule->();
         if( $meth eq 'json' ) {
@@ -1033,7 +1033,7 @@ sub tree_structure : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
     $p->{destination} = 'tree';
-    my @rules = Baseliner->model('Rules')->get_rules_info($p); 
+    my @rules = Baseliner->model('Rules')->get_rules_info($p);
     $c->stash->{json} = \@rules;
     $c->forward( 'View::JSON' );
 }
@@ -1104,7 +1104,7 @@ sub delete_rule_from_folder : Local {
         my $err = shift;
         { success=>\0, msg=>_loc('Error deleting rule from folder: %1', $err) };
     };
-    $c->forward( 'View::JSON' );   
+    $c->forward( 'View::JSON' );
 }
 
 no Moose;

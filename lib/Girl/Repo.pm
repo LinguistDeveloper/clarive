@@ -32,7 +32,7 @@ sub BUILD {
 
 sub heads {
     my ($self, %args) = @_;
-    Girl::Head->find_all( $self ); 
+    Girl::Head->find_all( $self );
 }
 
 sub refs {

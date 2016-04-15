@@ -8,7 +8,7 @@ Baseliner::Sugar - sweet stuff
 
 Some convenient sugar to over called methods.
 
-=cut 
+=cut
 
 use strict;
 use Try::Tiny;
@@ -77,11 +77,11 @@ Or:
     master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
 
 =cut
-sub master_new {   
+sub master_new {
     my ($collection, $name, $code ) =@_;
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
     my $class = 'BaselinerX::CI::'.$collection;
-    my $mid = $master_data->{mid};  # user supplied mid? ok. 
+    my $mid = $master_data->{mid};  # user supplied mid? ok.
     if( ref $code eq 'HASH' ) {
         my $ci = $class->new( %$master_data, %$code );
         return $ci->save;
@@ -93,13 +93,13 @@ sub master_new {
             my $ci = $class->new( %$master_data );
             $ci->save;
             $mid = $ci->mid;
-            ################################# 
+            #################################
             $ret = $code->( $mid );
-            ################################# 
+            #################################
             # txn commit
             return $ret;
         } catch {
-            my $e = shift; 
+            my $e = shift;
             ci->delete( $mid ) if length $mid;
             # txn rollback
             _throw $e;
@@ -113,7 +113,7 @@ sub event_new { Baseliner::Model::Events->new_event(@_, caller) }
 
 =head2 event_hook
 
-Adds hooks to events. 
+Adds hooks to events.
 
     event_hook 'event.topic.create' => 'before' => sub {
          ...
@@ -134,11 +134,11 @@ sub event_hook {
         if( my $hooks = $regs->get_node( $regkey ) ) {
             push @{ $hooks->param->{$when} }, $code;
         } else {
-            my $param = { 
-                before => [], 
+            my $param = {
+                before => [],
                 after  => [],
             };
-            push @{ $param->{ $when } }, $code; 
+            push @{ $param->{ $when } }, $code;
             Baseliner::Core::Registry->add( $pkg || __PACKAGE__, $regkey, $param );
         }
     }

@@ -11,7 +11,7 @@ use Baseliner::Core::Registry;
 
 use Mouse::Exporter;
 
-Mouse::Exporter->setup_import_methods( 
+Mouse::Exporter->setup_import_methods(
     as_is => [ 'register','register_class' ],
     also => [ 'Mouse' ]
 );

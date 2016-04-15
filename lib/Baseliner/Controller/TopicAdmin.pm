@@ -10,7 +10,7 @@ use experimental 'autoderef', 'smartmatch', 'switch';
 BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
-  
+
 register 'menu.admin.topic' => {
     label    => 'Topics',
     title    => _loc ('Admin Topics'),
@@ -27,7 +27,7 @@ sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     $c->stash->{query_id} = $p->{query};
-    $c->stash->{can_admin_labels} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.labels.admin' );    
+    $c->stash->{can_admin_labels} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.labels.admin' );
     $c->stash->{template} = '/comp/topic/topic_admin.js';
 }
 
@@ -42,26 +42,26 @@ sub update_category : Local {
     cache->remove_like( qr/^ci:/ );
     cache->remove({ d=>"topic:meta" });
     cache->remove({ d=>"topic:data" });
-    
+
     $c->registry->reload_all;
     my $assign_type = sub {
         my ($category) = @_;
         given ($type) {
             when ('R'){
                 $category->{is_release} = '1';
-                $category->{is_changeset} = '0';                
+                $category->{is_changeset} = '0';
                 return { is_release=>'1', is_changeset=>'0' };
             }
             when ('C'){
                 $category->{is_release} = '0';
-                $category->{is_changeset} = '1';                
+                $category->{is_changeset} = '1';
                 return { is_release=>'0', is_changeset=>'1' };
             }
             when ('N'){
                 $category->{is_release} = '0';
-                $category->{is_changeset} = '0';                
+                $category->{is_changeset} = '0';
                 return { is_release=>'0', is_changeset=>'' };
-            }            
+            }
         }
     };
 
@@ -70,12 +70,12 @@ sub update_category : Local {
             try{
                 my $row = mdb->category->find_one({name => $p->{name}});
                 if(!$row){
-                    my $category = {   
+                    my $category = {
                         id => mdb->seq('category'),
                         name => $p->{name},
                         color => $p->{category_color},
                         acronym => $p->{acronym},
-                        statuses => $idsstatus // [], 
+                        statuses => $idsstatus // [],
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
                         default_form => $p->{default_form} // $p->{default_field}, ## FIXME default_field is legacy
@@ -83,7 +83,7 @@ sub update_category : Local {
                     };
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
-                    
+
                     $c->registry->reload_all;
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=>$category->{id} };
                 }
@@ -116,7 +116,7 @@ sub update_category : Local {
                 # change all topics
                 if( $old->{name} ne $p->{name} || $old->{color} ne $p->{category_color} ) {
                     mdb->topic->update({ 'category.id'=>"$id_category" },
-                        { '$set'=>{ 
+                        { '$set'=>{
                                 'category.name'=>$p->{name}, name_category => $p->{name}, category_name=> $p->{name},
                                 'category.description' => $p->{description},
                                 'category.color' => $p->{category_color}, category_color => $p->{category_color},
@@ -151,7 +151,7 @@ sub update_category : Local {
         }
     }
     cache->remove('category:acronyms');
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 
@@ -177,7 +177,7 @@ sub list_status : Local {
     $row->sort({ $sort=>$dir });
     $row->skip($p->{start} // 0);
     $row->limit($p->{limit}) if $p->{limit};
-    
+
     while( my $r = $row->next ) {
         push @rows,
           {
@@ -192,7 +192,7 @@ sub list_status : Local {
             ci_update   => $r->{ci_update} eq '1'?\1:\0,
             bind_releases => $r->{bind_releases} eq '1'?\1:\0,
           };
-    }      
+    }
     $c->stash->{json} = { data=>\@rows, totalCount=>$count};
     $c->forward('View::JSON');
 }
@@ -243,7 +243,7 @@ sub update_status : Local {
                     readonly      => $p->{readonly} eq 'on'      ? '1' : '0',
                     frozen        => $p->{frozen} eq 'on'        ? '1' : '0',
                 );
-                
+
                 $c->stash->{json} = { msg=>_loc('Status modified'), success=>\1, status_id=> $id_status };
             }
             catch{
@@ -257,9 +257,9 @@ sub update_status : Local {
                 foreach my $id_status (_array $ids_status){
                     push @ids_status, $id_status;
                 }
-                  
+
                 $$_->delete for ci->status->search_cis( id_status=>mdb->in(@ids_status) );
-                
+
                 $c->stash->{json} = { success => \1, msg=>_loc('Statuses deleted') };
             }
             catch{
@@ -267,20 +267,20 @@ sub update_status : Local {
             }
         }
     }
-    
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 sub update_label : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    
+
     my $action = $p->{action};
     my $label = $p->{label};
     my $color = $p->{color};
     my @projects = split ",", $p->{projects};
     my $username = $c->username;
-    
+
     cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     given ($action) {
@@ -310,14 +310,14 @@ sub update_label : Local {
                 foreach my $id_label (_array $ids_label){
                     push @ids_label, $id_label;
                 }
-                  
+
                 mdb->label->remove({ id=>mdb->in(@ids_label) },{ multiple=>1 });
-                
+
                 if( @ids_label ) {
                     # errors like "cannot $pull/pullAll..." is due to labels=>N
                     mdb->topic->update({}, { '$pull'=>{ labels=>mdb->in(@ids_label) } },{ multiple=>1 }); # mongo rocks!
                 }
-                
+
                 $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };
             } catch{
                 my $err = shift;
@@ -326,8 +326,8 @@ sub update_label : Local {
             }
         }
     }
-    
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 sub update_category_admin : Local {
@@ -341,7 +341,7 @@ sub update_category_admin : Local {
 
     cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
-    
+
     foreach my $role (_array $idsroles){
         mdb->category->update({ id=>"$id_category" },
             { '$pull'=>{ workflow=>{ id_role=>"$role", id_status_from=>"$status_from", id_status_to=>mdb->in($idsstatus_to), job_type =>"$job_type" } } },
@@ -349,7 +349,7 @@ sub update_category_admin : Local {
         );
         if($idsstatus_to){
             mdb->category->update({ id=>"$id_category" },
-                { '$addToSet'=>{ workflow=>{ 
+                { '$addToSet'=>{ workflow=>{
                     id_role         => $role,
                     id_status_from  => $status_from,
                     job_type        => $job_type,
@@ -358,7 +358,7 @@ sub update_category_admin : Local {
         }
     }
     $c->stash->{json} = { success => \1, msg=>_loc('Categories admin') };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub list_workflow : Local {
@@ -374,30 +374,30 @@ sub list_workflow : Local {
     my %stat_to;
     my $doc_category = mdb->category->find_one({ id=> "$p->{categoryId}" });
     _fail(_loc("Category %1 not found", $p->{categoryId})) if !$doc_category;
-    
+
     my @cat_wkf = _array( $doc_category->{workflow} );
     push @{ $stat_to{$$_{id_role}}{$$_{id_status_from}} }, $_ for @cat_wkf;
     my %wkf_unique;
     $wkf_unique{ join(',',@{ $_ }{qw(id_role id_status_from)}) } = $_ for @cat_wkf;
-    my @wkf = 
-        sort { 
+    my @wkf =
+        sort {
             # complex sort needed... look into aggregation framework for better sorting on group
             sprintf('%09d%09d%09d', $$a{id_role}, $$a{id_status_from}, $statuses{ $$a{id_status_from} }{seq} )
-            <=> 
+            <=>
             sprintf('%09d%09d%09d', $$b{id_role}, $$b{id_status_from}, $statuses{ $$b{id_status_from} }{seq} )
         } values %wkf_unique;
 
     for my $rec ( @wkf ) {
-        my @sts = sort { $statuses{$$a{id_status_from}}<=>$statuses{$$b{id_status_from}} } 
+        my @sts = sort { $statuses{$$a{id_status_from}}<=>$statuses{$$b{id_status_from}} }
             _array( $stat_to{ $$rec{id_role} }{ $$rec{id_status_from} } );
-            
+
         # Grid for workflow configuration: right side field
         my @statuses_to;
         my @statuses_to_type;
         for my $status_to ( @sts ) {
             my $name = $statuses{ $status_to->{id_status_to} }{name};
             my $type = $statuses{ $status_to->{id_status_to} }{type};
-            # show 
+            # show
             my $job_type = $status_to->{job_type};
             if( $job_type && $job_type ne 'none' ) {
                 $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
@@ -409,7 +409,7 @@ sub list_workflow : Local {
 
         my $role = $roles{ $$rec{id_role} } // next;
         my $status = $statuses{ $$rec{id_status_from} } // next;
-         
+
         push @rows, {
              role           => $$role{role},
              role_job_type  => $$rec{job_type},
@@ -419,7 +419,7 @@ sub list_workflow : Local {
              status_color   => $$status{color},
              id_category    => $p->{categoryId},
              id_role        => $$rec{id_role},
-             id_status_from => $$rec{id_status_from},                         
+             id_status_from => $$rec{id_status_from},
              statuses_to    => \@statuses_to,
              statuses_to_type => \@statuses_to_type
 
@@ -438,10 +438,10 @@ sub list_tree_fields : Local {
     my @tree_fields;
     my @system;
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
-    
+
     my @temp_fields = _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} ) if length $id_category;
     my %conf_fields;
-    
+
     for(@temp_fields){
         my $params = $_->{params};
         $conf_fields{$_->{id_field}} = 1 if !exists($params->{hidden});
@@ -461,22 +461,22 @@ sub list_tree_fields : Local {
                             leaf        => \1
                         }
     }
-    
+
     push @tree_fields, {
         id          => 'S',
         text        => _loc('System fields'),
-        expanded    => scalar @system gt 0 ? \1 : \0, 
+        expanded    => scalar @system gt 0 ? \1 : \0,
         children    => \@system
-    };       
-    
+    };
+
     my @custom;
     my @id_fields = map { $_->{id_field} } _array $system_fields;
-    
-    my @custom_fields = 
-        grep {!exists $conf_fields{$$_{id_field}} } 
-        grep { $$_{id_field} ~~ @id_fields } 
+
+    my @custom_fields =
+        grep {!exists $conf_fields{$$_{id_field}} }
+        grep { $$_{id_field} ~~ @id_fields }
         map { _array($$_{fieldlets}) } mdb->category->find->all;
-        
+
     my %unique_fields;
     for(@custom_fields){
         if (exists $unique_fields{$_->{id_field}}){
@@ -493,40 +493,40 @@ sub list_tree_fields : Local {
                   params    => $params,
                   icon    => '/static/images/icons/icon_wand.gif',
                   leaf      => \1
-                };        
-            $unique_fields{$_->{id_field}} = '1';    
+                };
+            $unique_fields{$_->{id_field}} = '1';
         }
     }
-    
+
     push @tree_fields, {
         id          => 'C',
         text        => _loc('Custom fields'),
         expanded    => \0,
         children    => \@custom
     };
-    
+
 
     my @template_dirs; # = map { $_->root . '/forms/*.js' } Baseliner->features->list;
     push @template_dirs, map { $_->root . '/fields/templates/js/*.js' } Baseliner->features->list;
     push @template_dirs, map { $_->root . '/fields/system/js/*.js' } Baseliner->features->list;
-    
+
     push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
     push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
     #push @template_dirs, $c->path_to( 'root/forms' ) . "/*.js";
     #@template_dirs = grep { -d } @template_dirs;
-    
+
     my @tmp_templates = map {
         my $glob = $_;
         my @ret;
-        for my $rel_file ( grep { -f } glob "$glob" ) { 
+        for my $rel_file ( grep { -f } glob "$glob" ) {
             my $f = _file( $rel_file );
             my $d = $f->slurp;
             my $yaml = Util->_load_yaml_from_comment( $d );
-            my $id_form = $f->basename; 
-            
+            my $id_form = $f->basename;
+
             my $metadata;
             my $metadata_base = {
-                name => $id_form, 
+                name => $id_form,
                 params => {
                     origin => 'template',
                     js => $rel_file,
@@ -536,10 +536,10 @@ sub list_tree_fields : Local {
             };
             if(length $yaml ) {
                 _debug( "OK metadata for $f" );
-                $metadata = try { _load( $yaml ) } catch { 
+                $metadata = try { _load( $yaml ) } catch {
                     _error( "KO load yaml metadata for $f" );
                     $metadata_base;
-                };    
+                };
                 if( ref $metadata ne 'HASH' ) {
                     _error( "KO load yaml metadata not HASH for $f" );
                     $metadata = $metadata_base;
@@ -549,9 +549,9 @@ sub list_tree_fields : Local {
                 $metadata = $metadata_base;
             }
             my @rows = map {
-                +{  field=>$_, value => $metadata->{$_} } 
+                +{  field=>$_, value => $metadata->{$_} }
             } keys %{ $metadata || {} };
-            
+
             push @ret, {
                 file => "$f",
                 yaml => $yaml,
@@ -561,20 +561,20 @@ sub list_tree_fields : Local {
         }
        @ret;
     } @template_dirs;
-    
+
     my @templates;
 
-    # avoid warnings 
+    # avoid warnings
     @tmp_templates = map { $$_{metadata}{params}{type} //='generic'; $_ } @tmp_templates;
-    
-    # common sorter by field order 
+
+    # common sorter by field order
     my $field_order_sorter = sub {
         ($a->{metadata}{params}{field_order} // 0) <=> ($b->{metadata}{params}{field_order} // 0)
     };
-    for my $template ( sort $field_order_sorter 
-            grep { defined $$_{metadata}{params}{origin} 
-            && $_->{metadata}{params}{origin} eq 'template' 
-            && $_->{metadata}{params}{type} ne 'form'} @tmp_templates 
+    for my $template ( sort $field_order_sorter
+            grep { defined $$_{metadata}{params}{origin}
+            && $_->{metadata}{params}{origin} eq 'template'
+            && $_->{metadata}{params}{type} ne 'form'} @tmp_templates
     ) {
         if( $template->{metadata}{name} ){
             $template->{metadata}{params}{name_field} = $template->{metadata}{name};
@@ -585,7 +585,7 @@ sub list_tree_fields : Local {
                     text        => _loc ($template->{metadata}{name}),
                     params        => $template->{metadata}{params},
                     leaf        => \1,
-                };        
+                };
         }
     }
 
@@ -596,7 +596,7 @@ sub list_tree_fields : Local {
         push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
         push @data_system_listbox, $system_listbox->{metadata}->{params};
     }
-    
+
     push @templates,    {
                             id          => $i++,
                             id_field    => 'listbox',
@@ -604,10 +604,10 @@ sub list_tree_fields : Local {
                             params        => {origin=> 'template'},
                             meta        => \@meta_system_listbox,
                             data        => \@data_system_listbox,
-                            leaf        => \1                             
+                            leaf        => \1
                         };
-    
-    
+
+
     $j = 0;
     my @meta_forms;
     my @data_forms;
@@ -615,7 +615,7 @@ sub list_tree_fields : Local {
         push @meta_forms, [$j++, _loc $forms->{metadata}->{name}];
         push @data_forms, $forms->{metadata}->{params};
     }
-    
+
     push @templates,    {
                             id          => $i++,
                             id_field    => 'form',
@@ -623,16 +623,16 @@ sub list_tree_fields : Local {
                             params        => {origin=> 'template'},
                             meta        => \@meta_forms,
                             data        => \@data_forms,
-                            leaf        => \1                             
+                            leaf        => \1
                         };
-    
+
     push @tree_fields, {
         id          => 'T',
         text        => _loc('Templates'),
-        expanded    => \1, 
+        expanded    => \1,
         children    => [ sort { lc $$a{text} cmp lc $$b{text} } @templates ],
-    };      
-    
+    };
+
     $c->stash->{json} = \@tree_fields;
     $c->forward('View::JSON');
 }
@@ -647,39 +647,39 @@ sub update_fields : Local {
     cache->remove_like( qr/^roles:/ );
     cache->remove({ d=>"topic:meta" });
     $c->registry->reload_all;
-    
+
     my $order = 1;
     my $param_field;
     my %visible_system_fields;
-    
-    my @fields; 
-    
+
+    my @fields;
+
     foreach my $field (@ids_field){
         my $params = _decode_json(shift(@values_field));
-        
+
         $visible_system_fields{$field} = 1 if $params->{origin} eq 'system';
-        
+
         $params->{field_order} = $order++;
         $params->{id_field} = $field;
         $params = $self->params_normalize( $params );
-    
+
         push @fields, { id_field=>$field, params=>$params };
     }
-    
+
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
-    
+
     for my $f ( grep { !exists $visible_system_fields{$_->{id_field}} } _array $system_fields){
         my $params = $$f{params};
         $params->{hidden}   = 1 if $params->{origin} eq 'system';
         $params->{id_field} = $$f{id_field};
         $params = $self->params_normalize( $params );
         push @fields, { id_field => $$f{id_field}, params => $params };
-    }    
+    }
 
     mdb->category->update({ id=>"$id_category" },{ '$set'=>{ fieldlets=>\@fields } });
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub params_normalize {
@@ -694,13 +694,13 @@ sub get_conf_fields : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $id_category = $p->{id_category};
-    
-    my @conf_fields = 
+
+    my @conf_fields =
         grep { !exists $_->{params}{hidden} && $_->{params}{origin} ne 'default' }
         map { +{ id_field => $_->{id_field}, params => $_->{params} } }
         _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} )
         if length $id_category;
-        
+
     my @system;
     for ( sort { $a->{params}{field_order} <=> $b->{params}{field_order} } @conf_fields ){
         push @system,   {
@@ -728,7 +728,7 @@ sub get_conf_fields : Local {
     }
 
     $c->stash->{json} = { data=>\@system };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub workflow : Local {
@@ -740,7 +740,7 @@ sub workflow : Local {
     if( $action eq 'delete' ) {
         try {
             my $up = mdb->category->update({ id=>''.$p->{id} },
-                 { '$pull'=>{ workflow=>{ 
+                 { '$pull'=>{ workflow=>{
                         id_role        => mdb->in($p->{idsroles}),
                         id_status_from => mdb->in($p->{status_from}),
                         id_status_to   => mdb->in($p->{idsstatus}),
@@ -751,23 +751,23 @@ sub workflow : Local {
         };
     }
     $c->stash->{json} = { success => \1, msg=>_loc('Relationship deleted: %1', $cnt) };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub create_clone : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    
+
     cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try {
-        my ($row) = 
-            grep { $$_{id_field} eq $$p{name_field} } 
-            map { _array($$_{fieldlets}) } 
+        my ($row) =
+            grep { $$_{id_field} eq $$p{name_field} }
+            map { _array($$_{fieldlets}) }
             mdb->category->find->fields({ fieldlets=>1 })->all;
         if(!$row){
             my $params = _decode_json($p->{params});
-            
+
             $params->{origin} = 'custom';
             $params->{id_field} = $p->{name_field};
             $params->{name_field} = $p->{name_field};
@@ -775,15 +775,15 @@ sub create_clone : Local {
             $params->{rel_field} = $p->{name_field} if exists $params->{rel_field};
             if (exists $params->{filter}) {
                 $params->{filter} = $p->{filter};
-                $params->{html} = '';  
+                $params->{html} = '';
             }else{
-                $params->{html} = '/fields/field_generic.html';                
+                $params->{html} = '/fields/field_generic.html';
             }
-            
+
             mdb->category->update({ id =>''.$p->{id_category} },
                 { '$push'=>{ fieldlets=>{ id_field=>$p->{name_field}, params=>$params } } }
             );
-    
+
             $c->stash->{json} = { msg=>_loc('Field cloned'), success=>\1 };
         }
         else{
@@ -794,7 +794,7 @@ sub create_clone : Local {
         $c->stash->{json} = { msg=>_loc('Error cloning field: %1', shift()), failure=>\1 };
     };
 
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub duplicate : Local {
@@ -809,19 +809,19 @@ sub duplicate : Local {
             my %data = %$cat;
             delete $data{id};
             delete $data{description};
-            
+
             ## category
             my $id_cat = mdb->seq('category');
             my $doc = { %data, id=>$id_cat, name=>$data{name}.'-'.$id_cat };
             mdb->category->insert($doc);
         }
-        $c->stash->{json} = { success => \1, msg => _loc("Category duplicated") };  
+        $c->stash->{json} = { success => \1, msg => _loc("Category duplicated") };
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
     };
 
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub delete_row : Local {
@@ -829,8 +829,8 @@ sub delete_row : Local {
     my $p = $c->req->params;
     my $id_category = $p->{id_category};
     my $id_role = $p->{id_role};
-    my $id_status_from = $p->{id_status_from};    
-    
+    my $id_status_from = $p->{id_status_from};
+
     cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try{
@@ -841,8 +841,8 @@ sub delete_row : Local {
     catch{
         $c->stash->{json} = { msg=>_loc('Error deleting row: %1', shift()), failure=>\1 }
     };
-    
-    $c->forward('View::JSON');    
+
+    $c->forward('View::JSON');
 }
 
 sub export : Local {
@@ -851,14 +851,14 @@ sub export : Local {
     try{
         $p->{id_category} or _fail( _loc('Missing parameter id') );
         my $export;
-        my @cats; 
+        my @cats;
         my %statuses = ci->status->statuses;
         for my $id (  _array( $p->{id_category} ) ) {
             # TODO prefetch states and workflow
             my $cat = mdb->category->find_one({ id=> "$id" });
             my $statuses = delete $cat->{statuses};
             for my $st ( _array($statuses) ) {
-                push @{ $cat->{statuses} }, $statuses{ $st }; 
+                push @{ $cat->{statuses} }, $statuses{ $st };
             }
             _fail _loc('Category not found for id %1', $id) unless $cat;
             push @cats, $cat;
@@ -866,17 +866,17 @@ sub export : Local {
         if( @cats > 1 ) {
             my $yaml = _dump( \@cats );
             utf8::decode( $yaml );
-            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+            $c->stash->{json} = { success => \1, yaml=>$yaml };
         } else {
             my $yaml = _dump( $cats[0] );
             utf8::decode( $yaml );
-            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+            $c->stash->{json} = { success => \1, yaml=>$yaml };
         }
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub import_category : Local {
@@ -897,7 +897,7 @@ sub import_category : Local {
                 my $id = delete $data->{id};
                 delete $data->{_id};
                 my $statuses = delete $data->{statuses};
-                
+
                 # category
                 push @log => "----------------| Category: $data->{name} |----------------";
                 $topic_cat = mdb->category->find({ name=>$data->{name} })->count;
@@ -912,7 +912,7 @@ sub import_category : Local {
                     $topic_cat = mdb->category->update({ name=>$data->{name} },{ '$set'=>$data });
                     push @log => _loc('Updated category %1', $data->{name} );
                 }
-               
+
                 # statuses - make sure ci exists
                 my @final_statuses;
                 for my $status ( _array( $statuses ) ) {
@@ -924,27 +924,27 @@ sub import_category : Local {
                         $srow = ci->status->new( $status );
                         push @log => _loc('Created status %1', $$srow{name} );
                         push @final_statuses, $$srow{id_status};
-                    } else { 
+                    } else {
                         push @log => _loc('Status %1 found. Statuses are not updated by this import.', $$status{name} );
                         push @log => _loc("Status '%1' included in category", $$status{name} );
                         push @final_statuses, $$status{id_status};
                     }
-                }   
+                }
                 mdb->category->update({ id=>$id },{ '$set'=>{ statuses=>\@final_statuses } });
 
-                # TODO workflow ? 
-                push @log => $is_new 
-                    ? _loc('Topic category created with id %1 and name %2:', $id, $name) 
+                # TODO workflow ?
+                push @log => $is_new
+                    ? _loc('Topic category created with id %1 and name %2:', $id, $name)
                     : _loc('Topic category %1 updated', $name) ;
             }
         });   # txn end
-        
-        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
+
+        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };
     }
     catch{
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 no Moose;

@@ -8,10 +8,10 @@ sub path_capture {
 }
 sub grammar {
     q{
-        <nocontext: >  
+        <nocontext: >
         <perl>
-        <rule: perl>                 <[MATCH=statement]>+ % ; 
-        <rule: statement>            <line=matchline> <module=package> | <line=matchline> <depend=use> | <line=matchline> <depend=require> 
+        <rule: perl>                 <[MATCH=statement]>+ % ;
+        <rule: statement>            <line=matchline> <module=package> | <line=matchline> <depend=use> | <line=matchline> <depend=require>
         <rule: package>              package <MATCH=package_name>
         <rule: use>                  use <MATCH=package_name> <stmt>?
         <rule: require>              require <MATCH=package_name>

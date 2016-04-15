@@ -8,7 +8,7 @@ use Data::Dumper;
 
 sub ws_form_request {
     my ($self, %p) = @_;
-    
+
     my $ua = LWP::UserAgent->new;
     $ua->timeout( $p{timeout} || 60 );
     my $response = $ua->post( $p{url}, [ %{ $p{data} } ]);
@@ -38,13 +38,13 @@ Baseliner::WSUtils
 
 =head1 DESCRIPTION
 
-Utilities for simplifying WS manipulation. 
+Utilities for simplifying WS manipulation.
 
 =head1 METHODS
 
 =head2 ws_form_request ( url => ?, data=>{ field => 'value' }, timeout=>60 )
 
-Simplify calling a REST .NET style web-service with a form request. 
+Simplify calling a REST .NET style web-service with a form request.
 
     use Data::Dumper;
     use v5.10;
@@ -52,7 +52,7 @@ Simplify calling a REST .NET style web-service with a form request.
     my $wsu = Baseliner::WSUtils->new;
     my $result = $wsu->ws_form_request(
         url  => 'http://webservices.example.com/webService',
-        data => { form_param => q{some data in here} }, 
+        data => { form_param => q{some data in here} },
     );
 
     my $response = $result->{response};

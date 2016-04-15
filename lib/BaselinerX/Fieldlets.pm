@@ -101,7 +101,7 @@ register 'fieldlet.dbi_query' => {
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
     icon        => '/static/images/icons/sql.png',
-    show_in_palette => 0, 
+    show_in_palette => 0,
     type        => 'combo'
 };
 
@@ -155,7 +155,7 @@ register 'fieldlet.env_planner' => {
     data_gen    => sub{
         +{
             columns=>sprintf(
-                '%s[slotname],bl_combo,100;%s[plan_start_date],datefield,80;%s[plan_end_date],datefield,80', 
+                '%s[slotname],bl_combo,100;%s[plan_start_date],datefield,80;%s[plan_end_date],datefield,80',
                 _loc('Environment'), _loc('Planned Start'), _loc('Planned End') )
         }
     },

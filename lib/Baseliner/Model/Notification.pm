@@ -53,7 +53,7 @@ register 'config.comm.email' => {
 
 register 'service.daemon.email' => {
     name => 'Email Daemon',
-    icon => '/static/images/icons/daemon.gif', 
+    icon => '/static/images/icons/daemon.gif',
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;
@@ -64,7 +64,7 @@ register 'service.daemon.email' => {
 
 register 'service.email.flush' => {
     name => 'Email Flush Queue Once',
-    icon => '/static/images/icons/envelope.png', 
+    icon => '/static/images/icons/envelope.png',
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;
@@ -94,10 +94,10 @@ sub get_recipients{
             when ('Users') {
                 @recipients = map {+{id => $_->{mid}, name => $_->{username}, description => $_->{realname} ? $_->{realname}:''  }}
                             ci->user->find()->fields({mid => 1, username => 1, realname => 1, _id => 0})->sort({realname => 1})->all;
-                            
+
             }
             when ('Roles') {
-                @recipients = map {+{id => $_->{id}, name => $_->{role}, description => $_->{description} ? $_->{description}:''  }} 
+                @recipients = map {+{id => $_->{id}, name => $_->{role}, description => $_->{description} ? $_->{description}:''  }}
                             mdb->role->find()->fields({ id=>1, role=>1, description=>1, _id=>0 })->sort({ role => 1 })->all;
             }
             when ('Emails') {
@@ -109,17 +109,17 @@ sub get_recipients{
             }
             when ('Fields') {
                 @recipients = ({id => 'Fields', name => 'Fields'});
-            }            
+            }
             when ('Default') {
                 @recipients = ({id => 'Default', name => 'Default'});
-            }            
+            }
             when ('Owner') {
                 @recipients = ({id => 'Owner', name => 'Owner'});
-            }            
+            }
         };
         return wantarray ? @recipients : \@recipients;
     }catch{
-        _throw _loc( 'Error reading recipients: %1', shift() );    
+        _throw _loc( 'Error reading recipients: %1', shift() );
     };
 }
 
@@ -129,7 +129,7 @@ sub isValid {
     my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
     my $valid = 1;
-    
+
     SCOPE: foreach my $key (keys %{$data->{scopes}}){
         my @data_scope = _array keys %{$data->{scopes}->{$key}};
         if ( $data_scope[0] eq '*' ) {
@@ -172,7 +172,7 @@ sub isValid {
                 last SCOPE;
             }
         }
-    }    
+    }
     # if ($valid == 1) {
     #     foreach my $key (keys $notify_scope){
     #         if( exists $data->{scopes}->{$key}->{'*'} ){
@@ -193,9 +193,9 @@ sub isValid {
     #                 }else{ $valid = 0; }
     #             }
     #             last unless $valid == 1;
-    #         } 
+    #         }
     #     }
-    # }   
+    # }
     return $valid;
 }
 
@@ -223,11 +223,11 @@ sub get_rules_notifications{
     my $action = $p->{action} or _throw 'Missing parameter action';
     my $notify_scope = $p->{notify_scope}; # or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
-    
+
     my $notification = {};
-    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all; 
+    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all;
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, where=>{collection => 'project'}) if $mid;
-    
+
     if ( @rs_notify ) {
         foreach my $row_send ( @rs_notify ){
             #my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
@@ -235,14 +235,14 @@ sub get_rules_notifications{
 
             my $valid = 0;
             if ($notify_scope) {
-                $valid = $self->isValid({ data => $data, notify_scope => $notify_scope, mid => $mid});    
+                $valid = $self->isValid({ data => $data, notify_scope => $notify_scope, mid => $mid});
             }else{
                 $valid = 1 unless keys $data->{scopes};
             }
             if ($valid == 1){
                 my $actions;
                 my $roles;
-        
+
                 foreach my $carrier (keys $data->{recipients}){
                     my $type;
                     foreach $type (keys $data->{recipients}->{$carrier}){
@@ -253,11 +253,11 @@ sub get_rules_notifications{
                             $notification->{$key}{subject}       = $row_send->{subject};
                             $notification->{$key}{template_path} = $row_send->{template_path};
                             given ($type) {
-                                when ('Actions') { 
-                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = 1; 
+                                when ('Actions') {
+                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = 1;
                                 }
-                                default { 
-                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = $data->{recipients}->{$carrier}->{$type}->{$key_value}; 
+                                default {
+                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = $data->{recipients}->{$carrier}->{$type}->{$key_value};
                                 }
                             };
                         }
@@ -271,27 +271,27 @@ sub get_rules_notifications{
                 foreach my $type (keys $notification->{$key}{carrier}{$carrier}){
                     my @tmp_users;
                     given ($type) {
-                        when ('Users')         { 
+                        when ('Users')         {
                             if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                                 @tmp_users = Baseliner->model('Users')->get_users_username;
                             }
                             else{
-                                @tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
+                                @tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                         }
                         when ('Actions')     {
                             my @actions;
                             if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-                                @actions = ('*');                            
+                                @actions = ('*');
                             }
                             else{
                                 @actions = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             my $query = {};
                             $query->{action} = \@actions;
-                            
+
                             my @full_roles = mdb->role->find->all;
-                            
+
                             my @roles;
                             if (scalar @actions == 1 && $actions[0] eq '*'){
                                 delete $query->{action};
@@ -307,9 +307,9 @@ sub get_rules_notifications{
                                         }
                                     }
                                 }
-                            }                            
+                            }
                             @roles = _unique @roles;
-                            
+
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                         }
                         when ('Roles')      {
@@ -336,22 +336,22 @@ sub get_rules_notifications{
                             }
                             @tmp_users= map {$_->{name}} ci->user->find({mid=>mdb->in(@users_mid)})->all;
 
-                        }                        
+                        }
                         when ('Emails') {
                             my @emails = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             push @tmp_users, @emails;
-                        }                        
+                        }
                         when ('Owner')      {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             push @tmp_users, $topic->{created_by};
-                        }                        
+                        }
                     };
                     push @users, @tmp_users;
                 }
                  if (@users) {
-                    my %users; 
+                    my %users;
                     map { $users{$_} = 1 } @users;
-                    
+
                     $notification->{$key}{carrier}{$carrier} = \%users;
                 }
                 else{
@@ -385,7 +385,7 @@ sub decode_data {
         }
         if($data->{recipients}->{BCC}){
             $data->{recipients}->{BCC} = $self->decode_recipients($data,'BCC');
-        }        
+        }
     }
     if($data->{scopes}){
         if($data->{scopes}->{category}){
@@ -399,20 +399,20 @@ sub decode_data {
         }
         if($data->{scopes}->{field}){
             $data->{scopes}->{field} = $self->decode_scopes($data,'field');
-        }  
+        }
     }
     return $data;
 }
 
 sub decode_scopes {
-    my ($self, $data, $p) = @_;  
+    my ($self, $data, $p) = @_;
     if($p eq 'field'){
        $data->{scopes}->{field} = [values $data->{scopes}->{field}];
     }
-    else{ 
+    else{
        my @ar;
        foreach (keys $data->{scopes}->{$p}){
-          push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}};   
+          push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}};
        }
        $data->{scopes}->{$p} = \@ar;
     }
@@ -422,27 +422,27 @@ sub decode_recipients {
     my ($self, $data, $p) = @_;
     if($data->{recipients}->{$p}->{Fields}){
         $data->{recipients}->{$p}->{Fields} = [keys $data->{recipients}->{$p}->{Fields}];
-    } 
+    }
     if($data->{recipients}->{$p}->{Owner}){
         $data->{recipients}->{$p}->{Owner} = [keys $data->{recipients}->{$p}->{Owner}];
-    } 
+    }
     if($data->{recipients}->{$p}->{Emails}){
         $data->{recipients}->{$p}->{Emails} = [keys $data->{recipients}->{$p}->{Emails}];
-    } 
+    }
     if($data->{recipients}->{$p}->{Actions}){
         $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Actions}];
-    } 
+    }
     if($data->{recipients}->{$p}->{Roles}){
         my @ar;
         foreach (keys $data->{recipients}->{$p}->{Roles}){
-            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Roles}->{$_}};    
+            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Roles}->{$_}};
         }
         $data->{recipients}->{$p}->{Roles} = \@ar;
-    } 
+    }
     if($data->{recipients}->{$p}->{Users}){
         my @ar;
         foreach (keys $data->{recipients}->{$p}->{Users}){
-            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Users}->{$_}};    
+            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Users}->{$_}};
         }
         $data->{recipients}->{TO}->{Users} = \@ar;
     }
@@ -470,7 +470,7 @@ sub encode_data {
 
 sub encode_scopes {
     my ($self,$scopes) = @_;
-    if($scopes->{project}){  
+    if($scopes->{project}){
         my %hash;
         foreach (_array $scopes->{project}){
             $hash{ $_->{mid} } = $_->{name};
@@ -555,31 +555,31 @@ sub get_notifications {
     my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
     my @notify_default = _array ($p->{notify_default});
-    
+
     my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
-    
-    # rgo: use the event to get it's defaults! 
+
+    # rgo: use the event to get it's defaults!
     my $template = $ev->{notify}->{template};
     $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config, enforce_metadata => 0)->{template_default};
     $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{template_default};
-    if ($template) { 
-        _log( "template for $event_key: $template" ); 
+    if ($template) {
+        _log( "template for $event_key: $template" );
     } else {
         _error( _("Could not find template for $event_key") );
     }
-        
+
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {
             if( $notify->{template_path} eq $template ){
-                map { $notify->{carrier}{TO}{$_} = 1 } @notify_default;        
+                map { $notify->{carrier}{TO}{$_} = 1 } @notify_default;
             }else{
                 if (@notify_default){
                     my %users;
                     map { $users{$_} = 1 } @notify_default;
-                    map { $users{$_} = 1 } keys $notify->{carrier}{TO}; 
+                    map { $users{$_} = 1 } keys $notify->{carrier}{TO};
                     $notify->{carrier}{TO} = \%users;
                 }
             }
@@ -607,7 +607,7 @@ sub get_notifications {
                 else{
                     my @users;
                     foreach my $user ( keys $send_notification->{$key}{carrier}{$carrier} ){
-                        push @users, $user;    
+                        push @users, $user;
                     }
                     $send_notification->{$key}{carrier}{$carrier} = \@users;
                 }
@@ -617,7 +617,7 @@ sub get_notifications {
                 delete $send_notification->{$key};
             }
         }
-        
+
         if (keys $send_notification ){
             return $send_notification ;
         }
@@ -626,9 +626,9 @@ sub get_notifications {
         }
     }
     else{
-        return undef ;    
+        return undef ;
     }
-    
+
 };
 
 

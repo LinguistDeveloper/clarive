@@ -22,7 +22,7 @@ sub new {
     $parms->{uss_end_block} ||= '__END__';
     $parms->{uss_put_delay} ||= 1000; # in microseconds
     # open connection if needed
-    $self->open( Host => $parms->{host}, Port=> $parms->{port} || 1023 ) 
+    $self->open( Host => $parms->{host}, Port=> $parms->{port} || 1023 )
         if exists $parms->{host} ;
     # send login, if needed
     $self->login( $parms->{user}, $parms->{password} )
@@ -44,14 +44,14 @@ sub parms { my $self = shift; *$self->{mvs_uss}; }
 sub rexx {
     my $self = shift;
     my $rexx = join '',@_;
-    my $parms = $self->parms; 
+    my $parms = $self->parms;
     $self->print("\n");
     $self->print("\n");
     $self->print("\n");
     $self->print("\n");
     # cleanup
     $rexx =~s{\t|\r}{}g;
-    # temp file 
+    # temp file
     my ($rem_pid) = $self->cmd('echo $$');
     $rem_pid =~s{\r|\n}{}g;
     $rem_pid ||= $$;
@@ -80,7 +80,7 @@ sub rexx {
 sub tso {
     my $self = shift;
     my $cmd  = join '',@_;
-    my $parms = $self->parms; 
+    my $parms = $self->parms;
     Time::HiRes::usleep( $parms->{uss_put_delay} );
     $self->print("\n");
     #$cmd =~ s{"}{\"}g;
@@ -96,7 +96,7 @@ MVS::USS - MVS USS (OMVS) interface for running commands remotely
 =head1 DESCRIPTION
 
 This module extends L<Net::Telnet> and adds a few features that are
-hopefully useful for running commands on a Unix System Services (USS) 
+hopefully useful for running commands on a Unix System Services (USS)
 manfraime subsystem.
 
 =head1 METHODS
@@ -114,7 +114,7 @@ Parameters:
 
 =head2 rexx
 
-Runs a REXX program remotely and returns the stdout 
+Runs a REXX program remotely and returns the stdout
 without any noise.
 
     my $program = q{

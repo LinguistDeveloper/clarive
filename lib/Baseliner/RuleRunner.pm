@@ -189,7 +189,7 @@ sub dsl_build_and_test {
 
     my $rules_model = Baseliner::Model::Rules->new;
 
-    my $dsl = $rules_model->dsl_build( $stmts, id_rule=>$p{id_rule}, %p ); 
+    my $dsl = $rules_model->dsl_build( $stmts, id_rule=>$p{id_rule}, %p );
 
     my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
     $rule->compile;

@@ -5,9 +5,9 @@ use MRO::Compat;
 
 =head1 DEPRECATED
 
-For now. 
+For now.
 
-Even though the password may be obliviated, the username must be in the realm. 
+Even though the password may be obliviated, the username must be in the realm.
 
             <credential>
                 class +Baseliner::Core::User::Password
@@ -18,7 +18,7 @@ sub authenticate {
 
     if( $authinfo->id eq 'admin' ) {  ## $authinfo->password
         # not in the realm
-        return new Baseliner::Core::User; 
+        return new Baseliner::Core::User;
     } else {
         return Catalyst::Authentication::Credential::Password::authenticate( @_ );
     }

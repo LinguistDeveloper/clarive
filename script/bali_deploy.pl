@@ -55,7 +55,7 @@ sub now {
 
 sub pre {
     my $ret = "==============| " . now() . " " . sprintf( "[%.04f]", tv_interval( $t0 ) ). ' ';
-    $t0 = [gettimeofday]; 
+    $t0 = [gettimeofday];
     $ret;
 }
 
@@ -77,7 +77,7 @@ Options:
   -grep                   : grep a string or re in the generated sql
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
-                                bali deploy --schema BaliRepo --schema BaliRepoKeys 
+                                bali deploy --schema BaliRepo --schema BaliRepoKeys
 
 Versioning Options:
   --diff                  : diffs this schema against the database and generates a diff
@@ -88,10 +88,10 @@ Versioning Options:
   --grep <re>             : filter diff statements with a reg. expression
 
 Examples:
-    bin/bali deploy --env t   
+    bin/bali deploy --env t
     bin/bali deploy --env t --diff
     bin/bali deploy --env t --diff --deploy
-    bin/bali deploy --env t --installversion   
+    bin/bali deploy --env t --installversion
     bin/bali deploy --env t --upgrade                   # print migration scripts only, no changes made
     bin/bali deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
     bin/bali deploy --env t --upgrade --show --to 2     # same, but with schema version 2
@@ -115,7 +115,7 @@ say pre . "Config file: $cfg_file";
 
 require Baseliner::Schema::Baseliner;
 
-# load config 
+# load config
 require Config::General;
 my $cfg      = Config::General->new( $cfg_file );
 my $config = { $cfg->getall };

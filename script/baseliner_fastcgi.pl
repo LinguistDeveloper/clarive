@@ -12,7 +12,7 @@ use Baseliner;
 
 my $help = 0;
 my ( $listen, $nproc, $pidfile, $manager, $detach, $keep_stderr );
- 
+
 GetOptions(
     'help|?'      => \$help,
     'listen|l=s'  => \$listen,
@@ -25,10 +25,10 @@ GetOptions(
 
 pod2usage(1) if $help;
 
-Baseliner->run( 
-    $listen, 
+Baseliner->run(
+    $listen,
     {   nproc   => $nproc,
-        pidfile => $pidfile, 
+        pidfile => $pidfile,
         manager => $manager,
         detach  => $detach,
     keep_stderr => $keep_stderr,
@@ -44,7 +44,7 @@ baseliner_fastcgi.pl - Catalyst FastCGI
 =head1 SYNOPSIS
 
 baseliner_fastcgi.pl [options]
- 
+
  Options:
    -? -help      display this help and exits
    -l -listen    Socket path to listen on

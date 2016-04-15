@@ -40,25 +40,25 @@ sub parse {
          # tables
          push @{ $tree->{tables} }, map{
             push @depends, $_->name;
-            { 
-                table=>$_->name,  
+            {
+                table=>$_->name,
                 fields=>[map{
-                    $_->name 
-                } $_->get_fields ],  
+                    $_->name
+                } $_->get_fields ],
             }
          } $schema->get_tables;
          # procedures
          push @{ $tree->{procedures} }, map{
             push @depends, $_->name;
-            { 
+            {
                 name=>$_->name,
             }
          } $schema->get_procedures;
          return $schema;
      } ) or die $t->error;
      my $output = $t->translate( \$source ) or Util->_fail( $t->error );
-    
+
     return $tree;
-}   
+}
 
 1;

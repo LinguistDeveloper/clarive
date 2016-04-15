@@ -17,12 +17,12 @@ FIN
     my $subcommand = ref $opts{''} ? $opts{''}->[0] : $opts{''};
     my @cmds;
     for my $lib ( @INC ) {
-        push @cmds, glob "$lib/Clarive/Cmd/*";   
-    } 
+        push @cmds, glob "$lib/Clarive/Cmd/*";
+    }
     my @cmd_msg;
     my $main_caption;
     for my $cmd ( sort { uc $a cmp uc $b } @cmds ) {
-        next if -d $cmd;    
+        next if -d $cmd;
         my $pkg = $cmd =~ /Clarive\/Cmd\/(.*).pm$/ ? $1 : undef;
         next if $subcommand && $pkg ne $subcommand;
         if( $pkg ) {
@@ -32,7 +32,7 @@ FIN
             push @cmd_msg => $@ if $@;;
         }
         no strict 'refs';
-        my $fn = file($cmd)->basename =~ /^(.*)\.pm$/ ? $1 : $cmd; 
+        my $fn = file($cmd)->basename =~ /^(.*)\.pm$/ ? $1 : $cmd;
         if( $subcommand ) {
             $main_caption = ${$pkg . '::CAPTION'} // '??';
             for ( grep /^run_/, grep { defined &{"$pkg\::$_"} } keys %{"$pkg\::"} ) {
@@ -42,7 +42,7 @@ FIN
             }
         } else {
             my $caption = ${$pkg . '::CAPTION'} // '??';
-            my $cmd_id = ${$pkg . '::CMD_ALIAS'} // $fn; 
+            my $cmd_id = ${$pkg . '::CMD_ALIAS'} // $fn;
             push @cmd_msg => sprintf "    %-12s %-80s", $cmd_id, $caption;
         }
     }
@@ -53,7 +53,7 @@ FIN
         say '';
         say for @cmd_msg;
         print <<FIN;
-    
+
 cla help <command> to get all subcommands.
 cla <command> -h for command options.
 

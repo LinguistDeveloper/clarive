@@ -11,7 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 register 'dashlet.swarm' => {
     form    => '/dashlets/swarm_config.js',
-    name    => 'Swarm', 
+    name    => 'Swarm',
     icon    => '/static/images/icons/swarm.png',
     js_file => '/dashlets/swarm_dash.js'
 };
@@ -27,7 +27,7 @@ sub parse_status : Local {
     my @statuses_mids = map { $_->{name} } ci->status->find({ id_status => mdb->in($parse_status)})->all;
 
     $c->stash->{json} = { data=>\@statuses_mids };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 
 }
 
@@ -38,7 +38,7 @@ sub leer_log : Local {
     my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
     my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
     my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Email','Changeset','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
-    
+
     my @data;
     for my $i ( 0 .. 59 ) {
         my $parent = $parent[$i];
@@ -48,9 +48,9 @@ sub leer_log : Local {
         my $t = ($i+1) * 1000;
         push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
     }
-     
+
     $c->stash->{json} = { data=>\@data };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub activity_by_category : Local {
@@ -63,14 +63,14 @@ sub activity_by_category : Local {
     my $statuses = $p->{statuses} || undef;
     my $categories = $p->{categories} || undef;
     my $where = { mid=>{'$ne'=>undef} };
-    
+
     #my $days = $p->{days} || 2592000000;
     # my $days = $p->{days} || 31536000000;
     # $days = $days/86400000;
 
     my $date = Class::Date->now();
     # my $filter_date = $date - ($days . 'D');
- 
+
     my $time_filter = {};
 
     if ( $start_date && $end_date) {
@@ -109,7 +109,7 @@ sub activity_by_category : Local {
         _log "mid==>".$ev->{mid};
         #if(grep {$ev->{mid} eq $_}  keys %cats){
             my $parent = $cats{$ev->{mid}};
-            my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
+            my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' :
                 $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
             my $actor = $ev->{username} || 'clarive';
 
@@ -125,7 +125,7 @@ sub activity_by_category : Local {
     }
  # _log( \@data );
     $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub activity_by_status: Local {
@@ -147,7 +147,7 @@ sub activity_by_status: Local {
 
     my $date = Class::Date->now();
     # my $filter_date = $date - ($days . 'D');
- 
+
     my $time_filter = {};
 
     if ( $start_date && $end_date) {
@@ -195,7 +195,7 @@ sub activity_by_status: Local {
     for my $ev (@ev_rs) {
         my $parent = $ev->{event_key} =~ /(topic.create)/ ? _loc('New'): $ev->{vars}->{status};
         my $category = $cats{$ev->{mid}};
-        my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' : 
+        my $action = $ev->{event_key} =~ /(topic.create)/ ? 'add' :
             $ev->{event_key} =~ /(topic.delete)/ ? 'del' :  'mod';
         my $actor = $ev->{username} || 'clarive';
         #$action = 'add';
@@ -207,7 +207,7 @@ sub activity_by_status: Local {
     }
  # _log( \@data );
     $c->stash->{json} = { data=>\@data, skip=>$skip+$limit, total => $total };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub grouped_activity : Local {
@@ -216,11 +216,11 @@ sub grouped_activity : Local {
 
     #_warn $p;
     _log "comienzoooo";
-    
+
     my $limit = $p->{limit} || 10000;
     _log "limit => " . $limit;
     my $days = $p->{days} || 2592000000;
-    
+
     $days = $days/86400000;
 
     my $where = { mid=>{'$ne'=>undef} };
@@ -233,7 +233,7 @@ sub grouped_activity : Local {
         mdb->activity2->aggregate(
             [
                 {'$match' => { mid=>{'$ne'=>undef}, event_key => qr/topic/, ts => { '$gte' => ''.$filter_date} }},
-                
+
                 {
                     '$group' => {
                         _id    => { '$substr' => [ '$ts',0,16] },
@@ -256,7 +256,7 @@ sub grouped_activity : Local {
         my @data;
         for my $ev ( _array($date->{activity} )) {
             my $parent = $cats{$ev->{mid}};
-            my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' : 
+            my $action = $ev->{event_key} =~ /(topic.change_status|topic.new)/ ? 'add' :
                 $ev->{event_key} =~ /(topic.remove)/ ? 'del' : 'mod';
             my $actor = $ev->{username} || 'clarive';
             $action = 'add';
@@ -265,9 +265,9 @@ sub grouped_activity : Local {
         _log "subo => $date->{_id} - total: " . scalar @data;
         $result_dates{$date->{_id}} = \@data;
     }
-    #_log( \%result_dates); 
+    #_log( \%result_dates);
     $c->stash->{json} = { data=>\%result_dates };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub swarm_tiempo : Local {
@@ -284,7 +284,7 @@ sub swarm_tiempo : Local {
     my @actor = ('Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego','Diego','Carlos','Pedro','Ana','Diego','Marta','Carlos','Ana','Pedro','Diego','Marta','Carlos','Pedro','Ana','Marta','Diego','Pedro','Carlos','Marta','Diego');
     my @nodes = ('#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369','#44350','#44351','#44352','#44353','#44354','#44355','#44356','#44357','#44358','#44359','#44360','#44361','#44362','#44363','#44364','#44365','#44366','#44367','#44368','#44369');
     my @parent = ('Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Emergency','Emergency','BD','Hostage','Email','Release','Email','Changeset','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Changeset','Emergency','BD','Hostage','Email','Release','Email','Changeset');
-    
+
     my @data;
     for my $i ( 0 .. 59 ) {
         my $parent = $parent[$i];
@@ -294,9 +294,9 @@ sub swarm_tiempo : Local {
         my $t = $array[$i];
         push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
     }
-     
+
     $c->stash->{json} = { data=>\@data };
-    $c->forward('View::JSON');       
+    $c->forward('View::JSON');
 }
 
 no Moose;

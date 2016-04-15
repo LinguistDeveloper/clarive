@@ -66,7 +66,7 @@ subtest 'roadmap: build a monthly scaled calendar' => sub {
     for my $unit_shift ( 1..2 ) {
         for my $dt ( 0..11 ) {   # test a year
             $dt = $dt * $SECS_IN_DAY * 32;  # come up with an epoch monthly
-            for my $first_day ( 0..6 ) {  # 
+            for my $first_day ( 0..6 ) {  #
                 my $c = _build_c( req => { params => { username => 'root', scale=>'monthly', first_weekday=>$first_day, units_from=>$unit_shift, units_until=>$unit_shift } } );
                 mock_time 1+$dt => sub {
                     $controller->roadmap($c);
@@ -90,7 +90,7 @@ subtest 'roadmap: build a daily scaled calendar' => sub {
     for my $unit_shift ( 1..2 ) {
         for my $dt ( 0..11 ) {   # test a year
             $dt = $dt * $SECS_IN_DAY;  # come up with an epoch daily
-            for my $first_day ( 0..6 ) {  # 
+            for my $first_day ( 0..6 ) {  #
                 my $c = _build_c( req => { params => { username => 'root', scale=>'daily', first_weekday=>$first_day, units_from=>$unit_shift, units_until=>$unit_shift } } );
                 my $stash, my $data;
                 mock_time $dt_offset + 1 + $dt => sub {
@@ -109,7 +109,7 @@ subtest 'roadmap: build a daily scaled calendar' => sub {
 subtest 'roadmap: basic condition take in' => sub {
     _setup();
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { condition=>'"topic":{"$regex":"^a"}', 
+    my $c = _build_c( req => { params => { condition=>'"topic":{"$regex":"^a"}',
                 username => 'root' } } );
     $controller->roadmap($c);
     my $stash = $c->stash;
@@ -849,7 +849,7 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when topic and fiel
 
     my $project = TestUtils->create_ci_project();
 
-    my $id_role = TestSetup->create_role();   
+    my $id_role = TestSetup->create_role();
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid =

@@ -42,10 +42,10 @@ sub reset_previous_state {
     $url = '/rule/rule_test';
     %data = ( option => -1, id_rule => $id_rule );
     $ag->post( URL($url), \%data );
-    
+
 }
 
-## Rule creation 
+## Rule creation
 $url = '/rule/save';
 %data = ('chain_default' => '-', 'rule_event' => 'event.user.create', 'rule_name' => 'prueba', 'rule_type' => 'event', 'rule_when' => 'post-offline');
 $ag->post( URL($url), \%data );

@@ -7,7 +7,7 @@ sub upgrade {
 }
 
 sub downgrade {
-    
+
 }
 
 no Moose;

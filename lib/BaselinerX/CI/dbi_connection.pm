@@ -55,7 +55,7 @@ sub connect {
         alarm 0;
     }
     $self->_connection( $conn );
-    return $conn; 
+    return $conn;
 }
 
 sub dbis {
@@ -67,9 +67,9 @@ sub dbis {
 sub all_vars {
     my ($self)=@_;
     return {
-        host=>$self->server->hostname, 
-        %$self, 
-        %{ $self->parameters || {} }, 
+        host=>$self->server->hostname,
+        %$self,
+        %{ $self->parameters || {} },
     };
 }
 
@@ -78,8 +78,8 @@ sub gen_connect_str {
     return Util->parse_vars( $self->connect_str, $self->all_vars ) if length $self->connect_str;
     my $vars = $self->all_vars;
     # TODO depends on driver
-    my $str = length $vars->{sid} 
-        ? q{${user}/${password}@//${sid}} 
+    my $str = length $vars->{sid}
+        ? q{${user}/${password}@//${sid}}
         : q{${user}/${password}@//${host}:${port}/${service_name}};
     $str = Util->parse_vars( $str, $self->all_vars );
 }
@@ -119,14 +119,14 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
     SQL: for my $sql ( _array( $sql ) ) {
         # comments?
         $sql =~ s{--[^\n]*\r?\n}{\n}sg if $comment eq 'strip';
-        
+
         my @stmts = $split_mode eq 'none' ? ($sql)
             # auto = split on ; but not if its inside quotes '',"" - may be in comment, better if used with "strip"
-            : $split_mode eq 'auto' ? split( /;(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/, $sql)  
+            : $split_mode eq 'auto' ? split( /;(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/, $sql)
             # manual - user defined split
             : split( $split, ($sql) );
         STMT: for my $st ( @stmts ) {
-            next if $st =~ /^\s*$/;  # empty ? 
+            next if $st =~ /^\s*$/;  # empty ?
             my (@drops,@skips);
             if( $exists_action eq 'drop' ) {
                 @drops =  $self->gen_drop( $st );
@@ -154,10 +154,10 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
                 } elsif( $mode eq 'block' ) {
                     $st = qq{begin\n$st;\nend;};
                     _debug "Running sql $st against the database (mode block)", $st;
-                    $dbh->do( $st ); 
+                    $dbh->do( $st );
                 } else {  # mode direct
                     _debug "Running sql $st against the database (mode direct)", $st;
-                    $dbh->do( $st ); 
+                    $dbh->do( $st );
                 }
                 my @ret = $dbh->func( 'dbms_output_get' );
                 { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), catch=>'', skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
@@ -207,7 +207,7 @@ sub gen_drop {
         _debug( "SQL drop checking $sch.$name" );
 
         # check if object exists
-        my $cnt = $dbis->query( 
+        my $cnt = $dbis->query(
             'select count(*) from all_objects where object_name=? and object_type=? and owner=?',
             uc $name, uc $type, uc $sch )->list;
         if ( $cnt > 0 ) {
@@ -221,9 +221,9 @@ sub query_from_field {
     my ($self,$p)=@_;
     my $query = $p->{query};
     my $data = Util->hash_flatten($p);
-    
+
     my $meta = ci->topic->get_meta();
-    my ($field) = grep { $_->{id_field} eq $p->{id_field} && $_->{id_category} == $data->{'meta.id_category'} } @$meta; 
+    my ($field) = grep { $_->{id_field} eq $p->{id_field} && $_->{id_category} == $data->{'meta.id_category'} } @$meta;
     my $db= $self->connect;
     my $dbis = $self->dbis;
     my $sql = $field->{sql};
@@ -233,7 +233,7 @@ sub query_from_field {
     my @ret;
     @ret = $rs->hashes;
     $db->disconnect;
-    
+
     return { data=>[ @ret ], totalCount=> 1 };
 }
 

@@ -36,7 +36,7 @@ sub daemon {
 # groups the email queue around the same message
 sub group_queue {
     my ( $self, $config ) = @_;
-    
+
     my %query;
 
     $query{where}{'queue.active'} = '1';
@@ -59,7 +59,7 @@ sub group_queue {
             my $body;
             if( $msgsiz > $config->{max_message_size} ) {
                 _log _loc "Trimming email message body, size exceeded ( %1 > %2 )", $msgsiz, $config->{max_message_size};
-                $body = substr( $message->{body}, 0, $config->{max_message_size} ); 
+                $body = substr( $message->{body}, 0, $config->{max_message_size} );
             } else {
                 $body = $message->{body};
             }
@@ -69,7 +69,7 @@ sub group_queue {
             my $address = $queue_item->{destination} || $self->resolve_address( $queue_item->{username} );
 
             my $tocc = $queue_item->{carrier_param} || 'to';
-            push @{ $email{ $id }{ $tocc } }, $address; 
+            push @{ $email{ $id }{ $tocc } }, $address;
             push @{ $email{ $id }{ id_list } }, $queue_item->{id};
 
             $email{ $id }->{from} ||= $from; # from should be always from the same address
@@ -83,9 +83,9 @@ sub group_queue {
             alarm 0;
         }
         catch {
-            my $err = shift;    
+            my $err = shift;
             alarm 0;
-            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err; 
+            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err;
             mdb->message->update(
                 {'queue.id' => 0 + $queue_item->{id}},
                 {'$set' => {'queue.$.active' => '0'}}
@@ -94,12 +94,12 @@ sub group_queue {
     }
     return %email;
 }
-    
+
 # send pending emails
 sub process_queue {
     my ( $self, $c, $config ) = @_;
-    
-    my %email = $self->group_queue($config); 
+
+    my %email = $self->group_queue($config);
 
     # no to or cc, just these:
     my $email_override = $c->config->{email_override};
@@ -113,9 +113,9 @@ sub process_queue {
     _debug _loc "CC EMAILS added: '%1' (email_cc)",
         join(',',@email_cc) if @email_cc;
 
-    # first group by message 
+    # first group by message
     for my $msg_id ( keys %email ) {
-        my $em = $email{ $msg_id }; 
+        my $em = $email{ $msg_id };
         _debug "Sending email '$em->{subject}' (id=$msg_id) to " . join( ',',
           _array( $em->{to} ) ) . " and cc " . join( ',', _array( $em->{cc} ) );
 
@@ -125,7 +125,7 @@ sub process_queue {
         if( @email_override ) {
             @to=@email_override;
             @cc=();
-        } 
+        }
         if( @email_cc ) {
             push @cc, @email_cc;
         }
@@ -143,7 +143,7 @@ sub process_queue {
             #$body =~ s/[^\x00-\x7f]//g;
             #utf8::decode( $body );
 
-            
+
             $result = $self->send(
                 server=>$config->{server},
                 auth=>$config->{smtp_auth},
@@ -185,12 +185,12 @@ sub resolve_address {
     } else {
         if ( $username =~ /\@/ ) {
             return $username;
-        } else {        
+        } else {
             my $config = BaselinerX::Type::Model::ConfigStore->new->get( 'config.comm.email' );
             my $ret = '';
-            if ( $config->{auto_generate_empty_emails} ) {                
+            if ( $config->{auto_generate_empty_emails} ) {
                 my $domain = $config->{domain};
-                $ret = "$username\@$domain" if $domain;        
+                $ret = "$username\@$domain" if $domain;
             }
             return $ret;
         }
@@ -265,7 +265,7 @@ sub send {
 
 sub filter_queue {
     my ($self, @queue) = @_;
-    
+
     require Time::Piece;
     my $dateformat = "%Y-%m-%d %H:%M:%S";
 
@@ -277,7 +277,7 @@ sub filter_queue {
             if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);
             }else{
-                my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);    
+                my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);
                 if ($schedule_time lt $now) {
                     Baseliner::Model::Messaging->new->send_schedule_mail(%$r);
                     push (@q, $r);

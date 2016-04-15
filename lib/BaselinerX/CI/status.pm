@@ -32,7 +32,7 @@ has view_in_tree  => qw(is rw isa BoolCheckbox);
 sub icon { '/static/images/icons/status.png' }
 sub collection { 'status' }
 sub rel_type {
-    { 
+    {
         bls   => [ from_mid => 'status_bl' ]
     };
 }
@@ -49,7 +49,7 @@ before save_data => sub {
         $self->moniker( $$data{moniker} );
     }
 };
-    
+
 after save_data => sub {
     my ($self, $master_row, $data, $opts, $old ) = @_;
     # update statuses in topics
@@ -70,7 +70,7 @@ after delete => sub {
         foreach my $elem (_array $cat->{statuses}){
             last if ($elem eq $self->{id_status});
             $index++;
-        }    
+        }
         delete $arr[$index];
         mdb->category->update({_id => $cat->{_id}}, {'$set' => {statuses => \@arr}});
     }
@@ -89,8 +89,8 @@ _warn $p;
     }
     {
         data => [
-            map { +{ id_status => $_->id_status, name => $_->name } } 
-            sort { lc $a->name cmp lc $b->name } 
+            map { +{ id_status => $_->id_status, name => $_->name } }
+            sort { lc $a->name cmp lc $b->name }
             $self->search_cis(%$where)
         ]
     };
@@ -100,15 +100,15 @@ sub name_with_bl {
     my ($self, %p) = @_;
     my $bl = $self->bls->[0] if Util->_array($self->bls);
     return $self->name if $p{no_common} && $bl->moniker eq '*';
-    length $bl 
+    length $bl
         ? sprintf( '%s (%s)', $self->name, ($bl->moniker || $bl->name) )
-        : $self->name; 
+        : $self->name;
 }
 
 =head2 names_with_bl
 
 Returns:
-     
+
      ThisStateName (BL1)
      ThisStateName (BL2)
 
@@ -116,14 +116,14 @@ Returns:
 sub names_with_bl {
     my ($self) = @_;
     my @bls = map { $_->moniker || $_->name } Util->_array( $self->bls );
-    return @bls 
+    return @bls
         ? ( map { sprintf( '%s (%s)', $self->name,$_ ) } @bls )
         : ( $self->name );
 }
 
 sub statuses {
     my ($self, %p ) = @_;
-    
+
     if( my $id_cat = delete $p{id_category} ) {
         my $cat = mdb->category->find_one({ id=>mdb->in($id_cat) },{ statuses=>1 });
         return () unless $cat;

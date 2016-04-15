@@ -11,7 +11,7 @@ has action  => ( is => 'rw', isa => 'Str' );
 sub registry {
     return 'Baseliner::Core::Registry';
 }
-    
+
 sub short_from_key {
     my ($self, $key ) =@_;
     (my $var = $key) =~ s{^(.*)\.(.*?)$}{$2}g;

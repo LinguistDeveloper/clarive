@@ -10,8 +10,8 @@ use Class::Date;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.system_messages' => { 
-    name => _loc('System Messages'), 
+register 'service.job.system_messages' => {
+    name => _loc('System Messages'),
     job_service  => 1,
     form => '/forms/system_messages.js',
     icon => "/static/images/icons/sms.png",
@@ -34,7 +34,7 @@ sub run_create {
     } catch {
         my $err = shift;
         _fail(_loc( "Error creating system message: %1", "$err" ));
-    };    
+    };
 }
 
 1;

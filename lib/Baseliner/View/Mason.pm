@@ -5,7 +5,7 @@ BEGIN { extends 'CatalystX::Features::View::Mason' }
 
 __PACKAGE__->config(use_match => 0);
 
-# put something more than the UID ($<) in the folder. 
+# put something more than the UID ($<) in the folder.
 #   the parentpid is usually given by the shell
 
 if( Clarive->debug ) {

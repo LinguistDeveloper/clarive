@@ -21,7 +21,7 @@ register 'registor.action.ci' => {
                 $actions_admin_cis{$id_action_view} = { name => $id_action_view };
             }
         }
-        return \%actions_admin_cis;    
+        return \%actions_admin_cis;
     }
 };
 

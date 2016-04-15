@@ -29,7 +29,7 @@ sub dehash {
     if( ref($v) eq 'HASH' ) {
         $ret.='<ul>';
         for( sort keys %{ $v || {} } ) {
-           $ret .= "<li>$_: " . dehash( $v->{$_} ) . '</li>'; 
+           $ret .= "<li>$_: " . dehash( $v->{$_} ) . '</li>';
         }
         $ret.='</ul>';
     } elsif( ref($v) eq 'ARRAY' ) {
@@ -37,7 +37,7 @@ sub dehash {
            $ret .= "<li>".dehash($_) . '</li>';
         }
     } else {
-        $ret = $v; 
+        $ret = $v;
     }
     return $ret;
 }
@@ -48,7 +48,7 @@ sub show : Local {
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
     push @about, { name=>'Server Version', value=>$Baseliner::VERSION };
 
-    if ( Baseliner->model("Permissions")->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {    
+    if ( Baseliner->model("Permissions")->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
         push @about, { name=>'Perl Version', value=>$] };
         push @about, { name=>'Hostname', value=>Sys::Hostname::hostname() };
         push @about, { name=>'Process ID', value=>$$ };
@@ -61,7 +61,7 @@ sub show : Local {
         push @about, { name => _loc('Active users count'), value => ci->user->find({ active => '1', name => { '$ne' => 'root' }})->count };
         #push @about, { name=>'Library Path', value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
         #$body = dehash( $c->config );
-        $c->stash->{environment_vars} = [ 
+        $c->stash->{environment_vars} = [
             map {
                 +{ name=>$_, value=>$ENV{$_} }
             }
@@ -70,14 +70,14 @@ sub show : Local {
         $c->stash->{tlc} = $Baseliner::TLC;
     }
     $c->stash->{about} = \@about;
-    $c->stash->{licenses} = [ 
+    $c->stash->{licenses} = [
         map {
            { name=>$_, text=>scalar _file( $_ )->slurp };
         }
         grep { -e }
         glob( 'LICENSE* features/*/LICENSE' )
     ];
-    $c->stash->{copyright} = [ 
+    $c->stash->{copyright} = [
         map {
            { name=>$_, text=>scalar _file( $_ )->slurp };
         }

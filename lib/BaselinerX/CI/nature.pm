@@ -17,7 +17,7 @@ has_cis 'parsers';
 has_cis 'items';
 
 sub rel_type {
-    { 
+    {
         items => [ from_mid => 'nature_item' ] ,
         parsers => [ from_mid => 'nature_parser' ] ,
     };
@@ -25,7 +25,7 @@ sub rel_type {
 
 service scan => 'Scan Nature Items' => sub {
     my ($self,$c,$p) =@_;
-    $self->scan;  # asssumes the nature already has items 
+    $self->scan;  # asssumes the nature already has items
     return "ok scan: " . Util->_dump( $self );
 };
 
@@ -41,7 +41,7 @@ sub item_match {
     IN: for my $in ( @include ) {
         next unless length $in;
         if( $item->{path} =~ /$in/ || ($item->{fullpath} && $item->{fullpath} =~ /$in/ )) {
-            $match = 1; 
+            $match = 1;
             last IN;
         }
     }

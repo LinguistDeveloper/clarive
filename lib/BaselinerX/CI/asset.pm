@@ -2,7 +2,7 @@
 
 asset is a file stored in Clarive's db.
 
-An asset may be in many folders. May belong to projects. 
+An asset may be in many folders. May belong to projects.
 May be attached to topics.
 
 =cut
@@ -25,7 +25,7 @@ sub put_data {
     if( $self->id_data ) {
         mdb->grid->remove({ _id=>$self->id_data });
     }
-    my $id = do { 
+    my $id = do {
         if( ref($d) =~ /GLOB|IO::File/ ) {
             mdb->grid->put( $d, { parent_mid=>$self->mid, parent_collection=>'asset' });
         } else {
@@ -71,12 +71,12 @@ sub source {
     return scalar $self->slurp;
 }
 
-=head2 checkout 
+=head2 checkout
 
 Used by ChangesetServices to checkout topic
 attachments during a job.
 
-=cut 
+=cut
 method checkout( :$dir ) {
     my $dest = Util->_file($dir,$self->fullpath || $self->path);
     $dest->dir->mkpath;

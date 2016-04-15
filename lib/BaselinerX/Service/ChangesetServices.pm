@@ -102,7 +102,7 @@ sub update_changesets_bls {
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets = _array( $stash->{changesets} );
-    
+
     if ( !$job->is_failed( status => 'last_finish_status') ) {
         for my $cs ( @changesets ) {
             model->Topic->change_bls( mid=>$cs->{mid}, action=>'add', bls=>[$bl], username=>$stash->{username} );
@@ -114,17 +114,17 @@ sub topic_status {
     my ( $self, $c, $config ) = @_;
 
     my $stash    = $c->stash;
-    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics'; 
-    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status'; 
-   
+    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics';
+    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
+
     for my $mid ( Util->_array_or_commas( $topics) ) {
         my $topic = ci->new( $mid );
-        _log _loc 'Changing status for topic %1 to status %2', $topic->topic_name, $new_status; 
-        Baseliner->model('Topic')->change_status( 
-            change     => 1, 
+        _log _loc 'Changing status for topic %1 to status %2', $topic->topic_name, $new_status;
+        Baseliner->model('Topic')->change_status(
+            change     => 1,
             id_status  => $new_status,
             mid        => $mid,
-            bl         => $stash->{bl}, 
+            bl         => $stash->{bl},
         );
     }
 }
@@ -138,7 +138,7 @@ sub changeset_update {
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets;
-    
+
     my $category       = $config->{category};
     my $status_on_ok   = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_fail} : $config->{status_on_ok};
     my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
@@ -180,10 +180,10 @@ sub changeset_update {
         _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
         $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
         Baseliner->model('Topic')->change_status(
-           change          => 1, 
+           change          => 1,
            username        => $job->username,
            id_status       => $status,
-           bl              => $stash->{bl}, 
+           bl              => $stash->{bl},
            #id_old_status   => $cs->id_category_status,
            mid             => $cs->mid,
         );
@@ -199,20 +199,20 @@ sub update_baselines {
     my $log   = $job->logger;
     my $type = $job->job_type;
     my $bl = $job->bl;
-    
+
     my %rev_repos;
-    
+
     if ( !$job->is_failed( status => 'last_finish_status')) {
         my @project_changes = @{ $stash->{project_changes} || [] };
         $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
-        
+
         # first, group revisions by repository
         for my $pc ( @project_changes ) {
             my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
             next unless ref $repo_revisions_items eq 'ARRAY';
             for my $rri ( @$repo_revisions_items ) {
                 my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
-                
+
                 # TODO if 2 projects share a repository, need to create different tags with project in str?
                 for my $revision ( _array( $revisions ) ) {
                     $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
@@ -220,7 +220,7 @@ sub update_baselines {
                 }
             }
         }
-        
+
         # now update
         for my $revgroup ( values %rev_repos ) {
             my $repo = delete $revgroup->{repo};
@@ -254,7 +254,7 @@ sub update_baselines {
             }
 
             # save previous revision by repo mid
-            $stash->{bl_original}{$repo->mid} = $out; 
+            $stash->{bl_original}{$repo->mid} = $out;
             $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
         }
     }
@@ -268,9 +268,9 @@ sub verify_revisions {
     my $log   = $job->logger;
     my $type = $job->job_type;
     my $bl = $job->bl;
-    
+
     my %rev_repos;
-    
+
     my @project_changes = @{ $stash->{project_changes} || [] };
     $log->info( _loc('Checking job revisions', scalar(@project_changes) ) );
     for my $pc ( @project_changes ) {
@@ -278,7 +278,7 @@ sub verify_revisions {
         next unless ref $repo_revisions_items eq 'ARRAY';
         for my $rri ( @$repo_revisions_items ) {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
-            
+
             # TODO if 2 projects share a repository, look into tags from both?
             for my $revision ( _array( $revisions ) ) {
                 $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
@@ -286,7 +286,7 @@ sub verify_revisions {
             }
         }
     }
-    
+
     # now verify, only once for each repository
     for my $revgroup ( values %rev_repos ) {
         my $repo = delete $revgroup->{repo};
@@ -304,18 +304,18 @@ sub job_items {
     my $stash = $c->stash;
     my $job   = $stash->{job};
     my $log   = $job->logger;
-    
+
     my $type = $job->job_type;
     my $bl = $job->bl;
     my $all_bls = join '|', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
     my $rename_mode = $config->{rename_mode} // 'on';
-    
+
     my %projects;
     my @project_changes;
     my %all_items;
 
     $log->debug( _loc( "Loading items into stash... (type=%1, bl=%2)", $type, $bl ) );
-    
+
     # group changesets by project->repos->revisions
     for my $cs ( _array( $stash->{changesets} )  ) {
         my ($project) = $cs->projects;
@@ -327,7 +327,7 @@ sub job_items {
         for my $rev ( _array( $cs->revisions ) ) {
             my $repo = $rev->repo;
             $projects{ $project->mid }{repos}{ $repo->mid }{repo} //= $repo;
-            push @{ $projects{ $project->mid }{repos}{ $repo->mid }{revisions} }, $rev; 
+            push @{ $projects{ $project->mid }{repos}{ $repo->mid }{revisions} }, $rev;
         }
         _debug("Changeset $cs->{mid} detected for job");
     }
@@ -337,11 +337,11 @@ sub job_items {
         my $pc = { project => $project };
         $repos //= {};
         my @items;
-        
+
         # Topic files - group
         my %topic_files;
         for my $cs ( _array( $changesets )  ) {
-            my %mid_files = 
+            my %mid_files =
                 map { $_->{to_mid} => $_->{rel_field} }
                 mdb->master_rel->find({ from_mid=>$cs->mid, rel_type=>'topic_asset' })->all;
 
@@ -359,18 +359,18 @@ sub job_items {
                    next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
                    $fullpath =~ s/{$bl}//g; # cleanup
                }
-           
+
                my $versionid = $tfile->versionid;
                $tfile->fullpath( $fullpath );
                # if I'm the highest version, then save. Topic files are unique by project + path
                my $unique_key = $project . '&%&' . $fullpath;
                $topic_files{$unique_key} = { item=>$tfile, row=>$tfile, mid=>$mid, versionid=>$versionid }
                    if !exists $topic_files{$unique_key} || $topic_files{$unique_key}->{versionid} < $versionid;
-            } 
+            }
         }
         # Topic files - finalize groupings
         @items = map { $_->{item} } values %topic_files;
-    
+
         # Now work with Repositories
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
@@ -385,16 +385,16 @@ sub job_items {
                 $it;
             } grep {
                 # select only files for this BL
-                $rename_mode 
+                $rename_mode
                 ? ( $_->path =~ /{$bl}/ || $_->path !~ /{($all_bls)}/ )
-                : 1 
+                : 1
             } @repo_items;
             push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
         }
         $project->{items} = \@items;
         $stash->{project_items}{ $project->mid }{items} = \@items;
         $all_items{ $_->{fullpath} || $_->{path}}=$_ for @items;
-        push @project_changes, $pc; 
+        push @project_changes, $pc;
     }
     # put unique items into stash
     $stash->{items} = [ values %all_items ];
@@ -413,10 +413,10 @@ sub job_items {
 
     # save project-repository-revisions structure
     $stash->{project_changes} = \@project_changes;
-    
-    my $cnt = scalar keys %all_items; 
-    $log->info( _loc( "Found %1 items for this job", $cnt ), [ keys %all_items ] ); 
-    
+
+    my $cnt = scalar keys %all_items;
+    $log->info( _loc( "Found %1 items for this job", $cnt ), [ keys %all_items ] );
+
     { project_count=>scalar keys %projects };
 }
 
@@ -428,9 +428,9 @@ sub checkout_bl {
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
     _fail _loc 'Missing job_dir' unless length $job_dir;
-    
+
     my @project_changes = @{ $stash->{project_changes} || [] };
-    
+
     $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
     for my $pc ( @project_changes ) {
         my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
@@ -457,9 +457,9 @@ sub checkout_bl_all_repos {
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
     _fail _loc 'Missing job_dir' unless length $job_dir;
-    
+
     my @project_changes = @{ $stash->{project_changes} || [] };
-    
+
     $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
     for my $pc ( @project_changes ) {
         my ($project) = @{ $pc }{ qw/project/ };
@@ -511,7 +511,7 @@ sub checkout {
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     _fail _loc 'Missing job_dir' unless length $job_dir;
-    
+
     my $cnt = 0;
     # TODO group all items by repo provider and ask repo for a multi-item checkout
     my @items = _array( $stash->{items} );
@@ -540,13 +540,13 @@ sub nature_items {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
+
     my $commit_items = $config->{commit_items} // 0;
 
-    $stash->{natures} = {}; 
+    $stash->{natures} = {};
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
     $log->info( _loc('Starting nature analysis for all job items...') );
-   
+
     my @nat_rows =  ci->nature->find({active=>'1'})->fields({ mid=>1 })->all;
     my @projects = _array( $job->projects );
     my $start_t = Util->_ts();
@@ -575,7 +575,7 @@ sub nature_items {
                     $nature_names{ $nature->name }++;
                     $job->push_ci_unique( 'natures', $nature_clon );
                     push @chosen, $it;
-                    
+
                     push @msg, "MATCH = " . $it->path;
                     #last ITEM;
                 } else {
@@ -598,12 +598,12 @@ sub nature_items {
         }
     }
     return 0;
-}    
-    
+}
+
 register 'service.approval.request' => {
     name    => 'Request Approval',
-    #icon => '/static/images/icons/user_delete.gif', 
-    icon => '/static/images/icons/user_green.png', 
+    #icon => '/static/images/icons/user_delete.gif',
+    icon => '/static/images/icons/user_green.png',
     form => '/forms/approval_request.js',
     job_service  => 1,
     handler => \&request_approval,
@@ -648,7 +648,7 @@ sub request_approval {
         project => \@projects
     };
 
-    event_new 'event.job.approval_request' => 
+    event_new 'event.job.approval_request' =>
         { job => $job, subject => $subject, notify => $notify, username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
         $job->approval_config( $config );
         $job->final_status( 'APPROVAL' );

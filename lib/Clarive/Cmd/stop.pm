@@ -36,7 +36,7 @@ sub run {
             exit 1;
         }
         print "Nginx server stopped\n";
-    }    
+    }
 
     #Stop Clarive web interface
     try {

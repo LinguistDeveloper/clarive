@@ -21,13 +21,13 @@ has 'lc' => (
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
         if( ! -e $file ) {
             return {};
-            my $tfile = _file( $feature->root, '..', 'etc', 'lc.yaml.example' ); 
+            my $tfile = _file( $feature->root, '..', 'etc', 'lc.yaml.example' );
             File::Copy::copy( $tfile, $file );
         }
         open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
         my $fi = join '', <$ff>;
         utf8::downgrade( $fi );
-        my $lc = _load( $fi ); 
+        my $lc = _load( $fi );
         close $ff;
         # now from config
         my $ch = Baseliner->config->{lifecycle} || {};
@@ -36,7 +36,7 @@ has 'lc' => (
     }
 );
 
-has 'state_data' => qw(is rw isa HashRef lazy 1), 
+has 'state_data' => qw(is rw isa HashRef lazy 1),
     default => sub{
         my $self = shift;
         my $lc = $self->lc;
@@ -141,11 +141,11 @@ sub lc_for_project {
                 push @nodes, {
                   node   => $repo->name,
                   type   => 'changeset',
-                  url    => $repo->content_url, 
+                  url    => $repo->content_url,
                   active => 1,
                   icon   => $repo->icon,
                   data   => {
-                    id_repo => $id_repo  
+                    id_repo => $id_repo
                   }
                 };
             } catch {
@@ -154,39 +154,39 @@ sub lc_for_project {
                 my $msg = _loc('Error loading repository %1: %2', $id_repo, $err);
                 _error( $msg );
                 push @nodes, {
-                  node    => substr($msg,0,80), 
+                  node    => substr($msg,0,80),
                   active  => 1,
                   leaf    => \1,
                   icon    => '/static/images/icons/error.png',
                   data    => { id_repo => $id_repo }
                 };
-                
+
             };
         }
     }
     # General bag for starting the deployment workflow
     # Show states only if user has action for that project
-    
+
     my @states;
     my @projects_with_lc = Baseliner->model('Permissions')->user_projects_with_action( username => $username, action => 'action.project.see_lc');
     my @user_workflow = _unique map {$_->{id_status_from} } Baseliner->model("Topic")->user_workflow( $username );
 
-    if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {   
+    if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {
 
         # States-Statuses with bl and type = D (Deployable)
-        my @deployable_statuses = map { $_->{id_status} } ci->status->find({ type=>'D' })->sort({ seq=>1 })->all; 
-        
-        my @from_statuses = 
-                _unique map { $_->{id_status_from} } 
-                grep { 
-                    $$_{id_status_from} ~~ @user_workflow 
-                    && $$_{id_status_to} ~~ @deployable_statuses 
+        my @deployable_statuses = map { $_->{id_status} } ci->status->find({ type=>'D' })->sort({ seq=>1 })->all;
+
+        my @from_statuses =
+                _unique map { $_->{id_status_from} }
+                grep {
+                    $$_{id_status_from} ~~ @user_workflow
+                    && $$_{id_status_to} ~~ @deployable_statuses
                 }
                 map { _array($$_{workflow}) }
                 mdb->category->find->fields({ workflow=>1 })->all;
-        push @from_statuses, map { $_->{id_status} } ci->status->find({ view_in_tree => '1' })->sort({ seq=>1 })->all; 
+        push @from_statuses, map { $_->{id_status} } ci->status->find({ view_in_tree => '1' })->sort({ seq=>1 })->all;
         @from_statuses = _unique(@from_statuses);
-        
+
         push @states, map {
                 my $project_ci = ci->new($id_prj);
                 my @project_bls = map { $_->{bl} } _array $project_ci->bls;
@@ -204,9 +204,9 @@ sub lc_for_project {
                 };
             } sort {
                 $a->{seq} <=> $b->{seq}
-            } grep { 
+            } grep {
                 ref $_ eq 'BaselinerX::CI::status'
-            } 
+            }
             BaselinerX::CI::status->query( { id_status =>mdb->in(@from_statuses) } );
     } else {
         # publish an warning node
@@ -238,7 +238,7 @@ sub project_repos {
     my @ret;
     for my $assoc ( @{ $lc->{projects} } ) {
         next unless $assoc->{name} eq $prj;
-        push @ret, _array $assoc->{repositories}; 
+        push @ret, _array $assoc->{repositories};
     }
     @ret;
 }
@@ -248,7 +248,7 @@ sub all_repos {
     my $lc = $self->lc;
     my @ret;
     for my $assoc ( @{ $lc->{projects} } ) {
-        push @ret, { project=>$assoc->{name}, repositories=>$assoc->{repositories} } 
+        push @ret, { project=>$assoc->{name}, repositories=>$assoc->{repositories} }
     }
     @ret;
 }

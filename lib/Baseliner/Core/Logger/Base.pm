@@ -8,7 +8,7 @@ with 'Baseliner::Role::Logger';
 sub info {
     my $self = shift;
     return unless @_;
-    my $msg = join('', grep { defined } @_ ) . "\n"; 
+    my $msg = join('', grep { defined } @_ ) . "\n";
     my $cb_ret = $self->cb->( $msg );
     $msg = $cb_ret if defined $cb_ret && !ref $cb_ret;
     $self->output( $msg ) unless $self->quiet;

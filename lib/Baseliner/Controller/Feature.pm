@@ -27,7 +27,7 @@ sub restart_server : Local {
     _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
-        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"; 
+        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}";
         kill HUP => $ENV{BASELINER_PARENT_PID};
     } else {
         _log _loc "Server restart requested. Using bali-web restart";
@@ -60,7 +60,7 @@ sub local_get : Local {
     my $f = _file( $file );
     $c->res->cookies->{ $p->{id} } = { value=>1, expires=>time()+1000 } if $p->{id};
     $c->stash->{serve_filename} = $f->basename;
-    $c->stash->{serve_body} = $f->slurp; 
+    $c->stash->{serve_body} = $f->slurp;
     $c->forward('/serve_file');
 }
 
@@ -86,7 +86,7 @@ sub install_cpan : Local {
             _debug( "Installing $file with cpanm..." );
             push @log, "===========[ Installing $file ]=========", $/;
             my $ret = `cpanm -n '$file' 2>&1`;  # TODO use cpanm from a module
-            
+
             my $app = App::cpanminus::script->new;
             # patch fix this module
             $app->parse_options( '-n', $file );
@@ -118,7 +118,7 @@ sub installed_cpan : Local {
                 version => '',
             }
         } @modules;
-        
+
         { success => \1, msg => 'ok', data => \@data };
     }
     catch {
@@ -159,7 +159,7 @@ sub local_cpan : Local {
 sub upload_cpan : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    $c->stash->{json} = try { 
+    $c->stash->{json} = try {
         _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
         $dir->mkpath unless -d "$dir";
@@ -168,7 +168,7 @@ sub upload_cpan : Local {
         $p->{filepath} = $dir->file( $p->{filename} );
         _debug "CPAN filepath = $p->{filepath}";
         open( my $ff, '>', "$p->{filepath}" )
-            or _fail _loc 'Error opening file %1: %2', $p->{filepath}, $!; 
+            or _fail _loc 'Error opening file %1: %2', $p->{filepath}, $!;
         binmode $ff;
         print $ff from_base64( $p->{data} );
         close $ff;
@@ -187,7 +187,7 @@ sub upload_file_b64 : Private {
     $data = from_base64( $data );
     # dump to file
     open( my $ff, '>', $p->{filepath} )
-        or _fail _loc 'Error opening file: %1', $!; 
+        or _fail _loc 'Error opening file: %1', $!;
     binmode $ff;
     print $ff $data;
     close $ff;
@@ -206,19 +206,19 @@ sub pull : Local {
         my $branch = $p->{branch} // _fail _loc 'Missing branch';
         my $filename = "upgrade-$id.bundle";
         my ($feature) = grep { $_->name eq $p->{feature} } $c->features->list;
-        my $filepath =  $p->{feature} eq 'clarive' 
+        my $filepath =  $p->{feature} eq 'clarive'
             ? $c->path_to( $filename )
-            : $c->path_to( 'features', $feature->id, $filename ); 
+            : $c->path_to( 'features', $feature->id, $filename );
         push @log, _loc "file: %1", $filepath;
 
         $self->upload_file_b64({ data=>$data, id=>$id, filepath=>$filepath });
 
-        # cd to .git and verify file 
-        my $repohome = $p->{feature} eq 'clarive' 
+        # cd to .git and verify file
+        my $repohome = $p->{feature} eq 'clarive'
             ? $c->path_to( '.git' )
-            : $c->path_to( 'features', $feature->id, '.git' ); 
+            : $c->path_to( 'features', $feature->id, '.git' );
         my $git = Git::Wrapper->new( $repohome );
-        my @verify = $git->bundle('verify', "$filepath" ); 
+        my @verify = $git->bundle('verify', "$filepath" );
         # add / replace remote patch
         my $remote = 'patch';
         push @log, _loc 'remote setup: remote add %1 %2', $remote, $filepath;
@@ -229,15 +229,15 @@ sub pull : Local {
         push @log, _loc 'remote add/set-url: %1', $remote;
         push @log, _loc('Fetching from remote %1 into branch %2', $remote, $branch);
         my @fetch;
-        push @fetch, $git->fetch( $remote ); 
-        push @fetch, $git->fetch( $remote, '--tags' ); 
+        push @fetch, $git->fetch( $remote );
+        push @fetch, $git->fetch( $remote, '--tags' );
         push @log, @fetch;
-        
+
         # delete file
         unlink $filepath;
-        
+
         # checkout?
-        
+
         { success=>\1, msg=>'ok', filepath=>"$filepath", verify=>\@verify, fetch=>\@fetch, log=>\@log };
     } catch {
         my $err = shift;
@@ -256,7 +256,7 @@ sub list_repositories : Local {
         my @repositories = map { { feature=>$_->name, dir=>$_->path . '/.git' } } @features;
         unshift @repositories, { feature=>'clarive', dir=>$c->path_to('.git') . '' };
         @repositories = grep { -d $_->{dir} } @repositories;
-        
+
         my $remote = 'patch';
         for my $repo ( @repositories ) {
             my $git = Git::Wrapper->new( $repo->{dir} );
@@ -273,9 +273,9 @@ sub list_repositories : Local {
             }
             # get the current branch name
             $repo->{branch} = try { ($git->symbolic_ref( 'HEAD' ))[0] } catch { '' };
-            #$repo->{branch} = scalar _file( $repo->{dir}, 'HEAD' )->slurp; 
+            #$repo->{branch} = scalar _file( $repo->{dir}, 'HEAD' )->slurp;
             $repo->{branch} =~ s{^.*/(.*?)$}{$1}g;
-            # fetch_head - try to find out which is the latest commit from remote/patch 
+            # fetch_head - try to find out which is the latest commit from remote/patch
             $repo->{fetch_head} = try {
                 ( $git->RUN('rev-parse', "remotes/$remote/" . $repo->{branch} ) )[0]
             } catch {
@@ -296,7 +296,7 @@ sub list_repositories : Local {
             # list of available tags:
             $repo->{versions} = [ 'HEAD', reverse sort $git->tag(), @heads, @patches ];
         }
-        @repositories = sort { 
+        @repositories = sort {
             $a->{feature} eq 'clarive' ? -1 : $b->{feature} eq 'clarive' ? 1 : $a->{feature} cmp $b->{feature}
             } @repositories;
         { success=>\1, msg=>'ok', totalCount=>scalar@repositories, data=>\@repositories };

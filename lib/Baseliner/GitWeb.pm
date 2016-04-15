@@ -2909,7 +2909,7 @@ sub gitweb_cgi {
         my $filter = shift || '';
         my @list;
 
-        # rgo 
+        # rgo
         ref $self->{projects_list} && return Baseliner::Utils::_array( $self->{projects_list} ) ;
 
         $filter =~ s/\.git$//;
@@ -3969,8 +3969,8 @@ EOF
             insert_file($site_header);
         }
 
-        # rgo 
-        if( 0 ) { 
+        # rgo
+        if( 0 ) {
         print "<div class=\"page_header\">\n";
         if ( defined $logo ) {
             print $cgi->a(
@@ -4255,8 +4255,8 @@ EOF
 
 
         if ( $page > 0 ) {
-            $paging_nav 
-                .= $cgi->a( { -href => href( -replay => 1, page => undef ) }, "first" ) 
+            $paging_nav
+                .= $cgi->a( { -href => href( -replay => 1, page => undef ) }, "first" )
                 . " &sdot; "
                 . $cgi->a(
                 {   -href      => href( -replay => 1, page => $page - 1 ),
@@ -5890,7 +5890,7 @@ EOF
                 print "<tr class=\"light\">\n";
             }
             $alternate ^= 1;
-            print "<td><i>$ref{'age'}</i></td>\n" 
+            print "<td><i>$ref{'age'}</i></td>\n"
                 . ( $curr ? "<td class=\"current_head\">" : "<td>" )
                 . $cgi->a(
                 {   -href  => href( action => "shortlog", hash => $ref{'fullname'} ),
@@ -7121,8 +7121,8 @@ EOF
         print "<div class=\"title_text\">\n" . "<table class=\"object_header\">\n";
         git_print_authorship_rows( \%co );
         print "<tr><td>commit</td><td class=\"sha1\">$co{'id'}</td></tr>\n";
-        print "<tr>" 
-            . "<td>tree</td>" 
+        print "<tr>"
+            . "<td>tree</td>"
             . "<td class=\"sha1\">"
             . $cgi->a(
             {   -href => href( action => "tree", hash => $co{'tree'}, hash_base => $hash ),
@@ -7141,8 +7141,8 @@ EOF
         print "</td>" . "</tr>\n";
 
         foreach my $par (@$parents) {
-            print "<tr>" 
-                . "<td>parent</td>" 
+            print "<tr>"
+                . "<td>parent</td>"
                 . "<td class=\"sha1\">"
                 . $cgi->a(
                 {   -href => href( action => "commit", hash => $par ),
@@ -7584,7 +7584,7 @@ EOF
 
         # write patch
         if ( $format eq 'html' ) {
-            my $use_parents 
+            my $use_parents
                 = !defined $hash_parent
                 || $hash_parent eq '-c'
                 || $hash_parent eq '--cc';

@@ -31,9 +31,9 @@ sub test_login{
 
 for (my $var = 0; $var < 20; $var++) {
     say "\nAttempt:" . $var . " Date: " . scalar localtime ();
-    if ($var == 10) { 
+    if ($var == 10) {
         say "\n\n\n Wait 6s for unblock... and test with more incorrect user. \n\n\n";
-        sleep(6); 
+        sleep(6);
     }
     test_login('test_user','test_pass');
 }

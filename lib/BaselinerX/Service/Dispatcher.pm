@@ -14,7 +14,7 @@ with 'Baseliner::Role::Service';
 
 =head1 DESCRIPTION
 
-Brings up all daemons. 
+Brings up all daemons.
 
 Checks the daemon table to see if they are active. Stops daemons when they are not.
 
@@ -28,7 +28,7 @@ register 'config.dispatcher' => {
 register 'service.dispatcher' => {
     name    => 'Dispatcher Service',
     config  => 'config.dispatcher',
-    icon => '/static/images/icons/daemon.gif', 
+    icon => '/static/images/icons/daemon.gif',
     daemon => 1,
     handler => \&run,
 };
@@ -79,7 +79,7 @@ sub list {
     _log "Listing active daemons...";
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1, disp_id => $self->disp_id ) ) {
         my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
-        
+
         if ( $instance ) {
             my $pid = $instance->{pid};
 
@@ -105,7 +105,7 @@ sub stop_all {
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1, disp_id => $self->disp_id ) ) {
         if ( $daemon->{active} ) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
-            
+
             if ( $instance ) {
                 next unless $instance->{pid};
                 next unless pexists( $instance->{pid} );
@@ -133,7 +133,7 @@ sub restart_all {
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1, disp_id => $self->disp_id ) ) {
         if ( $daemon->{active} ) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
-            
+
             if ( $instance ) {
                 next unless $instance->{pid};
                 next unless pexists( $instance->{pid} );
@@ -156,9 +156,9 @@ sub dispatcher {
     my $frequency = $config->{frequency};
 
     my %sigs = map {
-        $_ => $SIG{$_} 
+        $_ => $SIG{$_}
     } qw(HUP TERM STOP USR1);
-    
+
     $SIG{HUP}  = sub { $self->restart_all( $c, @args ); $sigs{HUP} and $sigs{HUP}->() unless ref $sigs{HUP}  ne 'CODE' };
     $SIG{TERM} = sub { $self->stop_all( $c, @args ); $sigs{TERM} and $sigs{TERM}->() };
     $SIG{STOP} = sub { $self->stop_all( $c, @args ); $sigs{STOP} and $sigs{STOP}->() };
@@ -194,7 +194,7 @@ sub dispatcher {
         };
         for my $daemon (@daemons) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
-            
+
             if ( $instance ) {
                 $self->check_daemon( { daemon => $daemon }, $config );
             } else {
@@ -210,25 +210,25 @@ sub dispatcher {
         };
         for my $daemon (@daemons) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
-            
+
             if ( $instance ) {
                 _debug "Stopping daemon " . $daemon->{service} . " not active any more in instance ".$self->disp_id;
                 Baseliner->model('Daemons')->kill_daemon($daemon, 9, $self->disp_id);
             }
-        }        
+        }
         sleep $frequency;
     }
 }
 
 sub check_daemon {
-    my ($self, $p, $config ) = @_;  
+    my ($self, $p, $config ) = @_;
 
     my $daemon = $p->{daemon};
     my $new_disp = $p->{new_disp} // 0;
 
     my ($instance) = grep { $_->{disp_id} eq $self->disp_id } _array $daemon->{active_instances};
 #    _debug("Found instance: "._dump $instance);
-    
+
     if ( !$daemon->{active} ) {
         if ( !$new_disp ) {
             return unless $instance && $instance->{pid};
@@ -247,7 +247,7 @@ sub check_daemon {
                             'active_instances.$.last_ping' => mdb->ts
                         }
                     });
-                return;          
+                return;
             };
             if ( exists $self->failed_services->{ $daemon->{service} } ) {
                 mdb->daemon->update(
@@ -256,7 +256,7 @@ sub check_daemon {
                             'active_instances.$.last_ping' => mdb->ts
                         }
                     });
-                return;                              
+                return;
             }  # ignore failing services
         }
         _debug "Starting daemon " . $daemon->{service};

@@ -24,11 +24,11 @@ sub update {
         my $more = $p->{more} || '';
         my $username = $p->{username} || undef;
         my $from = $p->{from} || undef;
-        
+
         my $exp = $p->{exp};
-        
-        my $ret = mdb->sms->update({ _id=>$_id },{ 
-            '$set'=>{ title=>$title, text=>$text, more=>$more, from=>$from, username=>$username, ua=>$p->{user_agent}, expires=>"$exp" }, 
+
+        my $ret = mdb->sms->update({ _id=>$_id },{
+            '$set'=>{ title=>$title, text=>$text, more=>$more, from=>$from, username=>$username, ua=>$p->{user_agent}, expires=>"$exp" },
             '$currentDate'=>{ t=>boolean::true } },{upsert=>1}
         );
         event_new 'event.sms.new' => { username => $username } => sub {
@@ -56,7 +56,7 @@ sub sms_set_indexes {
     my $expire_secs = 2_764_800;  # 32 days, 1 day above max system message of 30 days
     if( scalar mdb->sms->get_indexes < 4 ) {   # works if the collection does not exist or missing indexes
         mdb->sms->drop_indexes;
-        Util->_debug( 'Creating mongo sms indexes. Expire seconds=' . $expire_secs ); 
+        Util->_debug( 'Creating mongo sms indexes. Expire seconds=' . $expire_secs );
         my $coll = mdb->db->get_collection('sms');
         $coll->ensure_index($_,{ background=>1 }) for ({ _id=>1 }, { username=>1 },{ expires=>1 });
         $coll->ensure_index({ t=>1 },{ expire_after_seconds=>$expire_secs }); # 1 month max
@@ -70,8 +70,8 @@ sub sms_set_indexes {
 sub sms_get {
     my ( $self, $id, $p ) = @_;
 
-    my $msg = mdb->sms->find_and_modify({ 
-        query=>{ _id=>mdb->oid($id) }, 
+    my $msg = mdb->sms->find_and_modify({
+        query=>{ _id=>mdb->oid($id) },
         update=>{ '$push'=>{ 'shown'=>{u=>$p->{username}, ts=>$p->{ts}, ua=>$p->{user_agent}, add=>$p->{address} } } },
         new=>1,
     });
@@ -81,10 +81,10 @@ sub sms_get {
 
 sub sms_list {
     my ( $self, $ts ) = @_;
-    my @sms = map { 
-        $$_{_id}.=''; 
+    my @sms = map {
+        $$_{_id}.='';
         $$_{expired} = $$_{expires} gt $ts ? \0 : \1;
-        $_ 
+        $_
     } mdb->sms->find->fields({ t=>0 })->sort({ t=>-1 })->all;
     return @sms;
 }

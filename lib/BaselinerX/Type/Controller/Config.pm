@@ -10,7 +10,7 @@ BEGIN { extends 'Catalyst::Controller' };
 sub generate_form : Path('/config/generate_form') {
     my ($self,$c, $key )=@_;
 
-    $c->stash->{ns_filter} = { start=>0, limit=>100 };     
+    $c->stash->{ns_filter} = { start=>0, limit=>100 };
     #$c->forward('/namespace/load_namespaces');
     $c->forward('/baseline/load_baselines');
 
@@ -18,7 +18,7 @@ sub generate_form : Path('/config/generate_form') {
 
     my $config = $c->registry->get( $key || 'config.nature.j2ee.build' );
     $c->stash->{metadata} = $config->metadata;
-        
+
     $c->stash->{template} = '/comp/config/config_form.mas';
 }
 
@@ -34,7 +34,7 @@ sub form : Path('/config/form') {
        my @meta;
        for( @{ $key || [] } ) {
            my $config = $c->model('Registry')->get( $_ );
-           push @meta, $config->metadata if ref $config; 
+           push @meta, $config->metadata if ref $config;
        }
        $c->stash->{config} = \@meta;
     } else {
@@ -47,7 +47,7 @@ sub form : Path('/config/form') {
 
 sub form_render : Private {
     my ($self,$c)=@_;
-    $c->stash->{ns_filter} = { start=>0, limit=>100 };     
+    $c->stash->{ns_filter} = { start=>0, limit=>100 };
     #$c->forward('/namespace/load_namespaces');
     $c->forward('/baseline/load_baselines');
     $c->stash->{url_submit} = '/config/submit';
@@ -87,7 +87,7 @@ sub json : Local {
     } else {  # all data for ns/bl
         my $ns = $c->request->params->{ns};
         my $bl = $c->request->params->{bl};
-        my @keys = $c->model('ConfigStore')->filter_ns( $ns );  
+        my @keys = $c->model('ConfigStore')->filter_ns( $ns );
         foreach my $key ( @keys ) {
             my $inf = $c->model('ConfigStore')->get( $key , ns=>$ns, bl=>$bl, long_key=>1 );
             if( defined $inf ) {
@@ -96,7 +96,7 @@ sub json : Local {
             }
         }
     }
-    $c->stash->{json} = { success=>\1, data => $data };  
+    $c->stash->{json} = { success=>\1, data => $data };
     $c->forward("View::JSON");
 }
 
@@ -129,7 +129,7 @@ sub ns_panel : Local {
     my @filter;
     if( defined $filter ) {
         push @filter, $filter;
-    } else { 
+    } else {
         push @filter, $c->model('ConfigStore')->filter_ns( $ns );
     }
     $c->stash->{metadata_filter} = [ @filter ];
@@ -141,7 +141,7 @@ sub field : Local {
     my $key = $c->request->parameters->{key};
     for my $config ( $c->model('ConfigStore')->all ) {
         my @metadata = $config->metadata_filter( $key );
-        if( scalar @metadata ) {  
+        if( scalar @metadata ) {
             $c->stash->{key} = $key;
             my $row = shift @metadata;   # we can only handle one key
             $c->stash->{metadata_row} = $row;

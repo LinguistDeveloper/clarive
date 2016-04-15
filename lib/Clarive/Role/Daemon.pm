@@ -3,7 +3,7 @@ use Mouse::Role;
 use Proc::Exists;
 use v5.10;
 
-requires 'instance_name'; 
+requires 'instance_name';
 
 has f          => qw(is rw default) => sub { 0 };
 has pid_name => qw(is rw isa Str);
@@ -22,15 +22,15 @@ with 'Clarive::Role::TempDir';
 sub nohup {
     my ($self, $proc ) = @_;
     ref $proc eq 'CODE' or die "missing parameter proc";
-    
+
     # TODO redirect stdout and error somewhere else
     #open STDOUT, '>', '/dev/null' or die "Could not redirect STDOUT: $!";
     #open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
-    
+
     require POSIX;
     local $SIG{HUP} = 'IGNORE';
     my $pid = fork;
-    if ($pid) { 
+    if ($pid) {
         $self->_write_pid( $pid );
         $self->save_opts();
         return $pid
@@ -49,7 +49,7 @@ sub _cleanup_logs {
     my ($self, $logfile ) = @_;
 
     $logfile //= $self->log_file;
-    
+
     return unless $logfile;
 
     # cleanup > 10
@@ -69,18 +69,18 @@ sub _log_zip {
         require DateTime;
         my $dt = DateTime->now;
         $dt =~ s{\W}{_}g;
-        my $oldlog = $self->log_file . ".$dt.gz"; 
+        my $oldlog = $self->log_file . ".$dt.gz";
         #rename $self->log_file, $oldlog;
         require IO::Compress::Gzip;
         IO::Compress::Gzip::gzip( $self->log_file, $oldlog );
-        unlink $self->log_file; 
+        unlink $self->log_file;
         say "Previous log file renamed to $oldlog";
     }
-} 
+}
 
 sub setup_pid_file {
     my ($self)=@_;
-   
+
     $self->pid_name( $self->pid_dir . '/' . $self->instance_name );
     $self->pid_file( $self->pid_name . '.pid' );
     say 'pid_file: ' . $self->pid_file;
@@ -103,14 +103,14 @@ sub check_pid_exists {
             # should not be there
             unlink $self->pid_file;
         }
-    } 
+    }
 }
 
 sub run_stop {
     my ($self,%opts) = @_;
-    
+
     my $pid = $self->_find_pid;
-    
+
     if( Proc::Exists::pexists( $pid ) ) {
         say "Shutting down server with process $pid...";
         $self->_kill( $self->signal, $pid, $opts{no_wait_kill} );
@@ -165,15 +165,15 @@ sub _write_pid {
     # write pid to pidfile
     open(my $pf, '>', $self->pid_file ) or die "Could not open pidfile: $!";
         print $pf $pid // $$;
-    close $pf; 
+    close $pf;
 }
 
 sub save_opts {
     my ($self, $pid) = @_;
     # write opts to pidfile
     open(my $pf, '>', $self->opts_file ) or die "Could not open opts file: $!";
-        print $pf $self->app->yaml( $self->opts ); 
-    close $pf; 
+        print $pf $self->app->yaml( $self->opts );
+    close $pf;
 }
 
 sub _find_pid {
@@ -216,13 +216,13 @@ sub _kill {
                 $self->f( 0 );
                 warn "Could not stop server. Sending KILL signal\n";
                 $self->_kill( 9 => $pid, $no_wait_kill );
-            } 
+            }
             die "ERROR: could not stop server with process $pid.\n";
         } else {
             say "Server stopped.";
         }
     } else {
-        say "Signal $sig sent to server $pid."; 
+        say "Signal $sig sent to server $pid.";
     }
 }
 
@@ -243,7 +243,7 @@ stops the server.
 
 restarts the server.
 
-=head2 log 
+=head2 log
 
 prints the logfile to screen.
 

@@ -2,16 +2,16 @@ package Clarive::Cmd;
 use Mouse;
 use v5.10;
 
-has app => qw(is ro required 1), 
+has app => qw(is ro required 1),
             handles=>[qw/
-                lang 
-                env 
-                home 
+                lang
+                env
+                home
                 base
-                debug 
+                debug
                 trace
-                verbose 
-                args 
+                verbose
+                args
                 argv
                 pos
             /];
@@ -24,7 +24,7 @@ around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
     my %p = @_;
-    $p{help} //= 1 if exists $p{h}; 
+    $p{help} //= 1 if exists $p{h};
     $self->$orig( %p );
 };
 

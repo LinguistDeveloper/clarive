@@ -1,7 +1,7 @@
 package Baseliner::Plugin::ConfigExternal;
 use Moose;
 
-sub setup { 
+sub setup {
     my $c = shift;
     # config / options from a supervisor? -- have higher precedence than .conf files
     if( ref $Baseliner::BASE_OPTS eq 'HASH' ) {

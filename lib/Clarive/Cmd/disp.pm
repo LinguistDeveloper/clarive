@@ -45,12 +45,12 @@ sub run_start {
         say 'log_file: ' . $self->log_file;
         #$self->_log_zip( $self->log_file );
         #$self->_cleanup_logs( $self->log_file );
-        $self->nohup( sub { 
-            $self->bali_service( 'service.dispatcher', %opts ); 
+        $self->nohup( sub {
+            $self->bali_service( 'service.dispatcher', %opts );
         });
     } else {
         $self->_write_pid();
-        $self->bali_service( 'service.dispatcher', %opts ); 
+        $self->bali_service( 'service.dispatcher', %opts );
     }
 }
 

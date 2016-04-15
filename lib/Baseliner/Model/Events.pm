@@ -24,14 +24,14 @@ with 'Baseliner::Role::CacheProxy' => {
 register 'config.events' => {
     name => 'Event daemon configuration',
     metadata => [
-        { id=>'frequency', label=>'event daemon frequency (secs)', default=>15 },    
-        { id=>'timeout', label=>'event daemon event rule runner timeout (secs)', default=>30 },    
+        { id=>'frequency', label=>'event daemon frequency (secs)', default=>15 },
+        { id=>'timeout', label=>'event daemon event rule runner timeout (secs)', default=>30 },
     ]
 };
 
 register 'service.event.daemon' => {
     daemon => 1,
-    icon => '/static/images/icons/daemon.gif', 
+    icon => '/static/images/icons/daemon.gif',
     config => 'config.events',
     handler => sub {
         my ($self, $c, $config ) = @_;
@@ -41,7 +41,7 @@ register 'service.event.daemon' => {
         for( 1..1000 ) {
             $self->run_once( $c, $config );
             sleep( $config->{frequency} );
-        } 
+        }
         # purge old events
         my $dt = _dt->subtract( days => ( $config->{purge_time} || 30 ) );
         $dt =  $dt->strftime('%Y-%m-%d %T');
@@ -78,29 +78,29 @@ sub run_once {
                 # save log
                 for my $rule ( _array( $ret->{rule_log} ) ) {
                     mdb->event_log->insert({
-                        id=>mdb->seq('event_log'), 
-                        id_event=> $ev->{id}, 
-                        id_rule=> $rule->{id}, 
-                        stash_data=> _dump( $rule->{ret} ), 
-                        return_code=>$rule->{rc}, 
+                        id=>mdb->seq('event_log'),
+                        id_event=> $ev->{id},
+                        id_rule=> $rule->{id},
+                        stash_data=> _dump( $rule->{ret} ),
+                        return_code=>$rule->{rc},
                         dsl => $rule->{dsl},
                         ts => mdb->ts,
                         log_output => $rule->{output},
                     });
                     $rc += $rule->{rc} if $rule->{rc};
                 }
-                
+
                 my $event_key = $ev->{event_key};
                 my $notify_scope = $stash->{notify};
                 my @notify_default;
-                
-                
+
+
                 my $config = config_get('config.notifications');
                 if (!$config->{exclude_default}){
                     push @notify_default, _array $stash->{notify_default} if $stash->{notify_default};
                     push @notify_default, $stash->{created_by} if $stash->{created_by};
                 }
-                
+
                 my $notification = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
                 my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email' )->{from};
                 if ($notification){
@@ -108,7 +108,7 @@ sub run_once {
                         my $topic = {};
                         $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
                         my $subject_parse = $notification->{$template}->{subject} // $stash->{subject};
-                        my $subject = parse_vars($subject_parse,{%$stash,%$topic} ) || try{ 
+                        my $subject = parse_vars($subject_parse,{%$stash,%$topic} ) || try{
                                 my $ev = Baseliner->registry->get( $event_key );
                                 my $msg = Util->_strip_html($ev->event_text( $stash ));
                                 substr( $msg, 0, 120 ) . ( length($msg)>120 ? '...' : '' );
@@ -125,25 +125,25 @@ sub run_once {
                         $model_messaging->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
                         $model_messaging->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
                         $model_messaging->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
-                        
+
                         $model_messaging->{vars} = {%$topic,%$stash};
                         $model_messaging->{vars}->{subject} = $subject;
                         $model_messaging->{vars}->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
                         $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
                         $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
-                            
+
                         my $rc_notify = 0;
                         my $err = '';
                         try {
                             Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
                         } catch {
-                            $err = shift;   
+                            $err = shift;
                             $rc_notify = 1;
                             $rc += $rc_notify;
                         };
-                        
+
                         mdb->event_log->insert({
-                            id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>$rc_notify, 
+                            id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>$rc_notify,
                             ts=>mdb->ts, log_output => $err, dsl=>'',
                         });
                     }
@@ -153,7 +153,7 @@ sub run_once {
                 mdb->event->update( {id => $ev->{id}}, {'$set'=>{event_status=>$event_status}});
             } catch {
                 my $err = shift;
-                # TODO global error or a rule by rule (errors go into rule, but event needs a global) 
+                # TODO global error or a rule by rule (errors go into rule, but event needs a global)
                 _error _loc 'event %1 failed (id=%2): %3', $ev->{event_key}, $ev->{id}, $err;
                 if( $err =~ m/^alarm/s ) {
                     alarm 0;

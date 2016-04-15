@@ -41,7 +41,7 @@ sub refs {
 
 =head2 exec
 
-Runs a command, dies on error. Chomps lines on success. 
+Runs a command, dies on error. Chomps lines on success.
 Returns a list.
 
 =cut
@@ -50,12 +50,12 @@ sub exec {
     my $git_cmd = ( defined $ENV{GIT_WRAPPER_GIT} ) ? $ENV{GIT_WRAPPER_GIT} : 'git';
     my $opts = ref $_[ $#_ ] ? pop @_ : {};
 
-    # TODO set work-tree  
+    # TODO set work-tree
     my $cmd;
     if( $opts->{cmd_unquoted} ) {
         $cmd = sprintf q{"%s" --git-dir '%s' %s}, $git_cmd,$self->dir, join ' ', @_;
     } else {
-        my $quoted = join ' ', map { my $s = $_; $s =~ s/"/\\"/g; '"'.$s.'"' } @_; 
+        my $quoted = join ' ', map { my $s = $_; $s =~ s/"/\\"/g; '"'.$s.'"' } @_;
         $cmd = sprintf q{"%s" --git-dir '%s' %s}, $git_cmd,$self->dir, $quoted;
     }
     _debug "Running GIT command ".$cmd;
@@ -68,7 +68,7 @@ sub exec {
         $rc = $?;
     }, \$stdout, \$stderr );
     #my @lines = $self->git->_cmd( @_ );
-    my @lines = split /\n/, $stdout; 
+    my @lines = split /\n/, $stdout;
     #chomp @lines unless $opts->{no_chomp};
     if( $rc ) {
         my $err_msg = sprintf "Error running git command %s: %s", $cmd, $stderr . "\n" . join('',@lines );
@@ -82,7 +82,7 @@ sub exec {
 sub run {
     my ($self, $cmd, @parms) = @_;
     $cmd =~ s/-/_/g;
-    return map { _to_utf8_git($_) } $self->git->$cmd( @parms ); 
+    return map { _to_utf8_git($_) } $self->git->$cmd( @parms );
 }
 
 sub _to_utf8_git {

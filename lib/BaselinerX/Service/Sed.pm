@@ -23,12 +23,12 @@ Some config examples:
         { pattern=>[ 's{^text}{done}g', 's{11}{12}g' ], include=>'txt$|html$' },
     ]
 
-Pattern is evalled, so escape vars when necessary. 
+Pattern is evalled, so escape vars when necessary.
 
 =head2 slurp mode
 
-Treats the whole file as a single string. Be careful when substituting a line, it may 
-delete the whole file. 
+Treats the whole file as a single string. Be careful when substituting a line, it may
+delete the whole file.
 
 =cut
 
@@ -37,7 +37,7 @@ register 'service.sed' => {
     form => '/forms/sed.js',
     icon => '/static/images/icons/rename_items.png',
     job_service  => 1,
-    handler => \&run 
+    handler => \&run
 };
 
 sub run {
@@ -47,14 +47,14 @@ sub run {
     my $job = $stash->{job};
     my $log = $job->logger;
 
-    my $path = $config->{path} 
+    my $path = $config->{path}
         or _fail _loc('Sed: Missing or invalid path in configuration');
 
     my $items_mode = $config->{items_mode} // 'all_files';
     my @items = _array( $stash->{nature_item_paths} );
 
     $log->info( _loc('Sed: starting: %1', $path ) );
-    
+
     -e $path or _fail _loc "Sed: Invalid path '%1'", $path;
 
     # check config
@@ -122,7 +122,7 @@ sub run {
         push @mods, "$f ($ret)" if $ret;
     });
 
-    $log->debug( _loc('Sed include/exclude.'), data=>join("\n", @log ) ); 
+    $log->debug( _loc('Sed include/exclude.'), data=>join("\n", @log ) );
     $log->info( _loc('Sed changes'), data=>_dump(\@mods) ) if @mods;
     $log->info( _loc('Sed finished. Changed %1 file(s).', scalar(@mods)) );
 }
@@ -159,9 +159,9 @@ sub process_file {
     my $cnt = 0;
 
     #_debug "Processing file $file with $p{patterns}";
-    my $sed_sub = sub { 
+    my $sed_sub = sub {
         my $data = shift;
-        
+
         # parse vars from stash
         my $parsed = Util->parse_vars( $data, $p{stash} ) if ref $p{stash};
         $cnt++ if $data ne $parsed;
@@ -177,11 +177,11 @@ sub process_file {
         my $data = join'',<$fin>;
         close $fin;
         $data = $sed_sub->($data);
-        # slurp out 
+        # slurp out
         open my $fout, '>', "$output_file" or _fail _loc("Sed: failed to write to file '%1': %2", "$output_file", $!);;
         print $fout $data;
         close $fout;
-    } 
+    }
     else {
         my $tmpfile = file "$output_file" . '-' . $$ . '.bak';
         open my $fout, '>', $tmpfile or _fail _loc("Sed: failed to write to file '%1': %2", $tmpfile, $!);;

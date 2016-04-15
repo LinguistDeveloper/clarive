@@ -41,7 +41,7 @@ sub json : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    
+
     $sort ||= 'role';
     $dir ||= 'asc';
     if($dir =~ /asc/i){
@@ -81,7 +81,7 @@ sub json : Local {
         my $actions_txt = \@actions;
         next if $query
             && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r, map { +{ action=>$_ } } @actions, @invalid_actions ] );
-        
+
         # if the query has a dot, filter actions
         if( defined $query && $query =~ /\./ ) {
             @actions = grep { $a = join ',', values %$_; $a =~ /$query/i } @actions;
@@ -98,15 +98,15 @@ sub json : Local {
             dashboards => $r->{dashboards}
           }
     }
-    $c->stash->{json} = { data => \@rows, totalCount => $cnt };     
+    $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward('View::JSON');
 }
 
 sub cleanup : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $id = $p->{id} || _fail 'Missing role id'; 
-    my $actions = $p->{actions} || _fail 'Missing actions'; 
+    my $id = $p->{id} || _fail 'Missing role id';
+    my $actions = $p->{actions} || _fail 'Missing actions';
     my @keys = map { $$_{key} || $$_{name} } _array($actions);
     _debug( \@keys );
     mdb->role->update({ id=>"$id" },{ '$pull'=>{ actions=>{ action=>mdb->in(@keys) } } });
@@ -121,7 +121,7 @@ sub action_tree_old : Local {
     foreach my $a ( @actions ) {
         my $key = $a->{key};
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>Util->_loc_decoded( $a->{name} ), leaf=>\1 }; 
+        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>Util->_loc_decoded( $a->{name} ), leaf=>\1 };
     }
     my @tree_final = map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree;
     $c->stash->{json} = \@tree_final;
@@ -329,19 +329,19 @@ sub delete : Local {
             delete $project_security->{$p->{id_role}};
             my $ci = ci->new($user->{mid});
             $ci->update(project_security=>$project_security);
-        }        
+        }
     };
     if( $@ ) {
         warn $@;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
-    } else { 
+    } else {
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
     cache->remove("roles:tree:$p->{id_role}:");
     cache->remove(':role:ids:');
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub duplicate : Local {
@@ -360,8 +360,8 @@ sub duplicate : Local {
                 my $roles = $dashboard->{role};
                 if (grep { $_==$id_duplicated_role } @$roles ){
                     push $roles, $r->{id};
-                    mdb->dashboard->update({ _id=>$dashboard->{_id} }, $dashboard);        
-                }    
+                    mdb->dashboard->update({ _id=>$dashboard->{_id} }, $dashboard);
+                }
             }
             my @rs_workflows = mdb->workflow->find();
             foreach my $workflow (@rs_workflows){
@@ -374,11 +374,11 @@ sub duplicate : Local {
     if( $@ ) {
         warn $@;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
-    } else { 
+    } else {
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
     cache->remove(':role:ids:');
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub grid : Local {
@@ -395,7 +395,7 @@ sub all : Local {
         $_
     } @rs;
     $c->stash->{json} = { data=>\@roles, totalCount=>scalar @roles };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 
@@ -423,12 +423,12 @@ sub roleusers : Local {
         @data =  sort { $a->{user} cmp $b->{user} } @data;
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
 
-    } catch { 
+    } catch {
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
     };
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub roleprojects : Local {
@@ -466,12 +466,12 @@ sub roleprojects : Local {
         }
         @data = sort { $a->{project} cmp $b->{project} } @data;
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
-    } catch { 
+    } catch {
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
     };
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub _build_model_actions {

@@ -15,10 +15,10 @@ Sets moniker and find.
 
 =cut
 sub process_item_tree {
-    my ($self, $item, $tree ) = @_;    
-    
+    my ($self, $item, $tree ) = @_;
+
     $tree = $self->tree_to_array( $tree ) unless ref $tree eq 'ARRAY';
-    
+
     my @tree_entries;
 
     for my $entry ( Util->_array( $tree ) ) {
@@ -40,7 +40,7 @@ sub process_item_tree {
     for my $entry ( Util->_array( $tree ) ) {
         if( length $entry->{module} ) {
             $entry->{module} = $self->change_case( $entry->{module} );
-            $module //= $entry->{module}; 
+            $module //= $entry->{module};
         }
 
         # make sure dependencies go with correct case
@@ -51,8 +51,8 @@ sub process_item_tree {
         }
     }
     my $ext = $item->extension;
-    
-    # set moniker 
+
+    # set moniker
     $item->moniker( $module ) if length $module;
 
     return $tree;
@@ -66,7 +66,7 @@ sub change_case {
 }
 
 sub tree_to_array {
-    my ($self, $tree, $key, $ret ) = @_;    
+    my ($self, $tree, $key, $ret ) = @_;
     $ret //= [];
     my $r = ref $tree;
     if( $r eq 'HASH' ) {

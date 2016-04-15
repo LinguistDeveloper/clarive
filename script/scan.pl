@@ -55,7 +55,7 @@ sub process {
 
 sub process_dir {
     my $path = shift;
-    
+
     my $dir = Path::Class::dir($path);
 
     $dir->recurse( callback => sub {
@@ -140,7 +140,7 @@ sub convert {
     my $file = shift;
     open my $in, "<:raw",  $file or die "$file: $!";
     my $d;
-    { 
+    {
         local $/;
         $d = <$in>;
         $d=~ s{\r}{}g;
@@ -159,7 +159,7 @@ sub convert {
         write_encoding( $file, $d, ':utf8' );
         print "\n";
     }
-    
+
 }
 
 sub write_encoding {
@@ -192,7 +192,7 @@ scan - find files and do things with them
  scan.pl [options] path1 path2 ...
 
  Options:
-   -t -test           just list files but don't change anything  
+   -t -test           just list files but don't change anything
    -u -usual          find the usual file extensions (pm,pl,mas,html,js,t,pod)
    -h -help           display this help and exits
    -b -block n        print find results in blocks of lines

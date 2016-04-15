@@ -32,7 +32,7 @@ sub now {
 
 sub pre {
     my $ret = "==============| " . now() . " " . sprintf( "[%.04f]", tv_interval( $t0 ) ). ' ';
-    $t0 = [gettimeofday]; 
+    $t0 = [gettimeofday];
     $ret;
 }
 
@@ -45,10 +45,10 @@ sub run_reindex {
     require Clarive::mdb;
     require Baseliner::Utils;
     my $collection = $self->collection || $self->pos->[0];
-    $collection 
-        ? Util->_log( "Rebuilding indexes for collection `$collection`" ) 
+    $collection
+        ? Util->_log( "Rebuilding indexes for collection `$collection`" )
         : Util->_log( "Rebuilding all indexes..." );
-    mdb->index_all( $collection, drop=>$self->drop ); 
+    mdb->index_all( $collection, drop=>$self->drop );
     Util->_log("Done." );
 }
 
@@ -66,7 +66,7 @@ sub run_dump {
             daemon dashboard dispatcher master master_cal master_doc master_rel master_seen
             master_seq notification repl role rule rule_version scheduler shared_html topic topic_image
         )) {
-            say "$cmd -c $coll"; 
+            say "$cmd -c $coll";
             system "$cmd -c $coll";
         }
     } else {

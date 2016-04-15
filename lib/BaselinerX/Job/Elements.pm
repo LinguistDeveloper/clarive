@@ -11,8 +11,8 @@ has 'elements' => (
 
 =head2 push_elements [@elements|$element]
 
-Pushes an array or a single element into the collection. 
-    
+Pushes an array or a single element into the collection.
+
     my $es = new BaselinerX::Job::Elements;
     # either like this:
     $es->push_element(  new BaselinerX::Job::Element(path=>'/xx/yy/ww', mask=>'/app/nat/sub' ) );
@@ -34,7 +34,7 @@ sub recent_elements {
     my %hash = $self->hash;
     for my $element ( @_ ) {
         if( $hash{ $element->long_path } ) {
-            if( $self->is_more_recent( $element ) ) { 
+            if( $self->is_more_recent( $element ) ) {
                 push @elements, $element;
             }
         } else {
@@ -49,7 +49,7 @@ sub hash_by_path {
     my %hash;
     for my $element ( _array $self->elements ) {
         my $key = $element->long_path;
-        $hash{ $key } = $element;    
+        $hash{ $key } = $element;
     }
     return %hash;
 }
@@ -59,7 +59,7 @@ sub hash_by_version {
     my %hash;
     for my $element ( _array $self->elements ) {
         my $key = $element->long_path;
-        $hash{ $key } = $element;    
+        $hash{ $key } = $element;
     }
     return %hash;
 }
@@ -96,7 +96,7 @@ the elements that match any of the regexes, and
 one array with elements that didn't match any.
 
     my $res = $elements->split_on_regex( '^/app/folder', ... );
-    
+
     say "Matches: "     . @{ $res->{matches} };
     say "Don't match: " . @{ $res->{dont} };
 
@@ -169,7 +169,7 @@ sub list_part {
                 }
             } catch {};
         }
-        return _unique @list; 
+        return _unique @list;
     } else {
         return @{ $self->elements || [] };
     }
@@ -182,7 +182,7 @@ Returns a new Elements collective reduced to a subset.
 
     my $elements = new BaselinerX::Job::Elements;
     $elements->cut_to_subset( 'nature', 'J2EE' );
-    
+
 =cut
 sub cut_to_subset {
     my $self = shift;
@@ -192,7 +192,7 @@ sub cut_to_subset {
 }
 
 =head2 count
-    
+
 Returns the number of elements.
 
 =cut
@@ -201,7 +201,7 @@ Returns the number of elements.
 
 =head2 subset (part, value)
 
-Returns an array of elements. 
+Returns an array of elements.
 
 =cut
 sub subset {
@@ -231,7 +231,7 @@ if( $elems_con->count > 0 ) { hay ear }
 elsif( $elems_sin->count > 0 ) { hay parcial }
 
 
-=cut 
+=cut
 
 sub split_by_extension {
     my ($self, @exts ) = @_;

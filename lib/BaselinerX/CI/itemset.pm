@@ -7,7 +7,7 @@ sub icon       { '/static/images/icons/ci.png' }
 has_cis items => 'Baseliner::Role::CI::Item'; #qw(is rw isa ArrayRef[Baseliner::Role::CI::Item]);
 
 sub rel_type {
-    { items=>{ from_mid => 'itemset_item' } } 
+    { items=>{ from_mid => 'itemset_item' } }
 }
 
 around BUILDARGS => sub {

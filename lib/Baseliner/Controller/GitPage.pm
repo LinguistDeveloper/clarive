@@ -32,7 +32,7 @@ sub commit_real : Local  {
         $git->show( { }, $sha )
     ];
     $c->stash->{changes} = $changes;
-    $c->stash->{template} = '/git/commit.html'; 
+    $c->stash->{template} = '/git/commit.html';
 }
 
 sub commit_tree : Local  {
@@ -43,7 +43,7 @@ sub commit_tree : Local  {
     my $changes = [
         map {
             my $file = $_;
-            +{ 
+            +{
                 text       => $file,
                 icon       => '/static/images/icons/lc/status-m.gif',
                 leaf => \1,
@@ -65,19 +65,19 @@ sub branch : Local  {
     $c->stash->{prefix} = $node->{prefix};
     $c->stash->{branch} = $node->{branch};
     $c->stash->{form} = {
-        description => 'some branch',     
+        description => 'some branch',
     };
     $c->stash->{commits} = [
         map {
             my ( $rev_sha, $rev_txt ) = $_ =~ /^(.+?) (.*)/;
             my $sha6 = substr( $rev_sha, 0, 6 );
-            +{ 
+            +{
                 name    =>  $rev_txt,
                 sha     =>  $rev_sha,
              }
         } $git->rev_list( { pretty => 'oneline' }, $node->{branch} )
     ];
-    $c->stash->{template} = '/git/branch.html'; 
+    $c->stash->{template} = '/git/branch.html';
 }
 
 sub show_file : Local  {
@@ -85,9 +85,9 @@ sub show_file : Local  {
     my $node = $c->req->params;
     my $git  = Git::Wrapper->new( $node->{repo_dir} );
     $sha = $node->{sha};
-    # TODO get file contents 
+    # TODO get file contents
     # $git->show( { pretty => 'format:', name_only => 1 }, $sha )
-    $c->stash->{template} = '/git/commit.html'; 
+    $c->stash->{template} = '/git/commit.html';
 }
 
 no Moose;

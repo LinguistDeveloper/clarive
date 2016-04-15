@@ -303,7 +303,7 @@ subtest 'update: reload topic when have deploy in initial status' => sub {
     my $base_params = TestSetup->_topic_setup();
 
     my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
-    
+
     my $project = ci->new($base_params->{project});
     $project->{bls} = [ $bl->mid ];
     $project->update();
@@ -1644,7 +1644,7 @@ subtest 'set_topic: saves topic into parent' => sub {
 
     my $model = _build_model();
     my $sprint = $model->get_data( undef, $sprint_mid, with_meta=>1 );
-    is scalar @{ $sprint->{changesets} }, 1; 
+    is scalar @{ $sprint->{changesets} }, 1;
     is $sprint->{changesets}->[0]->{mid}, $changeset_mid;
 };
 
@@ -1738,7 +1738,7 @@ subtest 'set_topic: saves topic into release' => sub {
 
     my $model = _build_model();
     my $release = $model->get_data( undef, $release_mid, with_meta=>1);
-    is scalar @{ $release->{changesets} }, 1; 
+    is scalar @{ $release->{changesets} }, 1;
     is $release->{changesets}->[0]->{mid}, $changeset_mid;
 };
 

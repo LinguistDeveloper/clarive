@@ -49,13 +49,13 @@ sub init : Local {
         }
     };
     $cr->compile;
-    $cr->run( stash=>$stash ); 
+    $cr->run( stash=>$stash );
     my $dashlets = $$stash{dashlets} // [];
 
     my $k = 1;
     my $user_config = ci->user->search_ci( name => $c->username )->dashlet_config;
 
-    $dashlets = [ map{ 
+    $dashlets = [ map{
         $$_{order} = $k++;
         # merge default data with node
         if( $$_{key} && (my $reg = $c->registry->get($$_{key})) ){
@@ -108,10 +108,10 @@ sub json : Local {
         } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->sort({ rule_name => 1})->all;
     }
     else {
-        @dashboard_list = map { 
+        @dashboard_list = map {
             my $name = $_->{rule_name};
             $name = $name.' '._loc('(Default)') if $_->{default_dashboard};
-            +{ name => $name, id => '' . $_->{id} } 
+            +{ name => $name, id => '' . $_->{id} }
         }
         mdb->rule->find({ rule_type => 'dashboard' })->sort({ rule_name => 1})->all;
     }
@@ -179,7 +179,7 @@ sub user_dashboards {
         push @dashboard_ids, map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
     }
 
-    # the trick here is to get the data but keep the order, 
+    # the trick here is to get the data but keep the order,
     #  because [0] is the user prerred dashboard
     my %dashash =
         map {
@@ -193,7 +193,7 @@ sub user_dashboards {
     return @dashboard_list;
 }
 
-sub list_jobs: Local { 
+sub list_jobs: Local {
     my ( $self, $c ) = @_;
     my $perm = Baseliner::Model::Permissions->new;
     my $p = $c->req->params;
@@ -222,7 +222,7 @@ sub list_jobs: Local {
         if( !$perm->is_root($username) ) {
                 @mid_filters = $perm->user_projects_with_action(username => $username,
                                                                     action => 'action.job.viewall',
-                                                                    level => 1)            
+                                                                    level => 1)
         }
 
         $where->{'projects'} = mdb->in(@mid_filters) if @mid_filters;
@@ -281,7 +281,7 @@ sub last_jobs : Local {
     my $bls = $p->{bls};
     my @datas;
     my $topic_mid = $p->{topic_mid};
-    
+
     try {
 
         my $where = {};
@@ -299,12 +299,12 @@ sub last_jobs : Local {
             @ids_project = $c->model('Permissions')
                 ->user_projects_ids( username => $c->username );
         }
-        
+
         if ( $topic_mid ) {
             my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
             $where->{changesets} = mdb->in(@related_topics);
         }
-        
+
         if ( @ids_project ) {
 
             my %jobs = map { $_->{mid} => $_ } ci->job->find($where)
@@ -318,7 +318,7 @@ sub last_jobs : Local {
                 my $endt = Class::Date->new($job->{endtime});
                 my $days = int( ($now - $endt)->day );
                 my $status = $job->{status};
-                my $type = $status =~ /ERROR|KILLED/ ? 'err' 
+                my $type = $status =~ /ERROR|KILLED/ ? 'err'
                     : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
                 # for project in job
                 for my $prj ( _array( $job->{projects} ) ) {
@@ -334,14 +334,14 @@ sub last_jobs : Local {
                         $r->{status} = $status;
                     }
                     # last durantion and top mid
-                    if( !defined $r->{top_seq} || $job->{_seq} > $r->{top_seq} ) {  
+                    if( !defined $r->{top_seq} || $job->{_seq} > $r->{top_seq} ) {
                         my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
                         $r->{last_duration} = sprintf '%dm %ds', int($secs/60), ($secs % 60);
                         $r->{top_seq} = $job->{_seq};
                     }
                 }
             }
-            
+
             # now create something we can send to the template
             @datas = sort {
                 $b->{top_seq} <=> $a->{top_seq}
@@ -355,7 +355,7 @@ sub last_jobs : Local {
                 }
                 @rows;
             } keys %rep;
-            
+
         } ## end if ( @ids_project )
 
     } catch {
@@ -364,7 +364,7 @@ sub last_jobs : Local {
     $c->stash->{json} = { data=>\@datas };
     $c->forward( 'View::JSON' );
 
-} 
+}
 
 sub topics_by_category: Local {
     my ( $self, $c ) = @_;
@@ -422,17 +422,17 @@ sub topics_by_category: Local {
 
     @topics_by_category = _array(mdb->topic->aggregate( [
         { '$match' => $where },
-        { '$group' => { 
-            _id => '$category.id', 
+        { '$group' => {
+            _id => '$category.id',
             'category' => {'$max' => '$category.name'},
-            'color' => {'$max' => '$category.color'}, 
+            'color' => {'$max' => '$category.color'},
             'total' => { '$sum' => 1 },
             'topics_list' => { '$push' => '$mid'}
-          } 
+          }
         },
         { '$sort' => { total => -1}}
     ]));
-    
+
     my $total = 0;
     my $topics_list;
     map { $total += $_->{total} } @topics_by_category;
@@ -454,12 +454,12 @@ sub topics_by_category: Local {
     if ( $others ) {
         push @data, [
             _loc('Other'),$others
-        ];                    
+        ];
         $topics_list->{_loc('Other')} = \@other_topics;
         $colors->{_loc('Other')} = "#DDDDDD";
     }
     $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
-    $c->forward('View::JSON'); 
+    $c->forward('View::JSON');
 }
 
 sub topics_by_field : Local {
@@ -582,7 +582,7 @@ sub topics_by_field : Local {
                     $name = mdb->master->find_one({mid=>"$val"})->{name};#ci->new($val)->name;
                 } catch {
 
-                };                
+                };
             };
 
             my $legend_name = $name;
@@ -604,7 +604,7 @@ sub topics_by_field : Local {
     if ( $others ) {
         push @data, [
             _loc('Other'),$others
-        ];                    
+        ];
         $topics_list->{_loc('Other')} = \@other_topics;
         $colors->{_loc('Other')} = "#DDDDDD";
     }
@@ -614,7 +614,7 @@ sub topics_by_field : Local {
     }
 
     $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
-    $c->forward('View::JSON'); 
+    $c->forward('View::JSON');
 }
 
 sub topics_by_status: Local {
@@ -668,17 +668,17 @@ sub topics_by_status: Local {
 
     @topics_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
-        { '$group' => { 
-            _id => '$category_status.id', 
+        { '$group' => {
+            _id => '$category_status.id',
             'status' => {'$max' => '$category_status.name'},
-            'color' => {'$max' => '$category_status.color'}, 
+            'color' => {'$max' => '$category_status.color'},
             'total' => { '$sum' => 1 },
             'topics_list' => { '$push' => '$mid'}
-          } 
+          }
         },
         { '$sort' => { total => -1}}
     ]));
-    
+
     my $total = 0;
     my $topics_list;
     map { $total += $_->{total} } @topics_by_status;
@@ -700,12 +700,12 @@ sub topics_by_status: Local {
     if ( $others ) {
         push @data, [
             _loc('Other'),$others
-        ];                    
+        ];
         $topics_list->{_loc('Other')} = \@other_topics;
         $colors->{_loc('Other')} = "#DDDDDD";
     }
     $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
-    $c->forward('View::JSON'); 
+    $c->forward('View::JSON');
 }
 
 
@@ -777,15 +777,15 @@ sub topics_by_date: Local {
         my $inc_from = $days_from."D";
         my $from = $now + $inc_from;
         $date_start = $from;
-        $where->{$date_field} = {'$gte' => "$from"};        
+        $where->{$date_field} = {'$gte' => "$from"};
     } elsif ( $days_until != 0 ) {
         my $inc_until = $days_until."D";
         my $until = $now + $inc_until;
         $date_end = $until;
-        $where->{$date_field} = {'$lte' => "$until"};        
+        $where->{$date_field} = {'$lte' => "$until"};
     }
 
-    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid ); 
+    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
 
     my $rs_topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0});
 
@@ -804,7 +804,7 @@ sub topics_by_date: Local {
         my $dt = DateTime->from_epoch( epoch => $date->epoch() );
         $dt->set_time_zone( _tz );
         my $fdate;
-        if ( $group !~ /day|quarter/ ) {    
+        if ( $group !~ /day|quarter/ ) {
             $dt->truncate( to => $group);
             $fdate = substr(''.$dt,0,10);
         } elsif ( $group eq 'quarter' ){
@@ -892,7 +892,7 @@ sub topics_by_date: Local {
 
     push $matrix, \@dates;
 
-    
+
     for ( keys %temp_data ) {
         push $matrix, [ $_, _array($temp_data{$_})];
     }
@@ -940,16 +940,16 @@ sub roadmap : Local {
         my $cat = $cats{$topic->{category}{id}};
         my $label = Util->parse_vars( $label_mask, { topic=>$topic, category=>$cat });
         $label = Util->parse_vars( $default_mask, { topic=>$topic, category=>$cat }) if $label eq $label_mask; ## oops, the parse didn't parse anything, so use the default
-        for my $cc ( _array $cal ) { 
+        for my $cc ( _array $cal ) {
             next unless exists $bls{ $cc->{slotname} };
-            push @{ $bls{ $cc->{slotname} } }, { label=>$label, topic=>$topic, cal=>$cc, acronym=>$cat->{acronym} }; 
+            push @{ $bls{ $cc->{slotname} } }, { label=>$label, topic=>$topic, cal=>$cc, acronym=>$cat->{acronym} };
         }
     }
 
     # find the first day
-    my $first_day = $scale eq 'weekly' 
+    my $first_day = $scale eq 'weekly'
             ? ( $now - ( ($units_from*7).'D' ) - ( ( ${first_day_of_my_week} >= 0 ? ${first_day_of_my_week} : 7 + ${first_day_of_my_week} ). 'D') )
-            : ( $scale eq 'monthly' 
+            : ( $scale eq 'monthly'
                    ? Class::Date->new( DateTime->from_epoch( epoch=>$now->epoch )->truncate( to=>'month' ) ) - ( $units_from.'M')
                    : ( $now - ( $units_from . 'D' ) )
               )
@@ -957,17 +957,17 @@ sub roadmap : Local {
     $first_day = substr( $first_day, 0, 10) . ' 00:00';
 
     # week by week, find which topics go where
-    my @units = map{ 
-            Class::Date->new( $first_day ) 
-            +  ( $scale eq 'monthly' 
-                    ? $_.'M' 
-                    : ( $scale eq 'weekly' 
-                        ? (($_*7).'D') 
-                        : $_.'D' ) 
+    my @units = map{
+            Class::Date->new( $first_day )
+            +  ( $scale eq 'monthly'
+                    ? $_.'M'
+                    : ( $scale eq 'weekly'
+                        ? (($_*7).'D')
+                        : $_.'D' )
                )
-        } 
+        }
         0..( $units_from + $units_until );
-    
+
     my $scale_sum = $scale eq 'monthly' ? '1M' : $scale eq 'weekly' ? '7D' : '1D';
 
     my $k=0;
@@ -975,13 +975,13 @@ sub roadmap : Local {
         my $row = { date=>"$st", is_current=>($units_from == $k++) };
         for my $bl ( keys %bls ) {
             my $ed = $st + $scale_sum;
-            my @bl_topics = grep { 
-                ($$_{cal}{plan_start_date} ge $st && $$_{cal}{plan_start_date} lt $ed ) 
-                || ( $$_{cal}{plan_end_date} ge $st && $$_{cal}{plan_end_date} lt $ed ) 
-                || ( $$_{cal}{plan_start_date} le $st && $$_{cal}{plan_end_date} ge $ed ) 
+            my @bl_topics = grep {
+                ($$_{cal}{plan_start_date} ge $st && $$_{cal}{plan_start_date} lt $ed )
+                || ( $$_{cal}{plan_end_date} ge $st && $$_{cal}{plan_end_date} lt $ed )
+                || ( $$_{cal}{plan_start_date} le $st && $$_{cal}{plan_end_date} ge $ed )
             } _array( $bls{ $bl } );
             for my $blt ( @bl_topics ) {
-                push @{ $row->{$bl} }, $blt; 
+                push @{ $row->{$bl} }, $blt;
             }
         }
 
@@ -989,7 +989,7 @@ sub roadmap : Local {
     }
 
     $c->stash->{json} = { data=>\@rows};
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub topics_gauge: Local {
@@ -1085,11 +1085,11 @@ sub gauge_data {
     } elsif ( $days_from != 0 ) {
         my $inc_from = $days_from."D";
         my $from = $now + $inc_from;
-        $where->{$date_condition} = {'$gte' => "$from"};        
+        $where->{$date_condition} = {'$gte' => "$from"};
     } elsif ( $days_until != 0 ) {
         my $inc_until = $days_until."D";
         my $until = $now + $inc_until;
-        $where->{$date_condition} = {'$lte' => "$until"};        
+        $where->{$date_condition} = {'$lte' => "$until"};
     }
 
 
@@ -1126,12 +1126,12 @@ sub gauge_data {
             push @data, $days;
             $max = $days if $days > $max;
             $min = $days if $days < $min;
-            
+
         } elsif ( $field_mode ){
             next if !_array($topic->{res_time});
             push @data, $topic->{res_time};
             $max = $topic->{res_time} if $topic->{res_time} > $max;
-            $min = $topic->{res_time} if $topic->{res_time} < $min;        
+            $min = $topic->{res_time} if $topic->{res_time} < $min;
         } elsif ( $end_remaining eq 'on' ) {
             my $date_end = Class::Date->new($topic->{$date_field_end});
             my $now = Class::Date->now();
@@ -1151,7 +1151,7 @@ sub gauge_data {
 
     use List::Util qw(sum);
     my $avg = @data? sprintf("%.2f",sum(@data) / @data): 0;
-    my $sum = @data? sprintf("%.2f",sum(@data)): 0; 
+    my $sum = @data? sprintf("%.2f",sum(@data)): 0;
 
 
     if ( $field_mode ){
@@ -1545,7 +1545,7 @@ sub topics_period_burndown : Local {
         my $created = Class::Date->new($row->{created_on});
         my $real_closed = $row->{closed_on} ? Class::Date->new($row->{closed_on}): $end + "1D";
         my $due_date = $row->{$date_field} ? Class::Date->new($row->{$date_field}): $end + "1D";
-        
+
         for my $date ( sort(keys %dates) ) {
             if ( ''.$created le $date ) {
                 my $new_real = $dates{$date}->{real} + 1;
@@ -1602,15 +1602,15 @@ sub list_emails: Local {
 
     my $username = $c->username;
     my @datas;
-        
-    
+
+
     my $emails = Baseliner->model('Messaging')->inbox(username=>$username, carrier=>'email', start => 0, limit => 1000);
-    
+
     foreach my $email (_array $emails->{data}){
         if (!$email->{swreaded}){
             push @datas, $email;
         }
-    }   
+    }
 
     $c->stash->{json} = {
         success => \1,
@@ -1671,7 +1671,7 @@ sub list_baseline : Local {
             @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 0);
             $where->{changesets} = mdb->in(@related_topics);
         }
-        
+
         my @jobs_ok = _array(
             mdb->master_doc->aggregate(
                 [   {   '$match' => $where},
@@ -1700,7 +1700,7 @@ sub list_baseline : Local {
         if ( $topic_mid ) {
             $where->{changesets} = mdb->in(@related_topics);
         }
-        
+
         my @jobs_ko = _array(
             mdb->master_doc->aggregate(
                 [   {   '$match' => $where
@@ -1775,9 +1775,9 @@ sub viewjobs : Local {
     # if($config->{projects} ne 'ALL'){
     #     @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
     # }
-    
+
     my @jobs;
-    
+
     if($type){
         my @status;
         given ($type) {
@@ -1788,13 +1788,13 @@ sub viewjobs : Local {
                 @status = ('ERROR','CANCELLED','KILLED','REJECTED');
             }
         }
-        
+
         my $days = $days . 'D';
-        my $start = mdb->now - $days; 
+        my $start = mdb->now - $days;
         $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
 
         @jobs = ci->job->find({ projects => mdb->in(@ids_project), endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
-        
+
     }else{
         @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(($bl)) })->all;
     }
@@ -1805,7 +1805,7 @@ sub viewjobs : Local {
 
 ##################################################
 #
-# TODO 
+# TODO
 # old dashlet data, deprecated? move somewhere else?
 #
 ##################################################
@@ -1830,7 +1830,7 @@ sub list_pending_jobs: Private{
             @mid_filters = $perm->user_projects_with_action(username => $username,
                                                                 action => 'action.job.viewall',
                                                                 level => 1);
-            
+
     }
 
     my $where = {};
@@ -1846,7 +1846,7 @@ sub list_pending_jobs: Private{
     my $numrow = 0;
     my @pending_jobs;
     my $default_config;
-    
+
     for my $doc ( @rs_search ) {
         last if $numrow >= $limit;
         try {
@@ -1875,13 +1875,13 @@ sub list_filtered_topics_old: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
-    
+
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
-    
-    ##########################################################################################################      
-    
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');
+
+    ##########################################################################################################
+
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username };
     my ($info, @rows) = Baseliner::Model::Topic->new->topics_for_user( $p );
@@ -1892,22 +1892,22 @@ sub list_filtered_topics: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
-    
+
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
-        
+
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };              
-        }      
-    }   
-    ##########################################################################################################      
-    
+            };
+        }
+    }
+    ##########################################################################################################
+
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
 
@@ -1931,22 +1931,22 @@ sub list_releases: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
-    
+
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.list_releases');    
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.list_releases');
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_releases'} _array $dashboard_rs->{dashlets};
-        
+
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };              
-        }      
-    }   
-    ##########################################################################################################      
-    
+            };
+        }
+    }
+    ##########################################################################################################
+
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
 
@@ -1971,22 +1971,22 @@ sub list_my_topics: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
-    
+
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_my_topics'} _array $dashboard_rs->{dashlets};
-        
+
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };              
-        }      
-    }   
-    ##########################################################################################################      
-    
+            };
+        }
+    }
+    ##########################################################################################################
+
     # go to the controller for the list
     my $limit = $default_config->{rows} && $default_config->{rows} ne 'ALL'? $default_config->{rows}:'';
     my $p = { limit => $limit, username=>$c->username };
@@ -2030,7 +2030,7 @@ sub topics_open_by_category: Local{
         { '$group' => { _id => '$category.id', 'category' => {'$max' => '$category.name'},'color' => {'$max' => '$category.color'}, 'total' => { '$sum' => 1 }} },
         { '$sort' => { total => -1}}
     ]));
-    
+
     foreach my $topic (@topics_open_by_category){
         push @datas, {
                     total           => $topic->{total},
@@ -2046,29 +2046,29 @@ sub topics_open_by_category: Local{
 
 sub list_status_changed: Local{
     my ( $self, $c ) = @_;
-    
+
     my $now1 = my $now2 = mdb->now;
     $now2 += '1D';
-    
+
     my $fecha1 = $now1->ymd;
     $fecha1 =~ s/\//-/g;
-    
+
     my $fecha2 = $now2->ymd;
     $fecha2 =~ s/\//-/g;
-    
+
     my $query = {
         event_key   => 'event.topic.change_status',
         ts          => { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
     };
-    
+
     #my @user_categories =  map { $_->{id} } Baseliner::Model::Topic->new->get_categories_permissions( username => $c->username, type => 'view' );
     #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
-    
+
     my %my_topics;
     my ($info, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef, clear_filter => 1 });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
-    
+
 
     my @status_changes;
     my @mid_topics;
@@ -2081,17 +2081,17 @@ sub list_status_changed: Local{
             push @mid_topics, $_->{mid};
         }
     }
-    
+
     @status_changes = reverse @status_changes;
     @mid_topics = _unique @mid_topics ;
-    
+
     my %topics_categories;
-    $topics_categories{ $_->{mid} } = { color=>$_->{category}{color}, name=>$_->{category}{name} } 
+    $topics_categories{ $_->{mid} } = { color=>$_->{category}{color}, name=>$_->{category}{name} }
      for   mdb->topic->find({ mid=>mdb->in(@mid_topics) })->all;
-    
+
     $c->stash->{list_topics} = \%topics_categories;
     $c->stash->{list_status_changed} = \@status_changes;
-    $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
+    $c->stash->{list_status_changed_title} = _loc('Daily highlights');
 };
 
 sub _data_to_aggregate {

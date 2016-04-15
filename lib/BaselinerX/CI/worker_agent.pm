@@ -3,7 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use v5.10;
 
-has workerid   => qw(is rw isa Str lazy 1), default => sub { 
+has workerid   => qw(is rw isa Str lazy 1), default => sub {
     my ($self)=@_;
     my $wid = $self->_whos_capable( $self->cap );
     $wid or Util->_throw( Util->_loc( 'Could not find a worker capable of %1', $self->cap ) );
@@ -11,12 +11,12 @@ has workerid   => qw(is rw isa Str lazy 1), default => sub {
 };
 has cap        => qw(is rw isa Str default '');
 
-has db => qw(is ro lazy 1), default => sub { 
+has db => qw(is ro lazy 1), default => sub {
     require Redis;
     Redis->new;
 };
 
-has queue => qw(is ro lazy 1), default => sub { 
+has queue => qw(is ro lazy 1), default => sub {
     require Redis;
     Redis->new;
 };
@@ -45,22 +45,22 @@ Sends file or data over.
 method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data=undef  ) {
     defined $local or defined $data or Util->_throw( 'Missing parameter local or data' );
     $remote or Util->_throw( 'Missing parameter remote' );
-    
-    my $chunk_size = $self->chunk_size(); 
+
+    my $chunk_size = $self->chunk_size();
     my $file_size;
     if( defined $local ) {
-        my $f = Util->_file( $local ); 
+        my $f = Util->_file( $local );
         Util->_fail( Util->_loc( "Local file '%1' not found", $f) ) unless -e $f;
         $file_size = $f->stat->size;
     } else {
         $file_size = length( $data );
     }
-    
-    $self->_worker_do( 
+
+    $self->_worker_do(
         put_file => { filepath=>$remote, filesize=>$file_size },
         start    => sub {
             my ($msg_id) = @_;
-            
+
             if( defined $local ) {
                 # send file
                 open my $ff, '<:raw', $local or Util->_throw( "ERROR opening file: $!" );
@@ -68,14 +68,14 @@ method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data
                 my $k=1;
                 while( sysread $ff, $chunk, $chunk_size ) {
                     #my $enc = unpack 'H*', $chunk;
-                    #my $list_len = $self->db->rpush( "queue:$msg_id:file", $enc ); 
+                    #my $list_len = $self->db->rpush( "queue:$msg_id:file", $enc );
                     my $list_len = $self->db->rpush( "queue:$msg_id:file", MIME::Base64::encode_base64( $chunk ) );
                 }
                 close $ff;
             } else {
                 # send data
                 for( my $pos=0; $pos<$file_size; $pos+=$chunk_size ) {
-                    my $list_len = $self->db->rpush( "queue:$msg_id:file", 
+                    my $list_len = $self->db->rpush( "queue:$msg_id:file",
                         MIME::Base64::encode_base64( substr($data,$pos,$chunk_size) ) );
                 }
             }
@@ -93,7 +93,7 @@ method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data
     );
 }
 
-=head2 
+=head2
 
 Tars a directory and ships it remotely.
 
@@ -106,9 +106,9 @@ sub put_dir {
     my $remote = $p->{remote} or Util->_throw( 'Missing parameter remote' );
     my $owner = [ split /:/, $p->{owner} ] if defined $p->{owner};
     my $replace = $p->{replace};  # replace destination dir?
-    
-    require Archive::Tar; 
-    my $fn = sprintf "%s-%s", $self->workerid, Util->_nowstamp; 
+
+    require Archive::Tar;
+    my $fn = sprintf "%s-%s", $self->workerid, Util->_nowstamp;
     $fn = Util->_name_to_id( $fn );
     $fn = $fn . '.tar';
     # build local tar
@@ -132,9 +132,9 @@ sub put_dir {
             $tar->add_files($tf);
         } else {
             # file
-            my $tf = Archive::Tar::File->new( 
-                data=>"$rel", scalar($f->slurp), 
-                {   type=>0, 
+            my $tf = Archive::Tar::File->new(
+                data=>"$rel", scalar($f->slurp),
+                {   type=>0,
                     mtime=>$stat->mtime,
                     mode =>$stat->mode,
                     ( defined $owner ? ( uname =>$owner->[0], gname=>$owner->[1] ) : () )
@@ -150,7 +150,7 @@ sub put_dir {
     # mkpath, untar, delete
     $self->remote_eval(q{
         if( $stash->{replace} ) {
-            rmtree( $stash->{remote} ) if length $stash->{remote} > 4; 
+            rmtree( $stash->{remote} ) if length $stash->{remote} > 4;
         }
         if( ! -e $stash->{remote} ) {
             mkpath( $stash->{remote} );
@@ -192,12 +192,12 @@ method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 
 method file_exists( $file_or_dir ) {
     $self->remote_eval(q{-e $stash->{file}}, { file=>$file_or_dir }); # check it exists
-    return $self->ret; 
+    return $self->ret;
 }
 
 =head2
 
-Execute a command remotely with system. Returns 
+Execute a command remotely with system. Returns
 the merged stdin + stderr.
 
     say "LS =" . $wa->execute('ls',-la);
@@ -209,32 +209,32 @@ the merged stdin + stderr.
 sub execute {
     my $self = shift;
     my $tmout = $self->timeout;
-    alarm $tmout if $tmout; 
+    alarm $tmout if $tmout;
     local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
     # windows: use open, which merges STDOUT AND STDERR; Unix: use Capture::Tiny to merge both
-    my $res = $self->remote_eval( q{ 
+    my $res = $self->remote_eval( q{
             my $olddir = Cwd::cwd;
             if( length $stash->{chdir} ) {
                 my $cr = chdir $stash->{chdir};
-                die $! if !$cr; 
+                die $! if !$cr;
                 print "Changed dir to " . $stash->{chdir}, "\n";
             }
             my $rc=-1;
             my $merged = '';
             if( "$^O" =~ /win/i ) {
-                open(EX, '-|', @{ $stash->{cmd} || [] }); 
-                $merged = join '',<EX>; 
+                open(EX, '-|', @{ $stash->{cmd} || [] });
+                $merged = join '',<EX>;
                 close EX;
                 $rc = $?;
             } else {
-                $merged = Capture::Tiny::tee_merged(sub{ 
-                    system  @{ $stash->{cmd} || [] }; 
-                    $rc = $? 
+                $merged = Capture::Tiny::tee_merged(sub{
+                    system  @{ $stash->{cmd} || [] };
+                    $rc = $?
                 });
             }
-                
+
             if( length $stash->{chdir} ) {
                 print "Changed dir back to " . $olddir, "\n";
                 chdir $olddir;
@@ -249,7 +249,7 @@ sub execute {
 sub check_os {
     my $self = shift;
     my $tmout = $self->timeout;
-    alarm $tmout if $tmout; 
+    alarm $tmout if $tmout;
     local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
@@ -266,7 +266,7 @@ sub chmod {
         my $mode = oct($stash->{mode}) || return "Invalid mode: $stash->{mode}\n";
         my $ret = chmod( $mode, @{$stash->{files}} );
         return $ret == 0 ? $! : 0;
-    ), 
+    ),
     { mode=>$mode, files=>\@files });
     $self->rc( 1 ) if $self->ret && !ref $self->ret;
     $self->output( $self->ret ) if $self->ret && !ref $self->ret;
@@ -303,9 +303,9 @@ sub _os {
 
 sub remote_eval {
     my ($self, $code, $stash ) = @_;
-    
-    $self->_worker_do( 
-        eval => { code=>$code//'print "pong"', stash=>$stash }, 
+
+    $self->_worker_do(
+        eval => { code=>$code//'print "pong"', stash=>$stash },
         done => sub {
            my ($msg_id, $res ) = @_;
            #say "RES=".Util->_dump($res);
@@ -335,20 +335,20 @@ sub cleanup_queue {
 #}
 
 sub _worker_do {
-    my ($self, $cmd, $cmd_data, %p ) = ( @_ ); 
+    my ($self, $cmd, $cmd_data, %p ) = ( @_ );
     my $r = $self->db;
     my $q = $self->queue;
 
     #my %ws = $self->db->hgetall( 'queue:workers' );
     require MIME::Base64;
     require Data::UUID;
-    
-    # XXX ping - determine if we have the agent online 
-    
+
+    # XXX ping - determine if we have the agent online
+
     my $msg_id = $self->_msgid;
     $self->destroy_list_push( "queue:$msg_id:*" );
     my $id = $self->workerid or Util->_throw( 'Missing workerid' );
-    
+
     # let me know someone got this
     $self->queue->subscribe( "queue:$msg_id:start", sub {
         my ($msg,$topic)=@_;
@@ -374,7 +374,7 @@ sub _worker_do {
     });
 
     # my callbacks are setup, tell agent to fetch file
-    $r->publish( "queue:$id:$cmd:$msg_id", 
+    $r->publish( "queue:$id:$cmd:$msg_id",
        ref $cmd_data ? Util->_to_json( Util->_damn($cmd_data) ) : $cmd_data
     );
 
@@ -387,12 +387,12 @@ sub _worker_do {
     return;   # do not return anything here, use the done callback
 }
 
-sub parse_message { 
-    my($self,$msg) = @_; 
+sub parse_message {
+    my($self,$msg) = @_;
     my $msgtype = substr($msg,0,5);
-    return $msgtype eq 'stor:' 
-        ? Storable::thaw(substr($msg,5)) 
-        : $msgtype eq 'yaml:' 
+    return $msgtype eq 'stor:'
+        ? Storable::thaw(substr($msg,5))
+        : $msgtype eq 'yaml:'
             ? Util->_load( substr($msg,5) )
             : Util->_from_json( $msg );
 }

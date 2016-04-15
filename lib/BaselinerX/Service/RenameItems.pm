@@ -8,13 +8,13 @@ use Path::Class;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.rename_items' => { 
+register 'service.job.rename_items' => {
     name    => 'Rename Baseline Items and Files',
     data    => { rename_items=>1, rename_files=>1 },
     icon    => '/static/images/icons/rename_items.png',
     #icon    => '/static/images/icons/baseline.gif',
     job_service  => 1,
-    handler => \&run, 
+    handler => \&run,
 };
 
 sub run {
@@ -32,12 +32,12 @@ sub run {
         $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
         @files_renamed = $self->rename_files( bl=>$bl, all_bls=>$all_bls, path=>$job->job_dir );
     }
-    
+
     my (@items_renamed, @items_removed );
     if( $config->{rename_items} ) {
         my @items;
         for my $item ( _array( $stash->{items} ) ) {
-            my $path = $item->path; 
+            my $path = $item->path;
             if( $path =~ /{$bl}/ ) {
                 my $old_path = $path;
                 $item->rename( sub{ s/{$bl}//g } );
@@ -49,8 +49,8 @@ sub run {
                 push @items_removed, $path;
             }
         }
-        $log->info( 
-            _loc( 'Renamed %1 item(s), removed %2 item(s)', scalar(@items_renamed), scalar(@items_removed)), 
+        $log->info(
+            _loc( 'Renamed %1 item(s), removed %2 item(s)', scalar(@items_renamed), scalar(@items_removed)),
             { renamed=>\@items_renamed, removed=>\@items_removed, items=>[ map { $_->path } @items ] } )
             if @items_renamed;
         $stash->{items} = \@items;
@@ -66,7 +66,7 @@ sub rename_files {
     _fail unless length $p->{path};
     my $bl = $p->{bl};
     my $all_bls = $p->{all_bls};
-    
+
     my $dir = Path::Class::dir( $p->{path} );
     _fail _loc('Could not find rename root dir %1', $dir) unless -e $dir;
     my ($list, $list_del);
@@ -90,7 +90,7 @@ sub rename_files {
                 $list .= "'$file' ==> '$new_name'\n";
                 push @files_renamed, { old=>"$file", new=>"$new_name" };
                 $cnt++;
-            } 
+            }
             elsif( $file =~ /{($all_bls)}/ ) {
                 # delete files from other baselines
                 unlink $file or _throw _loc 'Could not delete file that belongs to another baseline %1: %2', $file, $!;

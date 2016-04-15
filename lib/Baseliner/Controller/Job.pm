@@ -13,7 +13,7 @@ use Baseliner::Model::Jobs;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 
-BEGIN { 
+BEGIN {
     ## Oracle needs this
     $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 }
@@ -29,9 +29,9 @@ register 'config.job.states' => {
   metadata => [
     { id      => "states",
       default => [qw/
-          EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED 
+          EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED
           TRAPPED TRAPPED_PAUSED
-          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED 
+          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED
           PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED
           /]
     }
@@ -48,7 +48,7 @@ sub job_create : Path('/job/create')  {
             $_->children
          }
          grep { -e $_ } map { Path::Class::dir( $_->path, 'root', 'include', 'job_new') }
-                @features_list 
+                @features_list
     ];
     $c->stash->{action} = 'action.job.create';
     $c->stash->{template} = '/comp/job_new.js';
@@ -58,7 +58,7 @@ sub pipelines : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $type = $p->{type} // 'promote';
-    
+
     try {
         my $where;
         if ( !Baseliner::Model::Permissions->new->is_root($c->username) ) {
@@ -71,7 +71,7 @@ sub pipelines : Local {
            : $b->{rule_when} eq $type ? 1
            : $a cmp $b;
            $r;
-        } 
+        }
         sort mdb->rule->find({ rule_type=>'pipeline', rule_active => mdb->true })->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
@@ -128,11 +128,11 @@ sub rollback : Local {
                 $job->exec( $exec );
                 $job->step( $needing_rollback[0] );
                 $job->last_finish_status( '' );
-                $job->final_status( '' );  # reset status, so that POST runs in rollback 
+                $job->final_status( '' );  # reset status, so that POST runs in rollback
                 $job->rollback( 1 );
                 $job->status( 'READY' );
                 $job->logger->info( "Starting *Rollback*", \@needing_rollback );
-                $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
+                $job->maxstarttime(_ts->set(day => _ts->day + 1).'');
                 $job->save;
                 $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
                 $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
@@ -170,8 +170,8 @@ sub job_items_json : Path('/job/items/json') {
 
         # check if it's been processed by approval daemon
         if( $n->bl eq 'PREP' && $p->{job_type} eq 'promote' && ! $n->is_contained ) {
-            unless( $n->is_verified ) { 
-                $can_job = 0; 
+            unless( $n->is_verified ) {
+                $can_job = 0;
                 $n->{why_not} = _loc('Unverified');
             }
         }
@@ -196,7 +196,7 @@ sub job_items_json : Path('/job/items/json') {
             packages           => $packages_text ? $packages_text : q{},
             subapps            => $n->{subapps},
             inc_id             => exists $n->{inc_id} ? $n->{inc_id} : q{},
-            ns                 => $n->ns, 
+            ns                 => $n->ns,
             user               => $n->user,
             service            => $n->service,
             text               => do { my $a = $n->ns_info; Encode::from_to($a, 'utf8', 'iso-8859-1'); $a },
@@ -232,20 +232,20 @@ sub rs_filter {
         my $cnt = 0;
         my $page = to_pages( start=>$start, limit=>$limit );
         _log "Fetch page=$page, start=$start, limit=$limit (count: $processed, fetched so far: " . @ret . ")...:";
-        my $rs_paged = $rs->page( $page ); 
+        my $rs_paged = $rs->page( $page );
         last OUTER unless $rs_paged->count;
         while( my $r = $rs_paged->next ) {
             last OUTER unless defined $r;
             $processed++;
             if( ref $filter && $filter->($r) ) {
-                push @ret, $r;  
+                push @ret, $r;
             } else {
                 $skipped++;
             }
             $cnt = @ret;
             if( @ret >= $limit ) {
                 _log "Done with $cnt >= $limit, from $processed rows.";
-                last OUTER; 
+                last OUTER;
             }
         }
         $start+=$limit;
@@ -260,9 +260,9 @@ sub job_logfile : Local {
     $c->stash->{json}  = try {
         my $job = ci->new( $p->{mid} );
         my $file = $job->logfile;
-        #$file //= Baseliner->loghome( $job->name . '.log' ); 
+        #$file //= Baseliner->loghome( $job->name . '.log' );
         _fail _loc( "Error: logfile not found or invalid: %1", $file ) if !$file || ! -f $file;
-        my $data = _file( $file )->slurp; 
+        my $data = _file( $file )->slurp;
         { data=>$data, success=>\1 };
     } catch {
         my $err = shift;
@@ -372,10 +372,10 @@ sub refresh_now : Local {
                 $need_refresh = \1;
             }
         }
-    } catch { 
+    } catch {
         _error( shift );
     };
-    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };    
+    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };
     $c->forward('View::JSON');
 }
 
@@ -413,7 +413,7 @@ sub submit : Local {
             if( $job_ci->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
                 event_new 'event.job.delete' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  }  => sub {
                     # be careful: may be cancelled already
-                    $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
+                    $p->{mode} ne 'delete' and _fail _loc('Job already cancelled');
                     try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };  # delete should work always
                 };
                 $msg = "Job %1 deleted";
@@ -449,7 +449,7 @@ sub submit : Local {
             my $id_rule = $p->{id_rule};
             my $rule_version = $p->{rule_version};
             my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { undef };
-            
+
             my $contents = $p->{changesets};
             if( !defined $contents ) {
                 # TODO deprecated, use the changesets parameter only
@@ -472,11 +472,11 @@ sub submit : Local {
                     description  => $comments,
                     comments     => $comments,
                     stash_init   => $job_stash, # only used to create the stash
-                    changesets   => $contents, 
+                    changesets   => $contents,
                     bl_to        => $bl_to,
                     state_to        => $state_to
             };
-            
+
             if ( length $job_date && length $job_time ) {
                 $job_data->{schedtime} = Class::Date->new("$job_date $job_time")->string ;
                 _warn("expiry_time for $p->{window_type} = $config->{expiry_time}{$p->{window_type}}");
@@ -489,7 +489,7 @@ sub submit : Local {
                 $job_name = $job->name;
                 { jobname => $job_name, mid=>$job->mid, id_job=>$job->jobid };
             };
-            
+
             $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
         }
     } catch {
@@ -499,19 +499,19 @@ sub submit : Local {
         _error( $msg );
         $c->stash->{json} = { success => \0, msg=>$msg };
     };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub natures_json {
-    #my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+    #my @data = sort { uc $a->{name} cmp uc $b->{name} }
     #         map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
     #         map { Baseliner::Core::Registry->get($_) }
     #         Baseliner->registry->starts_with('nature');
-             
-    my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+
+    my @data = sort { uc $a->{name} cmp uc $b->{name} }
             map { { id=>$_->{mid}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
-            BaselinerX::CI::nature->search_cis;             
-  
+            BaselinerX::CI::nature->search_cis;
+
   _encode_json \@data;
 }
 
@@ -527,7 +527,7 @@ sub job_states : Path('/job/states') {
              sort @{config_get('config.job.states')->{states}};
   _encode_json \@data;
   $c->stash->{json} = { data => \@data };
-  $c->forward('View::JSON'); 
+  $c->forward('View::JSON');
 }
 
 sub envs_json {
@@ -559,7 +559,7 @@ sub monitor : Path('/job/monitor') {
     if($dashboard){
         $c->stash->{query_id} = $c->stash->{jobs};
     }
-    
+
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
     $c->stash->{envs_json}       = $self->envs_json($c->username);
@@ -601,7 +601,7 @@ sub resume : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error resuming the job: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub jc_store : Local  {
@@ -610,16 +610,16 @@ sub jc_store : Local  {
     my $topics = $$p{topics} || {} ;
     my @data;
     my $k = 1;
-    
+
     my %deploys;
     my %children;
- 
+
     my %deploy_changesets;
     my $add_deploy = sub{
         my ($cs,$id_project)=@_;
-        my ($static,$promote,$demote) = BaselinerX::LcController->promotes_and_demotes( 
-            username   => $c->username, 
-            topic      => $cs, 
+        my ($static,$promote,$demote) = BaselinerX::LcController->promotes_and_demotes(
+            username   => $c->username,
+            topic      => $cs,
             id_project => $id_project,
         );
         # this assumes $static->{$_} is always true (\1)
@@ -628,7 +628,7 @@ sub jc_store : Local  {
         $deploys{demote}{$_}++ for keys %{ $demote || {} };
         $deploy_changesets{ $$cs{mid} }=1; # keep unique count
     };
-    
+
     for my $node ( values %$topics ) {
         my $node_data = $$node{data};
         my $mid = $$node_data{topic_mid} ;
@@ -667,13 +667,13 @@ sub jc_store : Local  {
                       id_project  => $id_project,
                       project_name => join( ',', _array( $$cs_data{project_report} ) ),
                 }
-            } 
+            }
             grep {
                 $$_{category}{is_changeset}
             } @cs_user;
         }
         my $topic_data = $ci->get_data;
-        
+
         my $row = {
             _id      => ''.$mid,
             _is_leaf => @chi?\0:\1,
@@ -697,14 +697,14 @@ sub jc_store : Local  {
         };
         push @data, $row;
         push @data, @chi if @chi;
-        
+
         # now get all changesets and find where they can deploy
         $add_deploy->( $topic_data, $id_project ) if $ci->is_changeset;
     }
-    
+
     # filter out first level changesets if inside release
     @data = grep { !( $$_{_parent} xor $children{$$_{mid}} ) } @data;
-    
+
     # now reduce to common deployables
     my $total_cs = keys %deploy_changesets;
     for my $jt ( keys %deploys ) {
@@ -712,19 +712,19 @@ sub jc_store : Local  {
             delete $deploys{$jt}{$bl} if  $deploys{$jt}{$bl} < $total_cs;
         }
     }
-    
+
     for my $t ( @data ) {
         my $type = $$t{item}{is_release} ? 'release' : $$t{item}{is_changeset} ? 'changeset' : '';
         next if $type ne 'changeset';
     }
-    
+
     if( @data ){  # make sure we initialize to get the blocked ones if we have data but no deploys
-        $deploys{$_} //= {} for qw(promote demote static) 
+        $deploys{$_} //= {} for qw(promote demote static)
     }
-    
+
     #@data = sort{ $$a{_id} <=> $$b{_id} } @data;
-    $c->stash->{json} = { data=>\@data, totalCount=>scalar(@data), success=>\1, deploys=>\%deploys }; 
-    $c->forward('View::JSON');  
+    $c->stash->{json} = { data=>\@data, totalCount=>scalar(@data), success=>\1, deploys=>\%deploys };
+    $c->forward('View::JSON');
 }
 
 #
@@ -751,7 +751,7 @@ sub by_status : Local {
             my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
             $wh->{changesets} = mdb->in(@related_topics);
         }
-        
+
 
         map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
         my @data = ();
@@ -763,7 +763,7 @@ sub by_status : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub burndown_new : Local {
@@ -798,13 +798,13 @@ sub burndown_new : Local {
             my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
             $where->{changesets} = mdb->in(@related_topics);
         }
-        
+
         my $jobs = ci->job->find( $where );
 
         my %job_stats;
         my @hours = ('x');
-        
-        
+
+
         my %matrix = ();
 
         map { push @hours,"$_" } 0 .. 23;
@@ -855,7 +855,7 @@ sub burndown_new : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 # TODO filter by my apps
@@ -871,12 +871,12 @@ sub burndown : Local {
             my $tot = 0;
             for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
                 my $hour = Class::Date->new($job->{endtime})->hour;
-                $ret{ $hour }++; 
+                $ret{ $hour }++;
                 $tot++;
             }
             for( sort { $a <=> $b } keys %ret ) {
                 my $diff = $tot - $ret{$_};
-                $ret{$_} = $diff; 
+                $ret{$_} = $diff;
                 $tot = $diff;
             }
             \%ret;
@@ -889,7 +889,7 @@ sub burndown : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub by_hour : Local {
@@ -901,14 +901,14 @@ sub by_hour : Local {
         my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
         for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
             my $hour = Class::Date->new($job->{endtime})->hour;
-            $ret{ $hour }++; 
+            $ret{ $hour }++;
         }
         $c->stash->{json} = { success => \1, data=>\%ret };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub job_stats : Local {
@@ -919,9 +919,9 @@ sub job_stats : Local {
         my $d = mdb->now - '30D';
         my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
 
-        # use the internal report 
+        # use the internal report
         my $report = $c->registry->get( 'report.clarive.job_statistics_bl' );
-        my $config = undef; 
+        my $config = undef;
         my $rep_param = { dir=>uc($p->{dir}) eq 'DESC' ? -1 : 1 };
         my $rep_data = $report->data_handler->($report,$config,$rep_param);
         $c->stash->{json} = { data=>$rep_data->{rows}, totalCount=>$rep_data->{total}, config=>$rep_data->{config} };
@@ -929,7 +929,7 @@ sub job_stats : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 no Moose;

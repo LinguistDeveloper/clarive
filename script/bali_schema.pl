@@ -28,7 +28,7 @@ sub slurp {
 }
 
 sub spit {
-    my $filename = shift; 
+    my $filename = shift;
     open my $f, '>', $filename;
     print $f join("\n", @_);
     close $f;
@@ -58,14 +58,14 @@ sub default_value {
 
 # sqlite default value correction
 sub sqlite_adjust {
-    my $filename = shift; 
+    my $filename = shift;
     my @sql = slurp( $filename );
     spit( $filename, default_value( @sql ) );
 }
 
 # oracle cleanup, triggers and sequences
 sub oracle_adjust {
-    my $filename = shift; 
+    my $filename = shift;
     my @sql = slurp $filename;
 
     @sql = map { s/\"//g; $_ } @sql;

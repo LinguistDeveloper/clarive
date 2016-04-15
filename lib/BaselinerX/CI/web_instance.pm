@@ -24,7 +24,7 @@ has server4 => qw(is rw isa Str), default => '';
 has server5 => qw(is rw isa Str), default => '';
 has server6 => qw(is rw isa Str), default => '';
 
-sub rel_type { 
+sub rel_type {
     +{
            server    => [ from_mid => 'instances_server' ],
     };
@@ -34,11 +34,11 @@ sub rel_type {
 sub store {
 
     my ($self, $p) = @_;
-    
+
     my @cis = ci->search_cis(collection=>'web_instance');
 
     my $total = scalar (@cis);
-    
+
     return { totalCount => $total, data => \@cis };
 }
 

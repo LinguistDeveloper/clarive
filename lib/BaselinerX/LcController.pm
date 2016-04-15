@@ -18,7 +18,7 @@ register 'action.project.see_lc' => { name => 'User can access the project lifec
 register 'config.releases' => {
     name => _loc('Config lifecycle releases'),
     metadata => [
-        { id=>'by_project', label=>'Group by project', default=>0 },    
+        { id=>'by_project', label=>'Group by project', default=>0 },
     ],
 };
 
@@ -28,7 +28,7 @@ sub tree_topic_get_files : Local {
 
     my $id_topic = $c->req->params->{id_topic} ;
     my $sw_get_files = $c->req->params->{sw_get_files} ;
-    
+
     if ($sw_get_files){
         my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
             to_mid=>mid=>master_doc=>[{},{ fields=>{ yaml=>0 }}] );
@@ -60,7 +60,7 @@ sub tree_topic_get_files : Local {
                icon       => '/static/images/icons/delete_red.png',
                leaf       => \0,
                expandable => \1
-           };           
+           };
         }
     }
     $c->stash->{ json } = \@tree;
@@ -123,11 +123,11 @@ sub category_contents : Local {
     my $query = $p->{query};
     my ($info,@user_topics) = model->Topic->topics_for_user({ username=>$c->username, categories=>$category_id, clear_filter=>1, ($query?(query=>$query):()), ($id_project?(id_project=>$id_project):()) });
     @user_topics = map { $_->{mid}} @user_topics;
- 
+
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
-    
+
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
-    
+
     my @menu_related = $self->menu_related();
 
     my %related;
@@ -165,7 +165,7 @@ sub category_contents : Local {
 sub tree_project_jobs : Local {
     my ($self,$c) = @_;
     my $id_project = $c->req->params->{id_project} ;
-    
+
     my @jobs = ci->parents( mid=>$id_project, rel_type=>'job_project',
         start=>1, rows=>20, no_rels=>1,
         sort => { from_mid=>-1 }, docs_only => 1
@@ -209,7 +209,7 @@ sub tree_topics_project : Local {
     my $project = $p->{project} ;
     my $query = $p->{query};
     my $id_project = $p->{id_project} ;
-    
+
     my ( $info, @user_topics ) = model->Topic->topics_for_user({
         username     => $c->username,
         id_project   => $id_project,
@@ -219,7 +219,7 @@ sub tree_topics_project : Local {
     @user_topics = map { $_->{mid}} @user_topics;
 
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
-    
+
     my @menu_related = $self->menu_related();
 
     my %related;
@@ -258,7 +258,7 @@ sub topic_children_for_state {
     my $topic_mid = $p{topic_mid};
     my $state_id = $p{state_id};
     my $id_project = $p{id_project};
-    
+
     # get all children topics
     # my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
     # push @chi_topics, map { mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$$_{mid}" }, to_mid => mid => topic=>[{},{mid=>1}] ) } @chi_topics;
@@ -266,19 +266,19 @@ sub topic_children_for_state {
     my @changeset_categories = map { $_->{id} } mdb->category->find({ is_changeset => '1'})->fields({id=>1, _id =>0})->all;
     my @chi_topics = ci->new($topic_mid)->children( where => { collection => 'topic', id_category => mdb->in(@changeset_categories)}, mids_only => 1, depth => 2);
 
-    # now filter them thru user visibility, current state 
+    # now filter them thru user visibility, current state
     my $where = {
         username     => $p{username},
         clear_filter => 1,
         id_project   => $id_project,
         topic_list   => [ map{ $$_{mid} } @chi_topics ],
-    }; 
+    };
     if ( $state_id ) {
         $where->{statuses} = [ "$state_id" ];
     }
 
     my ( $info, @topics ) = Baseliner->model('Topic')->topics_for_user($where);
-    
+
     return @topics;
 }
 
@@ -303,7 +303,7 @@ sub topic_contents : Local {
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
-        
+
         my $leaf = $related{$_->{mid}} ? \0 : \1;
         push @tree, {
             text       => $_->{title},
@@ -320,7 +320,7 @@ sub topic_contents : Local {
                topic_mid   => $_->{topic_mid},
                click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
-            icon       => $icon, 
+            icon       => $icon,
             leaf       => $leaf,
             expandable => !$leaf,
             menu => \@menu_related
@@ -357,7 +357,7 @@ sub tree_releases : Local {
     #$c->forward('tree_topics_project');
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
-} 
+}
 
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
@@ -390,7 +390,7 @@ sub tree_projects : Local {
     @tree = sort { lc($$a{text}) cmp lc($$b{text}) } @tree;
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
-} 
+}
 
 sub tree_project : Local {
     my ($self,$c) = @_;
@@ -437,8 +437,8 @@ sub list_repo_contents : Local {
         my $id_repo = $p->{id_repo} or _throw 'missing repo id';
         my $repo = Baseliner::CI->new( $id_repo );
 
-        #if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
-        
+        #if( $config->{show_changes_in_tree} || !$p->{id_status} ) {
+
         my @items = $repo->list_contents( request=>$p );
         _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @items;
 
@@ -451,7 +451,7 @@ sub list_repo_contents : Local {
             push @tree, {
                 url        => $it->node_url,
                 data       => $it->node_data,
-                #parent_data => { id_project=>$id_project, project=>$project }, 
+                #parent_data => { id_project=>$id_project, project=>$project },
                 menu       => $menu,
                 icon       => $it->icon,
                 text       => $it->text || $it->name,
@@ -460,11 +460,11 @@ sub list_repo_contents : Local {
             };
         }
     } catch {
-        my $err = shift;   
+        my $err = shift;
         my $msg = _loc('Error detected: %1', $err );
         _error( $msg );
-        push @tree, { 
-            text => substr($msg,0,255), 
+        push @tree, {
+            text => substr($msg,0,255),
             data => {},
             icon => '/static/images/icons/log_e.png',
             leaf=>\1,
@@ -488,7 +488,7 @@ sub branches : Local {
 
     # provider-by-provider:
     # get all the changes for this project + baseline
-    if ( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+    if ( $config->{show_changes_in_tree} || !$p->{id_status} ) {
         try {
             my $repo = Baseliner::CI->new( $id_repo );
             if ($repo->{navigation_type} && $repo->{navigation_type} eq 'Directory'){
@@ -499,7 +499,7 @@ sub branches : Local {
                 @changes = $repo->can('list_contents') ? $repo->list_contents( request=>$p ) : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
             }
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
-            # loop through the branch objects 
+            # loop through the branch objects
             for my $cs ( @changes ) {
                 my $menu = [];
                 # get menu extensions (find packages that do)
@@ -513,7 +513,7 @@ sub branches : Local {
                 push @tree, {
                     url        => $cs->node_url,
                     data       => $data, #$cs->node_data,
-                    parent_data => { id_project=>$id_project, project=>$project }, 
+                    parent_data => { id_project=>$id_project, project=>$project },
                     menu       => $menu,
                     icon       => $cs->icon,
                     text       => $cs->text || $cs->name,
@@ -522,10 +522,10 @@ sub branches : Local {
                 };
             }
         } catch {
-            my $err = shift;   
+            my $err = shift;
             my $msg = _loc('Error detected: %1', $err );
             _error( $msg );
-            push @tree, { 
+            push @tree, {
                 text => substr($msg,0,255),
                 data => {},
                 icon => '/static/images/icons/log_e.png',
@@ -556,7 +556,7 @@ sub changeset : Local {
     my @cs;
 
     try {
-        if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+        if( $config->{show_changes_in_tree} || !$p->{id_status} ) {
             for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
                 #push @cs, $class;
                 try {
@@ -570,7 +570,7 @@ sub changeset : Local {
                     _error( $msg );
                     push @tree, {
                         icon => '/static/images/icons/error.png',
-                        text => substr($msg,0,80), 
+                        text => substr($msg,0,80),
                         leaf => \1,
                     };
                 };
@@ -585,7 +585,7 @@ sub changeset : Local {
                 push @tree, {
                     url        => $cs->node_url,
                     data       => $cs->node_data,
-                    parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
+                    parent_data => { id_project=>$id_project, bl=>$bl, project=>$project },
                     menu       => $menu,
                     icon       => $cs->icon,
                     text       => $cs->text || $cs->name,
@@ -595,7 +595,7 @@ sub changeset : Local {
             }
         }
 
-        ## add what's in this baseline 
+        ## add what's in this baseline
         my $repos = Baseliner::CI->new( $id_project )->repositories;
         # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
 
@@ -629,15 +629,15 @@ sub changeset : Local {
         # topics for a state
         #
         my $bind_releases = 0;
-        
+
         my @changes = mdb->joins(
                     master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
                     from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
-                
+
         # find releases for each changesets
         #my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
         my @releases = map { $_->{id}} mdb->category->find({ is_release => mdb->true})->all;
-        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'id_category' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;    
+        my @topic_topic = map { my $to_mid = $_->{mid}; map { {to_mid => $to_mid, from_mid => $_->{mid}} } ci->new($_->{mid})->parents( where => { collection => 'topic', 'id_category' => mdb->in(@releases) }, mids_only => 1, depth => 2 ) } @changes;
         my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{"$$_{from_mid}"}@topic_topic), is_release=>mdb->true })->all;
         my %releases;
         push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
@@ -752,7 +752,7 @@ sub changeset : Local {
                         name         => $rel->{title},
                         promotable   => $promotable,
                         demotable    => $demotable,
-                        is_release   => 1,    
+                        is_release   => 1,
                         deployable   => $deployable,
                         state_name   => _loc($state_name),
                         id_project   => $id_project,
@@ -775,7 +775,7 @@ sub changeset : Local {
             icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
-        }; 
+        };
     };
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
@@ -828,7 +828,7 @@ sub status_list {
 }
 
 sub promotes_and_demotes {
-    my ($self, %p ) = @_; 
+    my ($self, %p ) = @_;
     my ( $username, $topic, $id_status_from, $id_project ) = @p{ qw/username topic id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
 
@@ -844,20 +844,20 @@ sub promotes_and_demotes {
         my @_workflow;
         my @user_workflow = _unique map {$_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow( $username );
         use Array::Utils qw(:all);
-    
+
         @_workflow = map { _array(values $_) } $topic->{_workflow} ;
-    
+
         my %final = map { $_ => 1 } intersect(@_workflow,@user_workflow);
 
         my @final_key = keys %final;
         map { my $st= $_; delete $statuses{$st} if !( $st ~~ @final_key); } keys %statuses;
     }
     #end Personalized _workflow!
-    
+
     my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
     my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
-    my @bl_from = _array $statuses{ $id_status_from }{bls};    
-    
+    my @bl_from = _array $statuses{ $id_status_from }{bls};
+
     # Static
     my @statics = $self->status_list( dir => 'static', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
 
@@ -868,7 +868,7 @@ sub promotes_and_demotes {
     my @job_transitions;
 
     for my $status ( @statics ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $statics->{ $bl } = \1;
                 $statics->{'s'.$bl.$status->{id_status}} = \1;
@@ -905,7 +905,7 @@ sub promotes_and_demotes {
 
     # Promote
     my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
-    
+
     my $promotable={};
     my $job_promotable={};
 
@@ -954,7 +954,7 @@ sub promotes_and_demotes {
 
     for my $status ( @status_from ) {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
-        for my $bl ( map { $bls{$_} } @bl_from ) {        
+        for my $bl ( map { $bls{$_} } @bl_from ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $demotable->{ $bl } = \1;
                 $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
@@ -1068,34 +1068,34 @@ sub job_transitions : Local {
 }
 
 sub cs_menu {
-    my ($self, $c, %p ) = @_; 
+    my ($self, $c, %p ) = @_;
     my ( $topic, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic bl_state state_name id_status_from id_project categories/ };
     #_warn \%p;
     #return [] if $bl_state eq '*';
     my $job_mode = $p{job_mode} || 0;
     my ( @menu, @menu_s, @menu_p, @menu_d );
-    my $sha = ''; 
+    my $sha = '';
     my $username = $c->username;
-    
+
     push @menu, $self->menu_related();
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
-    my $is_release = $$categories{$topic->{id_category}}{is_release}; 
+    my $is_release = $$categories{$topic->{id_category}}{is_release};
     my @topic_transitions;
-    
+
     if ( $is_release ) {
-        # releases take the menu of their first child 
+        # releases take the menu of their first child
         #   TODO but should be intersection
-        my @chi = 
+        my @chi =
             grep { $$_{category}{is_changeset} }
             $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
-            
+
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
            if ( $job_mode ) {
                 @topic_transitions = $self->promotes_and_demotes( topic => $chi[0], username => $username, id_project => $id_project, job_mode => 1 );
-            } else {            
-               ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( 
+            } else {
+               ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
                     username   => $c->username,
                     topic      => $chi[0],
                     id_project => $id_project
@@ -1109,7 +1109,7 @@ sub cs_menu {
         my ( $menu_s, $menu_p, $menu_d );
         if ( $job_mode ) {
              @topic_transitions = $self->promotes_and_demotes( topic => $topic, username => $username, id_project => $id_project, job_mode => 1 );
-         } else {            
+         } else {
             ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
                 username   => $c->username,
                 topic      => $topic,
@@ -1122,7 +1122,7 @@ sub cs_menu {
     }
     if ( $job_mode ) {
          return @topic_transitions;
-     } else {            
+     } else {
         push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
         return ( $deployable, $promotable, $demotable, \@menu );
     }
@@ -1154,10 +1154,10 @@ sub repo_data : Local {
             my $cmd = "cm ls $p->{path} --tree=$tag_sha\@$repo_path --format={fullpath}#-#{revid}#-#{changeset}#-#{itemid}#-#{type}#-#{size}#-#{name}";
             my @all_files = `$cmd`;
             map { my @parts = split '#-#',$_;
-                  my $name = $parts[6]; 
-                  $name =~ s/\n//; 
-                  my $type = $parts[4]; 
-                  push @res, {path=>$parts[0], item=>$parts[6], size=>$parts[5], version=>$parts[2], leaf=>($type ne 'dir' ? \1 : \0 )} if !($name eq '.' and $type eq 'dir') 
+                  my $name = $parts[6];
+                  $name =~ s/\n//;
+                  my $type = $parts[4];
+                  push @res, {path=>$parts[0], item=>$parts[6], size=>$parts[5], version=>$parts[2], leaf=>($type ne 'dir' ? \1 : \0 )} if !($name eq '.' and $type eq 'dir')
             } @all_files;
         }
     }elsif($repo_type eq 'GitRepository'){
@@ -1165,7 +1165,7 @@ sub repo_data : Local {
         @ls = $g->git->exec( 'ls-tree', '-l', $p->{bl}, $path );
         my $cnt = 100;
         @res = grep { defined }
-        map { 
+        map {
             my ($attr, $type, $sha, $size, @f) = split /\s+/, $_;
             my $f = join ' ',@f;
             my $file = _file($f);
@@ -1181,7 +1181,7 @@ sub repo_data : Local {
                     leaf    => ( $type eq 'blob' ? \1 : \0 )
                 }
                 : undef
-        } @ls;   
+        } @ls;
     }
     my $cnt = 100;
     $c->stash->{json} = [
@@ -1263,7 +1263,7 @@ sub tree : Local {
         if( $p->{favorites} && $p->{favorites} eq 'true' ) {
             $c->forward( 'tree_favorites' );
         } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
-            $c->forward( 'tree_workspaces' );    
+            $c->forward( 'tree_workspaces' );
         } elsif( $p->{show_releases} && $p->{show_releases} eq 'true' ) {
             $c->forward( 'tree_releases' );
         } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
@@ -1275,13 +1275,13 @@ sub tree : Local {
         my $err = shift;
         my $msg = _loc('Error detected: %1', $err );
         _error( $msg );
-        $c->stash->{json} = [{ 
+        $c->stash->{json} = [{
             text => substr($msg,0,255),
             data => {},
             icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
-        }]; 
+        }];
     };
     $c->forward( 'View::JSON' );
 }
@@ -1292,7 +1292,7 @@ sub tree_all : Local {
     my $query = $p->{query};
     my $node = $p->{node};
 
-    if( $node eq '/' ) { 
+    if( $node eq '/' ) {
         $c->forward('tree_projects');
     } else {
         my ( $type, $node ) = $node =~ /^(.*?)\:(.*)$/;
@@ -1344,7 +1344,7 @@ sub tree_favorites : Local {
     my $user_mid = $c->user_ci->{mid};
     $self->check_user_favorites($user_mid);
     my $user = ci->user->find_one($user_mid);
-    my $root = length $p->{id_folder} 
+    my $root = length $p->{id_folder}
         ? $user->{favorites}->{ $p->{id_folder} }{contents}
         : $user->{favorites};
     $root //= {};
@@ -1353,7 +1353,7 @@ sub tree_favorites : Local {
 
     for my $node ( @$favs ) {
         delete $node->{menu} if !$node->{menu}; # otherwise menus don't work
-        $node->{leaf} = \1 if !$node->{url}; 
+        $node->{leaf} = \1 if !$node->{url};
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;
@@ -1370,7 +1370,7 @@ sub tree_workspaces : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my @tree;
-    my $user = $c->user_ci; 
+    my $user = $c->user_ci;
     my $wks = $user->workspaces;
     for my $node ( map {$wks->{$_}} sort { $a<=>$b } keys %{$wks||{}} ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
@@ -1427,13 +1427,13 @@ sub favorite_del : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $user = $c->user_ci; 
+        my $user = $c->user_ci;
         my $favs = $user->favorites;
         # delete node
         my $id = $p->{id};
         if( ! delete $favs->{$id} ) {
-            # search 
-            delete $favs->{$_}{contents}{$id} for keys %$favs;  
+            # search
+            delete $favs->{$_}{contents}{$id} for keys %$favs;
         }
         $user->save;
         cache->remove({ d=>"ci", mid=>$user->{mid} });
@@ -1449,9 +1449,9 @@ sub favorite_rename : Local {
     my $p = $c->req->params;
     $c->stash->{json} = try {
         _fail _loc "Invalid name" unless length $p->{text};
-        
+
         # TODO rename id_folder in case it's a folder?
-        my $user = $c->user_ci; 
+        my $user = $c->user_ci;
         my $d = $user->favorites->{ $p->{id} };
         $d->{text} = $p->{text};
         $user->save;
@@ -1465,7 +1465,7 @@ sub favorite_rename : Local {
 sub favorite_add_to_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
-    my $user_mid = $c->user_ci->{mid}; 
+    my $user_mid = $c->user_ci->{mid};
     cache->remove({ d=>"ci", mid=>$user_mid });
     $c->stash->{json} = try {
         my $favorite_folder= $p->{favorite_folder};
@@ -1473,14 +1473,14 @@ sub favorite_add_to_folder : Local {
         my $id_folder= $p->{id_folder};
         # get data
         my $user = ci->new($user_mid);
-        my $d = $user->favorites->{ $id_folder }; 
-        _fail _loc "Not found: %1", $id_folder unless defined $d; 
+        my $d = $user->favorites->{ $id_folder };
+        _fail _loc "Not found: %1", $id_folder unless defined $d;
         $d->{contents} //= {};
         # delete old
-        my $fav = delete $user->favorites->{ $id_favorite}; 
-        # set new 
+        my $fav = delete $user->favorites->{ $id_favorite};
+        # set new
         $d->{favorite_folder} = $id_folder;
-        $d->{contents}{ $id_favorite} = $fav; 
+        $d->{contents}{ $id_favorite} = $fav;
         $user->save;
         { success=>\1, msg=>_loc("Favorite moved ok") }
     } catch {
@@ -1492,7 +1492,7 @@ sub favorite_add_to_folder : Local {
 
 sub click_for_topic {
     my ($self, $catname, $mid ) = @_;
-    +{ 
+    +{
         url   => sprintf('/topic/view?topic_mid='.$mid),
         type  => 'comp',
         icon  => '/static/images/icons/topic.png',
@@ -1502,7 +1502,7 @@ sub click_for_topic {
 
 sub click_category {
     my ($self, $catname, $id ) = @_;
-    +{ 
+    +{
         url   => sprintf("/topic/grid?category_id=".$id),
         type  => 'comp',
         icon  => '/static/images/icons/topic.png',
@@ -1563,14 +1563,14 @@ sub topics_for_release : Local {
     my $p = $c->request->parameters;
     my $depth = -1;
 
-    if($p->{id_report}){ 
-        $depth = ci->report->find_one({ mid => $p->{id_report} })->{recursivelevel} // "2" 
+    if($p->{id_report}){
+        $depth = ci->report->find_one({ mid => $p->{id_report} })->{recursivelevel} // "2"
     }
-    
+
     my @cis = ci->new($p->{id_release})->children( mids_only => 1, rel_type => 'topic_topic', where => { collection => 'topic'}, depth => $depth);
 
     my @topics = _unique map { $_->{mid} } @cis;
-    push @topics, $p->{id_release};        
+    push @topics, $p->{id_release};
 
     $c->stash->{json} = { success=>\1, topics=>\@topics };
     $c->forward('View::JSON');
@@ -1590,8 +1590,8 @@ sub menu_related {
                         eval => {
                             handler => 'Baseliner.open_apply_filter_from_release'
                         }
-                        
-                    };           
+
+                    };
     return @menu;
 }
 

@@ -63,7 +63,7 @@ subtest 'list_status: returns statuses by category' => sub {
 
     my $ci = TestUtils->create_ci('status', name => 'New');
     my $category = mdb->category->insert({name => 'Category', statuses => [$ci->mid]});
-    
+
     TestUtils->create_ci('status', name => 'Something Else');
 
     my $c = _build_c(req => {params => {category => 'Category'}});
@@ -82,7 +82,7 @@ subtest 'list_status: returns statuses by query' => sub {
     my $controller = _build_controller();
 
     my $ci = TestUtils->create_ci('status', name => 'New');
-    
+
     TestUtils->create_ci('status', name => 'Something Else');
 
     my $c = _build_c(req => {params => {query => 'New'}});

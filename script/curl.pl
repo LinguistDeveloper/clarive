@@ -31,7 +31,7 @@ for my $url ( @ARGV) {
     for(1..$loop) {
         print "Test $_...\n";
         my $ua = WWW::Mechanize::Timed->new();
-        #$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' ); 
+        #$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' );
 
         $ua->get( $url ) or die "\nCould not get $url: $!\n\n";
         print "Headers Request : ".Dump($ua) if (($headers && !$total) || $echo);

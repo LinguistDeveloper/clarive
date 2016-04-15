@@ -27,8 +27,8 @@ has moniker     => qw(is rw isa Maybe[Str]);    # lazy 1);#,
 has created_by  => qw(is rw isa Maybe[Str]);
 has modified_by => qw(is rw isa Maybe[Str]);
 has _seq        => qw(is ro isa Num);
-    # default=>sub{   
-    #     my $self = shift; 
+    # default=>sub{
+    #     my $self = shift;
     #     if( ref $self ) {
     #         my $nid = Util->_name_to_id( $self->name );
     #         return $nid;
@@ -62,15 +62,15 @@ sub unique_keys {
 }
 sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
 
-# methods 
-sub has_bl { 1 } 
-sub has_description { 1 } 
+# methods
+sub has_bl { 1 }
+sub has_description { 1 }
 sub icon_class { '/static/images/icons/class.gif' }
 sub rel_type { +{} }   # { field => rel_type, ... }
 
 sub dump {
     my ($self) = @_;
-    return Util->_dump( $self ); 
+    return Util->_dump( $self );
 }
 
 sub class_short_name {
@@ -95,7 +95,7 @@ sub serialize {
     return () if !ref $self;
     # XXX consider calling known attribute methods instead
     my %data = map { $_ => $self->{$_} } grep !/^_/, keys %{$self};
-    # cleanup 
+    # cleanup
     if( $self->does( 'Baseliner::Role::Service' ) ) {
         delete $data{log};
         delete $data{job};
@@ -132,24 +132,24 @@ sub gen_mid {
 
 sub update {
     my $self = shift;
-    my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
+    my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_;
     my $class = ref $self || _fail _loc 'CI must exist for update to work';
-    
+
     # detect changed fields, in case it's a new row then all data is changed
     # TODO there's contaminated data coming thru from project variables
-    my $changed = +{ map { $_ => $data{$_} } grep { 
-        ( defined $self->{$_} && !defined $data{$_} ) 
-        || ( !defined $self->{$_} && defined $data{$_} ) 
+    my $changed = +{ map { $_ => $data{$_} } grep {
+        ( defined $self->{$_} && !defined $data{$_} )
+        || ( !defined $self->{$_} && defined $data{$_} )
         || !$self->compare_data(data1=>$self->{$_}, data2=>$data{$_})
         } keys %data } ;
-        
+
     # merge and recreate object
-    my $d = { %$self, %data };  
+    my $d = { %$self, %data };
     # update database only:
     my $saved_obj =  $class->new( $d );
     $saved_obj->save( changed=>$changed );
     # update live attributes
-    $self->$_( $saved_obj->$_ ) for grep { $self->can($_) } keys %data; 
+    $self->$_( $saved_obj->$_ ) for grep { $self->can($_) } keys %data;
 }
 
 sub save {
@@ -165,8 +165,8 @@ sub save {
     my $master_row;
     $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
     my $master_old;
-    my $exists = length($mid) && $master_row; 
-    
+    my $exists = length($mid) && $master_row;
+
     # try to get mid from ns
     my $ns = $self->ns;
     if( !$exists && length $ns && $ns ne '/' ) {
@@ -179,9 +179,9 @@ sub save {
 
     cache->remove({ d=>'ci' });
     cache->remove({ mid=>$mid }) if length $mid;
-    
+
     # TODO make it mongo transaction bound, in case there are foreign tables
-    if( $exists ) { 
+    if( $exists ) {
         ######## UPDATE CI
         if( $master_row ) {
             my $username = 'clarive';
@@ -214,13 +214,13 @@ sub save {
                     ns         => $self->ns,
                     ts         => mdb->ts,
                     _seq       => $_seq,
-                    moniker    => $self->moniker, 
+                    moniker    => $self->moniker,
                     bl         => join( ',', Util->_array( $bl ) ),
                     active     => $self->active // 1,
                     versionid  => $self->versionid || 1,
             };
             # update mid into CI
-            $mid = length($mid) ? $mid : $self->gen_mid; 
+            $mid = length($mid) ? $mid : $self->gen_mid;
             if( $mid =~ /([#\.\?])/ ) {
                 _fail _loc( 'MIDs cannot contain the character `%1`', "$1" );
             }
@@ -233,18 +233,18 @@ sub save {
                 $$master_row{name} = $name;
                 $self->name( $name );
             }
-            
+
             # now save the rest of the ci data (yaml)
             $self->new_ci( $master_row, undef, \%opts );
             { mid => $mid, username => $self->created_by };
         };
     }
-    return $mid; 
+    return $mid;
 }
 
 sub delete {
     my ( $self, $mid ) = @_;
-    
+
     $mid //= $self->mid;
     if( $mid ) {
         my $ci = mdb->master->find_one({'mid' => $mid});
@@ -305,7 +305,7 @@ sub field_is_ci {
 sub save_data {
     my ( $self, $master_row, $master_doc, $opts, $master_old ) = @_;
     return unless ref $master_doc;
-    
+
     # To fix not saving attributes modified in "before save_data"
     #$master_doc = { %$self, %$master_doc };
 
@@ -314,12 +314,12 @@ sub save_data {
     my @master_rel;
     my $meta = $self->meta;
     for my $field ( keys %$master_doc ) {
-        if( my $type = $self->field_is_ci($field,$meta) ) { 
+        if( my $type = $self->field_is_ci($field,$meta) ) {
             my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
-            my $v = delete($master_doc->{$field});  # consider a split on ,  
+            my $v = delete($master_doc->{$field});  # consider a split on ,
             $v = [ split /,/, $v ] unless ref $v;
-            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>$v }; 
+            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>$v };
             #_error( \@master_rel );
             #_fail( "$field is $type - $rel_type" );
         }
@@ -350,14 +350,14 @@ sub save_data {
         my ($my_rel,$my_rel_cl) = $rel->{rel_type}->[0] eq 'from_mid' ? qw(from_mid from_cl) : qw(to_mid to_cl);
         my ($other_rel,$other_rel_cl) = $my_rel eq 'from_mid' ? qw(to_mid to_cl) : qw(from_mid from_cl);
         my $rel_type_name = $rel->{rel_type}->[1];
-        # delete all records related 
+        # delete all records related
         my $mr_where ={ $my_rel=>''.$master_row->{mid}, rel_type=>$rel_type_name };
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             my $other_ref = ref( $other_mid ) ;
             my $other_cl  = $other_ref =~ /^BaselinerX::CI::/ ? $other_mid->collection : undef;
             $other_mid = $other_mid->mid if $other_ref =~ /^BaselinerX::CI::/;
-            next unless $other_mid;  # here we catch children that have not been instanciated (not saved related CIs?) 
+            next unless $other_mid;  # here we catch children that have not been instanciated (not saved related CIs?)
             my $rdoc = {
                 $my_rel       => $master_row->{mid},
                 $other_rel    => $other_mid,
@@ -418,7 +418,7 @@ sub load {
     my ( $self, $mid, $row, $data, $yaml, $rel_data ) = @_;
     $mid ||= $self->mid if $self->can('mid');
     _throw _loc( "Missing mid %1", $mid ) unless length $mid;
-    # in scope ? 
+    # in scope ?
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;
     return $scoped if $scoped;
@@ -434,7 +434,7 @@ sub load {
             _fail _loc( "Master row not found for mid %1", $mid );
         }
         # setup the base data from master row
-        $data = $row; 
+        $data = $row;
     }
 
     # find class, so that we are subclassed correctly
@@ -447,10 +447,10 @@ sub load {
         if( $Baseliner::CI::use_empty_ci ) {
             $self = $class = 'BaselinerX::CI::Empty';
         } else {
-            _fail(_loc("Could not load CI class `%1`. Maybe check if any plugins/features are missing?", $coll) ); 
+            _fail(_loc("Could not load CI class `%1`. Maybe check if any plugins/features are missing?", $coll) );
         }
     }
-    
+
     # grab the returned data, in case someone did an 'around' and returned it, otherwise == addr $data
     my $final_data = $self->load_data( $mid, $data, $class, $yaml, $rel_data );
     $Baseliner::CI::mid_scope->{ "$mid" } = $final_data if $Baseliner::CI::mid_scope;
@@ -473,12 +473,12 @@ sub load_data {
             Util->_error( Util->_whereami );
             undef;
         };
-        Util->_error( Util->_loc( "Error deserializing CI %1. Missing or invalid YAML ref: %2", $mid, ref $y || '(empty)' ) ) 
+        Util->_error( Util->_loc( "Error deserializing CI %1. Missing or invalid YAML ref: %2", $mid, ref $y || '(empty)' ) )
             unless ref $y eq 'HASH';
         $y //= {};
         $data->{$_} = $y->{$_} for keys %$y; # TODO yaml should be blessed obj?
     }
-    else {  
+    else {
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
     }
     # look for relationships
@@ -497,16 +497,16 @@ sub load_data {
         }
         # get rel data
         if( my @fields = keys %field_rel_mids ) {
-            my @rel_type_data = ref $rel_data eq 'ARRAY' 
-                ? @$rel_data 
-                : ref $rel_data eq 'HASH' 
+            my @rel_type_data = ref $rel_data eq 'ARRAY'
+                ? @$rel_data
+                : ref $rel_data eq 'HASH'
                     ? @{ $rel_data->{$mid} || [] }
                     : mdb->master_rel
                         ->find({ '$or'=>[{ to_mid=>"$mid" },{ from_mid=>"$mid" }], rel_type =>mdb->in(@fields) })
                         ->fields({ from_mid=>1,to_mid=>1,rel_type=>1 })->all;
-                    
+
             for my $rel_row ( @rel_type_data ) {
-                my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
+                my $f = $field_rel_mids{ $rel_row->{rel_type} };
                 next unless $f;
                 next if $rel_row->{ $f->{my_mid} } ne $mid;
                 my $other_mid = $rel_row->{ $f->{other_mid} };
@@ -517,7 +517,7 @@ sub load_data {
             }
         }
     }
-    
+
     #_log $data;
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form if $Baseliner::CI::get_form;
@@ -529,7 +529,7 @@ sub load_from_search {
     my ($class, $where, %p ) = @_;
     my @rows = mdb->master->find( $where )->all;
     if( $p{single} ) {
-        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
+        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3',
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
             if scalar @rows > 1;
         return unless @rows;
@@ -544,7 +544,7 @@ sub load_from_query {
     my @mids = map { $_->{mid} } mdb->master_doc->find($where)->fields({ mid=>1 })->limit(1000)->all;
     my @rows = mdb->master->find({ mid=>mdb->in(@mids) })->all;
     if( $p{single} ) {
-        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
+        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3',
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
             if scalar @rows > 1;
         return $class->load( $rows[0]->{mid} );
@@ -558,13 +558,13 @@ sub query {
     $where //= {};
     if( !$where->{collection} && $self->can('collection') ) {
         my $coll = $self->collection;
-        $where->{collection} = $coll if length $coll; 
+        $where->{collection} = $coll if length $coll;
     }
     local $Baseliner::CI::_no_record = 1;
     my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( $where, %p );
     return @recs;
 }
-        
+
 =head2 _build_ci_instance_from_rec
 
 Creates a CI obj from a hash.
@@ -577,24 +577,24 @@ sub _build_ci_instance_from_rec {
     if( $Baseliner::CI::_record_only ) {
         return $rec;
     }
-    my $ci_class = $rec->{ci_class}; 
+    my $ci_class = $rec->{ci_class};
     # instantiate
     my $obj = try {
         $ci_class->new( $rec )
-    } catch { 
+    } catch {
         my $err = shift;
         Util->_error( "MID=$rec->{mid} rec=" . _dump( $rec ) );
-        _fail _loc 'Could not instanciate CI `%1`%2: %3', 
+        _fail _loc 'Could not instanciate CI `%1`%2: %3',
             Util->to_base_class($ci_class), ($rec->{mid} ? " ($rec->{mid})": ''), $err;
     };
     # add the original record to _ci
     if( ! $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
-        $obj->{_ci} = $rec; 
+        $obj->{_ci} = $rec;
         $obj->{_ci}{ci_icon} = $obj->icon;
     }
     if( $Baseliner::CI::_merge_record ) {
         my $_ci = delete $obj->{_ci};
-        if( ref $_ci eq 'HASH' ) { 
+        if( ref $_ci eq 'HASH' ) {
             $obj->{$_} //= $_ci->{$_} for keys %$_ci;
         }
     }
@@ -651,11 +651,11 @@ sub related_mids {
         $mid = \@not_visited_mids;
     }
 
-    local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo) 
+    local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo)
     $visited->{$opts{edge}}->{ $mid } = 1;
     $opts{visited} = $visited;
     local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
-    
+
     # get my related cis
     my @cis = $self->related_cis( %opts );
     # unique?
@@ -676,7 +676,7 @@ sub related_mids {
             }
         } else {  # flat mode
             my @mids = map { $_->{mid} } @cis;
-            push @cis, 
+            push @cis,
                 $self->related_mids(
                     %opts,
                     mid   => \@mids,
@@ -694,7 +694,7 @@ sub related_cis {
     my ($self, %opts )=@_;
     my $mid = $opts{mid};
     $mid // _fail 'Missing parameter `mid`';
-    # in scope ? 
+    # in scope ?
     #local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
@@ -737,7 +737,7 @@ sub related_cis {
     my $rs = mdb->master_rel->find( $where );
     ########
     if( $opts{order_by} ) {
-        Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );   
+        Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );
         Util->_error( Util->_whereami() );
     }
 
@@ -750,7 +750,7 @@ sub related_cis {
     my @ret = map {
         my $rel_mid = $rel_edge eq 'child'
             ? $_->{to_mid}
-            : $_->{from_mid}; 
+            : $_->{from_mid};
         my $ci;
         $ci = { mid => $rel_mid };
 
@@ -770,7 +770,7 @@ sub _filter_cis {
     return () unless ref $opts{_cis} eq 'ARRAY';
     my @cis = @{ delete $opts{_cis} };
     if( $opts{does} || $opts{does_any} || $opts{does_all} ) {
-        @cis = grep { 
+        @cis = grep {
             my $ci = $_;
             my @does = map { "Baseliner::Role::CI::$_" } _array( $opts{does}, $opts{does_all}, $opts{does_any} );
             if( exists $opts{does_all} ) {
@@ -781,7 +781,7 @@ sub _filter_cis {
         } @cis;
     }
     if( $opts{isa} || $opts{isa_any} || $opts{isa_all} ) {
-        @cis = grep { 
+        @cis = grep {
             my @isa = map { "BaselinerX::CI::$_" } _array( $opts{isa}, $opts{isa_all}, $opts{isa_any} );
             my $ci = $_;
             if( exists $opts{isa_all} ) {
@@ -803,17 +803,17 @@ Returns an instantiated ci list.
 Options:
 
     edge => 'in' | 'out' | undef
-        type of edges to traverse. 
+        type of edges to traverse.
             out: where from_mid == mid
             in: where to_mid == mid
             undef: both in and out
 
     depth => 1
-        how many levels to recurse. Default is 1, which means no recursion.  
+        how many levels to recurse. Default is 1, which means no recursion.
 
     mode => 'flat' | 'tree'
-        how to return the data. Tree mode will return nodes nested into 
-        an attribute called 'ci_rel' 
+        how to return the data. Tree mode will return nodes nested into
+        an attribute called 'ci_rel'
 
     does => ['Server']
         filters CIs that do the role "Baseliner::Role::Server"
@@ -825,17 +825,17 @@ Options:
         filters CIs that do all of the roles (AND)
 
     filter_early => 1|0 (default:0)
-        checks CIs filters (does) before recursing. 
+        checks CIs filters (does) before recursing.
 
     unique => 1|0 (default:0)
         no duplicate cis in the list, useful to avoid recursive trees
 
-    no_rels => 1|0 (default:0) 
+    no_rels => 1|0 (default:0)
         don't load relationships into CIs
 
     start => Num
         start row for MasterRel query
-    
+
     rows => Num
         how many rows to retrieve from MasterRel
 
@@ -868,12 +868,12 @@ sub related {
     my %edges = map { $_->{mid} => ($_->{_edge} // '') } @cis;
 
 
-    my @all_cis = ( @cis, map { _array($_) } values %$tree_relations );  
+    my @all_cis = ( @cis, map { _array($_) } values %$tree_relations );
     my @ands = ( { mid => mdb->in(map{$_->{mid}} @all_cis)} );
 
     if( $opts{where} ) {
         push @ands, $opts{where};
-    } 
+    }
 
     # paging support
     $opts{start} //= 0;
@@ -886,7 +886,7 @@ sub related {
     $rs->sort( $opts{sort} ) if ref $opts{sort};
 
     my @found_cis = $rs->all;
-    
+
     if ( $opts{mids_only} ) {
         @found_cis = map { +{ mid => $_->{mid}, ci_rel=>$tree_relations->{$_->{mid}}  } } @found_cis;
     } elsif ( !$opts{docs_only} ) {
@@ -939,22 +939,22 @@ sub list_by_name {
 
 =head2 push_ci_unique
 
-Adds a ci to a has_cis list, making sure the list remains 
-unique. 
+Adds a ci to a has_cis list, making sure the list remains
+unique.
 
-    $self->push_ci_unique( 'field', $ci ); 
+    $self->push_ci_unique( 'field', $ci );
 
-All cis must be expanded into objects with ->mid available. 
+All cis must be expanded into objects with ->mid available.
 
 =cut
 sub push_ci_unique {
     my ($self,$field,$ci) = @_;
-    my $cis = $self->$field; 
+    my $cis = $self->$field;
     my %unique;
     for my $rel ( @{ $cis || [] } ) {
-        $unique{ $rel->mid } = $rel; 
+        $unique{ $rel->mid } = $rel;
     }
-    $unique{ $ci->mid } = $ci; 
+    $unique{ $ci->mid } = $ci;
     $self->$field( [ values %unique ] );
 }
 
@@ -967,13 +967,13 @@ attributes that are not C<sub{}>
 sub attribute_default_values {
     my ($class)=@_;
     my %defs =
-        map { 
-            $_->name => $_->default 
-        } 
-        grep { 
-            my $d=$_->default; 
-            defined $d && ref $d ne 'CODE'; 
-        } 
+        map {
+            $_->name => $_->default
+        }
+        grep {
+            my $d=$_->default;
+            defined $d && ref $d ne 'CODE';
+        }
         $class->meta->get_all_attributes;
     return \%defs;
 }
@@ -1003,7 +1003,7 @@ sub run_service {
     my $stash = {};
     my $config = \%p;
     require Capture::Tiny;
-    my ($return_data, $output, $rc); 
+    my ($return_data, $output, $rc);
     try {
         ($output) = Capture::Tiny::tee_merged( sub{
             $return_data = $reg->run_container( $stash, $config, $self_or_class );
@@ -1011,13 +1011,13 @@ sub run_service {
     } catch {
         my $err = shift;
         if( $p{fail} ) {
-            _fail _loc "Error running service %1 against ci %2: %3", 
+            _fail _loc "Error running service %1 against ci %2: %3",
                 $key, ( ref $self_or_class ? $self_or_class->mid : $self_or_class ), $err;
         } else {
-            $output .= "\n$err";  
+            $output .= "\n$err";
         }
     };
-    { stash=>$stash, return=>$return_data, output=>$output };  
+    { stash=>$stash, return=>$return_data, output=>$output };
 }
 
 sub variables_like_me {
@@ -1035,10 +1035,10 @@ sub variables_like_me {
             for my $role ( _array( $roles ) ) {
                 my $cn = Util->to_role_class($role);
                 if( $cn->can('meta') ) {
-                    my %consumers = map { $_=>1 } $cn->meta->consumers; 
+                    my %consumers = map { $_=>1 } $cn->meta->consumers;
                     @final = grep {
                         defined $_->var_ci_role
-                            && ( $_->var_ci_role eq $role 
+                            && ( $_->var_ci_role eq $role
                                 || $consumers{ Util->to_ci_class($_->var_ci_class) }
                                 || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
                     } @vars;
@@ -1049,11 +1049,11 @@ sub variables_like_me {
             @final = @vars;
         }
     } else {
-        my $cn = $class->class_short_name; 
+        my $cn = $class->class_short_name;
         #filter roles
         my %roles = map { Util->_strip_last( '::', $_->name ) => 1 } $class->meta->calculate_all_roles_with_inheritance;
         @vars = grep { defined $_->var_ci_role && $roles{ $_->var_ci_role } } @vars;
-        
+
         # filter class
         for my $var ( @vars ) {
             my $var_class = $var->var_ci_class;
@@ -1089,11 +1089,11 @@ sub all_cis {
 }
 
 
-# TODO consider returning a collection for ci->[collection] ? 
+# TODO consider returning a collection for ci->[collection] ?
 sub find {
     my ($self,$where,@rest) = @_;
     $where //= {};
-    if( ref($where) ne 'HASH' && length $where ) {  
+    if( ref($where) ne 'HASH' && length $where ) {
         $where = { mid=>mdb->in($where) };
     }
     $where->{collection} //= $self->collection;
@@ -1103,7 +1103,7 @@ sub find {
 sub aggregate {
     my ($self,$where) = @_;
     $where //= [];
-    unshift $where => { '$match'=>{ collection=>$self->collection } }; 
+    unshift $where => { '$match'=>{ collection=>$self->collection } };
     return mdb->master_doc->aggregate($where);
 }
 
@@ -1137,7 +1137,7 @@ sub search_cis {
     }
     my $rs = mdb->master_doc->find($where)->fields({ mid=>1 })->sort({ $sort=>1 });
     if( $search_one ) {
-        my $doc = $rs->next; 
+        my $doc = $rs->next;
         return undef if !$doc;
         return ci->new( $doc->{mid} );
     } else {

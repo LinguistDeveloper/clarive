@@ -34,7 +34,7 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
                     section_allowed => ['between']
                 };
             } else {
-                push @{ $stash->{dashlets} }, $config; 
+                push @{ $stash->{dashlets} }, $config;
             }
         }, Data::Dumper::Dumper({ id=>$n->{id}, key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
     };

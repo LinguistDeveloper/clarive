@@ -37,7 +37,7 @@ register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
 register 'service.notify.create' => {
     name => 'Send a Notification',
     form => '/forms/notify_create.js',
-    #migrar 
+    #migrar
     handler=>sub{
         my ($self, $c, $config) = @_;
 
@@ -78,25 +78,25 @@ register 'service.notify.create' => {
 
         my $final_cc = [ _unique(@users) ];
 
-        Baseliner->model('Messaging')->notify( 
+        Baseliner->model('Messaging')->notify(
             to => { users => $final_to },
             cc => { users => $final_cc },
             template        => $template,
-            template_engine => 'mason',        
-            utf8 => 1,    
+            template_engine => 'mason',
+            utf8 => 1,
             subject => $config->{subject},
             carrier => 'email',
             vars => {
                 msg => $config->{body},
             }
         );
-        return { msg_id => 999, config=>$config }; 
+        return { msg_id => 999, config=>$config };
     }
 };
 
 =head1 DESCRIPTION
 
-By default messages are sent by both email and instant messaging. 
+By default messages are sent by both email and instant messaging.
 
     # notify admins:
     $c->model('Messaging')->notify( subject=>'Internal Error', message=>'Maybe you want to take a look');
@@ -134,7 +134,7 @@ sub create {
     delete $final_vars{vars};
     %final_vars = ( %final_vars, %$vars );
     # parse subject
-    my $subject = parse_vars( $p{subject}, \%final_vars ); 
+    my $subject = parse_vars( $p{subject}, \%final_vars );
     $final_vars{subject} = $subject;
 
     if( my $template = $p{template} ) {
@@ -148,7 +148,7 @@ sub create {
                 _log _whereami;
                 $body = _loc('Email error. Email contents: <pre>%1</pre>', _dump($p{vars}) );
                 _fail _loc 'Error in message mason template %1: %2', $template, $err
-                    if $p{_fail_on_error}; 
+                    if $p{_fail_on_error};
             };
         } else {
             $template = Baseliner->path_to('root', $p{template} )
@@ -156,7 +156,7 @@ sub create {
             $body = _parse_template( $template, %final_vars );
         }
     }
-    
+
     $p{sender} ||= _loc('internal');
     my $msg = mdb->message->insert(
         {
@@ -183,7 +183,7 @@ sub delete_all {
     my @q;
 
     foreach my $r (_array $queue){
-        
+
         if($r->{username} eq $p{username}){
             push @q, $r;
         }
@@ -200,13 +200,13 @@ sub delete {
     my ( $self, %p ) = @_;
     my $msg = mdb->message->update(
         {_id => mdb->oid($p{id_message})},
-        {'$pull' => 
+        {'$pull' =>
             {
                 queue => {id => 0+$p{id_queue}}
             }
         }
     );
-    
+
 }
 
 sub read {
@@ -215,7 +215,7 @@ sub read {
 
 =head2 notify
 
-Creates a message and puts a notification in the queue. 
+Creates a message and puts a notification in the queue.
 
   subject => 'about...',
   body => 'body',
@@ -228,7 +228,7 @@ Then the destination (users):
     to => {
         users => [ 'A', 'B', ... ],
     },
-    cc => { 
+    cc => {
         users => [ ... ]
     }
 
@@ -267,7 +267,7 @@ sub notify {
 
         push @{ $users{$param} }, _array( $dest->{users}, $dest->{user} );
 
-        my @actions = _array( $dest->{actions}, $dest->{action} ); 
+        my @actions = _array( $dest->{actions}, $dest->{action} );
         for my $action ( @actions ) {
             _log "Looking for users for action $action";
             my @users = Baseliner->model('Permissions')->list(
@@ -276,12 +276,12 @@ sub notify {
                 ns     => ( $dest->{ns} || 'any' )
             );
             _log "Found: " . join',',@users;
-            push @{ $users{$param} }, @users; 
+            push @{ $users{$param} }, @users;
         }
     }
 
     # create the message
-    my $msg = $self->create(%p); 
+    my $msg = $self->create(%p);
     my $schedule = $p{schedule_time};
     # create the queue entries
     for my $carrier ( @carriers ) {
@@ -294,12 +294,12 @@ sub notify {
                 }
                 mdb->message->update(
                     {_id => $msg},
-                    {'$push' => 
+                    {'$push' =>
                         {queue => {
                             id =>  0 + mdb->seq('message_queue'),
-                            username=>$username, 
-                            carrier=>$carrier, 
-                            carrier_param=>$param, 
+                            username=>$username,
+                            carrier=>$carrier,
+                            carrier_param=>$param,
                             active => '1',
                             attempts => '0',
                             swreaded => '0',
@@ -323,14 +323,14 @@ sub notify_admin {
 
 =head2 inbox
 
-List all available messages for a given username. 
-    
+List all available messages for a given username.
+
     username => 'me',
 
-By default, only lists active (unread) messages. 
+By default, only lists active (unread) messages.
 
 If you are a queue carrier, to list all, set:
-    
+
     all => 1
 
 =cut
@@ -340,34 +340,34 @@ sub inbox {
     my @messages;
 
     my %q;
-    
+
     $p{dir} ||= 'DESC';
 
        if ($p{sort}){
         if($p{sort} eq 'id' or $p{sort} eq 'sent') {
             $p{sort} = 'queue.'.$p{sort};
-        } 
+        }
 
            if ($p{dir} eq 'DESC') {
-               $q{sort} = {$p{sort} => -1}; 
+               $q{sort} = {$p{sort} => -1};
            }else{
                $q{sort} = {$p{sort} => 1};
            }
        } else{
            if ($p{dir} eq 'DESC') {
-            $q{sort} = {'queue.id' => -1}; 
+            $q{sort} = {'queue.id' => -1};
         }else{
             $q{sort} = {'queue.id' => 1};
         }
        }
-    
+
     if( defined $p{start} && defined $p{limit} ) {
         $q{skip} = $p{start};
         $q{limit} = $p{limit} || 30;
     }
 
     $q{where}->{'queue.active'} = '1' unless $p{all};
-    
+
     exists $p{username} and $q{where}->{'queue.username'} = $p{username} if $p{username};
     exists $p{carrier} and $q{where}->{'queue.carrier'} = delete $p{carrier};
 
@@ -388,7 +388,7 @@ sub inbox {
       }
 
     foreach my $r (@q){
-        my $message = { %{ delete $r->{msg} }, %$r, swreaded => $r->{swreaded}  }; 
+        my $message = { %{ delete $r->{msg} }, %$r, swreaded => $r->{swreaded}  };
 
         push @messages, $message;
 
@@ -434,14 +434,14 @@ sub delivered {
 
 sub failed {
     my ($self,%p)=@_;
-    
+
     my $max_attempts = $p{max_attempts} || 10;  #TODO to config
-    
+
     _fail _loc('Missing id') unless length $p{id};
 
     $p{where} ={'queue.id' => 0 + $p{id}};
     my ($queue, $cnt) = $self->transform(%p);
-    
+
     my $r;
 
     for my $entry (_array $queue){
@@ -463,8 +463,8 @@ sub failed {
         {'queue.id' => 0 + $p{id}},
         {'$set' =>
             {
-                'queue.$.result' => $p{result}, 
-                'queue.$.active' => $act, 
+                'queue.$.result' => $p{result},
+                'queue.$.active' => $act,
                 'queue.$.attempts' => ''.$n_attempts
             }
         });
@@ -472,10 +472,10 @@ sub failed {
 
 sub get {
     my ($self,%p)=@_;
-    $p{where} ={'queue.id' => 0 + $p{id}}; 
+    $p{where} ={'queue.id' => 0 + $p{id}};
     my ($queue, $cnt) = $self->transform(%p);
     my ($row) = _array $queue;
-    my $merged = { %{ delete $row->{msg} }, %$row }; 
+    my $merged = { %{ delete $row->{msg} }, %$row };
     $merged->{_id} .='';
     return $merged if ref $row;
 }
@@ -508,7 +508,7 @@ sub send_schedule_mail {
     my ( $self, %p ) = @_;
     mdb->message->update(
         {
-            _id => $p{msg}->{_id}, 
+            _id => $p{msg}->{_id},
             'queue.id' => $p{id}
         },
         {'$set' => {'queue.$.sent' => mdb->ts}}
@@ -519,14 +519,14 @@ sub transform {
     my ($self, %p) = @_;
     my %message_json = $self->mdb_message_query(%p);
     my @queue = @{$message_json{data}};
-    @queue = 
+    @queue =
     map {
         my $msg = $_;
         map {
-           $_->{msg} = $msg; 
+           $_->{msg} = $msg;
            $_
-        } 
-        _array(delete $msg->{queue}) 
+        }
+        _array(delete $msg->{queue})
     } @queue;
 
 
@@ -536,7 +536,7 @@ sub transform {
 sub mdb_message_query {
     my ($self, %p) = @_;
     my $rs = mdb->message->find( $p{where} );
-    my $total_count = $p{is_daemon} ? 0 : $rs->count(); 
+    my $total_count = $p{is_daemon} ? 0 : $rs->count();
 
     $rs->sort( $p{sort} ) if $p{sort};
     $rs->skip( $p{skip} ) if $p{skip};
@@ -547,7 +547,7 @@ sub mdb_message_query {
     $json{data} = \@data;
     $json{total_count} = $total_count;
 
-    return %json; 
+    return %json;
 }
 
 no Moose;

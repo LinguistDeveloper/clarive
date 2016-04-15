@@ -40,12 +40,12 @@ has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>
     });
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        my $self = shift;
-       $self->mongo->get_database($self->mongo_db_name); 
+       $self->mongo->get_database($self->mongo_db_name);
     }, handles=>[qw(run_command eval)],
 );
 has db_cache => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        my $self = shift;
-       $self->mongo->get_database($self->mongo_db_name . '-cache'); 
+       $self->mongo->get_database($self->mongo_db_name . '-cache');
     },
 );
 
@@ -78,10 +78,10 @@ sub seq {
 sub collection {
     my ($self,$collname) = @_;
 
-    my $coll = $collname =~ /^cache/ 
+    my $coll = $collname =~ /^cache/
         ? $self->db_cache->get_collection( $collname )
         : $self->db->get_collection( $collname );
-    
+
     #require Baseliner::MongoCollection;
     Baseliner::MongoCollection->new( _collection=>$coll, _db=>$self );
 }
@@ -89,7 +89,7 @@ sub collection {
 sub grid { $_[0]->db->get_gridfs }
 
 sub grid_slurp {
-    my ($self,$where) = @_; 
+    my ($self,$where) = @_;
     my $doc = $self->grid->find_one($where);
     return unless $doc;
     my $data = $doc->slurp;
@@ -97,7 +97,7 @@ sub grid_slurp {
     return $data;
 }
 
-sub grid_insert {  
+sub grid_insert {
     my ($self, $in, %opts) = @_;
     my $fh;
     if( !ref $in ) {
@@ -122,7 +122,7 @@ sub grid_insert {
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
     }
-    _fail _loc 'Could not get filehandle for asset' unless $fh; 
+    _fail _loc 'Could not get filehandle for asset' unless $fh;
     my $md5 = Util->_md5( $self->fh );
     my $origin = _loc '%1:%3', caller;
     my $id = $self->grid->insert($fh, +{ md5=>$md5, origin=>$origin, %opts } );
@@ -158,9 +158,9 @@ sub grid_add {
     else {
         _fail _loc 'Invalid asset data type: %1', ref($in);
     }
-    
-    _fail _loc 'Could not get filehandle for asset' unless $fh; 
-    
+
+    _fail _loc 'Could not get filehandle for asset' unless $fh;
+
     # $grid->insert($fh, {"filename" => "mydbfile"});
     # TODO match md5, add mid to asset in case it exists
     my $id = $self->grid->insert($fh, { %opts } );
@@ -177,7 +177,7 @@ sub str { shift; [ map { defined $_ ? "$_" : undef } Util->_array( @_ ) ] }
 sub find {
     my ($self,$mid)=@_;
     my $master = $self->find_master( $mid );
-    return Util->_load( $master->{yaml} ); 
+    return Util->_load( $master->{yaml} );
 }
 
 sub find_master {
@@ -196,20 +196,20 @@ sub master_all {
 sub master_rs {
     my ($self,$where)=@_;
     my $rs = $self->master->find($where);
-    bless $rs => 'Baseliner::MongoCursor'; 
+    bless $rs => 'Baseliner::MongoCursor';
 }
 
 sub master_query {
     my ($self,$query)=@_;
     my $coll = $self->collection('master');
-    my ($results) = $coll->search(query=>$query, limit=>9999 )->{results}; 
+    my ($results) = $coll->search(query=>$query, limit=>9999 )->{results};
     my @rows = grep { defined } map {
         $_->{obj};
     } _array($results);
     return @rows;
 }
 
-=head2 joins 
+=head2 joins
 
     my @revisions = mdb->joins(
         { merge=>'flat' },
@@ -225,7 +225,7 @@ sub joins {
     my $self = shift;
     my %opts = %{ shift() } if ref $_[0] eq 'HASH';
     my ( %res, %in, @merges );
-    # detect if a find coll=>{ ... }  or query coll=>[{},{}] 
+    # detect if a find coll=>{ ... }  or query coll=>[{},{}]
     my $rs_find = sub {
         my $coll = shift;
         my $wh = shift;
@@ -241,8 +241,8 @@ sub joins {
     };
     while( @_ ) {
         my ($coll,$where,$from,$to,$as) = (shift,shift,shift,shift);
-        ($coll,$as) = @$coll if ref $coll eq 'ARRAY'; 
-        my $rs = $rs_find->( $coll => $where, %in ); 
+        ($coll,$as) = @$coll if ref $coll eq 'ARRAY';
+        my $rs = $rs_find->( $coll => $where, %in );
         if( ! $from ) {
             $res{coll} = $coll;
             $res{where} = $where;
@@ -250,7 +250,7 @@ sub joins {
         }
         my @docs;
         if( $opts{merge} ) {
-            @docs = $rs->all; 
+            @docs = $rs->all;
             my %merge;
             for my $doc ( @docs ) {
                 $merge{ $doc->{ $from } } = $doc;
@@ -258,7 +258,7 @@ sub joins {
             push @merges, [ $as // $coll,$from,$to, \%merge ];
         } else {
             $rs->fields({ _id=>-1, $from => 1 });
-            @docs = $rs->all; 
+            @docs = $rs->all;
         }
         #_warn [ map{ $_->{$from} } @docs ];
         %in = ( $to => mdb->in(map{ $_->{$from} } @docs ) );
@@ -276,12 +276,12 @@ sub joins {
             $k++;
             for my $doc ( @docs ) {
                 $doc->{$doc_key} = $doc->{$to} unless $last_key;
-                $opts{merge} eq 'flat' 
-                ? do{ 
+                $opts{merge} eq 'flat'
+                ? do{
                     my $h = $m->{ $last_key ? $doc->{$last_key} : $doc->{$to} } // {};
-                    $doc = { %$h, %$doc } 
+                    $doc = { %$h, %$doc }
                 }
-                : do{ 
+                : do{
                     $doc = { $join_key=>$m->{ $last_key ? $doc->{$last_key} : $doc->{$to} }, %$doc }
                 };
             }
@@ -354,7 +354,7 @@ sub index_all {
         event_log =>[
             [{ 'id_event'=>1 }],
         ],
-        'fs.files' =>[ 
+        'fs.files' =>[
             [{ parent_mid=>1 }],
             [{ topic_mid=>1 }],
             [{ id_rule=>1 }],
@@ -401,8 +401,8 @@ sub index_all {
             [[ collection=>1, starttime=>-1 ]],  # job monitor
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
-            [{'$**'=> "text"},{ 
-                    weights=>{ %{ Clarive->config->{index}{weights}{master_doc} || {} } }, 
+            [{'$**'=> "text"},{
+                    weights=>{ %{ Clarive->config->{index}{weights}{master_doc} || {} } },
                     language_override=>'_lang', background=>1 }],
         ],
         message => [
@@ -451,7 +451,7 @@ sub index_all {
             [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
             [{'$**'=> "text"},{
-                    weights=>{ %{ Clarive->config->{index}{weights}{topic} || {} } }, 
+                    weights=>{ %{ Clarive->config->{index}{weights}{topic} || {} } },
                     language_override=>'_lang', background=>1 }],
         ],
         topic_image => [
@@ -482,10 +482,10 @@ sub index_all {
                 try {
                     if( ref $ix eq 'ARRAY' ) {
                         _log "ENSURING $cn INDEX: $json";
-                        $coll->ensure_index( @$ix ) 
+                        $coll->ensure_index( @$ix )
                     } else {
                         _log _loc 'Eval collection %1 index %2', $cn, $ix;
-                        mdb->db->eval($ix); 
+                        mdb->db->eval($ix);
                     }
                 } catch {
                     my $err = shift;
@@ -494,15 +494,15 @@ sub index_all {
             }
         }
     };
-    
+
     $index_hash->($base_indexes);
-    
+
     # load list from files
-    my @from_files = 
+    my @from_files =
         grep /\.yml$/,
         map { $_->children }
         grep { -d } map { $_->path_to('etc','index') } Clarive->features->list_and_home;
-     
+
     for my $f ( @from_files ) {
         my $i = Util->_load( ''.$f->slurp );
         Util->_log( "Processing index file $f" );
@@ -522,11 +522,11 @@ sub ixhash {
 }
 
 sub true {
-   +{ '$nin'=>[undef,'','0',0] }; 
+   +{ '$nin'=>[undef,'','0',0] };
 }
 
 sub false {
-   +{ '$in'=>[undef,'','0',0] }; 
+   +{ '$in'=>[undef,'','0',0] };
 }
 
 # default 20MB capped collection
@@ -548,17 +548,17 @@ sub compact {
 # remove all dots and _ci from an unblessed doc
 sub clean_doc {
     my ($self,$doc) = @_;
-    
+
     return unless ref $doc eq 'HASH';
     delete $doc->{_ci};
     delete $doc->{$_} for grep /\./,keys $doc;
     for my $k ( keys %$doc ) {
         my $v = $doc->{$k};
         if( ref $v eq 'HASH' ) {
-            $self->clean_doc( $v ); 
+            $self->clean_doc( $v );
         }
         elsif( ref $v eq 'ARRAY' ) {
-            $self->clean_doc( $_ ) for _array( $v ); 
+            $self->clean_doc( $_ ) for _array( $v );
         }
         elsif( ref $v eq 'SCALAR' ) {
             $doc->{$k} = $$v;
@@ -598,10 +598,10 @@ You can use an ARRAY for shorthand too:
             [ 'age', 'foreign.age' ]     # handles pairs also
         ]);
 
-    Or use where=>$where for merging. 
-    
+    Or use where=>$where for merging.
+
 Possible queries:
-   
+
     term
     "term"  - case insensitive
     Term  - case insensitive
@@ -622,7 +622,7 @@ sub query_build {
     my @fields = ref $p{fields} eq 'HASH' ? keys( %{ $p{fields} } ) : _array($p{fields});
     # build columns   -----    TODO use field:lala
     $p{query} = Encode::encode('UTF-8',$p{query});
-    @terms = grep { defined($_) && length($_) } Util->split_with_quotes($p{query});  
+    @terms = grep { defined($_) && length($_) } Util->split_with_quotes($p{query});
     my @terms_normal = grep(!/^\+|^\-/,@terms);
     my @terms_plus = grep(/^\+/,@terms);
     my @terms_minus = grep(/^\-/,@terms);
@@ -634,7 +634,7 @@ sub query_build {
             $term =~ s{\*}{.*}g;
             $term =~ s{\?}{.}g;
         }
-        return $insensitive 
+        return $insensitive
             ? ( $is_re ? qr/$term/i : qr/\Q$term\E/i )
             : ( $is_re ? qr/$term/ : qr/\Q$term\E/ );
     };
@@ -663,11 +663,11 @@ sub query_build {
     } @terms_normal;
     my @wh_and = (
         ( @ors ? {'$or' => \@ors} : () ),
-        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields); 
-                { '$or'=>[map { +{$_ => $re_gen->($v,$is_re,$insensitive) } } @fields] } } @terms_plus ]} : () 
+        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields);
+                { '$or'=>[map { +{$_ => $re_gen->($v,$is_re,$insensitive) } } @fields] } } @terms_plus ]} : ()
         ),
-        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields); 
-                { '$and'=>[map { +{$_ => {'$not' => $re_gen->($v,$is_re,$insensitive) } } } @fields] } } @terms_minus ]} : () 
+        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields);
+                { '$and'=>[map { +{$_ => {'$not' => $re_gen->($v,$is_re,$insensitive) } } } @fields] } } @terms_minus ]} : ()
         ),
     );
     $where->{'$and'} = \@wh_and if @wh_and;
@@ -676,11 +676,11 @@ sub query_build {
 
 =head2 txn
 
-Simulated transaction in Mongo. 
+Simulated transaction in Mongo.
 
 1) insert a _tx with any insert, keep track of collections
-2) update, brings the updated equivalent of the older doc into mdb->_txn() 
-3) insert a _tx id with every update / insert 
+2) update, brings the updated equivalent of the older doc into mdb->_txn()
+3) insert a _tx id with every update / insert
 
 =cut
 sub txn {
@@ -700,7 +700,7 @@ sub AUTOLOAD {
     my $coll = $self->collection($collname);
     return $TRACE_DB
           ? bless { orig=>$self, coll=>$coll, collname=>$collname } => 'Baseliner::Mongo::TraceCollecion'
-          : $coll; 
+          : $coll;
 }
 
 sub trace_results {
@@ -736,7 +736,7 @@ package Baseliner::Mongo::TraceCollecion {
         my @ret = $self->{coll}->$meth(@_);
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         if( @ret == 1 ) {
-            my $ret = $ret[0]; 
+            my $ret = $ret[0];
             if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
                 # find()
                 return bless { cur=>$ret, collname=>$collname, callstr=>$callstr } => 'Baseliner::Mongo::TraceCursor';
@@ -744,7 +744,7 @@ package Baseliner::Mongo::TraceCollecion {
                 # find_one(), update, find_and_modify, etc
                 Baseliner::Mongo->trace_results($callstr,$elapsed,[caller(0)]);
             }
-            return $ret; 
+            return $ret;
         } elsif( @ret>1 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') ) {
             Baseliner::Mongo->trace_results("$callstr",$elapsed,[caller(0)]);
             return @ret;
@@ -765,12 +765,12 @@ package Baseliner::Mongo::TraceCursor {
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         my $callstr = $self->{callstr};
         my $collname = $self->{collname};
-        if( ( $meth=~/all|count|next/ 
-                && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') 
+        if( ( $meth=~/all|count|next/
+                && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache')
             ) || $ENV{CLARIVE_TRACE}=~/all/ ) {
             Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed,[caller(0)]);
         } else {
-            my $ret = $ret[0]; 
+            my $ret = $ret[0];
             if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
                 my $d = Data::Dumper->new(\@_);
                 $d->Indent(0)->Purity(1)->Quotekeys(0)->Terse(1)->Deepcopy(1);

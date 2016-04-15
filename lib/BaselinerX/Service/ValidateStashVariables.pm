@@ -11,7 +11,7 @@ register 'service.validate.stash_variables' => {
     name => 'Validate stash variables',
     handler => \&validate,
     icon => '/static/images/icons/webservice.png',
-    form => '/forms/validate_stash_variables.js', 
+    form => '/forms/validate_stash_variables.js',
 };
 
 sub validate {
@@ -51,7 +51,7 @@ sub validate {
                         }
                     } catch {
                             $status = 'ko';
-                            $msg .= " - "._loc("Error parsing %1: %2", $var, shift)."<br>";                    
+                            $msg .= " - "._loc("Error parsing %1: %2", $var, shift)."<br>";
                     };
                 }
 
@@ -61,7 +61,7 @@ sub validate {
     if ( $status eq 'ko') {
         _fail $msg;
     }
-} 
+}
 
 
 no Moose;

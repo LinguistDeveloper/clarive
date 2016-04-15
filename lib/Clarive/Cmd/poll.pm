@@ -63,7 +63,7 @@ sub _find_pid {
     my $clean_pid = sub { $_[0] =~ /^([0-9]+)/ ? $1 : $_[0] };
     if( defined $self->opts->{pid} ) {
         $clean_pid->( $self->opts->{pid} );
-    } 
+    }
     if( -e $pidfile ) {
         open(my $pf, '<', $pidfile ) or die "Could not open pidfile: $!";
         my $pid = join '',<$pf>;
@@ -79,10 +79,10 @@ sub run {
 
     my $pid_filter = $self->pid_filter;
     $pid_filter = qr/$pid_filter/i if $pid_filter;
-    
+
     if ( !$opts{remote} ) {
-        for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
-            next if $pid_filter && $pidfile !~ $pid_filter; 
+        for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) {
+            next if $pid_filter && $pidfile !~ $pid_filter;
             sayts "pid_file=$pidfile";
             my $pid = $self->_find_pid( $pidfile );
             sayts "checking pid exists=$pid";
@@ -99,12 +99,12 @@ sub run {
         sayts "connecting to Clarive Web Server...";
         $rc += $self->call_web( %opts, url=>$self->url_web );
     }
-    
+
     if( $self->act_nginx  && $self->url_nginx) {
         sayts "connecting to Nginx...";
-        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->act_nginx;  
+        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->act_nginx;
     }
-    
+
     if( $self->act_mongo ) {
         require MongoDB;
         try {
@@ -120,7 +120,7 @@ sub run {
                 )
             }
             my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
-            my $db = $m->get_database( $db_name ); 
+            my $db = $m->get_database( $db_name );
             sayts "OK: connected to Mongo database $db_name";
         } catch {
             my $err = shift;
@@ -128,7 +128,7 @@ sub run {
             $rc += $self->error_rc;
         };
     }
-    
+
     if( $self->act_redis ) {
         require Redis;
         try {
@@ -142,7 +142,7 @@ sub run {
             $rc += $self->error_rc;
         };
     }
-    
+
     $rc = $self->error_rc if $rc > $self->error_rc;
     sayts "poll finished. RC = $rc";
     exit $rc;
@@ -150,11 +150,11 @@ sub run {
 
 sub call_web {
     my ($self, %opts) =@_;
-    
+
     require LWP::UserAgent;
     require HTTP::Request;
     require Encode;
-    
+
     my $url = $opts{url} || sprintf "http://%s:%s", $opts{host} // 'localhost', $opts{port} // 3000;
     sayts "checking web server at url $url";
     my $uri = URI->new( $url );
@@ -183,7 +183,7 @@ sub call_web {
     } catch {
         my $err = shift;
         errts "error connecting to url $url: $err";
-        return 2 if $err =~ /timeout/; 
+        return 2 if $err =~ /timeout/;
         return 4;
     };
 }

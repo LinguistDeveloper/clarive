@@ -13,9 +13,9 @@ register 'config.reports.estadisticas_jobs_bl' => {
 };
 
 register 'report.clarive.job_statistics_bl' => {
-    name => 'Job Stats by Environment', 
+    name => 'Job Stats by Environment',
     data => { },
-    form => '/reports/listado_jobs.js', 
+    form => '/reports/listado_jobs.js',
     security_handler => sub{
         my ($self,$username) =@_;
         my $config = config_get 'config.reports.estadisticas_jobs_bl';
@@ -45,7 +45,7 @@ register 'report.clarive.job_statistics_bl' => {
                     {id => 'total', text => _loc('Total Jobs')}
                 ],
             },
-            report_name => _loc('Job Stats by Environment'), 
+            report_name => _loc('Job Stats by Environment'),
             report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
@@ -74,7 +74,7 @@ register 'report.clarive.job_statistics_bl' => {
           $where->{starttime} = {
               '$ne'  => undef,
               '$nin' => [ '' ],
-          };              
+          };
           if ( $p->{fecha_inicio_hasta} ) {
               $where->{starttime}->{'$lte'} = $p->{fecha_inicio_hasta};
           }

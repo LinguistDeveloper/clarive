@@ -55,7 +55,7 @@ requires 'warn';
 requires 'debug';
 requires 'error';
 
-has data => (is=>'rw', isa=>'Any' );   # XXX should be a HASHREF, per BaselinerX::Type::Service (lin ~153) 
+has data => (is=>'rw', isa=>'Any' );   # XXX should be a HASHREF, per BaselinerX::Type::Service (lin ~153)
 
 #requires 'last_message';
 

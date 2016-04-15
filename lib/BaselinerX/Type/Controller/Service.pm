@@ -31,10 +31,10 @@ sub rest : Local {
     my $quiet_mode = exists $p->{quiet_mode};
 
     # create a temporary logger
-    local $Baseliner::_thrower = sub { 
+    local $Baseliner::_thrower = sub {
         die @_,"\n";
     } if $quiet_mode;
-    local $Baseliner::_logger = sub { 
+    local $Baseliner::_logger = sub {
         my ($cl,$li,$fi,@msg) = @_;
         print STDERR @msg, "\n";
     } if $quiet_mode;
@@ -48,7 +48,7 @@ sub rest : Local {
     #close STDERR;
     #open(STDOUT, ">>", $tf) or die "Can't open STDOUT: $!";
     #open(STDERR, ">>", $tf) or die "Can't open STDERR: $!";
-    
+
     #$output= capture_merged {
     use IO::CaptureOutput;
     IO::CaptureOutput::capture( sub {

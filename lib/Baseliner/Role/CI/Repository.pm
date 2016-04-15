@@ -31,20 +31,20 @@ sub method_scan {
         $it->parse_tree([]);
     }
 
-    # scan 
+    # scan
     for my $nat ( @natures ) {
-        $nat->scan( items=>\@items );   
+        $nat->scan( items=>\@items );
         # TODO should return/update nature accepted items, and filter on that if nature has the option
     }
 
-    # commit items 
+    # commit items
     for my $it( @items ) {
-        $it->save;  
+        $it->save;
     }
 
     # tie into related cis
     for my $it( @items ) {
-        $it->tree_resolve; 
+        $it->tree_resolve;
     }
 
     return @items;

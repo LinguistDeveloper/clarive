@@ -42,8 +42,8 @@ sub rev_list {
        my ($f,$v) = /^(\w+) (.*)$/;
        if( $f ) {
           if( $f eq 'committer' ) { # get the commit date
-             my ($email,$date,$tz) = $v=~ /^(.+>) (\d+) (.+)$/; 
-             $v = $email; 
+             my ($email,$date,$tz) = $v=~ /^(.+>) (\d+) (.+)$/;
+             $v = $email;
              $d->{date} = $date;
              $d->{tz} = $tz;
           }

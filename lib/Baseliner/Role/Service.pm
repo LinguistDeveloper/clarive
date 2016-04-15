@@ -6,13 +6,13 @@ has 'log' => (
     does    => 'Baseliner::Role::Logger',
     lazy    => 1,
     default=>sub {
-        my $self = shift; 
+        my $self = shift;
         require Baseliner::Core::Logger::Base;
         return Baseliner::Core::Logger::Base->new();
     }
 );
 
-has 'job' => ( 
+has 'job' => (
     is       => 'rw',
     does     => 'Baseliner::Role::JobRunner',
     weak_ref => 1,

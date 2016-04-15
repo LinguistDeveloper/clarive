@@ -7,16 +7,16 @@ has _stash => qw(is rw isa HashRef default), sub{ +{} };
 has modified_keys => qw(is rw isa HashRef default), sub{ +{} };
 
 sub stash {
-    my ($self,$key,$data) = @_; 
+    my ($self,$key,$data) = @_;
     return $self->_stash unless length $key;
-    return defined $data 
+    return defined $data
         ? do{ $self->modified_keys->{$key}//=(); $self->_stash->{$key} = $data }
         : $self->_stash->{$key};
 }
 sub launch {
     my ($self,$key,$config, %p)=@_;
-    my $reg = Baseliner->registry->find( $key ) 
-        // Baseliner->registry->find( "service.$key" ) 
+    my $reg = Baseliner->registry->find( $key )
+        // Baseliner->registry->find( "service.$key" )
         // _fail( _loc('Could not find key %1 in registry', $key));
     return $reg->run_container( $p{stash}//$self->_stash, $config );
 }
@@ -26,7 +26,7 @@ sub run_local {
 }
 sub merge_modified {
     my ($self,$stash) = @_;
-    do { 
+    do {
         $stash->{$_} = $self->_stash->{$_};
     } for keys $self->modified_keys;
 }

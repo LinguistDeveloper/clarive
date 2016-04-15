@@ -4,8 +4,8 @@ extends 'MongoDB::Cursor';
 
 =head2 await_data
 
-Use with a tailable cursor. If we are at the end of the data, 
-block for a while rather than returning no data. After a 
+Use with a tailable cursor. If we are at the end of the data,
+block for a while rather than returning no data. After a
 timeout period, we do return as normal.
 
 Boolean value, defaults to 0.
@@ -28,39 +28,39 @@ sub each {
 
 =head2 _do_query
 
-Overwrite this parent method to support await_data, 
+Overwrite this parent method to support await_data,
 until the mainline is patched.
 
 =cut
 
 # sub _do_query {
 #     my ($self) = @_;
- 
+
 #     $self->_master->rs_refresh();
- 
+
 #     # in case the refresh caused a repin
 #     $self->_client(MongoDB::Collection::_select_cursor_client($self->_master, $self->_ns, $self->_query));
- 
+
 #     if ($self->started_iterating) {
 #         return;
 #     }
- 
+
 #     my $opts = ($self->_tailable() << 1) |
 #         (($MongoDB::Cursor::slave_okay | $self->slave_okay) << 2) |
 #         ($self->await_data << 5) |
 #         ($self->immortal << 4) |
 #         ($self->partial << 7);
- 
+
 #     my ($query, $info) = MongoDB::write_query($self->_ns, $opts, $self->_skip, $self->_limit, $self->_query, $self->_fields);
 #     $self->_request_id($info->{'request_id'});
- 
+
 #     if ( length($query) > $self->_client->_max_bson_wire_size ) {
 #         MongoDB::_CommandSizeError->throw(
 #             message => "database command too large",
 #             size => length $query,
 #         );
 #     }
- 
+
 #     eval {
 #         $self->_client->send($query);
 #         $self->_client->recv($self);
@@ -76,7 +76,7 @@ until the mainline is patched.
 #         # has not been set
 #         die $@;
 #     }
- 
+
 #     $self->started_iterating(1);
 # }
 

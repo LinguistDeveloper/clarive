@@ -29,13 +29,13 @@ sub upgrade {
     mdb->migra->add_master_doc_sort;
     #mdb->migra->update_topic_rels;
     mdb->migra->activity;
-    
+
     mdb->session->drop;
     mdb->cache->drop;
 }
 
 sub downgrade {
-    
+
 }
 
 no Moose;

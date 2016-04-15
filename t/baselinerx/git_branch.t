@@ -83,7 +83,7 @@ subtest 'node_data: return the short name when are more than 30 characters' => s
     );
 
     is $branch->node_data->{click}->{title},"history: master#1234567898765432112....";
-     
+
 };
 
 sub _build_branch {

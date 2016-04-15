@@ -13,7 +13,7 @@ has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
 has 'config' => ( is=> 'rw', isa=> 'Str' );
 
 sub run {
-    my $self= shift;  # 
+    my $self= shift;  #
     my $c = shift;
     my $service = $self->id;
     my $key = $self->key;
@@ -29,9 +29,9 @@ sub run {
         $handler->( $instance, $c, @_ );
         #_log $instance->log->msg;
         return $instance->log;
-    } 
+    }
     elsif( $handler && $module ) {
-        $module->$handler( $instance, $c, @_);    
+        $module->$handler( $instance, $c, @_);
         #_log $instance->log->msg;
         return $instance->log;
     }

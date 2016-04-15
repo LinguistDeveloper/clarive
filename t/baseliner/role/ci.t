@@ -206,7 +206,7 @@ subtest 'related cis returns mids only' => sub {
 
 subtest 'gen_mid: correctly generated mid format' => sub {
     _setup();
-    
+
     my $chi = BaselinerX::CI::TestClass->new;
     like $chi->gen_mid, qr/^TestClass-\d+$/ ;
 
@@ -225,7 +225,7 @@ subtest 'ci save is in cache' => sub {
 
 subtest 'ci save results in no ci in cache' => sub {
     _setup();
-    
+
     cache->setup('mongo');  # otherwise cache is fake
     my $ci = BaselinerX::CI::TestClass->new( something=>333 );
     my $mid = $ci->save;
@@ -238,7 +238,7 @@ subtest 'ci save results in no ci in cache' => sub {
 
 subtest 'ci save: cache is synchronized with latest data' => sub {
     _setup();
-    
+
     cache->setup('mongo');  # otherwise cache is fake
     my $ci = BaselinerX::CI::TestClass->new( something=>333 );
     my $mid = $ci->save;
@@ -247,12 +247,12 @@ subtest 'ci save: cache is synchronized with latest data' => sub {
     $ci->save;
     $ci = ci->new( $mid );
     my $ci_cache = cache->get({ d=>'ci', mid=>$mid });
-    is $ci_cache->{something}, $ci->something; 
+    is $ci_cache->{something}, $ci->something;
 };
 
 subtest 'ci sequencing saved in new CI' => sub {
     _setup();
-    
+
     my $prev_seq = mdb->seq('ci-seq');
     my $ci = BaselinerX::CI::TestClass->new();
     my $mid = $ci->save;
@@ -262,7 +262,7 @@ subtest 'ci sequencing saved in new CI' => sub {
 
 subtest 'ci sequencing available immediatly after save' => sub {
     _setup();
-    
+
     my $ci = BaselinerX::CI::TestClass->new();
     my $mid = $ci->save;
     ok length $ci->_seq;
@@ -270,7 +270,7 @@ subtest 'ci sequencing available immediatly after save' => sub {
 
 subtest 'ci sorting by sequence is correct' => sub {
     _setup();
-    
+
     for my $ii ( 1..11 ) {
         my $ci = BaselinerX::CI::TestClass->new(something=>$ii);
         my $mid = $ci->save;
@@ -282,7 +282,7 @@ subtest 'ci sorting by sequence is correct' => sub {
 
 subtest 'save: control mid characters' => sub{
     _setup();
-    
+
     my $ci = BaselinerX::CI::TestClass->new(mid=>'bad#mid');
     like exception { $ci->save }, qr/cannot contain.*#/;
 };
@@ -323,7 +323,7 @@ subtest 'save: related cis get deleted when removed' => sub {
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
     my $dad_mid = $dad->save;
-    
+
     my $dad2 = ci->new( $dad_mid );
     $dad2->kids([]);
     $dad2->save;
@@ -342,7 +342,7 @@ subtest 'save: related single ci gets deleted when removed' => sub {
 
     my $dad = BaselinerX::CI::TestParentClass->new(kids=>[$chi_mid]);
     my $dad_mid = $dad->save;
-    
+
     my $dad2 = ci->new( $dad_mid );
     $dad2->kids([]);
     $dad2->save;

@@ -17,7 +17,7 @@ Model::ConfigStore - work with internal configuration data
 
 Config table, default and instance provided meshup model.
 
-This is unrelated to standard Config files. 
+This is unrelated to standard Config files.
 
 =head1 METHODS
 
@@ -50,7 +50,7 @@ sub store_long {
                 ns      => $p{ns},
                 bl      => $p{bl},
             },
-            {   
+            {
                 key     => $key,
                 ns      => $p{ns},
                 bl      => $p{bl},
@@ -65,18 +65,18 @@ sub store_long {
 
 =head2 get
 
-The one and definitive way to get things out of the Config table. 
+The one and definitive way to get things out of the Config table.
 
 Can check one or more keys.
 
 Options:
-    
+
     ns       : optional namespace, default is /
     bl       : optional environment, default is *
     data     : user provided data
     long_key : uses the full key "config.etc.etc" as hash key names.
 
-Returns a hashref to the config data structure. 
+Returns a hashref to the config data structure.
 
 =cut
 
@@ -98,7 +98,7 @@ sub get {
     my $v = Clarive->config->{ $key };
     if( ! defined $v ) {
         my $config_eval = sprintf 'Baseliner->config->{%s}', join('}{', split /\./, $key );
-        $v =  eval $config_eval; 
+        $v =  eval $config_eval;
     }
     $values{ $key } = [ { key=>$key, ns=>'/', bl=>'*', value=>$v } ] if defined $v ;
 
@@ -109,11 +109,11 @@ sub get {
 
     my @rs = mdb->config->find($where)->fields(
             {ns => 1, key => 1, bl => 1, value => 1, _id => 0}
-        )->all; 
+        )->all;
 
     for my $r ( @rs ) {
         push @{ $values{ $r->{key} } }, { ns=>$r->{ns}, bl=>$r->{bl}, value=>$r->{value} };
-    }    
+    }
 
     # now find the best_match
     foreach my $k ( keys %values ) {
@@ -135,17 +135,17 @@ sub get {
 
             # use default value ?
             $data->{ $data_key } = $item->{default}
-                unless exists $data->{ $data_key }; 
-    
+                unless exists $data->{ $data_key };
+
             # expand key type
             $data->{$data_key} = $self->_expand( $item->{type}, $data->{ $data_key } );
             #TODO no expasion needed when already of type: unless ref $data->{$data_key} =~ /HASH|ARRAY/ || blessed($data->{$data_key});
 
             # resolve vars
             my $new_value = $data->{ $data_key } // '';
-            #$new_value =~ s/\$\{ns\}/$p{ns}/g ; 
-            #$new_value =~ s/\$\{bl\}/$p{bl}/g ; 
-            #$new_value =~ s/\$\{key\}/$key/g ; 
+            #$new_value =~ s/\$\{ns\}/$p{ns}/g ;
+            #$new_value =~ s/\$\{bl\}/$p{bl}/g ;
+            #$new_value =~ s/\$\{key\}/$key/g ;
             #$new_value =~ s/\$\{id\}/$item->{id}/g;
 
             $new_value = $self->variable_parse(
@@ -172,7 +172,7 @@ sub get {
         _throw $msg if($enforce_metadata);
         _debug $msg if $ENV{BASELINER_DEBUG_METADATA};
     }
-    
+
     if( $p{value} ) {
         my ( $first_key ) = keys %{ $data || {} };
         return defined $first_key ? $data->{ $first_key } : undef;
@@ -200,7 +200,7 @@ sub _expand {
             return eval "{ $value }";
         }
         elsif( $type eq 'array' ) {
-            return [ split(/,/, $value ) ]; 
+            return [ split(/,/, $value ) ];
         }
         elsif( $type eq 'eval' ) {
             return eval $value;
@@ -209,7 +209,7 @@ sub _expand {
             return $value;
         }
     } catch {
-        _log "Error expanding config type '$type' and value '$value': " . shift; 
+        _log "Error expanding config type '$type' and value '$value': " . shift;
         return $value;
     };
 }
@@ -221,7 +221,7 @@ Find to which config object this key belongs to (config.my.stuff.key => config.m
 =cut
 sub ns_config {
     my ($self, $key ) = @_;
-    #TODO pending     
+    #TODO pending
 }
 
 =head2 all_keys
@@ -247,7 +247,7 @@ sub all {
     }
     return @configs;
 }
-    
+
 =head2 filter_ns
 
 Get all config keys available for a ns.
@@ -274,7 +274,7 @@ List everything in the table.
 sub search {
     my $self = shift;
     my $p = _parameters(@_);
-    
+
     my $query = $p->{query};
     my $where = {};
     $query and $where = mdb->query_build(query => $query, fields=>[qw(ns bl key value ts)]);
@@ -295,7 +295,7 @@ sub search {
         $dir = 1;
     }
     my $sort = $p->{sort} ? {$p->{sort} => $dir} : {key => 1}
-        unless  $p->{sort} && $p->{sort} =~ /^config_/i;   
+        unless  $p->{sort} && $p->{sort} =~ /^config_/i;
     $rs->sort($sort);
 
     my $count = 0;
@@ -367,7 +367,7 @@ sub search_registry {
     my $self = shift;
     my $p = _parameters(@_);
 
-    my @rows;    
+    my @rows;
     my @config_list = Baseliner::Core::Registry->starts_with('config');
     for my $config_key ( @config_list ) {
         my $config = Baseliner::Core::Registry->get( $config_key );
@@ -400,7 +400,7 @@ sub search_registry {
 
     # sort
     my $sort = $p->{sort};
-    @rows = sort { 
+    @rows = sort {
         my $va = $a->{$sort};
         my $vb = $b->{$sort};
         !defined $va ? 1 : !defined $vb ? -1 : $va cmp $vb
@@ -440,13 +440,13 @@ sub set {
     my $registry_data = $self->search_registry( query=> $p{key} );
     my ($original) = _array($registry_data->{data} // []) if $registry_data && $registry_data->{data} && $registry_data->{data}[0] && $registry_data->{data}[0]->{key} eq $p{key};
     _warn $original;
-    
+
     $self->delete( %p );
-    
+
     my $row = mdb->config->insert(
-        {   key     => $p{key}, 
-            value   => $p{value}, 
-            ns      => $ns, 
+        {   key     => $p{key},
+            value   => $p{value},
+            ns      => $ns,
             bl      => $bl,
             ts      => mdb->ts,
             label   => $original->{config_label}
@@ -472,7 +472,7 @@ sub key_compose {
 sub variable_parse {
     my $self = shift;
     my $p = _parameters(@_);
-    
+
     _check_parameters($p, qw/value vars/ );
 
     my $value = $p->{value};
@@ -505,9 +505,9 @@ sub variable_parse_single {
 sub variable_parse_config {
     my $self = shift;
     my $p = _parameters(@_);
-        
+
     _check_parameters($p, qw/key value/ );
-    my $visited = $p->{visited} || {}; 
+    my $visited = $p->{visited} || {};
     my $value = $p->{value};
 
     # get the vars out of the data
@@ -516,7 +516,7 @@ sub variable_parse_config {
         my $var_key = $variable;
         my $variable_value;
 
-        # ignore invalid variables 
+        # ignore invalid variables
         next unless $var_key;
 
         my ($var_ns, $var_bl) = ( $p->{ns}, $p->{bl} );
@@ -545,9 +545,9 @@ sub variable_parse_config {
         #$value = $self->variable_parse( variable=>$var_key, value=>$value, vars=>$data );
     }
 
-    # recurse 
+    # recurse
     if( $value =~ m/\$\{(.+?)\}/gs ) {
-        $self->variable_parse_config( key=>$p->{key}, value=>$value,ns=>$p->{ns}, bl=>$p->{bl}, visited=>$visited );  
+        $self->variable_parse_config( key=>$p->{key}, value=>$value,ns=>$p->{ns}, bl=>$p->{bl}, visited=>$visited );
     }
     return $value;
 }

@@ -13,9 +13,9 @@ register 'config.reports.trending_requests_by_month' => {
 };
 
 register 'report.clarive.trending_requests_by_month' => {
-    name => 'TRENDING: Requests by month', 
+    name => 'TRENDING: Requests by month',
     data => { },
-    form => '/reports/trending.js', 
+    form => '/reports/trending.js',
     security_handler => sub{
         my ($self,$username) =@_;
         my $config = config_get 'config.reports.trending_requests_by_month';

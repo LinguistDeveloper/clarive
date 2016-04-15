@@ -79,10 +79,10 @@ sub create_tag {
     my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
     my $tag = $p->{tag} // _fail(_loc("Missing tag name"));
     my $sha = $p->{sha} // _fail(_loc("Missing sha"));
- 
+
     my $repo = ci->new($repo_mid);
     my $git = $repo->git;
-    
+
     $git->exec( 'tag', '-f', $tag, $sha );
 }
 
@@ -114,7 +114,7 @@ sub link_revision {
     my $username = $p->{username} // 'clarive';
 
     my @tokens = split(/\s/, $title );
-    
+
     my @topics = map { $_ =~ /^\#(.*)/; $1 }grep { $_ =~ /^\#(.*)/ } @tokens;
 
 
@@ -125,14 +125,14 @@ sub link_revision {
         @revs = _unique(@revs);
         if ( $topic ) {
             Baseliner->model('Topic')->update(
-                {   
+                {
                     topic_mid => $_,
                     action => 'update',
                     username => $username,
                     $field => \@revs
                 }
             );
-            _log _log("Revision $rev linked to topic $_");            
+            _log _log("Revision $rev linked to topic $_");
         } else {
             _log _log("Topic $_ does not exist");
         }
@@ -238,7 +238,7 @@ sub checkout {
         else {
             $repo_job->git->exec( qw/checkout/, $rev );
         }
-    } 
+    }
 }
 
 sub job_elements {
@@ -309,16 +309,16 @@ sub job_elements {
 
         $log->debug("Elements in tree", data => join "\n", @elems);
         my $count = scalar @elems;
-        $log->info( _loc( "*Git* Job Elements %1", $count ), data=>join"\n",@elems ); 
+        $log->info( _loc( "*Git* Job Elements %1", $count ), data=>join"\n",@elems );
         @elems = map {
             my ($status, $path ) = /^(.*?)\s+(.*)$/;
-            my $fullpath = _dir "/", $prjdir, $path; 
+            my $fullpath = _dir "/", $prjdir, $path;
             BaselinerX::GitElement->new( fullpath=> "$fullpath", status=>$status, version=>1 );
         } @elems;
         my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
         $e->push_elements( @elems );
         $job->job_stash->{elements} = $e;
-    } 
+    }
 }
 
 package BaselinerX::GitElement;
@@ -339,7 +339,7 @@ around BUILDARGS => sub {
     if( ! exists $p{path} && ! exists $p{name} ) {
         if(  $p{ fullpath } =~ /^(.*)\/(.*?)$/ ) {
             ( $p{path}, $p{name} ) = ( $1, $2 );
-        } 
+        }
         else {
             ( $p{path}, $p{name} ) = ( '', $p{fullpath} );
         }

@@ -45,7 +45,7 @@ my $ag = Clarive::Test->user_agent;
         $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
         is( ${ $res->{success} }, 1,  'ci delete ok' );
     }
-     
+
 }
 
 done_testing;

@@ -81,7 +81,7 @@ sub sems : Local {
             $r->{busy} = mdb->sem_queue->find({ key=>$r->{key}, status=>'busy' })->all;
             $r->{id} = '' . delete $r->{_id};
             push @rows, $r;
-            
+
         }
     }
     #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
@@ -114,7 +114,7 @@ sub queue : Local {
     my @rows;
     $where = {};
     $where->{'$and'}= [{ queue=>{'$exists'=>1} },{ queue=>{'$ne'=>[]} } ];
-    
+
     my $rs = mdb->sem->find( $where )->sort(mdb->ixhash( key=>1 ));
     $rs->skip( $start ) if length $start;
     $rs->limit( $limit ) if length $limit;
@@ -154,7 +154,7 @@ sub change_slot  : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my $sem;
-    try { 
+    try {
         if( $p->{action} eq 'add' ) {
             $sem = mdb->sem->find_and_modify({ query=>{ key=>$p->{key} }, update=>{ '$inc'=>{ maxslots=>1 } }, new=>1 });
         }
@@ -171,7 +171,7 @@ sub change_slot  : Local {
 
 =head2 queue_move
 
-Change the place of a request in the queue, by adding or subtracting 
+Change the place of a request in the queue, by adding or subtracting
 from the sequence.
 
 =cut
@@ -181,17 +181,17 @@ sub queue_move  : Local {
     my ($to,$to_queue);
     my $id_from = $p->{id_from} or _throw _loc("Missing parameter id from");
     my $id_to  = $p->{id_to} or _throw _loc("Missing parameter id to");
-    try { 
+    try {
         # switch sequences
-        $to = mdb->sem->find_and_modify({ 
-                query=>{ queue=>{'$elemMatch'=>{_id=>mdb->oid($id_to), status=>'waiting'}}}, 
+        $to = mdb->sem->find_and_modify({
+                query=>{ queue=>{'$elemMatch'=>{_id=>mdb->oid($id_to), status=>'waiting'}}},
                 update=>{ '$set'=>{'queue.$.seq'=>-1} } });
         _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to;
         ($to_queue) = grep { "$$_{_id}" eq $id_to } _array( $to->{queue} );
         _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to_queue;
-        
-        my $from = mdb->sem->find_and_modify({ 
-                query=>{ queue=>{ '$elemMatch'=>{ _id=>mdb->oid($id_from), status=>'waiting' }}}, 
+
+        my $from = mdb->sem->find_and_modify({
+                query=>{ queue=>{ '$elemMatch'=>{ _id=>mdb->oid($id_from), status=>'waiting' }}},
                 update=>{ '$set'=>{'queue.$.seq'=>$to_queue->{seq}} } });
         _fail _loc 'Source semaphore does not exist. Please, refresh' unless $from;
         my ($from_queue) = grep { "$$_{_id}" eq $id_from } _array( $from->{queue} );

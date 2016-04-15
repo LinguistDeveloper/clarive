@@ -77,7 +77,7 @@ if( $action eq 'dump' ) {
 }
 elsif( $action eq 'load' ) {
     say pre . "Starting Load...";
-    
+
     my $m = Baseliner->model('Baseliner');
     if( $args{transactional} ) {
         $m->txn_do( sub {
@@ -208,21 +208,21 @@ sub insert_row {
     }
     if( !$row || @rows >= $commit_num ) {
         _debug( \@rows ) if exists $args{v};
-        
+
         my @cols = grep { $inserting ? $_ ne 'id' && $_ ne 'mid' : 1 } $src->columns;
         my $table = $src->name;
         say "Calculating row sizes...";
         my %sizes;
         for my $row ( @rows ) {
             for my $col ( @cols ) {
-                $sizes{$col} //= 0; 
+                $sizes{$col} //= 0;
                 $sizes{$col} += length( $row->{$col} );
             }
         }
         say _dump \%sizes;
         my $sum = 0;
         _log sprintf "Committing %d rows (%d KB)...", scalar(@rows), [reverse map { $sum+=$_; $sum } values %sizes ]->[0];
-        
+
         # metadata to find blobs
         my $sql = 'SELECT column_name, data_type FROM user_tab_columns WHERE table_name=?';
         my %meta = map { lc $_->{column_name} => lc $_->{data_type} } _array $db->query($sql, uc $table)->hashes;
@@ -297,7 +297,7 @@ Options:
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
   -dir                    : output directory (otherwise: $BASELINER_HOME/etc/dump)
   -schema                 : schemas to deploy
-                                bali db load --schema BaliRepo --schema BaliRepoKeys 
+                                bali db load --schema BaliRepo --schema BaliRepoKeys
 
 Examples:
     bin/bali db dump

@@ -18,7 +18,7 @@ my $api_key = '1234';
 
 subtest 'authenticate with api_key' => sub {
     _setup();
-    
+
     _register_auth_fail_events();
 
     my $controller = Baseliner::Controller::Root->new( application => '' );
@@ -31,7 +31,7 @@ subtest 'authentication denied with wrong api_key' => sub {
     _setup();
 
     _register_auth_fail_events();
-    
+
     my $controller = Baseliner::Controller::Root->new( application => '' );
     my $c = _build_c( req => { params => { username=>'test', api_key=>'9999' } }, authenticate=>{} );
     $c->stash->{api_key_authentication} = 1;
@@ -42,7 +42,7 @@ subtest 'authentication with api_key when option is not enabled' => sub {
     _setup();
 
     _register_auth_fail_events();
-    
+
     my $controller = Baseliner::Controller::Root->new( application => '' );
     my $c = _build_c( req => { params => { username=>'test', api_key=>$api_key } }, authenticate=>{} );
     $c->stash->{api_key_authentication} = 0;

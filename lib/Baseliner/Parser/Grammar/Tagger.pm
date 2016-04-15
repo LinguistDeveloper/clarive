@@ -3,17 +3,17 @@ use Baseliner::Moose;
 
 sub grammar {
     #q{
-    #    <nocontext: >  
+    #    <nocontext: >
     #    #<debug: on>
-    #    <Tagger> 
+    #    <Tagger>
     #    <rule: Tagger>         <[MATCH=single_tag]>+  % .*
     #    <rule: single_tag>    <matchline> \#\:<tag>\:
     #    <token: tag>           \w+
-    #    <token: ws>            (?: \s+ | \#[^\n]* )*    
-    #} 
+    #    <token: ws>            (?: \s+ | \#[^\n]* )*
+    #}
     q{
-        <nocontext: >  
-        <Tagger> 
+        <nocontext: >
+        <Tagger>
         <rule: Tagger>         <[MATCH=single_tag]>+  % (.*)
         <token: single_tag>    <matchline> \#\:<tag>\:
         <token: tag>           \w+

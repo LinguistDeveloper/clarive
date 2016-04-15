@@ -30,19 +30,19 @@ sub run_password {
             push @password, $ks unless $val == 8 || $val == 13 || $val == 10;
             last if $val == 13 || $val == 10;
             print "*" unless $val == 8;
-        } 
+        }
         Term::ReadKey::ReadMode( 'original' );
         say '';
         $password = join '', @password;
     }
-    my $key = $self->app->config->{decrypt_key} // $self->app->config->{dec_key} 
+    my $key = $self->app->config->{decrypt_key} // $self->app->config->{dec_key}
         // do { my $ba = $self->app->config->{baseliner}; $ba->{decrypt_key} // $ba->{dec_key} };
-    die "ERROR: decrypt_key not defined. Environment set?\n" unless length $key; 
+    die "ERROR: decrypt_key not defined. Environment set?\n" unless length $key;
     my $user_key = $key . reverse( $username );
     require Crypt::Blowfish::Mod;
     my $b = Crypt::Blowfish::Mod->new( $user_key );
     require Digest::MD5;
-    say Digest::MD5::md5_hex( $b->encrypt($password) );    
+    say Digest::MD5::md5_hex( $b->encrypt($password) );
 }
 
 sub run_md5 {
@@ -61,9 +61,9 @@ sub run_encrypt {
     if( !defined $s ) {
         $s = <STDIN>;
     }
-    my $key = $opts{key} // $self->app->config->{decrypt_key} // $self->app->config->{dec_key} 
+    my $key = $opts{key} // $self->app->config->{decrypt_key} // $self->app->config->{dec_key}
         // do { my $ba = $self->app->config->{baseliner}; $ba->{decrypt_key} // $ba->{dec_key} };
-    die "ERROR: decrypt_key not defined. Environment set?\n" unless length $key; 
+    die "ERROR: decrypt_key not defined. Environment set?\n" unless length $key;
     require Crypt::Blowfish::Mod;
     my $b = Crypt::Blowfish::Mod->new( $key );
     say $b->encrypt( $s );

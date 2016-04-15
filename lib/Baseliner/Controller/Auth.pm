@@ -32,9 +32,9 @@ register 'config.maintenance' => {
 };
 
 
-=head2 logout 
+=head2 logout
 
-Hardcore, url based logout. Always redirects otherwise 
+Hardcore, url based logout. Always redirects otherwise
 we get into a /logout loop
 
 =cut
@@ -46,9 +46,9 @@ sub logout : Global {
     $c->res->redirect( $c->req->params->{redirect} || $c->uri_for('/') );
 }
 
-=head2 logoff 
+=head2 logoff
 
-JSON based logoff, used by the logout menu option 
+JSON based logoff, used by the logout menu option
 
 =cut
 sub logoff : Global {
@@ -72,7 +72,7 @@ sub login_from_url : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $username = $c->stash->{username};
-    if( $username ) {  
+    if( $username ) {
         try {
             die if $c->config->{ldap} eq 'no';
             $c->authenticate({ id=>$username }, 'ldap_no_pw');
@@ -100,8 +100,8 @@ sub login_basic : Local {
     my ($login,$password) =  $c->req->headers->authorization_basic;
     if( length $login ) {
         _debug "LOGIN BASIC=$login";
-        $c->stash->{login} = $login; 
-        $c->stash->{password} = $password; 
+        $c->stash->{login} = $login;
+        $c->stash->{password} = $password;
         $self->authenticate($c);
         _debug "LOGIN USER=" . $c->user;
         event_new 'event.auth.ok'=>{ username=>$c->username, mode=>'basic' };
@@ -115,17 +115,17 @@ sub login_basic : Local {
         return 0;  # stops chain, sends auth required
     }
 }
- 
+
 sub surrogate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $case = $c->config->{user_case};
     my $curr_user = $c->username;
-    my $username= $case eq 'uc' ? uc($p->{login}) 
+    my $username= $case eq 'uc' ? uc($p->{login})
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
         _fail('User cannot surrogate') unless $c->has_action('action.surrogate');
-        my $doc = ci->user->find_one({ name=>$username, active => mdb->true }); 
+        my $doc = ci->user->find_one({ name=>$username, active => mdb->true });
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
             $c->session->{user} = $c->user_ci;
@@ -141,12 +141,12 @@ sub surrogate : Local {
         event_new 'event.auth.surrogate_failed'=>{ username=>$curr_user, to_user=>$username };
         $c->stash->{json} = { success => \0, msg => _loc('Surrogate error: %1', $msg || _loc("Invalid User") ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 =head2 authenticate
 
-Private action to authenticate a user. 
+Private action to authenticate a user.
 
 Returns:
 
@@ -312,7 +312,7 @@ sub login : Global {
         ########################################################
         if (!$attempts_query->{block_datetime} || ( $block_expired && $block_expired == 1)){
             # go to the main authentication worker
-            $c->stash->{login} = $login; 
+            $c->stash->{login} = $login;
             $c->stash->{password} = $password;
             my $auth_ok = $self->authenticate($c);
             $msg = $c->stash->{auth_message};
@@ -338,7 +338,7 @@ sub login : Global {
                         { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
                         { upsert => 1 }
                     );
-                    if($attempts_query->{block_datetime} && $attempts_query->{block_datetime} != 0) { 
+                    if($attempts_query->{block_datetime} && $attempts_query->{block_datetime} != 0) {
                             my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
                             $time_user_block = $time_user_block + "$attempts_duration s";
                             if($time_user_block < mdb->ts) {
@@ -347,16 +347,16 @@ sub login : Global {
                                 mdb->user_login_attempts->update(
                                     { id_login => $id_login, id_browser => $id_browser },
                                     { id_login => $id_login, id_browser => $id_browser, num_attempts => 1, block_datetime => $block_datetime },
-                                    { upsert => 1 }); 
+                                    { upsert => 1 });
                             } #end if $time_user_block < mdb->ts
                         } #end else $attempts_query->{block_datetime} == 0
                     $msg //= _loc("Too many attempts");
                     event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-                    $c->stash->{json} = { 
-                        success => \0, 
+                    $c->stash->{json} = {
+                        success => \0,
                         msg => $msg,
-                        attempts_login => $attempts_login-$num_attempts, 
-                        block_datetime => $block_datetime, 
+                        attempts_login => $attempts_login-$num_attempts,
+                        block_datetime => $block_datetime,
                         attempts_duration => $attempts_duration };
                 } else {
                     $block_datetime = 0;
@@ -367,39 +367,39 @@ sub login : Global {
                     );
                     $msg //= _loc("Invalid User or Password");
                     event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-                    $c->stash->{json} = { 
-                        success => \0, 
+                    $c->stash->{json} = {
+                        success => \0,
                         msg => $msg,
                         errors => {login => $msg},
-                        attempts_login => $attempts_login-$num_attempts, 
+                        attempts_login => $attempts_login-$num_attempts,
                         block_datetime => $block_datetime };
-                } 
-            } 
-        } else { 
+                }
+            }
+        } else {
             $block_datetime = 0 if $block_expired == 1;
             $num_attempts = 0 if $block_expired == 1;
             mdb->user_login_attempts->update(
             { id_login => $id_login, id_browser => $id_browser },
             { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
-            { upsert => 1 }); 
+            { upsert => 1 });
             $msg //= _loc("Attempts exhausted, please wait");
             event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-            $c->stash->{json} = { 
-                    success => \0, 
+            $c->stash->{json} = {
+                    success => \0,
                     msg => $msg,
                     errors => {login => $msg},
-                    attempts_login => $attempts_login-$num_attempts, 
-                    block_datetime => $block_datetime, 
+                    attempts_login => $attempts_login-$num_attempts,
+                    block_datetime => $block_datetime,
                     attempts_duration => $attempts_duration
-            }; 
-        } 
+            };
+        }
     } catch {
         my $err = shift;
         my $msg_err = _loc('Login error: %1', $err);
         event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg_err };
         $c->stash->{json} = { success=>\0, msg=>$msg_err, errors => {login => $msg_err} };
     };
-    
+
     _log _loc('------| Login in attempt: `%1`. Result=',$c->username, 0+${ $c->stash->{json}{success} || \-1 } );
     $c->forward('View::JSON');
 }
@@ -441,7 +441,7 @@ sub saml_check : Private {
 sub login_from_session : Local {
     my ( $self, $c ) = @_;
     # the Root controller creates the session for this
-    _throw _loc 'Invalid session' unless $c->session_is_valid;    
+    _throw _loc 'Invalid session' unless $c->session_is_valid;
     $c->res->redirect( $c->config->{web_url} );
 }
 
@@ -459,7 +459,7 @@ sub create_user_session : Local {
         $c->_sessionid($sid);
         $c->reset_session_expires;
         $c->set_session_id($sid);
-        _throw _loc 'Invalid session' unless $c->session_is_valid;    
+        _throw _loc 'Invalid session' unless $c->session_is_valid;
         $c->session->{username} = $username;
         $c->session->{user} = $c->user_ci;
         $c->_save_session();

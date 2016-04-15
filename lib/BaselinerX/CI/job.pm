@@ -22,7 +22,7 @@ has is_rejected        => qw(is rw isa Bool default 0);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
-has job_contents       => qw(is rw isa HashRef), default=>sub{ +{} }; 
+has job_contents       => qw(is rw isa HashRef), default=>sub{ +{} };
 has current_service    => qw(is rw isa Any default Core);
 has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
@@ -45,12 +45,12 @@ has username           => qw(is rw isa Any);
 has milestones         => qw(is rw isa HashRef default), sub { +{} };
 has service_levels     => qw(is rw isa HashRef default), sub { +{} };
 has stash_init         => qw(is rw isa Maybe[HashRef] default), sub { +{} };
-has job_dir            => qw(is rw isa Any lazy 1), default => sub { 
+has job_dir            => qw(is rw isa Any lazy 1), default => sub {
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
-    File::Spec->catdir( $job_home, $self->name ); 
-};  
-has backup_dir         => qw(is rw isa Any lazy 1), default => sub { 
+    File::Spec->catdir( $job_home, $self->name );
+};
+has backup_dir         => qw(is rw isa Any lazy 1), default => sub {
     my ($self) = @_;
     return ''.Util->_file( $self->job_dir, '_backups' );
 };
@@ -59,12 +59,12 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
     my $type = $self->job_type || 'promote';
     my $doc = mdb->rule->find({ rule_when=>$type })->sort({ _id=>-1 })->next;
     if( $doc ) {
-        return $doc->{id};    
+        return $doc->{id};
     } elsif( $type eq 'demote' ) {
         # cant' find demote, use a promote
         my $doc = mdb->rule->find({ rule_when=>'promote' })->sort({ _id=>-1 })->next;
         _fail _loc 'Could not find a default %1 job chain rule', 'promote/demote' unless $doc;
-        return $doc->{id};    
+        return $doc->{id};
     } else {
         _fail _loc 'Could not find a default %1 job chain rule', $type;
     }
@@ -77,7 +77,7 @@ has_cis 'projects';
 has_cis 'natures';
 
 sub rel_type {
-    { 
+    {
         releases   => [ from_mid => 'job_release' ] ,
         changesets => [ from_mid => 'job_changeset' ] ,
         projects   => [ from_mid => 'job_project' ] ,
@@ -96,7 +96,7 @@ after new_ci => sub {
     try {
         $self->_check_and_init;
     } catch {
-        $self->delete;  
+        $self->delete;
         _fail shift;
     };
 };
@@ -122,7 +122,7 @@ around status => sub {
         Util->_debug( "Status has changed to $status by " . join(', ', $who[0], $who[2] ) );
     }
     $self->status_trans( Util->_loc($status) );
-    return defined $status 
+    return defined $status
         ? $self->$orig( $status )
         : $self->$orig();
 };
@@ -134,7 +134,7 @@ around exec => sub {
     if( defined $exec && $exec > 1 && ref $self->{logger} ) {
         $self->logger->exec( 0+$exec );
     }
-    return defined $exec 
+    return defined $exec
         ? $self->$orig( $exec )
         : $self->$orig();
 };
@@ -142,12 +142,12 @@ around exec => sub {
 around update_ci => sub {
     my $orig = shift;
     my $self = shift;
-    
-    $self->$orig( @_ ); 
+
+    $self->$orig( @_ );
 };
 
 
-###### methods 
+###### methods
 #
 
 # get and set the job stash in mdb, this does not merge! (it's a full replace)
@@ -165,7 +165,7 @@ sub job_stash {
         my $serial_stash = Util->_stash_dump($new_stash);  # better serialization for stash
         mdb->grid->remove({ what=>'job_stash', parent_mid=>''.$self->mid }, { multiple=>1 });
         my $id = mdb->grid_add( $serial_stash, what=>'job_stash', parent_collection=>'job', parent_mid=>''.$self->mid  );
-        $self->id_stash( "$id" );  
+        $self->id_stash( "$id" );
         return $new_stash;
     } else {
         # get
@@ -178,9 +178,9 @@ sub job_stash {
             Util->_debug(_loc 'Found job stash for this job');
         }
         my $job_stash_str = $stash_file->slurp;
-        my $job_stash = try { 
+        my $job_stash = try {
             length $job_stash_str ? Util->_stash_load($job_stash_str) : +{};
-        } catch { 
+        } catch {
             my $err = shift;
             Util->_log(_loc("Error loading job stash: %1", $err));
             +{};
@@ -208,7 +208,7 @@ sub _create {
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
     my $config = BaselinerX::Type::Model::ConfigStore->get( 'config.job', bl=>$self->bl );
-    
+
     my $status = $p{status} || 'IN-EDIT';
 
     if( !$self->maxstarttime ) {
@@ -216,7 +216,7 @@ sub _create {
     }
 
     my $type = $p{job_type} || $p{type} || $config->{type};
-    
+
     # create db row
     my $job_seq = mdb->seq('job');
     $self->jobid( $job_seq );
@@ -232,24 +232,24 @@ sub _create {
     # find job_stash_key fields
     my %topic_stash;
     for my $cs ( Util->_array( $changesets ) ) {
-        my @meta = Util->_array( $cs->get_meta ); 
+        my @meta = Util->_array( $cs->get_meta );
         for my $m ( @meta ) {
             if( my $key = $m->{job_stash_key} ) {
-                my $data = $cs->get_doc({ $m->{id_field} => 1 }); 
-                $topic_stash{$key} = $data->{ $m->{id_field} }; 
+                my $data = $cs->get_doc({ $m->{id_field} => 1 });
+                $topic_stash{$key} = $data->{ $m->{id_field} };
             }
         }
     }
-    
+
     # create a hash stash
     my $stash = +{ %{ $self->stash_init || {} }, %topic_stash };
     $self->stash_init($stash);
-    
+
     # separate releases into changesets
-    my @releases; 
+    my @releases;
     my @cs_cis;
     my (%cs_uniq,%rel_uniq);
-    
+
     for my $cs ( Util->_array( $changesets ) ) {
         $cs = ref $cs ? $cs :  ci->new( $cs );
         if( $cs->is_release ) {
@@ -280,7 +280,7 @@ sub _create {
                 }
             }
             if ( $active_job->bl eq $self->bl ) {
-                _fail _loc( "'%1' is in an active job to bl %3: %2", 
+                _fail _loc( "'%1' is in an active job to bl %3: %2",
                     $cs->topic_name, $active_job->name, $self->bl )
             }
         }
@@ -346,7 +346,7 @@ sub _create {
         grep { defined }
         map { $pp{$_->mid} ? undef : do{ $pp{$_->mid}=1; $_ } }
         map { $_->projects }
-        @cs_cis 
+        @cs_cis
     ]);
     $self->ns( 'job/' . $job_seq );
 }
@@ -354,7 +354,7 @@ sub _create {
 sub _check_and_init {
     my ($self) = @_;
     #$self->save;  # job_stash method needs an mid
-    
+
     # first stash
     my $stash = $self->stash_init;
     $self->job_stash($stash);
@@ -365,7 +365,7 @@ sub _check_and_init {
     $self->step('CHECK');
     $self->run( same_exec => 1 );
     # check not exists pause on CHECK status, return ERROR!
-    if( $self->status eq 'ERROR' ) { 
+    if( $self->status eq 'ERROR' ) {
         # errors during CHECK fail back to the user
         _fail _loc "Error during Job Check: %1", $self->last_error;
     } else {
@@ -373,7 +373,7 @@ sub _check_and_init {
         $self->step('INIT');
         $self->run( same_exec => 1 );
         # check not exists pause on INIT status, return ERROR!
-        if( $self->status eq 'ERROR' ) { 
+        if( $self->status eq 'ERROR' ) {
             # errors during CHECK fail back to the user
             $self->step('END');
             _error _loc "Error during Job Init: %1", $self->last_error;
@@ -384,7 +384,7 @@ sub _check_and_init {
             $self->status('READY');
         }
     }
-    
+
     return $self->jobid;
 }
 
@@ -420,7 +420,7 @@ sub is_running {
     return 0;
 }
 
-sub logger { 
+sub logger {
     my ($self)=@_;
     return Baseliner::JobLogger->new(
         step            => $self->step,
@@ -439,7 +439,7 @@ sub resume {
     if( $self->status eq 'PAUSED' ) {
         $self->logger->info( Util->_loc('Job resumed by user %1', $p->{username}) );
         $self->status( 'RUNNING' );
-        $self->save; 
+        $self->save;
         $msg = _loc('Job resumed by user %1', $p->{username});
     } else {
         Util->_fail( Util->_loc('Job was not paused') );
@@ -450,12 +450,12 @@ sub resume {
 sub run_inproc {
     my ($self, $p) = @_;
     Util->_log(Util->_loc('************** %1 Requested JOB IN-PROC %2 ***************', $p->{username}, $self->name) );
-    
+
     # check permissions
     if( ! model->Permissions->user_has_action(username=>$p->{username}, action=>'action.job.run_in_proc') ) {
         Util->_fail( Util->_loc('User %1 does not have permissions to start jobs in process', $p->{username}) );
     }
-    
+
     # check status, only READY allowed
     if( $self->status ne 'READY' ) {
         Util->_fail( Util->_loc('Cannot start job since status %1 != %2', $self->status, 'READY') );
@@ -477,7 +477,7 @@ sub run_inproc {
 }
 
 method write_to_logfile( $txt ) {
-    open my $ff, '>>', $self->logfile 
+    open my $ff, '>>', $self->logfile
         or _fail _loc("Could not open logfile %1 for writing", $self->logfile);
     print $ff $txt;
     close $ff;
@@ -486,7 +486,7 @@ method write_to_logfile( $txt ) {
 sub find_rollback_deps {
     my ($self)=@_;
     my @projects = map { $_->mid } Util->_array( $self->projects );
-    my @later_jobs = 
+    my @later_jobs =
        grep {
           # ignore later jobs that broke during PRE - XXX better to check if rollback needed flag is on?
           my $stash = $_->job_stash;
@@ -508,14 +508,14 @@ sub contract {
     _fail _loc 'Missing project for job %1', $self->name unless $prj;
     my $vars = $prj->variables // {};
     my $bl = $self->bl;
-    return { 
-        username => $self->username, 
+    return {
+        username => $self->username,
         schedtime => $self->schedtime,
         comments => $self->comments,
         projects=>join(' ', map { $_->name } @prjs),
         cs=>join(' ', map { $_->name } Util->_array( $self->changesets ) ),
-        bl=>$bl, 
-        vars=>{ $bl => { %{ $vars->{'*'} || {} }, %{ $vars->{$bl} || {} } } } 
+        bl=>$bl,
+        vars=>{ $bl => { %{ $vars->{'*'} || {} }, %{ $vars->{$bl} || {} } } }
     };
     #return $vars;
 }
@@ -534,8 +534,8 @@ sub reset {   # aka restart
     event_new 'event.job.rerun' => { job=>$self } => sub {
         # prepare stash for rules
         my $prev_stash = $self->job_stash;
-        my $stash = { 
-                %{ $prev_stash }, 
+        my $stash = {
+                %{ $prev_stash },
                needs_rollback => {},
         };
         $self->job_stash($stash);
@@ -634,10 +634,10 @@ sub approve {
     if( $self->status ne 'APPROVAL' ) {
         _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('approved');
     }
-    event_new 'event.job.approved' => 
+    event_new 'event.job.approved' =>
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
-        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), 
-            data=>sprintf("%s\n%s", $comments, join ',', $self->step, $self->status, $self->exec, $self->pid), 
+        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments),
+            data=>sprintf("%s\n%s", $comments, join ',', $self->step, $self->status, $self->exec, $self->pid),
             username=>$p->{username} );
         $self->status( 'READY' );
         $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
@@ -657,7 +657,7 @@ sub reject {
         _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('rejected');
     }
 
-    event_new 'event.job.rejected' => 
+    event_new 'event.job.rejected' =>
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
         $self->status( 'REJECTED' );
@@ -691,7 +691,7 @@ sub trap_action {
 }
 
 sub status_icon {
-    my ($self, $status, $rollback) = @_; 
+    my ($self, $status, $rollback) = @_;
 
     my $st = $status || $self->status;
     my $rb = $rollback || $self->rollback;
@@ -705,7 +705,7 @@ sub gen_job_key {
     { job_key => $self->job_key };
 }
 
-# used by the job monitor 
+# used by the job monitor
 sub build_job_contents {
     my ($self, $save_this) =@_;
     my $jc = {};
@@ -725,7 +725,7 @@ sub build_job_contents {
     } else {
         $self->job_contents($jc);
     }
-    return $jc; 
+    return $jc;
 }
 
 # used by the job email template
@@ -738,11 +738,11 @@ sub build_job_email {
     my %changesets;
 
     my $changesets = $self->changesets // [];
-    my $releases = $self->releases // []; 
-    
+    my $releases = $self->releases // [];
+
     for my $changeset (@$changesets) {
         $changeset_names{ $changeset->mid } = $changeset->topic_name;
-        
+
         if ( scalar @$releases > 0 ) {
             for my $release (@$releases) {
                 $release_names{ $release->mid } = $release->topic_name;
@@ -754,7 +754,7 @@ sub build_job_email {
             $changesets{ $changeset->{mid} } = $changeset->topic_name;
         }
     }
-    
+
     return (\%releases, \%release_names, \%changesets, \%changeset_names);
 }
 
@@ -771,7 +771,7 @@ sub rule_name {
 # used by the job dashboard
 sub summary2 {
     my ($self)=@_;
-    
+
     my $st = Class::Date->new( $self->starttime );
     my $et = Class::Date->new( $self->endtime );
 
@@ -793,15 +793,15 @@ sub summary2 {
 sub summary {
     my ($self, %p) = @_;
     my $result = {};
-    $p{job_exec} //= $self->exec; 
-    
+    $p{job_exec} //= $self->exec;
+
     my $active_time = 0;
-    
+
     my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>0+$p{job_exec} })
         ->fields({ step=>1, service_key=>1, ts=>1, t=>1 })
         ->sort(mdb->ixhash( ts=>1, t=>1 ))->all;
-    
-    my %log_max; 
+
+    my %log_max;
     my $last_serv;
     my $last_step;
     my ($last_log,$st,$et);
@@ -827,7 +827,7 @@ sub summary {
         $last_log = $mm;
     }
     my $services_time = +{ map { $_ => sprintf('%.1f', $log_max{$_}{dur}) } keys %log_max };
- 
+
     # Fill services time
     my $st2 = Class::Date->new( $self->starttime );
     my $et2 = Class::Date->new( $self->endtime );
@@ -842,7 +842,7 @@ sub summary {
         owner          => $self->username,
         last_step      => $self->step,
         rollback       => $self->rollback,
-        
+
         #starttime => $starttime,
         #execution_time => $execution_time,
         #endtime => $endtime,
@@ -854,12 +854,12 @@ sub summary {
 sub service_summary {
     my ( $self, %p ) = @_;
     my $summary = $p{summary} // $self->summary;
-        
+
     my $result = {};
     my $ss = {};
     my $log_levels = { warn => 3, error => 4, debug => 2, info => 2 };
     $p{job_exec} //= $self->exec;
-    
+
     my @log = mdb->job_log->find({ mid => ''.$self->mid, exec => 0+$p{job_exec} })
         ->fields({ step=>1, service_key=>1, lev=>1 })->all;
 
@@ -870,13 +870,13 @@ sub service_summary {
             }
             if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
                 $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
-            }            
+            }
         }
     }
 
-    my %seen;  
+    my %seen;
     my $load_results = sub {
-        my @keys = @_; 
+        my @keys = @_;
         for my $r ( @keys ) {
             my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
             next if $seen{ $skey . '#' . $step };
@@ -897,21 +897,21 @@ sub service_summary {
             };
         }
     };
-    
+
     # TODO load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
     # $load_results->( @keys );
 
     # load current keys
     my @keys = mdb->job_log->find({ mid=>''.$self->mid, exec => 0+$p{job_exec}, service_key=>{ '$ne'=>undef } })
         ->sort({ id=>1 })->fields({ step=>1, service_key=>1, id=>1 })->all;
-    # reset keys for current exec 
+    # reset keys for current exec
     for my $r ( @keys ) {
         $result->{$r->{step}}=[];
     }
     $load_results->( @keys );
-    
+
     return $result;  # {   PRE=>[ {},{} ], RUN=>... }
-} 
+}
 
 sub artifacts {
     my ( $self, %p ) = @_;
@@ -959,11 +959,11 @@ sub artifacts {
 
 method bom( :$username ) {
     return $self;
-    return { 
+    return {
         changesets => $self->changesets,
         projects   => $self->projects,
         #items=>$job->items,
-    }; 
+    };
 }
 
 sub _select_words {
@@ -975,7 +975,7 @@ sub _select_words {
         last if @ret >= $cnt;
     }
     return join '_', @ret;
-} 
+}
 
 sub annotate {
     my ($self,$p)=@_;
@@ -986,12 +986,12 @@ sub annotate {
     $text = substr($text, 0, 2048 );
     #$text = '<b>' . $c->username . '</b>: ' . $p->{text};
     $level = 'comment' if !$level || $level eq 'info';
-    my $log = $self->logger; 
+    my $log = $self->logger;
     $log->exec( 0+$p->{job_exec} ) if $p->{job_exec} > 0;
     $log->$level( $text, data=>$p->{data}, username=>$p->{username} );
 }
 
-# 
+#
 #===================  JOB EXECUTION METHODS ===================
 #
 
@@ -1006,7 +1006,7 @@ has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can requ
 has final_step         => ( is=>'rw', isa=>'Any' );  # so that we set the next step at the very end
 has pause_timeout      => qw(is rw isa Num default), 3600 * 24;  # 1 day max
 has pause_frequency    => qw(is rw isa Num default 5);  # 5 seconds
-has has_errors         => ( is=>'rw', isa=>'Num', default=>0 ); 
+has has_errors         => ( is=>'rw', isa=>'Num', default=>0 );
 has has_warnings       => ( is=>'rw', isa=>'Num', default=>0 );
 
 
@@ -1025,7 +1025,7 @@ sub run {
 
     local $Baseliner::CI::_no_record = 1; # prevent _ci in CIs
     Clarive->debug(1); # a job is always in debug mode
-    
+
     $self->final_status( $self->last_finish_status ) if $self->step eq 'POST'; # post should not change status at end
     $self->status('RUNNING');
     $self->write_pid;
@@ -1037,10 +1037,10 @@ sub run {
     $milestones->{$self->exec}->{$self->step}->{start} = _now;
     $self->milestones( $milestones );
     $self->save;
-    
+
     $self->service_levels->{ $self->step } = {};  # restart level aggregator
     #$self->service_levels->{ _loc('Core') } = {};  # restart level aggregator
-    
+
     # trap all die signals
     local $SIG{__DIE__} = \&_throw;
 
@@ -1053,9 +1053,9 @@ sub run {
         $self->has_warnings( $self->has_warnings + 1 ) if $lev eq 'warn';
         my $text = $msgs[0];
         if( ref $text ) {    # _log { ... }
-            $self->logger->common_log( [$lev,$cl,$fi,$li], _loc('Data dump'), @msgs ); 
+            $self->logger->common_log( [$lev,$cl,$fi,$li], _loc('Data dump'), @msgs );
         } else {
-            $self->logger->common_log( [$lev,$cl,$fi,$li], @msgs ); 
+            $self->logger->common_log( [$lev,$cl,$fi,$li], @msgs );
         }
         return 0;
     };
@@ -1063,11 +1063,11 @@ sub run {
     Util->_log("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
     Util->_debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
-     
+
     # prepare stash for rules
     my $prev_stash = $self->job_stash;
-    my $stash = { 
-            %{ $prev_stash }, 
+    my $stash = {
+            %{ $prev_stash },
             job            => $self,
             bl             => $self->bl,
             bl_to          => $self->bl_to,
@@ -1082,7 +1082,7 @@ sub run {
             changesets     => $self->changesets,
 #            needs_rollback => $self->needs_rollback //,
     };
-    
+
     event_new 'event.job.start_step' => { job=>$self, job_stash=>$prev_stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
 
     ROLLBACK:
@@ -1093,18 +1093,18 @@ sub run {
             _fail(_loc("Job rejected.  Treated as failed"));
         }
         my $rule_runner = Baseliner::RuleRunner->new;
-        my $ret = $rule_runner->run_single_rule( 
-            id_rule => $self->id_rule, 
+        my $ret = $rule_runner->run_single_rule(
+            id_rule => $self->id_rule,
             rule_version => $self->rule_version,
             logging => 1,
             stash   => $stash,
             simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
         );
         $self->job_stash( $stash ); # saves stash to table
-        
+
         $end_status = $self->final_status || 'FINISHED';
     } catch {
-        my $err = shift;   
+        my $err = shift;
         $stash->{failing} = 1;
         $job_error = 1;
         $end_status = 'ERROR';
@@ -1144,7 +1144,7 @@ sub run {
         $self->save;
         goto ROLLBACK if $rollback_now;
     }
-    
+
     $self->finish( $end_status );
 
     # last line on log
@@ -1156,23 +1156,23 @@ sub run {
         } else {
             $self->final_step( 'POST' );
         }
-    } elsif( $self->status eq 'FINISHED' ) { 
+    } elsif( $self->status eq 'FINISHED' ) {
         $self->logger->info( _loc( 'Job step %1 finished ok', $self->step ) );
         $self->goto_next_step( $self->final_status );  # goto_next_step only works for jobs 'FINISHED'
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
-        $self->goto_next_step( $self->final_status ); 
+        $self->goto_next_step( $self->final_status );
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
     $self->step( $self->final_step );
     $self->build_job_contents(0);
 
     $self->save;
-   
+
     Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );
     unlink $self->pid_file;
-    
+
     return $self->status;
 }
 
@@ -1221,20 +1221,20 @@ Updates the step in the row following the next_status rules
 =cut
 sub goto_next_step {
     my ($self, $no_status_change ) = @_;
-    
+
     my $current_step = $self->step;
 
     # STATUS
     my $next_status = $next_status{ $current_step };
     $self->status( $next_status ) if defined $next_status && !$no_status_change;
-    
+
     # STEP
     my $next_step = $next_step{ $current_step };
     $self->logger->debug(
          _loc('Going from step %1 to next step %2 (status %3)', $current_step, $next_step, $self->status )
     );
     $self->final_step( $next_step );
-    
+
     return ( $next_step, $next_status );
 }
 
@@ -1263,13 +1263,13 @@ sub finish {
 
 Pause job.
 
-When pausing, the status changes to PAUSE. Pause means that the job process 
+When pausing, the status changes to PAUSE. Pause means that the job process
 is still alive, albeit on stand by waiting for a change in status.
 
 Pause happens on the spot. The job blocks at this same call:
 
     $job->pause;  # may stay here for 10 hours ...
-    
+
         reason: "log message"
         details: "log data"
         timeout: seconds
@@ -1285,12 +1285,12 @@ sub pause {
     if ($self->step =~ /INIT|CHECK/){
         $self->update( status=>'ERROR' );
         $self->logger->warn( _loc('Cannot pause job on CHECK or INIT status') );
-        _fail _loc('Cannot pause job on CHECK or INIT status'); 
+        _fail _loc('Cannot pause job on CHECK or INIT status');
     }else{
         $self->update( status=>'PAUSED' );
         $p{reason} ||= _loc('unspecified');
         $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
-        
+
         my $timeout = $p{timeout} || $self->pause_timeout;
         my $freq    = $p{frequency} || $self->pause_frequency;
         my $t = 0;
@@ -1304,7 +1304,7 @@ sub pause {
             if( defined $timeout && $t > $timeout ) {
                 my $msg = _loc('Pause timed-out at %1 seconds', $timeout ) ;
                 $self->logger->error( $msg );
-                _fail $msg unless $p{no_fail}; 
+                _fail $msg unless $p{no_fail};
                 last;
             }
             $last_status = $self->load->{status};
@@ -1326,7 +1326,7 @@ sub pause {
 
 sub suspend {
     my ($self, %p ) = @_;
-    
+
     $self->logger->warn( _loc('Suspending Job' ) );
     $self->status( 'SUSPENDED' );
     $self->save;
@@ -1334,7 +1334,7 @@ sub suspend {
 
 sub root {
     my ($self)=@_;
-    return $self->job_stash->{root} || $self->job_stash->{path} || do { 
+    return $self->job_stash->{root} || $self->job_stash->{path} || do {
         require BaselinerX::Service::Init;
         BaselinerX::Service::Init->new->root_path( job=>$self );
     };
@@ -1344,7 +1344,7 @@ sub root {
 
 Parse a string for variables C<${variable}>, replacing it with:
 
-    1) job info 
+    1) job info
     2) stash data
     3) user supplied data
 

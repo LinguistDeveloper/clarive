@@ -30,7 +30,7 @@ register 'statement.catalog.if.var' => {
     #icon => '/static/images/icons/if.gif',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             my @name = grep /%s/, keys $stash->{wizard_data};
@@ -40,7 +40,7 @@ register 'statement.catalog.if.var' => {
                 %s
                 # $stash->{catalog_filter} = 1;
             }
-            
+
         }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -53,7 +53,7 @@ register 'statement.catalog.folder' => {
     holds_children => 1,
     form => '/forms/catalog_folder.js',
     filter => 1,
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
 
         my @children_mids;
@@ -62,25 +62,25 @@ register 'statement.catalog.folder' => {
         my $project;
         if (scalar @children_service > 0){
             foreach my $service (@children_service){
-                push @children_mids, @{$service->{data}->{service}};   
+                push @children_mids, @{$service->{data}->{service}};
             }
         }
 
         my @children_task = grep { $_->{key} eq 'statement.catalog.task'  } _array $n->{children};
         if (scalar @children_task > 0){
             foreach my $task (@children_task){
-                push @children_mids, @{$task->{data}->{task}};   
-            }            
+                push @children_mids, @{$task->{data}->{task}};
+            }
         }
 
         my @children_task_group = grep { $_->{key} eq 'statement.catalog.task_group'  } _array $n->{children};
         if (scalar @children_task_group > 0){
             foreach my $task_group (@children_task_group){
                 foreach my $task ( _array $task_group->{children}){
-                    push @children_mids, @{$task->{data}->{task}};   
-                }                 
-            }            
-        }        
+                    push @children_mids, @{$task->{data}->{task}};
+                }
+            }
+        }
 
         my $children_mids = \@children_mids;
 
@@ -101,7 +101,7 @@ register 'statement.catalog.folder' => {
                     $type = $stash->{realm} eq 'project' ? 'P' : $stash->{realm} eq 'subproject' ? 'S' : undef;
                     my $query = { mid => { '$in' => $children_mids }, active => '1'};
                     if ($stash->{catalog_step} eq 'MENU'){
-                        $query->{'$or'} = [ {type => $type}, {type=> { '$exists' => 0 }, project => $stash->{service_mid_project_click}}] if ($type);    
+                        $query->{'$or'} = [ {type => $type}, {type=> { '$exists' => 0 }, project => $stash->{service_mid_project_click}}] if ($type);
                     }
 
                     my @rows = mdb->master_doc->find( $query )->all;
@@ -112,9 +112,9 @@ register 'statement.catalog.folder' => {
                         my $ci = ci->new($mid);
                         if (scalar grep {$_->name =~ /Baseliner::Role::CI::CatalogService/} _array($ci->meta->roles)){
                             my $hide_service = $ci->hide_service($stash->{bl});
-                            next if ($hide_service); 
+                            next if ($hide_service);
                             push @show_rows, $mid;
-                            last;                           
+                            last;
                         }else{
                             push @show_rows, $mid;
                             last;
@@ -131,18 +131,18 @@ register 'statement.catalog.folder' => {
                 if (!$stash->{name_folder} || $stash->{name_folder} eq $name ){
                     if ($has_children eq '1' ){
                         my $id = mdb->oid->{value};
-                        my $folder = { 
+                        my $folder = {
                             id          => $id,
-                            parent      => $stash->{catalog_parent}, 
-                            name        => $name, 
+                            parent      => $stash->{catalog_parent},
+                            name        => $name,
                             mid         => 'folder:' . $name . ':' . ($stash->{service_mid_project_click} // '') . ':' . $system,
-                            type        => 'folder', 
-                            description => $description,  
+                            type        => 'folder',
+                            description => $description,
                             collapse    => $collapse,
                             system      => $system,
                             id_task      => $stash->{id_task},
                             _is_leaf    => \0,
-                        };     
+                        };
 
                         if( $stash->{catalog_step} eq 'MENU' ) {
                             push @{ $stash->{services} } => $folder;
@@ -152,7 +152,7 @@ register 'statement.catalog.folder' => {
 
                         if ($stash->{name_folder} && $stash->{name_folder} eq $name || $stash->{catalog_step} ne 'MENU'){
                             %s;
-                        }                    
+                        }
                     }
                 }
 
@@ -169,17 +169,17 @@ register 'statement.catalog.service' => {
     holds_children => 1,
     form => '/forms/catalog_service.js',
     filter => 1,
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
-        
+
         sprintf(q{
             {
                 local $stash->{catalog_filter} = 0;
                 my $name = q{%s};
                 _log ">>>>>>>>>>>>>>>>>>>>>>><SERVICE: " . $name;
-                launch( 'service.catalog.service', 'Catalog Service', $stash, 
+                launch( 'service.catalog.service', 'Catalog Service', $stash,
                    { key => $name, mid => q{%s}, description => q{%s}, attributes => %s, chi => sub{ %s } }, '' );
-                
+
             }
         }, $n->{text}, $n->{data}{service}[0], $n->{note}, Data::Dumper::Dumper($n->{data}), $self->dsl_build( $n->{children}, %p ) );
     },
@@ -192,16 +192,16 @@ register 'statement.catalog.task_group' => {
     #icon => '/static/images/icons/task_group.png',
     holds_children => 1,
     filter => 0,
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
 
         my @mids_task;
         foreach my $task (_array $n->{children}){
             if($task->{data}->{task}){
-                push @mids_task, @{$task->{data}->{task}};                
+                push @mids_task, @{$task->{data}->{task}};
             }
-               
-        }            
+
+        }
 
         sprintf(q{
             {
@@ -210,18 +210,18 @@ register 'statement.catalog.task_group' => {
                 my @mids_task = map {$_.''} _array $mids_task;
 
                 my $type;
-                $type = $stash->{realm} eq 'project' ? 'P' : $stash->{realm} eq 'subproject' ? 'S' : undef;                
+                $type = $stash->{realm} eq 'project' ? 'P' : $stash->{realm} eq 'subproject' ? 'S' : undef;
                 my $query = { mid => { '$in' => \@mids_task }, active => '1'};
                 if ($stash->{catalog_step} eq 'MENU'){
-                    $query->{'$or'} = [ {type => $type}, {type=> { '$exists' => 0 }, project => $stash->{service_mid_project_click}}] if ($type);    
+                    $query->{'$or'} = [ {type => $type}, {type=> { '$exists' => 0 }, project => $stash->{service_mid_project_click}}] if ($type);
                 }
 
                 my @rows = mdb->master_doc->find( $query )->all;
                 my $is_leaf = scalar @rows ? 0 : 1;
 
-                launch( 'service.catalog.task_group', 'Catalog Task Group', $stash, { key => $name, description => q{%s}, chi => sub{ %s }, is_leaf => $is_leaf }, '' );                    
+                launch( 'service.catalog.task_group', 'Catalog Task Group', $stash, { key => $name, description => q{%s}, chi => sub{ %s }, is_leaf => $is_leaf }, '' );
             }
-        }, $n->{text}, Data::Dumper::Dumper(\@mids_task), $n->{note}, $self->dsl_build( $n->{children}, %p ) );        
+        }, $n->{text}, Data::Dumper::Dumper(\@mids_task), $n->{note}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -234,7 +234,7 @@ register 'statement.catalog.task' => {
     holds_children => 1,
     form => '/forms/catalog_task.js',
     filter => 1,
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         my $tasks = grep { $_->{key} eq 'statement.catalog.task' } _array $n->{children};
 
@@ -242,9 +242,9 @@ register 'statement.catalog.task' => {
             {
                 local $stash->{catalog_filter} = 0;
                 my $name = q{%s};
-                launch( 'service.catalog.task', 'Catalog Task', $stash, 
+                launch( 'service.catalog.task', 'Catalog Task', $stash,
                    { key => $name, mid => q{%s}, description => q{%s}, attributes => %s, is_leaf => q{%s} , chi => sub{ %s } }, '' );
-                
+
             }
         }, $n->{text}, $n->{data}{task}[0], $n->{note}, Data::Dumper::Dumper($n->{data}), $tasks, $self->dsl_build( $n->{children}, %p ) );
     },
@@ -274,7 +274,7 @@ register 'statement.catalog.step' => {
 #         sprintf(q{
 #             my $service_selected = $stash->{service_selected};
 
-#             my $sel_task_current = BaselinerX::Service::Catalog::set_sel_task_current( $service_selected->{tasks} ); 
+#             my $sel_task_current = BaselinerX::Service::Catalog::set_sel_task_current( $service_selected->{tasks} );
 #             if( $stash->{catalog_step} eq 'RUN' ) {
 #                 if ( !$sel_task_current->{attributes}->{sw_dependency} ) {
 #                     if ( !$sel_task_current->{attributes}->{sw_services_task_done} ) {
@@ -284,7 +284,7 @@ register 'statement.catalog.step' => {
 #                         } catch {
 #                             $sel_task_current->{attributes}->{sw_services_task_done} = 0;
 #                         }
-#                     }                    
+#                     }
 #                 }
 #             }
 #         }, $self->dsl_build( $n->{children}, %p ) );
@@ -306,35 +306,35 @@ register 'service.catalog.service' => {
         my $attributes = $config->{attributes};
         my $id_task = $stash->{id_task};
 
-        my $service = { 
+        my $service = {
             id          => $id,
             id_rule     => $stash->{id_rule},
             mid         => $mid,
-            name        => $key, 
-            description => $description,  
+            name        => $key,
+            description => $description,
             attributes  => $attributes,
-            type        => 'service', 
+            type        => 'service',
             id_task     => $id_task,
-            parent      => $stash->{catalog_parent}, 
+            parent      => $stash->{catalog_parent},
             icon        => '/static/images/icons/catalogue.png',
             #icon        => '/static/images/icons/catalog-light.png',
-            _is_leaf    => $attributes->{split_task} ? \0 : \1,     
+            _is_leaf    => $attributes->{split_task} ? \0 : \1,
         };
 
         local $stash->{catalog_parent} = $id;
-        local $stash->{service_current} = $service;   
+        local $stash->{service_current} = $service;
 
         if ($stash->{catalog_step} eq 'MENU') {
             push @{ $stash->{services} } => $service;
             $chi->();
-        } 
+        }
 
         my $service_selected = $stash->{service_selected};
 
         if ($service_selected && $service_selected->{mid} eq $stash->{service_current}->{mid}){
 
             my $relation_field = $stash->{field_service_task_relation};
-            my $id_category = $stash->{category_mid_topic_created_service};        
+            my $id_category = $stash->{category_mid_topic_created_service};
 
             given ($stash->{catalog_step}) {
                 when ('DRAFT') {
@@ -342,29 +342,29 @@ register 'service.catalog.service' => {
                 }
                 when ('RUN') {
                     if ( !$service_selected->{run_service_step} ){
-                        $self->create_or_update_service( $relation_field, $service_selected, $id_category, $stash ); 
+                        $self->create_or_update_service( $relation_field, $service_selected, $id_category, $stash );
                     }
-                    if ( $service_selected->{run_service_step} ne 'DONE') { 
+                    if ( $service_selected->{run_service_step} ne 'DONE') {
                         my $id_status = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category});
                         $self->set_service_status($service_selected, $id_category, $id_status, $stash );
                         $service_selected->{status_service} = mdb->topic->find_one({ mid => $service_selected->{mid_topic_created_service} })->{category_status}{id};
                     }
                 }
-            } 
+            }
 
             $chi->();
 
             given ($stash->{catalog_step}) {
-                when ('DRAFT') { 
-                    my $topic_data = $self->set_service_data( $relation_field, $service_selected, $id_category, $stash );  
+                when ('DRAFT') {
+                    my $topic_data = $self->set_service_data( $relation_field, $service_selected, $id_category, $stash );
                     $topic_data->{topic_mid} = $service_selected->{mid_topic_created_service};
                     my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => 'update', %$topic_data } );
                 }
-                when ('RUN') { 
+                when ('RUN') {
                     $self->set_service_selected($stash);
                     $self->set_task_selected($stash);
-                }                            
-            }                        
+                }
+            }
         }
     },
     icon        => '/static/images/icons/catalogue.png'  #new icons for clarive 6.3
@@ -393,17 +393,17 @@ register 'service.catalog.task' => {
 
         if (exists $stash->{task_current} ) {
             $stash->{task_parent_name} = $stash->{task_current}->{name};
-        } 
+        }
         #if( ( $stash->{catalog_step} eq 'MENU') || $service_selected->{mid} eq $stash->{service_current}->{mid} || !$stash->{service_current}->{mid} ){
-            my $task = { 
+            my $task = {
                 id          => $id,
                 id_rule     => $stash->{id_rule},
                 id_service  => $stash->{service_current}->{mid} || $stash->{task_group_current}->{type} || undef,
                 mid         => $mid,
                 attributes  => $attributes,
-                name        => $key, 
+                name        => $key,
                 description => $description,
-                type        => 'task', 
+                type        => 'task',
                 id_task      => $id_task,
                 parent      => $stash->{catalog_parent},
                 icon        => '/static/images/icons/catalogue.png',
@@ -412,14 +412,14 @@ register 'service.catalog.task' => {
             };
 
             local $stash->{catalog_parent} = $id;
-            local $stash->{task_current} = $task; 
-            
+            local $stash->{task_current} = $task;
+
             if ($stash->{catalog_step} eq 'MENU') {
                 if ($stash->{service_current}->{attributes}->{split_task} eq '1' || $stash->{task_group_current} || $stash->{folder_current}->{system} eq '_catalog_folder') {
-                    push @{ $stash->{services} } => $task;                    
+                    push @{ $stash->{services} } => $task;
                 }
                 $chi->();
-            } 
+            }
 
             delete $stash->{task_selected};
 
@@ -433,7 +433,7 @@ register 'service.catalog.task' => {
                 }
                 my $key_task_mid_project = $task_sel->{mid} . '_' . $task_sel->{project}->{mid};
                 if (!exists $stash->{tasks_status}->{$key_task_mid_project}){
-                    $stash->{tasks_status}->{$key_task_mid_project} = 0;            
+                    $stash->{tasks_status}->{$key_task_mid_project} = 0;
                 }
                 if ($stash->{task_parent_name} eq $task_sel->{name}) {
                     $stash->{project_parent} = $task_sel->{project};
@@ -443,7 +443,7 @@ register 'service.catalog.task' => {
             # if ($service_selected->{name} && $stash->{service_current}->{attributes}->{split_task} eq '0'){
             #     push @{$service_selected->{tasks}} => $task;
             #     $stash->{task_selected} = $task;
-            # }    
+            # }
 
             if ($stash->{catalog_step} eq 'NEXT' || $stash->{catalog_step} eq 'PREV') {
                 my $is_new;
@@ -471,20 +471,20 @@ register 'service.catalog.task' => {
                     my $id_category = $stash->{category_mid_topic_created_task};
 
                     given ($stash->{catalog_step}) {
-                       
+
                         when ('DRAFT') {
                             $self->create_or_update_task( $service_selected, $task_selected, $id_category, $stash  );
                             if (!$stash->{task_group_current}->{name} && $task_selected->{id_service} eq '' ){
                                 $self->set_service_selected($stash);
-                                $self->set_task_selected($stash);                                 
-                            }                        
+                                $self->set_task_selected($stash);
+                            }
                         }
                         when ('RUN') {
                             if ( !$task_selected->{run_task_step} ){
                                 $self->create_or_update_task( $service_selected, $task_selected, $id_category, $stash );
                                 if (!$stash->{task_group_current}->{name} && $task_selected->{id_service} eq '' ){
                                     $self->set_service_selected($stash);
-                                    $self->set_task_selected($stash);                                 
+                                    $self->set_task_selected($stash);
                                 }
                             }
 
@@ -504,9 +504,9 @@ register 'service.catalog.task' => {
                                 id_category     => $id_category,
                                 id_status_from  => $id_status,
                                 surrogate       => 'clarive'
-                            };                            
-                            if ( $task_selected->{run_task_step} ne 'DONE' && 
-                                $service_selected->{status_service} eq $task_selected->{attributes}->{init_run_status} || 
+                            };
+                            if ( $task_selected->{run_task_step} ne 'DONE' &&
+                                $service_selected->{status_service} eq $task_selected->{attributes}->{init_run_status} ||
                                 ($task_selected->{attributes}->{init_run_status} eq '' && $task_selected->{run_task_step} ne 'DONE')) {
                                     my $id_status = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category}); ##resolverlo a nivel global
                                     $self->set_task_status($task_selected, $id_category, $id_status, $stash );
@@ -516,7 +516,7 @@ register 'service.catalog.task' => {
                                     if ($id_status ne $id_status_before){
                                         $self->set_service_status($service_selected, $id_category_service, $id_status, $stash );
                                     }
-                                    $task_selected->{run_task_step} = 'DONE'; 
+                                    $task_selected->{run_task_step} = 'DONE';
                             }
 
                             if ( $task_selected->{run_task_step} eq 'DONE' ){
@@ -530,7 +530,7 @@ register 'service.catalog.task' => {
                                             my $id_status_dependency = Baseliner->model('Topic')->get_dependency_status_from_category({id_category => $id_category});
 
                                             ##Contemplar caso automático
-                                            if ( $id_status eq $id_status_dependency) { 
+                                            if ( $id_status eq $id_status_dependency) {
                                                 my @status = Baseliner->model('Topic')->next_status_for_user(%$params);
 
                                                 if ( @status ){
@@ -564,8 +564,8 @@ register 'service.catalog.task' => {
                                             if ($has_dependency){
                                                 my $id_status_dependency = Baseliner->model('Topic')->get_dependency_status_from_category({id_category => $id_category});
                                                 if ( $task_selected->{attributes}->{status_mid} ne $id_status_dependency ) {
-                                                    $self->set_task_status( $task_selected, $id_category, $id_status_dependency, $stash );                                                
-                                                }                                               
+                                                    $self->set_task_status( $task_selected, $id_category, $id_status_dependency, $stash );
+                                                }
                                             }
                                             else{
                                                 if( $task_selected->{attributes}->{automatic} ){
@@ -575,8 +575,8 @@ register 'service.catalog.task' => {
                                                     $stash->{tasks_status}->{$task_selected->{mid} . '_' . $task_selected->{project}->{mid}} = 1;
                                                 }else{
                                                     my $id_status = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category});
-                                                    $self->set_task_status($task_selected, $id_category, $id_status, $stash );                                                    
-                                                }                                                  
+                                                    $self->set_task_status($task_selected, $id_category, $id_status, $stash );
+                                                }
                                             }
                                         }else{ # No dependencies
                                             if( $task_selected->{attributes}->{automatic} ){
@@ -584,28 +584,28 @@ register 'service.catalog.task' => {
                                                 $self->set_task_status( $task_selected, $id_category, $id_status_final, $stash );
                                                 $task_selected->{attributes}->{sw_task_done} = 1;
                                                 $stash->{tasks_status}->{$task_selected->{mid} . '_' . $task_selected->{project}->{mid}} = 1;
-                                            }                                            
+                                            }
                                         }
-                                    }                                
+                                    }
                                 }
                             }
-                        }                    
+                        }
                     }
 
                     $chi->();
 
                     if ($stash->{catalog_step} eq 'RUN'){
                         if ( $task_selected->{attributes}->{sw_services_task_done} && $task_selected->{attributes}->{sw_services_task_done} == 0 ){
-                            $task_selected->{attributes}->{sw_task_done} = 0; 
+                            $task_selected->{attributes}->{sw_task_done} = 0;
                         }
                         $stash->{from_catalog_event_topic} = 0;
                         mdb->topic->update({ mid => $task_selected->{attributes}->{topic_mid}},{ '$set' => { '_catalog_stash' => _dump $stash }});
 
                         if($service_selected->{type} eq '_service'){
                             $self->set_service_selected($stash);
-                            $self->set_task_selected($stash);                            
+                            $self->set_task_selected($stash);
                         }
-                    }  
+                    }
                 }
             }
             #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>END TASK: " . $key;
@@ -632,39 +632,39 @@ register 'service.catalog.task_group' => {
         my $id_task = $stash->{id_task};
 
         if (!$is_leaf){
-            my $task_group = { 
+            my $task_group = {
                 id          => $id,
                 id_rule     => $stash->{id_rule},
                 mid         => '',
-                name        => $key, 
-                description => $description,  
+                name        => $key,
+                description => $description,
                 attributes  => $attributes,
-                type        => 'task_group', 
+                type        => 'task_group',
                 id_task     => $id_task,
-                parent      => $stash->{catalog_parent}, 
+                parent      => $stash->{catalog_parent},
                 icon        => '/static/images/icons/catalogue.png',
                 #icon        => '/static/images/icons/task_group.png',
-                _is_leaf    => $is_leaf,     
+                _is_leaf    => $is_leaf,
             };
 
 
             local $stash->{catalog_parent} = $id;
-            local $stash->{task_group_current} = $task_group;   
+            local $stash->{task_group_current} = $task_group;
 
             if ($stash->{catalog_step} eq 'MENU') {
                 push @{ $stash->{services} } => $task_group;
             }
 
-            $chi->(); 
+            $chi->();
 
             my $service_selected = $stash->{service_selected};
 
             if (exists $service_selected->{mid_topic_created_service} && $service_selected->{mid_topic_created_service} ne ''){
                 if ($stash->{catalog_step} eq 'DRAFT' || $stash->{catalog_step} eq 'RUN'){
                     $self->set_service_selected($stash);
-                    $self->set_task_selected($stash);                 
+                    $self->set_task_selected($stash);
                 }
-            }            
+            }
         }
 
     },
@@ -674,7 +674,7 @@ register 'service.catalog.form' => {
     name => 'Form',
     icon => '/static/images/icons/catalogue.png',
     #icon => '/static/images/icons/catalog-form.png',
-    form => '/forms/catalog_form.js', 
+    form => '/forms/catalog_form.js',
     parse_vars => 0,
     handler => sub{
         my ( $self, $c, $config ) = @_;
@@ -691,9 +691,9 @@ register 'service.catalog.form' => {
 
                 $key = "form_global";
 
-                $form = { 
+                $form = {
                     id_rule     => $stash->{id_rule},
-                    name        => $key, 
+                    name        => $key,
                     fieldlets   => \@fieldlets,
                     type        => 'form',
                     subtype     => $config->{type_form},
@@ -703,7 +703,7 @@ register 'service.catalog.form' => {
                     }
                 };
 
-                push @{ $service_selected->{forms} } => $form;  
+                push @{ $service_selected->{forms} } => $form;
             }else{
                 if ($stash->{task_current}) {
 
@@ -716,7 +716,7 @@ register 'service.catalog.form' => {
 
                     $key = "form_$task_selected->{name}_$stash->{catalog_parent}";
 
-                    my %task_cleaned = map { 
+                    my %task_cleaned = map {
                         if ($_ !~ /^_/) {
                             ($_, $task_selected->{$_});
                         }else{
@@ -724,11 +724,11 @@ register 'service.catalog.form' => {
                         }
                     } keys $task_selected;
 
-                    $form = { 
+                    $form = {
                         id_rule     => $stash->{id_rule},
-                        name        => $key, 
+                        name        => $key,
                         fieldlets   => \@fieldlets,
-                        type        => 'form', 
+                        type        => 'form',
                         subtype     => $config->{type_form},
                         parent      => $stash->{catalog_parent},
                         task        => Util->_clone(\%task_cleaned),
@@ -737,29 +737,29 @@ register 'service.catalog.form' => {
                             mid     => $task_selected->{project}->{mid},
                             name    => $task_selected->{project}->{name}
                         }
-                    };                
-                    
+                    };
+
                     if ( $service_selected->{tasks} ){
                         push @{$task_selected->{forms}} => $form;
                         push @{ $service_selected->{forms} } => $form if ($config->{type_form} eq 'wizard');
                     }else{
-                        push @{ $service_selected->{forms} } => $form if ($config->{type_form} eq 'wizard');    
-                    }                    
+                        push @{ $service_selected->{forms} } => $form if ($config->{type_form} eq 'wizard');
+                    }
                 }else{
                     $key = "form_service";
 
-                    $form = { 
+                    $form = {
                         id_rule     => $stash->{id_rule},
-                        name        => $key, 
+                        name        => $key,
                         fieldlets   => \@fieldlets,
-                        type        => 'form', 
+                        type        => 'form',
                         project     => {
                             mid     => $service_selected->{project}->{mid},
                             name    => $service_selected->{project}->{name}
                         }
                     };
 
-                    push @{ $service_selected->{forms} } => $form;                      
+                    push @{ $service_selected->{forms} } => $form;
                 }
             }
         }
@@ -769,7 +769,7 @@ register 'service.catalog.form' => {
 # register 'service.catalog.wizard_panel' => {
 #     name => 'Wizard Panel',
 #     icon => '/static/images/icons/catalog-wizard.png',
-#     form => '/forms/wizard_panel.js', 
+#     form => '/forms/wizard_panel.js',
 #     handler => sub{
 #         my ( $self, $c, $config ) = @_;
 #         my $stash = $c->stash;
@@ -778,7 +778,7 @@ register 'service.catalog.form' => {
 #         my $path = $config->{path};
 #         my $title = $config->{title} || $config->{node_attributes}{text};
 #         my $note = $config->{note} || $config->{node_attributes}{note};
-        
+
 #         #push @{ $stash->{wizard_js_forms} }, $path;
 #         push @{ $service->{forms} }, { title=>$title, path=>$path, note=>$note };
 #     },
@@ -792,8 +792,8 @@ sub set_service_data {
     my $date = '' . Class::Date->now;
     $date =~ s/\W//g;
     $topic_data->{title}              = $date . '_' . uc $stash->{category_topic_created_service} . '_' . $stash->{bl};
-    $topic_data->{category}           = $id_category;     
-    $topic_data->{id_category_status} = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category}); 
+    $topic_data->{category}           = $id_category;
+    $topic_data->{id_category_status} = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category});
     $topic_data->{description}        = $service_data->{description};
     $topic_data->{username}           = $stash->{username};
     $topic_data->{bl}                 = $stash->{bl};
@@ -802,7 +802,7 @@ sub set_service_data {
     $topic_data->{$stash->{category_id_field_project_service}} = $service_data->{project}->{mid};
 
 
-    
+
     # if( $service_data->{forms} ){
     #     my @forms = grep { $_->{parent} eq $service_data->{mid} } _array $stash->{wizard_forms};
     #     my $index = 0;
@@ -818,7 +818,7 @@ sub set_service_data {
     my @all_fields;
     my $index = 99000;
     for my $form (_array $stash->{service_selected}->{forms}) {
-        
+
         if( !$form->{id_task} ){
             for my $fieldlet (@{$form->{fieldlets}}){
                 $index += 1;
@@ -828,16 +828,16 @@ sub set_service_data {
                     my $var_type = $ci_variable->{var_type};
                     my $var_columns = $ci_variable->{var_columns};
                     if ($var_type eq 'grid editor') {
-                        $fieldlet->{params}->{html} = '/fields/templates/html/grid_editor.html'; 
-                        $fieldlet->{params}->{columns} = $var_columns; 
-                        $fieldlet->{params}->{section} = 'head';    
+                        $fieldlet->{params}->{html} = '/fields/templates/html/grid_editor.html';
+                        $fieldlet->{params}->{columns} = $var_columns;
+                        $fieldlet->{params}->{section} = 'head';
                     }
                 }
                 $fieldlet->{params}->{field_order} = $index;
                 $fieldlet->{params}->{field_order_html} = $index;
                 $fieldlet->{params}->{field_type_form} = $form->{subtype};
-            }            
-            push @all_fields, @{$form->{fieldlets}};            
+            }
+            push @all_fields, @{$form->{fieldlets}};
         }
     }
     $topic_data->{_catalog_fieldlets}= \@all_fields;
@@ -846,7 +846,7 @@ sub set_service_data {
         my $from_data = '';
         $from_data = '_' . $field->{params}->{from} if (exists $field->{params}->{from});
         $topic_data->{$field->{id_field}} = $stash->{wizard_data}->{ $service_data->{project}->{mid} . '_' . $field->{id_field} . $from_data } if ( exists $stash->{wizard_data}->{ $service_data->{project}->{mid} . '_' . $field->{id_field} . $from_data });
-    }                         
+    }
 
     return $topic_data;
 }
@@ -864,7 +864,7 @@ sub create_or_update_service {
         $action = 'add';
         $topic_data->{id_category_status} = $stash_data->{status_draft};
     };
-    
+
     $topic_data->{_catalog_stash} = _dump $stash_data;
 
     my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => $action, %$topic_data } );
@@ -879,14 +879,14 @@ sub set_task_data {
     my $topic_data;
 
     $topic_data->{title}              = $task_selected->{name};
-    $topic_data->{category}           = $id_category;               
+    $topic_data->{category}           = $id_category;
     $topic_data->{id_category_status} = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category});
     $topic_data->{description}        = $task_selected->{description};
     $topic_data->{username}           = $stash->{username};
     $topic_data->{origin}             = $task_selected->{attributes}->{origin};
-    $topic_data->{ci_task_mid}        = $task_selected->{mid}; 
-    $topic_data->{ci_task_variables_output} = $task_selected->{attributes}->{variables_output}; 
-    $topic_data->{bl}                 = $stash->{bl};  
+    $topic_data->{ci_task_mid}        = $task_selected->{mid};
+    $topic_data->{ci_task_variables_output} = $task_selected->{attributes}->{variables_output};
+    $topic_data->{bl}                 = $stash->{bl};
     $topic_data->{peticion}           = [$stash->{service_selected}->{mid_topic_created_service}];
     $topic_data->{$stash->{category_id_field_bl_task}}          = $stash->{bl_mid};
     $topic_data->{$stash->{category_id_field_project_task}}     = $stash->{service_selected}->{project}->{mid} if ($stash->{service_selected}->{project}->{mid});
@@ -905,20 +905,20 @@ sub set_task_data {
                     my $var_type = $ci_variable->{var_type};
                     my $var_columns = $ci_variable->{var_columns};
                     if ($var_type eq 'grid editor') {
-                        $fieldlet->{params}->{html} = '/fields/templates/html/grid_editor.html'; 
-                        $fieldlet->{params}->{columns} = $var_columns; 
-                        $fieldlet->{params}->{section} = 'head';   
+                        $fieldlet->{params}->{html} = '/fields/templates/html/grid_editor.html';
+                        $fieldlet->{params}->{columns} = $var_columns;
+                        $fieldlet->{params}->{section} = 'head';
                     }
                 }
                 $fieldlet->{params}->{field_order} = $index;
                 $fieldlet->{params}->{field_order_html} = $index;
                 $fieldlet->{params}->{field_type_form} = $form->{subtype};
-            }            
+            }
             push @all_fields, @{$form->{fieldlets}};
         }
     }
 
-    
+
     if ( $task_selected->{attributes}->{help} ) {
         $index += 1;
         my $fieldlet_help = {
@@ -950,9 +950,9 @@ sub set_task_data {
 
     for my $field ( @all_fields ){
         my $from_data = '';
-        $from_data = '_' . $field->{params}->{from} if (exists $field->{params}->{from});        
+        $from_data = '_' . $field->{params}->{from} if (exists $field->{params}->{from});
         $topic_data->{$field->{id_field}} = $stash->{wizard_data}->{ $task_selected->{project}->{mid} . '_' . $field->{id_field} . $from_data} if ( exists $stash->{wizard_data}->{ $task_selected->{project}->{mid} . '_' . $field->{id_field} . $from_data});
-    }   
+    }
 
     if ($task_selected->{attributes}->{output}){
         my $output_attributes = $task_selected->{attributes}->{output};
@@ -967,26 +967,26 @@ sub set_task_data {
     return $topic_data;
 }
 
- 
+
 sub create_or_update_task {
     my ($self, $service_selected, $task_selected, $id_category, $stash  ) = @_;
 
-    if ( $service_selected->{tasks} ){ 
+    if ( $service_selected->{tasks} ){
         if ($service_selected->{type} eq '_service'){
             my $relation_field = $stash->{field_service_task_relation};
-            my $id_category_service = $stash->{category_mid_topic_created_service};        
+            my $id_category_service = $stash->{category_mid_topic_created_service};
 
             if ( !$service_selected->{run_service_step} ){
                 $self->create_or_update_service( $relation_field, $service_selected, $id_category_service, $stash );
             }
 
-            if ( $service_selected->{run_service_step} ne 'DONE') { 
+            if ( $service_selected->{run_service_step} ne 'DONE') {
                 if ( $stash->{catalog_step} eq 'RUN' ){
                     my $id_status = Baseliner->model('Topic')->get_initial_status_from_category({id_category => $id_category_service});
                     $self->set_service_status($service_selected, $id_category_service, $id_status, $stash );
                     $service_selected->{status_service} = $id_status;
                 }
-            }            
+            }
         }
 
         my $action;
@@ -998,27 +998,27 @@ sub create_or_update_task {
             $topic_data->{topic_mid} = $task_selected->{attributes}->{topic_mid};
         }else{
             $action = 'add';
-            $topic_data->{id_category_status} = $stash->{status_draft};    
+            $topic_data->{id_category_status} = $stash->{status_draft};
         }
 
         $task_selected->{run_task_step} = 'CHECK';
         $topic_data->{_catalog_stash} = _dump $stash;
         my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => $action, %$topic_data,  } );
-        
+
         $task_selected->{attributes}->{topic_mid} = $topic_mid;
 
         if( $action eq 'add'){
-            push @{ $service_selected->{mids_topic_created_task} }, $topic_mid;     
-        } 
+            push @{ $service_selected->{mids_topic_created_task} }, $topic_mid;
+        }
 
         if ($service_selected->{type} eq '_service'){
             $self->set_service_selected($stash);
             $self->set_task_selected($stash);
         }
-    } 
+    }
 }
 
-sub has_dependency {   
+sub has_dependency {
     my ($self, $service_selected, $stash_data) = @_;
     my $parent_task = $stash_data->{task_current}->{parent};
     my $tasks = $service_selected->{tasks};
@@ -1029,9 +1029,9 @@ sub has_dependency {
             $parent_task = $task;
             last;
         }
-    }         
-    
-    return $bl_dependency, $parent_task; 
+    }
+
+    return $bl_dependency, $parent_task;
 }
 
 
@@ -1052,12 +1052,12 @@ sub build_catalog_folder {
         push @roles, $r;
     }
     my $classes = [ packages_that_do( @roles ) ];
-    my $collection = { 
-        '$in'=>[ map { 
+    my $collection = {
+        '$in'=>[ map {
                     my $coll= $_->can('collection') ? $_->collection : Util->to_base_class($_);
-                    $coll 
-                } @$classes 
-        ] 
+                    $coll
+                } @$classes
+        ]
     };
 
     my @task_cis = mdb->master_doc->find({collection => $collection, active => '1'} )->sort({ name => 1 })->all;
@@ -1066,22 +1066,22 @@ sub build_catalog_folder {
         my $task = {
             children => $task_children->{$ci_task->{mid}} ? $task_children->{$ci_task->{mid}}->{children} : [],
             active  => 1,
-            data        => $task_children->{$ci_task->{mid}} ? $task_children->{$ci_task->{mid}}->{data} : {task => [$ci_task->{mid}]}, 
+            data        => $task_children->{$ci_task->{mid}} ? $task_children->{$ci_task->{mid}}->{data} : {task => [$ci_task->{mid}]},
             id_rule     => $id_rule,
             icon        => '/static/images/icons/catalogue.png',
             #icon        => '/static/images/icons/catalog-target.png',
             key         => 'statement.catalog.task',
             leaf        => \0,
             name        => '_task',
-            text        => $ci_task->{name},    
-            disabled    => \0,    
+            text        => $ci_task->{name},
+            disabled    => \0,
             expanded    => \1,
             holds_children => \1,
             nested      => '0',
             on_drop     => '',
             on_drop_js  => undef,
             palette     => \0,
-            run_sub     => \0,        
+            run_sub     => \0,
         };
 
         push @children, $task;
@@ -1109,7 +1109,7 @@ sub build_catalog_folder {
             on_drop     => '',
             on_drop_js  => undef,
             palette     => \0,
-            run_sub     => \1,           
+            run_sub     => \1,
         };
     }
     return $folder;
@@ -1119,13 +1119,13 @@ sub set_service_selected {
     my ($self, $stash) = @_;
 
     my $service_selected = $stash->{service_selected};
-    my $relation_field = $stash->{field_service_task_relation}; 
+    my $relation_field = $stash->{field_service_task_relation};
     my $id_category = $stash->{category_mid_topic_created_service};
 
-    my $topic_data = $self->set_service_data( $relation_field, $service_selected, $id_category, $stash );  
+    my $topic_data = $self->set_service_data( $relation_field, $service_selected, $id_category, $stash );
     $topic_data->{topic_mid} = $service_selected->{mid_topic_created_service};
     #$service_selected->{run_service_step} = 'DONE';
-    $stash->{from_catalog_event_topic} = 0;                                     
+    $stash->{from_catalog_event_topic} = 0;
     $topic_data->{_catalog_stash} = _dump $stash;
     delete $topic_data->{title};
     my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => 'update', %$topic_data } );
@@ -1140,7 +1140,7 @@ sub set_task_selected {
     if ($service_selected->{mids_topic_created_task}){
         mdb->topic->update({ mid => { '$in' => $service_selected->{mids_topic_created_task} }},{ '$set' => { '_catalog_stash' => _dump $stash }},{ multiple=>1 });
         my $id_task_category = $stash->{category_mid_topic_created_task};
-        my $mid_status_final = Baseliner->model('Topic')->get_final_status_from_category({id_category => $id_task_category});  
+        my $mid_status_final = Baseliner->model('Topic')->get_final_status_from_category({id_category => $id_task_category});
         #my $tot_tasks = scalar @{$service_selected->{mids_topic_created_task}};
         my $tot_tasks = scalar @{$service_selected->{tasks}};
         my $tot_tasks_done = mdb->topic->find({ mid => { '$in' => $service_selected->{mids_topic_created_task}}, 'category_status.id' => $mid_status_final})->all;
@@ -1151,7 +1151,7 @@ sub set_task_selected {
             my $topic_data = {};
             $topic_data->{topic_mid} = $service_selected->{mid_topic_created_service};
             $topic_data->{status_new} = $status_mid;
-            $topic_data->{username} = 'clarive'; #$stash->{username};   
+            $topic_data->{username} = 'clarive'; #$stash->{username};
             $stash->{from_catalog_event_topic} = 1;
             $topic_data->{_catalog_stash} = _dump $stash;
             delete $topic_data->{title};
@@ -1174,12 +1174,12 @@ sub set_task_status {
     $topic_data->{topic_mid} = $task_selected->{attributes}->{topic_mid};
     $topic_data->{category} = $id_category;
     $topic_data->{status_new} = $id_status ;
-    $topic_data->{username} = $username;   
+    $topic_data->{username} = $username;
     $stash->{from_catalog_event_topic} = 1;
     $topic_data->{_catalog_stash}       = _dump $stash;
-    
-    my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => 'update', %$topic_data } );            
-    
+
+    my ( $msg, $topic_mid ) = Baseliner->model('Topic')->update( { action => 'update', %$topic_data } );
+
 }
 
 sub set_service_status {

@@ -7,11 +7,11 @@ sub grammar {
 
           <nocontext:>             # Switch off debugging noise
 
-          <Document>               # Define a document  
+          <Document>               # Define a document
 
           <rule: Document>        <[Element]>*     # Contains many elements
 
-          <rule: Element>         <XMLDecl>        # Which can be XML declarations, 
+          <rule: Element>         <XMLDecl>        # Which can be XML declarations,
                                 | <SelfClosingTag> # OR self closing tags
                                 | <NormalTag>      # OR normal tags
 
@@ -22,13 +22,13 @@ sub grammar {
           <rule: NormalTag>       \< <TagName> <[Attribute]>* \>   # A normal tag can also have attributes
                                       <TagBody>?                                     #   And a body
                                   <EndTag(:TagName)>                                 # And an end tag named the same
-          
-          <token: TagName>        [^\W\d][^\s\>]+          # A name begins with a non-digit non-non word char
-          
-          <rule: EndTag>       \< / <:TagName> \>          # An end tag is a tagname in <>s with a leading /   
 
-          <rule: TagBody>         <[NormalTag]>*           # A tag body may contain normal tags 
-                                | <[SelfClosingTag]>*      # OR self closing tags                                 
+          <token: TagName>        [^\W\d][^\s\>]+          # A name begins with a non-digit non-non word char
+
+          <rule: EndTag>       \< / <:TagName> \>          # An end tag is a tagname in <>s with a leading /
+
+          <rule: TagBody>         <[NormalTag]>*           # A tag body may contain normal tags
+                                | <[SelfClosingTag]>*      # OR self closing tags
                                 | <Text>                   # OR text
                                                            # note that NormalTags are recursive.
 

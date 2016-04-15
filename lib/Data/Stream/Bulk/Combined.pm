@@ -11,7 +11,7 @@ has 'streams' => (
       metaclass => 'Collection::List',
       is=>'rw',
       isa=>'ArrayRef[Any]',
-      default=>sub{[]}, 
+      default=>sub{[]},
       provides => { 'count' => 'stream_count', }
 );
 
@@ -19,7 +19,7 @@ has 'leftover' => (
       metaclass => 'Collection::Array',
       is=>'rw',
       isa=>'ArrayRef[Any]',
-      default=>sub{[]}, 
+      default=>sub{[]},
       provides => { 'push' => 'push', }
 );
 
@@ -27,7 +27,7 @@ has 'filters' => (
       metaclass => 'Collection::Array',
       is=>'rw',
       isa=>'ArrayRef[HashRef]',
-      default=>sub{[]}, 
+      default=>sub{[]},
       provides => {
              'push' => 'add_filter',
       }
@@ -49,7 +49,7 @@ sub is_done {
 
 sub bulk {
     my $self = shift;
-    my $rows = shift; 
+    my $rows = shift;
     my @items = @_;
 
     my $total_streams = scalar( @{ $self->streams } );
@@ -83,8 +83,8 @@ sub page {
     my @top = @filtered[ 0 .. $args{rows}-1 ];
 
     # extract topmost from the bottom
-    my %index; @index{ @top }=(); 
-    my @bottom = grep !exists($index{$_}), @items; 
+    my %index; @index{ @top }=();
+    my @bottom = grep !exists($index{$_}), @items;
     $self->leftover( \@bottom );
 
     return @top;
@@ -111,8 +111,8 @@ sub mesh {
     $max < $_  &&  ($max = $_)  for values %limit;
 
     #$max < $#$_  &&  ($max = $#$_)  for @_;
-    #map { my $ix = $_; map $_->[$ix], grep defined $_->[$ix], @_; } 0..$max; 
-    map { my $ix = $_; map $_->[$ix], grep $ix <= $limit{$_}, @_; } 0..$max; 
+    #map { my $ix = $_; map $_->[$ix], grep defined $_->[$ix], @_; } 0..$max;
+    map { my $ix = $_; map $_->[$ix], grep $ix <= $limit{$_}, @_; } 0..$max;
 }
 
 sub next {
@@ -123,7 +123,7 @@ sub next {
         push @stream_items, $stream->next;
     }
     return [ $self->mesh( @stream_items ) ];
-}    
+}
 
 sub run_filters {
     my $self = shift;
@@ -149,4 +149,4 @@ sub run_filters {
     return @items;
 }
 
-1; 
+1;

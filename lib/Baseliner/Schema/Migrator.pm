@@ -12,8 +12,8 @@ sub check {
     say('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
     my @candidates = (
-        Clarive->path_to('lib/Baseliner/Schema/Migrations'), 
-        map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list) 
+        Clarive->path_to('lib/Baseliner/Schema/Migrations'),
+        map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list)
     );
     for my $f ( map { $_->children } grep { -e } @candidates ) {
         my ($id) = $f->basename =~ /^(.+)\.(.*?)$/;
@@ -33,8 +33,8 @@ sub check {
             say "Forcing migration for `$id`" if $args{$id};
             # lib/Clarive/Cmd/install->_ask_me()
             my $pkg = "Baseliner::Schema::Migrations::$id";
-            _info( _loc('Running migration %1 (%2)...', $id,$version) ); 
-            eval { 
+            _info( _loc('Running migration %1 (%2)...', $id,$version) );
+            eval {
                 eval "require $pkg" or die $@;
                 $pkg->upgrade;
             };
@@ -45,13 +45,13 @@ sub check {
         }
         say "ID=$id";
     }
-    
+
     # check if migrations past are still here
     for my $doc ( @current ) {
         next if exists $ids{ $doc->{_id} };
         _warn( _loc( 'Migration source not found: %1. Rolling back...', $doc->{_id} ) );
     }
-    
+
     say('Migration check done.');
 }
 

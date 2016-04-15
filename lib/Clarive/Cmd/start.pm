@@ -8,7 +8,7 @@ our $CAPTION = 'start all server tasks';
 sub run {
     my ($self,%opts) = @_;
 
-    if ( !$opts{no_mongo} ) {    
+    if ( !$opts{no_mongo} ) {
         print "Starting mongo server\n";
         #system('mongod -f '.$self->app->base.'/config/mongod.conf');
         if ( $? ) {
@@ -19,7 +19,7 @@ sub run {
     }
 
     if ( $opts{mongo_arbiter} ) {
-        if ( !$opts{no_mongo_arbiter} ) {    
+        if ( !$opts{no_mongo_arbiter} ) {
             print "Starting Mongo arbiter\n";
             system('mongod -f '.$self->app->base.'/config/mongo-arb.conf');
             if ( $? ) {
@@ -30,7 +30,7 @@ sub run {
         }
     }
 
-    if ( $opts{redis} ) {    
+    if ( $opts{redis} ) {
         print "Starting Redis server\n";
         system('redis-server',$self->app->base.'/config/redis.conf');
         if ( $? ) {
@@ -49,7 +49,7 @@ sub run {
         }
         print "Nginx server started\n";
     }
-    
+
     #Start Clarive web interface
     try {
         print "Starting Clarive web server\n";

@@ -21,7 +21,7 @@ sub begin : Private {  #TODO control auth here
      } elsif( ! length $c->username ) {
          $c->stash->{auth_basic} = 1;
          $c->stash->{api_key_authentication} = 1;
-     } 
+     }
      _debug "GIT USER=" . ( $c->username // '');
 }
 
@@ -57,7 +57,7 @@ sub git : Path('/git/') {
         return;
     }
     my $home = $config->{home} or do{
-        $self->process_error( $c, 'internal error', 'Missing config.git.repo' );   
+        $self->process_error( $c, 'internal error', 'Missing config.git.repo' );
         return;
     };
 
@@ -243,7 +243,7 @@ sub _resolve_repo_project {
         $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project->name ) );
         $c->response->status( 401 );
         return;
-    } 
+    }
 
     my $repo = ci->search_ci(
         '$or' => [
@@ -320,8 +320,8 @@ sub access_granted {
     # Check permissions
     if( ! length $c->username ) {
         if( ! exists $c->req->params->{service} ) {  # first request has param 'service'
-            $self->process_error( $c, 'access denied', 
-                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
+            $self->process_error( $c, 'access denied',
+                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} )
                 );
             return;
         } elsif( $c->req->user_agent =~ /JGit/i ) {
@@ -332,8 +332,8 @@ sub access_granted {
             $c->response->status( 401 );
             return;
         } else {
-            $self->process_error( $c, 'access denied', 
-                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} ) 
+            $self->process_error( $c, 'access denied',
+                    _loc("Authentication failed for user '%1': %2", $c->stash->{login}, $c->stash->{auth_message} )
                 );
             $c->response->status( 401 );
             return;
@@ -354,19 +354,19 @@ sub process_error {
     $git_ver =~ s/\.$//g if $git_ver; # ie. 2.1.0.GIT => 2.1.0.
     $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
 
-    my $git_service = $c->stash->{git_service} // ''; 
+    my $git_service = $c->stash->{git_service} // '';
     _debug ">>> GIT VERSION=$git_ver";
     _error( $msg );
     if( $git_service eq 'git-receive-pack' ) {
         #my $m2 = 'refs/tags/CERT hook declined';
-        $msg = sprintf 
+        $msg = sprintf
         "%04x\002%s".
         #"0033\002error: hook declined to update refs/tags/CERT\n".
         #"003b\001000eunpack ok\n".
         #"0024ng refs/tags/CERT hook declined\n".
         #"%04x\001000eunpack ok\n".
         #"%04xng %s\n".
-        "00000000\n", 5+length($msg),$msg; # ,31+length($m2),8+length($m2),$m2; 
+        "00000000\n", 5+length($msg),$msg; # ,31+length($m2),8+length($m2),$m2;
         $c->res->status( 200 );
         $c->res->content_type( "application/x-git-receive-pack-result" );
         $c->res->headers->header( 'Cache-Control'=>'no-cache, max-age=0, must-revalidate' );
@@ -374,7 +374,7 @@ sub process_error {
         $c->res->headers->header( 'Expires'=>'Fri, 01 Jan 1980 00:00:00 GMT' );
         $c->res->write( $msg );
         $c->res->body( '' );
-    } 
+    }
     elsif( !length($git_ver) || $git_ver < version->parse('1.8.3') ) {
         my $servtxt = sprintf "# service=%s\n",$git_service;
         my $errtxt = sprintf "ERR %s\n",$msg;

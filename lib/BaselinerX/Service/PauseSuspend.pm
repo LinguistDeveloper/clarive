@@ -8,8 +8,8 @@ use Path::Class;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.pause' => { 
-    name => 'Pause a Job', 
+register 'service.job.pause' => {
+    name => 'Pause a Job',
     job_service  => 1,
     icon=>'/static/images/icons/job.png',
     #icon=>'/static/images/icons/pause.gif',
@@ -23,9 +23,9 @@ sub run_pause {
     my $job = $stash->{job};
     my $log = $job->logger;
     $config ||= {};
-    
+
     $job->pause( %$config ) ;
-    
+
     return 1;
 }
 

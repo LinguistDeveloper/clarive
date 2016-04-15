@@ -16,10 +16,10 @@ sub new {
     my $self = $class->next::method($c);
 
     for my $field (keys %$arguments) {
-        
+
         # Remove catalyst_component_name (and future Cat specific params)
         next if $field =~ /^catalyst/;
-        
+
         # no longer supported
         warn('json_driver is no longer supported'), next if $field eq 'json_driver';
 

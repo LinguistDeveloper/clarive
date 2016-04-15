@@ -45,7 +45,7 @@ sub start_server {
         if ! ref $paths && defined $paths;
     croak "mandatory option ``exec'' is missing or is not an arrayref\n"
         unless $opts->{exec} && ref $opts->{exec} eq 'ARRAY';
-    
+
     # open pid file
     my $pid_file_guard = sub {
         return unless $opts->{pid_file};
@@ -59,7 +59,7 @@ sub start_server {
             },
         );
     }->();
-    
+
     # open log file
     if ($opts->{log_file}) {
         open my $fh, '>>', $opts->{log_file}
@@ -72,16 +72,16 @@ sub start_server {
             or die "failed to dup STDERR to file: $!";
         close $fh;
     }
-    
+
     # create guard that removes the status file
     my $status_file_guard = $opts->{status_file} && Scope::Guard->new(
         sub {
             unlink $opts->{status_file};
         },
     );
-    
+
     print STDERR "start_server (pid:$$) starting now...\n";
-    
+
     # start listening, setup envvar
     my @sock;
     my @sockenv;
@@ -136,13 +136,13 @@ sub start_server {
     }
     $ENV{SERVER_STARTER_PORT} = join ";", @sockenv;
     $ENV{SERVER_STARTER_GENERATION} = 0;
-    
+
     # setup signal handlers
     $SIG{$_} = sub {
         push @signals_received, $_[0];
     } for (qw/INT TERM HUP/);
     $SIG{PIPE} = 'IGNORE';
-    
+
     # setup status monitor
     my ($current_worker, %old_workers);
     my $update_status = $opts->{status_file}
@@ -163,7 +163,7 @@ sub start_server {
                 or die "failed to rename $tmpfn to $opts->{status_file}:$!";
         } : sub {
         };
-    
+
     # the main loop
     my $term_signal;
     $current_worker = _start_worker($opts);
@@ -201,7 +201,7 @@ sub start_server {
             }
         }
     }
-    
+
  CLEANUP:
     # cleanup
     $old_workers{$current_worker} = $ENV{SERVER_STARTER_GENERATION};
@@ -219,7 +219,7 @@ sub start_server {
             $update_status->();
         }
     }
-    
+
     print STDERR "exiting\n";
 }
 
@@ -229,7 +229,7 @@ sub restart_server {
     };
     die "--restart option requires --pid-file and --status-file to be set as well\n"
         unless $opts->{pid_file} && $opts->{status_file};
-    
+
     # get pid
     my $pid = do {
         open my $fh, '<', $opts->{pid_file}
@@ -238,25 +238,25 @@ sub restart_server {
         chomp $line;
         $line;
     };
-    
+
     # function that returns a list of active generations in sorted order
     my $get_generations = sub {
         open my $fh, '<', $opts->{status_file}
             or die "failed to open file:$opts->{status_file}:$!";
         uniq sort { $a <=> $b } map { /^(\d+):/ ? ($1) : () } <$fh>;
     };
-    
+
     # wait for this generation
     my $wait_for = do {
         my @gens = $get_generations->()
             or die "no active process found in the status file";
         pop(@gens) + 1;
     };
-    
+
     # send HUP
     kill 'HUP', $pid
         or die "failed to send SIGHUP to the server process:$!";
-    
+
     # wait for the generation
     while (1) {
         my @gens = $get_generations->();

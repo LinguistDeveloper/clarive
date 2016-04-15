@@ -15,7 +15,7 @@ service 'connect' => {
     form    => '/forms/test_server_connect.js',
     handler => sub{
         my ($self,$c,$config) = @_;
-        try { 
+        try {
             my $ag = $self->connect( user=>$config->{user} );
             $ag->execute('nope');
             _log("OK. Connected.");
@@ -60,43 +60,43 @@ method connect( :$user='' ) {
                 do { alarm 0; return $chi };
             }
             BaselinerX::CI::worker_agent->new( server=>$self, timeout=>$self->agent_timeout, os=>$self->os, cap=>$user.'@'.$self->hostname );
-        } catch { $err.=shift . "\n" };       
-    } 
+        } catch { $err.=shift . "\n" };
+    }
     if( !$agent && $self->connect_balix ) {
-        $agent = try { 
+        $agent = try {
             my ($chi) = $self->children( where=>{collection=>'balix_agent'} ) if $self->mid;
             if (ref $chi){
                 $chi->os( $self->os );
                 do { alarm 0; return $chi };
         }
             BaselinerX::CI::balix_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
-        } catch { $err.=shift . "\n" };       
+        } catch { $err.=shift . "\n" };
     }
     if( !$agent && $self->connect_ssh ) {
-        $agent = try { 
+        $agent = try {
             my ($chi) = $self->children( where=>{collection=>'ssh_agent'} ) if $self->mid;
             if(ref $chi){
             $chi->os( $self->os );
                 do { alarm 0; return $chi };
         }
             BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
-        } catch { $err.=shift . "\n" };       
+        } catch { $err.=shift . "\n" };
     }
     if( !$agent && $self->connect_clax ) {
-        $agent = try { 
+        $agent = try {
             my ($chi) = $self->children( where=>{collection=>'clax_agent'} ) if $self->mid;
             if(ref $chi){
             $chi->os( $self->os );
                 do { alarm 0; return $chi };
         }
             BaselinerX::CI::clax_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
-        } catch { $err.=shift . "\n" };       
+        } catch { $err.=shift . "\n" };
     }
     if( $err ) {
-        my $meths = join ',', grep { defined } map { my $m="connect_".$_; ($self->$m ? $_ : undef); } qw(worker balix ssh); 
+        my $meths = join ',', grep { defined } map { my $m="connect_".$_; ($self->$m ? $_ : undef); } qw(worker balix ssh);
         if( !$agent ) {
             _fail _loc 'ERROR: could not find agent for this server (methods attempted: %1): %2', $meths, $err;
-        } 
+        }
         else {
             _debug 'Some connection methods failed: ' . $err;
         }

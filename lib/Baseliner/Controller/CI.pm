@@ -125,7 +125,7 @@ sub dispatch {
             dir     => $p->{dir}
         );
     }
-    
+
     $total = scalar( @tree ) unless defined $total;
     return ($total,@tree);
 }
@@ -219,8 +219,8 @@ sub tree_classes {
 sub form_for_ci {
     my ($self, $class, $collection )=@_;
     local $Baseliner::CI::get_form = 1;
-    my $ci_form = $class && $class->can('ci_form') 
-        ? $class->ci_form 
+    my $ci_form = $class && $class->can('ci_form')
+        ? $class->ci_form
         : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Clarive->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
@@ -249,11 +249,11 @@ sub tree_objects {
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
 
-            $collection = { '$in'=>[ map { 
+            $collection = { '$in'=>[ map {
                 my $coll= $_->can('collection') ? $_->collection : Util->to_base_class($_);
                 $class_coll{ $coll } = $_ ; # for later decoding it from a table
                 $coll } @$class ] };
-        } 
+        }
         elsif( $class ) {
             $collection = $class->can('collection') ? $class->collection : Util->to_base_class($class);
             %class_coll = ( $collection => $class );  # for later decoding it from a table
@@ -265,7 +265,7 @@ sub tree_objects {
         }
     }
     my $opts;
-    
+
     if ($p{sort}) {
         my $sort = $p{sort};
         if ($sort eq 'mid'){
@@ -273,9 +273,9 @@ sub tree_objects {
         }elsif($sort eq 'item' or $sort eq 'name'){
             $opts = { "_sort.name" => $dir };
         }else{
-            $opts = { $p{sort} => $dir };        
-        }        
-    } else { 
+            $opts = { $p{sort} => $dir };
+        }
+    } else {
         $opts = { _id => $dir };
     }
     my $page;
@@ -291,12 +291,12 @@ sub tree_objects {
             $where->{$other_filter} = $filter_js->{$other_filter};
         }
     }
-    
+
     if( length $p{query} ) {
         my $filter = {};
         my $q = $p{query};
         $filter->{collection} = $collection if $collection;
-        my @mids_query = map { $_->{obj}{mid} } 
+        my @mids_query = map { $_->{obj}{mid} }
             _array( mdb->master_doc->search( query=>$q, limit=>1000, project=>{mid=>1}, filter=>$filter )->{results} );
         push @mids_query, map { $_->{mid} } mdb->master_doc->find({ '$or'=>[ {name=>qr/$q/i}, {moniker=>qr/$q/i} ] })->fields({ mid=>1 })->all;
         $where->{mid}=mdb->in(@mids_query);
@@ -309,7 +309,7 @@ sub tree_objects {
     }
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
-    # search for variables in mids 
+    # search for variables in mids
     if( defined $p{mids} && @$mids ) {
         my @where_mids;
         for my $m ( _array( $p{mids} ) ) {
@@ -320,7 +320,7 @@ sub tree_objects {
     }
 
     my $rs = mdb->master_doc->query($where,$limit)->sort($opts)->fields({ yaml=>0 });
-    
+
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
@@ -329,9 +329,9 @@ sub tree_objects {
         my $data = $p{no_yaml} ? {} : $row;
         my $row_class = $class_coll{ $row->{collection} } // 'ci';
         # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
-        my $ci_form = $forms{ $row->{collection} } 
+        my $ci_form = $forms{ $row->{collection} }
             // ( $forms{ $row->{collection} } = $self->form_for_ci( $row_class, $row->{collection} ) );
-        
+
         # list properties: field: value, field: value ...
         my $pretty = $p{pretty} && !$p{no_yaml}
             ?  do { join(', ',map {
@@ -341,9 +341,9 @@ sub tree_objects {
                 } grep { length $data->{$_} } keys %$data ) }
             : '';
         my $noname = $row->{collection}.':'.$row->{mid};
-        my $icon = $icons{ $row_class } 
-            // ( $icons{$row_class} = $row_class 
-                ? try { $row_class->icon } catch { $generic_icon } 
+        my $icon = $icons{ $row_class }
+            // ( $icons{$row_class} = $row_class
+                ? try { $row_class->icon } catch { $generic_icon }
                 : $generic_icon );
         +{
             _id               => $row->{mid},
@@ -354,11 +354,11 @@ sub tree_objects {
             item              => ( $row->{name} // $data->{name} // $noname ),
             ci_form           => $ci_form,
             type              => 'object',
-            class             => $row_class || '', 
-            classname         => $row_class || '', 
+            class             => $row_class || '',
+            classname         => $row_class || '',
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => $icon, 
+            icon              => $icon,
             ts                => $row->{ts},
             modified_by       => $row->{modified_by},
             bl                => $row->{bl},
@@ -542,7 +542,7 @@ sub list_roles {
         ($name) = $name =~ /^.*::CI::(.*)$/;
         return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
         $name =~ s{::}{}g if $name;
-        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
+        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name;
         return $name || 'CI';
     };
     my %cl=Class::MOP::get_all_metaclasses;
@@ -559,8 +559,8 @@ sub class_methods : Local {
     my ($self, $c) = @_;
     my $classname = $c->req->params->{classname};
     $classname = Util->to_ci_class( $classname );
-    my @methods = 
-        map { 
+    my @methods =
+        map {
             my $meth = $_;
             my $ret = { name=>$meth };
             if( my $info = Function::Parameters::info( $classname.'::'.$meth ) ) {
@@ -569,7 +569,7 @@ sub class_methods : Local {
                 $ret->{n_required} = [ map { $_->name } $info->named_required ];
                 $ret->{n_optional} = [ map { $_->name } $info->named_optional ];
             }
-            $ret; 
+            $ret;
         } sort { lc $a cmp lc $b } grep !/^(_|TO_JSON)/, $classname->meta->get_method_list;
     $c->stash->{json} = { data=>\@methods, totalCount=>scalar(@methods) };
     $c->forward('View::JSON');
@@ -612,7 +612,7 @@ sub store : Local : Does('Ajax') {
 
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
-    
+
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
     my $cache_key;
@@ -623,7 +623,7 @@ sub store : Local : Does('Ajax') {
             #return $c->forward('View::JSON');
         }
     }
-    
+
     my $bl = delete $p->{bl};
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
@@ -648,7 +648,7 @@ sub store : Local : Does('Ajax') {
         my $dir;
         $dir = 'to_mid' if $p->{mid} || $p->{from_mid};
         $dir = 'from_mid' if $p->{to_mid};
-        
+
         my @rels = map { $$_{$dir} } mdb->master_rel->find($w)->all;
         $where->{mid} = mdb->in( @rels );
     }
@@ -656,7 +656,7 @@ sub store : Local : Does('Ajax') {
     if( length $bl && $bl ne '*' ) {
         $where->{bl} = qr/($bl|\*)/;  # XXX XXX XXX  use rels from master_rel?
     }
-    
+
     # used by value in a CIGrid
     my $mids;
     if( exists $p->{mids} ) {
@@ -667,9 +667,9 @@ sub store : Local : Does('Ajax') {
             $mids = [];  # otherwise, it will return all cis
         }
     }
-    
+
     my @data;
-    my $total = 0; 
+    my $total = 0;
 
     if( my $class = $p->{class} // $p->{classname} // $p->{isa} // ($collection ? 'BaselinerX::CI::'.$collection : '') ) {
 
@@ -678,7 +678,7 @@ sub store : Local : Does('Ajax') {
             my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
             for my $collections ( @cols_roles ) {
                 if(exists $collections->{$class}){
-                    push @security, keys $collections->{$class};    
+                    push @security, keys $collections->{$class};
                 }
             }
             $mids = [ _array($mids), _unique @security];
@@ -708,16 +708,16 @@ sub store : Local : Does('Ajax') {
 
     # variables
     if( $p->{with_vars} ) {  # $p->{no_vars} ) {  # show variables always, with_vars deprecated
-        my %vp = ( 
-            $p->{role} 
-            ? (role=>$p->{role}) 
-            : ($p->{classname} || $p->{class} || $p->{isa}) 
-                ? (classname=>$p->{class}||$p->{classname}) 
-                : () 
+        my %vp = (
+            $p->{role}
+            ? (role=>$p->{role})
+            : ($p->{classname} || $p->{class} || $p->{isa})
+                ? (classname=>$p->{class}||$p->{classname})
+                : ()
             );
-        
+
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
-        push @data, grep { defined } map { 
+        push @data, grep { defined } map {
             my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
             length $query && $_->name !~ /$query/i ? undef : +{
                   _id=> 'var-'. $_->mid,
@@ -725,7 +725,7 @@ sub store : Local : Does('Ajax') {
                   _parent=> undef,
                   active=> \1,
                   bl=> $_->bl,
-                  class=> $cn, 
+                  class=> $cn,
                   classname => $cn,
                   collection=> 'variable',
                   data=> {},
@@ -737,29 +737,29 @@ sub store : Local : Does('Ajax') {
                   name => 'variable: ${' . $_->name . '}',
                   pretty_properties=> '',
                   properties=> undef,
-                  ts=>$_->ts, 
+                  ts=>$_->ts,
                   type=>  'object',
                   versionid=> $_->versionid,
              };
         } @vars;
     }
-    
-    if( ref $mids ) { 
+
+    if( ref $mids ) {
         # return data ordered like the mids
         my @data_ordered;
         my %h = map { $_->{mid} => $_ } @data;
         exists $h{$_} and push @data_ordered, delete $h{ $_ } for @$mids;
         push @data_ordered, grep { defined } values %h; # the rest of them at the bottom
-        @data = @data_ordered; 
+        @data = @data_ordered;
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
-    cache->set( $cache_key, $c->stash->{json} ) if $cache_key; 
+    cache->set( $cache_key, $c->stash->{json} ) if $cache_key;
     $c->forward('View::JSON');
 }
 
 # used by CIGrid to get dependents
-#   
+#
 
 sub children : Local {
     my ($self, $c) = @_;
@@ -794,7 +794,7 @@ sub ci_create_or_update {
     my $class = $p{class};
 
     _fail _loc( 'Missing class for %1', $p{name} ) if !$class;
-    
+
     # check if it's an update, in case of foreign ci
 
     if ( length $p{mid} ) {
@@ -804,7 +804,7 @@ sub ci_create_or_update {
         return $p{mid};
     } else {
         my $name = $p{name};
-        my $mid; 
+        my $mid;
         $class = "BaselinerX::CI::$p{class}";
 
         my @same_name_cis = mdb->master->find({ name=>$name, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
@@ -830,7 +830,7 @@ sub ci_create_or_update {
             $obj->save;
             return $mid;
         }
-    } 
+    }
 };
 
 =head2 sync
@@ -863,7 +863,7 @@ sub sync : Local {
             my $repo = ci->new($repo_mid);
             my @repo_projects = map { $_->{mid} } $repo->related( where=>{collection => 'project'});
 
-            my $ok_repo = grep { defined } @topic_projects{ @repo_projects }; 
+            my $ok_repo = grep { defined } @topic_projects{ @repo_projects };
             if (!$ok_repo) {
                 $c->stash->{json} = { success=>\0, msg=>_loc('The revision does not belong to any of the changeset projects' ) };
                 $valid_repo = 0;
@@ -877,7 +877,7 @@ sub sync : Local {
                     }
                     if ( !($branch ~~ @branches) ) {
                         $c->stash->{json} = { success=>\0, msg=>_loc('The revision must belong to %1 branch.  You probably need to merge branches', $branch ) };
-                        $valid_repo = 0;                        
+                        $valid_repo = 0;
                     }
                 }
             }
@@ -954,7 +954,7 @@ sub update : Local {
     my $bl = delete $form_data->{bl};
     my $active = $form_data->{active};
     $form_data->{active} = $active = $active eq 'on' ? 1 : 0;
-    
+
     if( $form_data->{password} && $form_data->{password} eq $Baseliner::CI::password_hide_str ) {
         delete $form_data->{password};
     }
@@ -967,10 +967,10 @@ sub update : Local {
 
     try {
         if( $action eq 'add' ) {
-            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, created_by=>$c->username ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, created_by=>$c->username );
             $ci->save;
             $mid = $ci->mid;
-            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data ); 
+            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data );
         }
         elsif( $action eq 'edit' && defined $mid ) {
             my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
@@ -980,13 +980,13 @@ sub update : Local {
         else {
             _fail _loc("Undefined action");
         }
-        
+
         # XXX deprecate this?
         if( $chi ) {
-            my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
+            my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ];
             mdb->master_rel->remove({ from_mid=>"$mid" });
             for my $to_mid ( _array( $cis ) ) {
-                my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js
                 my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
                 mdb->master_rel->insert($doc);
                 cache->remove({ mid=>"$to_mid" }); # qr/:$to_mid:/ );
@@ -1126,7 +1126,7 @@ sub delete : Local {
                 }
                 $c->stash->{json} = { success=>\1, exists=>\0, msg=>_loc('CIs deleted ok' ) };
             }
-        } elsif ($collection eq 'project' && $remove_data) { 
+        } elsif ($collection eq 'project' && $remove_data) {
             my @all_users = grep { values $_->{project_security} } ci->user->find->fields({ mid=>1,name=>1,project_security=>1,_id=>0 })->all;
             foreach my $user (@all_users){
                 my $ps = $user->{project_security};
@@ -1137,7 +1137,7 @@ sub delete : Local {
                             _debug _loc("Remove mid project %1 for %2",$mid,$user->{name});
                             my @new_proj = grep { $_ ne $mid } _array($project);
                             my $ci_update = ci->new($user->{mid});
-                            $ci_update->{project_security}->{$ps_key}->{project} = \@new_proj;             
+                            $ci_update->{project_security}->{$ps_key}->{project} = \@new_proj;
                             $ci_update->update;
                             $project = \@new_proj;
                         }
@@ -1180,7 +1180,7 @@ sub export : Local {
         my @cis = map { ci->new( $_ ) } _array $mids;
         my $data;
         if( $format eq 'yaml' ) {
-            $data = _dump( \@cis );            
+            $data = _dump( \@cis );
         }elsif( $format eq 'json' ) {
             $data = _encode_json( [ map { _damn( $_ ) } @cis ] );
         }elsif( $format eq 'csv' ) {
@@ -1193,9 +1193,9 @@ sub export : Local {
         my $err = shift;
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
-    }; 
-    
-    $c->forward('View::JSON');   
+    };
+
+    $c->forward('View::JSON');
 }
 
 sub export_file : Local {
@@ -1211,13 +1211,13 @@ sub export_file : Local {
             $c->stash->{serve_body} = $body;
             $c->stash->{serve_filename} = length $p->{ci_type} ? Util->_name_to_id($p->{ci_type}).'Export.csv' : 'CIsExport.csv';
         }
-        
+
         $c->forward('/serve_file');
     } catch {
         my $err = shift;
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
-    }; 
+    };
 }
 
 sub export_csv {
@@ -1243,14 +1243,14 @@ sub export_csv {
         }elsif($col =~ /^_.*/){
             next;
         }
-        push @csv_cols, $col; 
-    }  
+        push @csv_cols, $col;
+    }
 
     #ordenamos alfabeticamente. Ver si se puede ordenar de otro modo
     @csv_cols = sort @csv_cols;
 
     #sustituir las referencias por los nombres del CI al que referencian
-    foreach my $csv_struct (@array) {        
+    foreach my $csv_struct (@array) {
         foreach my $field (keys %{$csv_struct}) {
             if($class->field_is_ci($field)){
                 my ($campo) = _array ${$csv_struct}{$field};
@@ -1321,14 +1321,14 @@ sub json_tree : Local {
         $p->{exclude_cl} = $include_cl;
     };
 
-    $p->{limit} //= 50;  
+    $p->{limit} //= 50;
     my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '__#__' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $k=0;
     $c->stash->{json} = try {
         my @all;
-        for my $mid ( _array( $mids ) ) { 
-            $mid =~ s{^.+__#__(.+)$}{$1}; 
+        for my $mid ( _array( $mids ) ) {
+            $mid =~ s{^.+__#__(.+)$}{$1};
             my $ci = ci->new( $mid );
             my @rels = $ci->$direction( depth=>$depth, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
@@ -1351,8 +1351,8 @@ sub json_tree : Local {
             };
             my @data = map { $recurse->( $_ ) } @rels;
             my $d = {
-                id => $prefix . $mid, 
-                name => $ci->name, 
+                id => $prefix . $mid,
+                name => $ci->name,
                 data => {
                     %node_data,
                     %root_node_data,
@@ -1366,11 +1366,11 @@ sub json_tree : Local {
                 push @all, @data;
             }
         }
-        my $ret = @all == 1 
+        my $ret = @all == 1
             ? $all[0]
             : {
                 id=>_nowstamp,
-                name=>'search', 
+                name=>'search',
                 data => { icon=>'/static/images/icons/ci.png', %node_data },
                 children => \@all
             };
@@ -1434,10 +1434,10 @@ sub service_run : Local {
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
         my $service_js_output = $service->js_output;
-        
+
         local $ENV{BASELINER_LOGCOLOR} = 0;
         my $ci = ci->new( $p->{mid} );
-        # TODO this is the future: 
+        # TODO this is the future:
         my $ret = $ci->run_service( $p->{key}, %{ $p->{data} || {} } );
         #my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
         #_debug( $ret );
@@ -1447,7 +1447,7 @@ sub service_run : Local {
         $data = ref $data ? Util->_dump( $data ) : "$data";
         #{success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
         {success => \1, console=>$ret->{output}, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
-    } 
+    }
     catch {
         my $err = shift;
         _error( $err );
@@ -1496,13 +1496,13 @@ sub import_all : Local {
     my $permissions = $self->_build_permissions;
     _fail( _loc( 'User %1 not authorized to import CIs', $c->username ) )
       unless $permissions->user_can_admin_ci( $c->username );
-    
+
     my $text = $p->{text};
     my $format = $p->{format};
     use v5.10;
     given ($format) {
         when ('yaml') {
-           $c->stash->{json} = 
+           $c->stash->{json} =
                 try {
                     my $d = _load( $text );
                     my @mids;
@@ -1520,8 +1520,8 @@ sub import_all : Local {
             $c->forward('View::JSON');
         }
         when ('csv') {
-            $c->stash->{json} = 
-                try { 
+            $c->stash->{json} =
+                try {
                     my $ci;
                     my $class = "BaselinerX::CI::$p->{ci_type}";
                     my @rows = csv_import($text);
@@ -1566,7 +1566,7 @@ sub import_one_ci {
             my $now = Class::Date->now() ;
             $d->{name} = $d->{name} . ' (' . $now . ')';
         }
-        return $d->save; 
+        return $d->save;
     } else {
         _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
     }
@@ -1577,7 +1577,7 @@ sub csv_import{
     use Text::CSV;
     use List::MoreUtils qw/zip/;
     my $csv = Text::CSV->new ({sep_char=>';', binary => 1});
-    
+
     open my $ff, '<', \$text;
     my @rows;
     my @cols;
@@ -1651,28 +1651,28 @@ sub search_query {
     my $query = $p{query};
     my $limit = 50; #$p{limit} // 1000;
     my $where = {};
-    
+
     return () if ! length $query;
     my $res = mdb->master_doc->search( query=>$query, limit=>1000,
-        #project=>{name=>1,collection=>1}, 
+        #project=>{name=>1,collection=>1},
         project=>{ _id=>0 },
         filter=>{ collection=>mdb->nin('topic','job') }
     );
 
-    my @results = map { 
+    my @results = map {
         my $r = $$_{obj};
         $r;
     } _array( $res->{results} );
-    
+
     my $wh = {collection=>mdb->nin('topic','job') };
-    mdb->query_build( where=>$wh, query=>$query, fields=>['mid','moniker','name','description'] ); 
+    mdb->query_build( where=>$wh, query=>$query, fields=>['mid','moniker','name','description'] );
     push @results, map {
         delete $$_{_id};
         $_;
     } mdb->master_doc->find($wh)->limit(1000)->all;
-    
+
     my %res_unique = map { $$_{mid} => $_ } @results;
-    
+
     #my @mids = map { $_->{obj}{mid} } _array $res->{results};
     #$where->{'me.mid'} = mdb->in(@mids);
     return map {
@@ -1687,13 +1687,13 @@ sub search_query {
         my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
-            $desc =~ s/[^\w\s]//g; 
-            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
+            $desc =~ s/[^\w\s]//g;
+            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g;
         }
         +{
             title => sprintf( '%s #%s %s', $r->{collection}, $r->{mid}, $r->{name} ),
             info  => $info,
-            text  => $text, 
+            text  => $text,
             url   => [ $r->{mid}, $r->{name}, '#999', $r->{collection}, $icon ],
             type  => 'ci',
             mid   => $r->{mid},
@@ -1720,7 +1720,7 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$mid_or_class,$meth) = @_;
     my $p = $c->req->params;
-    
+
     my $collection = $p->{collection};
     my $res_key = delete $p->{_res_key}; # return call response in this hash key
     my $mid_as_param = $p->{mid};
@@ -1733,7 +1733,7 @@ sub default : Path Args(2) {
     # }
     local $Baseliner::CI::_no_record = 1;
     local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
-    local $Baseliner::CI::mid_scope = {}; # more freshness, paranoid 
+    local $Baseliner::CI::mid_scope = {}; # more freshness, paranoid
     try {
         my $ret;
         $meth = "$meth";
@@ -1744,11 +1744,11 @@ sub default : Path Args(2) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif( Util->_package_is_loaded($class) ) {
-            # it's a static class 
+            # it's a static class
             # _debug( 'static class' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
-            $ret = $class->$meth( $to_args->($class) ); 
-        #} elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {  
+            $ret = $class->$meth( $to_args->($class) );
+        #} elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {
         } elsif( my $ci = ci->new($mid_or_class) ) {
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
@@ -1775,15 +1775,15 @@ sub default : Path Args(2) {
         } else {
             $json_res = { data => $ret };
         }
-        
+
         # direct response or into a key (like 'data'?)
         if( $res_key ) {
             $c->stash->{json} = { %$call_res, $res_key => $json_res };
         # merged
-        } elsif( $json_res eq 'HASH' ) {  
+        } elsif( $json_res eq 'HASH' ) {
             $c->stash->{json} = { %$call_res, %$json_res };
         # not a HASH, pure response
-        } else { 
+        } else {
             $c->stash->{json} = $json_res;
             #$c->stash->{json} = { %$call_res, $res_key => $json_res };
         }
@@ -1791,7 +1791,7 @@ sub default : Path Args(2) {
         my $err = shift;
         my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
         _error "Error in CI call '$mid_or_class/$meth': $json\n$err";
-        $c->stash->{json} = { msg=>"$err", success=>\0 }; 
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
     };
     $c->forward('View::JSON');
 }

@@ -19,9 +19,9 @@ $GZIP_FLAG='-qf'; # force writing over old logfiles
 
 sub new {
     my ($class, %args) = @_;
-    croak("usage: new( File => filename 
+    croak("usage: new( File => filename
                 [, Count    => cnt ]
-                [, Gzip     => lib or \"/path/to/gzip\" or no ] 
+                [, Gzip     => lib or \"/path/to/gzip\" or no ]
                 [, Signal   => \&sub_signal ]
                 [, Pre      => \&sub_pre ]
                 [, Post     => \&sub_post ]
@@ -44,7 +44,7 @@ sub new {
     carp "Signal is a deprecated argument, see Pre/Post" if $args{'Signal'};
 
     # mutual excl
-    croak "Can not define both Signal and Post" 
+    croak "Can not define both Signal and Post"
         if ($args{Signal} and $args{Post});
 
     (ref($self->{'Signal'}) eq "CODE")
@@ -85,22 +85,22 @@ sub new {
     # confirm existence of dir
 
     if (defined $self->{'Dir'} ) {
-        croak "error: $self->{'Dir'} not writable" 
+        croak "error: $self->{'Dir'} not writable"
         unless (-w $self->{'Dir'});
-        croak "error: $self->{'Dir'} not executable" 
+        croak "error: $self->{'Dir'} not executable"
         unless (-x $self->{'Dir'});
     }
 
     # open and lock the file
     if( $self->{'Flock'} eq 'yes'){
         $self->{'Fh'} = new IO::File "$self->{'File'}", O_WRONLY|O_EXCL;
-        croak "error: can not lock open: ($self->{'File'})" 
+        croak "error: can not lock open: ($self->{'File'})"
         unless defined($self->{'Fh'});
         flock($self->{'Fh'},LOCK_EX);
     }
     else{
         $self->{'Fh'} = new IO::File "$self->{'File'}";
-        croak "error: can not open: ($self->{'File'})" 
+        croak "error: can not open: ($self->{'File'})"
         unless defined($self->{'Fh'});
     }
 
@@ -125,7 +125,7 @@ sub rotate {
     # TODO: what is this doing ??
     my $dir   =  defined($self->{'Dir'}) ? "$self->{'Dir'}/" : "";
     $currn    =~ s+.*/([^/]*)+$self->{'Dir'}/$1+ if defined($self->{'Dir'});
-    
+
     for($i = $self->{'Count'}; $i > 1; $i--) {
         $j = $i - 1;
         my $date;
@@ -150,12 +150,12 @@ sub rotate {
         if ( -r $prev && -f $prev ) {
             move($prev,$next)    ## move will attempt rename for us
                 or croak "error: move failed: ($prev,$next)";
-            
-        }       
+
+        }
     }
     ## copy current to next incremental
     $next = "${currn}.1";
-    copy ($curr, $next);        
+    copy ($curr, $next);
     ## preserve permissions and status
     if ( $self->{'Persist'} eq 'yes' ){
         my @stat = stat $curr;
@@ -171,11 +171,11 @@ sub rotate {
         truncate $curr,0 or croak "error: could not truncate $curr: $!"; }
     else{
         local(*IN);
-        open(IN, "+>$self->{'File'}") 
+        open(IN, "+>$self->{'File'}")
             or croak "error: could not truncate $curr: $!";
     }
 
-    if ($self->{'Gzip'} and $self->{'Gzip'} eq 'lib') 
+    if ($self->{'Gzip'} and $self->{'Gzip'} eq 'lib')
     {
         my $now = Util->_ts();
         my @parts = split ' ', $now;
@@ -190,7 +190,7 @@ sub rotate {
         my $out_name = $next.".$time".$ext;
         _gzip($next, $out_name);
     }
-    
+
 
     # TODO: deprecated: remove next release
     eval { &{$self->{'Signal'}}($curr, $next); } if ($self->{Signal});
@@ -230,7 +230,7 @@ sub _gzip {
 
     return unless _have_compress_zlib();
     my($buffer,$fhw);
-    $fhw = new IO::File $in 
+    $fhw = new IO::File $in
         or croak "error: could not open $in: $!";
     my $gz = Compress::Zlib::gzopen($out, "wb")
         or croak "error: could not gzopen $out: $!";

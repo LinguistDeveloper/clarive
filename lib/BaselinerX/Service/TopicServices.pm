@@ -14,7 +14,7 @@ register 'service.topic.change_status' => {
     job_service  => 1,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/folder_go.png',
-    form => '/forms/topic_status.js' 
+    form => '/forms/topic_status.js'
 };
 
 register 'service.topic.create' => {
@@ -23,7 +23,7 @@ register 'service.topic.create' => {
     job_service  => 1,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/add.gif',
-    form => '/forms/topic_create.js' 
+    form => '/forms/topic_create.js'
 };
 
 register 'service.topic.update' => {
@@ -32,7 +32,7 @@ register 'service.topic.update' => {
     job_service  => 1,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/edit.gif',
-    form => '/forms/topic_update.js' 
+    form => '/forms/topic_update.js'
 };
 
 register 'service.topic.upload' => {
@@ -41,7 +41,7 @@ register 'service.topic.upload' => {
     job_service  => 0,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/upload.gif',
-    form => '/forms/asset_file.js' 
+    form => '/forms/asset_file.js'
 };
 
 register 'service.topic.load' => {
@@ -50,7 +50,7 @@ register 'service.topic.load' => {
     job_service  => 0,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/document.png',
-    form => '/forms/topic_load.js' 
+    form => '/forms/topic_load.js'
 };
 
 register 'service.topic.related' => {
@@ -59,7 +59,7 @@ register 'service.topic.related' => {
     job_service  => 0,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/spacetree.png',
-    form => '/forms/topic_related.js' 
+    form => '/forms/topic_related.js'
 };
 
 register 'service.topic.inactivity_daemon' => {
@@ -76,7 +76,7 @@ register 'service.topic.get_with_condition' => {
     job_service  => 0,
     icon => '/static/images/icons/topic.png',
     #icon => '/static/images/icons/report_default.png',
-    form => '/forms/topic_get_with_condition.js' 
+    form => '/forms/topic_get_with_condition.js'
 };
 
 register 'config.topic.inactivity_daemon' => {
@@ -104,9 +104,9 @@ sub load {
     my $topic = mdb->topic->find_one({ mid => "$mid"});
     if ( !$topic ) {
         _fail(_loc("Topic %1 not found", $mid));
-    } 
+    }
     return $topic;
-    
+
 }
 sub web_request {
     my ( $self, $c, $config ) = @_;
@@ -114,7 +114,7 @@ sub web_request {
     require LWP::UserAgent;
     require HTTP::Request;
     require Encode;
-    
+
     my $method = $config->{method} // 'GET';
     my $url    = $config->{url};
     my $args   = $config->{args};
@@ -147,9 +147,9 @@ sub web_request {
         $ua->default_header( $k => $headers->{$k} );
     }
     $ua->env_proxy;
-    
+
     if( length $body ) {
-        $request->content( $body ); 
+        $request->content( $body );
     }
 
     my $response = $ua->request( $request );
@@ -161,7 +161,7 @@ sub web_request {
         #Encode::from_to($content, $encoding, 'utf-8' ) if $content;
         #}
     return { response=>$response, content=>$content };
-} 
+}
 
 sub change_status {
     my ( $self, $c, $config ) = @_;
@@ -171,7 +171,7 @@ sub change_status {
     my $old_status = $config->{old_status};
     my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
 
-    # Let's check that all topics exist in the system   
+    # Let's check that all topics exist in the system
     my @topic_mids = Util->_array_or_commas($topics);
     my @topic_rows;
 
@@ -195,9 +195,9 @@ sub change_status {
     #Let's get the new_status id
     my $new_status_id;
 
-    
+
     ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => "$new_status"} );
-    
+
     if ( !$new_status_id ) {
         ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => "$new_status"} );
     }
@@ -207,9 +207,9 @@ sub change_status {
     }
 
     for my $topic ( @topic_rows ) {
-        _log _loc('Changing status for topic %1 to status %2', $topic->{mid}, $new_status_id); 
-        Baseliner->model('Topic')->change_status( 
-            change     => 1, 
+        _log _loc('Changing status for topic %1 to status %2', $topic->{mid}, $new_status_id);
+        Baseliner->model('Topic')->change_status(
+            change     => 1,
             id_status  => $new_status_id,
             mid        => $topic->{mid},
             username   => $config->{username} // 'clarive'
@@ -243,7 +243,7 @@ sub create {
             $category_id = $cat->{id};
         } else {
             _fail _loc("Category %1 does not exist in the system", $category);
-        }        
+        }
     }
 
     #Let's get the new_status id
@@ -268,7 +268,7 @@ sub create {
     $data->{action} = 'add';
     $data->{category} = $category_id;
 
-    Baseliner->model('Topic')->update( 
+    Baseliner->model('Topic')->update(
         $data
     );
 }
@@ -292,7 +292,7 @@ sub update {
         $data->{$field} = $variables->{$field};
     }
 
-    Baseliner->model('Topic')->update( 
+    Baseliner->model('Topic')->update(
         $data
     );
 }
@@ -303,7 +303,7 @@ sub upload {
     my $filepath = $config->{path};
     my $username = $config->{username} // 'clarive';
     if ($username eq ''){$username = 'clarive'}
-    
+
     my $p;
     $p->{filter} = $config->{field};
     $p->{topic_mid} = "$config->{mid}";
@@ -312,14 +312,14 @@ sub upload {
     my $f =  _file( ''. $filepath );
 
     my %response = Baseliner->model("Topic")->upload(
-                f           => $f, 
-                p           => $p, 
+                f           => $f,
+                p           => $p,
                 username    => $username,
         );
     if ($response{status} ne '200') {
-        _fail _loc("Error asseting the file %1 to the topic %2. Error: %3", 
+        _fail _loc("Error asseting the file %1 to the topic %2. Error: %3",
             $p->{qqfile}, $p->{topic_mid}, $response{msg});
-    }   
+    }
 }
 
 sub related {
@@ -388,7 +388,7 @@ sub get_with_condition {
         }
         my $ci_user = ci->user->find_one({ name=>$filter_user });
         if ($ci_user) {
-            my @topic_mids = 
+            my @topic_mids =
                 map { $_->{from_mid} }
                 mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
             if (@topic_mids) {

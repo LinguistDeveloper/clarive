@@ -13,9 +13,9 @@ register 'config.reports.estadisticas_jobs_mes' => {
 };
 
 register 'report.clarive.job_statistics_mes' => {
-    name => 'Monthly Job Stats', 
+    name => 'Monthly Job Stats',
     data => { },
-    form => '/reports/listado_jobs.js', 
+    form => '/reports/listado_jobs.js',
     security_handler => sub{
         my ($self,$username) =@_;
         my $config = config_get 'config.reports.estadisticas_jobs_mes';
@@ -74,7 +74,7 @@ register 'report.clarive.job_statistics_mes' => {
           $where->{starttime} = {
               '$ne'  => undef,
               '$nin' => [ '' ],
-          };              
+          };
           if ( $p->{fecha_inicio_hasta} ) {
               $where->{starttime}->{'$lte'} = $p->{fecha_inicio_hasta};
           }

@@ -16,13 +16,13 @@ sub _get_options {
         }
         else {
             $opt =     Encode::encode_utf8($opt) if Encode::is_utf8($opt);
-            push @{ $hash{$last_opt} }, $opt; 
+            push @{ $hash{$last_opt} }, $opt;
         }
     }
     # convert single option => scalar
     for( keys %hash ) {
         if( @{ $hash{$_} } == 1 ) {
-            $hash{$_} = $hash{$_}->[0];    
+            $hash{$_} = $hash{$_}->[0];
         }
     }
     return %hash;
@@ -69,7 +69,7 @@ for my $dir (  @dirs ) {
                     if( $mod =~ /^\+/ ) {
                         $mod = substr( $mod, 1);
                     } else {
-                        $mod = "Catalyst::Plugin::$mod" 
+                        $mod = "Catalyst::Plugin::$mod"
                     }
                     $mods{ $mod }{ $f->relative( $home ) } = ();
                 }
@@ -116,13 +116,13 @@ if( exists $args{transform} ) {
 
 # compress and select
 
-my @modlist = 
+my @modlist =
     sort { uc($a) cmp uc($b) }
     map {
         my $m = $_;
         if( exists $args{transform} ) {
             $m
-        } 
+        }
         $m;
     }
     grep { length }
@@ -137,7 +137,7 @@ my @modlist =
 
 my $query = qr/$args{q}/ if exists $args{q};
 for my $mod ( @modlist ) {
-    next if defined $query && $mod !~ $query;      
+    next if defined $query && $mod !~ $query;
 
     if( exists $args{check} ) {
         say "Requiring $mod..." if exists $args{v};
@@ -179,7 +179,7 @@ Options:
   -model                  : include model requires
 
 Examples:
-  bali perldeps 
+  bali perldeps
   bali perldeps -at  # show modules where defined also
   bali perldeps -dir features/gitscm/lib lib # limit to directory
   bali perldeps -q YAML -at

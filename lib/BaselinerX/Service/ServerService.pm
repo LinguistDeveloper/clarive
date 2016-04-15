@@ -9,11 +9,11 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
-register 'service.restart_server' => { name => 'Restarts Clarive server',  icon => '/static/images/icons/daemon.gif', handler => \&run, }; 
+register 'service.restart_server' => { name => 'Restarts Clarive server',  icon => '/static/images/icons/daemon.gif', handler => \&run, };
 
 sub run {
     my ($self,$c,$config) = @_;
- 
+
     my $dir = $ENV{BASELINER_LOGHOME};
 
     my @pids = map {
@@ -27,10 +27,10 @@ sub run {
 
     for my $pid ( @pids ) {
         try {
-            _log _loc "Server restart requested. Using kill HUP $pid"; 
+            _log _loc "Server restart requested. Using kill HUP $pid";
             kill HUP => $pid;
         } catch {
-            _error _loc ("Error restarting $pid: "). shift;            
+            _error _loc ("Error restarting $pid: "). shift;
         };
     }
 }

@@ -23,7 +23,7 @@ register 'statement.fileman.foreach' => {
     text => 'FOREACH file/item',
     type => 'loop',
     form => '/forms/file_foreach.js',
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             my $config = parse_vars %s, $stash;
@@ -168,7 +168,7 @@ sub file_foreach {
     my $path = $config->{path};
     my $path_mode = $config->{path_mode} // 'files_flat';
     my $dir_mode = $config->{dir_mode} // 'file_only';
-   
+
     _fail _loc 'Root path not configured' if $path_mode ne 'nature_items' && !length $path;
     _fail _loc 'Path does not exist or is not readable: `%1`', $path if length $path && $path!~/\*|\?/ && !-e $path;
     my $job_dir = $stash->{job_dir};
@@ -188,9 +188,9 @@ sub file_foreach {
         });
     }
     elsif( $path_mode eq 'nature_items' ){
-        @files = 
+        @files =
             map { length $path ? $_->relative($path)->stringify : "$_" }
-            grep { 
+            grep {
                 my $is_dir = -d $_; # is_dir does not check if it exists and is a dir
                 ($dir_mode eq 'file_only' && !$is_dir)
                 || ($dir_mode eq 'dir_only' && $is_dir)
@@ -199,9 +199,9 @@ sub file_foreach {
             grep {
                -e $_  # gets rid of deletions
             }
-            map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
+            map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} );
     }
-   
+
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     @files = $self->filter_paths( $include_path, $exclude_path, @files );
     return \@files;
@@ -233,7 +233,7 @@ sub filter_paths {
         }
         push @filtered, $path;
     }
-    _debug( _loc("Filter paths, include, excludes"), 
+    _debug( _loc("Filter paths, include, excludes"),
             "Includes:\n".join("\n",_array($include_path))
             ."\nExcludes:\n".join("\n",_array($exclude_path))
             ."\nMessages:\n".join("\n",@debugs) ) if @debugs;
@@ -247,24 +247,24 @@ sub run_tar {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
-    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
+
+    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}),
             $config );
-    Util->tar_dir( %$config ); 
+    Util->tar_dir( %$config );
 }
-    
+
 #sub run_zip {
 #    my ($self, $c, $config ) = @_;
 #
 #    my $job   = $c->stash->{job};
 #    my $log   = $job->logger;
 #    my $stash = $c->stash;
-#    
-#    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
+#
+#    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}),
 #            $config );
-#    Util->zip_dir( %$config ); 
+#    Util->zip_dir( %$config );
 #}
-    
+
 sub run_tar_nature {
     my ($self, $c, $config ) = @_;
 
@@ -272,21 +272,21 @@ sub run_tar_nature {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $clean_path_mode = $config->{clean_path_mode} // 'none';
-    
+
     my @files = _array( $stash->{nature_item_paths} );
     # check if there are absolute nature file paths (starting with /)
     #    maybe caused by missing IF NATURE op "cut path"
     for my $f( @files ) {
-        next unless $f =~ /^\//; 
+        next unless $f =~ /^\//;
         if( $clean_path_mode eq 'force' ) {
-            $f =~ s{^/}{}g; 
+            $f =~ s{^/}{}g;
         } else {
             _warn _loc 'Nature path not relative for file `%1`. This file will not be included in the tar. Check your IF NATURE `Cut Path` has at least a slash `/`', $f;
         }
     }
-    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
+    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}),
             $config );
-    Util->tar_dir( %$config, files=>\@files ); 
+    Util->tar_dir( %$config, files=>\@files );
 }
 
 sub run_zip {
@@ -295,26 +295,26 @@ sub run_zip {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
-    $log->info( _loc("Zip source '%1' into file '%2'", $config->{source}, $config->{to}), 
+
+    $log->info( _loc("Zip source '%1' into file '%2'", $config->{source}, $config->{to}),
             $config );
-    Util->zip_tree( %$config ); 
+    Util->zip_tree( %$config );
 }
 
-    
+
 sub run_zip_nature {
     my ($self, $c, $config ) = @_;
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
+
     my @files = _array( $stash->{nature_item_paths} );
-    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
+    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}),
             $config );
-    Util->zip_dir( %$config, files=>\@files ); 
+    Util->zip_dir( %$config, files=>\@files );
 }
-    
+
 sub run_write {
     my ($self, $c, $config ) = @_;
 
@@ -328,16 +328,16 @@ sub run_write {
     my $template_var  = $config->{template_var} // '';
     my $body = $config->{body};
     my $log_body = $config->{log_body};
-    
+
     require Encode;
     Encode::from_to( $body, $body_encoding, $file_encoding )
         if $body_encoding && ( $file_encoding ne $body_encoding );
-        
+
     if( $templating eq 'tt' ) {
         my $output = BaselinerX::Service::Templating->process_tt( $stash, $template_var, $body );
         $body = $output;
     }
-    
+
     my $dir = _file( $filepath )->dir;
     $dir->mkpath;
     my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
@@ -345,21 +345,21 @@ sub run_write {
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
     print $ff $body;
     close $ff;
-    $log->info( _loc("File content written: '%1'", $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
+    $log->info( _loc("File content written: '%1'", $filepath), $log_body eq 'yes' ? ( data=>$body ) : () );
     return $filepath;
 }
-    
+
 sub run_store {
     my ($self, $c, $config ) = @_;
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
+
     my $job_dir = $job->job_dir;
     my $file = $config->{file} // _fail _loc 'Missing parameter file';
     my $filename = $config->{filename} // _fail _loc 'Missing parameter filename';
-    
+
     my $f = _file( $job_dir, $file );
     $f = _file( $file ) unless -e $f;
     _fail _loc 'Could not find file `%1` nor `%2` to store', $f, _file($job_dir, $file)
@@ -390,21 +390,21 @@ sub run_ship {
     my $chmod       = $config->{'chmod'};
     my $chown       = $config->{'chown'};
     my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
-    my $rel_mode    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
-    my $anchor_path = $config->{anchor_path} // ''; 
-    my $create_dir  = $config->{create_dir} // 'create'; 
-    my $backup_mode = $config->{backup_mode} // 'backup'; 
-    my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
-    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'nb_after'; 
+    my $rel_mode    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor
+    my $anchor_path = $config->{anchor_path} // '';
+    my $create_dir  = $config->{create_dir} // 'create';
+    my $backup_mode = $config->{backup_mode} // 'backup';
+    my $rollback_mode = $config->{rollback_mode} // 'rollback';
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'nb_after';
     my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
     my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
     my $exist_mode_local = $config->{exist_mode_local} // 'skip';
     my $recursive = $config->{recursive} // 0;
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
-    
+
     _fail _loc "Server not configured" unless length $config->{server};
-    
+
     my $sent_files = $stash->{sent_files} // {};
 
     my $servers = $config->{server};
@@ -426,7 +426,7 @@ sub run_ship {
         my ( @locals, @backup_files );
         my $is_wildcard = 0;
         if( $local_mode eq 'nature_items' ) {
-            @locals = map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
+            @locals = map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} );
         } else {
             # local_files (with or without wildcard)
             $local_path = $server->parse_vars( "$local_path" );
@@ -448,19 +448,19 @@ sub run_ship {
             }
         }
         $log->debug( _loc('local_mode=%1, local list', $local_mode), \@locals );
-        
+
         ITEM: for my $local ( @locals ) {
             $cnt++;
 
             # local path relative or pure filename?
             $log->debug( _loc("rel path mode '%1', local='%2', anchor='%3'", $rel_mode, $local, $anchor_path ) );
-            my $local_path = 
-                $rel_mode eq 'file_only' ? _file( $local )->basename : 
-                $rel_mode eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
+            my $local_path =
+                $rel_mode eq 'file_only' ? _file( $local )->basename :
+                $rel_mode eq 'rel_path_job' ? _file( $local )->relative( $job_dir )
                 : _file($local)->relative( $anchor_path );
             $local_path = $server->parse_vars("$local_path");
             $log->debug( _loc("rel path mode '%1', local_path=%2", $rel_mode, $local_path ) );
-            
+
             # filters?   TODO use $self->filter_paths
             my $flag;
             IN: for my $in ( _array( $include_path ) ) {
@@ -480,7 +480,7 @@ sub run_ship {
                     next ITEM;
                 }
             }
-            
+
             # set remote to remote + local_path, except on local_files w/ wildcard
             my $remote = _file( "$remote_path", "$local_path" );
             my $bkp_local = _file( $job->backup_dir, $server_str, $remote );
@@ -522,7 +522,7 @@ sub run_ship {
                     $log->debug( _loc( "Rollback switch to local file '%1', but no for the file '%2'", $bkp_local, $remote ) );
                 }
             }
-            
+
             # ship done here
             my $local_stat   = join(",",@{ _file($local)->stat || [] }); # create a stat string
             my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files, but faster than _md5
@@ -530,7 +530,7 @@ sub run_ship {
             my $local_key_md5 = Util->_md5( $local_key );
             $agent->copy_attrs($copy_attrs);
             my $hostname = $agent->server->hostname;
-            my $sent = $sent_files->{$hostname}{$local_key_md5}{"$remote"}; 
+            my $sent = $sent_files->{$hostname}{$local_key_md5}{"$remote"};
             if( $sent && $exist_mode ne 'reship' ) {
                 $log->info( _loc('File `%1` already in machine `%2` (%3). Ship skipped.', "$local", "*$hostname*".':'.$remote, $server_str ), data=>$local_key );
             } else {
@@ -557,7 +557,7 @@ sub run_ship {
                 $sent_files->{$hostname}{$local_key_md5}{"$remote"} = _now();
             }
             $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_after';
-            
+
             if( length $chown ) {
                 _debug "chown $chown $remote";
                 $agent->chown( $chown, "$remote" );
@@ -577,7 +577,7 @@ sub run_ship {
         $log->warn( _loc( "Could not find any file locally to ship to '%1'", $server_str ), $config )
             unless $cnt > 0;
     }
-    
+
     $stash->{sent_files} //= $sent_files;
 
     return 1;
@@ -660,14 +660,14 @@ sub run_rm {
     my $stash = $c->stash;
 
     my $file = $config->{file} // _fail _loc 'Missing parameter file';
-    
+
     my $f = _file( $job->job_dir, $file );
     _fail _loc "Could not find file '%1'", $f
         unless -e $f;
     if( unlink "$f" ) {
-        $log->info( _loc("Successfully delete file '%1'", $f) ); 
+        $log->info( _loc("Successfully delete file '%1'", $f) );
     } else {
-        _fail( _loc("Error deleting file '%1': %2", $f, $!) ); 
+        _fail( _loc("Error deleting file '%1': %2", $f, $!) );
     }
 }
 
@@ -679,14 +679,14 @@ sub run_rmtree {
     my $stash = $c->stash;
 
     my $dir = $config->{dir} // _fail _loc 'Missing parameter dir';
-    
+
     my $f = _dir( $job->job_dir, $dir );
     _fail _loc "Could not find dir '%1'", $f
         unless -d $f;
     if( $f->rmtree ) {
-        $log->info( _loc("Successfully deleted directory '%1'", $f) ); 
+        $log->info( _loc("Successfully deleted directory '%1'", $f) );
     } else {
-        _fail( _loc("Error deleting directory '%1': %2", $f, $!) ); 
+        _fail( _loc("Error deleting directory '%1': %2", $f, $!) );
     }
 }
 
@@ -701,27 +701,27 @@ sub run_parse_config {
     my $type = $config->{type} || 'yaml';
     my $opts = $config->{opts} || {};
     my $enc = $config->{encoding} || 'utf8';
-    
+
     if( !-e $config_file ) {
         my $msg = _loc( "Config file not found in '%1'", $config_file );
         if( $fail_if_not_found ) {
-            _fail $msg; 
+            _fail $msg;
         } else {
             _warn $msg;
         }
     }
-    
-    open my $ff, '<:'.$enc , "$config_file" 
+
+    open my $ff, '<:'.$enc , "$config_file"
         or _fail( _loc('Error opening config file: %1: %2', $config_file, $!) );
     my $body = do { local $/; <$ff> }; # slurp file
     if( !length $body ) {
         _fail _loc("Config file is empty: '%1'", $config_file);
         return;
     }
-    my $vars = try { 
-          $type eq 'yaml' ? _load( $body ) 
-        : $type eq 'json' ? _decode_json( $body ) 
-        : $type eq 'general' ? do { require Config::General; 
+    my $vars = try {
+          $type eq 'yaml' ? _load( $body )
+        : $type eq 'json' ? _decode_json( $body )
+        : $type eq 'general' ? do { require Config::General;
             my $f = Config::General->new(-String=>$body, %$opts );
             +{ $f->getall };
         }
@@ -741,7 +741,7 @@ sub run_parse_config {
         }
         : $type eq 'xml' ? do {
             require XML::Simple;
-            my $xml = XML::Simple::XMLin( "$body", KeepRoot=>1, %$opts ); 
+            my $xml = XML::Simple::XMLin( "$body", KeepRoot=>1, %$opts );
             +{ %$xml }; # convert internal xml to hash
         } : _fail(_loc('Unknown config file type: %1', $type));
     } catch {
@@ -759,22 +759,22 @@ sub run_write_config {
     my $stash = $c->stash;
     my $config_file = $config->{config_file};
     my $fail_if_not_found  = $config->{fail_if_not_found};
-    
+
     my $type = $config->{type} || 'yaml';
     my $varname = $config->{varname};
     my $input_type = $config->{input_type} || 'yaml';
     my $opts = $config->{opts} || {};
     my $enc = $config->{encoding} || 'utf8';
-    
+
     my $write_to_file = sub{
-        my $body = shift; 
-        open my $ff, '>:'.$enc , "$config_file" 
+        my $body = shift;
+        open my $ff, '>:'.$enc , "$config_file"
             or _fail( _loc('Error opening config file: %1: %2', $config_file, $!) );
         print $ff $body;
         close $ff;
     };
-    
-    my $data = do { 
+
+    my $data = do {
         if( $input_type eq 'var' ) {
             my $varname = $config->{varname} || _fail(_loc('Missing config file data variable name'));
             $$stash{$varname} or _fail _loc("Config data is missing from stash: %1", $varname );;
@@ -782,15 +782,15 @@ sub run_write_config {
             $config->{config_data};
         }
     };
-    
-    my $body = try { 
+
+    my $body = try {
           $type eq 'yaml' ? do {
-             Util->_dump( $data ); 
+             Util->_dump( $data );
           }
-        : $type eq 'json' ? do{ 
+        : $type eq 'json' ? do{
             Util->_encode_json( $data );
         }
-        : $type eq 'general' ? do { require Config::General; 
+        : $type eq 'general' ? do { require Config::General;
             require Config::General;
             Config::General->new(-ConfigHash=>$data, %$opts )->save_string;
         }
@@ -816,12 +816,12 @@ sub run_write_config {
         }
         : $type eq 'xml' ? do {
             require XML::Simple;
-            XML::Simple::XMLout( $data, %$opts ); 
-        } 
+            XML::Simple::XMLout( $data, %$opts );
+        }
         : _fail(_loc('Unknown config file type: %1', $type));
     } catch {
         my $err = shift;
-        _fail _loc('Error writing config file `%1` from variable `%2` (type %3, encoding %4): %5', 
+        _fail _loc('Error writing config file `%1` from variable `%2` (type %3, encoding %4): %5',
             $config_file, $varname, $type, $enc, $err ) ;
     };
     $write_to_file->( $body );
