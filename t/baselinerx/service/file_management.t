@@ -161,6 +161,44 @@ subtest 'run_ship: copies file with special symbols' => sub {
       };
 };
 
+subtest 'run_sync_remote: runs sync_dir on agent' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'sync_remote' } );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+    $agent->mock( sync_dir => sub { } );
+
+    $service->run_sync_remote(
+        $c,
+        {
+            local_path  => '/local/path',
+            remote_path => '/remote/path/',
+            direction   => 'local-to-remote',
+            server      => $server
+        }
+    );
+
+    my (%args) = $agent->mocked_call_args('sync_dir');
+    is_deeply \%args,
+      {
+        'remote'            => '/remote/path/',
+        'local'             => '/local/path',
+        'direction'         => 'local-to-remote',
+        'delete_extraneous' => 0
+      };
+};
+
 done_testing;
 
 sub _setup {

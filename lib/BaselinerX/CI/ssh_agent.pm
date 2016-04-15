@@ -1,6 +1,7 @@
 package BaselinerX::CI::ssh_agent;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::CommandRunner;
 use Try::Tiny;
 #use namespace::autoclean;
 
@@ -241,6 +242,43 @@ sub execute {
     ($rc, $ret);
 }
 
+sub sync_dir {
+    my ( $self, %p ) = @_;
+
+    my $remote            = $p{remote}            // _throw 'Missing remote parameter';
+    my $local             = $p{local}             // _throw 'Missing local parameter';
+    my $direction         = $p{direction}         // 'local-to-remote';
+    my $delete_extraneous = $p{delete_extraneous} // 0;
+
+    my $server = $self->_build_uri;
+    my $port;
+    if ($server =~ s{:(\d+)$}{}) {
+        $port = $1;
+    }
+    $remote = "$server:$remote";
+
+    my ( $from, $to ) = $direction eq 'local-to-remote' ? ( $local, $remote ) : ( $remote, $local );
+
+    my $command_runner = $self->_build_command_runner;
+
+    my @options;
+    if ($port) {
+        push @options, '-e', "ssh -p $port";
+    }
+    if ($delete_extraneous) {
+        push @options, '--delete';
+    }
+
+    my $ret = $command_runner->run('rsync', '-avz', @options, $from, $to);
+
+    $self->ret( $ret->{output} );
+    $self->rc( $ret->{exit_code} );
+
+    $self->_throw_on_error;
+
+    return ( $ret->{exit_code}, $ret->{output} );
+}
+
 sub _build_openssh {
     my $self = shift;
 
@@ -248,22 +286,29 @@ sub _build_openssh {
     return Net::OpenSSH->new(@_);
 }
 
+sub _build_command_runner {
+    return Baseliner::CommandRunner->new;
+}
+
 sub _build_uri {
-    my ($self) = @_;
+    my $self = shift;
+
     my $uri;
-    if( $self->user ) {
-        $uri =  sprintf('%s@%s', $self->user, $self->server->hostname ); 
-    } 
+    if ( $self->user ) {
+        $uri = join '@', $self->user, $self->server->hostname;
+    }
     else {
-        $uri =  $self->server->hostname; 
+        $uri = $self->server->hostname;
     }
-    if ($self->{port_num}){
-        $uri.=':'.$self->{port_num};
-    } elsif (Baseliner->config->{ssh_port}) {
-        $uri.=':'.Baseliner->config->{ssh_port};
+
+    if ( $self->port_num ) {
+        $uri .= ':' . $self->port_num;
     }
-return $uri;
+    elsif ( Baseliner->config->{ssh_port} ) {
+        $uri .= ':' . Baseliner->config->{ssh_port} // 22;
+    }
+
+    return $uri;
 }
 
 1;
-

@@ -127,6 +127,8 @@ sub execute {
     _throw "FTP execute not implemented yet.";
 }
 
+sub sync_dir { _throw 'sync_dir not supported' }
+
 # not used:
 sub _build_uri {
     my ($self) = @_;

@@ -95,6 +95,72 @@ subtest 'returns error exit_code when put_file fails' => sub {
     ok $ssh_agent->put_file(local => $filename, remote => 'bar') != 0;
 };
 
+subtest 'sync_dir: creates correct rsync command' => sub {
+    my $command_runner = _mock_command_runner();
+
+    my $ssh_agent = _build_ssh_agent(
+        user        => 'foo',
+        server      => BaselinerX::CI::generic_server->new( hostname => 'bar' ),
+        private_key => '/foo/bar',
+    );
+    $ssh_agent->mock( _build_command_runner => sub { $command_runner } );
+
+    $ssh_agent->sync_dir( remote => '/foo/bar', local => '/foo/bar' );
+
+    my (@cmd) = $command_runner->mocked_call_args('run');
+
+    is_deeply \@cmd, [ 'rsync', '-avz', '/foo/bar', 'foo@bar:/foo/bar' ];
+};
+
+subtest 'sync_dir: creates correct rsync command in opposite direction' => sub {
+    my $command_runner = _mock_command_runner();
+
+    my $ssh_agent = _build_ssh_agent(
+        user        => 'foo',
+        server      => BaselinerX::CI::generic_server->new( hostname => 'bar' ),
+        private_key => '/foo/bar',
+    );
+    $ssh_agent->mock( _build_command_runner => sub { $command_runner } );
+
+    $ssh_agent->sync_dir( remote => '/foo/bar', local => '/foo/bar', direction => 'remote-to-local' );
+
+    my (@cmd) = $command_runner->mocked_call_args('run');
+
+    is_deeply \@cmd, [ 'rsync', '-avz', 'foo@bar:/foo/bar', '/foo/bar' ];
+};
+
+subtest 'sync_dir: creates correct rsync command with delete extraneous' => sub {
+    my $command_runner = _mock_command_runner();
+
+    my $ssh_agent = _build_ssh_agent(
+        user        => 'foo',
+        server      => BaselinerX::CI::generic_server->new( hostname => 'bar' ),
+        private_key => '/foo/bar',
+    );
+    $ssh_agent->mock( _build_command_runner => sub { $command_runner } );
+
+    $ssh_agent->sync_dir( remote => '/foo/bar', local => '/foo/bar', delete_extraneous => 1 );
+
+    my (@cmd) = $command_runner->mocked_call_args('run');
+
+    is_deeply \@cmd, [ 'rsync', '-avz', '--delete', '/foo/bar', 'foo@bar:/foo/bar' ];
+};
+
+sub _mock_command_runner {
+    my $mock = Test::MonkeyMock->new;
+
+    $mock->mock(
+        'run' => sub {
+            {
+                exit_code => 0,
+                output    => '123'
+            };
+        }
+    );
+
+    return $mock;
+}
+
 sub _mock_openssh {
     my $mock = Test::MonkeyMock->new;
 

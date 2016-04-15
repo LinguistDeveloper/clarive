@@ -95,6 +95,14 @@ register 'service.fileman.retrieve' => {
     handler => \&run_retrieve,
 };
 
+register 'service.fileman.sync_remote' => {
+    name        => 'Sync a Remote Directory',
+    icon        => $ICON_DEFAULT,
+    form        => '/forms/sync_remote.js',
+    job_service => 1,
+    handler     => \&run_sync_remote,
+};
+
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
@@ -599,6 +607,45 @@ sub run_retrieve {
         $agent->get_file(
             local  => $local,
             remote => $remote,
+        );
+    }
+
+    return 1;
+}
+
+sub run_sync_remote {
+    my ( $self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+
+    my $remote_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
+    my $local_orig  = $config->{local_path}  // _fail 'Missing parameter local_file';
+    my $direction   = $config->{direction}   // _fail 'Missing parameter direction';
+    my $delete_extraneous = $config->{delete_extraneous} && $config->{delete_extraneous} eq 'on' ? 1 : 0;
+    my $user = $config->{user};
+
+    my $servers = $config->{server};
+    for my $server ( Util->_array_or_commas($servers) ) {
+        $server = ci->new($server) unless ref $server;
+        Util->is_ci_or_fail( $server, 'server' );
+
+        my $local      = $server->parse_vars("$local_orig");
+        my $remote     = $server->parse_vars("$remote_orig");
+
+        my $server_str = "$user\@" . $server->name;
+        _debug "Connecting to server " . $server_str;
+
+        my $agent = $server->connect( user => $user );
+
+        $log->info( _loc( "Syncing directories '%1' and '%2'", $local, "*$server_str" . '*:' . $remote ) );
+
+        $agent->sync_dir(
+            remote            => $remote,
+            local             => $local,
+            direction         => $direction,
+            delete_extraneous => $delete_extraneous
         );
     }
 

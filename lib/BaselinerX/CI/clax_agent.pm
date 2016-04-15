@@ -217,6 +217,8 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 method remote_eval( $code ) {
 }
 
+method sync_dir { _throw 'sync_dir not supported' }
+
 sub _crc32_from_file {
     my $self = shift;
     my ($file ) = @_;
