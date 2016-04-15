@@ -230,9 +230,9 @@
             txt_cont.update( _( '<b>'+txt+'</b>', Cla.ci_loc(collection), mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: opts.rec.bl || ['*'], colspan: 1 });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: opts.rec.bl || ['*'], colspan: 1, disabled: !can_save });
         var children = new Ext.form.Hidden({ name: 'children', value: opts.rec.children });
-        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: opts.rec.description, height: 80 };
+        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, disabled: !can_save, value: opts.rec.description, height: 80 };
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
             padding: 10,
@@ -250,13 +250,13 @@
                 children,
                 { layout:'column', border: false, defaults:{ layout:'form', border: false, padding: '0px 2px 10px 2px'}, items:[
                     { columnWidth : .65, defaults: { anchor: '100%' }, items:[
-                        { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: opts.rec.name, height: 30, style:'font-size: 18px;' },
+                        { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, disabled: !can_save, value: opts.rec.name, height: 30, style:'font-size: 18px;' },
                         ( has_description > 0 ? desc : [] )
                     ]},
                     { columnWidth : .35, defaults: { anchor: '100%' }, items:[
-                        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: opts.rec.moniker, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: opts.rec.versionid, allowBlank: true },
+                        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, disabled: !can_save, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: opts.rec.moniker, disabled: !can_save, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: opts.rec.versionid, disabled: !can_save, allowBlank: true },
                         ( has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},
