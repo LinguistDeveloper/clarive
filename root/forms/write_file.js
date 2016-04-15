@@ -18,9 +18,9 @@
     });
 
     var templating = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Templating'), name:'templating', value: data.templating || 'none', 
+        fieldLabel: _('Template Use'), name:'templating', value: data.templating || 'none', 
         data: [ 
-          ['none',_("No Templating")], 
+          ['none',_("No Template")], 
           ['tt',_('Template Toolkit')]
         ]
     });

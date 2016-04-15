@@ -3383,7 +3383,7 @@ msgid "Are you sure you want to delete the labels selected?"
 msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
 
 msgid "Pick a Color"
-msgstr "Elije color"
+msgstr "Elige color"
 
 msgid "Labels"
 msgstr "Etiquetas"
@@ -6158,10 +6158,10 @@ msgid "Template Var"
 msgstr "Variables de la plantilla"
 
 msgid "File Encoding"
-msgstr "Encoding del Fichero"
+msgstr "Codificación del Fichero"
 
 msgid "Content Encoding"
-msgstr "Encoding del Contenido"
+msgstr "Codificación del Contenido"
 
 msgid "CI Class"
 msgstr "Clase CI"
@@ -6950,10 +6950,10 @@ msgid "Status on Failure"
 msgstr "Estado en fallo"
 
 msgid "Status on Rollback OK"
-msgstr "Estado en matcha atrás OK"
+msgstr "Estado en marcha atrás OK"
 
 msgid "Status on Rollback Failure"
-msgstr "Estado en matcha atrás Fallo"
+msgstr "Estado en marcha atrás Fallo"
 
 msgid "Local Dir"
 msgstr "Directorio local"
@@ -8932,3 +8932,67 @@ msgstr "Entrada"
 
 msgid "Not in statuses"
 msgstr "No en Estados"
+
+msgid "Amazon Account"
+msgstr "Cuenta Amazon"
+
+msgid "Amazon Instance"
+msgstr "Instancia Amazon"
+
+msgid "Expected State"
+msgstr "Estado Esperado"
+
+msgid "Timeout Action"
+msgstr "Acción tras tiempo de Espera"
+
+msgid "Check Interval"
+msgstr "Intervalo de verificación"
+
+msgid "Image ID"
+msgstr "Id de Imagen"
+
+msgid "Template Use"
+msgstr "Uso de Plantilla"
+
+msgid "No Template"
+msgstr "Sin Plantilla"
+
+msgid "Instance Name"
+msgstr "Nombre de Instancia"
+
+msgid "Instance Type"
+msgstr "Tipo de Instancia"
+
+msgid "Key Name Settings"
+msgstr "Configuración de Clave"
+
+msgid "Use local"
+msgstr "Usar Local"
+
+msgid "Use existing AWS key"
+msgstr "Usar Clave Existente"
+
+msgid "Key Name"
+msgstr "Nombre de Clave"
+
+msgid "Private Key Location"
+msgstr "Ubicación Clave Privada"
+
+msgid "Max Count"
+msgstr "Número Máximo"
+
+msgid "Min Count"
+msgstr "Número Mínimo"
+
+msgid "Subnet Id"
+msgstr "Id Subred"
+
+msgid "Associate Public IP"
+msgstr "Asociar IP Pública"
+
+msgid "Programming language"
+msgstr "Lenguaje de programación"
+
+msgid "Height"
+msgstr "Altura"
+

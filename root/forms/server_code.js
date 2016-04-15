@@ -2,7 +2,7 @@
     var data = params.data || {};
     
     var lang_combo = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Language'), name:'lang', value: data.lang || 'js', data: [
+        fieldLabel: _('Programming language'), name:'lang', value: data.lang || 'js', data: [
             ['js',_('JavaScript')],
             ['perl',_('Perl')]
         ]
