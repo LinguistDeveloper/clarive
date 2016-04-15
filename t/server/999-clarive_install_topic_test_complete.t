@@ -609,20 +609,20 @@ my $role_dev;
 
 
 #########################
-#		entorno			#
+#        entorno            #
 #########################
 
 $url = 'ci/update';
 $data = {
     as_json   => 1,
     form_data => {
-        name           	=> 'Entorno de pruebas',
-        description    	=> 'Entorno de pruebas',
-        bl             	=> '*',
-        moniker        	=> '',
-        active         	=> 'on',
-        children       	=> '',
-        seq 			=> '100'
+        name               => 'Entorno de pruebas',
+        description        => 'Entorno de pruebas',
+        bl                 => '*',
+        moniker            => '',
+        active             => 'on',
+        children           => '',
+        seq             => '100'
     },
     _merge_with_params => 1,
     action             => 'add',
@@ -634,7 +634,7 @@ is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
      
 
 #########################
-#		status			#
+#        status            #
 #########################
 
 $url = 'ci/update';
@@ -709,7 +709,7 @@ is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
      
 
 #############################
-#		categoria			#
+#        categoria            #
 #############################
 
 $url = 'topicadmin/update_category';

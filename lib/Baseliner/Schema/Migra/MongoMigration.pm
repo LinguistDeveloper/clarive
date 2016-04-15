@@ -1185,7 +1185,7 @@ sub topic_admin {
         my @fi = _dbis->query('select id_field,params_field from bali_topic_fields_category where id_category=?', $$tc{id} )->hashes;
         $$tc{fieldlets} = [ map { 
             my $pf = delete $$_{params_field};
-        	$$_{params} = Util->_load($pf);
+            $$_{params} = Util->_load($pf);
             $trans->( $$_{params}{allowBlank} );
             $trans->( $$_{params}{hidden} );
             $trans->( $$_{params}{system_force} );

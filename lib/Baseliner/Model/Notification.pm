@@ -174,27 +174,27 @@ sub isValid {
         }
     }    
     # if ($valid == 1) {
-    # 	foreach my $key (keys $notify_scope){
-    #     	if( exists $data->{scopes}->{$key}->{'*'} ){
-    #         	$valid = 1;
+    #     foreach my $key (keys $notify_scope){
+    #         if( exists $data->{scopes}->{$key}->{'*'} ){
+    #             $valid = 1;
     #         }
     #         else{
-    #     		if( ref $notify_scope->{$key} eq 'ARRAY'){
-    #         		foreach my $value (@{$notify_scope->{$key}}){
-    #         			if (exists $data->{scopes}->{$key}->{$value}) {
-    #             			$valid = 1;
-    #                 		last;
-    #             		}else{ $valid = 0;}
-    #         		}
-    #     		}
-    #     		else{
-    #     			if (exists $data->{scopes}->{$key}->{$notify_scope->{$key}}) {
-    #     				$valid = 1;
-    #     			}else{ $valid = 0; }
-    #     		}
-    #     		last unless $valid == 1;
+    #             if( ref $notify_scope->{$key} eq 'ARRAY'){
+    #                 foreach my $value (@{$notify_scope->{$key}}){
+    #                     if (exists $data->{scopes}->{$key}->{$value}) {
+    #                         $valid = 1;
+    #                         last;
+    #                     }else{ $valid = 0;}
+    #                 }
+    #             }
+    #             else{
+    #                 if (exists $data->{scopes}->{$key}->{$notify_scope->{$key}}) {
+    #                     $valid = 1;
+    #                 }else{ $valid = 0; }
+    #             }
+    #             last unless $valid == 1;
     #         } 
-    # 	}
+    #     }
     # }   
     return $valid;
 }
@@ -218,7 +218,7 @@ sub exclude_default{
 }
 
 sub get_rules_notifications{
-	my ( $self, $p ) = @_;
+    my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $action = $p->{action} or _throw 'Missing parameter action';
     my $notify_scope = $p->{notify_scope}; # or _throw 'Missing parameter notify_scope';
@@ -229,63 +229,63 @@ sub get_rules_notifications{
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, where=>{collection => 'project'}) if $mid;
     
     if ( @rs_notify ) {
-		foreach my $row_send ( @rs_notify ){
+        foreach my $row_send ( @rs_notify ){
             #my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
             my $data = $self->encode_data($row_send->{data});
 
             my $valid = 0;
-    		if ($notify_scope) {
+            if ($notify_scope) {
                 $valid = $self->isValid({ data => $data, notify_scope => $notify_scope, mid => $mid});    
             }else{
                 $valid = 1 unless keys $data->{scopes};
             }
-    		if ($valid == 1){
-        		my $actions;
-        		my $roles;
+            if ($valid == 1){
+                my $actions;
+                my $roles;
         
-        		foreach my $carrier (keys $data->{recipients}){
+                foreach my $carrier (keys $data->{recipients}){
                     my $type;
                     foreach $type (keys $data->{recipients}->{$carrier}){
                         my @values;
-                		foreach my $key_value (keys $data->{recipients}->{$carrier}->{$type}){
+                        foreach my $key_value (keys $data->{recipients}->{$carrier}->{$type}){
                             #my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
                             my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
                             $notification->{$key}{subject}       = $row_send->{subject};
                             $notification->{$key}{template_path} = $row_send->{template_path};
-                    		given ($type) {
-                        		when ('Actions') { 
+                            given ($type) {
+                                when ('Actions') { 
                                     $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = 1; 
                                 }
-                        		default { 
+                                default { 
                                     $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = $data->{recipients}->{$carrier}->{$type}->{$key_value}; 
                                 }
-                    		};
-                		}
-            		}
-        		}
-    		}
-		}
-		foreach my $key (keys $notification){
-			foreach my $carrier ( keys $notification->{$key}{carrier}) {
-    			my @users;
-        		foreach my $type (keys $notification->{$key}{carrier}{$carrier}){
-        			my @tmp_users;
-        			given ($type) {
-            			when ('Users') 	    { 
-                        	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
+                            };
+                        }
+                    }
+                }
+            }
+        }
+        foreach my $key (keys $notification){
+            foreach my $carrier ( keys $notification->{$key}{carrier}) {
+                my @users;
+                foreach my $type (keys $notification->{$key}{carrier}{$carrier}){
+                    my @tmp_users;
+                    given ($type) {
+                        when ('Users')         { 
+                            if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                                 @tmp_users = Baseliner->model('Users')->get_users_username;
                             }
                             else{
-                        		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
+                                @tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
                             }
                         }
-                        when ('Actions') 	{
+                        when ('Actions')     {
                             my @actions;
                             if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-								@actions = ('*');                            
+                                @actions = ('*');                            
                             }
                             else{
-                            	@actions = keys $notification->{$key}{carrier}{$carrier}->{$type};
+                                @actions = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             my $query = {};
                             $query->{action} = \@actions;
@@ -346,18 +346,18 @@ sub get_rules_notifications{
                             push @tmp_users, $topic->{created_by};
                         }                        
                     };
-            		push @users, @tmp_users;
-        		}
-     			if (@users) {
-                	my %users; 
+                    push @users, @tmp_users;
+                }
+                 if (@users) {
+                    my %users; 
                     map { $users{$_} = 1 } @users;
                     
-        			$notification->{$key}{carrier}{$carrier} = \%users;
-        		}
-        		else{
-        			delete $notification->{$key}{carrier}{$carrier} ;
-        		}
-    		}
+                    $notification->{$key}{carrier}{$carrier} = \%users;
+                }
+                else{
+                    delete $notification->{$key}{carrier}{$carrier} ;
+                }
+            }
             my @totCarrier = keys $notification->{$key};
             if (!@totCarrier) {
                 delete $notification->{$key};
@@ -365,10 +365,10 @@ sub get_rules_notifications{
         };
     }
     if (keys $notification){
-    	return $notification;
+        return $notification;
     }
     else {
-    	return undef ;
+        return undef ;
     }
 }
 
@@ -549,14 +549,14 @@ sub encode_recipients {
 }
 
 sub get_notifications {
-	my ( $self, $p ) = @_;
+    my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $ev = Baseliner->registry->get( $event_key );
     my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
     my @notify_default = _array ($p->{notify_default});
     
-	my $send_notification;
+    my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
@@ -585,7 +585,7 @@ sub get_notifications {
             }
         }
     }
-	my $exclude_notification;
+    my $exclude_notification;
     $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );
     if ($exclude_notification){
         foreach my $key ( keys $exclude_notification ){
@@ -607,7 +607,7 @@ sub get_notifications {
                 else{
                     my @users;
                     foreach my $user ( keys $send_notification->{$key}{carrier}{$carrier} ){
-                        push @users, $user;	
+                        push @users, $user;    
                     }
                     $send_notification->{$key}{carrier}{$carrier} = \@users;
                 }

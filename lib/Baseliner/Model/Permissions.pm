@@ -738,7 +738,7 @@ sub user_roles {
 
 sub user_role_ids {
     my ( $self, $username ) = @_;
-    $username or _throw 'Missing parameter username';	
+    $username or _throw 'Missing parameter username';    
     my $u = ci->user->find_one({ username=>$username },{ project_security=>1 });
     return $u ? keys $u->{project_security} : ();
 }

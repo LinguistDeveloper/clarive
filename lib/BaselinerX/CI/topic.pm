@@ -38,7 +38,7 @@ around delete => sub {
     my ($orig, $self, $mid ) = @_;
     $mid = $mid // $self->mid;
     mdb->topic->remove({ mid=>"$mid" },{ multiple=>1 });
-	my $cnt = $self->$orig($mid);
+    my $cnt = $self->$orig($mid);
 };
     
 # adds extra data to _ci during loading

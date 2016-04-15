@@ -44,7 +44,7 @@ sub get_users_friends_by_username{
     foreach my $project (@user_projects){
         push @res, $self->get_users_from_project($project);
     }
-    @res= _unique @res;	
+    @res= _unique @res;    
    
     return wantarray ? @res : \@res;
 }

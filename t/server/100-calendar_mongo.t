@@ -23,7 +23,7 @@ my $json;
 my $id_cal;
 
 #####################
-#	CALENDARIOS		#
+#    CALENDARIOS        #
 #####################
 
 $url = '/job/calendar_update';
@@ -143,7 +143,7 @@ $id_cal = $json->{id_cal};
 
 
 #########################
-#	VENTANAS DE PASE	#
+#    VENTANAS DE PASE    #
 #########################
 
 my $cmd;
@@ -219,7 +219,7 @@ say "Result: " . $json->{msg};
 ok $json->{success}, 'merge windows succesfully';
 
 # #############################
-# #	AÑADIR PASE A VENTANAS 	#
+# #    AÑADIR PASE A VENTANAS     #
 # #############################
 
 $url = "/job/build_job_window_direct";

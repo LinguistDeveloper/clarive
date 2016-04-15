@@ -35,8 +35,8 @@ my $json;
 #take mid of user root
 $url = '/ci/gridtree';
 %data = ('ci_form' => '/ci/user.js', '_is_leaf' => 'false',  'class' => 'BaselinerX::CI::user', 'classname' => 'BaselinerX::CI::user', 'click' => '[object Object]', 
-		 'collection' => 'user', 'has_bl' => '0', 'has_collection' => '0', 'icon' => '/static/images/icons/user.gif', 'item' => 'user', 'limit' => '30', 'pretty' => 'true',
-		 'query' => 'root', 'start' => '0', 'tab_icon' => '/static/images/icons/user.gif', 'ts' => '-', 'type' => 'class');
+         'collection' => 'user', 'has_bl' => '0', 'has_collection' => '0', 'icon' => '/static/images/icons/user.gif', 'item' => 'user', 'limit' => '30', 'pretty' => 'true',
+         'query' => 'root', 'start' => '0', 'tab_icon' => '/static/images/icons/user.gif', 'ts' => '-', 'type' => 'class');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
@@ -48,7 +48,7 @@ $url = '/notification/save_notification';
 my $now = localtime->strftime('%Y/%d/%m - %H:%M:%S');
 my $test_subject = "Test de notificacion: $now";
 %data = ('action' => 'SEND',  'event' => 'event.auth.failed', 'notification_id' => '-1',  'recipients' => '{"TO":{"Users":{"$root_id":"root"}}}', 
-		 'subject' => "$test_subject", 'template' => '/email/test.html');
+         'subject' => "$test_subject", 'template' => '/email/test.html');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
@@ -63,7 +63,7 @@ $url = '/notification/save_notification';
 $now = localtime->strftime('%Y/%d/%m - %H:%M:%S');
 $test_subject = "Test de notificacion: $now";
 %data = ('action' => 'SEND',  'event' => 'event.auth.failed', 'notification_id' => $id,  'recipients' => '{"TO":{"Users":{"$root_id":"root"}}}', 
-		 'subject' => "$test_subject", 'template' => '/email/test.html');
+         'subject' => "$test_subject", 'template' => '/email/test.html');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );

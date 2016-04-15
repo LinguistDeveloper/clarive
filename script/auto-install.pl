@@ -5847,7 +5847,7 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
           *refaddr = *Scalar::Util::refaddr;
       };
       eval <<'END_PERL' if $@;
-  # Failed to load Scalar::Util	
+  # Failed to load Scalar::Util    
   sub refaddr {
       my $pkg = ref($_[0]) or return undef;
       if ( !! UNIVERSAL::can($_[0], 'can') ) {
@@ -9760,8 +9760,8 @@ $fatpacked{"version.pm"} = <<'VERSION';
       }
   }
   
-  sub is_strict	{ defined $_[0] && $_[0] =~ qr/ \A $STRICT \z /x }
-  sub is_lax	{ defined $_[0] && $_[0] =~ qr/ \A $LAX \z /x }
+  sub is_strict    { defined $_[0] && $_[0] =~ qr/ \A $STRICT \z /x }
+  sub is_lax    { defined $_[0] && $_[0] =~ qr/ \A $LAX \z /x }
   
   1;
 VERSION
@@ -10163,17 +10163,17 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   # so that prescan_version can use the same code as in C
   
   use overload (
-      '""'	=> \&thischar,
-      '0+'	=> \&thischar,
-      '++'	=> \&increment,
-      '--'	=> \&decrement,
-      '+'		=> \&plus,
-      '-'		=> \&minus,
-      '*'		=> \&multiply,
-      'cmp'	=> \&cmp,
-      '<=>'	=> \&spaceship,
-      'bool'	=> \&thischar,
-      '='		=> \&clone,
+      '""'    => \&thischar,
+      '0+'    => \&thischar,
+      '++'    => \&increment,
+      '--'    => \&decrement,
+      '+'        => \&plus,
+      '-'        => \&minus,
+      '*'        => \&multiply,
+      'cmp'    => \&cmp,
+      '<=>'    => \&spaceship,
+      'bool'    => \&thischar,
+      '='        => \&clone,
   );
   
   sub new {
@@ -10359,14 +10359,14 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
           return BADVERSION($s,$errstr,"Invalid version format (no leading zeros)");
       }
   
-      while (isDIGIT($d)) { 	# integer part
+      while (isDIGIT($d)) {     # integer part
           $d++;
       }
   
       if ($d eq '.')
       {
           $saw_decimal++;
-          $d++; 		# decimal point
+          $d++;         # decimal point
       }
       else
       {
@@ -10382,7 +10382,7 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       {
           my $i = 0;
           my $j = 0;
-          while (isDIGIT($d)) {	# just keep reading
+          while (isDIGIT($d)) {    # just keep reading
           $i++;
           while (isDIGIT($d)) {
               $d++; $j++;
@@ -10419,9 +10419,9 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
           return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
           }
       }
-      } 					# end if dotted-decimal
+      }                     # end if dotted-decimal
       else
-      {					# decimal versions
+      {                    # decimal versions
       # special $strict case for leading '.' or '0'
       if ($strict) {
           if ($d eq '.') {

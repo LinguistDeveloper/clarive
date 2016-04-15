@@ -87,19 +87,19 @@ sub log_rows : Private {
 
     my $where = $mid ? { mid=>"$mid" } : {};
 
-    $where = {};	
+    $where = {};    
     if( $query ) {
         #$where->{'lower(to_char(ts)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
         $where = mdb->query_build( query=>$query, fields=>[qw(
                 ts          
                 t
-                text		
-                ns			
-                provider	
+                text        
+                ns            
+                provider    
                 data_name   
-                service_key	
-                step		
-                )]);		
+                service_key    
+                step        
+                )]);        
     } else {
         my $job_exec;
         if( exists $p->{job_exec} ) {
@@ -215,7 +215,7 @@ sub logs_json : Path('/job/log/json') {
         data       => \@rows,
         job        => ref $job ? $job : {},
         job_key  => $job_key,
-     };	
+     };    
     # CORE::warn Dump $c->stash->{json};
     $c->forward('View::JSON');
 }
@@ -436,7 +436,7 @@ sub log_elements : Path('/job/log/elements') {
     my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
     # TODO send this to a comp with a pretty table
-    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );	
+    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );    
 }
 
 sub log_delete : Path('/job/log/delete') {

@@ -126,18 +126,18 @@ Tools for generating a custom config file and showing config values in your serv
 
 Generates conf file.
 
-	cla config-gen --env <env>
+    cla config-gen --env <env>
 
 =head2 config-show
 
 Show configuration parameters.
 
-	cla config-show 
+    cla config-show 
 
 =head2 config-opts
 
 Show configuration and option parameters
-	
-	cla config-opts
+    
+    cla config-opts
 
 =cut

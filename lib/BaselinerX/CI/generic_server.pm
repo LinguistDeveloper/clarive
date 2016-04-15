@@ -28,17 +28,17 @@ service 'connect' => {
 sub error {}
 sub rc {}
 sub ping {
-	my ( $self ) = @_;
+    my ( $self ) = @_;
 
-	my $return = 'KO';
+    my $return = 'KO';
 
-	my $server = $self->hostname;
-	my $out = `ping -c 1 "$server"`;
-	my $rc = $? >> 8;
-	if ( $rc == 0 ) {
-		$return = 'OK';
-	}
-	return ( $return, $out );
+    my $server = $self->hostname;
+    my $out = `ping -c 1 "$server"`;
+    my $rc = $? >> 8;
+    if ( $rc == 0 ) {
+        $return = 'OK';
+    }
+    return ( $return, $out );
 
 };
 
@@ -68,7 +68,7 @@ method connect( :$user='' ) {
             if (ref $chi){
                 $chi->os( $self->os );
                 do { alarm 0; return $chi };
-	    }
+        }
             BaselinerX::CI::balix_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
@@ -76,9 +76,9 @@ method connect( :$user='' ) {
         $agent = try { 
             my ($chi) = $self->children( where=>{collection=>'ssh_agent'} ) if $self->mid;
             if(ref $chi){
-	        $chi->os( $self->os );
+            $chi->os( $self->os );
                 do { alarm 0; return $chi };
-	    }
+        }
             BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
@@ -86,9 +86,9 @@ method connect( :$user='' ) {
         $agent = try { 
             my ($chi) = $self->children( where=>{collection=>'clax_agent'} ) if $self->mid;
             if(ref $chi){
-	        $chi->os( $self->os );
+            $chi->os( $self->os );
                 do { alarm 0; return $chi };
-	    }
+        }
             BaselinerX::CI::clax_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }

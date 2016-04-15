@@ -31,7 +31,7 @@ sub check_links {
         $content =~ m/<!--.*?-->/msg;
         my @links = $content =~ m/\[.*?\]\((.*?)\)/msg;
 
-	ok $content !~ m/\r/gsm, "DOS line-ending in $file";
+    ok $content !~ m/\r/gsm, "DOS line-ending in $file";
 
         foreach my $link (@links) {
             my $link_to = $ROOT . "/$link.markdown";

@@ -71,9 +71,9 @@ sub list : Local {
         my $r = $_;
           {
             id          => $r->mid,
-            bl 		    => $r->bl,
-            name	    => _loc($r->name),
-            description	=> _loc($r->description),
+            bl             => $r->bl,
+            name        => _loc($r->name),
+            description    => _loc($r->description),
           };
     } sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
     my $cnt = @rows;

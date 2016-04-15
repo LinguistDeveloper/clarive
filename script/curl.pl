@@ -9,10 +9,10 @@ my @argv = @ARGV;
 my $loop=1;
 GetOptions(
     'loop|l=i'  => \$loop,
-    'verbose|v'	=>\(my $verbose),
-    'content|c'	=>\(my $content),
-    'headers|h'	=>\(my $headers),
-    'echo|e'	=>\(my $echo),
+    'verbose|v'    =>\(my $verbose),
+    'content|c'    =>\(my $content),
+    'headers|h'    =>\(my $headers),
+    'echo|e'    =>\(my $echo),
 );
 
 sub LWP::Debug::trace {

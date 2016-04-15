@@ -31,7 +31,7 @@ sub run {
         return $instance->log;
     } 
     elsif( $handler && $module ) {
-        $module->$handler( $instance, $c, @_);	
+        $module->$handler( $instance, $c, @_);    
         #_log $instance->log->msg;
         return $instance->log;
     }

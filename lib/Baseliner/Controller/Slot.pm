@@ -410,7 +410,7 @@ sub build_job_window : Path('/job/build_job_window') {
         my $bl = $p->{bl};
         my $contents = _decode_json $p->{job_contents};
         #$contents = $c->model('Jobs')->container_expand( $contents );
-        my $month_days = 31;	
+        my $month_days = 31;    
 
         # get calendar range list
         $date =  $date
@@ -518,7 +518,7 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         _fail "Missing date format" if length $date && ! $date_format ;
         
         my $bl = $p->{bl};
-        my $month_days = 31;	
+        my $month_days = 31;    
 
         # get calendar range list
         $date =  $date

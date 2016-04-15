@@ -10,7 +10,7 @@ sub detail : Local {
     my $p = $c->request->parameters;
     my $message = $c->model('Messaging')->get( id => $p->{id} ); 
     mdb->message->update({'queue.id' => 0 + $p->{id}}, {'$set' => {'queue.$.swreaded' => '1'}});
-    $c->stash->{json} = { data => [ $message ] };		
+    $c->stash->{json} = { data => [ $message ] };        
     $c->forward('View::JSON');
 }
 
@@ -74,7 +74,7 @@ sub json : Local {
                  sent       => $message->{sent},
                  created    =>  $message->{created},
                  schedule_time  =>  $message->{schedule_time},
-                 swreaded	=> $message->{swreaded}
+                 swreaded    => $message->{swreaded}
              }
     }
     $c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };
@@ -94,7 +94,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Message '%1' deleted", $p->{name} ) };
     }
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub delete_all : Local {
@@ -118,7 +118,7 @@ sub inbox : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{username} = $p->{username} || $c->username;
-    $c->stash->{query_id} = $p->{query};	
+    $c->stash->{query_id} = $p->{query};    
     $c->stash->{template} = '/comp/message_grid.js';    
 }
 
@@ -150,7 +150,7 @@ sub to_and_cc : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => $err };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub test_message : Local {

@@ -113,7 +113,7 @@ sub get {
 
     for my $r ( @rs ) {
         push @{ $values{ $r->{key} } }, { ns=>$r->{ns}, bl=>$r->{bl}, value=>$r->{value} };
-    }	
+    }    
 
     # now find the best_match
     foreach my $k ( keys %values ) {
@@ -367,7 +367,7 @@ sub search_registry {
     my $self = shift;
     my $p = _parameters(@_);
 
-    my @rows;	
+    my @rows;    
     my @config_list = Baseliner::Core::Registry->starts_with('config');
     for my $config_key ( @config_list ) {
         my $config = Baseliner::Core::Registry->get( $config_key );

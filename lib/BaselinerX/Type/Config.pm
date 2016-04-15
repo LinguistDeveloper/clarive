@@ -7,10 +7,10 @@ with 'Baseliner::Role::Registrable';
 
 register_class 'config' => __PACKAGE__;
 
-has name 	=> ( is=> 'rw', isa=> 'Str' );
-has desc 	=> ( is=> 'rw', isa=> 'Str' );
+has name     => ( is=> 'rw', isa=> 'Str' );
+has desc     => ( is=> 'rw', isa=> 'Str' );
 has metadata => ( is=> 'rw', isa=> 'ArrayRef' );  ##TODO this shall be a Moose subtype someday, an array of ConfigColumn
-has formfu 	=> ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
+has formfu     => ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
 has 'plugin' => (is=>'rw', isa=>'Str', default=>'');
 has 'id' => (is=>'rw', isa=>'Str', default=>'');
 has 'preference' => (is=>'rw', isa=>'Bool', default=>0 );
@@ -176,7 +176,7 @@ sub data {
     my $data = $p{data} || {};
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} };  ## data=> params have priority
-        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} }) or die $!;			
+        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} }) or die $!;            
         while( my $r = $rs->next ) {
             $data->{ $_->{id} } = $r->value;
         }
@@ -200,9 +200,9 @@ sub factory_from_metadata{
         if($_->{id} eq 'ns'){
             $p{ns} = $data->{ $_->{id} };
         }elsif($_->{id} eq 'bl'){
-            $p{bl} = $data->{ $_->{id} };			
+            $p{bl} = $data->{ $_->{id} };            
         }
-    }		
+    }        
     
     $p{ns} ||= '/';
     $p{bl} ||= '*';
@@ -210,13 +210,13 @@ sub factory_from_metadata{
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} }; 
         ## load missing from table
-        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){	
+        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){    
             my $rs = mdb->config->find({ key => $self->key.'.'.$_->{id} }) or die $!;
             my @values;
             while( my $r = $rs->next ) {
                 push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
                 if( ($r->bl eq $p{bl}) ) {
-                    $data->{ $_->{id} } = $r->value;	            	
+                    $data->{ $_->{id} } = $r->value;                    
                 }
             }
             if( my $value = best_match( $p{ns}, $p{bl}, @values ) ) {
@@ -226,7 +226,7 @@ sub factory_from_metadata{
         $data->{ $_->{id} } = $data->{ $_->{id} }->() if ref $data->{$_->{id}} eq 'CODE';
     }
     $data = $self->getopt( $data ) if $p{getopt};
-    return $data;		
+    return $data;        
 }
 
 =head2 store
@@ -275,11 +275,11 @@ sub store_from_metadata{
         if($_->{id} eq 'ns'){
             $p{ns} = $data->{ $_->{id} };
         }elsif($_->{id} eq 'bl'){
-            $p{bl} = $data->{ $_->{id} };			
+            $p{bl} = $data->{ $_->{id} };            
         }
     }
     
-    return store($self,$c,%p);		
+    return store($self,$c,%p);        
 }
 
 sub grid_columns { 
@@ -340,7 +340,7 @@ sub rows {
         my $short = $self->short_from_key( $r->key );
         $data->{$short} = $r->value;
         push @packed_data, $r->value;
-    }	
+    }    
     push @rows, $data if( $data );
     ## now order by
     if( $p{sort_field} ) {
@@ -349,7 +349,7 @@ sub rows {
         for(@rows) {
             my $val = $_->{ $p{sort_field} };
             next if( $p{query} && ( $_->{packed_data} !~/$p{query}/ ) );
-            $r{ $val . "-$i" } = $_;	
+            $r{ $val . "-$i" } = $_;    
             $i++;
         }
         my @sorted = sort keys %r;
@@ -365,7 +365,7 @@ sub load_inf {  #TODO deprecated
     while( my $r = $rs->next  ) {
         (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
         $data->{$var} = $r->value;
-    }	
+    }    
     return $data;
 }
 
@@ -471,7 +471,7 @@ sub getRowValueById {
     $ns ||= '/';
     $bl ||= '*';
     my $rs = mdb->config->find({ ns=>$ns, bl=>$bl, key=>$self->key.'.'.$id })
-        or die $!;			
+        or die $!;            
     while( my $r = $rs->next ) {
         return $r->value
     }

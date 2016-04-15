@@ -43,7 +43,7 @@ sub leer_log : Local {
     for my $i ( 0 .. 59 ) {
         my $parent = $parent[$i];
         my $nodes = $nodes[$i];
-		my $action = $action[$i];
+        my $action = $action[$i];
         my $actor = $actor[$i];
         my $t = ($i+1) * 1000;
         push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
@@ -138,12 +138,12 @@ sub activity_by_status: Local {
     #my $statuses = $p->{statuses} || undef;
     my $end_date = $p->{end_date};
     my $where = { mid=>{'$ne'=>undef} };
-	#my $not_in_status = $p->{not_in_status} || undef;
+    #my $not_in_status = $p->{not_in_status} || undef;
 
 
     #my $days = $p->{days} || 2592000000;
-	# my $days = $p->{days} || 31536000000;
-	# $days = $days/86400000;
+    # my $days = $p->{days} || 31536000000;
+    # $days = $days/86400000;
 
     my $date = Class::Date->now();
     # my $filter_date = $date - ($days . 'D');
@@ -200,8 +200,8 @@ sub activity_by_status: Local {
         my $actor = $ev->{username} || 'clarive';
         #$action = 'add';
         if ($parent){
-			push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$category} };
-		} else {
+            push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> $category_colors{$category} };
+        } else {
             push @data, { parent=>_loc('Unknown'), node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor, color=> '#EEEEEE' };
         }
     }
@@ -215,20 +215,20 @@ sub grouped_activity : Local {
     my $p = $c->request->parameters;
 
     #_warn $p;
-	_log "comienzoooo";
+    _log "comienzoooo";
     
     my $limit = $p->{limit} || 10000;
-	_log "limit => " . $limit;
+    _log "limit => " . $limit;
     my $days = $p->{days} || 2592000000;
-	
-	$days = $days/86400000;
+    
+    $days = $days/86400000;
 
     my $where = { mid=>{'$ne'=>undef} };
 
     my $date = Class::Date->now();
     my $filter_date = $date - ($days . 'D');
-	_log "dates... " . $days;
-	_log "fecha filtrado" . $filter_date;
+    _log "dates... " . $days;
+    _log "fecha filtrado" . $filter_date;
     my @dates = _array(
         mdb->activity2->aggregate(
             [
@@ -243,8 +243,8 @@ sub grouped_activity : Local {
                     }
                 },
                 {'$sort' => {_id => 1}},
-				# {'$skip' => 10},
-				# {'$limit' => 50}
+                # {'$skip' => 10},
+                # {'$limit' => 50}
             ]
         )
     );
@@ -262,10 +262,10 @@ sub grouped_activity : Local {
             $action = 'add';
             push @data, { parent=>$parent, node=>$ev->{mid}, ev=>$action, t=>$ev->{ts}, who=>$actor } if ($parent);
         }
-		_log "subo => $date->{_id} - total: " . scalar @data;
+        _log "subo => $date->{_id} - total: " . scalar @data;
         $result_dates{$date->{_id}} = \@data;
     }
-	#_log( \%result_dates); 
+    #_log( \%result_dates); 
     $c->stash->{json} = { data=>\%result_dates };
     $c->forward('View::JSON');    
 }
@@ -274,10 +274,10 @@ sub swarm_tiempo : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-	my $limit = $p->{limit} || 10000;
+    my $limit = $p->{limit} || 10000;
     my $days = $p->{days} || 1;
 
-	my @array = ('2015-06-08 10:25','2015-06-08 10:26','2015-06-08 10:27','2015-06-08 10:28','2015-06-08 10:29','2015-06-08 10:30','2015-06-08 12:31','2015-06-08 12:32','2015-06-08 12:33','2015-06-08 13:34','2015-06-08 13:35','2015-06-08 13:36','2015-06-08 13:37','2015-06-08 13:48','2015-06-08 13:49','2015-06-08 13:55','2015-06-08 13:56','2015-06-08 13:57','2015-06-08 13:58','2015-06-08 13:59','2015-06-08 14:00','2015-06-08 14:06','2015-06-08 14:07','2015-06-08 14:08','2015-06-08 14:09','2015-06-08 14:10','2015-06-08 14:11','2015-06-08 14:12','2015-06-08 14:13','2015-06-08 14:14','2015-06-08 14:15','2015-06-08 14:16','2015-06-08 15:57','2015-06-08 15:58','2015-06-08 15:59','2015-06-08 16:00','2015-06-08 16:01','2015-06-08 16:02','2015-06-08 16:03','2015-06-08 16:04','2015-06-08 16:05','2015-06-08 16:06','2015-06-08 16:07','2015-06-08 16:08','2015-06-08 16:09','2015-06-08 16:10','2015-06-08 16:11','2015-06-08 16:12','2015-06-08 16:13','2015-06-08 16:14','2015-06-08 16:15','2015-06-08 16:16','2015-06-08 16:17','2015-06-08 16:18','2015-06-08 16:19','2015-06-08 16:20','2015-06-08 16:21','2015-06-08 16:22','2015-06-08 16:23','2015-06-08 16:24');
+    my @array = ('2015-06-08 10:25','2015-06-08 10:26','2015-06-08 10:27','2015-06-08 10:28','2015-06-08 10:29','2015-06-08 10:30','2015-06-08 12:31','2015-06-08 12:32','2015-06-08 12:33','2015-06-08 13:34','2015-06-08 13:35','2015-06-08 13:36','2015-06-08 13:37','2015-06-08 13:48','2015-06-08 13:49','2015-06-08 13:55','2015-06-08 13:56','2015-06-08 13:57','2015-06-08 13:58','2015-06-08 13:59','2015-06-08 14:00','2015-06-08 14:06','2015-06-08 14:07','2015-06-08 14:08','2015-06-08 14:09','2015-06-08 14:10','2015-06-08 14:11','2015-06-08 14:12','2015-06-08 14:13','2015-06-08 14:14','2015-06-08 14:15','2015-06-08 14:16','2015-06-08 15:57','2015-06-08 15:58','2015-06-08 15:59','2015-06-08 16:00','2015-06-08 16:01','2015-06-08 16:02','2015-06-08 16:03','2015-06-08 16:04','2015-06-08 16:05','2015-06-08 16:06','2015-06-08 16:07','2015-06-08 16:08','2015-06-08 16:09','2015-06-08 16:10','2015-06-08 16:11','2015-06-08 16:12','2015-06-08 16:13','2015-06-08 16:14','2015-06-08 16:15','2015-06-08 16:16','2015-06-08 16:17','2015-06-08 16:18','2015-06-08 16:19','2015-06-08 16:20','2015-06-08 16:21','2015-06-08 16:22','2015-06-08 16:23','2015-06-08 16:24');
 
     _log ">>>>>>>>>>>>>>>>>>>>>><Controlador";
     my @action = ('add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','add','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','mod','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del','del');
@@ -289,14 +289,14 @@ sub swarm_tiempo : Local {
     for my $i ( 0 .. 59 ) {
         my $parent = $parent[$i];
         my $nodes = $nodes[$i];
-		my $action = $action[$i];
+        my $action = $action[$i];
         my $actor = $actor[$i];
         my $t = $array[$i];
         push @data, { parent => $parent, node=>$nodes, ev=>$action, t=>$t, who=>$actor };
     }
      
     $c->stash->{json} = { data=>\@data };
-    $c->forward('View::JSON');   	
+    $c->forward('View::JSON');       
 }
 
 no Moose;

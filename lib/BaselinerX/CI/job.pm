@@ -822,7 +822,7 @@ sub summary {
             $active_time += $dur;
             $st=undef;
         }
-		$last_serv = $log->{service_key};
+        $last_serv = $log->{service_key};
         $last_step = $log->{step};
         $last_log = $mm;
     }

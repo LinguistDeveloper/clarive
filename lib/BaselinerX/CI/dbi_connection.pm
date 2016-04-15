@@ -41,7 +41,7 @@ sub gen_data_source {
 };
 
 sub connect {
-	my ( $self ) = @_;
+    my ( $self ) = @_;
     Util->_fail( 'Missing server attribute' ) unless $self->server;
     my $tmout = $self->timeout;
     return $self->_connection if ref $self->_connection;
@@ -95,9 +95,9 @@ sub data_source_parsed {
 }
 
 sub ping {
-	my ( $self ) = @_;
+    my ( $self ) = @_;
     my $db = $self->connect;
-	return 'connected';
+    return 'connected';
 };
 
 sub begin_work { my $dbh = $_[0]->connect; $dbh->begin_work if $dbh->{AutoCommit} }

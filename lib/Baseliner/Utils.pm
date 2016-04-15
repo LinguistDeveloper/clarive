@@ -261,7 +261,7 @@ sub _guess_utf8 {
 sub _utf8_to_ansi {
     return $_[0] unless _guess_utf8( $_[0] );
     my $ret = "$_[0]";
-    Encode::from_to( $ret, 'utf8', 'iso8859-1' );	
+    Encode::from_to( $ret, 'utf8', 'iso8859-1' );    
     return $ret;
 }
 
@@ -1201,7 +1201,7 @@ sub zip_files {
         }
         $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
         or _throw "Error writing zip file $p{to}: $!";
-	}
+    }
     return $p{to};
 }
 sub zip_tree {
@@ -2063,9 +2063,9 @@ sub in_range {
    #my @rg = map { $_ =~ s/-+./../g ? eval $_ : $_ } grep { length } split /,+/, $range;
    my @rg = grep { length } split /,+/, $range;
    List::MoreUtils::any { 
-   		/^(.+)-+$/ ? $v >= $1 :
-   		/^-+(.+)$/ ? $v <= $1 :
-   		/^(.+)-+(.+)$/ ? ($v >= $1 && $v <= $2) : 
+           /^(.+)-+$/ ? $v >= $1 :
+           /^-+(.+)$/ ? $v <= $1 :
+           /^(.+)-+(.+)$/ ? ($v >= $1 && $v <= $2) : 
         $v == $_ 
    } @rg;
 }

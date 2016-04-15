@@ -49,7 +49,7 @@ sub hash_by_path {
     my %hash;
     for my $element ( _array $self->elements ) {
         my $key = $element->long_path;
-        $hash{ $key } = $element;	
+        $hash{ $key } = $element;    
     }
     return %hash;
 }
@@ -59,7 +59,7 @@ sub hash_by_version {
     my %hash;
     for my $element ( _array $self->elements ) {
         my $key = $element->long_path;
-        $hash{ $key } = $element;	
+        $hash{ $key } = $element;    
     }
     return %hash;
 }

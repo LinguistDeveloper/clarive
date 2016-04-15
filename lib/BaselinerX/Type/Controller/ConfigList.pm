@@ -24,7 +24,7 @@ sub delete : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub resolve : Local {
@@ -37,7 +37,7 @@ sub resolve : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub update : Local {
@@ -57,7 +57,7 @@ sub update : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error storing config value %1: %2", $$, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub json : Local {

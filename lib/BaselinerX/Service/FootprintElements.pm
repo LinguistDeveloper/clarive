@@ -73,7 +73,7 @@ register 'service.job.footprint' => {
                 }
             }
             #logdebug "Footprinting fichero:\n'$filename'\n";
-            if ( $elto_found ) {			
+            if ( $elto_found ) {            
                 if( (-f $filename) && (-T $filename)) {
                     my $newdata = "";
                     open FP,"<$filename";

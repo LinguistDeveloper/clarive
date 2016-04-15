@@ -19,12 +19,12 @@ my %data;
 my $json;
 
 #####################
-#		USER	    #
+#        USER        #
 #####################
 
 $url = 'user/update';
 %data = ('action' => 'add', 'type' => 'user', 'id' => '-1', 'username' => 'utest', 'pass' => 'utest', 'alias' => 'utest', 'pass_cfrm' => 'utest',
-		'realname' => 'usuario de prueba', 'language' => 'spanish', 'phone' => '661000000', 'email' => 'usuario@test.es');
+        'realname' => 'usuario de prueba', 'language' => 'spanish', 'phone' => '661000000', 'email' => 'usuario@test.es');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );

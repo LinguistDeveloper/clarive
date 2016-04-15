@@ -267,7 +267,7 @@ register 'registor.action.topic_category_fields' => {
             for my $field (_array $meta){
                 my $field_to_id = $field->{id_field};
                 if ($field->{fields}) {
-                	my @fields_form = _array $field->{fields};
+                    my @fields_form = _array $field->{fields};
                     
                     for my $field_form (@fields_form){
                         my $field_form_to_id = _name_to_id($field_form->{id_field});
@@ -1264,7 +1264,7 @@ sub get_update_system_fields {
     
     for my $template (  grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
-    	    my @select_fields = grep { $_->{type} eq $template->{metadata}->{params}->{type}} @fields;
+            my @select_fields = grep { $_->{type} eq $template->{metadata}->{params}->{type}} @fields;
             for my $select_field (@select_fields){
                 my ($update_field) = 
                     grep { $$_{id_field} eq $select_field->{id_field} } 
@@ -1285,7 +1285,7 @@ sub get_update_system_fields {
     
     for my $system_listbox ( grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
         if( $system_listbox->{metadata}->{name} ){
-    		my @select_fields = grep { $_->{js} eq $system_listbox->{metadata}->{params}->{js}} @fields;
+            my @select_fields = grep { $_->{js} eq $system_listbox->{metadata}->{params}->{js}} @fields;
             for my $select_field (@select_fields){
                 my ($update_field) = 
                     grep { $$_{id_field} eq $select_field->{id_field} } 
@@ -2667,7 +2667,7 @@ sub set_release {
             }
         }else{
             mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid, rel_type=>$rel_type, rel_field => $release_field },{multiple=>1});
-	        $self->cache_topic_remove($old_release);
+            $self->cache_topic_remove($old_release);
             if ($cancelEvent != 1){            
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
@@ -2949,7 +2949,7 @@ sub get_meta_permissions {
         my $parse_id_field = $_->{id_field};
 
         if($_->{fieldlets}){
-        	my @fields_form = _array $_->{fieldlets};
+            my @fields_form = _array $_->{fieldlets};
             for my $field_form ( @fields_form ){
                 my $parse_field_form_id = $field_form->{id_field};
                 my $write_action = join '.', 'action.topicsfield', $parse_category, $parse_id_field,  $parse_field_form_id, $parse_status, 'write';

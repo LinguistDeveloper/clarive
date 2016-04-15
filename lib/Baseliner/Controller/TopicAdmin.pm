@@ -456,7 +456,7 @@ sub list_tree_fields : Local {
                             id          => $i++,
                             id_field    => $_->{id_field},
                             text        => _loc ($_->{params}->{name_field}),
-                            params	    => $_->{params},
+                            params        => $_->{params},
                             icon        => '/static/images/icons/lock_small.png',
                             leaf        => \1
                         }
@@ -490,7 +490,7 @@ sub list_tree_fields : Local {
                   id        => $i++,
                   id_field  => $_->{id_field},
                   text      => $params->{name_field},
-                  params	=> $params,
+                  params    => $params,
                   icon    => '/static/images/icons/icon_wand.gif',
                   leaf      => \1
                 };        
@@ -583,9 +583,9 @@ sub list_tree_fields : Local {
                     id          => $i++,
                     id_field    => $template->{metadata}{name},
                     text        => _loc ($template->{metadata}{name}),
-                    params	    => $template->{metadata}{params},
+                    params        => $template->{metadata}{params},
                     leaf        => \1,
-                };		
+                };        
         }
     }
 
@@ -601,7 +601,7 @@ sub list_tree_fields : Local {
                             id          => $i++,
                             id_field    => 'listbox',
                             text        => _loc ('Listbox'),
-                            params	    => {origin=> 'template'},
+                            params        => {origin=> 'template'},
                             meta        => \@meta_system_listbox,
                             data        => \@data_system_listbox,
                             leaf        => \1                             
@@ -620,7 +620,7 @@ sub list_tree_fields : Local {
                             id          => $i++,
                             id_field    => 'form',
                             text        => _loc ('Custom forms'),
-                            params	    => {origin=> 'template'},
+                            params        => {origin=> 'template'},
                             meta        => \@meta_forms,
                             data        => \@data_forms,
                             leaf        => \1                             
@@ -707,7 +707,7 @@ sub get_conf_fields : Local {
                             id          => $_->{params}->{field_order},
                             id_field    => $_->{id_field},
                             name        => _loc ($_->{params}->{name_field} // $_->{id_field}),
-                            params	    => $_->{params},
+                            params        => $_->{params},
                             img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/lock_small.png' : '/static/images/icons/icon_wand.gif',
                             meta => {
                                 bd_field    => { read_only => \0 },

@@ -19,7 +19,7 @@ my %data;
 my $json;
 
 #####################
-#		DAEMONS	    #
+#        DAEMONS        #
 #####################
 
 #create a daemon

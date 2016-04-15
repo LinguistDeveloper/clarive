@@ -20,31 +20,31 @@ my $json;
 my $mod;
 
 sub init_test_sequences {
-	$url = '/repl/sequence_test';
-	%data = ( option => 0 );
-	$ag->post( URL($url), \%data );
+    $url = '/repl/sequence_test';
+    %data = ( option => 0 );
+    $ag->post( URL($url), \%data );
 }
 
 sub restore_previous_state {
-	$url = '/repl/sequence_test';
-	%data = ( option => -1 );
-	$ag->post( URL($url), \%data );
+    $url = '/repl/sequence_test';
+    %data = ( option => -1 );
+    $ag->post( URL($url), \%data );
 }
 
 sub simulate_sequence_change {
-	$url = '/repl/sequence_test';
-	%data = ( option => 1 );
-	$ag->post( URL($url), \%data );
+    $url = '/repl/sequence_test';
+    %data = ( option => 1 );
+    $ag->post( URL($url), \%data );
 }
 
 sub get_seq {
-	my %p = @_;
-	my $seq_id = $p{seq_id};
-	$url = '/repl/sequence_test';
-	%data = ( option => 2, seq_id => $seq_id );
-	$ag->post( URL($url), \%data );
-	my $json = _decode_json( $ag->content );
-	$json->{seq};
+    my %p = @_;
+    my $seq_id = $p{seq_id};
+    $url = '/repl/sequence_test';
+    %data = ( option => 2, seq_id => $seq_id );
+    $ag->post( URL($url), \%data );
+    my $json = _decode_json( $ag->content );
+    $json->{seq};
 }
 
 

@@ -5,10 +5,10 @@ with 'Baseliner::Role::Registrable';
 
 register_class 'form' => __PACKAGE__;
 
-has name 	=> ( is=> 'rw', isa=> 'Str' );
-has desc 	=> ( is=> 'rw', isa=> 'Str' );
+has name     => ( is=> 'rw', isa=> 'Str' );
+has desc     => ( is=> 'rw', isa=> 'Str' );
 has metadata => ( is=> 'rw', isa=> 'ArrayRef' );  ##TODO this shall be a Moose subtype someday, an array of ConfigColumn
-has formfu 	=> ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
+has formfu     => ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
 has 'plugin' => (is=>'rw', isa=>'Str', default=>'');
 has 'id' => (is=>'rw', isa=>'Str', default=>'');
 

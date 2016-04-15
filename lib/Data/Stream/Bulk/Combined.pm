@@ -123,7 +123,7 @@ sub next {
         push @stream_items, $stream->next;
     }
     return [ $self->mesh( @stream_items ) ];
-}	
+}    
 
 sub run_filters {
     my $self = shift;

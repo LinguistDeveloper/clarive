@@ -11,7 +11,7 @@ sub default : Path {
     my $file = $c->path_to('lib', 'Baseliner', 'I18N', $lang . '.po');
     try {
         $c->serve_static_file( $file );
-    } catch {	
+    } catch {    
         $c->res->body( "" );
     };
 }

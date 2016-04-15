@@ -10,7 +10,7 @@ BEGIN { extends 'Catalyst::Controller' };
 sub generate_form : Path('/config/generate_form') {
     my ($self,$c, $key )=@_;
 
-    $c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
+    $c->stash->{ns_filter} = { start=>0, limit=>100 };     
     #$c->forward('/namespace/load_namespaces');
     $c->forward('/baseline/load_baselines');
 
@@ -47,7 +47,7 @@ sub form : Path('/config/form') {
 
 sub form_render : Private {
     my ($self,$c)=@_;
-    $c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
+    $c->stash->{ns_filter} = { start=>0, limit=>100 };     
     #$c->forward('/namespace/load_namespaces');
     $c->forward('/baseline/load_baselines');
     $c->stash->{url_submit} = '/config/submit';

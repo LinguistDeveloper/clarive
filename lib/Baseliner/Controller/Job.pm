@@ -375,7 +375,7 @@ sub refresh_now : Local {
     } catch { 
         _error( shift );
     };
-    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };	
+    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };    
     $c->forward('View::JSON');
 }
 
@@ -499,7 +499,7 @@ sub submit : Local {
         _error( $msg );
         $c->stash->{json} = { success => \0, msg=>$msg };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');    
 }
 
 sub natures_json {

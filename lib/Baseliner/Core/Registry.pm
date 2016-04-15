@@ -91,7 +91,7 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', default => sub {{}
         $raw->{$_} = $param->{$_} for grep !/^registry_node$/, keys $param;
         return $raw;
     }
-}	
+}    
 
 sub clear {
     my $class = shift;
@@ -207,7 +207,7 @@ sub initialize {
     for my $rc ( sort keys %init_rc ) {
         for my $rc_node ( sort @{ $init_rc{$rc} } ) {
             my ($key, $node) = @{  $rc_node };
-            ## search for my class backwards	
+            ## search for my class backwards    
             $self->instantiate( $node );
         }
     }
@@ -216,7 +216,7 @@ sub initialize {
 
 ## bless an object instance with the provided params
 sub instantiate {
-    my ($self,$node,$class)=@_;	
+    my ($self,$node,$class)=@_;    
     $class ||= $self->_find_class( $node->key );
     $node->{instance} = $class->new( $node->param );
 }
@@ -414,7 +414,7 @@ sub search_for_node {
 
         # query for attribute value
         foreach my $attr( keys %query ) {
-            my $val = $query{$attr};	
+            my $val = $query{$attr};    
             if( defined $val ) {
                 if( defined $node->{$attr} ) {
                     next OUTER unless( $node->{$attr} eq $val);

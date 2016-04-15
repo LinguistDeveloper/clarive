@@ -67,7 +67,7 @@ sub sendFile {
     my $fs = $harax->{FS};
     
     $rfile = $localfile unless($rfile);
-    $rfile=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );	
+    $rfile=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );    
     if( ! -e $localfile ) {
         die "sendFile: the file '$localfile' does not exist.";
     }
@@ -88,7 +88,7 @@ sub sendData {
     my $FF = $fs->open_write($rfile);
     print $FF $data;
     $fs->close_write($FF);
-    my ($RC,$RET) = ($?,"");	
+    my ($RC,$RET) = ($?,"");    
     return ($RC >> 8,$RET);
 }
 
@@ -131,7 +131,7 @@ sub get_file {
         ##DEBUG && warn ahora()." - get_file parms: $self, $rfile, $localfile \n";
         $self->{scp}->get($rfile, $localfile) or print  $self->{scp}->{errstr};
         ##DEBUG && warn ahora()." - get_file ok.\n";
-    }	
+    }    
 }
 
 sub getDir {
@@ -143,7 +143,7 @@ sub getDir {
     my %Paths=();
     for( split /\n/, $RET ) {
         next unless $_;
-        DEBUG && warn "Getting $_\n";		
+        DEBUG && warn "Getting $_\n";        
         (my $rempath = $_ ) =~ s{\Q$rdir\E}{}g;
         $rempath=~s{\\}{/}g;
         my $localfile = $localdir."/".$rempath;
@@ -152,10 +152,10 @@ sub getDir {
         unless( exists $Paths{$localpath} ) {
             DEBUG && warn "Making path $localpath\n";
             require File::Path; 
-            File::Path::mkpath($localpath) or print "Mkpath error: $!"; 		
-        }		
+            File::Path::mkpath($localpath) or print "Mkpath error: $!";         
+        }        
         $Paths{$localpath}=1;
-        DEBUG && warn "NOw the file $_ to $localfile\n";		
+        DEBUG && warn "NOw the file $_ to $localfile\n";        
         $harax->get_file( $_, $localfile);
     }
     return( 0, '');
@@ -165,7 +165,7 @@ sub execute {
     my ($harax, $rcmd) = @_;
     my $fs = $harax->{FS};
     
-    $rcmd=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );	
+    $rcmd=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );    
     $rcmd=~ s{"}{\\"}g if( $harax->{WIN} );
     my $RET = $fs->_remotely($rcmd);
     my $RC = $?;
@@ -197,7 +197,7 @@ sub _executeas {
     if( $user eq "" ) {
         return (99,"ERROR ".__PACKAGE__.": remote user parameter is blank!");
     }
-    $rcmd =~ s/\"/\\\"/g;  	#"
+    $rcmd =~ s/\"/\\\"/g;      #"
     my $RET = $fs->_remotely("su - $user -c $rcmd");
     my $RC = $?;
     return($RC >> 8,$RET);
