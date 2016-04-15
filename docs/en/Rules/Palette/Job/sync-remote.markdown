@@ -13,3 +13,5 @@ Configuration options:
 - **Remote Path**: Path to remote directory.
 - **Local Path**:  Path to local directory.
 - **Delete extraneous files from destination**: Whether to remove the files that do not exit in the source directory.
+
+Currently only supported for SSH connections.
