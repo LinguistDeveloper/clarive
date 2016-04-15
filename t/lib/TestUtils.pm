@@ -15,7 +15,7 @@ use Clarive::mdb;
 use Clarive::ci;
 use Time::Local;
 use Time::Piece;
-use Test::MockTime qw(set_absolute_time restore_time);
+use Test::MockTime qw(set_fixed_time restore_time);
 use Test::TempDir::Tiny;
 use TestGit;
 
@@ -148,7 +148,7 @@ sub mock_time {
     my $epoch = $time =~ m/^\d+$/ ? $time : Time::Piece->strptime( $time, '%Y-%m-%dT%T' )->epoch;
     $epoch -= $gmt_offset_in_seconds;
 
-    set_absolute_time($epoch);
+    set_fixed_time($epoch);
 
     my @retval = $cb->();
 
