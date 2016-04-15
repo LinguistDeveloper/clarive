@@ -116,7 +116,7 @@
                     var save_foo = function(de, de_data){
                         form.getForm().setValues( de_data ); 
                     };
-                    data_panel = new Baseliner.DataEditor({ data: opts.rec, hide_cancel: true, save_only: true, on_save: save_foo });
+                    data_panel = new Baseliner.DataEditor({ data: opts.rec, hide_cancel: true, save_only: true, on_save: save_foo, hide_save: !can_save });
                     cardpanel.add( data_panel );
                     cardpanel.getLayout().setActiveItem( data_panel );
                 } else {
