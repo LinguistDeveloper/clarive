@@ -4,39 +4,70 @@ use Moose;
 use Encode ();
 use Text::Unaccent::PurePerl qw(unac_string);
 use Baseliner::Model::Topic;
-use Baseliner::Utils qw(_dump _utf8 _array _strip_html);
+use Baseliner::Utils qw(_dump _utf8 _array _strip_html _log _dump _loc);
 
 has renderer => qw(is ro);
+
+sub split_columns_csv {
+    my $self           = shift;
+    my (%params)       = @_;
+    my @column_csv     = ();
+    my $splited_column = {};
+
+    for my $column ( grep { length $_->{name} } _array( $params{columns} ) ) {
+
+        if ( $column->{id} ne 'numcomment' ) {
+
+            push( @column_csv, $column );
+
+        }
+        else {
+
+            push( @column_csv, $column );
+
+            $splited_column->{id}   = 'referenced_in';
+            $splited_column->{name} = 'REF_IN_SPLIT';
+            push( @column_csv, $splited_column );
+
+            $splited_column         = {};
+            $splited_column->{id}   = 'references_out';
+            $splited_column->{name} = 'REF_OUT_SPLIT';
+            push( @column_csv, $splited_column );
+
+            $splited_column         = {};
+            $splited_column->{id}   = 'num_file';
+            $splited_column->{name} = 'file_name';
+            push( @column_csv, $splited_column );
+
+        }
+
+    }
+
+    return @column_csv;
+}
+
 
 sub export {
     my $self = shift;
     my ( $data, %params ) = @_;
-
     my @csv;
     my @cols;
+    my @colum_print_csv = split_columns_csv ( params => %params );
+    my $header_file;
+    my $referencia_in =_loc("Referenced In");
+    my $referencia_out =_loc("References");
 
-    my ( $ref_in, $ref_out, $num_file, $numcomment );
+    $header_file = join (';', map { "\"" . _loc($_->{name}) ."\""} @colum_print_csv) . "\n";
+
+    $header_file=~s/REF_IN_SPLIT/$referencia_in/;
+    $header_file=~s/REF_OUT_SPLIT/$referencia_out/;
+
     for my $row ( _array $data) {
         my $main_category = $row->{category}->{name} || $row->{category_name};
         my @cells;
-        for my $col ( grep { length $_->{name} } _array( $params{columns} ) ) {
+        for my $col ( @colum_print_csv ) {
             my $col_id = $col->{id};
-          COMMENTS:
-            if ( $col->{id} eq 'numcomment' && $params{id_report} !~ /report/ )
-            {    # Look for all fields managed in this column
-                if ( $col_id eq 'numcomment' ) {
-                    $col_id = 'referenced_in';
-                }
-                elsif ( $col_id eq 'referenced_in' ) {
-                    $col_id = 'references_out';
-                }
-                elsif ( $col_id eq 'references_out' ) {
-                    $col_id = 'num_file';
-                }
-                elsif ( $col_id eq 'num_file' ) {
-                    $col_id = 'numcomment';
-                }
-            }
+
             my $v = $row->{$col_id};
             if ( ref $v eq 'ARRAY' ) {
                 if ( $col->{id} eq 'projects' ) {
@@ -58,7 +89,15 @@ sub export {
                     $v = join ';', @res;
                 }
                 else {
-                    $v = join ',', @$v;
+
+                    if($col->{name} eq 'REF_IN_SPLIT' || $col->{name} eq 'REF_OUT_SPLIT'){
+
+                    $v = scalar  @$v;
+
+                    }else{
+
+                        $v = join ',', @$v;
+                    }
                 }
             }
             elsif ( ref $v eq 'HASH' ) {
@@ -122,6 +161,7 @@ sub export {
     }
 
     my $body = join("\n", @csv);
+    $body = $header_file .  $body;
 
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file
     my $len = length $body;
