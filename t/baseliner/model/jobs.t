@@ -88,45 +88,39 @@ sub _create_job {
     my (%params) = @_;
 
     mdb->rule->insert(
-        {
-            id        => '1',
+        {   id        => '1',
             rule_when => 'promote',
             rule_tree => JSON::encode_json(
-                [
-                    {
-                        "attributes" => {
+                [   {   "attributes" => {
                             "disabled" => 0,
                             "active"   => 1,
                             "key"      => "statement.step",
                             "text"     => "CHECK",
                             "expanded" => 1,
-                            "leaf" => \0,
+                            "leaf"     => \0,
                         },
                         "children" => []
                     },
-                    {
-                        "attributes" => {
+                    {   "attributes" => {
                             "disabled" => 0,
                             "active"   => 1,
                             "key"      => "statement.step",
                             "text"     => "INIT",
                             "expanded" => 1,
-                            "leaf" => \0,
+                            "leaf"     => \0,
                         },
                         "children" => []
                     },
-                    {
-                        "attributes" => {
+                    {   "attributes" => {
                             "disabled" => 0,
                             "active"   => 1,
                             "key"      => "statement.step",
                             "text"     => "PRE",
                             "expanded" => 1,
-                            "leaf" => \0,
+                            "leaf"     => \0,
                         },
                         "children" => [
-                            {
-                                "attributes" => {
+                            {   "attributes" => {
                                     "palette"        => 0,
                                     "disabled"       => 0,
                                     "on_drop_js"     => undef,
@@ -135,7 +129,7 @@ sub _create_job {
                                     "text"           => "Server CODE",
                                     "expanded"       => 1,
                                     "run_sub"        => 1,
-                                    "leaf" => \1,
+                                    "leaf"           => \1,
                                     "active"         => 1,
                                     "name"           => "Server CODE",
                                     "holds_children" => 0,
@@ -148,8 +142,7 @@ sub _create_job {
                                 },
                                 "children" => []
                             },
-                            {
-                                "attributes" => {
+                            {   "attributes" => {
                                     "palette"        => 0,
                                     "disabled"       => 0,
                                     "on_drop_js"     => undef,
@@ -157,66 +150,73 @@ sub _create_job {
                                     "text"           => "IF var THEN",
                                     "expanded"       => 1,
                                     "run_sub"        => 1,
-                                    "leaf" => \0,
+                                    "leaf"           => \0,
                                     "name"           => "IF var THEN",
                                     "active"         => 1,
                                     "holds_children" => 1,
-                                    "data"           => {},
-                                    "nested"         => "0",
-                                    "on_drop"        => ""
+                                    "data"           => {
+                                        "value"    => "user_story",
+                                        "variable" => "category_name"
+                                    },
+                                    "nested"  => "0",
+                                    "on_drop" => ""
                                 },
                                 "children" => [
-                                    {
-                                        "attributes" => {
-                                            "palette"    => 0,
-                                            "disabled"   => 0,
-                                            "on_drop_js" => undef,
-                                            "key"  => "statement.code.server",
-                                            "text" => "INSIDE IF",
+                                    {   "attributes" => {
+                                            "palette"        => 0,
+                                            "disabled"       => 0,
+                                            "on_drop_js"     => undef,
+                                            "key"            => "statement.code.server",
+                                            "text"           => "INSIDE IF",
                                             "expanded"       => 1,
                                             "run_sub"        => 1,
-                                            "leaf" => \1,
+                                            "leaf"           => \1,
                                             "name"           => "Server CODE",
                                             "active"         => 1,
                                             "holds_children" => 0,
-                                            "data"           => {},
-                                            "nested"         => "0",
-                                            "on_drop"        => ""
+                                            "data"           => {
+                                                "value"    => "user_story",
+                                                "variable" => "category_name"
+                                            },
+                                            "nested"  => "0",
+                                            "on_drop" => ""
                                         },
                                         "children" => []
                                     },
-                                    {
-                                        "attributes" => {
-                                            "icon" =>
-                                              "/static/images/icons/if.gif",
+                                    {   "attributes" => {
+                                            "icon"           => "/static/images/icons/if.gif",
                                             "palette"        => 0,
                                             "on_drop_js"     => undef,
                                             "holds_children" => 1,
                                             "nested"         => "0",
-                                            "key"      => "statement.if.var",
-                                            "text"     => "IF var THEN",
-                                            "run_sub"  => 1,
-                                            "leaf" => \0,
-                                            "on_drop"  => "",
-                                            "name"     => "IF var THEN",
-                                            "data"     => {},
+                                            "key"            => "statement.if.var",
+                                            "text"           => "IF var THEN",
+                                            "run_sub"        => 1,
+                                            "leaf"           => \0,
+                                            "on_drop"        => "",
+                                            "name"           => "IF var THEN",
+                                            "data"           => {
+                                                "value"    => "user_story",
+                                                "variable" => "category_name"
+                                            },
                                             "expanded" => 1
                                         },
                                         "children" => [
-                                            {
-                                                "attributes" => {
+                                            {   "attributes" => {
                                                     "palette"        => 0,
                                                     "on_drop_js"     => undef,
                                                     "holds_children" => 0,
                                                     "nested"         => "0",
-                                                    "key" =>
-                                                      "statement.code.server",
-                                                    "text"     => "INSIDE IF2",
-                                                    "run_sub"  => 1,
-                                                    "leaf" => \1,
-                                                    "on_drop"  => "",
-                                                    "name"     => "Server CODE",
-                                                    "data"     => {},
+                                                    "key"            => "statement.code.server",
+                                                    "text"           => "INSIDE IF2",
+                                                    "run_sub"        => 1,
+                                                    "leaf"           => \1,
+                                                    "on_drop"        => "",
+                                                    "name"           => "Server CODE",
+                                                    "data"           => {
+                                                        "value"    => "user_story",
+                                                        "variable" => "category_name"
+                                                    },
                                                     "expanded" => 1
                                                 },
                                                 "children" => []
@@ -227,18 +227,16 @@ sub _create_job {
                             }
                         ]
                     },
-                    {
-                        "attributes" => {
+                    {   "attributes" => {
                             "disabled" => 0,
                             "active"   => 1,
                             "key"      => "statement.step",
                             "text"     => "RUN",
                             "expanded" => 1,
-                            "leaf" => \0,
+                            "leaf"     => \0,
                         },
                         "children" => [
-                            {
-                                "attributes" => {
+                            {   "attributes" => {
                                     "palette"        => 0,
                                     "disabled"       => 0,
                                     "on_drop_js"     => undef,
@@ -247,7 +245,7 @@ sub _create_job {
                                     "text"           => "Server CODE",
                                     "expanded"       => 1,
                                     "run_sub"        => 1,
-                                    "leaf" => \1,
+                                    "leaf"           => \1,
                                     "active"         => 1,
                                     "name"           => "Server CODE",
                                     "holds_children" => 0,
@@ -262,18 +260,16 @@ sub _create_job {
                             }
                         ]
                     },
-                    {
-                        "attributes" => {
+                    {   "attributes" => {
                             "disabled" => 0,
                             "active"   => 1,
                             "key"      => "statement.step",
                             "text"     => "POST",
                             "expanded" => 1,
-                            "leaf" => \0,
+                            "leaf"     => \0,
                         },
                         "children" => [
-                            {
-                                "attributes" => {
+                            {   "attributes" => {
                                     "palette"        => 0,
                                     "disabled"       => 0,
                                     "on_drop_js"     => undef,
@@ -282,7 +278,7 @@ sub _create_job {
                                     "text"           => "Server CODE",
                                     "expanded"       => 1,
                                     "run_sub"        => 1,
-                                    "leaf" => \1,
+                                    "leaf"           => \1,
                                     "active"         => 1,
                                     "name"           => "Server CODE",
                                     "holds_children" => 0,
@@ -302,11 +298,12 @@ sub _create_job {
         }
     );
 
-    my $job = BaselinerX::CI::job->new(id_rule => '1', %params);
+    my $job = BaselinerX::CI::job->new( id_rule => '1', %params );
     capture { $job->save };
 
     return $job;
 }
+
 
 sub _create_changeset {
     my $id_changeset_rule = TestSetup->create_rule_form(

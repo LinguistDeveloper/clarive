@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::LongString;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
@@ -149,6 +150,62 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
     my $args = $code->();
 
     is_deeply $args, {output => '123'};
+};
+
+subtest 'statement.if.var: access inside data_key' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        [   {   "attributes" => {
+                    "key"  => "statement.if.var",
+                    "text" => "IF var THEN",
+                    "data" => {
+                        "value"    => "user_story",
+                        "variable" => "category_name"
+                    },
+                    "data_key" => "topic_data"
+                },
+            }
+        ]
+    );
+
+    $dsl =~ s/\n+/\n/g;
+    $dsl =~ s/^\s+|\s+$//;
+
+    is_string $dsl, '# task: IF var THEN
+current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0 );
+if ( $stash->{topic_data}->{category_name} eq \'user_story\' ) {
+}';
+};
+
+subtest 'statement.if_not.var: access inside data_key' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        [   {   "attributes" => {
+                    "key"  => "statement.if_not.var",
+                    "text" => "IF var THEN",
+                    "data" => {
+                        "value"    => "user_story",
+                        "variable" => "category_name"
+                    },
+                    "data_key" => "topic_data"
+                },
+            },
+        ]
+    );
+
+    $dsl =~ s/\n+/\n/g;
+    $dsl =~ s/^\s+|\s+$//;
+
+    is_string $dsl, '# task: IF var THEN
+current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0 );
+if ( $stash->{topic_data}->{category_name} ne \'user_story\' ) {
+}';
 };
 
 subtest 'dsl_build: semaphore key test with fork' => sub {
@@ -626,20 +683,15 @@ subtest 'dsl_build: builds dsl with correct nested level' => sub {
         }
     );
 
-    is $dsl, <<'EOF';
-# task: IF var THEN
+    $dsl =~ s/\n+/\n/g;
+    $dsl =~ s/^\s+|\s+$//;
 
+    is_string  $dsl, '# task: IF var THEN
 current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{IF var THEN}, level => 0 );
-
-if ( $stash->{'foo'} eq 'bar' ) {
-
+if ( $stash->{foo} eq \'bar\' ) {
     # task: INSIDE IF
-
     current_task( $stash, id_rule => q{}, rule_name => q{}, name => q{INSIDE IF}, level => 1 );
-
-}
-
-EOF
+}'
 };
 
 sub _setup {
