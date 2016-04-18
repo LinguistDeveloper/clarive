@@ -4,24 +4,24 @@ extends 'Clarive::Cmd';
 use v5.10;
 use Term::ANSIColor qw/:constants/;
 
-has server => qw(is rw isa Str), default => sub { 
+has server => qw(is rw isa Str), default => sub {
     my ($self)=@_;
     return $self->app->config->{redis}{server} // 'localhost:6379';
 };
 
-has db => qw(is ro lazy 1), default => sub { 
+has db => qw(is ro lazy 1), default => sub {
     my ( $self ) = @_;
     require Redis;
     Redis->new( %{ $self->app->config->{redis} || {} }, server=>$self->server );
 };
 
-has queue => qw(is ro lazy 1), default => sub { 
+has queue => qw(is ro lazy 1), default => sub {
     my ( $self ) = @_;
     require Redis;
     Redis->new( %$self );
 };
 
-with 'Clarive::Role::Baseliner'; 
+with 'Clarive::Role::Baseliner';
 
 our $CAPTION = 'queue management tools';
 
@@ -31,9 +31,9 @@ sub run {
 
 sub run_workers {
     my ($self,%opts)=@_;
-    
+
     require JSON::XS;
-    
+
     say "workers:";
     for my $key ( $self->db->hkeys('queue:workers') ) {
         my $v = $self->db->hget( 'queue:workers', $key);
@@ -51,7 +51,7 @@ sub run_workers {
 
 sub run_keys {
     my ($self,%opts)=@_;
-    
+
     my $mask = $opts{mask} // '*';
     say "queue:$mask keys:";
     for my $key ( $self->db->keys("queue:$mask") ) {
@@ -62,14 +62,14 @@ sub run_keys {
 
 sub run_ping {
     my ($self,%opts)=@_;
-    
+
     require JSON::XS;
-    
+
     my $wid = $opts{wid} // $opts{workerid} // die "Missing option workerid\n";
     $self->queue->subscribe("queue:pong:$wid", sub{
         my ($msg)=@_;
         my $cy = $self->_format_conf( $msg );
-        say "worker id $wid is alive:\n$cy"; 
+        say "worker id $wid is alive:\n$cy";
         exit 0;
     });
     say "pinging $wid...";
@@ -134,4 +134,3 @@ sub _format_conf_yaml {
     return $cy;
 }
 1;
-

@@ -95,7 +95,7 @@ sub build_where {
             if (@not_in && @in){
                 $where->{'category_status.id'} = {'$nin' =>\@not_in, '$in' =>\@in};
             }else{
-                $where->{'category_status.id'} = @not_in ? 
+                $where->{'category_status.id'} = @not_in ?
                         mdb->nin(@not_in) : mdb->in(@in);
             }
         } else {
@@ -146,7 +146,7 @@ sub build_where {
             }
             $where = merge $where, $filter;
         }
-       
+
         if ( defined $search_query && length $search_query ) {
             my @mids_in = _array( delete $where->{mid} );
             push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
@@ -154,7 +154,7 @@ sub build_where {
               Baseliner::Model::Topic->new->run_query_builder( $search_query, $where, $username, build_query => 1 );
             $where->{mid} = mdb->in(@mids_in) if @mids_in;
         }
-    }   
+    }
 
     return $where;
 }

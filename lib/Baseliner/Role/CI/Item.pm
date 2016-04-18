@@ -8,8 +8,8 @@ has dir          => qw(is rw isa Str default /);           # my parent
 has path    => qw(is rw isa Str), lazy => 1, default=> sub{           # path includes the filename
     my $self = shift;
     return $self->name;
-};  
-has path_rel     => qw(is rw isa Str);                     # with prefix only 
+};
+has path_rel     => qw(is rw isa Str);                     # with prefix only
 has path_in_repo => qw(is rw isa Str);                     # in case someone changes path, set this here
 has size         => qw(is rw isa Num default -1);
 has mask         => qw(is rw isa Maybe[Num] default 777);
@@ -111,8 +111,8 @@ Saves item in the process.
 =cut
 sub tree_resolve {
     my ($self,%p) = @_;
-    my $tag_relationship = $p{tag_relationship} // $self->tag_relationship; 
-    my $item_relationship = $p{item_relationship} // $self->item_relationship; 
+    my $tag_relationship = $p{tag_relationship} // $self->tag_relationship;
+    my $item_relationship = $p{item_relationship} // $self->item_relationship;
     my @rel_cis;
     my @rel_topics;
     for my $t ( Util->_array( $self->parse_tree ) ) {
@@ -161,7 +161,7 @@ sub scan {
     _fail _loc('No natures available to scan. Please, define some nature CIs before continuing.') unless @natures;
     for my $nat ( @natures ) {
         # should return/update nature accepted items
-        push @nature_items, $nat->scan( items=>[ $self ] );   
+        push @nature_items, $nat->scan( items=>[ $self ] );
     }
     _fail _loc('No natures included this item path: %1', $self->path ) unless @nature_items;
     $self->save;  # save my parse tree
@@ -185,10 +185,10 @@ sub moniker_from_tree_or_name {
     # first check if we have a module in the tree
     my $module;
     for my $entry ( @{ $self->parse_tree } ) {
-        $module = $entry->{module} if defined $entry->{module}; 
+        $module = $entry->{module} if defined $entry->{module};
     }
 
-    # determine module name 
+    # determine module name
     if( ! defined $module ) {
         $module = $self->basename;
         if( my $fb = $self->path_capture ) {
@@ -208,4 +208,3 @@ sub moniker_from_tree_or_name {
 }
 
 1;
-

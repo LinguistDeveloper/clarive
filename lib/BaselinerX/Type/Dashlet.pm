@@ -16,9 +16,9 @@ has no_boot  => ( is => 'rw', isa => 'Bool', default => 0);
 has id => (is=>'rw', isa=>'Str', default=>'');
 
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
-	return sub{
-	    my ($self, $n, %p ) = @_;
-	    sprintf(q{
+    return sub{
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
             my $config = parse_vars %s, $stash;
             my $name = $config->{title} || $config->{name};
             my $id_field = Util->_name_to_id( $name );
@@ -34,15 +34,13 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
                     section_allowed => ['between']
                 };
             } else {
-                push @{ $stash->{dashlets} }, $config; 
+                push @{ $stash->{dashlets} }, $config;
             }
-	    }, Data::Dumper::Dumper({ id=>$n->{id}, key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
-	};
+        }, Data::Dumper::Dumper({ id=>$n->{id}, key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
+    };
 });
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
-

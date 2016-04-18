@@ -23,7 +23,7 @@ sub user_exists {
 # get user data from the database
 sub populate_from_ldap {
     my ($self, $who ) = @_;
-    
+
     my $where = defined $who ? { username=>$who } : {};
     my $rs = ci->user->find($where);
     while( my $r = $rs->next ) {
@@ -38,14 +38,14 @@ sub populate_from_ldap {
 
 sub get_users_friends_by_username{
     my ($self, $username ) = @_;
-    
+
     my @res;
     my @user_projects = $self->get_projects_from_user($username);
     foreach my $project (@user_projects){
         push @res, $self->get_users_from_project($project);
     }
-    @res= _unique @res;	
-   
+    @res= _unique @res;
+
     return wantarray ? @res : \@res;
 }
 
@@ -56,7 +56,7 @@ sub get_users_friends_by_projects{
     my @users;
     foreach my $project (_array $projects){
         push @users, $self->get_users_from_project($project);
-    } 
+    }
     return wantarray ? @users : \@users;
 }
 
@@ -78,19 +78,19 @@ sub get_roles_from_projects{
             }
         }
     }
-    @resp = _unique @resp;        
+    @resp = _unique @resp;
     return wantarray ? @resp : \@resp;
 }
 
 sub get_users_from_actions {
     my ( $self, %p ) = @_;
     my @actions = _array $p{actions} or _throw 'Missing parameter actions';
-    
+
     my @projects = _array $p{projects};
 
     my @users = Baseliner::Model::Permissions->new->users_with_actions( actions => \@actions, projects => \@projects, include_root => 0);
 
-    return wantarray ? @users : \@users; 
+    return wantarray ? @users : \@users;
 }
 
 sub get_users_from_mid_roles {
@@ -100,12 +100,12 @@ sub get_users_from_mid_roles {
 
     my @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, projects => \@projects, include_root => 0);
 
-    return wantarray ? @users : \@users; 
+    return wantarray ? @users : \@users;
 }
 
 sub get_users_username {
     my @users = map { $_->{username} } ci->user->find({active => mdb->true})->fields({username => 1, _id => 0});
-    return wantarray ? @users : \@users; 
+    return wantarray ? @users : \@users;
 }
 
 sub get_categories_fields_meta_by_user {
@@ -114,13 +114,13 @@ sub get_categories_fields_meta_by_user {
     my $username = $p{username} or _throw 'Missing parameter username';
     my %categories_fields;
     my %categories;
-    
+
     %categories = %{$p{categories}} if $p{categories};
 
     if(!%categories){
-        map { $categories{$_->{id}} = $_->{name} } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );        
+        map { $categories{$_->{id}} = $_->{name} } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
     }
-    
+
     my $is_root = model->Permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
     my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
@@ -132,14 +132,14 @@ sub get_categories_fields_meta_by_user {
         my @fieldlets = _array (Baseliner->model('Topic')->get_meta(undef, $key, $username));
         ##Se podría tener en cuenta para el metadato los permisos de escritura y lectura.
         for my $field ( @fieldlets){
-            my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';  
+            my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';
 
             if (!($view_action ~~ @user_read_actions_for_topic)){
             #if (!Baseliner::Model::Permissions->new->user_has_read_action( username=> $username, action => $view_action )){
                 $fields_perm{$field->{id_field}} = $field;
             };
         }
-        
+
         $categories_fields{$parse_category} = \%fields_perm;
     }
     return \%categories_fields;
@@ -180,7 +180,7 @@ sub get_users_from_mid_roles_topic {
     for my $topic_security ( @topic_securities ) {
         my @ors;
         my $total_where = {};
-        
+
         for my $role (@roles) {
             my $where = {};
             $where->{"project_security.$role"} = { '$nin' => [undef] };
@@ -198,16 +198,16 @@ sub get_users_from_mid_roles_topic {
         $mega_where->{'$or'} = \@mega_ors;
         @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
     } else {
-        @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, include_root => 0);        
+        @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, include_root => 0);
     }
-    return wantarray ? @users : \@users; 
+    return wantarray ? @users : \@users;
 }
 
 sub get_actions_from_user{
     my ($self, $username, @bl) = @_;
     my @final;
     if($username eq 'root' || $username eq 'local/root'){
-        @final = Baseliner->model( 'Actions' )->list;   
+        @final = Baseliner->model( 'Actions' )->list;
     }else{
         my $user = ci->user->find_one({ name=>$username });
         _fail _loc 'User %1 not found', $username unless $user;

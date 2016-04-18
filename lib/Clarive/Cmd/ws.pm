@@ -15,21 +15,21 @@ sub run_list {
     my ($self,%opts) = @_;
     my $r = $self->app->home;
     my $classname = $self->classname;
-    
+
     require Moose;
     require Baseliner::Core::Registry;
     require Baseliner::CI;
     require Baseliner::Role::CI;
     eval "use lib '$_';" for <$r/features/*/lib>; #/
-   
+
     if( $opts{mid} ) {
         require Baseliner;
         Baseliner->build_app();
-        $classname = ref Baseliner::CI->new( $opts{mid} ); 
+        $classname = ref Baseliner::CI->new( $opts{mid} );
         $classname = ( split /::/, $classname )[-1];
         say "mid classname=$classname";
     }
-    
+
     my %commons;
     my %found;
 
@@ -38,22 +38,22 @@ sub run_list {
         next unless -e $f;
         next if $f =~ m{features/#};
         my $name = [ split '/', $f  ]->[-1];
-        $name=~ s/\.pm//g; 
+        $name=~ s/\.pm//g;
         my $pkg="BaselinerX::CI::$name";
         my $path = "/ci/$name/:";
         require Class::Inspector;
         require $f unless Class::Inspector->loaded( $pkg );
         eval "no warnings; package $pkg; use namespace::autoclean;";
         #$pkg->meta->get_method_map;
-        my %methods = 
+        my %methods =
             map { $_ => 1 }
             grep !/^(super|meta|new|does|has|with|TO_JSON)$/,
             grep !/^[A-Z]+$/,
             @{ Class::Inspector->methods( $pkg, 'public' ) || [] };
-        $found{ $path } = \%methods; 
+        $found{ $path } = \%methods;
         # add all methods to common pool
         $commons{$_}=1 for keys %methods;
-    } 
+    }
     # delete not common
     CK: for my $ck ( sort keys %commons ) {
         for my $fk ( sort keys %found ) {
@@ -68,7 +68,7 @@ sub run_list {
     say '';
     for my $fk ( sort keys %found ) {
         my @methods = sort keys %{ $found{$fk} };
-        say $fk; 
+        say $fk;
         say join ", ", @methods;
         say scalar(@methods). " methods found.\n";
     }
@@ -78,7 +78,7 @@ sub run_list {
 =head1 Clarive REST tools
 
 options:
-    
+
     --mid <mid>             list methods available for a given CI
     --classname             list methods for a given CI class
 

@@ -11,7 +11,7 @@ has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
 =head2 search
 
     my $res = mdb->master_doc->search( query=>$query, limit=>1000,
-        #project=>{name=>1,collection=>1}, 
+        #project=>{name=>1,collection=>1},
         filter=>{ collection=>mdb->nin('topic','job') }
     );
 
@@ -46,7 +46,7 @@ sub search_re {
     };
     my @ors =  map { +{ $_ => $query } } @cols;
     my $rs = $self->find({ '$or'=>\@ors },{ limit=>$p{limit}//1000 });
-    return wantarray ? $rs->all : $rs; 
+    return wantarray ? $rs->all : $rs;
 }
 
 sub search_index {
@@ -59,10 +59,10 @@ sub clone {
     my ($self,$collname)=@_;
     $collname //= $self->name . '_' . Util->_nowstamp;
     my $coll = mdb->collection($collname);
-    Util->_fail( Util->_loc('Collection %1 already has rows in it, cannot clone')) if $coll->count; 
+    Util->_fail( Util->_loc('Collection %1 already has rows in it, cannot clone')) if $coll->count;
     for my $doc ( $self->find->all ) {
         try {
-            $coll->insert($doc) 
+            $coll->insert($doc)
         } catch {
             my $err = shift;
             Util->_error(sprintf 'Could not clone document with id %s (mid=%s). Skipped', $doc->{_id}, $doc->{mid} );
@@ -87,7 +87,7 @@ sub merge_into {
 
 sub get {
     my ($self,$mid)=@_;
-    return ref $mid eq 'ARRAY' 
+    return ref $mid eq 'ARRAY'
         ? $self->find_one({ mid=>{ '$in'=>$mid } })
         : $self->find_one({ mid=>"$mid" });
 }
@@ -97,13 +97,13 @@ sub set {
     $doc //= {};
     $self->update({ mid=>"$mid" },$doc,{ upsert=>1 });
 }
-    
+
 sub find_or_create {
     my ($self,$doc) = @_;
     return if $self->find($doc)->count;
     $self->update($doc,$doc,{ upsert=>1 });
 }
-    
+
 sub update_or_create {
     my ($self,$doc) = @_;
     $self->update($doc,$doc,{ upsert=>1 });
@@ -111,7 +111,7 @@ sub update_or_create {
 
 #around save => sub {
 #    my ($orig,$self,@args) = @_;
-#    try { 
+#    try {
 #        $self->$orig( @args );
 #    } catch {
 #        my $err = shift;
@@ -120,30 +120,30 @@ sub update_or_create {
 #    };
 #};
 
-sub delete { 
+sub delete {
     Util->_throw( "mdb...->delete does not exist. Use ->remove");
 }
 
 sub all_keys {
     my ($self)=@_;
     my $tmp = $self->name . '_keys_' . Util->_nowstamp();
-    mdb->run_command([   
-      "mapreduce"=> $self->name, 
+    mdb->run_command([
+      "mapreduce"=> $self->name,
       "map"=> q{
            function() {
             var ff=function(obj,pf){
-                for (var key in obj) { 
+                for (var key in obj) {
                     if( key == '_id' || key==undefined ) continue;
                     if( typeof obj[key] != 'function' ) emit(pf+key, null);
                     if( typeof obj[key] == 'object' ) {
-                        ff(obj[key],key+'.'); 
+                        ff(obj[key],key+'.');
                     }
                 }
             }
             ff(this,'');
            }
       },
-      "reduce"=> q{function(key, stuff) { return null; }}, 
+      "reduce"=> q{function(key, stuff) { return null; }},
       "out"=> $tmp,
     ]);
     my @ky = grep !/^_id/, map { $_->{_id} } mdb->$tmp->find->all;
@@ -160,7 +160,7 @@ sub follow {
     my $rs = $self->query($where)->tailable(1); # ->hint({ '$natural' => 1 }); # hint makes perl cpu shoot up
     bless $rs => 'Baseliner::MongoCursor';
     $rs->await_data( 1 );
-    ITER: while( $iter != 0 ) { 
+    ITER: while( $iter != 0 ) {
         while ( my $r = $rs->next ) {
             if( my $err = mdb->db->last_error->{err} ) {
                 Util->_fail( Util->_loc('Failed during mongo tail follow: %1', $err) );
@@ -207,7 +207,7 @@ sub find_one_value {
 Returns a hash indexed by key pointing to an array of hashes
 
     my %users = mdb->master_doc->find_hashed( username=>{ username=>qr/^A/ }, { realname=>1 });
-    
+
     say $users{ $id }->[0]->{name};
 
 =cut
@@ -223,10 +223,10 @@ sub find_hashed {
     while( my $r = $rs->next ) {
         if ( ref $$r{$key} eq 'ARRAY'){
             for my $item ( @{$$r{$key}} ){
-                push @{ $ret{ $item // '' } }, $r    
+                push @{ $ret{ $item // '' } }, $r
             }
         }else{
-            push @{ $ret{ $$r{$key} // '' } }, $r   
+            push @{ $ret{ $$r{$key} // '' } }, $r
         }
     }
     return wantarray ? %ret : \%ret;
@@ -238,7 +238,7 @@ sub find_hashed {
 Returns a hash indexed by key pointing to a SINGLE VALUE (no arrayref)
 
     my %users = mdb->master_doc->find_hashed( username=>{ username=>qr/^A/ }, { realname=>1 });
-    
+
     say $users{ $id }{name};
 
 =cut
@@ -256,7 +256,7 @@ sub find_hash_one {
             $ret{ $$r{$key} } = [ $ret{ $$r{$key} } ];
             push @{ $ret{ $$r{$key} } }, $r
         } else {
-            $ret{ $$r{$key} } = $r; 
+            $ret{ $$r{$key} } = $r;
         }
     }
     return wantarray ? %ret : \%ret;
@@ -276,7 +276,7 @@ sub find_mid {
     my @docs = $self->find({ mid=>mdb->in(@mids) })->all;
     return @docs==1 ? $docs[0] : @docs;
 }
-    
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

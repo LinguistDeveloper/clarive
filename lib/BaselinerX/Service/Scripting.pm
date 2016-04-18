@@ -47,10 +47,10 @@ sub run_local {
     my $fail_on_error = $config->{fail_on_error} // 1;
     my $output_files = $config->{output_files};
     my $errors = $config->{errors} || 'fail';
-    
+
     # rollback basics
     my $task  = $stash->{current_task_name};
-    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none';
     my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
@@ -67,9 +67,9 @@ sub run_local {
         _log "CHDIR $home";
     }
     my @cmd = ($path, _array( $args ) );
-    $job->logger->info( _loc('Running command: %1', join ' ', @cmd), \@cmd ); 
+    $job->logger->info( _loc('Running command: %1', join ' ', @cmd), \@cmd );
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
-    my ($out) = Capture::Tiny::tee_merged(sub{ 
+    my ($out) = Capture::Tiny::tee_merged(sub{
         local %ENV = ( %ENV, %$environment );
         $ret = system @cmd ;
         $rc = $?;
@@ -99,9 +99,9 @@ sub run_local {
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
         $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
-        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
+        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
     }
-        
+
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_after'; # only if everything went alright
     return $r;
 }
@@ -128,16 +128,16 @@ sub run_remote {
     my $stash = $c->stash;
 
     my $errors = $config->{errors} || 'fail';
-    
+
     my @rets;
-    my ($servers,$user,$home, $path,$args, $stdin, $output_error, $output_warn, $output_capture, $output_ok) = 
+    my ($servers,$user,$home, $path,$args, $stdin, $output_error, $output_warn, $output_capture, $output_ok) =
         @{ $config }{qw/server user home path args stdin output_error output_warn output_capture output_ok/};
-        
+
     # rollback basics
     my $task  = $stash->{current_task_name};
-    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_mode = $config->{meta}{needs_rollback_mode} // 'none';
     my $needs_rollback_key = $config->{meta}{needs_rollback_key} // $task;
-    
+
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
@@ -150,17 +150,17 @@ sub run_remote {
         my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
             my $dest = $user . '@' . $hostname;
-            $log->info( _loc( "STARTING remote script %1: '%2'", $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ), 
+            $log->info( _loc( "STARTING remote script %1: '%2'", $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ),
                 { config => $config, dest => $dest });
         }
-        
+
         my $agent = $server->connect( user=>$user );
         $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
         $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
         my $ret = $agent->ret;
-        
+
         my $lev_custom = '';
         if( $errors eq 'custom' ) {
             $lev_custom = 'warn' if length $config->{rc_warn} && List::MoreUtils::any { Util->in_range($_, $config->{rc_warn}) } _array($rc);
@@ -169,7 +169,7 @@ sub run_remote {
             $lev_custom = 'silent' if length $config->{rc_ok} && List::MoreUtils::any { Util->in_range($_, $config->{rc_ok}) } _array($rc);
             _debug( _loc('Custom error detected: %1 (rc=%2)', $lev_custom, join(',',map { $_ } _array($rc)) ) );
         }
-        
+
         if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
             my $ms = _loc 'Error during script (%1) execution: %2', $path_parsed, ($out // 'script not found or could not be executed (check chmod or chown)');
             Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
@@ -181,7 +181,7 @@ sub run_remote {
             # check for output errors and warnings
             #   if we find an output ok, then ignore all other errors
             $self->check_output_errors($stash,$errors,$log,$output,$config);
-            $log->info( _loc( "FINISHED remote script %1: '%2'", $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ), 
+            $log->info( _loc( "FINISHED remote script %1: '%2'", $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ),
                 $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
@@ -192,9 +192,9 @@ sub run_remote {
 
 sub check_output_errors {
     my ($self, $stash, $error_mode, $log, $output, $config)=@_;
-    
+
     my $ignore_errors = 0;
-    my ($output_ok, $output_error, $output_warn, $output_capture) = @{$config}{qw(output_ok output_error output_warn output_capture)}; 
+    my ($output_ok, $output_error, $output_warn, $output_capture) = @{$config}{qw(output_ok output_error output_warn output_capture)};
     my %found = ();
 
     OUT_OK: for my $ook ( _array($output_ok) ) {
@@ -241,7 +241,7 @@ sub run_eval {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
+
     my ($servers, $user, $code) = @{ $config }{qw/server user code/};
     my @rets;
     for my $server ( Util->_array_or_commas($servers)  ) {
@@ -252,7 +252,7 @@ sub run_eval {
             next;
         }
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
-        
+
         my $agent = $server->connect( user=>$user );
         # TODO some agents may not support eval, check this out first, call exec instead?
         $agent->remote_eval( $code );
@@ -274,7 +274,7 @@ sub run_eval {
         }
         push @rets, $ret;
     }
-    
+
     #{ output=>$out, rc=>$rc, ret=>$ret };
     return @rets > 1 ? \@rets : $rets[0];
 }

@@ -35,7 +35,7 @@ sub path_parts {
 
 =head2 long_path
 
-Returns the full path to the file plus a semicolon plus the 
+Returns the full path to the file plus a semicolon plus the
 version number.
 
     /path/to/file.txt;23
@@ -55,7 +55,7 @@ Returns a hash of path parts, according to the mask defined.
 
     filepath: /foo/java/testJava/file.java
     mask    : /app/tech/prj
-    
+
 Becomes:
 
     app   => 'foo',
@@ -63,7 +63,7 @@ Becomes:
     prj   => 'testJava',
 
 B<DEPRECATION WARNING>: under consideration. The
-mask system is unflexible and unreliable. Avoid this 
+mask system is unflexible and unreliable. Avoid this
 method whenever possible.
 
 =cut

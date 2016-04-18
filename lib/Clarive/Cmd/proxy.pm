@@ -27,7 +27,7 @@ sub run {
     $http_opts{LocalAddr} = $self->listen if $self->listen && !length $self->app->args->{port} && !$self->app->args->{host};
     $http_opts{LocalHost} = $self->host if $self->app->args->{host};
     $http_opts{LocalPort} = $self->port if length $self->app->args->{port};
-    my $d = HTTP::Daemon->new( 
+    my $d = HTTP::Daemon->new(
         ReuseAddr => 1,
         %http_opts,
     ) || die "$!: ".(join ',',%http_opts)."\n";
@@ -49,23 +49,23 @@ sub run {
 
             $request->push_header( Via => "1.1 ". $c->sockhost );
             my $response = $ua->simple_request( $request );
-            
+
             my $resas = $response->as_string;
             if( $self->unpack ) {
                 for( split /\n/, $resas ) {
                     my $hh = unpack( 'H*', $_ );
-                    print "\t<-- ".($self->quotemeta ? quotemeta($_) : $_ )." [$hh]\n"; 
+                    print "\t<-- ".($self->quotemeta ? quotemeta($_) : $_ )." [$hh]\n";
                 }
             } else {
                 for( split /\n/, $resas ) {
                    print "\t<-- " . ($self->quotemeta ? quotemeta($_) : $_ ) . "\n";
                 }
             }
-        
+
             $c->send_response( $response );
 
             # Save the response content into file
-            if( ($request->method eq "GET" || $request->method eq "POST") 
+            if( ($request->method eq "GET" || $request->method eq "POST")
                 && $response->is_success && length($response->content) > 10 )
             {
                 my $uri = $request->uri->as_string;

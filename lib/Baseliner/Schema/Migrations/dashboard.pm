@@ -6,7 +6,7 @@ sub upgrade {
 }
 
 sub downgrade {
-    
+
 }
 
 1;

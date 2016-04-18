@@ -25,7 +25,7 @@ sub run_search_ldap {
     my $connection_mesg = $ldap->bind( $config->{ldap_user}, password => $config->{password} );
     my $search_result = $ldap->search(
         base   => $config->{ldap_base},
-    	filter => $config->{filter}
+        filter => $config->{filter}
     );
     $stash->{ldap_search_return_code} = $connection_mesg->{resultCode};
     $stash->{ldap_search_result} = $search_result->{entries};

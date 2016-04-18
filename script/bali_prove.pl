@@ -10,9 +10,9 @@ Usage, from the command line:
 
     $ bali prove
 
-    # or 
+    # or
 
-    $ perl script/bali_prove.pl 
+    $ perl script/bali_prove.pl
 
 Basic steps that this script does:
 
@@ -68,7 +68,7 @@ sub now {
 
 sub pre {
     my $ret = "==============| " . now() . " " . sprintf( "[%.04f]", tv_interval( $t0 ) ). ' ';
-    $t0 = [gettimeofday]; 
+    $t0 = [gettimeofday];
     $ret;
 }
 

@@ -23,8 +23,8 @@ register 'action.development.sequences', => { name => 'Sequences'};
 
 
 register 'menu.development' => {
-    label => 'Development', 
-    action => 'action.development.%', 
+    label => 'Development',
+    action => 'action.development.%',
     index => 30
 };
 register 'menu.development.repl' => {
@@ -93,7 +93,7 @@ register 'menu.development.sequences' =>{
     title    => 'Sequences',
     action   => 'action.development.sequences',
     icon     => '/static/images/icons/sequence.png',
-    #index    => 10, 
+    #index    => 10,
 };
 
 
@@ -153,7 +153,7 @@ sub sequence_test : Local {
     }
     if ( $option == 2 ){
         my $seq_id = $c->request->parameters->{seq_id};
-        my $seq = mdb->master_seq->find({ _id => $seq_id })->next->{seq}; 
+        my $seq = mdb->master_seq->find({ _id => $seq_id })->next->{seq};
         $c->stash->{json} = { success=>\1, msg=>_loc('Get seq value of ' . $seq_id), seq => $seq };
     }
     if ( $option == -1 ) {
@@ -216,7 +216,7 @@ sub eval : Local {
         }
     );
     _log "================================ REPL END ============================\n";
-    
+
     $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
     $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) )
         if $dump eq 'json' && ref $res && !blessed $res;
@@ -240,7 +240,7 @@ sub sql {
     my @conn = $code=~/^(.+?),(.*?),(.*?)\n(.*)$/s;
     _fail _loc 'Missing first line DBI connect string. Ex: DBI:mysql:database=<db>;host=<hostname>;port=<port>,my-username,my-password'
         unless @conn > 1;
-        
+
     $code = pop @conn;
     my @sts = $self->sql_normalize( $code );
     my $dbs = Util->_dbis( \@conn );
@@ -312,7 +312,7 @@ sub save : Local {
         $p->{_id} //= $p->{id};
         mdb->repl->insert($p);
     }
-} 
+}
 
 sub load : Local {
     my ( $self, $c ) = @_;
@@ -321,7 +321,7 @@ sub load : Local {
     _fail _loc 'REPL entry not found: %1', $p->{id} unless $doc;
     $c->stash->{json} = $doc;
     $c->forward( 'View::JSON' );
-} 
+}
 
 sub delete : Local {
     my ( $self, $c ) = @_;
@@ -332,7 +332,7 @@ sub delete : Local {
     } else {
         _fail _loc 'Missing REPL id';
     }
-} 
+}
 
 sub tree_saved : Local {
     my ( $self, $c ) = @_;
@@ -349,7 +349,7 @@ sub tree_saved : Local {
         } @docs
     ];
     $c->forward( 'View::JSON' );
-} 
+}
 
 sub tree_hist : Local {
     my ( $self, $c ) = @_;
@@ -417,7 +417,7 @@ sub tree_class : Local {
                 url       => '/repl/class_meth',
                 url_click => '/repl/class_pod',
                 data      => {class => $_}
-              
+
             }
             }
             grep {
@@ -534,7 +534,7 @@ sub save_to_file : Local {
     my $p = $c->req->parameters;
     my @docs = mdb->repl->find->all;
     try {
- 
+
         for my $item ( @docs ) {
             my $name = $item->{id};
             $name =~ Util->name_to_id( $name );
@@ -556,7 +556,7 @@ sub save_to_file : Local {
         $c->stash->{json} = {success => \0, msg => shift};
     };
     $c->forward( 'View::JSON' );
-} 
+}
 
 sub tidy : Local {
     my ( $self, $c ) = @_;

@@ -121,7 +121,7 @@ sub compile {
         };
         eval qq{
             {
-                package $pkg; 
+                package $pkg;
                 use Moose;
                 use v5.10;
                 #extends 'Baseliner::Model::Rules';
@@ -133,9 +133,9 @@ sub compile {
                 our \$DATA = {};
                 sub data { \$DATA }
                 sub ts { '$ts' }
-                sub run { 
+                sub run {
                     my (\$self,\$stash)=\@_;
-                    $dsl 
+                    $dsl
                 };
                 sub call {
                     my (\$id_rule, \$stash)=\@_;

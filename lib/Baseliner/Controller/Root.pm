@@ -10,8 +10,8 @@ register 'action.home.show_lifecycle' => { name => 'User can access the lifecycl
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
-register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ; 
-register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ; 
+register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ;
+register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ;
 register 'event.wipe_cache' => { name => 'Wipe Cache', vars=>['username','ts'] } ;
 
 use Try::Tiny;
@@ -30,12 +30,12 @@ Baseliner::Controller::Root - Root Controller for Baseliner
 
 =head1 DESCRIPTION
 
-All root / urls are installed here. 
+All root / urls are installed here.
 
 =cut
 
 sub begin : Private {  # placeholder so we don't break people who actually do a forward here
-	my ($self,$c) = @_;
+    my ($self,$c) = @_;
 }
 
 sub response_headers {
@@ -48,8 +48,8 @@ sub response_headers {
 sub process_content_type {
     my ( $self, $c ) = @_;
     my $content_type = $c->req->content_type;
-    
-    # cleanup 
+
+    # cleanup
     delete $c->req->params->{_bali_login_count}; # used by tabfu to control attempts
 
     # process json data, if any
@@ -57,13 +57,13 @@ sub process_content_type {
         my $body = $c->req->body;
         my $body_data = <$body>;
         my $json = Util->_from_json( $body_data ) if $body_data;
-        if( ref $json eq 'HASH' ) {  
+        if( ref $json eq 'HASH' ) {
             my $p = $c->req->params || {};
             delete $json->{_merge_with_params};
             my $d = { %$p, %$json };
             delete $d->{as_json};
             delete $d->{$_} for grep /^_bali/, keys $d;
-            $c->req->params( $d ); 
+            $c->req->params( $d );
         } else {
             $json //= {};
             if( ref $json eq 'HASH' ) {
@@ -88,7 +88,7 @@ sub process_run_token {
     # run_token ?  (used by Util->async_request
     if( my $run_token = $c->req->headers->{'run-token'} // $c->req->params->{run_token} // $c->req->{body_data}->{run_token} ){
         _debug "RUN TOKEN $run_token";
-        # often, 
+        # often,
         for my $att ( 1..5 ) {  # 5 attempts to get it from the session
             if( delete $c->session->{$run_token} ) {
                 $c->stash->{run_token} = 1;
@@ -104,7 +104,7 @@ sub process_run_token {
 
 =head2 auto
 
-auto centralizes all auhtentication check and dispatch. 
+auto centralizes all auhtentication check and dispatch.
 
 =cut
 sub auto : Private {
@@ -159,7 +159,7 @@ sub auto : Private {
         $c->response->body("Unauthorized");
     } elsif( $c->stash->{auth_basic} ) {
         my $ret = $c->forward('/auth/login_basic');
-        return $ret; 
+        return $ret;
     } elsif( $c->stash->{auth_logon_type} && $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
         $c->res->body(_loc('Error: Authentication required') );
         $c->res->status(401);
@@ -200,9 +200,9 @@ sub _authenticate {
         $c->reset_session_expires;
         $c->set_session_id($sid);
         $c->_tried_loading_session_data(0);
-        $c->session_is_valid;    
+        $c->session_is_valid;
     };
-    
+
     # saml?
     if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
@@ -215,7 +215,7 @@ sub _authenticate {
     }
 
     # api_key ?
-    $c->stash->{api_key_authentication} ||= Clarive->config->{api_key_authentication}; 
+    $c->stash->{api_key_authentication} ||= Clarive->config->{api_key_authentication};
 
     if( my $api_key = $c->request->params->{api_key} ) {
         if( $c->stash->{api_key_authentication} ) {
@@ -243,7 +243,7 @@ sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
 
     my @languages = $c->user_languages;
-    $c->languages([ @languages ]); 
+    $c->languages([ @languages ]);
 }
 
 sub serve_file : Private {
@@ -255,7 +255,7 @@ sub serve_file : Private {
     my $content_type = $c->stash->{content_type} || 'application-download;charset=utf-8';
     if( defined $file ) {
         $c->serve_static_file( $file );
-    } 
+    }
     elsif( defined $body ) {
         $c->res->body( $body );
     }
@@ -288,7 +288,7 @@ sub theme {
 
     # check if theme dir is in the session already
     if( $c->session->{theme_dir} && !$c->config->{force_theme} ) {
-        $c->stash->{theme_dir} = $c->session->{theme_dir}; 
+        $c->stash->{theme_dir} = $c->session->{theme_dir};
         return;
     }
 
@@ -354,7 +354,7 @@ sub index : Private {
         push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page', params=>$p };
     }
 
-    # set language 
+    # set language
     $self->_set_user_lang($c);
 
     # load menus
@@ -382,7 +382,7 @@ sub index : Private {
             map { { name=>$_, content=>Util->_slurp($_) } }
             _unique
             grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
-                    @features_list 
+                    @features_list
         ];
     }
     $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
@@ -459,10 +459,10 @@ sub to_yaml : Local {
 Turns YAML encoded text parameter C<yaml>
 into a JSON response:
 
-    { 
+    {
         success: true|false,
         msg: <error message>,
-        json: the json object 
+        json: the json object
     }
 
 =cut
@@ -483,11 +483,11 @@ sub from_yaml : Local {
 sub cla_worker : Path('cla-worker') {
     my ( $self, $c ) = @_;
     $c->res->content_type('text/plain; charset=utf-8');
-    $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp ); 
+    $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp );
 }
 
 sub cache_clear : Local {
-    my ($self,$c) = @_; 
+    my ($self,$c) = @_;
     $c->stash->{json} = try {
         _fail 'No permission' unless $c->has_action('action.development.cache_clear');
         cache->clear;
@@ -508,7 +508,7 @@ sub share_html : Local {
         if( ! mdb->collection('system.namespaces')->find({ name=>qr/shared_html/ })->count ) {
             mdb->create_capped( 'shared_html' );
         }
-        mdb->shared_html->insert({ _id=>$id, html=>$p->{html}, 
+        mdb->shared_html->insert({ _id=>$id, html=>$p->{html},
                 content_type => $p->{content_type} || 'text/html',
                 title=>$p->{title}, username=>$c->username });
         { success=>\1, msg=>'ok', url=>'/shared/'.$id };
@@ -542,11 +542,11 @@ sub shared : Local {
 
 Renders a Mason view by default, passing it all parameters as <%args>.
 
-=cut 
+=cut
 
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
-    
+
     # check for controlled errors in DEBUG mode
     if( _array( $c->error ) > 0 ) {
         if( Clarive->debug && $c->req->params->{_bali_client_context} eq 'json' ) {
@@ -574,7 +574,7 @@ sub end : ActionClass('RenderView') {
         $c->response->content_type('text/javascript; charset=utf-8');
     }
     # send params to mason, unless already on stash with the same name
-    $c->stash->{$_} //= $c->request->parameters->{$_} 
+    $c->stash->{$_} //= $c->request->parameters->{$_}
         foreach( keys %{ $c->req->parameters || {} });
 }
 

@@ -19,7 +19,7 @@ my %data;
 my $json;
 
 #####################
-#   	CONFIG		#
+#       CONFIG        #
 #####################
 
 #updating a value stored in the registry and storing it in the db

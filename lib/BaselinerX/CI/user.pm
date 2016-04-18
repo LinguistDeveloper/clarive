@@ -28,7 +28,7 @@ has workspaces => qw(is rw isa HashRef), default => sub { +{} };
 has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
 
-has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1, 
+has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1,
     default=>sub{ [ Util->_array(Clarive->config->{default_lang} // 'en') ] });
 
 sub icon { '/static/images/icons/user.gif' }
@@ -37,7 +37,7 @@ sub has_description { 0 }
 
 sub workspace_create {
     my ($self,$p) = @_;
-    # create the favorite id 
+    # create the favorite id
     my $id = time . '-' .  int rand(9999);
     # delete empty ones
     $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
@@ -47,10 +47,10 @@ sub workspace_create {
         my $key = Clarive->config->{decrypt_key} // Clarive->config->{dec_key};
         die "Error: missing 'decrypt_key' config parameter" unless length $key;
         my $b = Crypt::Blowfish::Mod->new( $key );
-        $p->{password} = $b->encrypt( $p->{password} // '' ); 
+        $p->{password} = $b->encrypt( $p->{password} // '' );
     }
-    my $user = ci->user->find_one( { name=>$p->{username} }); 
-    $user->workspaces->{$id} = $p; 
+    my $user = ci->user->find_one( { name=>$p->{username} });
+    $user->workspaces->{$id} = $p;
     $user->save;
     { id_workspace => $p->{id_workspace} }
 }
@@ -114,7 +114,7 @@ sub encrypt_password {
     my $user_key = ( Clarive->config->{decrypt_key} // Clarive->config->{dec_key} // '' ) .reverse ( $username );
     require Crypt::Blowfish::Mod;
     my $b = Crypt::Blowfish::Mod->new( $user_key );
-    return Digest::MD5::md5_hex( $b->encrypt($password) );    
+    return Digest::MD5::md5_hex( $b->encrypt($password) );
 }
 
 sub save_api_key  {
@@ -147,7 +147,7 @@ method gen_project_security {
                         my @tmp = map {$_->{mid}} ci->$col->search_cis;
                         push @{$security->{$role}->{$col}}, @tmp;
                     }
-                    last;    
+                    last;
                 }
                 my $ci = ci->new($_);
                 my $col = Baseliner::Utils::to_base_class(ref $ci);
@@ -177,7 +177,7 @@ method has_action( $action ) {
 }
 
 method roles( $username=undef ) {
-    return grep { defined } map { $$_{id} } 
+    return grep { defined } map { $$_{id} }
     Baseliner::Model::Permissions->new->user_roles( ref $self ? $self->username : $username );
 }
 
@@ -185,8 +185,8 @@ method save_dashlet_config ( :$username=undef, :$data, :$id_dashlet) {
 
     my $user = ci->user->search_ci( name => $username );
 
-    if ( $user ) {    
-        $user->dashlet_config->{$id_dashlet} = $data; 
+    if ( $user ) {
+        $user->dashlet_config->{$id_dashlet} = $data;
         $user->save;
     }
     { ok => \1, data => $data, msg => _loc('Dashlet config saved') }
@@ -196,8 +196,8 @@ method remove_dashlet_config ( :$username=undef, :$id_dashlet) {
 
     my $user = ci->user->search_ci( name => $username );
 
-    if ( $user ) {    
-        delete $user->dashlet_config->{$id_dashlet}; 
+    if ( $user ) {
+        delete $user->dashlet_config->{$id_dashlet};
         $user->save;
     }
     { ok => \1, msg => _loc('Dashlet config saved') }
@@ -206,7 +206,7 @@ method remove_dashlet_config ( :$username=undef, :$id_dashlet) {
 method date_format {  # return a momentJS format
     my $pref = $self->date_format_pref;
     my $format = $pref eq 'format_from_local' ? _loc('date_format') : $pref;
-    return $format eq 'date_format' ? 'Y-M-D' : $format; 
+    return $format eq 'date_format' ? 'Y-M-D' : $format;
 }
 
 method cdate_format( $format='' ) { # return a Class::Date format
@@ -221,7 +221,7 @@ method cdate_format( $format='' ) { # return a Class::Date format
             }
             $pref
         };
-    return $format eq 'date_format' ? '%Y-%m-%d' : $format; 
+    return $format eq 'date_format' ? '%Y-%m-%d' : $format;
 }
 
 method ctime_format( $format='' ) { # return a Class::Date format
@@ -235,14 +235,14 @@ method ctime_format( $format='' ) { # return a Class::Date format
             #$pref =~ s/(\w)/%$1/g;
             $pref
         };
-    return $format eq 'date_format' ? '%l:%M%p' : $format; 
+    return $format eq 'date_format' ? '%l:%M%p' : $format;
 }
 
 method user_dt( $date='' ) {
     my $epoch = $self->user_cdate($date)->epoch;
     my $dt = DateTime->from_epoch( epoch=>$epoch );
     $dt->set_time_zone( $self->timezone_pref ) if length $self->timezone_pref && $self->timezone_pref ne 'server_timezone';
-    return $dt; 
+    return $dt;
 }
 
 method user_cdate( $date='' ) {

@@ -29,7 +29,7 @@ my $dest = shift @ARGV;
 my @MY_ARGS = grep { state $gg=1; /^--$/ ? ($gg=0) : $gg } @ARGV;
 
 # any args?
-my %opts = do { 
+my %opts = do {
     no warnings;
     my $lastopt='';
     my %opts = map { $lastopt=~/^--?/ && $_=~/^--?/ ? (1, $lastopt=$_) : ($lastopt=$_)  } @MY_ARGS;
@@ -59,7 +59,7 @@ my $reversed = $opts{'--start'};
 if( $reversed ) {
     @origs = reverse @origs;
     @origs = grep {
-        state $f=0; 
+        state $f=0;
         my $sha = $omap->{$_};
         $f=1 if $sha =~ /^$reversed/;
         $f
@@ -70,28 +70,28 @@ ORIG: for my $msg ( @origs ) {
     my $sha = $omap->{$msg};
     my $sha7 = substr( $sha, 0, 7);
     my $msg_pretty = `git log --pretty="%cn: %s [%cr, %h]" -1 $sha7`;
-    
+
     if( $until && !$reversed ) {
         say "UNTIL match: $until";
         last;
     }
 
     my $ask_maybe = sub{
-        my ($status,$force) = @_; 
+        my ($status,$force) = @_;
         my $default = { '+++'=>'y', '---'=>'n', '==='=>'n' }->{ $status };
         my $s = $color_status{$status} . "$status $msg_pretty" . RESET;
-        $opts{'-y'} && !$force 
+        $opts{'-y'} && !$force
             ? say $s
-            : ask( 
+            : ask(
                 "$s\n View (v)? Skip and Start (s)? Exclude (n)? Include commit (y)?",
-                $default => '', 
+                $default => '',
                 y=>sub{ push( @chosen, $msg), next ORIG },
                 s=>sub{ last ORIG },
                 q=>sub{ exit 1 },
                 v=>sub{ system 'git', 'show', '--source', $sha; say ''; 0 },
                 # diffs all, not useful, needs to filter on files: d=>sub{ system 'git', '--no-pager', 'diff', $sha; 0 },
                 c=>sub{ system "git show --source $sha7 | git apply --check"; say ''; 0 },
-                n=>sub{ next ORIG } 
+                n=>sub{ next ORIG }
             );
     };
 
@@ -135,21 +135,21 @@ CHOSEN: for my $msg ( @chosen ) {
     my $msg2 = substr($msg, 0,80);
     say '=' x 80;
     system 'git', 'show', $sha, '--name-only';
-    ask( "\ncherry-pick? s=show ", 
+    ask( "\ncherry-pick? s=show ",
         y => sub {
             system 'git', 'cherry-pick', $sha;
             if( $? ) {
                 system 'git', 'status';
-                ask "===> ERROR during cherry-pick. y: Mark as resolved and go to next commit / a: try to cherry-pick again\n", 
+                ask "===> ERROR during cherry-pick. y: Mark as resolved and go to next commit / a: try to cherry-pick again\n",
                     y =>sub { next CHOSEN },
                     a =>sub { goto AGAIN },
                     q => sub { die "Aborted\n" };
             }
-            1; 
-        }, 
+            1;
+        },
         n => sub {
-            1; 
-        }, 
+            1;
+        },
         s => sub {
             system 'git', 'show', $omap->{$msg};
             system 'git', 'show', $sha, '--name-only';
@@ -185,7 +185,3 @@ sub ask {
         }
     }
 }
-
-
-
-#for my $dest

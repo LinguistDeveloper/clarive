@@ -1,7 +1,7 @@
 package Baseliner::Role::ErrorThrower;
 use Moose::Role;
 
-# error control 
+# error control
 has throw_errors => qw(is rw isa Bool default 0 lazy 1);
 has ret          => qw(is rw isa Any), default => '';   # return value/hash from command
 has rc           => qw(is rw isa Maybe[Num] default 0); # return code, 0 is ok, !0 bad

@@ -4,5 +4,3 @@ with 'Baseliner::Role::CI';
 with 'Baseliner::Role::CI::Infrastructure';
 
 1;
-
-

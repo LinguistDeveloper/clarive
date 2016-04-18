@@ -96,4 +96,3 @@ sub sms_wipe : Local {
 }
 
 1;
-

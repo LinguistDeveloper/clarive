@@ -15,10 +15,10 @@ has collectionname => (
 
 use Sereal::Encoder;
 use Sereal::Decoder;
-has _encoder => qw(is rw isa Object lazy 1 default), sub{ 
-    Sereal::Encoder->new({ compress=>1, compress_threshold=>1_024_000, compress_level=>1, canonical=>1 }) 
-}; 
-has _decoder => qw(is rw isa Object lazy 1 default), sub{ Sereal::Decoder->new }; 
+has _encoder => qw(is rw isa Object lazy 1 default), sub{
+    Sereal::Encoder->new({ compress=>1, compress_threshold=>1_024_000, compress_level=>1, canonical=>1 })
+};
+has _decoder => qw(is rw isa Object lazy 1 default), sub{ Sereal::Decoder->new };
 
 sub _cfg_or_default {
     my ($self, $name, $default) = @_;
@@ -66,9 +66,9 @@ sub get_session_data {
     }
 
     # rgo: $prefix can be either session or expires (but not sure), session includes sessiond data.
-    return $prefix eq 'session' && length $found->{$prefix} 
-        ? $self->_deserialize($found->{$prefix}, $found->{type}) 
-        : $prefix eq 'expires' 
+    return $prefix eq 'session' && length $found->{$prefix}
+        ? $self->_deserialize($found->{$prefix}, $found->{type})
+        : $prefix eq 'expires'
             ? $found->{$prefix}
             : $self->_deserialize($found->{$prefix},$found->{type});
 }
@@ -123,4 +123,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

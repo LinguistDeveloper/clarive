@@ -24,8 +24,8 @@ my $json;
 
 #crear un dashboard
 $url = '/dashboard/update';
-%data = ('action' => 'add', 'dashlets' => '/dashlets/emails.html#/dashboard/list_emails, /dashlets/topics.html#/dashboard/list_topics', 
-		 'description' => 'test', 'id' => '-1', 'name' => 'test', 'roles' => '61, 2', 'type' => 'T');
+%data = ('action' => 'add', 'dashlets' => '/dashlets/emails.html#/dashboard/list_emails, /dashlets/topics.html#/dashboard/list_topics',
+         'description' => 'test', 'id' => '-1', 'name' => 'test', 'roles' => '61, 2', 'type' => 'T');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
@@ -36,8 +36,8 @@ my $id = $json->{dashboard_id};
 
 #actualizar un dashboard
 $url = '/dashboard/update';
-%data = ('action' => 'update', 'dashlets' => '/dashlets/emails.html#/dashboard/list_emails', 
-		 'description' => 'test actualizado', 'id' => $id, 'name' => 'test actualizado', 'roles' => '61, 2', 'type' => 'T');
+%data = ('action' => 'update', 'dashlets' => '/dashlets/emails.html#/dashboard/list_emails',
+         'description' => 'test actualizado', 'id' => $id, 'name' => 'test actualizado', 'roles' => '61, 2', 'type' => 'T');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );

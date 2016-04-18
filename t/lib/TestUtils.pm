@@ -365,7 +365,7 @@ sub model {
 
 sub user         { shift->{user} }
 sub username     { shift->{username} }
-sub authenticate { 
+sub authenticate {
     my $self = shift;
 
     my $auth = $self->{authenticate};

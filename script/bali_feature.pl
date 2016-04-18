@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 =head1 NAME
 
 bali feature
@@ -28,7 +28,7 @@ my $base = qq{git submodule %s http://clarive.vasslabs.com/git/%s.git %s};
 while( my ($cmd, $v) = each %opts ) {
     for( $cmd ) {
         when( 'add' ) {
-            my $s = sprintf $base => $cmd, $v, "features/$v"; 
+            my $s = sprintf $base => $cmd, $v, "features/$v";
             say $s ;
             system $s;
             system qw/git submodule init/;
@@ -53,8 +53,8 @@ __DATA__
 
 bali feature --<cmd> <param>
 
-    --add <feature_name>      add git submodule, then init and update 
-    --update <feature_name>   add git submodule and done   
+    --add <feature_name>      add git submodule, then init and update
+    --update <feature_name>   add git submodule and done
 
 examples:
 

@@ -56,8 +56,8 @@ register 'event.ws.wsdl_error' => {
 
 sub init_job_tasks {
     my ($self)=@_;
-    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
-            children=>[], leaf=>\0, expanded=>\1 } 
+    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png',
+            children=>[], leaf=>\0, expanded=>\1 }
     } qw(CHECK INIT PRE RUN POST);
 }
 
@@ -80,8 +80,8 @@ sub init_fieldlets_tasks {
         $node->{data}{hide_from_edit_cb} = '0';
         $node->{ts} = mdb->ts;
         # $node->{who} = 'root'; # TODO get user from $c->username
-        $node 
-    } Baseliner::Core::Registry->get('fieldlet.system.status_new')->registry_node->raw, 
+        $node
+    } Baseliner::Core::Registry->get('fieldlet.system.status_new')->registry_node->raw,
     Baseliner::Core::Registry->get('fieldlet.system.title')->registry_node->raw;
 }
 
@@ -104,10 +104,10 @@ sub tree_format {
             $n->{leaf} = \0;
             $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         } elsif( ($n->{leaf} && $n->{leaf} eq 'false') ||(! ${$n->{leaf} // \1}) ) {  # may be a folder with no children
-            $n->{children} = []; 
+            $n->{children} = [];
             $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         }
-        delete $n->{loader};  
+        delete $n->{loader};
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
         #_log $n;
         push @tree_out, $n;
@@ -177,17 +177,17 @@ sub build_tree {
     }
 }
 
-sub _is_true { 
-    my($self,$v) = @_; 
+sub _is_true {
+    my($self,$v) = @_;
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
 sub all_nodes {
     my ($self, %p )=@_;
     my @nodes = $self->build_tree( $p{id_rule} );
-    my $dig; $dig = sub{ 
-        map { 
-          ( $_, $dig->( _array( $$_{children} ) ) ) 
+    my $dig; $dig = sub{
+        map {
+          ( $_, $dig->( _array( $$_{children} ) ) )
         } @_;
     };
     $dig->( @nodes );
@@ -207,7 +207,7 @@ sub dsl_build {
     local $Data::Dumper::Terse = 1;
     local $Data::Dumper::Deparse = 1;
     local $Data::Dumper::Deepcopy = 1;
-    
+
     for my $s ( _array $stmts ) {
         my $level = $s->{level} // 0;
 
@@ -215,7 +215,7 @@ sub dsl_build {
         my $children = $s->{children} || [];
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
         # is active ?
-        next if defined $attr->{active} && !$attr->{active}; 
+        next if defined $attr->{active} && !$attr->{active};
         #next if (ref $attr->{disabled} eq 'SCALAR' && ${$attr->{disabled}} ) || $attr->{disabled} eq 'true' || $attr->{disabled};
         delete $attr->{loader} ; # node cruft
         delete $attr->{events} ; # node cruft
@@ -224,23 +224,23 @@ sub dsl_build {
         my $name_id = Util->_name_to_id( $name );
         my $data = $attr->{data} || {};
         # put the properties (metadata) into the data so that we see it in $config in services
-        $data->{meta}{$_}= blessed($attr->{$_}) 
-            ? "$attr->{$_}" 
-            : $attr->{$_} 
+        $data->{meta}{$_}= blessed($attr->{$_})
+            ? "$attr->{$_}"
+            : $attr->{$_}
             for grep !/^data$/, keys %$attr;
-        
+
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
-        my $run_rollback = _bool($attr->{run_rollback},1); 
+        my $run_rollback = _bool($attr->{run_rollback},1);
         my $error_trap = $attr->{error_trap} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_timeout = $attr->{trap_timeout} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_rollback = $attr->{trap_rollback} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
-        my $needs_rollback_mode = $attr->{needs_rollback_mode} // 'none'; 
+        my $needs_rollback_mode = $attr->{needs_rollback_mode} // 'none';
         my $needs_rollback_key  = $attr->{needs_rollback_key} // '';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         my $debug_mode = length $attr->{debug_mode} && $attr->{debug_mode} ne 'none' ? $attr->{debug_mode} : '';
-        push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
-        push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};  
+        push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};
+        push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};
 
         my $timeout = $attr->{timeout};
         my $rb_close_me = 0;
@@ -264,28 +264,28 @@ sub dsl_build {
             if ( $needs_rollback_key && $needs_rollback_key ne '<always>') {
                 push @dsl, sprintf( 'if( !$$stash{rollback} || ( $$stash{rollback} && $stash->{needs_rollback}{q{%s}} )) { # forward or back if rollback_key ', $needs_rollback_key)."\n";
                 $rb_close_me = 1;
-            } 
+            }
         }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
-        push @dsl, sprintf( '# task: %s', $name // '') . "\n"; 
+        push @dsl, sprintf( '# task: %s', $name // '') . "\n";
         if( $closure ) {
             push @dsl, sprintf( 'current_task($stash, id_rule => q{%s}, rule_name => q{%s}, name => q{%s}, level => %s, cb => sub{', $id_rule, $rule_name, $name, $level )."\n";
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, id_rule => q{%s}, rule_name => q{%s}, name => q{%s}, level => %s);', $id_rule, $rule_name, $name // '', $level)."\n";
         }
-        push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';  
+        push @dsl, sprintf( '_debug("BEFORE STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';
         if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
-        push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
+        push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose};
         if( length $attr->{key} ) {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = $stash->{job_step};', $needs_rollback_key || $name_id) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
-            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
+            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap;
             if( my $semaphore_key = $attr->{semaphore_key} ) {
                 # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
-                push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
+                push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n";
             }
             my $key = $attr->{key};
             use Baseliner::Model::Registry;
@@ -321,7 +321,7 @@ sub dsl_build {
             push @dsl, "};\n";
             push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} && $attr->{sub_mode} eq 'run';
         }
-        push @dsl, sprintf( '_debug("AFTER STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';  
+        push @dsl, sprintf( '_debug("AFTER STASH", $stash);' ) . "\n" if $debug_mode eq 'stash';
     }
 
     my $dsl = join "\n", @dsl;
@@ -388,13 +388,13 @@ register 'statement.if.var' => {
     type => 'if',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( $stash->{'%s'} eq '%s' ) {
                 %s
             }
-            
+
         }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -404,13 +404,13 @@ register 'statement.if_not.var' => {
     type => 'if',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( $stash->{'%s'} ne '%s' ) {
                 %s
             }
-            
+
         }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -419,13 +419,13 @@ register 'statement.if.condition' => {
     text => 'IF condition THEN',
     type => 'if',
     data => { condition =>'1' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( %s ) {
                 %s
             }
-            
+
         }, $n->{condition}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -436,13 +436,13 @@ register 'statement.if.else' => {
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             else {
                 %s
             }
-            
+
         }, $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -453,13 +453,13 @@ register 'statement.if.elsif' => {
     type => 'if',
     nested => 1,
     data => { condition =>'1' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             elsif( %s ) {
                 %s
             }
-            
+
         }, $n->{condition}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -469,7 +469,7 @@ register 'statement.if.var.list' => {
     type => 'if',
     form => '/forms/variable_values.js',
     data => { variable=>'', values=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         my @conditions;
         my $complete_condition;
@@ -484,16 +484,16 @@ register 'statement.if.var.list' => {
             if( %s ) {
                 %s
             }
-    
+
         /, $complete_condition, $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
 register 'statement.try' => {
-    text => 'TRY statement (without catch)', 
+    text => 'TRY statement (without catch)',
     type => 'if',
     data => { },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             use Try::Tiny;
@@ -505,10 +505,10 @@ register 'statement.try' => {
 };
 
 register 'statement.try_with_catch' => {
-    text => 'TRY statement (needs a catch)', 
+    text => 'TRY statement (needs a catch)',
     type => 'if',
     data => { },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             use Try::Tiny;
@@ -520,27 +520,27 @@ register 'statement.try_with_catch' => {
 };
 
 register 'statement.catch' => {
-    text => 'CATCH statement (needs a try_with_catch)', 
+    text => 'CATCH statement (needs a try_with_catch)',
     type => 'if',
     data => { },
     nested => 1,
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             catch {
                 %s
             };
-            
+
         }, $self->dsl_build( $n->{children}, %p) );
     },
 };
 
 register 'statement.let.merge' => {
-    text => 'MERGE value INTO stash', 
+    text => 'MERGE value INTO stash',
     type => 'let',
-    holds_children => 0, 
+    holds_children => 0,
     data => { value=>{} },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         local $Data::Dumper::Terse = 1;
         sprintf(q{
@@ -550,11 +550,11 @@ register 'statement.let.merge' => {
 };
 
 register 'statement.delete.key' => {
-    text => 'DELETE hashkey', 
+    text => 'DELETE hashkey',
     type => 'if',
-    holds_children => 0, 
+    holds_children => 0,
     data => { key=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
            delete $stash->{ '%s' } ;
@@ -590,14 +590,14 @@ register 'statement.foreach' => {
     text => 'FOREACH stash[ variable ]',
     type => 'loop',
     data => { variable=>'stash_var', local_var=>'value' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $item ( Util->_array_or_commas( $stash->{'%s'} ) ) {
                 local $stash->{'%s'} = $item;
                 %s
             }
-            
+
         }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -606,30 +606,30 @@ register 'statement.foreach.ci' => {
     text => 'FOREACH CI',
     type => 'loop',
     data => { variable=>'stash_var', local_var=>'value' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $ci ( map { ci->new($_) } Util->_array_or_commas( $stash->{'%s'} ) ) {
                 local $stash->{'%s'} = $ci;
                 %s
             }
-            
+
         }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
 register 'statement.foreach.split' => {
-    text => 'FOREACH SPLIT /re/', 
+    text => 'FOREACH SPLIT /re/',
     type => 'loop',
     data => { split=>',', variable=>'stash_var', local_var=>'value' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $item ( split _regex('%s'), $stash->{'%s'} ) {
                 local $stash->{'%s'} = $item;
                 %s
             }
-            
+
         }, $n->{split} // ',', $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -653,7 +653,7 @@ register 'statement.sub' => {
     sub_mode => 'declare',
     description=> 'Just group tasks under this but do not run it',
     on_drop_js => q{
-        node.attributes.sub_name = new_id_for_task("SUB"); 
+        node.attributes.sub_name = new_id_for_task("SUB");
     },
     icon => '/static/images/icons/cog_perl.png',
     #icon => '/static/images/icons/shortcut.png',
@@ -717,7 +717,7 @@ register 'statement.log' => {
         sprintf(q{
             Util->_%s(
                 parse_vars(%s,$stash)
-            ); 
+            );
         }, $n->{data}{level}, $txt);
     }
 };
@@ -770,12 +770,12 @@ register 'event.rule.tester' => {
 register 'statement.var.set' => {
     text => 'SET VAR', data => {},
     type => 'let',
-    holds_children => 0, 
-    form => '/forms/set_var.js', 
-    dsl => sub { 
+    holds_children => 0,
+    form => '/forms/set_var.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            $stash->{'%s'} = parse_vars( q{%s}, $stash ); 
+            $stash->{'%s'} = parse_vars( q{%s}, $stash );
         }, $n->{variable}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -783,9 +783,9 @@ register 'statement.var.set' => {
 register 'statement.var.set_expr' => {
     text => 'SET EXPR', data => {},
     type => 'let',
-    holds_children => 0, 
-    form => '/forms/set_expr.js', 
-    dsl => sub { 
+    holds_children => 0,
+    form => '/forms/set_expr.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             $stash->{'%s'} = do { %s };
@@ -796,12 +796,12 @@ register 'statement.var.set_expr' => {
 register 'statement.var.set_to_ci' => {
     text => 'SET VAR to CI', data => {},
     type => 'let',
-    holds_children => 0, 
+    holds_children => 0,
     data => { variable=>'my_varname', from_code=>'', prepend=>'' },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            $stash->{'%s'} = ci->new( '%s' . parse_vars( %s, $stash ) ); 
+            $stash->{'%s'} = ci->new( '%s' . parse_vars( %s, $stash ) );
         }, $n->{variable}, $n->{prepend}, $n->{from_code} || sprintf(q{$stash->{'%s'}},$n->{variable}) );
     },
 };
@@ -809,19 +809,19 @@ register 'statement.var.set_to_ci' => {
 register 'statement.nature.block' => {
     text => 'APPLY NATURE', data => { nature=>'' },
     type => 'loop',
-    form => '/forms/nature_block.js', 
-    dsl => sub { 
+    form => '/forms/nature_block.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
-                # check if nature applies 
+                # check if nature applies
                 my $nature = ci->new( '%s' );
                 if( my $nature_items = stash_has_nature( $nature, $stash) ) {
                     # load natures config
                     my $variables = $nature->variables->{ $stash->{bl} // '*' } // {};
-                    merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
+                    merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' };
                     $stash->{nature_items} = $nature_items;
-                    
+
                     %s
                 }
             }
@@ -832,13 +832,13 @@ register 'statement.nature.block' => {
 register 'statement.stash.local' => {
     text => 'STASH LOCAL', data => {},
     type => 'loop',
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
                 local $stash = { %$stash };
-                
-                %s    
+
+                %s
             }
         }, $self->dsl_build( $n->{children}, %p ) );
     },
@@ -847,16 +847,16 @@ register 'statement.stash.local' => {
 register 'statement.project.block' => {
     text => 'APPLY PROJECT', data => { project=>'', bl=>'' },
     type => 'loop',
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
                 my $project = ci->new( '%s' );
                 my $vars = variables_for_bl( $project, $stash->{bl} );
                 _info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
-                merge_data $stash, $vars, { _ctx => 'apply project' }; 
+                merge_data $stash, $vars, { _ctx => 'apply project' };
 
-                %s    
+                %s
             }
         }, $n->{project} // 'project', $self->dsl_build( $n->{children}, %p ) );
     },
@@ -864,9 +864,9 @@ register 'statement.project.block' => {
 
 register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
-    form => '/forms/stmt_eval.js', 
-    icon => '/static/images/icons/cog_perl.png', 
-    dsl => sub { 
+    form => '/forms/stmt_eval.js',
+    icon => '/static/images/icons/cog_perl.png',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
@@ -881,9 +881,9 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    icon => '/static/images/icons/cog_perl.png', 
-    form => '/forms/stmt_eval.js', 
-    dsl => sub { 
+    icon => '/static/images/icons/cog_perl.png',
+    form => '/forms/stmt_eval.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
@@ -897,15 +897,15 @@ register 'statement.perl.do' => {
 
 register 'statement.perl.group' => {
     text => 'GROUP',data => { },
-    icon => '/static/images/icons/cog_gears.png', 
-    dsl => sub { 
+    icon => '/static/images/icons/cog_gears.png',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
                 my $dk = '%s';
-                my $ret = do { 
-                    %s 
-                }; 
+                my $ret = do {
+                    %s
+                };
                 $stash->{$dk} = $ret if length $dk;
             }
         }, $n->{data_key} // '', $self->dsl_build( $n->{children}, %p ) );
@@ -915,9 +915,9 @@ register 'statement.perl.group' => {
 register 'statement.perl.for' => {
     text => 'FOR eval', data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.png', 
-    form => '/forms/stmt_for.js', 
-    dsl => sub { 
+    icon => '/static/images/icons/cog_perl.png',
+    form => '/forms/stmt_for.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             for( %s ) {
@@ -958,8 +958,8 @@ register 'statement.perl.code' => {
     type => 'loop',
     icon => '/static/images/icons/cog_perl.png',
     holds_children => 0,
-    form => '/forms/stmt_eval.js', 
-    dsl => sub { 
+    form => '/forms/stmt_eval.js',
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             %s;
@@ -970,10 +970,10 @@ register 'statement.perl.code' => {
 register 'statement.project.loop' => {
     text => 'FOR projects with changes DO', data => { },
     type => 'loop',
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            for my $project ( project_changes( $stash ) ) { 
+            for my $project ( project_changes( $stash ) ) {
                 $stash->{project} = $project->name;
                 $stash->{project_mid} = $project->mid;
                 $stash->{project_lc} = lc $project->name;
@@ -984,8 +984,8 @@ register 'statement.project.loop' => {
                 if ( !@project_bls || $stash->{bl} ~~ @project_bls ) {
                     my $vars = variables_for_bl( $project, $stash->{bl} );
                     $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
-                    merge_data $stash, $vars, { _ctx => 'project_loop' }; 
-                    
+                    merge_data $stash, $vars, { _ctx => 'project_loop' };
+
                     %s
                 } else {
                     $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %%2', $project->name, $stash->{bl} ) );
@@ -1001,12 +1001,12 @@ register 'statement.if.nature' => {
     form => '/forms/if_nature.js',
     type => 'if',
     data => { nature=>'', },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         my ($nature) = _array($n->{nature});  # in case we accidently get an array of natures
         sprintf(q{
             if( my $nature = $stash->{natures}{ $project->mid }{'%s'} ) {
-                NAT: {  
+                NAT: {
                     $stash->{current_nature} = $nature;
                     local $stash->{nature_items} = $stash->{project_items}{ $stash->{current_project}->mid }{natures}{ $nature->mid };
                     last NAT if !_array( $stash->{nature_items} );
@@ -1015,7 +1015,7 @@ register 'statement.if.nature' => {
                     local $stash->{ nature_item_paths_del } = $nat_paths_del;
                     local $stash->{ nature_items_comma } = join(',', @$nat_paths );
                     local $stash->{ nature_items_quote } = "'" . join("' '", @$nat_paths ) . "'";
-                    $stash->{job}->logger->info( _loc('Nature Detected *%%1*', $nature->name ), 
+                    $stash->{job}->logger->info( _loc('Nature Detected *%%1*', $nature->name ),
                         +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
                     %s
@@ -1030,7 +1030,7 @@ register 'statement.if.any_nature' => {
     form => '/forms/if_any_nature.js',
     type => 'if',
     data => { natures=>'', },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( _any { exists $stash->{natures}{ $project->mid }{$_} } split /,/, '%s' ) {
@@ -1045,7 +1045,7 @@ register 'statement.if.rollback' => {
     text => 'IF ROLLBACK',
     type => 'if',
     data => { rollback=>'1', },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( $stash->{rollback} eq '%s' ) {
@@ -1057,10 +1057,10 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text => 'INCLUDE rule',
-    icon => '/static/images/icons/cog_perl.png', 
+    icon => '/static/images/icons/cog_perl.png',
     holds_children => 0,
     data => { id_rule=>'', },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
         my $dsl = $self->include_rule( $n->{id_rule}, %p );
         sprintf(q{
@@ -1071,10 +1071,10 @@ register 'statement.include' => {
 
 register 'statement.call' => {
     text => 'CALL rule',
-    icon => '/static/images/icons/cog.png', 
+    icon => '/static/images/icons/cog.png',
     holds_children => 0,
     data => { id_rule=>'', },
-    dsl => sub { 
+    dsl => sub {
         my ($self, $n , %p) = @_;
 
         sprintf(q{
@@ -1087,9 +1087,9 @@ sub include_rule {
     my ($self, $id_rule, %p) = @_;
     my @tree = $self->build_tree( $id_rule, undef );
     my $dsl = try {
-        $self->dsl_build( \@tree, id_rule=>$id_rule, %p ); 
+        $self->dsl_build( \@tree, id_rule=>$id_rule, %p );
     } catch {
-        _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) ); 
+        _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) );
     };
     return $dsl;
 }
@@ -1101,18 +1101,18 @@ sub get_rules_info {
     $sort = 'name_insensitive' if $sort eq 'rule_name';
     my $dir = $p->{dir} && $p->{dir} eq 'ASC' ? 1 : -1;
     if( $p->{query} ) {
-        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode username)] ); 
+        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode username)] );
     }
     # my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( $sort=>$dir ) );
     my $rs = mdb->rule->aggregate([
             { '$match'=>$where },
-            { '$project'=>{ 
-                    rule_name=>1, rule_type=>1, rule_compile_mode=>1, 
+            { '$project'=>{
+                    rule_name=>1, rule_type=>1, rule_compile_mode=>1,
                     rule_when=>1, rule_event=>1, rule_active=>1, event_name=>1, username=>1, folders=>1,
-                    id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' } 
-                } 
+                    id=>1,ts=>1, name_insensitive=> { '$toLower'=> '$rule_name' }
+                }
             },
-            { '$sort'=>mdb->ixhash( $sort=>$dir ) } 
+            { '$sort'=>mdb->ixhash( $sort=>$dir ) }
     ],{ cursor=>1 });
     my @rules;
     while (my $rule = $rs->next) {
@@ -1139,7 +1139,7 @@ sub get_rules_info {
                 draggable  => \0,
                 children   => []
             };
-            map { push $temp_structure->{children}, 
+            map { push $temp_structure->{children},
                 { text=>$_->{rule_name},
                   leaf=>\1,
                   draggable=>\1,
@@ -1152,18 +1152,18 @@ sub get_rules_info {
                   event_name=>$_->{event_name},
                   rule_name=>$_->{rule_name},
                   username=>$_->{username}
-               } if $_->{rule_type} eq $rule_type 
+               } if $_->{rule_type} eq $rule_type
             } @rules;
             push $folder_structure, $temp_structure;
         }
-     my $custom_folder_node = {text=>_loc('Custom Folders'),  iconCls => 'default_folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [], 
+     my $custom_folder_node = {text=>_loc('Custom Folders'),  iconCls => 'default_folders', leaf => \0, expandable => \1, expanded => $expanded, children=> [],
                 is_custom_folders_node=>\1, allowDrop=>\0, allowDrag=>\0, draggable=>\0 };
         my $rs = mdb->rule_folder->find;
         while( my $rule_folder = $rs->next ) {
             my $temp_structure = {
                 text           => $rule_folder->{name},
                 rule_folder_id => $rule_folder->{id},
-                iconCls => 'default_folders', 
+                iconCls => 'default_folders',
                 is_folder      => \1,
                 leaf           => \0,
                 expandable     => \1,
@@ -1173,10 +1173,10 @@ sub get_rules_info {
                 allowDrag      => \0
             };
             map {
-                push $temp_structure->{children}, 
-                { text=>$_->{rule_name}, 
-                  iconCls => 'default_folders', 
-                  leaf=>\1, 
+                push $temp_structure->{children},
+                { text=>$_->{rule_name},
+                  iconCls => 'default_folders',
+                  leaf=>\1,
                   rule_id=>$_->{id},
                   rule_ts=>$_->{ts},
                   rule_type=>$_->{rule_type},
@@ -1202,7 +1202,7 @@ sub add_custom_folder {
     my $folder_name = $p->{folder_name};
     my $rule_folder_seq;
     die _loc('Folder already exists') if mdb->rule_folder->find({name=>$folder_name})->count();
-    if(mdb->master_seq->find_one({_id=>'rule_folder'})){    
+    if(mdb->master_seq->find_one({_id=>'rule_folder'})){
         $rule_folder_seq = mdb->master_seq->find_one({_id=>'rule_folder'})->{seq};
     }else{
         $rule_folder_seq = 1;
@@ -1212,7 +1212,7 @@ sub add_custom_folder {
     my $folder_info = { name=>$folder_name, id=>$new_id.'', username=>$p->{username}, ts=>mdb->now().'', iconCls => 'default_folders' };
     mdb->rule_folder->insert($folder_info);
     my $ret = mdb->master_seq->update({ _id => 'rule_folder', seq =>$rule_folder_seq }, { '$set' => { seq => $new_id } });
-    $folder_info;  
+    $folder_info;
 }
 
 sub rename_rule_folder {
@@ -1268,11 +1268,11 @@ sub write_rule {
 
     event_new 'event.rule.update'
         => { username=>$p{username}, rule_id=>$p{id_rule}, rule_name=>$doc->{rule_name}, rule_type=>$doc->{rule_type} }
-        => sub { 
+        => sub {
             if (!$actual_timestamp and !$previous_user){
                 $actual_timestamp = $old_timestamp;
                 $previous_user = $p{username};
-                mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } ); 
+                mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } );
             }
             $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
 
@@ -1300,7 +1300,7 @@ sub delete_rule {
 
     event_new 'event.rule.delete'
         => { username=>$p{username}, rule_id=>$p{id_rule}, rule_name=>$doc->{rule_name}, rule_type=>$doc->{rule_type} }
-        => sub { 
+        => sub {
 
             if($doc->{rule_type} eq 'fieldlets'){
                 #remove relationship between rule and category
@@ -1311,7 +1311,7 @@ sub delete_rule {
 
             delete $doc->{_id};
 
-            mdb->rule_version->insert({ %$doc, deleted=>'1', ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, was=>'' });    
+            mdb->rule_version->insert({ %$doc, deleted=>'1', ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, was=>'' });
         };
     return $name;
 }
@@ -1344,8 +1344,8 @@ sub save_rule {
     my $data = {
         rule_active => '1',
         rule_name  => $p{rule_name},
-        rule_when  => ( $p{rule_type} eq 'pipeline' 
-            ? $p{pipeline_default}  
+        rule_when  => ( $p{rule_type} eq 'pipeline'
+            ? $p{pipeline_default}
             : $p{rule_when} ),
         rule_event => $p{rule_event},
         rule_type  => $p{rule_type},
@@ -1360,7 +1360,7 @@ sub save_rule {
     if ( length $p{rule_id} ) {
         event_new 'event.rule.update'
             => { username=>$p{username}, rule_id=>$p{rule_id}, rule_name=>$p{rule_name}, rule_type=>$p{rule_type}}
-            => sub { 
+            => sub {
                 my $doc = mdb->rule->find_one({ id=>"$p{rule_id}" });
                 _fail _loc 'Rule %1 not found', $p{rule_id} unless $doc;
                 mdb->rule->update({ id=>"$p{rule_id}" },{ %$doc, %$data });
@@ -1368,7 +1368,7 @@ sub save_rule {
     } else {
         event_new 'event.rule.create'
             => { username=>$p{username}, rule_id=>$p{rule_id}, rule_name=>$p{rule_name}, rule_type=>$p{rule_type}}
-            => sub { 
+            => sub {
                 $data->{id} = mdb->seq('rule');
                 $data->{rule_seq} = 0+mdb->seq('rule_seq');
                 mdb->rule->insert($data);
@@ -1380,4 +1380,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

@@ -38,7 +38,7 @@ sub gitweb : Path('/gitweb.cgi') {
     );
 
     if( $a_parm eq 'blob_plain' ) {
-       # TODO consider using Code textarea 
+       # TODO consider using Code textarea
     } else {
         my $html = $c->res->body;
         $html =~ s{<\?xml.*?>}{}gs;
@@ -55,7 +55,7 @@ sub gitweb : Path('/gitweb.cgi') {
         $c->res->content_type( 'text/html' );
 
         $c->stash->{gitweb_html} = $html;
-        $c->stash->{template} = '/git/gitweb.html'; 
+        $c->stash->{template} = '/git/gitweb.html';
     }
 }
 
@@ -333,5 +333,3 @@ __DATA__
     our $projects_list = "" if ( !-e $projects_list );
 
 }
-
-

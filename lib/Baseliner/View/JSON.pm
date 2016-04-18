@@ -19,11 +19,11 @@ sub encode_json {
     if( ref $data eq 'HASH' && ( my $msg = delete $c->stash->{__broadcast} ) && !$c->session->{login_from_api} ) {
         $$data{__broadcast} = $msg if ref $msg eq 'HASH';
     }
-    
+
     if( !ref $data ) {
         Util->_throw( 'Missing JSON data in stash');
     }
-    
+
     my $encoder = $self->{_json_encoder} // ( $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed );
     $encoder->max_depth([1024]);
     $encoder->encode($data);
@@ -32,11 +32,11 @@ sub encode_json {
 sub process {
     my $self = shift;
     my ($c) = @_;
-    
+
     $self->system_messages($c);
-    
+
     $self->next::method(@_);
-    
+
     my $output = $c->res->output;
     if( $c->config->{'Baseliner::View::JSON'}->{decode_utf8} ) {
         $output = Encode::decode_utf8($output)
@@ -61,12 +61,12 @@ Baseliner::View::JSON - Catalyst JSON View
 
 =head1 SYNOPSIS
 
-Encodes the response after conversion. 
+Encodes the response after conversion.
 
 There are two ways of preventing this view from encoding:
 
 Globally, in C</baseliner/baseliner.conf>:
-    
+
     <Baseliner::View::JSON>
         decode_utf8 0
     </Baseliner::View::JSON>

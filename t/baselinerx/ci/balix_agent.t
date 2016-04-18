@@ -5,10 +5,8 @@ use Test::More;
 use Test::Deep;
 use Test::Fatal;
 
-use lib 't/lib';
 use TestEnv;
-
-TestEnv->setup;
+BEGIN { TestEnv->setup }
 
 use Baseliner::Role::CI;    # WTF this is needed for CI
 use BaselinerX::CI::generic_server;

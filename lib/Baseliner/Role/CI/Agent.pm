@@ -12,9 +12,9 @@ has password    => qw(is rw isa Str);
 has server => qw(is rw isa CI),
     traits => ['CI'],
     handles=>[qw(remote_temp remote_perl remote_tar hostname)];
-    
+
 around rel_type => sub {
-    { 
+    {
         server => [ to_mid => 'server_agent' ] ,
     };
 };
@@ -55,7 +55,7 @@ has mkpath_on    => qw(is ro isa Bool default 1);
 
 =head2 overwrite_on
 
-Overwrite remote files. Replace full directories. 
+Overwrite remote files. Replace full directories.
 
 Default: true
 
@@ -99,7 +99,7 @@ sub _double_quote_cmd {
     map { ref $_ eq 'SCALAR' ? $$_ : "\"$_\""; } @_;
 }
 
-sub _quote_str { 
+sub _quote_str {
     $_[0]->is_win ? '"' : "'";
 }
 
@@ -109,12 +109,10 @@ sub fatpack_perl_code {
     my $claw_file = Baseliner->path_to( 'bin/cla-worker' );
     my $claw = scalar $claw_file->slurp;
     if( my ($fp) = $claw =~ /^(.*END OF FATPACK CODE).*$/s ) {
-        return $fp . "\n\n" . $code;         
+        return $fp . "\n\n" . $code;
     } else {
         Util->_fail( Util->_loc( "Error trying to fatpack perl code. Could not find fatpack code in '%1'", $claw_file) );
     }
 }
 
 1;
-
-

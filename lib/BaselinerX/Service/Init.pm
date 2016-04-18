@@ -10,19 +10,19 @@ use File::Path qw/mkpath remove_tree/;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.init' => { 
+register 'service.job.init' => {
     name => 'Init Job Home',
     job_service  => 1,
-    handler => \&job_init, 
+    handler => \&job_init,
 };
 
 sub job_init {
     my ($self,$c,$config)=@_;
-    
+
     my $job = $c->stash->{job};
     my $log = $job->logger;
     my $job_dir = $job->job_dir;
-    
+
     $log->debug( _loc( 'Creating job home: %1', $job_dir ) );
     if( -e $job_dir ) {
         if( length $job_dir > 5 ) {
@@ -40,7 +40,7 @@ sub job_init {
             $log->debug( _loc( "Job home '%1' created", $job_dir ) );
         }
     }
-    
+
     return { init=>1, job_dir=>$job_dir };
 }
 

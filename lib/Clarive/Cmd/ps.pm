@@ -28,9 +28,9 @@ sub run {
     } glob $self->pid_dir . '/cla*.pid';
 
     say "PARENT PIDS: " . Clarive->yaml( \%pids ) if $opts{v};
-    
+
     my %procs = ( job=>{},server=>{},disp=>{} );
-    
+
     foreach my $p ( @{$t->table} ){
         my $line = sub {
             my ($type) = @_;
@@ -42,19 +42,19 @@ sub run {
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              $self->filter_cmd($type, $^O eq 'cygwin' ? $p->fname : $p->cmndline) 
+              $self->filter_cmd($type, $^O eq 'cygwin' ? $p->fname : $p->cmndline)
             );
         };
-        
+
         no warnings;
         if( my $parent = $pids{$p->ppid} || $pids{$p->pid} ) {
             my $type = $parent->{type};
-            $procs{$type}{$p->pid} = +{ %$parent, line=>$line->($type) }; 
+            $procs{$type}{$p->pid} = +{ %$parent, line=>$line->($type) };
             $pids{$p->pid} = $parent;
         } else {
             my $type = $parent->{type};
         }
-        
+
         #for my $pid ( @pids ) {
         #    if( $pid->{pid}>1 && ($pid->{pid} == $p->pid || $pid->{pid} == $p->ppid) ) {
         #        if( $pid->{type} eq 'server' || $server_pids{$p->ppid} ) {
@@ -81,7 +81,7 @@ sub run {
 }
 
 sub run_filter {
-    my ($self) = @_; 
+    my ($self) = @_;
     my $FORMAT = "%-6s %-6s %-8s %-24s %s";
     my $t = new Proc::ProcessTable;
     my @disp;

@@ -12,7 +12,7 @@ use Package::Alias Registry => 'Baseliner::Core::Registry';
 
 use Moose::Exporter;
 
-Moose::Exporter->setup_import_methods( 
+Moose::Exporter->setup_import_methods(
     with_caller => [ 'register','register_class' ],
     also => [ 'Moose' ]
 );

@@ -6,7 +6,7 @@ has repo_dir => qw/is rw isa Str required 1/;
 has repo_name => qw/is rw isa Str required 1/;
 has project => qw/is rw isa Str required 1/;
 has bl => qw/is rw isa Any/;
-has head => qw/is rw isa Any required 1/, 
+has head => qw/is rw isa Any required 1/,
     #handles => qr/.*/;
     ;
 has name => qw/is rw isa Str required 1/;
@@ -82,7 +82,7 @@ sub _click {
        $title= $title . "....";
     }
     else{
-        $title = $self->name;   
+        $title = $self->name;
     }
     +{
             url      => '/comp/view_commits_history.js',
@@ -96,7 +96,7 @@ sub _click {
 }
 
 
-sub node_data { 
+sub node_data {
     my $self = shift;
     my $branch = $self->name;
     +{  repo_dir   => $self->repo_dir,

@@ -70,12 +70,12 @@ say "Scanning localizable strings in dirs: " . join',',@search;
 sub interactive {
     my $p = shift;
     if( exists $args{i} ) {
-        print "$p\n>"; 
+        print "$p\n>";
         my $in = <STDIN>;
         $in =~ s{\n|\r}{}gs;
         return $in;
     }
-    $p; 
+    $p;
 }
 
 for my $dir ( @search ) {

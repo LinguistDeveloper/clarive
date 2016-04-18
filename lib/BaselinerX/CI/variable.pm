@@ -19,7 +19,7 @@ with 'Baseliner::Role::CI::Variable';
 after save => sub {
     my ($self, $master_row, $data ) = @_;
 
-    if ( $self->name ne $self->old_name ) {    
+    if ( $self->name ne $self->old_name ) {
         $self->change_var_names();
         $self->change_var_names_in_rules() if config_get('config.rules')->{auto_rename_vars};
         $self->old_name($self->name);
@@ -44,17 +44,17 @@ sub default_hash {
     for my $var ( @all ) {
         next unless ! length($var->bl) || $var->bl eq '*' || $var->bl eq $bl;
         my $variables = $var->variables;
-        my $def = ref $variables 
-            ? (exists $variables->{$bl} ? $variables->{$bl} : $variables->{'*'} ) 
+        my $def = ref $variables
+            ? (exists $variables->{$bl} ? $variables->{$bl} : $variables->{'*'} )
             : $var->var_default;
-        $vars{ $var->name } = $def; 
-    } 
+        $vars{ $var->name } = $def;
+    }
     \%vars;
 }
 
 sub change_var_names {
     my ($self) = @_;
-    
+
     my @bls = map {$_->{bl}} ci->bl->find({},{bl=>1,_id=>0})->all;
 
     my @ors = map { +{"variables.".$_.".".$self->{old_name}=>{'$exists'=>1}} } @bls;
@@ -88,14 +88,14 @@ sub change_var_names_in_rules {
 
     for my $rule ( @rules ) {
         my $tree = $rule->{rule_tree};
-        
-        
+
+
         if ( $tree && $tree =~ /\{$old_name\}|\"$old_name\"|\'$old_name\'/  ) {
             $tree =~ s/\{$old_name\}/\{$new_name\}/g;
             $tree =~ s/\"$old_name\"/\"$new_name\"/g;
             $tree =~ s/\'$old_name\'/\'$new_name\'/g;
             _debug _log("Updating variable name from $old_name to $new_name in rule $rule->{id}");
-            Baseliner::Controller::Rule->local_stmts_save( {username => 'clarive', id_rule => $rule->{id} , stmts => $tree, old_ts => $rule->{ts} }); 
+            Baseliner::Controller::Rule->local_stmts_save( {username => 'clarive', id_rule => $rule->{id} , stmts => $tree, old_ts => $rule->{ts} });
         }
     }
 }
@@ -106,4 +106,3 @@ sub is_ci {
 }
 
 1;
-

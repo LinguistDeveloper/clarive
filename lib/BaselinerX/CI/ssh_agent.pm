@@ -31,9 +31,9 @@ has ssh     => (
         ];
         push @$master_opts, -i => $self->private_key if $self->{private_key};
 
-        my $n = $self->_build_openssh( $uri, 
+        my $n = $self->_build_openssh( $uri,
             master_opts      => [ @$master_opts ],
-            default_ssh_opts => [ -F => '/dev/null' ] 
+            default_ssh_opts => [ -F => '/dev/null' ]
         );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
         $n;
@@ -90,7 +90,7 @@ sub make_writable {
 
 method file_exists( $file_or_dir ) {
     my ($rc,$ret) = $self->execute( 'test', '-r', $file_or_dir ); # check it exists
-    return !$rc; 
+    return !$rc;
 }
 
 sub get_file {
@@ -104,13 +104,13 @@ sub get_dir {
     my $remote = delete $p{remote} || $self->home || _throw "Missing parameter remote";
     $p{recursive} = 1;
     $p{copy_attrs} = $self->copy_attrs; # copies attributes : may cause an error scp set mode: Not owner
-    $p{glob} = 1; # allows for * 
+    $p{glob} = 1; # allows for *
     $p{stderr_to_stdout} = 1;
     $p{stdout_file} = _tmp_file;  # send output to tmp file
     ( $local, $remote ) = map { "$_" } $local, $remote;  # strigify possible Path::Class
     _mkpath( $local ) if !-d $local && !$file_to_file && $self->mkpath_on; # create local path
     my $method = $self->_method . "_get";
-    my $ret = $self->ssh->$method( \%p, $remote, $local ); 
+    my $ret = $self->ssh->$method( \%p, $remote, $local );
     my $out = Util->_slurp( $p{stdout_file} );
     unlink $p{stdout_file};
     $self->ret( "$out" );
@@ -152,10 +152,10 @@ sub delete_file {
 General method to copy files.
 
 Parameters:
-    
+
     local     => local file or dir
     remote    => remote file dir
-    add_path  => path to add to remote 
+    add_path  => path to add to remote
     recusive  => copy recurse ( default: 1 )
 
 =cut
@@ -172,7 +172,7 @@ sub put_dir {
     delete $p{add_path};
     $p{recursive} //= 1;
     $p{copy_attrs} //= $self->copy_attrs; # copies attributes : may cause an error scp set mode: Not owner
-    $p{glob} //= 1; # allows for * 
+    $p{glob} //= 1; # allows for *
     $p{stderr_to_stdout} //= 1;
     $p{stdout_file} //= _tmp_file;  # send output to tmp file
     ( $local, $remote ) = map { "$_" } $local, $remote;  # strigify possible Path::Class
@@ -184,9 +184,9 @@ sub put_dir {
     _throw _loc ( "put-dir error: local file/dir not found: %1", $local)
         if $local !~ /\*/ && ! -e $local;  # don't check if contains asterisks
 
-    # run 
+    # run
     _log "URI=" . $self->_build_uri . ", L=$local, R=$remote";
-    my $ret = $self->ssh->$method( \%p, $local, $remote ); 
+    my $ret = $self->ssh->$method( \%p, $local, $remote );
     $ret = defined $ret ? $ret : 127;
 
     my $out = Util->_slurp( $p{stdout_file} );
@@ -203,19 +203,19 @@ sub execute {
     my %p = ( stderr_to_stdout => 1, );
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
     $p{stdout_file} = _tmp_file;  # send output to tmp file
-    
+
     # TODO alternative: send a shell file (or .bat) to remote and execute it?
     my $cmd_quoted;
     if( length( join('', @cmd) ) > 65_536 ) {  # 64K TODO use getconf ARG_MAX - length(join '',%ENV)
         $cmd_quoted = join ' ', $self->_double_quote_cmd( @cmd ); # command is too large, so we use a quoted version
     }
-    my $ret; 
-    my $rc; 
+    my $ret;
+    my $rc;
     my $timeout = length $self->{timeout} ? $self->{timeout} : 60;
 
     try {
         local $SIG{ALRM} = sub { die "ssh timeout alarm\n" };
-        alarm $timeout; 
+        alarm $timeout;
         if( !$cmd_quoted ) {
             $ret = $self->ssh->system( \%p, @cmd );
         } else {
@@ -230,8 +230,8 @@ sub execute {
         _fail $msg if $self->throw_errors;
         $ret = $msg;
         $rc = $?>0 ? $? : 99;
-        #_fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
-        #_fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
+        #_fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/;
+        #_fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/;
     };
     my $out = Util->_slurp( $p{stdout_file} );
     $out //= '';
@@ -304,8 +304,8 @@ sub _build_uri {
     if ( $self->port_num ) {
         $uri .= ':' . $self->port_num;
     }
-    elsif ( Baseliner->config->{ssh_port} ) {
-        $uri .= ':' . Baseliner->config->{ssh_port} // 22;
+    elsif ( Clarive->config->{ssh_port} ) {
+        $uri .= ':' . Clarive->config->{ssh_port} // 22;
     }
 
     return $uri;

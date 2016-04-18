@@ -46,10 +46,10 @@ sub generate_from_template {
         TOP:
         my $desc = $vv->{desc};
         $desc = length $desc ? "\n--------------| $var |--------------\n".eval("\"$desc\"")."\n" : '';
-        
+
         my $default = length $vv->{default} ? eval( $vv->{default}  ) : '';
         my $default_msg = length $default ? " [$default]" : '';
-        my $v = $self->_ask_me( msg=> "$desc$var$default_msg: " ); 
+        my $v = $self->_ask_me( msg=> "$desc$var$default_msg: " );
         # trim
         $v =~ s/^\s+//g;
         $v =~ s/\s+$//g;
@@ -57,19 +57,19 @@ sub generate_from_template {
         $vv->{valid} and ( $v =~ $v->{valid} or say "*** Invalid value. Try again.", goto TOP );
         # transform
         $vv->{transform} and do{ $v = eval( $vv->{transform} ) };
-        
+
         $vv->{value} = length $v ? $v : $default;
     }
-    
+
     # now replace
     for my $var ( keys %vars ) {
         my $value = $vars{$var}{value};
         $value='' unless defined $value;
         $d =~ s{\[\[$var:?(.*?)\]\]}{$value}sg;
     }
-    
+
     say $d;
-    
+
     if( -e $dest_file ) {
         my $yn = $self->_ask_me( msg=>"Destination file already exists. Overwrite?", yn=>1 );
         exit 1 unless $yn;
@@ -126,18 +126,18 @@ Tools for generating a custom config file and showing config values in your serv
 
 Generates conf file.
 
-	cla config-gen --env <env>
+    cla config-gen --env <env>
 
 =head2 config-show
 
 Show configuration parameters.
 
-	cla config-show 
+    cla config-show
 
 =head2 config-opts
 
 Show configuration and option parameters
-	
-	cla config-opts
+
+    cla config-opts
 
 =cut

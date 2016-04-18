@@ -12,7 +12,7 @@ with 'Clarive::Role::Baseliner';
 
 sub run {
     my ($self, %opts) = @_;
-    say "Clarive - License data:" ; 
+    say "Clarive - License data:" ;
     if( my $site = $self->app->config->{ $ss } ) {
         eval { require Clarive::Util::TLC; };
         my $lic = Clarive::Util::TLC::check( $site, verbose=>1 );
@@ -25,4 +25,3 @@ sub run {
 }
 
 1;
-

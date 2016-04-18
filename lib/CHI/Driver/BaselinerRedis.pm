@@ -19,8 +19,6 @@ sub _verify_redis_connection {
         die('Failed to connect to Redis');
     }
     return 1;
-} 
+}
 
 1;
-
-

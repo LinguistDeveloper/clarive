@@ -31,7 +31,7 @@ sub ext_menu_json {
     my $ref = $self->ext_menu(%p);
     require JavaScript::Dumper;
     return defined $ref
-        ? JavaScript::Dumper::js_dumper($ref)   # TODO this is the only dumper that does bare \'function()' ? 
+        ? JavaScript::Dumper::js_dumper($ref)   # TODO this is the only dumper that does bare \'function()' ?
         : undef;
 }
 
@@ -85,7 +85,7 @@ sub ext_menu {
         $ret->{handler}=\"$self->{handler}";
     }
     elsif( ! @children ) {
-        $ret->{handler}=\"function() { Ext.Msg.alert('Error', 'No action defined'); } "; 
+        $ret->{handler}=\"function() { Ext.Msg.alert('Error', 'No action defined'); } ";
     }
     $ret->{menu} = { ignoreParentClicks=>\'1', items=>\@children } if(@children);
     $ret->{menu_count} = scalar(@children);
@@ -93,7 +93,7 @@ sub ext_menu {
     if( $icon ) {
         $ret->{icon} = $icon;
         $ret->{cls} = 'x-btn-text-icon';
-    } 
+    }
 
     $ret->{cls} .= ' ' if $ret->{cls};
     $ret->{cls} .= "ui-menu-$class";

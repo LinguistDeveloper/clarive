@@ -8,7 +8,7 @@ has rollback  => qw(is rw isa BoolCheckbox default 0);
 has_cis 'contents';
 
 sub rel_type {
-    { 
+    {
         contents => [ from_mid => 'group_contents' ] ,
     };
 }

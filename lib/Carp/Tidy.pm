@@ -133,7 +133,7 @@ unless( $ENV{CARP_TIDY_OFF} ) {
 
 =head1 DESCRIPTION
 
-Carp prettier. 
+Carp prettier.
 
 =head1 SYNOPSIS
 
@@ -149,7 +149,3 @@ Carp prettier.
 =cut
 
 1;
-
-
-
-

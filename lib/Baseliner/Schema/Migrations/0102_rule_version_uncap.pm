@@ -9,7 +9,7 @@ sub upgrade {
         mdb->rule_version->insert( $r );
     }
     # for safety:
-    mdb->rule_version_capped->drop 
+    mdb->rule_version_capped->drop
         if mdb->rule_version_capped->count == mdb->rule_version->count;
 }
 
@@ -18,6 +18,3 @@ sub downgrade {
 }
 
 1;
-
-
-

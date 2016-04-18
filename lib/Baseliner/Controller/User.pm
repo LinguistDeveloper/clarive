@@ -22,7 +22,7 @@ register 'config.user.global' => {
         {   id      => 'language',
             label   => 'Language',
             type    => 'combo',
-            default => Baseliner->config->{default_lang},
+            default => Clarive->config->{default_lang},
             store   => [ 'es', 'en' ]
         },
     ]
@@ -34,7 +34,7 @@ register 'config.user.view' => {
         {   id      => 'theme',
             label   => 'Theme',
             type    => 'combo',
-            default => Baseliner->config->{default_theme},
+            default => Clarive->config->{default_theme},
             store   => [ 'gray', 'blue', 'slate' ]
         },
     ]

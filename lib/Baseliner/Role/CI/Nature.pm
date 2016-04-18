@@ -45,7 +45,7 @@ sub filter_items {
         for my $i ( @excludes ) {
             next ITEM if $item->path =~ $i;
         }
-        
+
         if( ref $p{callback} eq 'CODE' ) {
             next unless $p{callback}->( $item );
         }
@@ -69,16 +69,16 @@ sub filter_items {
 
 sub scan {
     my ($self, %p )=@_;
-   
-    my $nat_items = $self->filter_items( %p ); 
+
+    my $nat_items = $self->filter_items( %p );
     my $nat_items_after_parse = [];
-    
+
     for my $parser ( Util->_array( $self->parsers ) ) {
         ITEM: for my $item ( @$nat_items ) {
             Util->_debug( "parsing item " . $item->path . " with parser " . $parser->name );
             my $res = $parser->parse( $item );
             Util->_debug( "PARSER $parser->{name} (" . ref($parser) . "): " . Util->_dump( $res ) );
-            
+
             # TODO this is the place to take or reject items based on parse results and a flag
             #   only_parsed goes here
             push @$nat_items_after_parse, $item;
@@ -97,4 +97,3 @@ sub scan {
 }
 
 1;
-

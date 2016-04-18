@@ -72,19 +72,19 @@ sub monitor {
     $groupby //= '';
 
     $sort ||= 'starttime';
-    $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1; 
+    $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1;
 
     my @order_by;
     if ( length($groupby) ) {
         $groupdir = $groupdir eq 'ASC' ? 1 : -1;
-        @order_by = ( 
-            $group_keys->{$groupby} => ($groupby eq 'when'?-1:$groupdir), 
-            $group_keys->{$sort} => $dir 
+        @order_by = (
+            $group_keys->{$groupby} => ($groupby eq 'when'?-1:$groupdir),
+            $group_keys->{$sort} => $dir
         );
     } else {
         @order_by = ( $group_keys->{$sort} => $dir );
     }
-    
+
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
     my $page = to_pages( start=>$start, limit=>$limit );
@@ -100,18 +100,18 @@ sub monitor {
             $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
             $query =~ s{\+(\S+)}{"$1"}g;
             $query =~ s{""+}{"}g;
-            @mids_query = map { $_->{obj}{mid} } 
+            @mids_query = map { $_->{obj}{mid} }
                 _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
         }
         if( !@mids_query ) {
-            mdb->query_build( where=>$where, query=>$query, fields=>[ keys %$group_keys ] ); 
+            mdb->query_build( where=>$where, query=>$query, fields=>[ keys %$group_keys ] );
         } else {
             push @mid_filters, { mid=>mdb->in(@mids_query) };
         }
     }
 
     my $is_root = Baseliner::Model::Permissions->new->is_root($username);
-    
+
     if( !$is_root ) {
         my $user = ci->user->find_one({ name=>$username });
         my @roles = keys $user->{project_security};
@@ -121,7 +121,7 @@ sub monitor {
         $where->{bl} = mdb->in(@bl) if(@bl && !('*' ~~ @bl));
         $where->{projects} = mdb->in( sort @ids_project );
     }
-    
+
     if( length $p->{job_state_filter} ) {
         my @job_state_filters = do {
                 my $job_state_filter = Util->_decode_json( $p->{job_state_filter} );
@@ -137,22 +137,22 @@ sub monitor {
     }
 
     # Filter by environment name:
-    if (exists $p->{filter_bl}) {      
+    if (exists $p->{filter_bl}) {
       $where->{bl} = $p->{filter_bl};
     }
 
     # Filter by job_type
-    if (exists $p->{filter_type}) {      
+    if (exists $p->{filter_type}) {
       $where->{job_type} = $p->{filter_type};
     }
-        
+
     $query_id ||='';
     if($query_id ne '-1'){
         #Cuando viene por el dashboard
         my @jobs = split(",",$query_id);
         $where->{'mid'} = mdb->in( \@jobs );
     }
-    
+
     $where->{'$and'} =\@mid_filters if @mid_filters;
 
     if( $filter ) {
@@ -177,21 +177,21 @@ sub monitor {
     }
 
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(mdb->ixhash( @order_by ));
-    
+
     if( $p->{list_only} ) {    # used by the refresh auto, for speed
         return (0, $rs->fields({ mid=>1 })->next );
     }
 
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start) unless $limit eq -1;
-    
+
     my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all;
-            
+
     my @rows;
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
-    
+    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ;
+    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ;
+
     local $Baseliner::CI::mid_scope = {};
 
     for my $job ( $rs->all ) {
@@ -200,14 +200,14 @@ sub monitor {
         my $type = _loc($job->{job_type});
         my @changesets = (); #_array $job_items{ $job->{id} };
         my $job_contents = $job->{job_contents} // {};
-        
+
         my $last_log_message = $job->{last_log_message};
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $when='';
-        my $day;  
+        my $day;
         my $sdt = parse_dt( '%Y-%m-%d %H:%M:%S', $job->{starttime} // $job->{ts}  );
-        my $dur =  $today - $sdt; 
+        my $dur =  $today - $sdt;
         $sdt->{locale} = DateTime::Locale->load( $p->{language} || 'en' ); # day names in local language
         $day =
             $dur->{months} > 3 ? [ 90, _loc('Older') ]
@@ -245,8 +245,8 @@ sub monitor {
             bl           => $job->{bl},
             bl_text      => $job->{bl},  #TODO resolve bl name
             ts           => $job->{ts},
-            # show only date if when 
-            starttime    => ( $groupby eq 'starttime' ? substr($job->{starttime},0,10) : $job->{starttime} ), 
+            # show only date if when
+            starttime    => ( $groupby eq 'starttime' ? substr($job->{starttime},0,10) : $job->{starttime} ),
             schedtime    => ( $groupby eq 'schedtime' ? substr($job->{schedtime},0,10) : $job->{schedtime} ),
             maxstarttime => ( $groupby eq 'maxstarttime' ? substr($job->{maxstarttime},0,10) : $job->{maxstarttime} ),
             endtime      => ( $groupby eq 'endtime' ? substr($job->{endtime},0,10) : $job->{endtime} ),
@@ -274,7 +274,7 @@ sub monitor {
             runner       => $job->{runner},
             job_family   => $job->{job_family} ||'pipeline',
             id_rule      => $job->{id_rule},
-            rule_name    => _loc('Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ), 
+            rule_name    => _loc('Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ),
             contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
             changesets   => $job_contents->{list_changesets} || [],
             changeset_cis   => $job_contents->{list_changeset_cis} || [],
@@ -340,14 +340,14 @@ sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
 sub search_query {
     my ($self, %p ) = @_;
-    
+
     $p{limit} //= 100;
     $p{query_id} = -1;
     my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor(\%p);
     return map {
         my $r = $_;
         #my $summary = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
-        my @text = 
+        my @text =
             grep { length }
             map { "$_" }
             map { _array( $_ ) }
@@ -426,7 +426,7 @@ sub export {
 
 sub get_contents {
     my ( $self, %p ) = @_;
-    defined $p{jobid} or _throw "Missing jobid"; 
+    defined $p{jobid} or _throw "Missing jobid";
     my $result;
 
     my $job = _ci( ns=>'job/' . $p{jobid} );
@@ -441,10 +441,10 @@ sub get_contents {
     }
     $result = {
         packages => $changesets_by_project,
-        items => $items, 
+        items => $items,
         technologies => \@natures,
     };
-    
+
     return $result;
 
 } ## end sub get_contents
@@ -456,7 +456,7 @@ sub user_can_search {
 
 sub build_field_query {
     my ($self,$query,$where) = @_;
-    mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] ); 
+    mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] );
 }
 
 

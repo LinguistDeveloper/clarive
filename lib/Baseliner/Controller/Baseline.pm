@@ -46,7 +46,7 @@ sub json : Local {
             bl          => $_->{bl},
             active      => 1,
             bl_name=>sprintf( ( defined $_->{name} ? "%s (%s)" : "%s" ),$bl, _loc($_->{name}) ),
-            name_bl=>( defined $_->{name} ? sprintf("%s (%s)" , _loc($_->{name}), $bl ) : $bl )  
+            name_bl=>( defined $_->{name} ? sprintf("%s (%s)" , _loc($_->{name}), $bl ) : $bl )
          }
     } Baseliner::Core::Baseline->baselines();
     @bl_list = grep { $_->{bl} ne '*' } @bl_list if $p->{no_common};
@@ -62,32 +62,32 @@ sub list : Local {
     $limit ||= 100;
     $sort ||= 'seq';
     $dir ||= 'asc';
-    
+
     my $where = $query
     ? { 'lower(bl||name||description)' => { -like => "%".lc($query)."%" } }
     : undef;
-    
+
     my @rows = map {
         my $r = $_;
           {
             id          => $r->mid,
-            bl 		    => $r->bl,
-            name	    => _loc($r->name),
-            description	=> _loc($r->description),
+            bl             => $r->bl,
+            name        => _loc($r->name),
+            description    => _loc($r->description),
           };
     } sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
     my $cnt = @rows;
-        
+
     $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
-    $c->forward('View::JSON');    
+    $c->forward('View::JSON');
 }
 
 sub bounds : Private {
     my ($self,$c)=@_;
     my $p = $c->request->parameters;
     $c->forward('/baseline/list');
-    my $rows = $c->stash->{json}{data}; 
-    $c->stash->{bound_list} = [ 
+    my $rows = $c->stash->{json}{data};
+    $c->stash->{bound_list} = [
         map {
             +{
                 id   => $_->{id},
@@ -101,5 +101,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
-

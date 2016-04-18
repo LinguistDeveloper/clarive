@@ -18,7 +18,7 @@ with 'Baseliner::Role::Service';
 register 'config.daemon.purge' => {
     name => 'Event daemon configuration',
     metadata => [
-        { id=>'frequency', label=>'event purge daemon frequency (secs)', default=>86400 },    
+        { id=>'frequency', label=>'event purge daemon frequency (secs)', default=>86400 },
     ]
 };
 
@@ -115,13 +115,13 @@ sub run_once {
                     _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
                     $job_purge_count++;
                     $ci_job->update( purged=>1 );
-                    next if $opts->{dry_run};              
+                    next if $opts->{dry_run};
                     # delete job logs
-                    _log "\tDeleting log $purged_job_log_path"; 
+                    _log "\tDeleting log $purged_job_log_path";
                     unlink $purged_job_log_path;
                     my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
                     while( my $actual = $deleted_job_logs->next ) {
-                        my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
+                        my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} });
                         my $data;
                         mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} && $actual->{level} eq 'debug';
                         if(ref $query){
@@ -174,17 +174,17 @@ sub run_once {
                     #my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
                     #next unless -e $pid_file;
                     require Baseliner::LogfileRotate;
-                    
+
                     _log "\tTruncating: ".$file->basename;
-                    my $log = new Baseliner::LogfileRotate( File   => $file, 
+                    my $log = new Baseliner::LogfileRotate( File   => $file,
                                     Count  => $config_purge->{keep_rotation_level},
                                     Gzip  => 'lib',
                                     # Post   => sub{
-                                    #         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
+                                    #         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {
                                     #             my $pid = _file( $pid_file )->slurp;
                                     #             #open( my $opened_file, $pid_file );
                                     #             _log _loc("Restarting process ".$pid." for file ".$file->basename);
-                                    #             kill( "HUP", $pid ); 
+                                    #             kill( "HUP", $pid );
                                     #         }
                                     #     },
                                     Dir    => $file->dir,
@@ -196,7 +196,7 @@ sub run_once {
                 }
             }
         }
-        
+
         ####################### purge old event_log
 
         ############################ PURGE OLD SENT MESSAGES ###########################################
@@ -210,14 +210,14 @@ sub run_once {
         ############################ DELETE SPECIFICATIONS OF RELEASES ###########################################
         _rmpath(_dir(_tmp_dir(),'downloads'));
     }
-    
+
     my $event_log_keep = $config_purge->{event_log_keep};
     my $event_ok_purge = $config_purge->{event_ok_purge};
     my $event_ko_purge = $config_purge->{event_ok_purge};
     my $event_auth_purge = $config_purge->{event_auth_purge};
 
     if ( $event_ok_purge || $event_ko_purge || $event_auth_purge ) {
-        if( length $event_log_keep ) { 
+        if( length $event_log_keep ) {
             _log "Purging events";
 
             if ( $event_ok_purge ) {
@@ -245,7 +245,7 @@ sub run_once {
                 mdb->event_log->remove({ id_event=>mdb->in(@events_ko)}, { multiple=>1 });
             }
             if ( $event_auth_purge ) {
-                my @events_auth = map { $_->{id} } mdb->event->find( 
+                my @events_auth = map { $_->{id} } mdb->event->find(
                     {   ts           => { '$lt' => '' . ( mdb->now() - $event_log_keep )},
                         event_key    => qr/event\.auth/
                     }

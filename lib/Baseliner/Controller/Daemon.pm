@@ -32,7 +32,7 @@ sub list : Local {
     }else{
         $dir = -1;
     }
-    
+
     my @rows;
     my $where = $query ? mdb->query_build(query => $query, fields=>[qw(service)]) : {};
     my $rs = mdb->daemon->find($where);
@@ -91,7 +91,7 @@ _warn($action);
 #                    last_ping => mdb->ts,
                 });
             _log "Después del insert";
-            
+
             $c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon.'' };
         }
         catch{
@@ -105,11 +105,11 @@ _warn($action);
             my $id_daemon = $p->{id};
             my $daemon = mdb->daemon->update(
                 {_id => mdb->oid($id_daemon)},
-                {   '$set' => { 
+                {   '$set' => {
 #                        hostname => $p->{hostname},
                         active => $p->{state},
                         instances => $p->{instances},
-                        
+
 #                        last_ping => mdb->ts,
                     }
                 });
@@ -121,10 +121,10 @@ _warn($action);
     }
     when ('delete') {
         my $id_daemon = $p->{id};
-        
+
         try{
             my $row = mdb->daemon->remove({_id => mdb->oid($id_daemon)});
-    
+
             $c->stash->{json} = { success => \1, msg=>_loc('Daemon deleted') };
         }
         catch{
@@ -132,7 +132,7 @@ _warn($action);
         }
     }
     }
-    
+
     $c->forward('View::JSON');
 }
 
@@ -144,6 +144,3 @@ sub dispatcher : Local {
 }
 
 1;
-
-
-

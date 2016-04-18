@@ -6,11 +6,9 @@ use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
 
-use lib 't/lib';
-
 use TestEnv;
-use TestUtils qw(mock_time);
 BEGIN { TestEnv->setup }
+use TestUtils qw(mock_time);
 
 use_ok 'Baseliner::Model::Scheduler';
 

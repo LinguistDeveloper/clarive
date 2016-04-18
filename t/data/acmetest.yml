@@ -2,6 +2,7 @@ mongo:
    dbname: acmetest
    client:
       host: 'localhost:27017'
+cache:
 foo: baz
 baseliner:
     name: test

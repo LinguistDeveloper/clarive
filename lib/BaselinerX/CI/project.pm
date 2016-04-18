@@ -16,8 +16,8 @@ has_ci 'parent_project';
 has_cis 'assets';
 has_cis 'folders';
 
-sub rel_type { 
-    { 
+sub rel_type {
+    {
         bls            => [ from_mid => 'project_bl'],
         repositories   => [ from_mid => 'project_repository'],
         parent_project => [ from_mid => 'project_project'] ,
@@ -33,7 +33,7 @@ sub unique_keys {
 }
 
 service 'scan' => 'Run Scanner' => sub {
-    return 'Project scanner disabled';   
+    return 'Project scanner disabled';
 };
 
 method user_has_action( :$username, :$action=undef ) {
@@ -46,8 +46,8 @@ after save_data => sub {
     my ($self, $master_row, $data, $opts, $old ) = @_;
     # update jobs with new project name, TODO this can be potentially very slow, put this in a queue
     if( $$opts{changed}{name} && defined $$old{name} ) {
-        map { 
-            _debug "Updating project name in job " . $_->mid; 
+        map {
+            _debug "Updating project name in job " . $_->mid;
             $_->build_job_contents(1);
         } ci->job->search_cis( projects=>mdb->in($self->mid) );
 
@@ -61,13 +61,13 @@ after save_data => sub {
         my $vars = $allvars->{$bl} || {};
         for my $var ( %$vars ) {
             if( my $meta = ci->variable->search_ci( name=>$var ) ) {
-                push @var_cis, grep { length } _array( split /,/, $vars->{$var} ) if $meta->is_ci;  # TODO while are we still splitting this?? 
+                push @var_cis, grep { length } _array( split /,/, $vars->{$var} ) if $meta->is_ci;  # TODO while are we still splitting this??
             }
         }
     }
     mdb->master_rel->insert({ from_mid=>$self->mid, to_mid=>$_, rel_type=>'project_variable', rel_field=>'variables' }) for _unique( @var_cis );
 };
-    
+
 sub merged_variables {
     my ($self, $bl,$include_default)=@_;
     $bl //= '*';
@@ -77,8 +77,8 @@ sub merged_variables {
     my $variables = ref $self->variables ? $self->variables : {};
     my $variables_bl = $variables->{$bl} // {};
     my $variables_any = $variables->{'*'} // {};
-    my $variables_parent = !$self->parent_project 
-        ? {} 
+    my $variables_parent = !$self->parent_project
+        ? {}
         : $self->parent_project->merged_variables($bl,0);
     my $vars = { %$default_vars, %$variables_parent, %$variables_any, %$variables_bl };
     return $vars;

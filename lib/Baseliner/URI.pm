@@ -15,7 +15,7 @@ around BUILDARGS => sub {
     my $class = shift;
     my %args;
     if( @_ == 1 ) {
-        %args = $class->parse_url( $_[0] ); 
+        %args = $class->parse_url( $_[0] );
         exists $args{params} and $args{params} = $class->parse_params( $args{params} );
     } else {
         %args = @_;
@@ -41,7 +41,7 @@ Returns a hash with the following keys:
     * agent
     * user (optional)
     * password (optional)
-    * host 
+    * host
     * port (optional)
     * home (optional)
     * params (optional)

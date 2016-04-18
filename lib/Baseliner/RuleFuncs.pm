@@ -180,7 +180,7 @@ sub error_trap {
             return;
         };
 
-        $job->logger->error( _loc "Error trapped in rule: %1", $err );    
+        $job->logger->error( _loc "Error trapped in rule: %1", $err );
         $job->update( status=>'TRAPPED' );
 
         ## Avoid error if . in stash keys
@@ -200,7 +200,7 @@ sub error_trap {
             # catch and ignore
             my $err = shift;
             _warn( _loc('Could not store event for trapped error: %1', $err ) );
-        }; 
+        };
 
         my $last_status = 'TRAPPED';
         my $timeout = $trap_timeout;
@@ -234,16 +234,16 @@ sub error_trap {
         }
 
         if( $last_status eq 'RETRYING' ) {
-            $job->logger->info( _loc "Retrying task", $err );    
+            $job->logger->info( _loc "Retrying task", $err );
             goto RETRY_TRAP;
         } elsif( $last_status eq 'SKIPPING' ) {
-            $job->logger->info( _loc "Skipping task", $err );    
+            $job->logger->info( _loc "Skipping task", $err );
             return;
         } elsif( $last_status eq 'ERROR' ) { # ERROR
-            $job->logger->info( _loc "Aborting task", $err );    
+            $job->logger->info( _loc "Aborting task", $err );
             _fail( $err );
         } else {
-           goto LOOP; 
+           goto LOOP;
         }
     };
 }
@@ -275,7 +275,7 @@ sub project_changes {
         _warn _loc('No project changes detected');
         return ();
     } else {
-        return map { 
+        return map {
             my $p = $_->{project};
             if( Util->_blessed( $p )  ) {
                 $p;
@@ -340,23 +340,23 @@ sub cut_nature_items {
     # items deleted
     my @items_del   = grep { $_->status eq 'D' } @items;
     my @paths_del   = grep { length } map { $_->path_tail( $tail ) } @items_del;
-    
-    _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail 
+
+    _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail
         unless ( @paths_write + @paths_del );
     return ( \@paths_write, \@paths_del );
 }
 
 # launch runs service, merge return into stash and returns what the service returns
-sub launch {  
+sub launch {
     my ($key, $task, $stash, $config, $data_key )=@_;
-    
+
     $task = parse_vars( $task, $stash );
 
     my $reg = Baseliner::Core::Registry->get_instance( $key );
     _fail _loc "Cound not find '$key' in registry" unless $reg;
 
     #_log "running container for $key";
-    my $return_data = try { 
+    my $return_data = try {
         $reg->run_container( $stash, $config );
     } catch {
         my $err = shift;
@@ -365,7 +365,7 @@ sub launch {
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
-    my $mergeable = $refr eq 'HASH' || Scalar::Util::blessed($return_data); 
+    my $mergeable = $refr eq 'HASH' || Scalar::Util::blessed($return_data);
     if( $mergeable || $refr eq 'ARRAY' || !$refr ) {
         # merge into stash
         merge_into_stash( $stash, ( $data_key eq '=' && $mergeable ? $return_data : { $data_key => $return_data } ) ) if length $data_key;
@@ -387,8 +387,8 @@ sub merge_into_stash {
 sub stash_has_nature {
     my ($nature,$stash) = @_;
     $nature = ci->new( $nature ) unless ref $nature;
-    my $nature_items = $nature->filter_items( items=>$stash->{items} ); # save => 1 ??  
-    return $nature_items; 
+    my $nature_items = $nature->filter_items( items=>$stash->{items} ); # save => 1 ??
+    return $nature_items;
 }
 
 sub changeset_projects {
@@ -421,8 +421,8 @@ sub changeset_projects {
 #}
 
 sub variables_for_bl {
-    my ($ci, $bl) = @_; 
-    my $vars = $ci->variables // { _no_vars=>1 }; 
+    my ($ci, $bl) = @_;
+    my $vars = $ci->variables // { _no_vars=>1 };
     my $vars_common_bl = $vars->{'*'} // {};
     my $vars_for_bl = $vars->{$bl} // { _no_vars_for_bl=>$bl } if length $bl && $bl ne '*';
     $vars_for_bl //= {};

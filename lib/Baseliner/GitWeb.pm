@@ -190,13 +190,13 @@ sub gitweb_cgi {
     our %known_snapshot_formats = (
 
         # name => {
-        # 	'display' => display name,
-        # 	'type' => mime type,
-        # 	'suffix' => filename suffix,
-        # 	'format' => --format for git-archive,
-        # 	'compressor' => [compressor command and arguments]
-        # 	                (array reference, optional)
-        # 	'disabled' => boolean (optional)}
+        #     'display' => display name,
+        #     'type' => mime type,
+        #     'suffix' => filename suffix,
+        #     'format' => --format for git-archive,
+        #     'compressor' => [compressor command and arguments]
+        #                     (array reference, optional)
+        #     'disabled' => boolean (optional)}
         #
         'tgz' => {
             'display'    => 'tar.gz',
@@ -293,9 +293,9 @@ sub gitweb_cgi {
     our %feature = (
 
         # feature => {
-        # 	'sub' => feature-sub (subroutine),
-        # 	'override' => allow-override (boolean),
-        # 	'default' => [ default options...] (array reference)}
+        #     'sub' => feature-sub (subroutine),
+        #     'override' => allow-override (boolean),
+        #     'default' => [ default options...] (array reference)}
         #
         # if feature is overridable (it means that allow-override has true value),
         # then feature-sub will be called with default options as parameters;
@@ -444,7 +444,7 @@ sub gitweb_cgi {
 
         # To enable system wide have in $GITWEB_CONFIG e.g.
         # $feature{'actions'}{'default'} = [('graphiclog',
-        # 	'/git-browser/by-commit.html?r=%n', 'summary')];
+        #     '/git-browser/by-commit.html?r=%n', 'summary')];
         # Project specific override is not supported.
         'actions' => {
             'override' => 0,
@@ -1901,9 +1901,9 @@ sub gitweb_cgi {
 
         $line = esc_html( $line, -nbsp => 1 );
         $line =~ s{\b([0-9a-fA-F]{8,40})\b}{
-		$cgi->a({-href => href(action=>"object", hash=>$1),
-					-class => "text"}, $1);
-	}eg;
+        $cgi->a({-href => href(action=>"object", hash=>$1),
+                    -class => "text"}, $1);
+    }eg;
 
         return $line;
     }
@@ -2703,7 +2703,7 @@ sub gitweb_cgi {
             return undef;
         }
 
-        #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa	panic.c'
+        #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa    panic.c'
         $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40})\t/;
         if ( defined $type && $type ne $2 ) {
 
@@ -2726,8 +2726,8 @@ sub gitweb_cgi {
         while ( my $line = <$fd> ) {
             chomp $line;
 
-            #'040000 tree 595596a6a9117ddba9fe379b6b012b558bac8423	gitweb'
-            #'100644 blob e02e90f0429be0d2a69b76571101f20b8f75530f	gitweb/README'
+            #'040000 tree 595596a6a9117ddba9fe379b6b012b558bac8423    gitweb'
+            #'100644 blob e02e90f0429be0d2a69b76571101f20b8f75530f    gitweb/README'
             if ( $line =~ m/(?:[0-9]+) (?:.+) $hash\t(.+)$/ ) {
                 close $fd;
                 return $1;
@@ -2909,7 +2909,7 @@ sub gitweb_cgi {
         my $filter = shift || '';
         my @list;
 
-        # rgo 
+        # rgo
         ref $self->{projects_list} && return Baseliner::Utils::_array( $self->{projects_list} ) ;
 
         $filter =~ s/\.git$//;
@@ -3467,8 +3467,8 @@ sub gitweb_cgi {
         my $line = shift;
         my %res;
 
-        # ':100644 100644 03b218260e99b78c6df0ed378e59ed9205ccc96d 3b93d5e7cc7f7dd4ebed13a5cc1a4ad976fc94d8 M	ls-files.c'
-        # ':100644 100644 7f9281985086971d3877aca27704f2aaf9c448ce bc190ebc71bbd923f2b728e505408f5e54bd073a M	rev-tree.c'
+        # ':100644 100644 03b218260e99b78c6df0ed378e59ed9205ccc96d 3b93d5e7cc7f7dd4ebed13a5cc1a4ad976fc94d8 M    ls-files.c'
+        # ':100644 100644 7f9281985086971d3877aca27704f2aaf9c448ce bc190ebc71bbd923f2b728e505408f5e54bd073a M    rev-tree.c'
         if ( $line =~ m/^:([0-7]{6}) ([0-7]{6}) ([0-9a-fA-F]{40}) ([0-9a-fA-F]{40}) (.)([0-9]{0,3})\t(.*)$/ ) {
             $res{'from_mode'}  = $1;
             $res{'to_mode'}    = $2;
@@ -3483,7 +3483,7 @@ sub gitweb_cgi {
             }
         }
 
-# '::100755 100755 100755 60e79ca1b01bc8b057abe17ddab484699a7f5fdb 94067cc5f73388f33722d52ae02f44692bc07490 94067cc5f73388f33722d52ae02f44692bc07490 MR	git-gui/git-gui.sh'
+# '::100755 100755 100755 60e79ca1b01bc8b057abe17ddab484699a7f5fdb 94067cc5f73388f33722d52ae02f44692bc07490 94067cc5f73388f33722d52ae02f44692bc07490 MR    git-gui/git-gui.sh'
 # combined diff (for merge commit)
         elsif ( $line =~ s/^(::+)((?:[0-7]{6} )+)((?:[0-9a-fA-F]{40} )+)([a-zA-Z]+)\t(.*)$// ) {
             $res{'nparents'}  = length($1);
@@ -3525,7 +3525,7 @@ sub gitweb_cgi {
 
         if ( $opts{'-l'} ) {
 
-            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa   16717	panic.c'
+            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa   16717    panic.c'
             $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40}) +(-|[0-9]+)\t(.+)$/s;
 
             $res{'mode'} = $1;
@@ -3539,7 +3539,7 @@ sub gitweb_cgi {
             }
         } else {
 
-            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa	panic.c'
+            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa    panic.c'
             $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40})\t(.+)$/s;
 
             $res{'mode'} = $1;
@@ -3969,8 +3969,8 @@ EOF
             insert_file($site_header);
         }
 
-        # rgo 
-        if( 0 ) { 
+        # rgo
+        if( 0 ) {
         print "<div class=\"page_header\">\n";
         if ( defined $logo ) {
             print $cgi->a(
@@ -4126,11 +4126,11 @@ EOF
 
             print qq!<script type="text/javascript">\n! . qq!window.onload = function () {\n!;
             if ( gitweb_check_feature('javascript-actions') ) {
-                print qq!	fixLinks();\n!;
+                print qq!    fixLinks();\n!;
             }
             if ( $jstimezone && $tz_cookie && $datetime_class ) {
-                print qq!	var tz_cookie = { name: '$tz_cookie', expires: 14, path: '/' };\n! .    # in days
-                    qq!	onloadTZSetup('$jstimezone', tz_cookie, '$datetime_class');\n!;
+                print qq!    var tz_cookie = { name: '$tz_cookie', expires: 14, path: '/' };\n! .    # in days
+                    qq!    onloadTZSetup('$jstimezone', tz_cookie, '$datetime_class');\n!;
             }
             print qq!};\n! . qq!</script>\n!;
         }
@@ -4255,8 +4255,8 @@ EOF
 
 
         if ( $page > 0 ) {
-            $paging_nav 
-                .= $cgi->a( { -href => href( -replay => 1, page => undef ) }, "first" ) 
+            $paging_nav
+                .= $cgi->a( { -href => href( -replay => 1, page => undef ) }, "first" )
                 . " &sdot; "
                 . $cgi->a(
                 {   -href      => href( -replay => 1, page => $page - 1 ),
@@ -5890,7 +5890,7 @@ EOF
                 print "<tr class=\"light\">\n";
             }
             $alternate ^= 1;
-            print "<td><i>$ref{'age'}</i></td>\n" 
+            print "<td><i>$ref{'age'}</i></td>\n"
                 . ( $curr ? "<td class=\"current_head\">" : "<td>" )
                 . $cgi->a(
                 {   -href  => href( action => "shortlog", hash => $ref{'fullname'} ),
@@ -7121,8 +7121,8 @@ EOF
         print "<div class=\"title_text\">\n" . "<table class=\"object_header\">\n";
         git_print_authorship_rows( \%co );
         print "<tr><td>commit</td><td class=\"sha1\">$co{'id'}</td></tr>\n";
-        print "<tr>" 
-            . "<td>tree</td>" 
+        print "<tr>"
+            . "<td>tree</td>"
             . "<td class=\"sha1\">"
             . $cgi->a(
             {   -href => href( action => "tree", hash => $co{'tree'}, hash_base => $hash ),
@@ -7141,8 +7141,8 @@ EOF
         print "</td>" . "</tr>\n";
 
         foreach my $par (@$parents) {
-            print "<tr>" 
-                . "<td>parent</td>" 
+            print "<tr>"
+                . "<td>parent</td>"
                 . "<td class=\"sha1\">"
                 . $cgi->a(
                 {   -href => href( action => "commit", hash => $par ),
@@ -7199,7 +7199,7 @@ EOF
             my $line = <$fd>;
             close $fd;
 
-            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa	panic.c'
+            #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa    panic.c'
             unless ( $line && $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40})\t/ ) {
                 die_error( 404, "File or directory for given base does not exist" );
             }
@@ -7255,7 +7255,7 @@ EOF
                     or die_error( 500, "Open git-diff-tree failed" );
                 @difftree =
 
-                    # ':100644 100644 03b21826... 3b93d5e7... M	ls-files.c'
+                    # ':100644 100644 03b21826... 3b93d5e7... M    ls-files.c'
                     # $hash == to_id
                     grep {/^:[0-7]{6} [0-7]{6} [0-9a-fA-F]{40} $hash/}
                     map { chomp; $_ } <$fd>;
@@ -7584,7 +7584,7 @@ EOF
 
         # write patch
         if ( $format eq 'html' ) {
-            my $use_parents 
+            my $use_parents
                 = !defined $hash_parent
                 || $hash_parent eq '-c'
                 || $hash_parent eq '--cc';

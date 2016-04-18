@@ -37,17 +37,17 @@ sub cgit : Path('/cgit.cgi') {
 
             die "CGI '$cgi' exited non-zero with: $exit_code";
         }
-        
+
         #my $q = CGI->new;
         #print $q->header, $q->start_html('Hello'), $q->h1('Catalyst Rocks!'), $q->end_html;
     });
-    my $html = $c->res->body; 
+    my $html = $c->res->body;
     $html =~ s{<html.*?>}{}gs;
     $html =~ s{</html.*?>}{}gs;
     $html =~ s{\<head\>.*\</head\>}{}gs;
     $html =~ s{\<body\>}{}gs;
     $html =~ s{\<\/body\>}{}gs;
-    $c->res->body( $html ); 
+    $c->res->body( $html );
 }
 
 sub cgit_data : Path('/cgit-data') {
@@ -59,4 +59,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

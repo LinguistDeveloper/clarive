@@ -6,7 +6,7 @@ use Baseliner::Utils;
 
 sub list {
     my ( $self, %p ) = @_;
-    
+
     my $query = {};
     $query->{active} = defined $p{active} ? $p{active} : '1';
     $p{all} and delete $query->{active};
@@ -22,7 +22,7 @@ sub list {
     }elsif(defined $p{no_id}){
 #        $query->{'instances.instance'} = {'$nin' => [ $p{no_id} ]};
         $query = {
-                'instances.instance' => { '$nin'     => [ $p{no_id} ] }, 
+                'instances.instance' => { '$nin'     => [ $p{no_id} ] },
                 instances => { '$nin' => [undef,[]] }
         };
 
@@ -34,7 +34,7 @@ sub list {
 
 =head2 request_start_stop
 
-Changes the db status of the daemon, but relies on the corresponding 
+Changes the db status of the daemon, but relies on the corresponding
 host dispatcher to start or stop the process.
 
 =cut
@@ -90,7 +90,7 @@ sub service_start {
 
 =head2 service_start_forked
 
-Pure forking service starter. See service_start for options. 
+Pure forking service starter. See service_start for options.
 
 =cut
 sub service_start_forked {
@@ -114,7 +114,7 @@ sub service_start_forked {
             $SIG{STOP} = 'DEFAULT';
             $0 = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
             _debug "Model/Daemons.pm: --- Starting service forked command '$0'";
-            if( exists $p{frequency} ) { 
+            if( exists $p{frequency} ) {
                 while(1) {
                     Baseliner->launch( $service_name, data=>\%params );
                     sleep $p{frequency};
@@ -137,7 +137,7 @@ sub service_start_forked {
 
 =head2 kill_daemon $daemon [, $signal]
 
-Just kill it. Optionally 'kill it' with a signal. 
+Just kill it. Optionally 'kill it' with a signal.
 
 =cut
 sub kill_daemon {

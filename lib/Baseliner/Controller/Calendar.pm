@@ -73,27 +73,27 @@ sub events : Local {
     my $where = { %$where_cat, %$condition };
 
     model->Topic->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
-    
+
     my @topics;
     my %master_cal;
     if( $query_type eq 'cal_field' ) {
         _fail _loc 'Missing calendar field(s)' unless $id_fieldlet;
         @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
-        map { push @{ $master_cal{$$_{mid}} } => $_ } 
+        map { push @{ $master_cal{$$_{mid}} } => $_ }
             mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics), rel_field=>mdb->in( ref $id_fieldlet ? $id_fieldlet : split /,/,$id_fieldlet) })->all;
     } elsif( $query_type eq 'field_pair' ) {
         @topics = mdb->topic->find({ %$where,
                 '$or'=>[
-                     { $start_fieldlet=>{ '$lt'=>$calend } }, 
-                     { $end_fieldlet=>{'$gt'=>$calstart} }, 
-                     { '$and'=>[{ $start_fieldlet=>{'$gte'=>$calstart} },{ $end_fieldlet=>{'$lte'=>$calend} }, ] } 
+                     { $start_fieldlet=>{ '$lt'=>$calend } },
+                     { $end_fieldlet=>{'$gt'=>$calstart} },
+                     { '$and'=>[{ $start_fieldlet=>{'$gte'=>$calstart} },{ $end_fieldlet=>{'$lte'=>$calend} }, ] }
                  ] })
                 ->fields({ _txt=>0 })->all;
     } elsif( $query_type eq 'open_topics' ) {
         @topics = mdb->topic->find({ %$where,
-                '$or'=>[ 
-                        { created_on=>{ '$lt'=>$calend } }, 
-                        { closed_on=>{'$gt'=>$calstart} }, 
+                '$or'=>[
+                        { created_on=>{ '$lt'=>$calend } },
+                        { closed_on=>{'$gt'=>$calstart} },
                         { '$and'=>[{ created_on=>{'$gte'=>$calstart} },{ closed_on=>{'$lte'=>$calend} } ] },
                         { created_on=>{ '$lte'=>$calend }, closed_on=>{'$exists'=>0} },
                     ] })
@@ -101,16 +101,16 @@ sub events : Local {
     } else {
         # start_end
         @topics = mdb->topic->find({ %$where,
-                '$or'=>[ 
-                     { created_on=>{ '$lt'=>$calend } }, 
-                     { ts=>{'$gt'=>$calstart} }, 
-                     { '$and'=>[{ created_on=>{'$gte'=>$calstart} },{ ts=>{'$lte'=>$calend} } 
+                '$or'=>[
+                     { created_on=>{ '$lt'=>$calend } },
+                     { ts=>{'$gt'=>$calstart} },
+                     { '$and'=>[{ created_on=>{'$gte'=>$calstart} },{ ts=>{'$lte'=>$calend} }
                   ] } ] })
                 ->fields({ _txt=>0 })->all;
     }
 
     my $color_index = 0;
-    my %topic_colors; 
+    my %topic_colors;
 
     # topics
     for my $topic ( @topics ) {
@@ -124,7 +124,7 @@ sub events : Local {
                 my $start = $cal->{plan_start_date};
                 my $end   = $cal->{plan_end_date};
                 next if $start lt $calstart && $end lt $calend;
-                my $color = ( $topic_colors{ $topic->{mid} . $cal->{slotname} } //= $all_colors->[$color_index++] ); 
+                my $color = ( $topic_colors{ $topic->{mid} . $cal->{slotname} } //= $all_colors->[$color_index++] );
                 push @events, {
                     title       => "$label [$cal->{slotname}]",
                     start       => $start,
@@ -185,7 +185,7 @@ sub events : Local {
            # TODO consider multiplying job into different steps PRE and RUN
            my $title = sprintf('%s %s', $$_{name},join(',',_array($$_{job_contents}{list_apps})) );
            { title=>$title, color=>'#111', start=>$$_{schedtime}, end=>$$_{endtime}, allDay=>\0 }
-          
+
        } ci->job->find({ schedtime=>{ '$lt'=>$calend }, endtime=>{'$gt'=>$calstart} })->all;
    }
    my @warnings;

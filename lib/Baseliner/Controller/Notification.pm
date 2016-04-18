@@ -108,17 +108,17 @@ sub list_notifications : Local {
 
 sub list_events : Local {
     my ( $self, $c ) = @_;
-    my @events = map { 
+    my @events = map {
         my $key = $_;
         my $event = $c->registry->get($_);
         my ($kind) = $key =~ /^event\.([^.]+)\./;
         +{
-            key => $key, 
+            key => $key,
             kind=>$kind,
             description=> $event->description // $_
          }
      } sort $c->registry->starts_with('event.');
-    
+
     $c->stash->{json} = \@events;
     $c->forward('View::JSON');
 }
@@ -126,7 +126,7 @@ sub list_events : Local {
 sub list_actions : Local {
     my ( $self, $c ) = @_;
     my @actions = map {+{action => $_,  checked => $_ eq 'SEND' ? \1: \0}} $c->model('Notification')->get_actions;
-    
+
     $c->stash->{json} = \@actions;
     $c->forward('View::JSON');
 }
@@ -134,7 +134,7 @@ sub list_actions : Local {
 sub list_carriers : Local {
     my ( $self, $c ) = @_;
     my @carriers = map {+{carrier => $_}} $c->model('Notification')->get_carriers;
-    
+
     $c->stash->{json} = \@carriers;
     $c->forward('View::JSON');
 }
@@ -142,15 +142,15 @@ sub list_carriers : Local {
 sub list_type_recipients : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    
+
     my @type_recipients;
     if ($p->{action} eq 'SEND'){
-        @type_recipients = grep {$_ ne 'Default'} $c->model('Notification')->get_type_recipients;    
+        @type_recipients = grep {$_ ne 'Default'} $c->model('Notification')->get_type_recipients;
     }else {
-        @type_recipients = $c->model('Notification')->get_type_recipients;    
+        @type_recipients = $c->model('Notification')->get_type_recipients;
     }
     my @recipients = map {+{type_recipient => $_}} @type_recipients;
-    
+
     $c->stash->{json} = \@recipients;
     $c->forward('View::JSON');
 }
@@ -163,14 +163,14 @@ sub get_type_obj_recipients{
         when ('Default')    { $obj = 'none'; }
         when ('Emails')     { $obj = 'textfield'; }
         when ('Fields')     { $obj = 'textfield'; }
-        default             { $obj = 'combo'; }            
+        default             { $obj = 'combo'; }
     };
     return $obj;
 }
 
 sub get_recipients : Local {
     my ( $self, $c, $type ) = @_;
-    
+
     try{
         my $recipients = $c->model('Notification')->get_recipients($type);
         my $obj = $self->get_type_obj_recipients($type);
@@ -184,17 +184,17 @@ sub get_recipients : Local {
 sub get_scope : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    
+
     try{
         my $scope;
         if (Baseliner->registry->get( $p->{key} )->notify){
             $scope =  Baseliner->registry->get( $p->{key} )->notify->{scope};
         }
-        $c->stash->{json} = { data => $scope, success=>\1 }; 
+        $c->stash->{json} = { data => $scope, success=>\1 };
     }catch{
         $c->stash->{json} = { msg=> _loc('Se ha producido un error'), success=>\0 };
     };
-    
+
     $c->forward('View::JSON');
 }
 
@@ -209,7 +209,7 @@ sub save_notification : Local {
         if($p->{event}){
             if (Baseliner::Core::Registry->get( $p->{event} )->notify){
                 my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
-        
+
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
             }
         }
@@ -233,14 +233,14 @@ sub save_notification : Local {
         );
 
         if($p->{notification_id} eq '-1'){
-            $c->stash->{json} = { success => \1, msg => _loc('Notification added'), notification_id => $notification->{upserted}->{value} };         
+            $c->stash->{json} = { success => \1, msg => _loc('Notification added'), notification_id => $notification->{upserted}->{value} };
         }else{
-            $c->stash->{json} = { success => \1, msg => _loc('Notification updated'), notification_id => $p->{notification_id} }; 
+            $c->stash->{json} = { success => \1, msg => _loc('Notification updated'), notification_id => $p->{notification_id} };
         }
     }catch{
         my $err = shift;
-        _error( $err );        
-        $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )}; 
+        _error( $err );
+        $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )};
     };
     $c->forward('View::JSON');
 }
@@ -258,8 +258,8 @@ sub remove_notifications : Local {
 
         map {$_ = mdb->oid($_)} @ids_notification;
 
-        mdb->notification->remove({_id => {'$in' => \@ids_notification }});  
-        
+        mdb->notification->remove({_id => {'$in' => \@ids_notification }});
+
         $c->stash->{json} = { success => \1, msg=>_loc('Notifications deleted') };
     }
     catch{
@@ -274,7 +274,7 @@ sub change_active : Local {
     my @ids_notifications = _array $p->{ids_notification};
     my $action = $p->{action};
     my $msg_active = $action eq 'active' ? 'activated' : 'deactivated';
-    
+
     try{
         map {$_ = mdb->oid($_)} @ids_notifications;
         my @notifications = mdb->notification->find({_id => {'$in' => \@ids_notifications }})->all;
@@ -286,7 +286,7 @@ sub change_active : Local {
     catch{
         $c->stash->{json} = { success => \0, msg => 'Error modifying the notification' };
     };
-    
+
     $c->forward('View::JSON');
 }
 
@@ -294,7 +294,7 @@ sub change_active : Local {
 sub get_templates : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    
+
     try{
 
         my @templates_dirs = map { $_->root } Baseliner->features->list;
@@ -304,15 +304,15 @@ sub get_templates : Local {
         for my $template_dir ( @templates_dirs ) {
             push @templates, map { ( _file $_)->basename } <$template_dir/email/*>;
         }
-        
+
         @templates = map { +{name => $_, path => "/email/$_" }}  @templates;
 
-        $c->stash->{json} = { data => \@templates, success=>\1 }; 
+        $c->stash->{json} = { data => \@templates, success=>\1 };
 
     }catch{
         $c->stash->{json} = { data => {}, msg=> _loc('Se ha producido un error'), success=>\0 };
     };
-    
+
      $c->forward('View::JSON');
 }
 
@@ -323,7 +323,7 @@ sub export : Local {
     try{
         $p->{id_notify} or _fail( _loc('Missing parameter id') );
         my $export;
-        my @notifies; 
+        my @notifies;
         for my $id (  _array( $p->{id_notify} ) ) {
             my $notify = mdb->notification->find({_id => mdb->oid($id)})->next;
             _fail _loc('Notify not found for id %1', $id) unless $notify;
@@ -332,17 +332,17 @@ sub export : Local {
         if( @notifies > 1 ) {
             my $yaml = _dump( \@notifies );
             utf8::decode( $yaml );
-            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+            $c->stash->{json} = { success => \1, yaml=>$yaml };
         } else {
             my $yaml = _dump( $notifies[0] );
             utf8::decode( $yaml );
-            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+            $c->stash->{json} = { success => \1, yaml=>$yaml };
         }
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub import_notification : Local {
@@ -371,21 +371,21 @@ sub import_notification : Local {
                 #    $notify->update( $data );
                 #    push @log => _loc('Updated notify %1', $data->{event_key} );
                 #}
-               
-                #push @log => $is_new 
-                #    ? _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) 
+
+                #push @log => $is_new
+                #    ? _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key)
                 #    : _loc('Notify %1 updated', $notify->event_key) ;
 
                 push @log, _loc('Notify created with id %1 and event_key: %2', $id, $data->{event_key}) ;
             }
         });   # txn end
-        
-        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
+
+        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };
     }
     catch{
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 no Moose;

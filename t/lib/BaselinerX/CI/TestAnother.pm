@@ -8,4 +8,3 @@ sub icon {'icon_another'}
 has something => qw(is rw isa Any default 333);
 
 1;
-

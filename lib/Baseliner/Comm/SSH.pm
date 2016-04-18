@@ -22,14 +22,14 @@ my ($RM,$RPORT,$RUSR,$RPWD,$FS) = ();
 
 sub open {
     my $class = shift @_;
-    my $maq = shift @_; 
+    my $maq = shift @_;
 
     require Net::SCP;
     require Filesys::Virtual::SSH;
     my $harax;
     $harax->{PARAMS} = { @_ };
     $harax->{WIN}=1 if $harax->{PARAMS}{OS} =~ m/win/i;
-    
+
     if( $maq =~ /@/ ) {
         ($RUSR,$RM) = split /\@/, $maq; ##/
     } else {
@@ -39,35 +39,35 @@ sub open {
 
     $harax->{RM} = $RM; ## remote machine
     my $host = ( $RUSR? $RUSR.'@'.$RM : $RM );  ## if user is defined, connect with it
-    
+
     $harax->{FS} = Filesys::Virtual::SSH->new({
          host      => $host,
          cwd       => '/',
          root_path => '/',
          home_path => "$ENV{HOME}",
     });
-    
+
     $harax->{host} = $host;
     $harax->{RUSR} = $RUSR;
 
     $harax->{scp} = Net::SCP->new( { "host"=>$harax->{RM}, "user"=>$harax->{RUSR} } );
     die "Could not connect SCP to  $harax->{RUSR}\@$harax->{RM}: $!" unless $harax->{scp};
     my $self = bless($harax,$class);
-    
+
     unless( $harax->{WIN} ) {
         my ($rc,$ret) = $harax->execute("set");
         $harax->{WIN}=1 if $ret=~ /OS=win/i;
-    } 
-    
+    }
+
     $self;
 }
 
 sub sendFile {
     my ($harax, $localfile, $rfile) = @_;
     my $fs = $harax->{FS};
-    
+
     $rfile = $localfile unless($rfile);
-    $rfile=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );	
+    $rfile=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );
     if( ! -e $localfile ) {
         die "sendFile: the file '$localfile' does not exist.";
     }
@@ -88,7 +88,7 @@ sub sendData {
     my $FF = $fs->open_write($rfile);
     print $FF $data;
     $fs->close_write($FF);
-    my ($RC,$RET) = ($?,"");	
+    my ($RC,$RET) = ($?,"");
     return ($RC >> 8,$RET);
 }
 
@@ -104,7 +104,7 @@ sub getFile {
         my $FF;
         $FF = $self->{FS}->open_read($rfile);
         if($localfile) {
-            CORE::open FOUT,">$localfile" 
+            CORE::open FOUT,">$localfile"
                 or die "Error: Could not open local file $localfile";
             binmode FOUT;
             print FOUT <$FF>;
@@ -117,9 +117,9 @@ sub getFile {
             $self->{FS}->close_read($FF);
             return (0,$data);
         }
-        
+
     }
-        
+
 }
 
 sub get_file {
@@ -131,7 +131,7 @@ sub get_file {
         ##DEBUG && warn ahora()." - get_file parms: $self, $rfile, $localfile \n";
         $self->{scp}->get($rfile, $localfile) or print  $self->{scp}->{errstr};
         ##DEBUG && warn ahora()." - get_file ok.\n";
-    }	
+    }
 }
 
 sub getDir {
@@ -143,7 +143,7 @@ sub getDir {
     my %Paths=();
     for( split /\n/, $RET ) {
         next unless $_;
-        DEBUG && warn "Getting $_\n";		
+        DEBUG && warn "Getting $_\n";
         (my $rempath = $_ ) =~ s{\Q$rdir\E}{}g;
         $rempath=~s{\\}{/}g;
         my $localfile = $localdir."/".$rempath;
@@ -151,11 +151,11 @@ sub getDir {
         (my $localpath = $localfile) =~ s{^(.*)/(.*?)$}{$1}g;
         unless( exists $Paths{$localpath} ) {
             DEBUG && warn "Making path $localpath\n";
-            require File::Path; 
-            File::Path::mkpath($localpath) or print "Mkpath error: $!"; 		
-        }		
+            require File::Path;
+            File::Path::mkpath($localpath) or print "Mkpath error: $!";
+        }
         $Paths{$localpath}=1;
-        DEBUG && warn "NOw the file $_ to $localfile\n";		
+        DEBUG && warn "NOw the file $_ to $localfile\n";
         $harax->get_file( $_, $localfile);
     }
     return( 0, '');
@@ -164,8 +164,8 @@ sub getDir {
 sub execute {
     my ($harax, $rcmd) = @_;
     my $fs = $harax->{FS};
-    
-    $rcmd=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );	
+
+    $rcmd=~ s{\\}{\\\\\\\\}g if( $harax->{WIN} );
     $rcmd=~ s{"}{\\"}g if( $harax->{WIN} );
     my $RET = $fs->_remotely($rcmd);
     my $RC = $?;
@@ -197,7 +197,7 @@ sub _executeas {
     if( $user eq "" ) {
         return (99,"ERROR ".__PACKAGE__.": remote user parameter is blank!");
     }
-    $rcmd =~ s/\"/\\\"/g;  	#"
+    $rcmd =~ s/\"/\\\"/g;      #"
     my $RET = $fs->_remotely("su - $user -c $rcmd");
     my $RC = $?;
     return($RC >> 8,$RET);
@@ -220,7 +220,7 @@ sub ping {
     my $RET = $fs->_remotely("echo $hostname");
     my $RC = $?;
     my $byte = substr($RET,0,1);
-    
+
     if ( $byte ne substr($hostname,0,1) ) {
         $RET = "Server is not responding. Make sure that SSH is installed and has a valid public key.";
         $RC = 1;

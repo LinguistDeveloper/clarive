@@ -24,7 +24,7 @@ for my $service_name (  @ARGV ) {
                 kill 9,$pid if $mode eq 'kill';
                 $found=1;
             }
-        } 
+        }
     }
     print $found ? "Done.\n" : "No processes found.\n";
 }

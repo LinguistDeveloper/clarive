@@ -7,7 +7,7 @@ our @modules;
 BEGIN {
 
     use CatalystX::Features 0.24;
-    
+
     # TODO ConfigLoader used by some features with .conf, but not core -- migrate to features/*/config/.yml
 
     if( $ENV{BALI_PLUGINS} ) {
@@ -15,7 +15,7 @@ BEGIN {
     }
     elsif( $ENV{BALI_CMD} || $ENV{BALI_FAST} ) {
         @modules = qw/
-            Singleton           
+            Singleton
             +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features
             +CatalystX::Features::Lib
@@ -29,10 +29,10 @@ BEGIN {
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
-            Session     
+            Session
             +Baseliner::MongoSession
             Session::State::Cookie
-            Singleton           
+            Singleton
             +CatalystX::Features::Plugin::Static::Simple/;
         push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
@@ -113,7 +113,7 @@ sub cache_remove_like { shift; cache->remove_like( @_ ) }
 sub cache_keys { shift; cache->keys( @_ ) }
 sub cache_keys_like { shift; cache->keys_like( @_ ) }
 sub cache_clear { shift; cache->clear( @_ ) }
-   
+
 sub config_catalyst {
     __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
     __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
@@ -123,7 +123,7 @@ sub config_catalyst {
             'static',
             qr/images/,
         ];
-    __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];    
+    __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];
 
     __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 
@@ -149,7 +149,7 @@ sub config_catalyst {
     }
 
     __PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
-        
+
     ## Authentication
     __PACKAGE__->config(
         'authentication' => {
@@ -178,7 +178,7 @@ sub config_catalyst {
 }
 
 # Start the application
-sub build_app { 
+sub build_app {
     my $c = shift;
 
     $c->config_catalyst;
@@ -208,9 +208,9 @@ sub build_app {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
+    print STDERR ( Baseliner->config->{name} // 'Baseliner' )
         . " $Baseliner::VERSION. Startup time: " . tv_interval($t0) . "s.\n";
-    $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
+    $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do {
         my $mdbv = mdb->mongo_version;
         print STDERR "Environment: $bali_env. MongoDB: $mdbv / $MongoDB::VERSION. Catalyst: $Catalyst::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
@@ -218,7 +218,7 @@ sub build_app {
 
     # clear cache on restart
     if( Clarive->debug ) {
-        cache->clear;  
+        cache->clear;
         mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
         Util->_debug( "Cache cleared" );
     }
@@ -270,7 +270,7 @@ sub launch {
 
 our $global_app;
 sub app {
-    # TODO use this only: 
+    # TODO use this only:
     #         return bless {} => __PACKAGE__;  # so it won't break $c->{...} calls
     Baseliner->can('instance') and return __PACKAGE__->instance;  # depends on Catalyst Plugin "Singleton"
     my ($class, $c ) = @_;
@@ -338,7 +338,7 @@ sub username {
     $user = try { return $c->user->id
     } catch {
         Baseliner::Utils::_debug "No user id.";
-        return undef;   
+        return undef;
     } and return $user;
 }
 
@@ -360,7 +360,7 @@ sub user_languages {
     my ($c) = @_;
     if( my $user_ci = $c->user_ci ) {
         my $language = $user_ci->language_pref || $c->config->{default_lang};
-        return( $language ); 
+        return( $language );
     }
     elsif( ref $c->session->{user} ) {
         return( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
@@ -369,7 +369,7 @@ sub user_languages {
         # detect browser language
         my $language = substr ($c->req->headers->{'accept-language'} // '', 0,2);  # usually "en-US,en,..."
         $language = 'en' unless $c->installed_languages->{$language}; # if it's not installed, choose English
-        return( $language ); 
+        return( $language );
     }
 }
 

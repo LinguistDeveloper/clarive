@@ -84,10 +84,10 @@ sub topic_categories_to_rules {
             my $f;
             my $attributes;
             my $data;
-            next if $fieldlet->{params}->{id_field} eq 'created_on' || $fieldlet->{params}->{id_field} eq 'created_by' || 
+            next if $fieldlet->{params}->{id_field} eq 'created_on' || $fieldlet->{params}->{id_field} eq 'created_by' ||
                     $fieldlet->{params}->{id_field} eq 'modified_on' || $fieldlet->{params}->{id_field} eq 'modified_by' ||
                     $fieldlet->{params}->{id_field} eq 'category' || $fieldlet->{params}->{id_field} eq 'labels' ||
-                    $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' || 
+                    $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' ||
                     ($fieldlet->{params}->{id_field} eq 'description' && $fieldlet->{params}->{bd_field} eq 'description' &&
                         $fieldlet->{params}->{hidden} eq '1' && $fieldlet->{params}->{name_field} eq 'Description') ||
                     $fieldlet->{params}->{id_field} eq 'moniker';
@@ -97,7 +97,7 @@ sub topic_categories_to_rules {
                     $fieldlet->{params}->{html} = $fieldlet->{params}->{$key};
                 }elsif($key eq 'name_field'){
                     $fieldlet->{params}->{$key} =~ s/\n//;
-                    $data->{$key} = $fieldlet->{params}->{$key}; 
+                    $data->{$key} = $fieldlet->{params}->{$key};
                 }else{
                     $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
                 }
@@ -111,7 +111,7 @@ sub topic_categories_to_rules {
             }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
                 $reg_key = $fieldlet->{params}->{js};
             }else{
-                  #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ; 
+                  #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ;
                   #next;
             }
             # _log _dump $fieldlet;
@@ -130,20 +130,20 @@ sub topic_categories_to_rules {
             }
             $data->{editable} = '1' if not $fieldlet->{params}->{editable};
             $data->{hidden} = '0' if not $fieldlet->{params}->{hidden};
-            
-         
+
+
             $attributes->{active} = '1';
             $attributes->{disabled} = \0;
             $attributes->{expanded} = \0;
             $attributes->{icon} = $icon; #;// '/static/images/icons/lock_small.png';
             if($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
                 if($fieldlet->{params}->{bd_field} eq 'moniker'){
-                    $attributes->{key} = 'fieldlet.system.moniker';    
+                    $attributes->{key} = 'fieldlet.system.moniker';
                     $data->{editable} = '1';
                     $data->{hidden} = '0';
                 }else{
-                    $attributes->{key} = 'fieldlet.text';    
-                } 
+                    $attributes->{key} = 'fieldlet.text';
+                }
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js'){
                 $attributes->{key} = 'fieldlet.milestones';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
@@ -152,10 +152,10 @@ sub topic_categories_to_rules {
                 $attributes->{key} = 'fieldlet.milestones';
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
                 if($fieldlet->{params}->{bd_field} eq 'progress'){
-                    $attributes->{key} = 'fieldlet.system.progress';    
+                    $attributes->{key} = 'fieldlet.system.progress';
                 }else{
-                    $attributes->{key} = 'fieldlet.progressbar';    
-                }        
+                    $attributes->{key} = 'fieldlet.progressbar';
+                }
             }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && !$fieldlet->{params}->{js}){
                 if($fieldlet->{params}->{type} eq 'numberfield'){
                     $attributes->{key} = 'fieldlet.number';
@@ -317,7 +317,7 @@ sub topic_categories_to_rules {
         #_log "LA REGLA "._dump $rule;
         mdb->rule->insert($rule);
         mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
-        _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name}; 
+        _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name};
         generate_dsl($rule);
     }
     if(@pending_register_fieldlets){
@@ -373,7 +373,7 @@ sub generate_dsl {
     }
     return $msg;
 }
-    
+
 sub map_registors {
     my @categories  = mdb->category->find->all;
     my $find_directos;
@@ -396,16 +396,16 @@ sub map_registors {
                 if($_->{params}->{js} eq '/fields/system/js/field_category.js'){
                     #_log "LA CATEGORIA ES "._dump $cat;
                 }
-            }      
+            }
           } _array $_->{fieldlets}
     } @categories;
-    
+
     my @reg_fieldlets = Baseliner::Core::Registry->starts_with('fieldlet');
     map {
         my $reg = Baseliner::Core::Registry->get($_);
-        
+
         #if ( $reg->{registry_node}->{key} =~ /.*required.*/ ) {
-            
+
         #}else {
             my $unique_key;
            # _log "==>".$reg->{registry_node}->{param}->{html}."===>".$reg->{registry_node}->{param}->{js};
@@ -534,7 +534,7 @@ sub drop_all {
 sub cleanup {
     my ($self,%p) = @_;
     # bad inserts probably
-    mdb->master->remove({ mid=>undef }); 
+    mdb->master->remove({ mid=>undef });
 }
 
 sub current {
@@ -646,13 +646,13 @@ sub run {
     }
     say "OK=$ok - NOK=$nok";
     $self->assets( %tables ) unless $p{no_assets};
-    $self->convert_schemas( %tables ) unless $p{no_convert};  
+    $self->convert_schemas( %tables ) unless $p{no_convert};
     mdb->index_all;
 }
 
 sub convert_schemas {
     my ($self,%tables) = @_;
-    
+
     say "Converting schemas for tables: " . join keys %tables;
 
     if( !%tables || exists $tables{bali_user} ) {
@@ -668,7 +668,7 @@ sub convert_schemas {
         #     my $uid = delete $lab->{mid_user};
         #     $lab->{
     }
-    
+
     # master_rel dups
     my $rs = mdb->master_rel->find;
     my %rel_index;
@@ -684,7 +684,7 @@ sub convert_schemas {
         $rel_index{ $key } = 1;
     }
     say "duplicates found: $dup";
-    
+
     # master_doc
     if( !%tables || exists $tables{bali_master} ) {
         say "Converting master yaml to docs in master_doc...";
@@ -702,17 +702,17 @@ sub convert_schemas {
             mdb->master_doc->insert( $doc );
         });
     }
-    
+
     # sequences
     if( !%tables || exists $tables{bali_master_seq} ) {
-        mdb->master_seq->drop; 
+        mdb->master_seq->drop;
         my $db = Util->_dbis;
         my $max_mid = $db->query('select max(mid) from bali_master')->array->[0];
         require List::Util;
         my $max_mid_mdb = List::Util::max(map { $_->{mid} } mdb->master_doc->find->fields({ mid=>1 })->all );
         mdb->seq('mid', ($max_mid_mdb > $max_mid ? $max_mid_mdb : $max_mid)+1 );
     }
-    
+
     # topic
     if( !%tables || exists $tables{bali_topic} ) {
         print "Migrating bali_topic...";
@@ -726,8 +726,8 @@ sub convert_schemas {
         });
         say "$k rows migrated.";
     }
-    
-    # repository 
+
+    # repository
     #   migrate Repository saved.repl into mdb->repl
     #   migrate mvs.queue? no, not needed
     if( !%tables || exists $tables{bali_repo} ) {
@@ -746,19 +746,19 @@ sub convert_schemas {
         });
         mdb->repo->drop; # in case it exists
     }
-    
+
     say 'Done converting.';
 }
 
 sub assets {
     my ($self,%tables) = @_;
-    
+
     say "Migrating assets for tables " . join ',', keys %tables;
 
     # log
     if( !%tables || exists $tables{bali_log} ) {
         my $k=0;
-        print "Migrating log assets..."; 
+        print "Migrating log assets...";
         mdb->log->drop;
         mdb->grid->remove({ parent_collection=>'log' });
         my %not_found;
@@ -782,11 +782,11 @@ sub assets {
         say "$k rows migrated.";
         say "id_job not found: " . join ', ', map { "$_ (" . $not_found{$_} . ")" } keys %not_found if %not_found;
     }
-    
+
     # log_data
     if( !%tables || exists $tables{bali_log_data} ) {
         my $k=0;
-        print "Migrating log_data assets..."; 
+        print "Migrating log_data assets...";
         mdb->log_data->drop;
         mdb->grid->remove({ parent_collection=>'log_data' });
         $self->each('bali_log_data', sub{
@@ -806,11 +806,11 @@ sub assets {
         });
         say "$k rows migrated.";
     }
-    
+
     # job_stash
     if( !%tables || exists $tables{bali_job_stash} ) {
         my $k = 0;
-        print "Migrating job_stash assets..."; 
+        print "Migrating job_stash assets...";
         mdb->job_stash->drop;
         mdb->grid->remove({ parent_collection=>'job' });
         $self->each('bali_job_stash', sub{
@@ -829,8 +829,8 @@ sub assets {
         });
         say "$k rows migrated.";
     }
-    
-    # file_version 
+
+    # file_version
     if( !%tables || exists $tables{bali_file_version} ) {
         my $k=0;
         print "Migrating file_version assets...";
@@ -847,7 +847,7 @@ sub assets {
         });
         say "$k rows migrated.";
     }
-    
+
     # topic_image
     if( !%tables || exists $tables{bali_topic_image} ) {
         my $k=0;
@@ -865,7 +865,7 @@ sub assets {
         });
         say "$k rows migrated.";
     }
-    
+
     say 'Done migrating assets.';
 }
 
@@ -874,7 +874,7 @@ sub each {
     my $db = Util->_dbis;
     my $rs = $db->query( sprintf 'SELECT * FROM %s', $table );
     while( my $row = $rs->hash ) {
-        $code->( $row ); 
+        $code->( $row );
     }
 }
 
@@ -892,17 +892,17 @@ sub topic_security {
 
 sub topic_labels {
     my ( $self, %p ) = @_;
-    
+
     my $db = Util->_dbis();
-    
+
     # bali_topic_label
     my %tlabels;
     map { push @{ $tlabels{$_->{id_topic}} }, $_->{id_label} } $db->query('select * from bali_topic_label')->hashes;
-    
+
     for my $mid ( keys %tlabels ) {
         mdb->topic->update({ mid=>"$mid" },{ '$set'=>{ labels=>$tlabels{$mid} } });
     }
-    
+
     # bali_label
     mdb->label->drop;
     mdb->label->insert($_) for $db->query('select * from bali_label')->hashes;
@@ -912,7 +912,7 @@ sub topic_status {
     my ( $self, %p ) = @_;
     for my $row ( DB->BaliTopic->search->hashref->all ) {
         warn "Updating status for topic #" . $row->{mid} . "\n";
-        Baseliner->model('Topic')->update_category( $row->{mid}, $row->{id_category} ); 
+        Baseliner->model('Topic')->update_category( $row->{mid}, $row->{id_category} );
         Baseliner->model('Topic')->update_category_status( $row->{mid}, $row->{id_category_status} );
     }
 }
@@ -929,7 +929,7 @@ sub job_status_fix {
        }
     });
 }
-    
+
 sub topic_numify {
     my ( $self, %p ) = @_;
     for my $doc ( mdb->topic->find->all ) {
@@ -939,7 +939,7 @@ sub topic_numify {
 sub rules {
     my ($self)=@_;
     my $db = Util->_dbis();
-    
+
 
     # MASTER
     my @rules = $db->query('select * from bali_rule order by id')->hashes;
@@ -952,7 +952,7 @@ sub rules {
         $maxseq = $rule->{rule_seq} if $rule->{rule_seq} > $maxseq;
         $maxid = $rule->{id} if $rule->{id} > $maxid;
         $rule->{id} .='';
-        mdb->rule->insert($rule);        
+        mdb->rule->insert($rule);
         if( !length $rule->{rule_tree} ) {
             _warn( "RULE TREE missing for $id, Open them in Rule editor, then save again." );
             # no json rule_tree, look for legacy data
@@ -963,7 +963,7 @@ sub rules {
                 my $par = length $parent ? ' and id_parent=? ' : ' and id_parent is null';
                 my @rows = $db->query('select * from bali_rule_statement where id_rule=? '.$par.' order by id', $id_rule, ($parent // () ))->hashes;
                 for my $row ( @rows ) {
-                              
+
                     my $n = { text=>$row->{stmt_text} };
                     $row->{stmt_attr} = _load( $row->{stmt_attr} );
                     $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
@@ -977,10 +977,10 @@ sub rules {
                         $n->{leaf} = \0;
                         $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
                     } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
-                        $n->{children} = []; 
+                        $n->{children} = [];
                         $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
                     }
-                    delete $n->{loader};  
+                    delete $n->{loader};
                     delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
                     #_log $n;
                     push @tree, $n;
@@ -991,7 +991,7 @@ sub rules {
             mdb->rule->update({ id=>$rule->{id} }, { '$set'=>{ rule_tree=>Util->_encode_json(\@tree) } });
         }
     }
-    
+
     mdb->seq('rule',$maxid+1);
     mdb->seq('rule_seq',$maxseq+1);
 }
@@ -999,13 +999,13 @@ sub rules {
 sub message_queue {
     mdb->message->drop;
     for my $msg ( DB->BaliMessage->all ) {
-       my @q = map { delete $_->{id_message}; delete $_->{id}; $_ }  
+       my @q = map { delete $_->{id_message}; delete $_->{id}; $_ }
               $msg->bali_message_queues->hashref->all;
        my $doc = +{ $msg->get_columns };
        delete $doc->{id};
        $doc->{queue} = \@q;
-       
-       mdb->message->insert( $doc );   
+
+       mdb->message->insert( $doc );
     }
 }
 
@@ -1073,11 +1073,11 @@ sub dashboards {
         delete $dash->{id};
         $dash->{role} = \@roles_in_mongo;
         my @dashlets = _array _load $dash->{dashlets};
-        $dash->{dashlets} = \@dashlets;      
+        $dash->{dashlets} = \@dashlets;
         if($dash->{system_params}){
             $dash->{system_params} = _load $dash->{system_params};
-        } 
-        mdb->dashboard->insert( $dash );   
+        }
+        mdb->dashboard->insert( $dash );
     }
     mdb->dashboard->remove({'$or'=>[dashlets => qr/^---.*/i, system_params => qr/^---.*/i]});
 }
@@ -1101,15 +1101,15 @@ sub role_id_fix {
 sub daemons {
     my @daemons = _dbis->query('select * from bali_daemon')->hashes;
     for my $daemon ( @daemons ) {
-        delete $daemon->{id};   
-        mdb->daemon->insert( $daemon );   
+        delete $daemon->{id};
+        mdb->daemon->insert( $daemon );
     }
 }
 
 sub repository_repl {
     my ($self) = @_;
-    
-    # repository 
+
+    # repository
     #   migrate Repository saved.repl into mdb->repl
     #   migrate mvs.queue? no, not needed
     mdb->repl->clone if mdb->repl->count;
@@ -1140,7 +1140,7 @@ sub topic_rels {
             _debug "OK. Updated $k/$tot";
             @group = ();
         }
-        push @group, $mid; 
+        push @group, $mid;
         $k++;
     }
     if( @group ){
@@ -1167,7 +1167,7 @@ sub role {
             }
         }
         $role->{actions} = \@actions_in_mongo;
-        mdb->role->update({ id=>"$$role{id}" },$role,{ upsert=>1 }); 
+        mdb->role->update({ id=>"$$role{id}" },$role,{ upsert=>1 });
     }
     mdb->master_seq->remove({ _id => 'role'});
     mdb->master_seq->insert({ _id => 'role', seq => $highest_id });
@@ -1183,9 +1183,9 @@ sub topic_admin {
         my @st = _dbis->query('select * from bali_topic_categories_status where id_category=?', $$tc{id} )->hashes;
         $$tc{statuses} = [ _unique map { $$_{id_status} } @st ];
         my @fi = _dbis->query('select id_field,params_field from bali_topic_fields_category where id_category=?', $$tc{id} )->hashes;
-        $$tc{fieldlets} = [ map { 
+        $$tc{fieldlets} = [ map {
             my $pf = delete $$_{params_field};
-        	$$_{params} = Util->_load($pf);
+            $$_{params} = Util->_load($pf);
             $trans->( $$_{params}{allowBlank} );
             $trans->( $$_{params}{hidden} );
             $trans->( $$_{params}{system_force} );
@@ -1195,7 +1195,7 @@ sub topic_admin {
             $_ } @fi ];
         my @wf = _dbis->query('select id_role,id_status_from,id_status_to,job_type from bali_topic_categories_admin where id_category=?', $$tc{id} )->hashes;
         $$tc{workflow} = [ @wf ];
-        #_log( $tc ) ; 
+        #_log( $tc ) ;
         $max_cat = $$tc{id} if $$tc{id} > $max_cat;
         $$tc{id} .= '';
         mdb->category->update({ id=>"$$tc{id}" }, $tc,{ upsert=>1 });
@@ -1203,7 +1203,7 @@ sub topic_admin {
     # get rid of priority fields in forms
     mdb->category->update({},
      { '$pull'=>{ fieldlets=>{ id_field=>'priority' } } },{ multiple=>1 });
-    
+
     mdb->seq('category', $max_cat ) if $max_cat;
 }
 
@@ -1211,16 +1211,16 @@ sub mids {
     my $max_mid = _dbis->query('select max(mid) from bali_master')->array->[0];
     require List::Util;
     my $max_mid_mdb = List::Util::max(
-        map { $_->{mid} } 
+        map { $_->{mid} }
         mdb->master->find->fields({ mid=>1 })->all,
-        mdb->master_doc->find->fields({ mid=>1 })->all 
+        mdb->master_doc->find->fields({ mid=>1 })->all
      );
      mdb->seq('mid', ($max_mid_mdb > $max_mid ? $max_mid_mdb : $max_mid)+1 );
 }
 
 sub statuses {
     my @st = _dbis->query('select * from bali_topic_status')->hashes;
-    
+
     for my $s ( @st )  {
         my $ci = ci->status->search_ci( id_status=>$$s{id} );
         next unless $ci;
@@ -1228,13 +1228,13 @@ sub statuses {
         $ci->save;
         say "Updated CI status data for $$s{id} mid=$$ci{mid}";
     }
-    
+
 }
 
 # make sure all statuses in DB are migrated to mongo
 sub statuses_from_db {
     my @st = _dbis->query('select * from bali_topic_status')->hashes;
-    
+
     for my $s ( @st )  {
         my $ci = ci->status->search_ci( id_status=>$$s{id} );
         next if $ci;
@@ -1263,25 +1263,25 @@ sub topic_fields {
        my %d = map { $_=>$$t{$_} } qw(description modified_on modified_by);
        mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d });
     }
-    
+
     # fix some old broken fields
     for my $t ( mdb->topic->find->all ) {
        my %d = ();
        $d{modified_by} = $$t{created_by} if length $$t{created_by};
        mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d }) if %d;
     }
-    
+
 }
 
 sub topic_assets {
     my $db = _dbis;
     my @deleteables;
-    for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
-        
+    for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {
+
         # get file data
-        my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
+        my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata
            from bali_file_version where mid=?}, $$rel{to_mid})->hash;
-       
+
         if( !$r ) {
             # deleted file, invalid master_rel
             _warn "Not found file mid=$$rel{to_mid}, skipped";
@@ -1298,22 +1298,22 @@ sub topic_assets {
         });
         $asset->save;
         $asset->put_data( $$r{filedata} );
-        
+
         # RELATE to topic ci
         say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid} field=$$rel{rel_field}, mid=$$asset{mid} ($$r{filename})";
         #my $topic = ci->new( $$rel{from_mid} );
         #my @ass = grep { defined } ( _array( $topic->assets ), $asset );
         #$topic->assets( \@ass );
         #$topic->save;
-        
+
         # UPDATE old relation to new asset mid
-        mdb->master_rel->update({ _id=>$$rel{_id} },{ '$set'=>{ to_mid=>$$asset{mid}, rel_type=>'topic_asset' } });    
-        
+        mdb->master_rel->update({ _id=>$$rel{_id} },{ '$set'=>{ to_mid=>$$asset{mid}, rel_type=>'topic_asset' } });
+
         # DELETE old file CI
         push @deleteables, $$rel{to_mid};
-        
+
         # DELETE old relationship
-        #mdb->master_rel->remove({ _id=>$$rel{_id} });    
+        #mdb->master_rel->remove({ _id=>$$rel{_id} });
     }
     ci->delete( $_ ) for @deleteables;
 }
@@ -1331,7 +1331,7 @@ sub master_doc_clean {
 
 sub job_last_error {
     # clean last_error monstruosities
-    my @mids = ci->job->find->fields({mid=>1})->all; 
+    my @mids = ci->job->find->fields({mid=>1})->all;
     my ($k,$tot)=(0,scalar(@mids));
     for my $j ( @mids ) {
        my $job = ci->new( $$j{mid} );
@@ -1347,7 +1347,7 @@ sub job_last_error {
 # Integrity fixes
 #
 
-# insert (no update) 
+# insert (no update)
 sub master_insert {
     my $db = Util->_dbis();
 
@@ -1355,18 +1355,18 @@ sub master_insert {
     # MASTER
     my $rs = $db->query('select * from bali_master');
     while ( my $r = $rs->hash ) {
-        my $mid = "$$r{mid}"; 
+        my $mid = "$$r{mid}";
         next if mdb->master->find({ mid=>$mid })->count;
         _warn("MISSING master mid=$mid. Inserting.");
         # inserts master
         mdb->master->update({ mid=>$mid }, $r, { upsert=>1 });
         push @misses, $mid;
     }
-    
+
     # inserts master_doc record after we have all masters
     for my $mid (@misses) {
-        try { ci->new( $mid )->save } 
-        catch { warn "Could not write MASTER_DOC for $mid: " . shift() };  
+        try { ci->new( $mid )->save }
+        catch { warn "Could not write MASTER_DOC for $mid: " . shift() };
     }
 }
 
@@ -1379,16 +1379,16 @@ sub master_and_rel {
     for my $r ( @master ) {
         mdb->master->update({ mid=>''.$r->{mid} }, $r, { upsert=>1 });
     }
-    
+
     # NOT IN MASTER
     my %in_master = map  {  $_->{mid} => $_ } @master;
     for my $m ( mdb->master->find->fields({ mid=>1 })->all ) {
         if( ! exists $in_master{ $m->{mid} } ) {
             warn "MASTER-MASTER not in DB: $m->{mid}";
-            mdb->master->remove({ mid=>''.$m->{mid} },{ multiple=>1 }) 
+            mdb->master->remove({ mid=>''.$m->{mid} },{ multiple=>1 })
         }
     }
-    
+
     # FIX master_rel safely
     $self->master_rel_fix;
 }
@@ -1396,12 +1396,12 @@ sub master_and_rel {
 # MASTER_DOC created from CI->save. MASTER_DOC deleted if not in MASTER
 sub master_doc {
     my ($self) = @_;
-    
-    # MASTER_DOC 
+
+    # MASTER_DOC
     for my $mid ( map {$_->{mid}} mdb->master->find->fields({ mid=>1 })->all ) {
         try { ci->new( $mid )->save } catch { warn "Could not write MASTER_DOC for $mid: " . shift() };  # creates/updates master_doc record
     }
-    # master_doc integrity 
+    # master_doc integrity
     for my $mid ( map {$_->{mid}} mdb->master_doc->find->fields({ mid=>1 })->all ) {
         next if mdb->master->find_one({ mid=>$mid });
         warn "master_doc mid not found=$mid";
@@ -1412,10 +1412,10 @@ sub master_doc {
 # topic docs that do not have a master row?
 sub master_topic {
     my ($self) = @_;
-    
+
     my $db = Util->_dbis();
     my %in_master = map  {  $_->{mid} => $_ } $db->query('select * from bali_master')->hashes;
-    
+
     # TOPIC is in MASTER?
     for my $t ( mdb->topic->find->fields({ mid=>1 })->all ) {
         my $x = mdb->master->find_one({ mid=>$t->{mid} });
@@ -1431,14 +1431,14 @@ sub master_rel_add {
     my $db = Util->_dbis();
     @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
         unless @mids > 0;
-    
+
     my $k = 0;
     _debug "safely adding master_rel from DB (no deletes)...";
     for my $mid ( @mids ) {
         next if $mid !~ /^\d+$/;   # we want only numeric mids from mongo, otherwise db query breaks
-        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ }
             $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
-        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ }
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %db ) {
             next if exists $mdb{$_};
@@ -1448,18 +1448,18 @@ sub master_rel_add {
     }
     _debug "INSERTed REL into MDB: $k times";
 }
-    
+
 # safely add and delete MASTER_REL from Database
 sub master_rel_fix {
     my ($self,@mids)=@_;
     my $db = Util->_dbis();
     @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
         unless @mids > 0;
-    
+
     for my $mid ( @mids ) {
-        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ }
             $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
-        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ }
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %mdb ) {
             next if exists $db{$_};
@@ -1473,7 +1473,7 @@ sub master_rel_fix {
         }
     }
 }
-    
+
 # DROPS!!! master_rel and reloads from Database
 sub master_rel_rebuild {
     my $db = Util->_dbis();
@@ -1499,7 +1499,7 @@ sub user_cis {
 
 sub topic {
     my ( $self, %p ) = @_;
-    
+
     my $db = Util->_dbis;
     my $coll = $p{coll} // mdb->topic;
     my $r = $p{row} // $db->query('select * from bali_topic where mid=?', $p{mid} )->hash;
@@ -1559,13 +1559,13 @@ sub topic {
 }
 
 sub clean_master_topic {
-   for ( _dbis->query(q{select name,mid from bali_master m where m.collection='topic' and not exists 
+   for ( _dbis->query(q{select name,mid from bali_master m where m.collection='topic' and not exists
     (select 1 from bali_topic t where t.mid=m.mid)})->hashes ){
         warn "Deleting master mid $_->{mid} not found in topic...";
         my $x = DB->BaliMaster->find($_->{mid});
         next unless $x;
         $x->delete
-    } 
+    }
 }
 
 sub add_master_doc_sort{
@@ -1574,7 +1574,7 @@ sub add_master_doc_sort{
 
     foreach  (@cis){
         my $new_name = $_->{name} ? lc $_->{name} : $_->{collection}.':'.$_->{mid};
-        mdb->master_doc->update({mid => $_->{mid}},{'$set'=>{_sort => {name => $new_name}}}); 
+        mdb->master_doc->update({mid => $_->{mid}},{'$set'=>{_sort => {name => $new_name}}});
     }
 }
 
@@ -1591,13 +1591,13 @@ sub activity{
     my $inc = 1000;
     my $total_events = 0;
     my @ev_errors;
-    while ($total_events <= $inc){  
+    while ($total_events <= $inc){
         my $limit = $tot+$inc;
         my @events = mdb->event->find({event_key=>{'$not'=>qr/^event\.(rule|repository)/i}})->skip($tot)->limit($inc)->all;
         $total_events = @events;
         $tot += $inc;
         if($total_events == 0){
-           last; 
+           last;
         }
         $ultra_tot += $total_events;
         _log "$ultra_tot events converted to activity" if $ultra_tot % 500 == 0;
@@ -1606,11 +1606,11 @@ sub activity{
                 my $key = $event->{event_key};
                 my $ev = Baseliner::Core::Registry->get($key);
                 if( _array( $ev->{vars} ) > 0 ) {
-                    
+
                     my $ed_reduced={};
                     my $ed = _load $event->{event_data};
                     Util->_unbless( $ed );
-                    foreach (_array $ev->{vars}){             
+                    foreach (_array $ev->{vars}){
                         $ed_reduced->{$_} = $ed->{$_};
                     }
                     $ed_reduced->{ts} = $event->{ts};
@@ -1626,10 +1626,10 @@ sub activity{
                         ev_level        => $ev->{ev_level},
                         level           => $ev->{level}
                     });
-                }    
+                }
             } catch{
                 push @ev_errors, $event;
-            }        
+            }
         }
     }
     _log "numero total de eventos erroneos ". scalar @ev_errors ;
@@ -1646,7 +1646,7 @@ sub topic_view {
             T.MODIFIED_ON,
             T.MODIFIED_BY,
             T.DESCRIPTION,
-            T.STATUS, 
+            T.STATUS,
             NUMCOMMENT,
             C.ID CATEGORY_ID,
             C.NAME CATEGORY_NAME,
@@ -1686,18 +1686,18 @@ sub topic_view {
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
                     LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
                     LEFT JOIN BALI_TOPIC_PRIORITY TP ON T.ID_PRIORITY = TP.ID
-                    LEFT JOIN (SELECT COUNT(*) AS NUMCOMMENT, A.MID 
+                    LEFT JOIN (SELECT COUNT(*) AS NUMCOMMENT, A.MID
                                         FROM BALI_TOPIC A, BALI_MASTER_REL REL, BALI_POST B
                                         WHERE A.MID = REL.FROM_MID
                                         AND REL.TO_MID = B.MID
                                         AND REL.REL_TYPE = 'topic_post'
                                         GROUP BY A.MID) D ON T.MID = D.MID
-                    LEFT JOIN (SELECT COUNT(*) AS NUM_FILE, E.MID 
+                    LEFT JOIN (SELECT COUNT(*) AS NUM_FILE, E.MID
                                         FROM BALI_TOPIC E, BALI_MASTER_REL REL1, BALI_FILE_VERSION G
                                         WHERE E.MID = REL1.FROM_MID
                                         AND REL1.TO_MID = G.MID
                                         AND REL1.REL_TYPE = 'topic_file_version'
-                                        GROUP BY E.MID) H ON T.MID = H.MID                                         
+                                        GROUP BY E.MID) H ON T.MID = H.MID
                     LEFT JOIN BALI_TOPIC_STATUS S ON T.ID_CATEGORY_STATUS = S.ID
                     LEFT JOIN BALI_MASTER_REL REL_PR ON REL_PR.FROM_MID = T.MID AND REL_PR.REL_TYPE = 'topic_project'
                     LEFT JOIN BALI_PROJECT P ON P.MID = REL_PR.TO_MID
@@ -1708,21 +1708,21 @@ sub topic_view {
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
-                    
+
                     LEFT JOIN BALI_MASTER_REL rel_topics_out ON rel_topics_out.FROM_MID = T.MID AND rel_topics_out.REL_TYPE = 'topic_topic'
                     LEFT JOIN BALI_TOPIC topics_out ON topics_out.MID = rel_topics_out.TO_MID
-                    
+
                     LEFT JOIN BALI_MASTER_REL rel_topics_in ON rel_topics_in.TO_MID = T.MID AND rel_topics_in.REL_TYPE = 'topic_topic'
                     LEFT JOIN BALI_TOPIC topics_in ON topics_in.MID = rel_topics_in.FROM_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_cis_out ON rel_cis_out.FROM_MID = T.MID AND rel_cis_out.REL_TYPE NOT IN( 
+
+                    LEFT JOIN BALI_MASTER_REL rel_cis_out ON rel_cis_out.FROM_MID = T.MID AND rel_cis_out.REL_TYPE NOT IN(
                         'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
                     LEFT JOIN BALI_MASTER cis_out ON cis_out.MID = rel_cis_out.TO_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_cis_in ON rel_cis_in.TO_MID = T.MID AND rel_cis_in.REL_TYPE NOT IN( 
+
+                    LEFT JOIN BALI_MASTER_REL rel_cis_in ON rel_cis_in.TO_MID = T.MID AND rel_cis_in.REL_TYPE NOT IN(
                         'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
                     LEFT JOIN BALI_MASTER cis_in ON cis_in.MID = rel_cis_in.FROM_MID
-                    
+
                     LEFT JOIN BALI_PROJECT_DIRECTORIES_FILES DF ON DF.ID_FILE = T.MID
                     LEFT JOIN BALI_PROJECT_DIRECTORIES DS ON DF.ID_DIRECTORY = DS.ID
             WHERE T.ACTIVE = 1

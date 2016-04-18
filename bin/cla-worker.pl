@@ -19,7 +19,7 @@ use Term::ANSIColor qw(:constants);
 
 select(STDERR);
 $| = 1;
-select(STDOUT); 
+select(STDOUT);
 $| = 1;
 
 our $t0 = [gettimeofday];
@@ -28,16 +28,16 @@ our %conf;
 our $id_has_pid = 0;
 
 # logging functions
-sub _log { 
+sub _log {
     my $elapsed = tv_interval ( $t0 );
     my $msg = $_[0];
     local $main::log_error=1 if $msg=~/^ERROR/;
-    my ($pre,$post) =  $main::log_error ? (RED,RESET) 
-        : $main::log_warn ? (YELLOW,RESET) 
+    my ($pre,$post) =  $main::log_error ? (RED,RESET)
+        : $main::log_warn ? (YELLOW,RESET)
         : $main::log_debug ? (GREEN,RESET)
         :('','');
     my $ts = _now();
-    print $pre, sprintf("[${workerid}%s $ts %0.4f] ", ( $id_has_pid ? '' : " $$"), $elapsed), @_, $post, "\n"; 
+    print $pre, sprintf("[${workerid}%s $ts %0.4f] ", ( $id_has_pid ? '' : " $$"), $elapsed), @_, $post, "\n";
     $t0 = [gettimeofday];
 }
 sub _error { local $main::log_error = 1; _log( @_ ) }
@@ -79,9 +79,9 @@ require Sys::Hostname;
     script_home    => $script_home,
     encode_format  => 'yaml',
     os             => $^O,
-    arch           => ( $^O =~ /win/i 
-        ? do{ use Config; $Config{"archname"} } 
-        : do{ $a=`uname -m`; chomp $a; $a } ), 
+    arch           => ( $^O =~ /win/i
+        ? do{ use Config; $Config{"archname"} }
+        : do{ $a=`uname -m`; chomp $a; $a } ),
     home           => $script_home,
     pid_dir        => $script_home,
     log_dir        => $script_home,
@@ -98,7 +98,7 @@ if( -e $config_file ) {
     print "config_file: $config_file\n" unless $args{h};
     open my $fc,'<:encoding(utf-8)', $config_file or die "ERROR: could not open config file: $!\n";
     local $/;
-    my $yaml = <$fc>; 
+    my $yaml = <$fc>;
     %conf = ( %conf, %{ Load( $yaml ) || {} } );
 }
 # merge args
@@ -116,7 +116,7 @@ $conf{id} = $workerid;
 $workerid_clean =~ s/_+/_/g;
 $conf{pid_file} ||= File::Spec->catfile( $conf{pid_dir}, "cla-worker-$workerid_clean.pid" );
 $conf{log_file} ||= File::Spec->catfile( $conf{log_dir}, "cla-worker.log" );
-our ($reconnect_wait, $timeout_file, $daemon, $pid_file, $log_file, $timeout, $chunk_size ) = 
+our ($reconnect_wait, $timeout_file, $daemon, $pid_file, $log_file, $timeout, $chunk_size ) =
     @conf{ qw/reconnect_wait timeout_file daemon pid_file log_file timeout chunk_size/ };
 
 our @capabilities;
@@ -136,7 +136,7 @@ if( exists $ARGV{'-h'} || exists $ARGV{'--help'} ) {
 }
 
 # run command: start, stop
-our ($redis, $queue); 
+our ($redis, $queue);
 {
     no strict 'refs';
     *{ "main::$CMD" }->();
@@ -150,7 +150,7 @@ sub start {
     CONNECT:
     print "connecting to server $conf{server}...";
     $redis = try {
-        Redis->new( 
+        Redis->new(
             server=>$conf{server},
             encoding => undef,
             on_connect => sub {
@@ -188,9 +188,9 @@ sub start {
         $recon_count++;
         goto CONNECT;
     };
-    
-    $recon_count = 1; # reset logarithm 
-    
+
+    $recon_count = 1; # reset logarithm
+
     # check if someone has this id already
     $queue->subscribe("queue:pong:$workerid", sub {
         my ($msg, $topic, $subscribed_topic) = @_;
@@ -211,7 +211,7 @@ sub start {
             my $pid = read_pid( $pid_file );
             # check if proc exists
             if( kill 0 => $pid ) {
-                die "FATAL: pid file '$pid_file' already exists.\n" 
+                die "FATAL: pid file '$pid_file' already exists.\n"
             } else {
                 unlink $pid_file;
             }
@@ -219,7 +219,7 @@ sub start {
         my $pid = fork();
         die "can't fork: $!" unless defined $pid;
         if( $pid ) {
-            print "forked daemon with pid $pid\n"; 
+            print "forked daemon with pid $pid\n";
             open my $fp,'>', $pid_file or die "FATAL: could not open pid file '$pid_file': $!\n";
             print $fp $pid;
             close $fp;
@@ -227,7 +227,7 @@ sub start {
         }
         # child
         require POSIX;
-        POSIX::setsid(); 
+        POSIX::setsid();
         log_shorten();
         open STDIN, '/dev/null' or die "Could not redirect STDIN: $!";
         open STDOUT, '>>', $log_file or die sprintf "Could not redirect STDIN to %s: $!", $log_file;
@@ -257,7 +257,7 @@ sub start {
             my $reqid = ( split /:/, $topic )[2];
             my $caps = decode_base64( $msg );
             _debug "got request for capabilities: $caps";
-            my @caps = split /,/,$caps; 
+            my @caps = split /,/,$caps;
             my %all_caps = map { $_ => 1 } @capabilities;
             if( scalar( grep {defined} @all_caps{@caps}) == scalar @caps ) {
                 # send requester that I'm ok
@@ -290,7 +290,7 @@ sub stop {
     my $pid = read_pid( $pid_file );
     print "stopping worker id $workerid with pid $pid...\n";
     my $sig = $conf{sig} || 'HUP';
-    my $ret = kill $sig => $pid; 
+    my $ret = kill $sig => $pid;
     print $ret ? "stopped.\n" : "ERROR during shutdown: $!\n";
     unlink $pid_file;
     exit !$ret;
@@ -305,7 +305,7 @@ sub stop_all {
         print "stopping daemon with pid file $pf...\n";
         my $pid = read_pid( $pf );
         my $sig = $conf{sig} || 'HUP';
-        my $ret = kill $sig => $pid; 
+        my $ret = kill $sig => $pid;
         if( $ret ) {
             print "stopped daemon with pid $pid\n";
         } else {
@@ -332,7 +332,7 @@ sub ps {
 sub capabilities {
     print "worker capabilities:\n";
     for my $cap ( @capabilities ) {
-        print "   - $cap\n";        
+        print "   - $cap\n";
     }
 }
 
@@ -345,7 +345,7 @@ sub config {
 
 sub log_shorten {
     my ($file) = @_;
-    system tail => -1000 => $file => ">$file.new"; 
+    system tail => -1000 => $file => ">$file.new";
     unlink $file;
     copy "$file.new" => $file;
 }
@@ -356,17 +356,17 @@ sub read_pid {
     my $pid = join '', <$fp>;
     $pid =~ s/[^0-9]*//g;
     close $fp;
-    return $pid; 
+    return $pid;
 }
 
 sub process_message {
     my ($msg, $topic, $subscribed_topic) = @_;
     my ($ns, $workerid, $cmd, $id_msg) = ( split /:/, $topic );
     # send ack
-    $redis->publish( "queue:$id_msg:start",'' ); 
-        
+    $redis->publish( "queue:$id_msg:start",'' );
+
     # start payload
-    _log "start: $topic ($cmd): msg bytes=" . length($msg);  
+    _log "start: $topic ($cmd): msg bytes=" . length($msg);
     _debug "CMD       =$cmd";
     _debug "CMD DATA  =$msg";
     my ($ret, $rc);
@@ -390,7 +390,7 @@ sub process_message {
     my $result = {
         ret    => $ret,     # ret value from command
         rc     => $rc,      # return code
-        output => $output,  # stdout + stderr 
+        output => $output,  # stdout + stderr
     };
     _log sprintf "$cmd DONE in %0.4fs", tv_interval $t1;
     $redis->set( "queue:$id_msg:result", encode_msg( $result ) );
@@ -464,8 +464,8 @@ sub aborted {
 sub encode_msg {
     my ($d) = @_;
     # json: has problems with utf8, storable: may hit incompatible version binaries
-    return $conf{encode_format} eq 'yaml' 
-        ? 'yaml:' . Dump( $d )  
+    return $conf{encode_format} eq 'yaml'
+        ? 'yaml:' . Dump( $d )
         : $conf{encode_format} eq 'stor'
             ? 'stor:' . Storable::freeze( $d )
             : encode_json( $d );
@@ -477,7 +477,7 @@ exit 0;
 sub usage {
     print banner();
     print qq{usage: cla-worker command <options>
-    
+
 commands available:
         start                starts a new worker
         stops                stops a daemon worker
@@ -485,7 +485,7 @@ commands available:
         capabilities         lists capabilities
         config               display worker config
         ps                   lists all worker processes
-        
+
 options:
         --server             host and port of the queue server: localhost:6379
         --id                 client id
@@ -502,10 +502,10 @@ options:
 
 examples:
 
-    cla-worker start --server 192.168.1.2:6379 
-    cla-worker stop 
+    cla-worker start --server 192.168.1.2:6379
+    cla-worker stop
     curl -fsL http://clarive.com/downloads/cla-worker | perl - start --server 192.168.1.2:6379 --id centos
-    
+
 };
 }
 
@@ -518,20 +518,18 @@ sub tpl_eval {
 sub banner {
 q{
 
-    88888888  888          8888      888888888    88  888      888   8888888   
-   888888888  888          88888     8888888888   88  888     888   8888888888 
-  888         888         888888     88     888   88   888    888  888     888 
+    88888888  888          8888      888888888    88  888      888   8888888
+   888888888  888          88888     8888888888   88  888     888   8888888888
+  888         888         888888     88     888   88   888    888  888     888
   88          888         888 888    88     888   88   888   888   88       888
  888          888        888  888    8888888888   88    888  888   888888888888
   88          888        888888888   88888888     88    888 888    888888888888
-  888         888       8888888888   88    888    88     888888    888         
-   888888888  888888888 888     888  88     888   88     88888      8888888888 
-    88888888  888888888888      888  88      888  88      8888       888888888 
+  888         888       8888888888   88    888    88     888888    888
+   888888888  888888888 888     888  88     888   88     88888      8888888888
+    88888888  888888888888      888  88      888  88      8888       888888888
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Clarive Worker v6.2 - Copyright (c) 2015 clarive.com
 
 }
 }
-
-

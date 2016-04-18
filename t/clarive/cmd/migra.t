@@ -1,14 +1,13 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
-use TestEnv;
 
-TestEnv->setup;
+use TestEnv;
+BEGIN { TestEnv->setup }
 
 use boolean;
 use Clarive::mdb;

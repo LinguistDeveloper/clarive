@@ -887,7 +887,7 @@ sub get_log_history {
             my @tags = split ', ', $text_tags if $text_tags;
             @tags = map { $_=~ s/tag: //g; $_ } @tags;
             my $txt = join ', ', @tags;
-            $log->{tags} = $txt if $text_tags; 
+            $log->{tags} = $txt if $text_tags;
             $log->{revision} = substr($revision,0,8);
         }else{
             $log->{comment} = $log->{comment}."\n".$_;

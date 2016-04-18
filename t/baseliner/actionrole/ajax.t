@@ -1,15 +1,11 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
-
 use Test::More;
-use TestEnv;
-use TestUtils ':catalyst';
 
-BEGIN {
-    TestEnv->setup;
-}
+use TestEnv;
+BEGIN { TestEnv->setup }
+use TestUtils ':catalyst';
 
 use_ok 'Baseliner::ActionRole::Ajax';
 

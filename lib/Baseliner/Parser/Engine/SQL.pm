@@ -5,9 +5,9 @@ sub parse {
     my ($self,%p) =@_;
     my $f = "$p{file}";
     my $source = $p{source};
-    
+
     my $tree = { depends=>[] };
-    
+
     my @lines = split /\r?\n/, $source ;
     my ( $fc, @select_list, @update_list, @insert_list, @delete_list );
     my ( @final_select_list, @sort_nodup_delete_list, @sort_nodup_update_list, @sort_nodup_final_select_list, @sort_nodup_insert_list );
@@ -22,7 +22,7 @@ sub parse {
         $fc .= " " . $_;
         $tl++;
     }
-    
+
     $_ = $fc;
     s/([\d\D]*)/\U$1/;            #make uppercase
     $fc = $_;
@@ -103,7 +103,7 @@ sub parse {
     @sort_nodup_delete_list       = sort keys +{ map { $_=>1 } @delete_list };
     @sort_nodup_final_select_list = sort keys +{ map { $_=>1 } @final_select_list };
     my @deps = sort keys +{ map { $_=>1 } @sort_nodup_delete_list, @sort_nodup_insert_list, @sort_nodup_update_list, @sort_nodup_final_select_list };
-    for( @deps ) { 
+    for( @deps ) {
         s/[\(\)]+//g;
         s/@.+$//g;
         s/^(.+)\.//g;
@@ -116,9 +116,6 @@ sub parse {
     }
 
     return $tree;
-}   
+}
 
 1;
-
-
-

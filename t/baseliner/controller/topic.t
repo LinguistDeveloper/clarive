@@ -1227,7 +1227,7 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
 
     my $id_changeset_rule     = _create_changeset_form();
     my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
-    
+
     my $user = TestSetup->create_user(
         username => 'developer',
         realname => 'Test User',
@@ -1246,7 +1246,7 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
         id_role  => $id_role2,
         project  => $project2
     );
-    
+
     my $topic_mid = TestSetup->create_topic( id_category => $id_changeset_category, project => $project );
 
     my $c = _build_c(
@@ -2003,7 +2003,7 @@ sub _create_topic_selector_form {
 
 subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
     _setup();
-      
+
     my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
     my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
 
@@ -2371,10 +2371,7 @@ sub _setup {
         'Baseliner::Model::Rules',            'BaselinerX::LcController',
         'BaselinerX::Type::Model::ConfigStore',
     );
-
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
+    TestUtils->cleanup_cis;
 
     mdb->topic->drop;
     mdb->category->drop;

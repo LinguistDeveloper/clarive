@@ -9,7 +9,7 @@ with 'Baseliner::Role::Logger';
 
 =head1 Logging
 
-Handles all job logging. 
+Handles all job logging.
 
 The basics:
 
@@ -52,7 +52,7 @@ sub log_levels { +{ warn => 3, error => 4, debug => 2, info => 2 } }
 
 Centralizes all logging levels. You may create your own levels if you wish.
 
-All data is compressed. 
+All data is compressed.
 
 =cut
 sub common_log {
@@ -71,7 +71,7 @@ sub common_log {
         ($package, $filename, $line) = caller 1;
     }
     my $module = "$package - $filename ($line)";
-    my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...  
+    my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...
     $p{data}||='';
     ref $p{data} and $p{data}=_dump( $p{data} );  # auto dump data if its a ref
     $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
@@ -96,13 +96,13 @@ sub common_log {
     # check for password patterns - TODO put this in config
 #    $text =~ s{(\S+/)\S+@}{$1\************@}g;  # XXX the asterisk is "bold" in log textile
     # Using config.global.password_patterns
-    $text = Baseliner::Utils::hide_passwords($text);    
+    $text = Baseliner::Utils::hide_passwords($text);
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
         my $doc = { id=>$id, mid =>$jobmid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };
-        
-        $doc->{_id} = mdb->job_log->insert($doc); 
-        
+
+        $doc->{_id} = mdb->job_log->insert($doc);
+
         $doc->{pid} = $$;
         $doc->{more} = $p{more} if defined $p{more};
         $doc->{data_name} = $p{data_name} if $p{data_name};
@@ -115,18 +115,18 @@ sub common_log {
         if( $p{data} ) {
             my $data = Util->hide_passwords( $p{data});
             my $d = try { compress($data) } catch { $data };  ## asset in grid  TODO find a better solution than storing the raw data... encode/decode?
-            my $id_ass = mdb->grid_add( $d, filename=>($doc->{data_name}//'logdata'), parent_collection=>'log', id_log=>$id, parent=>$doc->{_id}, parent_mid=>$jobmid, ); 
+            my $id_ass = mdb->grid_add( $d, filename=>($doc->{data_name}//'logdata'), parent_collection=>'log', id_log=>$id, parent=>$doc->{_id}, parent_mid=>$jobmid, );
             $doc->{data} = $id_ass;
         }
-        
+
         # save top level for this statement if higher
         my $loglevels = $self->log_levels;
         my $curr_service = $self->current_service;
         $curr_service =~ s/\.//g;
 
         my $top_service_level = $self->job->service_levels->{ $self->job->step }{ $curr_service };
-        $self->job->service_levels->{ $self->job->step }{ $curr_service } = $lev 
-            if $loglevels->{$lev} > ( $top_service_level ? $loglevels->{$top_service_level} : 0 ); 
+        $self->job->service_levels->{ $self->job->step }{ $curr_service } = $lev
+            if $loglevels->{$lev} > ( $top_service_level ? $loglevels->{$top_service_level} : 0 );
 
         # print out too
         {
@@ -147,7 +147,7 @@ sub common_log {
         $doc->{step} = $step if $step;
 
         mdb->job_log->save( $doc );
-        
+
         $self->last_log( $doc ) if $lev ne 'debug';
         $row = $doc;
     } catch {
@@ -169,7 +169,7 @@ sub debug { shift->common_log('debug',@_) }
 
 =head2 log_on_rc
 
-Allows change the log level depending on a return code value. 
+Allows change the log level depending on a return code value.
 
     $log->rc_config({ 0=>'info', 1=>'warn', 99=>'error' });
 
@@ -179,7 +179,7 @@ Allows change the log level depending on a return code value.
 
     $log->log_on_rc( $some_rc, 'This can be an error or something else', data=>$lots_of_data );
 
-The message will have a " (RC=$rc_code)" string part appended at the end. 
+The message will have a " (RC=$rc_code)" string part appended at the end.
 
 =cut
 sub log_on_rc {
@@ -199,10 +199,9 @@ sub log_on_rc {
 
 =over 4
 
-=item * 
+=item *
 
 Add pluggable log data viewers on the value of "more"
 
 =cut
 1;
-

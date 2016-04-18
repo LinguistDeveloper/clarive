@@ -87,7 +87,7 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
     my @rows;
 
     while ( my $r = $rs->next ) {
-        next if $query && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r ] ); 
+        next if $query && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r ] );
         push @rows,
             {
             id          => $r->{id},
@@ -117,8 +117,8 @@ sub calendar_grid : Path('/job/calendar_grid') {
     my ( $self, $c ) = @_;
 
     #$c->stash->{ns_query} = { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-    $c->stash->{can_edit} = 
-        $c->model('Permissions')->is_root( $c->username ) 
+    $c->stash->{can_edit} =
+        $c->model('Permissions')->is_root( $c->username )
         ||
         $c->model('Permissions')
             ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
@@ -133,7 +133,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $new_id;
-    
+
     my @msgs = ();
 
     try {
@@ -152,7 +152,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
 
         if( $p->{action} eq 'create' || $p->{newAction} eq 'create')  {
             @msgs = ( 'created', 'creating' );
-            
+
             $p->{ns} = '/' unless length $p->{ns};
             my $r1 = mdb->calendar->find({ ns => $p->{ ns }, bl => $p->{ bl } });
             if ( my $r = $r1->next ) {
@@ -204,7 +204,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             length $p->{ seq } and $row->{seq} = $p->{ seq };
             $row->{ns} = length $p->{ns} ? $p->{ns} : '/';
             $p->{bl} and $row->{bl} = $p->{bl};
-            
+
             mdb->calendar->update({ id => ''.$p->{ id_cal } }, $row);
         }
         $c->stash->{ json } = { success => \1, msg => _loc( "Calendar with id '%1' $msgs[0]", $p->{ name } ), id_cal=>$new_id // $p->{id_cal} };
@@ -319,7 +319,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                     end_time   => $ven_fin,
                     start_date => $self->parseDateTimeToDbix( $currentDate ),
                     end_date   => $self->parseDateTimeToDbix( $currentDate )
-                });  
+                });
                 $self->db_merge_slots( $id_cal ) if defined $id_cal;
             }
             elsif ( $cmd eq "C1" || $cmd eq "C0" ) {
@@ -340,7 +340,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
     $c->forward( 'View::JSON' );
 }
 
-sub calendar_delete : 
+sub calendar_delete :
  {
     my ( $self, $c ) = @_;
     my $p           = $c->req->params;
@@ -359,7 +359,7 @@ sub calendar_delete :
 
 =head2 db_merge_slots ( id_cal )
 
-Cleans up bali_calendar_window for a given calendar id. 
+Cleans up bali_calendar_window for a given calendar id.
 Should be called anytime slot data is changed.
 
 =cut
@@ -376,10 +376,10 @@ sub db_merge_slots {
     my $to_time = sub { substr( $_[0], 0, 2 ) . ':' . substr( $_[0], 2, 2 ) };
 
     for ( $slots->sorted ) {
-        my $date = join '-', ( $_->when =~ /^(\d{4})(\d{2})(\d{2})/ ) 
+        my $date = join '-', ( $_->when =~ /^(\d{4})(\d{2})(\d{2})/ )
             if $_->type eq 'date';
         my $new_id = ''.mdb->seq('calendar_window');
-        mdb->calendar_window->insert({  
+        mdb->calendar_window->insert({
             id         => $new_id,
             start_time => $to_time->( $_->{start} ),
             end_time   => $to_time->( $_->{end} ),
@@ -396,7 +396,7 @@ sub db_merge_slots {
 =head2 build_job_window
 
 Called by the New Job component. Merges all slots
-that apply to a list of NS. 
+that apply to a list of NS.
 
 =cut
 sub build_job_window : Path('/job/build_job_window') {
@@ -406,11 +406,11 @@ sub build_job_window : Path('/job/build_job_window') {
     try {
         my $date = $p->{job_date};
         my $date_format = $p->{date_format} or _fail "Missing date format";
-        
+
         my $bl = $p->{bl};
         my $contents = _decode_json $p->{job_contents};
         #$contents = $c->model('Jobs')->container_expand( $contents );
-        my $month_days = 31;	
+        my $month_days = 31;
 
         # get calendar range list
         $date =  $date
@@ -428,9 +428,9 @@ sub build_job_window : Path('/job/build_job_window') {
             my $mid = $item->{mid};
             my $ci = _ci( $mid );
             # recurse into ci relations up to depth
-            my @related; 
-            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;   
-            my @projects = $ci->children( depth => 1, where => { collection => 'project'}, docs_only => 1 ) ;   
+            my @related;
+            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;
+            my @projects = $ci->children( depth => 1, where => { collection => 'project'}, docs_only => 1 ) ;
             push @all_projects, @projects;
             push @related, @projects;
 
@@ -446,10 +446,10 @@ sub build_job_window : Path('/job/build_job_window') {
         @ns = _unique @ns;
 
         my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
-        
+
         # build statistics
         my %stats;
-        my $prj_list = mdb->in( map { $_->{mid} } @all_projects ); 
+        my $prj_list = mdb->in( map { $_->{mid} } @all_projects );
         # TODO loop by project here so we get 1000 from one, 1000 from another...
         my $rs = ci->job->find({ projects=>$prj_list, bl=>$bl })->sort({ starttime=>-1 })->limit(1000);
         while( my $job = $rs->next ) {
@@ -466,7 +466,7 @@ sub build_job_window : Path('/job/build_job_window') {
                 $job->{status} eq 'FINISHED' ? $stats{$k}{ok}++ : $stats{$k}{ko}++;
             } @prjs;
         }
-        
+
         my @res; my @durs; my $succ=1;
         my $any_succ = 0;
         for my $pb ( keys %stats ) {
@@ -478,20 +478,20 @@ sub build_job_window : Path('/job/build_job_window') {
             $any_succ = 1 if $ok || $ko;
             #map { _warn("DUR=========================$_"); $durs+=$_ } @dur;
         }
-        my $avg = '?'; 
-        if( @durs ) { 
+        my $avg = '?';
+        if( @durs ) {
             $avg = Util->to_dur(List::Util::sum(@durs));
         }
-        
+
         #my $cis2 = Util->_clone( \%cis );
         #Util->_unbless( $cis2 );
-         
+
         $c->stash->{json} = {
-            success=>\1, 
-            data=>$hour_store, 
+            success=>\1,
+            data=>$hour_store,
             cis=>\%cis,
-            cals=>\@rel_cals, 
-            stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } 
+            cals=>\@rel_cals,
+            stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' }
         };
     } catch {
         my $error = shift;
@@ -516,9 +516,9 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         my $date = $p->{job_date};
         my $date_format = $p->{date_format};
         _fail "Missing date format" if length $date && ! $date_format ;
-        
+
         my $bl = $p->{bl};
-        my $month_days = 31;	
+        my $month_days = 31;
 
         # get calendar range list
         $date =  $date
@@ -544,9 +544,9 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
 sub check_dates {
     my ($self, $date, $bl, @ns) = @_;
     my @rel_cals = mdb->calendar->find(
-        { 
-            ns=> { '$in' => [ @ns, '/', 'Global', undef ] }, 
-            bl=> { '$in' => [ $bl, '*'] } 
+        {
+            ns=> { '$in' => [ @ns, '/', 'Global', undef ] },
+            bl=> { '$in' => [ $bl, '*'] }
         })->all;
 
     my @ns_cals = map { $_->{ns} } @rel_cals;
@@ -592,7 +592,7 @@ sub init_date {
 =head2 db_to_slots ( id_cal, %opts )
 
 Convert a given id_cal Calendar from the bali_calendar_window
-table into a Calendar::Slots structure. 
+table into a Calendar::Slots structure.
 
 Options:
 
@@ -601,9 +601,9 @@ Options:
 =cut
 sub db_to_slots {
     my ($self, $id_cal, %opts ) = @_;
-    my @cals = mdb->joins( 
+    my @cals = mdb->joins(
             calendar => { id=>$id_cal },
-            id => id_cal => 
+            id => id_cal =>
             calendar_window => {} );
     my $slots = Calendar::Slots->new();
     # create base (undefined) calendar
@@ -653,7 +653,7 @@ sub merge_calendars {
 
     my $bl = $p{bl};
     my $now = Class::Date->new( _dt() );
-    my $date = $p{date} || $now; 
+    my $date = $p{date} || $now;
     $date = Class::Date->new( $date ) if ref $date ne 'Class::Date' ;
 
     # if today, start hours at now
@@ -664,7 +664,7 @@ sub merge_calendars {
     $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
     push $where->{bl} , $p{bl} if $p{bl};
     $where->{bl} = mdb->in( $where->{bl} );
-    
+
     my @cals = mdb->calendar->find($where)
         ->sort({ seq=>1 })
         ->sort({ day => 1 })
@@ -673,9 +673,9 @@ sub merge_calendars {
     my @slots_cal;
     for my $cal (@cals) {
         my $id_cal = $cal->{id};
-        my @win_cals = mdb->joins( 
+        my @win_cals = mdb->joins(
             calendar => { id=>$id_cal },
-            id => id_cal => 
+            id => id_cal =>
             calendar_window => {} );
 
         my $slots = Calendar::Slots->new();
@@ -719,10 +719,10 @@ sub merge_calendars {
        for( $s->start .. $s->end-1 ) {
          my $time = sprintf('%04d',$_);
          next if $start_hour && $time < $start_hour;  # don't show today time if it's passed already
-         next if substr( $time, 2,2) > 59 ; # skip if >= 60 
+         next if substr( $time, 2,2) > 59 ; # skip if >= 60
          next if $time == 2400;  # no 24:00 in returned list
          # now choose which slot to use for this minute
-         #   giving higher precedence to the ASCII value of TYPE letter 
+         #   giving higher precedence to the ASCII value of TYPE letter
          #     X > U > N - using ord for ascii values
          $s->data->{seq} //= $DEFAULT_SEQ;
          if( ! exists $list{$time}
@@ -788,5 +788,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
-

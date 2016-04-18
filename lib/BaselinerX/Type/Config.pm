@@ -7,10 +7,10 @@ with 'Baseliner::Role::Registrable';
 
 register_class 'config' => __PACKAGE__;
 
-has name 	=> ( is=> 'rw', isa=> 'Str' );
-has desc 	=> ( is=> 'rw', isa=> 'Str' );
+has name     => ( is=> 'rw', isa=> 'Str' );
+has desc     => ( is=> 'rw', isa=> 'Str' );
 has metadata => ( is=> 'rw', isa=> 'ArrayRef' );  ##TODO this shall be a Moose subtype someday, an array of ConfigColumn
-has formfu 	=> ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
+has formfu     => ( is=> 'rw', isa=> 'ArrayRef', default=> sub { [] } );
 has 'plugin' => (is=>'rw', isa=>'Str', default=>'');
 has 'id' => (is=>'rw', isa=>'Str', default=>'');
 has 'preference' => (is=>'rw', isa=>'Bool', default=>0 );
@@ -23,7 +23,7 @@ sub load_from_ns {
 # Setup the Config Infraestructure Globals
 sub setup_inf {
     my $c=shift;
-    
+
 }
 
 sub column_order {
@@ -36,12 +36,12 @@ sub column_order {
 # returns a subset limited to a set of keys
 sub metadata_filter {
     my ($self, @keys) = @_;
-    my %key; 
+    my %key;
     @key{ @keys } = ();
     my @metadata;
     foreach my $mk ( @{ $self->metadata || [] } ) {
        my $mk_key = join '.', $self->key, $mk->{id};
-       push @metadata, $mk if( exists $key{$mk_key} ); 
+       push @metadata, $mk if( exists $key{$mk_key} );
     }
     return @metadata;
 }
@@ -59,7 +59,7 @@ sub best_match {
         else {
             if( $ns ne '/' ) {
                 my @ns2 = split /\//, $ns;
-                $ns = join "/", @ns2[ 0..(scalar(@ns2)-2) ]; 
+                $ns = join "/", @ns2[ 0..(scalar(@ns2)-2) ];
                 #Para evitar un bucle infinito...
                 $ns = "/" if($ns eq "");
                 return best_match( $ns, '*', @values );
@@ -140,7 +140,7 @@ sub factory {
     my $long_key = $p{long_key};
     my $default_data = $p{default_data} || {};
     for( @{$self->metadata} ) {
-        next if defined $data->{ $_->{id} }; 
+        next if defined $data->{ $_->{id} };
         ## load missing from table
             my $rs = mdb->config->find({ key => $self->key.'.'.$_->{id} }) or die $!;
             my @values;
@@ -176,7 +176,7 @@ sub data {
     my $data = $p{data} || {};
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} };  ## data=> params have priority
-        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} }) or die $!;			
+        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} }) or die $!;
         while( my $r = $rs->next ) {
             $data->{ $_->{id} } = $r->value;
         }
@@ -194,29 +194,29 @@ sub factory_from_metadata{
     $p{ns} ||= '/';
     $p{bl} ||= '*';
     my $data = $p{data} || {};
-    
+
     for( @{$self->metadata} ) {
         next unless defined $data->{ $_->{id} };
         if($_->{id} eq 'ns'){
             $p{ns} = $data->{ $_->{id} };
         }elsif($_->{id} eq 'bl'){
-            $p{bl} = $data->{ $_->{id} };			
+            $p{bl} = $data->{ $_->{id} };
         }
-    }		
-    
+    }
+
     $p{ns} ||= '/';
     $p{bl} ||= '*';
 
     for( @{$self->metadata} ) {
-        next if defined $data->{ $_->{id} }; 
+        next if defined $data->{ $_->{id} };
         ## load missing from table
-        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){	
+        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){
             my $rs = mdb->config->find({ key => $self->key.'.'.$_->{id} }) or die $!;
             my @values;
             while( my $r = $rs->next ) {
                 push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
                 if( ($r->bl eq $p{bl}) ) {
-                    $data->{ $_->{id} } = $r->value;	            	
+                    $data->{ $_->{id} } = $r->value;
                 }
             }
             if( my $value = best_match( $p{ns}, $p{bl}, @values ) ) {
@@ -226,7 +226,7 @@ sub factory_from_metadata{
         $data->{ $_->{id} } = $data->{ $_->{id} }->() if ref $data->{$_->{id}} eq 'CODE';
     }
     $data = $self->getopt( $data ) if $p{getopt};
-    return $data;		
+    return $data;
 }
 
 =head2 store
@@ -234,7 +234,7 @@ sub factory_from_metadata{
 Parameters:
     long_key=>1  - takes long keys like config.something.field instead of just "field"
 
-=cut 
+=cut
 sub store {
     my ($self, $c, %p ) = @_;
     my $data = $p{data};
@@ -250,7 +250,7 @@ sub store {
                     ns      => $p{ns},
                     bl      => $p{bl},
                 },
-                {   
+                {
                     key     => $key,
                     ns      => $p{ns},
                     bl      => $p{bl},
@@ -269,20 +269,20 @@ sub store {
 sub store_from_metadata{
     my($self,$c,%p) = @_;
     my $data = $p{data};
-    
+
     for( @{$self->metadata} ) {
         next unless defined $data->{ $_->{id} };
         if($_->{id} eq 'ns'){
             $p{ns} = $data->{ $_->{id} };
         }elsif($_->{id} eq 'bl'){
-            $p{bl} = $data->{ $_->{id} };			
+            $p{bl} = $data->{ $_->{id} };
         }
     }
-    
-    return store($self,$c,%p);		
+
+    return store($self,$c,%p);
 }
 
-sub grid_columns { 
+sub grid_columns {
     my $self=shift;
     my @cols;
     ## {header: "Modificado", width:80, dataIndex: 'modificado', sortable: true, hidden: true },
@@ -299,7 +299,7 @@ sub grid_columns {
     return \@cols;
 }
 
-sub grid_fields { 
+sub grid_fields {
     my $self=shift;
     my @data;
     for( @{$self->metadata || [] } ) {
@@ -313,7 +313,7 @@ sub get_keys {
     my $self=shift;
     my $config = $self->key;
     my @keys;
-    push @keys, "$config.$_->{id}" for( @{$self->metadata} ); 
+    push @keys, "$config.$_->{id}" for( @{$self->metadata} );
     return @keys;
 }
 
@@ -340,7 +340,7 @@ sub rows {
         my $short = $self->short_from_key( $r->key );
         $data->{$short} = $r->value;
         push @packed_data, $r->value;
-    }	
+    }
     push @rows, $data if( $data );
     ## now order by
     if( $p{sort_field} ) {
@@ -349,7 +349,7 @@ sub rows {
         for(@rows) {
             my $val = $_->{ $p{sort_field} };
             next if( $p{query} && ( $_->{packed_data} !~/$p{query}/ ) );
-            $r{ $val . "-$i" } = $_;	
+            $r{ $val . "-$i" } = $_;
             $i++;
         }
         my @sorted = sort keys %r;
@@ -365,11 +365,11 @@ sub load_inf {  #TODO deprecated
     while( my $r = $rs->next  ) {
         (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
         $data->{$var} = $r->value;
-    }	
+    }
     return $data;
 }
 
-# Loads key aliases straight into the stash for fast/lazy access 
+# Loads key aliases straight into the stash for fast/lazy access
 sub load_stash {
     my $c = shift;
     my @config_list = ref $_[0] ? @{ $_[0] } : @_;
@@ -394,7 +394,7 @@ sub load_stash {
 sub split_key {
     my ($self, $key ) = @_;
     return { config=>$key, id=>$key } if $key !~ /\./;
-    my ( $domain, $id ) = ( $key =~ m/^(.*)\.(.*?)$/ ); 
+    my ( $domain, $id ) = ( $key =~ m/^(.*)\.(.*?)$/ );
     return { config=>$domain, id=>$id };
 }
 
@@ -458,9 +458,9 @@ sub config_store {
     my $self = shift;
     my $config_name = shift;
     my $config = $self->ConfigSets->{ $config_name };
-    my %data = map { 
+    my %data = map {
                 my $opt = $_->{opt} || $_->{id};
-                $opt => \$_->{value} 
+                $opt => \$_->{value}
             } @{$config->metadata};
     return \%data;
 }
@@ -471,7 +471,7 @@ sub getRowValueById {
     $ns ||= '/';
     $bl ||= '*';
     my $rs = mdb->config->find({ ns=>$ns, bl=>$bl, key=>$self->key.'.'.$id })
-        or die $!;			
+        or die $!;
     while( my $r = $rs->next ) {
         return $r->value
     }

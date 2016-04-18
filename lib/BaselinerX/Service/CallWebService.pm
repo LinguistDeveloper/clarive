@@ -12,7 +12,7 @@ register 'service.web.request' => {
     handler => \&web_request,
     job_service  => 1,
     icon => '/static/images/icons/webservice.png',
-    form => '/forms/web_request.js', 
+    form => '/forms/web_request.js',
 };
 
 sub web_request {
@@ -21,7 +21,7 @@ sub web_request {
     require LWP::UserAgent;
     require HTTP::Request;
     require Encode;
-    
+
     my $method = $config->{method} // 'GET';
     my $url    = $config->{url};
     my $args   = $config->{args};
@@ -58,15 +58,15 @@ sub web_request {
         $ua->default_header( $k => $headers->{$k} );
     }
     $ua->env_proxy;
-    
+
     if( length $body ) {
-        $request->content( $body ); 
+        $request->content( $body );
     }
 
     my $response = $ua->request( $request );
 
     $c->stash->{_ws_body} = $response->decoded_content;
-    
+
     if( ! $response->is_success ) {
         _error( $response->decoded_content );
         _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args);
@@ -76,7 +76,7 @@ sub web_request {
         #Encode::from_to($content, $encoding, 'utf-8' ) if $content;
         #}
     return { response=>$response, content=>$content };
-} 
+}
 
 
 no Moose;

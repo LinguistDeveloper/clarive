@@ -10,12 +10,12 @@ sub AUTOLOAD {
     my $name = $AUTOLOAD;
     my ($method) = reverse( split(/::/, $name));
     state $model_loaded = Baseliner->can('model');
-    return $model_loaded 
-        ? Baseliner->model($method) 
+    return $model_loaded
+        ? Baseliner->model($method)
         : do {
          my $cn = 'Baseliner::Model::'.$method;
          eval "require $cn";
-         $cn 
+         $cn
      };
 }
 

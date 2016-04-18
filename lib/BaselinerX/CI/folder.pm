@@ -2,7 +2,7 @@
 
 folder is a generic ci folder stored in Clarive's db.
 
-Usually used to store CIs, may store any ci really. 
+Usually used to store CIs, may store any ci really.
 
 =cut
 package BaselinerX::CI::folder;
@@ -15,8 +15,8 @@ sub icon { '/static/images/icons/catalogue.png' }
 has_ci 'parent_folder';
 has_cis 'cis';
 
-sub rel_type { 
-    { 
+sub rel_type {
+    {
         parent_folder  => [ to_mid => 'folder_folder'],
         cis            => [ to_mid => 'folder_ci'],
     },

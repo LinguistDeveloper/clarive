@@ -1,6 +1,6 @@
 =head1 file
 
-file is a local file. 
+file is a local file.
 
 =cut
 package BaselinerX::CI::file;
@@ -24,7 +24,7 @@ service 'view_source' => 'View Source' => sub {
 sub slurp {
     my ($self)=@_;
     return unless ! $self->is_dir;
-    return wantarray ? @{ $self->_lines } 
+    return wantarray ? @{ $self->_lines }
         : $self->{_body} // ( $self->{_body}= join( '', @{ $self->_lines } ) );  # join '' is expensive, so we cache
 }
 
@@ -41,4 +41,3 @@ sub source {
 
 
 1;
-

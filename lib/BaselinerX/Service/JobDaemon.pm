@@ -16,7 +16,7 @@ has 'proc_list' => ( is=>'rw', isa=>'ArrayRef', default=>sub { [] } );
 
 register 'service.job.daemon' => {
     name    => 'Watch for new jobs',
-    icon => '/static/images/icons/daemon.gif', 
+    icon => '/static/images/icons/daemon.gif',
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&job_daemon,
@@ -53,7 +53,7 @@ sub job_daemon {
     my $startup = { cwd=>Cwd::cwd, proc=>$^X, script=>$0, argv=>[ @ARGV ] };
     # enable signal handler before sleep
     $SIG{USR1} = sub { _log "Exitting job daemon via restart signal"; $EXIT_NOW=1 };
-    $SIG{USR2} = sub { _log "Restarting job daemon via restart signal..."; 
+    $SIG{USR2} = sub { _log "Restarting job daemon via restart signal...";
         chdir $startup->{cwd};
         _log "Changed dir to $startup->{cwd}";
         my $cmd;
@@ -73,18 +73,18 @@ sub job_daemon {
         my $now = mdb->now;
 
         # Immediate chain (PRE, POST or now=1 )
-        my @query_roll = ( 
-            {   
-                '$or' => [ 
-                    { step => 'PRE', status=>'READY' }, 
-                    { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
-                    { step => mdb->in('PRE','RUN','POST'), status=>'REJECTED' }, 
-                    { now=>1 }, 
-                ], 
-                
+        my @query_roll = (
+            {
+                '$or' => [
+                    { step => 'PRE', status=>'READY' },
+                    { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') },
+                    { step => mdb->in('PRE','RUN','POST'), status=>'REJECTED' },
+                    { now=>1 },
+                ],
+
             },
         # Scheduled chain (RUN and now<>0 )
-            { 
+            {
                 schedtime        => { '$lte', "$now" },
                 maxstarttime     => { '$gt',  "$now" },
                 status           => 'READY',
@@ -106,7 +106,7 @@ sub job_daemon {
                     my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
                     if( $job->status ne $job_doc->{status} ) {
                         _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
-                        if( $discrepancies{ $job->mid } > 10 ) {  
+                        if( $discrepancies{ $job->mid } > 10 ) {
                             #$job->save; # fixes the discrepancy
                             delete $discrepancies{ $job->mid };
                         } else {
@@ -116,7 +116,7 @@ sub job_daemon {
                         _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
                         # set job pid to 0 to avoid checking until it sets it's own pid
                         $job->update( status=>'RUNNING', pid=>0, host => $hostname );
-                        
+
                         # get proc mode from job bl
                         my $mode = $^O eq 'Win32'
                             ? 'spawn'
@@ -126,7 +126,7 @@ sub job_daemon {
                         $loghome ||= $ENV{BASELINER_HOME} . './logs';
                         _mkpath $loghome;
                         my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.', $job->name . '.log' );
-                        
+
                         # launch the job proc
                         if( $mode eq 'spawn' ) {
                             _log "Spawning job (mode=$mode)";
@@ -153,7 +153,7 @@ sub job_daemon {
         $self->check_job_expired($config);
         $self->check_cancelled($config);
         last if $EXIT_NOW;
-        sleep $freq;    
+        sleep $freq;
         last if $EXIT_NOW;
     }
     _log "Job daemon stopped.";
@@ -201,7 +201,7 @@ sub runner_fork {
         if ($pid = Fork) { exit 0; }  # refork and exit parent (XXX necessary?)
         if( $p{mode} eq 'detach' ) {
             _log "Detaching job...";
-            my $sid = POSIX::setsid; 
+            my $sid = POSIX::setsid;
             $sid > 0 or _throw "Could not detach job $p{jobid}: $!";
             _log "Detached with session id $sid";
         }
@@ -239,7 +239,7 @@ sub precompile_rule {
     return unless length $id_rule;
     require Baseliner::CompiledRule;
     my $r = Baseliner::CompiledRule->new( id_rule=>$id_rule );
-    try { 
+    try {
         $r->compile;
         _log _loc "Rule %1 precompile status=%2", $r->rule_name, $r->compile_status;
     } catch {
@@ -252,8 +252,8 @@ sub precompile_rule {
 sub check_job_expired {
     my ($self, $config)=@_;
     #_log( "Checking for expired jobs..." );
-    my $rs = ci->job->find({ 
-            maxstarttime => { '$lt' => _now }, 
+    my $rs = ci->job->find({
+            maxstarttime => { '$lt' => _now },
             status => mdb->in('READY','APPROVAL'),
     });
     while( my $doc = $rs->next ) {
@@ -265,8 +265,8 @@ sub check_job_expired {
     }
 
     #_log( "Checking for expired jobs..." );
-    $rs = ci->job->find({ 
-            maxapprovaltime => { '$lt' => _now }, 
+    $rs = ci->job->find({
+            maxapprovaltime => { '$lt' => _now },
             status => mdb->in('APPROVAL'),
     });
     while( my $doc = $rs->next ) {
@@ -276,7 +276,7 @@ sub check_job_expired {
         $ci->endtime( _now );
         $ci->save;
     }
-    # some jobs are running with pid, and some without, 
+    # some jobs are running with pid, and some without,
     #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
     my @running = ('RUNNING','PAUSED','TRAPPED');
     $rs = ci->job->find({ status => mdb->in(@running) });
@@ -297,17 +297,17 @@ sub check_job_expired {
                     next unless $ci->pid;
                 }
                 next if pexists($ci->pid);
-                my $msg = _loc("Detected killed job %1 (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
-                _warn( $msg ); 
+                my $msg = _loc("Detected killed job %1 (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid );
+                _warn( $msg );
                 # TODO consider using $ci->update
-                $ci->logger->error( $msg ); 
+                $ci->logger->error( $msg );
                 $ci->status('KILLED');
                 $ci->endtime( _now );
                 $ci->save;
             } else {
                 #if( $^O eq 'MSWin32' ) {
                 #    use Win32::Process;
-                #    my $win_proc; 
+                #    my $win_proc;
                 #    if( Win32::Process::Open( $win_proc, $row->pid ) ) {
                 #        $win_proc->Kill;
                 #    }
@@ -331,8 +331,8 @@ sub check_job_expired {
 sub check_cancelled {
     my ($self, $config)=@_;
     my $hostname = $config->{id};
-    my $rs = ci->job->find({ 
-            status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ] 
+    my $rs = ci->job->find({
+            status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ]
     });
     while( my $doc = $rs->next ) {
         _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $doc->{name}, $doc->{mid}, $doc->{pid}, $doc->{host}, $hostname;
@@ -345,15 +345,15 @@ sub check_cancelled {
                     my $msg;
                     if( kill $sig => $job->pid ) {
                         # recheck
-                        $msg = _loc("Killed issued to job %1 process due to CANCEL status (mid %2 status %3, pid %4, host %5)", 
-                            $job->name, $job->mid, $job->status, $job->pid, $hostname ); 
-                        _warn( $msg ); 
+                        $msg = _loc("Killed issued to job %1 process due to CANCEL status (mid %2 status %3, pid %4, host %5)",
+                            $job->name, $job->mid, $job->status, $job->pid, $hostname );
+                        _warn( $msg );
                     } else {
-                        $msg = _loc("Could not kill Job %1 process due to CANCEL: pid not found (mid %2 status %3, pid %4, host %5)", 
-                                $job->name, $job->mid, $job->status, $job->pid, $hostname ); 
-                        _warn( $msg ); 
+                        $msg = _loc("Could not kill Job %1 process due to CANCEL: pid not found (mid %2 status %3, pid %4, host %5)",
+                                $job->name, $job->mid, $job->status, $job->pid, $hostname );
+                        _warn( $msg );
                     }
-                    $job->logger->error( $msg ); 
+                    $job->logger->error( $msg );
                     $job->status('KILLED');
                     $job->endtime( _now );
                     unlink $job->pid_file;
@@ -380,4 +380,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

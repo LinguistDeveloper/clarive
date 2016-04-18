@@ -20,7 +20,7 @@ around BUILDARGS => sub {
     if( ! exists $p{path} && ! exists $p{name} ) {
         if(  $p{ fullpath } =~ /^(.*)\/(.*?)$/ ) {
             ( $p{path}, $p{name} ) = ( $1, $2 );
-        } 
+        }
         else {
             ( $p{path}, $p{name} ) = ( '', $p{fullpath} );
         }
@@ -33,7 +33,7 @@ around BUILDARGS => sub {
 
 sub source {
     my ($self, %p) = @_;
-    my $sha = $p{version} // $p{sha} // $self->sha; 
+    my $sha = $p{version} // $p{sha} // $self->sha;
     my $repo = $p{repo} // $self->repo;
     my $git = $repo->git;
     local $Baseliner::logger = undef;
@@ -43,23 +43,23 @@ sub source {
 
 sub checkout {
     my ($self, %p) = @_;
-    
+
     my $flat = $p{flat};
     my $path = $p{path};
     my $repo = $p{repo} // $self->repo // _fail _loc 'Missing parameter repo';
     my $dir = $p{dir} // _fail 'Missing dir parameter' unless $path;
-    
+
     my $mask = $self->mask;
-   
-    $path //= File::Spec->catfile( 
-        "$dir", 
-        $flat ? _file( $self->path )->basename : $self->path 
+
+    $path //= File::Spec->catfile(
+        "$dir",
+        $flat ? _file( $self->path )->basename : $self->path
     );
     my $dir_for_file = _file( $path )->dir;
     $dir_for_file->mkpath;
-    _fail _loc "Could not find or create dir %1 for file %2", $dir_for_file, $self->path 
+    _fail _loc "Could not find or create dir %1 for file %2", $dir_for_file, $self->path
         unless -e $dir_for_file;
-        
+
     if( my $blob = $self->blob ) {
         my $git = $repo->git;
         $git->exec( 'cat-file', '-p',  "'$blob'", "> '$path'", { cmd_unquoted=>1, no_chomp=>1, %p } );
@@ -69,11 +69,11 @@ sub checkout {
     } else {
         unlink "$path"; # delete local file, may exist due to a previous baseline checkout, so unlink is due
     }
-    #open my $ff, '>', $path 
+    #open my $ff, '>', $path
     #or _fail _loc "Could not checkout to file '%1': %2", $path, $!;
     #binmode $ff;
     #print $ff $self->source( no_encode=>1, repo=>$repo );
-    #close $ff; 
+    #close $ff;
 }
 
 1;

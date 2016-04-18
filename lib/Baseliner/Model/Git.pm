@@ -56,7 +56,7 @@ sub repositories_from_dir {
         _log "DIR $_";
         Girl::Repo->new( path => "$_" );
     } grep {
-        $_->is_dir 
+        $_->is_dir
     } REPO_HOME->children;
 }
 
@@ -89,7 +89,7 @@ sub tags_arr {
     my $repo_path = $repo->path;
     my $git  = Git::Wrapper->new( $repo_path );
     # get the next bl in the cycle
-    #   TODO could be more then one next, but it requires a loop and a separation of destinations 
+    #   TODO could be more then one next, but it requires a loop and a separation of destinations
     #      on the return list (whereto)
     my $lc = Baseliner->model('LCModel')->lc;
     $bl ||= $lc->bl( $state_name );
@@ -112,7 +112,7 @@ sub tags_arr {
     _log "TAGS = " . _dump \@tags;
     _log "TAGS TO= " . _dump \%tags_to;
     my $parent = 0; # used to detect tags yet to be merged
-    @tags = 
+    @tags =
         grep { defined }
         map {
             my $name = $_;
@@ -125,7 +125,7 @@ sub tags_arr {
             my $status = $trunk ? 'trunk' : !$parent ? 'pending' : 'merged';
             my $promotable = length $bl_to ? $trunk : 0;
             my $demotable = length $bl_from ? $trunk : 0;
-            +{ name => $name, msg => "$msg", 
+            +{ name => $name, msg => "$msg",
                     bl_to => $bl_to,
                     bl_from => $bl_from,
                     promotable => $promotable, demotable => $demotable, status => $status }
@@ -134,7 +134,7 @@ sub tags_arr {
         map {
             my $x = $_;
             $x =~ s{\(|\)}{}g;
-            my @t = split /,/, $x; 
+            my @t = split /,/, $x;
             @t = map { s/^\s+//g; $_ } @t;
             @t;
         }
@@ -175,7 +175,7 @@ sub old_tags_for_bl {
     my $bl_commit = $repo->git->exec( 'rev-parse', $bl );
     _log "GIT getting tags that --contains $bl_commit (rev-parse of $bl)";
     my @tags = $repo->git->exec( qw/tag -l -n --contains/, $bl_commit );
-    @tags = 
+    @tags =
         grep { $_->{name} !~ /^(DESA|TEST|PREP|PROD|PREP|DEV|QA)/ }
         map {
             my ($name, $msg ) = m/^(\S+)\s+(.+)$/;
@@ -207,7 +207,7 @@ sub tags_not_in_bl {
     my @bl_tags;
     for my $bl ( qw/TEST PREP PROD/ ) {
         try {
-           push @bl_tags, map { $_->{name} } $self->tags_arr( %args, bl=>$bl );  
+           push @bl_tags, map { $_->{name} } $self->tags_arr( %args, bl=>$bl );
         } catch {};
     }
     #@bl_tags = _unique @bl_tags;
@@ -291,7 +291,7 @@ sub diff {
     return wantarray ? @diff : \@diff;
 }
 
-=pod 
+=pod
 
 sub old_tags_not_in_bl {
     my ($self, %args) = @_;

@@ -4,11 +4,9 @@ use warnings;
 use Test::More;
 use Test::MonkeyMock;
 
-use lib 't/lib';
-
 use TestEnv;
-use TestUtils qw(mock_time);
 BEGIN { TestEnv->setup }
+use TestUtils qw(mock_time);
 
 use_ok 'Baseliner::Model::SchedulerCalendar';
 

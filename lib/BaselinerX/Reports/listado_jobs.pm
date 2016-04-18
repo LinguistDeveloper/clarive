@@ -13,9 +13,9 @@ register 'config.reports.listado_jobs' => {
 };
 
 register 'report.clarive.jobs' => {
-    name => 'Job List', 
+    name => 'Job List',
     data => { },
-    form => '/reports/listado_jobs.js', 
+    form => '/reports/listado_jobs.js',
     security_handler => sub{
         my ($self,$username) =@_;
         my $config = config_get 'config.reports.listado_jobs';
@@ -52,7 +52,7 @@ register 'report.clarive.jobs' => {
                     {id => 'ejecuciones', text => _loc('Executions'), meta_type => 'number'}
                 ],
             },
-            report_name => _loc('Job List'), 
+            report_name => _loc('Job List'),
             report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
@@ -81,7 +81,7 @@ register 'report.clarive.jobs' => {
           $where->{starttime} = {
               '$ne'  => undef,
               '$nin' => [ '' ],
-          };              
+          };
           if ( $p->{fecha_inicio_hasta} ) {
               $where->{starttime}->{'$lte'} = $p->{fecha_inicio_hasta};
           }
@@ -217,7 +217,7 @@ register 'report.clarive.jobs' => {
         if ($sort){
             my $field = (keys $sort)[0];
             my $dir = $p->{dir};
-            @rows = sort { 
+            @rows = sort {
                 $dir eq '1'? lc($a->{$field}) cmp ($b->{$field}) : lc($b->{$field}) cmp ($a->{$field})
             } @rows;
         }

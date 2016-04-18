@@ -11,7 +11,7 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
         my $ftp = Net::FTP->new( $self->resource->host )
             or _fail _loc "FTP: Could not connect to host %1", $self->resource->host;
         my ( $user, $password );
-        if( defined $self->resource->user && defined $self->resource->password ) { 
+        if( defined $self->resource->user && defined $self->resource->password ) {
             ( $user, $password )  = ( $self->resource->user, $self->resource->password );
         } else {
             require Net::Netrc;
@@ -34,7 +34,7 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
     }
 );
 
-sub error { 
+sub error {
     return shift->ftp->message;
 }
 
@@ -96,28 +96,28 @@ sub dir {
 
 sub cd {
     my ($self, %p) = @_;
-    
+
     $self->ftp->cwd( "$p{remote}" );
     $self->ftp->message;
 }
 
 sub delete {
     my ($self, %p) = @_;
-    
+
     $self->ftp->delete( "$p{remote}" );
     $self->ftp->message;
 }
 
 sub rename {
     my ($self, %p) = @_;
-    
+
     $self->ftp->rename( "$p{old}", "$p{new}" );
     $self->ftp->message;
 }
 
 sub close {
     my ($self, %p) = @_;
-    
+
     $self->ftp->close();
     $self->ftp->message;
 }
@@ -139,4 +139,3 @@ sub _build_uri {
 }
 
 1;
-

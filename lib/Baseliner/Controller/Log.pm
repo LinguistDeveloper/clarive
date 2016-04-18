@@ -61,9 +61,9 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
     my $job = ci->job->find_one({ mid=>$mid });
     if( $job ) {
         my $stop_now = $job->{status} ne 'RUNNING' ? \1 : \0;
-        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>$stop_now };  
+        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>$stop_now };
     } else {
-        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>\1 };  
+        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>\1 };
     }
     $c->forward('View::JSON');
 }
@@ -74,7 +74,7 @@ sub log_rows : Private {
     my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
     $limit||=50;
     ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
-    $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1; 
+    $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1;
     # include direction in sort, so that both fields follow the same sort
     my $sort_ix = Tie::IxHash->new( $sort ? ( $sort => $dir ) : (), (defined($sort) && $sort ne 'id') || !defined($sort) ? ( id => $dir ): () );
     $filter = decode_json( $filter ) if $filter;
@@ -87,19 +87,19 @@ sub log_rows : Private {
 
     my $where = $mid ? { mid=>"$mid" } : {};
 
-    $where = {};	
+    $where = {};
     if( $query ) {
         #$where->{'lower(to_char(ts)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
         $where = mdb->query_build( query=>$query, fields=>[qw(
-                ts          
+                ts
                 t
-                text		
-                ns			
-                provider	
-                data_name   
-                service_key	
-                step		
-                )]);		
+                text
+                ns
+                provider
+                data_name
+                service_key
+                step
+                )]);
     } else {
         my $job_exec;
         if( exists $p->{job_exec} ) {
@@ -110,14 +110,14 @@ sub log_rows : Private {
         $where->{'exec'} = 0+$job_exec;
         # faster: $from->{join} = [ 'jobexec' ];
     }
-    
+
     if($mid){
         $where->{mid} = $mid;
     }
     $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter )
         if ref($filter) eq 'HASH';
     $p->{levels} and $where->{lev} = mdb->in( _array $p->{levels} );
-    
+
     #Viene por la parte de dashboard_log
     if($service_name){
         $where->{service_key} = $service_name;
@@ -126,10 +126,10 @@ sub log_rows : Private {
 
     my $rs = mdb->job_log->find( $where );
     $rs->sort( $sort_ix );
-    
+
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
-    
+
     my $qre = qr/\.\w+$/;
     while( my $doc = $rs->next ) {
         my $more = $doc->{more};
@@ -141,7 +141,7 @@ sub log_rows : Private {
         }
 
         my $data_len = $doc->{data_length} || 0;
-        my $data_name = $doc->{data_name} || ''; 
+        my $data_name = $doc->{data_name} || '';
         my $file = $data_name =~ $qre
             ? $data_name
             : ( $data_len > ( 4 * 1024 ) )
@@ -191,7 +191,7 @@ sub log_html : Path('/job/log/html') {
     }
     # get data
     if( defined $p->{mid} ) {
-        # log_rows uses req->parameters ($p) 
+        # log_rows uses req->parameters ($p)
         my ($job, @rows ) = $self->log_rows( $c, $p->{mid} );
         # prepare template
         $c->stash->{rows} = \@rows;
@@ -215,7 +215,7 @@ sub logs_json : Path('/job/log/json') {
         data       => \@rows,
         job        => ref $job ? $job : {},
         job_key  => $job_key,
-     };	
+     };
     # CORE::warn Dump $c->stash->{json};
     $c->forward('View::JSON');
 }
@@ -430,13 +430,13 @@ sub log_data : Path('/job/log/data') {
 sub log_elements : Path('/job/log/elements') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $job = ci->new( $p->{mid} ); 
+    my $job = ci->new( $p->{mid} );
     my $job_exec = ref $job ? $job->exec : 1;
     my @items = _array ($job->stash->{items});
     my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
     # TODO send this to a comp with a pretty table
-    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );	
+    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );
 }
 
 sub log_delete : Path('/job/log/delete') {
@@ -497,14 +497,14 @@ sub upload_file : Path('/job/log/upload_file') {
     my $filename = $p->{qqfile};
     my $level    = $p->{level} ||= 'info';
     my $text     = $p->{text};
-    
+
     my $f = _file( $c->req->body );
     _log "Uploading to log " . $filename;
     try {
         my $job = ci->new( $mid );
-        my $msg = length $text  ? $text : _loc( "User *%1* has uploaded file '%2'", $c->username, $filename);  
+        my $msg = length $text  ? $text : _loc( "User *%1* has uploaded file '%2'", $c->username, $filename);
         $job->logger->$level( $msg, data=>''.$f->slurp, data_name=>"$filename", more=>'file', username=>$c->username );
-        $c->stash->{ json } = { success => \1, msg => _loc( 'File saved to job %1 log: %2', $job->name, $filename ) } ;            
+        $c->stash->{ json } = { success => \1, msg => _loc( 'File saved to job %1 log: %2', $job->name, $filename ) } ;
     } catch {
         my $err = shift;
         _error "Error uploading file to job log: " . $err;

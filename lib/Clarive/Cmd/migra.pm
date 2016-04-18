@@ -237,7 +237,7 @@ sub run_fix {
 
     $self->_dry_run_banner(%opts);
     my $doc = mdb->clarive->find_one({ _id => $clarive->{_id} });
-    $self->_say( length $doc->{migration}{error} ? "Last error: $doc->{migration}{error}" : "(no error)" ); 
+    $self->_say( length $doc->{migration}{error} ? "Last error: $doc->{migration}{error}" : "(no error)" );
 
     my $yes = $opts{args}->{yes} || $self->_ask_me( msg => 'Remove error from last migration?' );
     return unless $yes;

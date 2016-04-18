@@ -17,15 +17,15 @@ sub user_projects : Local {
     my $roles = $p->{roles};
 
     my @rows = Baseliner->model('Users')->get_projectnames_and_descriptions_from_user($username, $collection, $query, $roles);
-    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};	
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
     $c->forward('View::JSON');
 }
 
 sub all_projects : Local {
     my ($self, $c) = @_;
-	my @rows = Baseliner->model('Projects')->get_all_projects();
-	$c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};		
-	$c->forward('View::JSON');	
+    my @rows = Baseliner->model('Projects')->get_all_projects();
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
+    $c->forward('View::JSON');
 }
 
 1;

@@ -44,11 +44,11 @@ sub query : Local {
     } catch {
         0
     };
-    my $t0 = [ Time::HiRes::gettimeofday ]; 
+    my $t0 = [ Time::HiRes::gettimeofday ];
 
     $c->stash->{search_config} = $config;
 
-    $lucy_here 
+    $lucy_here
         ? $c->forward('/search/query_lucy')
         : $c->forward('/search/query_raw');
     my $inter = sprintf( "%.02f", Time::HiRes::tv_interval( $t0 ) );
@@ -62,21 +62,21 @@ sub query_raw : Local {
     my $config   = $c->stash->{search_config};
     my $provider = $p->{provider} or _throw _loc('Missing provider');
     my $query    = $p->{query} // _throw _loc('Missing query');
-    my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider}, params=>$p, ); 
-     
+    my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider}, params=>$p, );
+
     $c->stash->{json} = {
         results  => $self->order_matches($query,$config,@results),
         type     => $provider->search_provider_type,
         name     => $provider->search_provider_name,
         provider => $provider
     };
-} 
+}
 
 sub clean_match {
     my $self = shift;
-    #$_[0] =~ s/^\B+\b(.*)$/X=$1=/; 
-    #$_[0] =~ s/^(.*)\s+\S+$/$1/g; 
-    $_[0] =~ s/^\S+\s+(.*)$/$1/g; 
+    #$_[0] =~ s/^\B+\b(.*)$/X=$1=/;
+    #$_[0] =~ s/^(.*)\s+\S+$/$1/g;
+    $_[0] =~ s/^\S+\s+(.*)$/$1/g;
 }
 
 sub order_matches {
@@ -87,7 +87,7 @@ sub order_matches {
     my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
     for my $doc ( @results ) {
         my @found;
-        $$doc{mid} //= -1; 
+        $$doc{mid} //= -1;
         my $idexact  = $$doc{mid} eq $query;
         my $idmatch  = length join '',( "$$doc{mid}" =~ /(\Q$query\E)/gsi );
         my $tmatch  = length join '', ( "$$doc{title}" =~ /(\Q$query\E)/gsi );
@@ -113,19 +113,19 @@ sub order_matches {
     }
     #my $res = { results => , query => $query, matches => @$docs };
     # TODO mid here may not come and maybe a string, don't order on it
-    [ sort { 
-        $$a{matches} == $$b{matches} ? $$a{mid} <=> $$b{mid} : $$b{matches} <=> $$a{matches} 
+    [ sort {
+        $$a{matches} == $$b{matches} ? $$a{mid} <=> $$b{mid} : $$b{matches} <=> $$a{matches}
         } @$docs ];
 }
 
 =head2 query_lucy
 
-Normally, this runs once for each provider. Gets called 
+Normally, this runs once for each provider. Gets called
 many times for a search.
 
 Parameters:
 
-    provider : where to search 
+    provider : where to search
     tokenizer_pattern : how to break down words
 
 =cut
@@ -144,8 +144,8 @@ sub query_lucy : Local {
     my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$case_folder, $string_tokenizer]);
     my $searcher = Baseliner::Lucy->new(
         index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
-        language   => $lang || $c->config->{default_lang} || 'en', 
-        analyser   => $analyzer, 
+        language   => $lang || $c->config->{default_lang} || 'en',
+        analyser   => $analyzer,
         resultclass => 'LucyX::Simple::Result::Hash',
         entries_per_page => $config->{max_results},
         schema     => [
@@ -160,14 +160,14 @@ sub query_lucy : Local {
         search_fields => ['title', 'text', 'mid','info'],
         search_boolop => $config->{lucy_boolop} // 'OR',
     );
-     
+
     # create Lucy docs
     my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider} ); # query => $query don't send a query, its faster
 
     #push @results, @results for 1..8;
     my $id=0;
     my %extra_data; # for things that don't need to go into the index
-    map { 
+    map {
         my $r = $_;
         $r->{id} //= $r->{mid} // $r->{type} . '_' . $id++;
         $extra_data{ $r->{id} }{url} = delete $r->{url};
@@ -182,7 +182,7 @@ sub query_lucy : Local {
         _debug shift(); # usually a "no results" exception
         ([],undef);
     };
-    #$dir->rmtree; 
+    #$dir->rmtree;
 
     # post procesing of results
     for( _array( $results ) ) {
@@ -202,4 +202,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

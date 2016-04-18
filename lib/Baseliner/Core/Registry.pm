@@ -39,7 +39,7 @@ class_has registor_data =>
       lazy    => 1,
       clearer => 'clear_registor_data',
     );
-    
+
 class_has registor_keys_added =>
     ( is      => 'rw',
       isa     => 'HashRef',
@@ -91,7 +91,7 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', default => sub {{}
         $raw->{$_} = $param->{$_} for grep !/^registry_node$/, keys $param;
         return $raw;
     }
-}	
+}
 
 sub clear {
     my $class = shift;
@@ -128,11 +128,11 @@ sub _registrar {
     my $self = shift;
     #return $self->_registrar_enabled if ref $self->_registrar_enabled;
     #$self->_registrar_enabled({});
-    my @disabled_keys = 
+    my @disabled_keys =
         grep { ! $self->is_enabled($_) }
         keys %{ $self->_registrar };
     for my $key ( @disabled_keys ) {
-       delete $self->_registrar->{$key} 
+       delete $self->_registrar->{$key}
         if defined $self->_registrar->{$key};
     }
     return $self->_registrar;
@@ -147,11 +147,11 @@ sub add {
     $param //= {};
     if( ref $param eq 'HASH' ) {
         $param->{key}=$key unless($param->{key});
-        $param->{short_name} = $key; 
+        $param->{short_name} = $key;
         $param->{short_name} =~ s{^.*\.(.+?)$}{$1}g if( $key =~ /\./ );
         $param->{id}= $param->{id} || $param->{short_name};
         $param->{module} //=$pkg;
-    
+
         my $node = Baseliner::Core::RegistryNode->new( $param );
         $node->param( $param );
         $node->param->{registry_node} = $node;
@@ -172,14 +172,14 @@ sub add_class {
 
 # everything starts here, called from Baseliner.pm
 sub setup {
-    my $self= shift; 
+    my $self= shift;
     # XXX DEPRECATED - slow: $self->load_enabled_list;
     $self->load_config_registry;
     $self->initialize( @_ );
 }
 
 sub load_config_registry {
-    my $self= shift; 
+    my $self= shift;
     my $keys = Baseliner->config->{registry}{'keys'};
     return unless ref $keys eq 'HASH';
     for my $key ( keys %$keys ) {
@@ -189,7 +189,7 @@ sub load_config_registry {
 
 ## blesses all registered objects into their registrable classes (new Service, new Config, etc.)
 sub initialize {
-    my $self= shift; 
+    my $self= shift;
 
     my %init_rc = ();
     my @namespaces = ( @_ ? @_ : keys %{ $self->registrar || {} } );
@@ -207,7 +207,7 @@ sub initialize {
     for my $rc ( sort keys %init_rc ) {
         for my $rc_node ( sort @{ $init_rc{$rc} } ) {
             my ($key, $node) = @{  $rc_node };
-            ## search for my class backwards	
+            ## search for my class backwards
             $self->instantiate( $node );
         }
     }
@@ -216,7 +216,7 @@ sub initialize {
 
 ## bless an object instance with the provided params
 sub instantiate {
-    my ($self,$node,$class)=@_;	
+    my ($self,$node,$class)=@_;
     $class ||= $self->_find_class( $node->key );
     $node->{instance} = $class->new( $node->param );
 }
@@ -231,8 +231,8 @@ sub _find_class {
         $class = join '.',@domain[ 0..$i ];
         last if( $self->classes->{$class} ) ;
     }
-    my $class_module = $self->classes->{$class} 
-        || Util->_fail(Util->_loc('Could not find registry class %1 for key %2',$class,$key)); 
+    my $class_module = $self->classes->{$class}
+        || Util->_fail(Util->_loc('Could not find registry class %1 for key %2',$class,$key));
         ## if no class found, bless onto itself
     #$ENV{CATALYST_DEBUG} && print STDERR "\t\t*** CLASS: $class ($class_module) FOR $key\n";
     return $class_module;
@@ -240,8 +240,8 @@ sub _find_class {
 
 =head2 get_node
 
-Return the key registration object (node). 
-If not found, check registors are loaded and try 
+Return the key registration object (node).
+If not found, check registors are loaded and try
 again.
 
 =cut
@@ -250,7 +250,7 @@ sub get_node {
     $key || croak "Missing parameter \$key";
     return $self->registrar->{$key} || do{
         $self->registor_loader( $key );  # make sure registor data is loaded
-        $self->registrar->{$key};   
+        $self->registrar->{$key};
     };
 }
 
@@ -260,9 +260,9 @@ Returns the actual instantiated object (ie isa BaselinerX::Type::Action)
 or fail.
 
 =cut
-sub get { 
+sub get {
     my ($self,$key)=@_;
-    return $self->get_instance($key) // {};# _fail _loc("Could not find key '%1' in the registry", $key); 
+    return $self->get_instance($key) // {};# _fail _loc("Could not find key '%1' in the registry", $key);
 }
 
 sub get_instance {
@@ -290,7 +290,7 @@ or undef if not found.
 =cut
 sub find {
     my ($self,$key)=@_;
-    return $self->get_instance($key); 
+    return $self->get_instance($key);
 }
 
 sub get_partial {
@@ -352,7 +352,7 @@ Search for registered objs with matching attributes
 Returns: nodes (not instances)
 
 Options:
-    
+
     allowed_actions => [qw//]   # filters nodes with allowed actions only
 
 Configuration:
@@ -378,7 +378,7 @@ sub search_for_node {
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
     my $reg = $self->registrar;
-    
+
     my @allowed;
     foreach my $action ( _array $allowed_actions ) {
         if( blessed $action ) {
@@ -389,7 +389,7 @@ sub search_for_node {
     }
 
     # loop thru services
-    $q_depth //= 99; 
+    $q_depth //= 99;
     OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
         my $depth = ( my @ss = split /\./,$key ) -1 ;
         next if( $depth > $q_depth );
@@ -402,7 +402,7 @@ sub search_for_node {
         my $has_permission = 0;
         if ( !$username  || (!$node_instance->actions && !$node_instance->action) || $key_prefix eq 'action.') {
             $has_permission = 1;
-        } else {        
+        } else {
             for ( _array( $node_instance->action, $node_instance->actions ) ) {
                 $has_permission = 1 if Baseliner->model("Permissions")->user_has_any_action( action => $_, username => $username)
             }
@@ -414,7 +414,7 @@ sub search_for_node {
 
         # query for attribute value
         foreach my $attr( keys %query ) {
-            my $val = $query{$attr};	
+            my $val = $query{$attr};
             if( defined $val ) {
                 if( defined $node->{$attr} ) {
                     next OUTER unless( $node->{$attr} eq $val);
@@ -447,10 +447,10 @@ sub search_for {
 
 =head2 registor_loader
 
-Given a registry node key, look for candidate 
-registors and check if their data is loaded. 
+Given a registry node key, look for candidate
+registors and check if their data is loaded.
 
-If registor loaded, return. 
+If registor loaded, return.
 
 If not, call registor node generator. Then register
 each one of them.
@@ -461,10 +461,10 @@ sub registor_loader {
 
     my @registor_nodes;
     my $reg = $self->registrar;
-    my $registors = $self->registors;  
+    my $registors = $self->registors;
     my ($key_prefix) = split /\./, $key; # look for registor like 'registor.menu', 'registor.action', ...
-    return unless $key_prefix; 
-    
+    return unless $key_prefix;
+
     # look in registry for candidate registors
     for my $registor_key ( grep{ index($_, "registor.$key_prefix.")==0 } keys %{ $reg || {} } ) {
         #    _debug( "Looking in registor $registor_key for key $key_prefix" );
@@ -489,14 +489,14 @@ sub registor_loader {
         }
     }
     return unless @registor_nodes; # nothing to register, leave
-    
-    
+
+
     # register into registry hash all registor data found
     my $flag = 0;
     for my $regs ( @registor_nodes ) {
         my $data = $regs->{data};
         my $registor = $regs->{registor};
-        next unless ref $data eq 'HASH'; 
+        next unless ref $data eq 'HASH';
         # for each registry entry returned by Registor...
         for my $key ( keys %$data ) {
             next if exists $reg->{$key} && ! $data->{$key}->{_overwrite};
@@ -509,7 +509,7 @@ sub registor_loader {
     }
     # instanciate new keys in registry
     $self->initialize if $flag;
-    # everything should be in memory (registrar) now 
+    # everything should be in memory (registrar) now
     return;
 }
 
@@ -570,4 +570,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

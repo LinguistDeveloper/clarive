@@ -9,6 +9,3 @@ sub connect { ... }
 with 'Baseliner::Role::CI::Server';
 
 1;
-
-
-

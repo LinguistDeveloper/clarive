@@ -619,9 +619,9 @@ sub _setup {
     mdb->topic->drop;
     mdb->category->drop;
 
-    TestUtils->setup_registry( 
-        'BaselinerX::Type::Event', 
-        'BaselinerX::CI', 
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::CI',
         'Baseliner::Model::Jobs',
         'Baseliner::Model::Rules'
     );

@@ -9,7 +9,7 @@ use Time::HiRes ();
 method push( :$msg, :$data ) {
     my $ts = mdb->ts;
     my $data_ser = _stash_dump( $data );
-    mdb->queue->insert({ msg=>$msg, data=>$data_ser, ts=>mdb->ts, t=>Time::HiRes::time() }); 
+    mdb->queue->insert({ msg=>$msg, data=>$data_ser, ts=>mdb->ts, t=>Time::HiRes::time() });
 }
 
 method pop( :$msg ) {

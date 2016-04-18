@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use v5.10;
 use FindBin;
-use lib "$FindBin::Bin/../lib"; 
+use lib "$FindBin::Bin/../lib";
 BEGIN {
     # $BASELINER_HOME/local-lib setup, in case it exists
     my $locallibdir="$FindBin::Bin/../local-lib";
@@ -78,12 +78,12 @@ my @argv_noservice = @ARGV;
 for( "script/bali_$service_name.pl" , "script/bali-$service_name.pl", "script/baseliner_$service_name.pl" ) {
     next unless -f $_;
     say "Running porcelain $_ @argv_noservice";
-    exec 'bin/bali', $service_name, @argv_noservice; 
+    exec 'bin/bali', $service_name, @argv_noservice;
 }
 
 if( $service_name =~ /(stop|kill)/ ) {
     stop( $1 );
-    exit 0; 
+    exit 0;
 }
 elsif( $service_name =~ /^start$/i ) {
     my $rc = start();
@@ -113,7 +113,7 @@ $c->stash->{bl} = $bl;
 @ARGV = @argv_noservice;
 
 ## get service
-if( 1 ) { 
+if( 1 ) {
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = $c->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
@@ -151,7 +151,7 @@ sub stop {
                 kill 9,$pid if $mode eq 'kill';
                 $found=1;
             }
-        } 
+        }
     }
     print $found ? "Done.\n" : "No processes found.\n";
 }
@@ -182,4 +182,3 @@ sub shut {
         print "No Baseliner processes found.\n";
     }
 }
-

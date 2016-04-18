@@ -19,7 +19,7 @@ my %data;
 my $json;
 
 #########################
-#		status			#
+#        status            #
 #########################
 
 #nuevo
@@ -46,7 +46,7 @@ my $json;
     #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
     #     is( ${ $res->{success} }, 1,  'ci delete ok' );
     # }
-     
+
 }
 
 #progreso
@@ -73,7 +73,7 @@ my $json;
     #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
     #     is( ${ $res->{success} }, 1,  'ci delete ok' );
     # }
-     
+
 }
 
 #finalizado
@@ -100,7 +100,7 @@ my $json;
     #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
     #     is( ${ $res->{success} }, 1,  'ci delete ok' );
     # }
-     
+
 }
 
 done_testing;

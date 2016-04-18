@@ -21,7 +21,7 @@ sub user_agent {
 }
 
 sub URL($) {
-	return join '/', $base_url, @_;
+    return join '/', $base_url, @_;
 }
 }
 
@@ -31,7 +31,7 @@ sub URL($) {
     use Baseliner::Utils ();
     require WWW::Mechanize;
     has _ag => qw(is rw isa WWW::Mechanize required 1), handles=>qr/.*/;
-    
+
     sub json {
         my ($self,$url,$data) = @_;
         my $req = HTTP::Request->new(POST => $url );

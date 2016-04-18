@@ -22,27 +22,27 @@ sub template_transform {
     my $stash = $c->stash;
     my $job   = $stash->{job};
     my $log   = $job->logger;
-    
+
     my $input_file    = $config->{input_file} // _fail _loc 'Missing input files';
     my $output_file   = $config->{output_file};
     my $encoding      = $config->{encoding};
     my $engine        = $config->{engine} // 'tt';
     my $template_var  = $config->{template_var} // '';
-    
+
     _fail _loc 'Could not find file: %1', $input_file unless -e $input_file;
-    
+
     my $output;
 
     if( $engine eq 'tt' ) {
         my $body = _file( $input_file )->slurp;
-        $output = $self->process_tt( $stash, $template_var, $body ); 
+        $output = $self->process_tt( $stash, $template_var, $body );
     }
     elsif( $engine eq 'mason' ) {
         my $comp_dir = _file( $input_file )->dir->relative( $job->job_dir );
         my $is_relative = $comp_dir !~ /^\.\./;   # not in job_dir, then use absolute
         my $root_dir;
         if( $is_relative ) {
-            $root_dir = $job->job_dir;     
+            $root_dir = $job->job_dir;
         } else {
             $root_dir = '/';
             $comp_dir = _file( $input_file )->dir;
@@ -53,7 +53,7 @@ sub template_transform {
     else {
         _fail _loc 'Invalid templating engine type: %1', $engine;
     }
-   
+
     if( $output_file ) {
         my $format = $encoding ? sprintf(':encoding(%s)', $encoding) : ':raw';
         open my $fout, '>'.$format, $output_file

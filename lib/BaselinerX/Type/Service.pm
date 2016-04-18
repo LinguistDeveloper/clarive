@@ -57,12 +57,12 @@ sub BUILD {
     }
     ## add service to admin menu
     # if( $self->show_in_menu ) {
-    #     register 'menu.admin.service.'.$self->id => { label=>$self->name || $self->key, url=>'/'.$self->key, title=>$self->name || $self->key }; 
-    #     #register 'menu.admin.dfldfj' => { init_rc=>9999, label=>'asdfd', url=>'/ldkfjd', title=>'asdfasdf' }; 
+    #     register 'menu.admin.service.'.$self->id => { label=>$self->name || $self->key, url=>'/'.$self->key, title=>$self->name || $self->key };
+    #     #register 'menu.admin.dfldfj' => { init_rc=>9999, label=>'asdfd', url=>'/ldkfjd', title=>'asdfasdf' };
     # }
 }
 
-#register 'menu.admin.service' => { label=>'Services', title=>'Services', action => 'menu.admin.service.%', index=>1000 }; 
+#register 'menu.admin.service' => { label=>'Services', title=>'Services', action => 'menu.admin.service.%', index=>1000 };
 
 sub dispatch {
     my ($self, %p )=@_;
@@ -81,7 +81,7 @@ sub dispatch {
         $config_data = $config->getopt;
         #$config_data->{argv} = \@argv_noservice;
         _log "===Config $self->{config}===\n",_dump($config_data),"\n";
-    } 
+    }
     elsif( $p{'-ns'} ) {
         $config_data = $config->load_from_ns($p{'-ns'} );
     }
@@ -98,7 +98,7 @@ Run module services subs ( service->code or sub module::service ). $self is an i
 
 =cut
 sub run {
-    my $self= shift;  # 
+    my $self= shift;  #
     my $c = shift;
     my @args = @_;
 
@@ -107,7 +107,7 @@ sub run {
     my $version = $self->registry_node->version;
     my $handler = $self->handler;
     my $module = $self->module;
-    my $args = $_[0] || {}; 
+    my $args = $_[0] || {};
     my $service_noun = service_noun();
 
     # load logger
@@ -116,9 +116,9 @@ sub run {
         $logger = $self->logger;
     } else {
         my $logger_class = $self->logger_class;
-        eval "require $logger_class"; 
+        eval "require $logger_class";
         _throw _loc('Error requiring logger class %1', $logger_class) if $@;
-        $logger = $logger_class->new(); 
+        $logger = $logger_class->new();
     }
 
     # setup a dummy job if needed
@@ -136,7 +136,7 @@ sub run {
     $logger->verbose( exists($args->{v}) || exists($args->{debug}) );
     delete $args->{v};  # assume I'm the only one using this
 
-    _log "\n=== running $service_noun: $key | $version | $service | $module ===\n" 
+    _log "\n=== running $service_noun: $key | $version | $service | $module ===\n"
         unless $self->quiet;
 
     # instanciate the service
@@ -145,8 +145,8 @@ sub run {
     # check the service implements role
     _throw qq{Service '$key' doesn't implement Baseliner::Role::Service. Please, put:
 
-        with 'Baseliner::Role::Service'; 
-        
+        with 'Baseliner::Role::Service';
+
     within your class.} unless $instance->does('Baseliner::Role::Service');
 
     # try to set the job for the service (a Baseliner::Role::Service attribute)
@@ -177,9 +177,9 @@ sub run_container {
     $config //= {};
     # create dummy job if we don't have one
     $stash->{job} or local $stash->{job} = BaselinerX::Type::Service::Container::Job->new( job_stash=>$stash );
-    my $container = BaselinerX::Type::Service::Container->new( stash=>$stash, config=>$config ); 
+    my $container = BaselinerX::Type::Service::Container->new( stash=>$stash, config=>$config );
     my $pkg = $self->module;
-    $obj ||= $pkg->new(); 
+    $obj ||= $pkg->new();
     return $handler->( $obj, $container, $config );
 }
 

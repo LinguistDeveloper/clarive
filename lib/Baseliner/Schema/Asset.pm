@@ -37,21 +37,21 @@ around BUILDARGS => sub {
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
     }
-    
-    _fail _loc 'Could not get filehandle for asset' unless $fh; 
-    
+
+    _fail _loc 'Could not get filehandle for asset' unless $fh;
+
     $self->$orig( fh=>$fh, %opts );
 };
 
-sub insert {         
+sub insert {
     my ($self,%p) = @_;
     # $grid->insert($fh, {"filename" => "mydbfile"});
     # TODO match md5, add mid to asset in case it exists
     my $md5 = Util->_md5( $self->fh );
-    my $id = $self->grid->insert($self->fh, { 
-            filename=>$self->filename, 
-            md5=>$md5, parent_mid=>$self->parent_mid, 
-            parent_collection=>$self->parent_collection, 
+    my $id = $self->grid->insert($self->fh, {
+            filename=>$self->filename,
+            md5=>$md5, parent_mid=>$self->parent_mid,
+            parent_collection=>$self->parent_collection,
             parent => $self->parent,
             %p });
     $self->id( $id );

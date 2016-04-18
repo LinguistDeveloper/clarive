@@ -50,7 +50,7 @@ subtest 'create_branch: creates a branch in multiple repositories' => sub {
 
     my $repo2 = TestUtils->create_ci_GitRepository();
     my $commit2 = TestGit->commit($repo2);
-    
+
     $config = { repo => $repo2->mid, tag => 'TEST', sha => $commit2 };
     $rv = $gs->create_tag( $stash, $config );
 
@@ -61,21 +61,21 @@ subtest 'create_branch: creates a branch in multiple repositories' => sub {
     my $git = $repo1->git;
 
     my @branches = $git->exec( 'branch', '-a' );
-     
+
     is_deeply(\@branches, ['* master','  test_branch']);
 
     my $branch_sha = $git->exec( 'rev-parse', 'test_branch' );
-         
+
     is $branch_sha, $commit1;
 
     $git = $repo2->git;
 
     @branches = $git->exec( 'branch', '-a' );
-     
+
     is_deeply(\@branches, ['* master','  test_branch']);
 
     $branch_sha = $git->exec( 'rev-parse', 'test_branch' );
-         
+
     is $branch_sha, $commit2;
 };
 
@@ -175,8 +175,8 @@ subtest 'create_branch: fails if commit does not exist' => sub {
 
     like exception {
         my $rv = $gs->create_branch( $stash, $config );
-    }, qr/Not a valid object name: 'TEST'/; 
-     
+    }, qr/Not a valid object name: 'TEST'/;
+
 };
 
 subtest 'create_tag: creates a tag in repo' => sub {
@@ -194,11 +194,11 @@ subtest 'create_tag: creates a tag in repo' => sub {
     my $git = $repo->git;
 
     my @tags = $git->exec( 'tag' );
-     
+
     is_deeply(\@tags, ['TEST']);
 
     my $tag_sha = $git->exec( 'rev-parse', 'TEST' );
-         
+
     is $tag_sha, $commit;
 };
 
@@ -214,8 +214,8 @@ subtest 'create_tag: fails if no sha provided' => sub {
     like exception {
         my $gs = BaselinerX::GitServices->new();
         my $rv = $gs->create_tag( $stash, $config );
-    }, qr/Missing sha/; 
-     
+    }, qr/Missing sha/;
+
 };
 
 subtest 'create_tag: fails if no tag provided' => sub {
@@ -230,8 +230,8 @@ subtest 'create_tag: fails if no tag provided' => sub {
     like exception {
         my $gs = BaselinerX::GitServices->new();
         my $rv = $gs->create_tag( $stash, $config );
-    }, qr/Missing tag name/; 
-     
+    }, qr/Missing tag name/;
+
 };
 
 subtest 'create_tag: fails if no repo provided' => sub {
@@ -246,8 +246,8 @@ subtest 'create_tag: fails if no repo provided' => sub {
     like exception {
         my $gs = BaselinerX::GitServices->new();
         my $rv = $gs->create_tag( $stash, $config );
-    }, qr/Missing repo mid/; 
-     
+    }, qr/Missing repo mid/;
+
 };
 
 subtest 'create_tag: moves tag if already exists' => sub {
@@ -266,11 +266,11 @@ subtest 'create_tag: moves tag if already exists' => sub {
     my $git = $repo->git;
 
     my @tags = $git->exec( 'tag' );
-     
+
     is_deeply(\@tags, ['TEST']);
 
     my $tag_sha = $git->exec( 'rev-parse', 'TEST' );
-         
+
     is $tag_sha, $commit;
 
     $config = { repo => $repo->mid, tag => 'TEST', sha => $commit2 };
@@ -280,11 +280,11 @@ subtest 'create_tag: moves tag if already exists' => sub {
     $git = $repo->git;
 
     @tags = $git->exec( 'tag' );
-     
+
     is_deeply(\@tags, ['TEST']);
 
     $tag_sha = $git->exec( 'rev-parse', 'TEST' );
-         
+
     is $tag_sha, $commit2;
 };
 

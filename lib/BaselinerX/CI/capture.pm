@@ -14,11 +14,11 @@ has parse_type    => qw(is rw isa Str default Source);
 #service 'parse' => 'Parse a file' => \&parse;
 
 sub parse {
-    my ($self,$item) = @_; 
-    my $file = $item->path; 
-    my $source = $item->source; 
+    my ($self,$item) = @_;
+    my $file = $item->path;
+    my $source = $item->source;
     my $tmout = $self->timeout;
-    my $regex = $self->regex; 
+    my $regex = $self->regex;
     $regex = eval( 'qr{' . $regex . '}'. $self->regex_options );
     Util->_fail( 'Missing or invalid regex: %1', $@ ) unless $regex;
 
@@ -32,7 +32,7 @@ sub parse {
         push @newline => { from=>$last, to=>$-[0], lin=>++$i };
         $last = $+[0];
     }
-    
+
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
     my %tree;
     my @found;
@@ -42,7 +42,7 @@ sub parse {
         push @found => { %caps, line=>($lin//0) } if %caps;
         Util->_debug( \%caps );
         while( my($k,$v) = each %caps ) {
-            $tree{ $k } = [] unless exists $tree{$k}; 
+            $tree{ $k } = [] unless exists $tree{$k};
             push @{ $tree{ $k } }, $v;
         }
     }
@@ -57,4 +57,3 @@ sub parse {
 }
 
 1;
-

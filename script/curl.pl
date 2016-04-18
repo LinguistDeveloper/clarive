@@ -9,10 +9,10 @@ my @argv = @ARGV;
 my $loop=1;
 GetOptions(
     'loop|l=i'  => \$loop,
-    'verbose|v'	=>\(my $verbose),
-    'content|c'	=>\(my $content),
-    'headers|h'	=>\(my $headers),
-    'echo|e'	=>\(my $echo),
+    'verbose|v'    =>\(my $verbose),
+    'content|c'    =>\(my $content),
+    'headers|h'    =>\(my $headers),
+    'echo|e'    =>\(my $echo),
 );
 
 sub LWP::Debug::trace {
@@ -31,7 +31,7 @@ for my $url ( @ARGV) {
     for(1..$loop) {
         print "Test $_...\n";
         my $ua = WWW::Mechanize::Timed->new();
-        #$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' ); 
+        #$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' );
 
         $ua->get( $url ) or die "\nCould not get $url: $!\n\n";
         print "Headers Request : ".Dump($ua) if (($headers && !$total) || $echo);
@@ -51,4 +51,3 @@ for my $url ( @ARGV) {
     print "Median: ".median(@data)."\n";
     print "Req/s: ".( $loop/$total)."\n";
 }
-

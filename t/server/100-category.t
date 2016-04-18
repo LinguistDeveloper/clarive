@@ -19,7 +19,7 @@ my %data;
 my $json;
 
 #############################
-#		categoria			#
+#        categoria            #
 #############################
 
 {
@@ -38,7 +38,7 @@ my $json;
     };
 
     my $res = $ag->json( URL('topicadmin/update_category') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
+    is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );
 }
 
 #reload de entire system to create a topic for the new category

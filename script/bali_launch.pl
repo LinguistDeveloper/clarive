@@ -10,7 +10,7 @@ if( !@ARGV ) {
     my $serv = Baseliner::Core::Registry->Services ;
     print "===Available services===\n", join( "\n", map { $_ . " - " . ( $serv->{$_}->{name} || "$_ service" ) } keys %$serv );
     exit 0;
-} 
+}
 
 
 my @argv = @ARGV;

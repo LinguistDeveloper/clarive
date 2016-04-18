@@ -129,7 +129,7 @@ __END__
 
 =head1 NAME
 
-Baseliner::CSV is based on Baseliner::CSV 
+Baseliner::CSV is based on Baseliner::CSV
 - convert CSV into an array of hashes, or an array of
 hashes into CSV
 

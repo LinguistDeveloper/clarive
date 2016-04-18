@@ -17,4 +17,3 @@ sub node_url { '/lifecycle/list_repo_contents' }
 with 'Baseliner::Role::LC::Node';
 
 1;
-

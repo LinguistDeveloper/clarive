@@ -17,8 +17,8 @@ register 'event.auth.attempt' => { name => 'User Login Attempt', vars=>['usernam
 
 register 'service.auth.ok' => {
     name => 'Authorize User Login',
-    icon => '/static/images/icons/user_green.png', 
-    #icon => '/static/images/icons/user_add.gif', 
+    icon => '/static/images/icons/user_green.png',
+    #icon => '/static/images/icons/user_add.gif',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $c->stash->{login_data}{login_ok} = 1;
@@ -27,8 +27,8 @@ register 'service.auth.ok' => {
 
 register 'service.auth.deny' => {
     name => 'Deny User Login',
-    icon => '/static/images/icons/user_red.png', 
-    #icon => '/static/images/icons/user_delete.gif', 
+    icon => '/static/images/icons/user_red.png',
+    #icon => '/static/images/icons/user_delete.gif',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $c->stash->{login_data}{login_ok} = 0;
@@ -37,8 +37,8 @@ register 'service.auth.deny' => {
 
 register 'service.auth.message' => {
     name => 'Login Error Message',
-    icon => '/static/images/icons/user_red.png', 
-    #icon => '/static/images/icons/user_delete.gif', 
+    icon => '/static/images/icons/user_red.png',
+    #icon => '/static/images/icons/user_delete.gif',
     data => { msg=>'User authentication denied by rule', args=>[] },
     handler=>sub{
         my ($self, $c, $data ) = @_;
@@ -50,5 +50,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
-

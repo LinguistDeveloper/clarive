@@ -1,15 +1,15 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::MonkeyMock;
 use Test::Deep;
 use Test::TempDir::Tiny;
+
 use TestEnv;
+BEGIN { TestEnv->setup }
 use TestSetup;
 use TestUtils ':catalyst';
-BEGIN { TestEnv->setup }
 use TestGit;
 use Cwd qw(realpath);
 use JSON ();

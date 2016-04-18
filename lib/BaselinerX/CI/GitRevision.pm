@@ -13,9 +13,9 @@ has sha => qw(is rw isa Str);
 has _sha_long => qw(is rw isa Str);
 has_ci 'repo';
 
-has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
-    default=>sub{   
-        my $self = shift; 
+has moniker  => qw(is rw isa Maybe[Str] lazy 1),
+    default=>sub{
+        my $self = shift;
         if( ref $self ) {
             my $nid = $self->sha;
             return $nid;
@@ -65,11 +65,11 @@ sub items {
     my $repo = $self->repo;
     my $git = $repo->git;
 
-    my $rev_sha  = $self->sha_long; 
+    my $rev_sha  = $self->sha_long;
     my $tag_sha  = $repo->git->exec( qw/rev-parse/, $tag );
 
     my $diff_shas;
-        
+
     my @items;
     if ( $type eq 'demote' ) {
         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
@@ -98,7 +98,7 @@ sub items {
                 $diff_shas = [ $tag_sha ];
             }
         }
-    } 
+    }
     my %repo_items = $self->repo_items( $diff_shas );
 
 
@@ -145,10 +145,10 @@ sub _find_sha_from_previous_jobs {
 
     my (@last_jobs) = map {
         $_->{mid}
-    } sort { 
-        $b->{endtime} cmp $a->{endtime} 
-    } grep { 
-        $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl 
+    } sort {
+        $b->{endtime} cmp $a->{endtime}
+    } grep {
+        $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl
     } ci->new($cs)->jobs;
 
     return unless @last_jobs;
@@ -175,7 +175,7 @@ sub _find_sha_from_previous_jobs {
 
 sub sha_long {
     my $self = shift;
-    # full rev-parsed sha 
+    # full rev-parsed sha
     my $fs = $self->_sha_long;
     return $fs if length $fs;
     return $self->_sha_long( $self->repo->git->exec( qw/rev-parse/, $self->sha ) );
@@ -186,7 +186,7 @@ sub show {
     my ($self, %p)=@_;
     my $repo = $self->repo;
     my $git = $repo->git;
-    
+
     my $type = $p{type} // 'promote';
     my $rev_sha  = $self->sha_long;
     #my @items = $git->exec( qw/diff-tree --no-commit-id --name-status -r/, $tag_sha );
@@ -204,9 +204,9 @@ sub show {
             path    => "$fullpath",
             versionid => $rev_sha,
             %$info,
-            status => $status, 
+            status => $status,
         );
-    } keys %repo_items; 
+    } keys %repo_items;
     return @items;
 }
 
@@ -239,7 +239,7 @@ sub repo_items {
         my $old_path = delete $ri->{old_path} // next;
         if( !exists $repo_items{$old_path} ) {
             my $ri2 = +{ moved=>$ri->{blob}, status=>'D', blob=>undef, mask=>undef };
-            $repo_items{$old_path} = $ri2;            
+            $repo_items{$old_path} = $ri2;
         }
     }
 

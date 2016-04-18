@@ -24,7 +24,7 @@ sub delete : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');
 }
 
 sub resolve : Local {
@@ -37,7 +37,7 @@ sub resolve : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');
 }
 
 sub update : Local {
@@ -57,7 +57,7 @@ sub update : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error storing config value %1: %2", $$, $err ) };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');
 }
 
 sub json : Local {
@@ -85,8 +85,8 @@ sub json_combined : Local {
     my %original = map { $_->{key} => 1 } _array $res1->{data};
 
     my %modified;
-    my $res2 = $c->model('ConfigStore')->search( query=>$query,  );  
-    for( _array( $res2->{data} ) ) { 
+    my $res2 = $c->model('ConfigStore')->search( query=>$query,  );
+    for( _array( $res2->{data} ) ) {
         next unless $_->{ns} eq '/';
         next unless $_->{bl} eq '*';
         $modified{$_->{key}}=$_;
@@ -98,7 +98,7 @@ sub json_combined : Local {
             $row->{status} = 'modified';
             push @ret, $row;
             $modified++;
-        } else { 
+        } else {
             $_->{status} = 'original';
             push @ret, $_;
         }
@@ -107,19 +107,19 @@ sub json_combined : Local {
         my $orig = $original{ $_->{key} };
         next if ref $orig
             && $orig->{ns} eq $_->{ns}
-            && $orig->{bl} eq $_->{bl}; 
+            && $orig->{bl} eq $_->{bl};
         $_->{status} = 'missing';
         push @ret, $_;
     }
 
-    @ret = sort { 
+    @ret = sort {
         my $va = $a->{$sort};
         my $vb = $b->{$sort};
         !defined $va ? 1 : !defined $vb ? -1 : $va cmp $vb
     } @ret if $sort;
     @ret = reverse @ret if lc($dir) eq 'desc';
 
-    $c->stash->{json} = { 
+    $c->stash->{json} = {
         data =>  \@ret,
         totalCount => scalar @ret - $modified
     };
@@ -133,7 +133,7 @@ sub json_original : Local {
     $start||=0;
     $limit||=50;
     my $res = $c->model('ConfigStore')->search_registry( query=>$query, start=>$start, limit=>$limit, sort=>$sort, dir=>$dir );
-    $c->stash->{json} = { 
+    $c->stash->{json} = {
         data => $res->{data},
         totalCount => $res->{total},
     };
@@ -146,8 +146,8 @@ sub json_modified : Local {
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
     $start||=0;
     $limit||=50;
-    my $res = $c->model('ConfigStore')->search( query=>$query, start=>$start, limit=>$limit, sort=>$sort, dir=>$dir  );  
-    $c->stash->{json} = { 
+    my $res = $c->model('ConfigStore')->search( query=>$query, start=>$start, limit=>$limit, sort=>$sort, dir=>$dir  );
+    $c->stash->{json} = {
         data =>  $res->{data},
         totalCount => $res->{total},
     };

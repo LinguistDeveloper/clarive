@@ -21,7 +21,7 @@ sub parse {
         return unless $item->path =~ /(pm|pl)$/;
         my $ext = $item->extension;
         if( my $s = $item->slurp ) {
-            my $module = $ext eq 'pm' 
+            my $module = $ext eq 'pm'
                ? do {
                  my $found;
                  for my $lin ( split /\n/, $s ) {
@@ -36,12 +36,12 @@ sub parse {
             $item->{module} = $module;
             $item->moniker( $module );
             my %deps;
-            for my $use ( $s =~ /use\s+([\w|:]+)/gm ) { 
+            for my $use ( $s =~ /use\s+([\w|:]+)/gm ) {
                 next if $use ~~ [qw(base lib strict vars warnings threads)];
                 next if $use =~ /^v[0-9]/;
                 $deps{ $use } = 1;
             }
-            for my $req ( $s =~ /require\s+([\w|:]+)/gm ) { 
+            for my $req ( $s =~ /require\s+([\w|:]+)/gm ) {
                 $req =~ s/'"//g;
                 $deps{ $req } = 1;
             }
@@ -55,7 +55,7 @@ sub parse {
 =pod
 
     use Baseliner::Scan;
-    my $repo = BaselinerX::CI::filesys_repo->new( root_path=>'/home/apst/scm/servidor/udp' ); 
+    my $repo = BaselinerX::CI::filesys_repo->new( root_path=>'/home/apst/scm/servidor/udp' );
     my $pp = Baseliner::Parser::Perl->new;
     my $sc = Baseliner::Scan->new( repos=>[$repo], parsers=>[ $pp ] );
     $sc->scan;
@@ -123,7 +123,7 @@ sub tagger {
     my %tags;
     my $body = $_->slurp;
     return unless defined $body;
-    for my $tag ( $body =~ /#:(\w+):/gm ) { 
+    for my $tag ( $body =~ /#:(\w+):/gm ) {
         $tags{ $tag }=1;
         $item->{tags}{ $tag } = 1;
     }
@@ -131,4 +131,3 @@ sub tagger {
 }
 
 1;
-

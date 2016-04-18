@@ -15,7 +15,7 @@ before save => sub {
     my ($self, $master_row, $data ) = @_;
     $self->moniker( $self->bl );
 };
-    
+
 after save_data => sub {
     my ($self, $master_row, $data, $opts, $old ) = @_;
     # update statuses in topics

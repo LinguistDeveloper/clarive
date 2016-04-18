@@ -37,15 +37,15 @@ sub BUILD {
 
     # log file (only created by daemonize/nohup, but used by tail)
     $self->setup_log_dir();
-    
+
     $self->instance_name( 'cla-web-'. $self->id . '-' . $self->port );
-    
+
     $self->setup_pid_file();
     $self->pid_web_file( $self->pid_name . '-web.pid' );
     #
-    # restarter ? 
+    # restarter ?
     #
-    
+
     if( defined $self->opts->{r} ) {
         $self->opts->{R} = join ' ', ('lib', glob( '*.conf' ), grep( !/^features\/#/, glob 'features/*/lib' ) );
     }
@@ -58,20 +58,20 @@ sub BUILD {
 
 sub setup_vars {
     my ($self,%opts) = @_;
-    
+
     $ENV{PLACK_ENV} = 'deployment'; # $self->debug ? 'development' : 'deployment';
-    
+
     say "home: " . $self->home;
-    say "env: " . $self->env; 
+    say "env: " . $self->env;
 
     if( $ENV{BASELINER_LIBPATH} ) {
         $ENV{LIBPATH} = join ':', $ENV{BASELINER_LIBPATH}, $ENV{LIBPATH};
     }
-    
+
     if( $self->daemon ) {
         say 'log_file: ' . $self->log_file;
-        $self->_log_zip( $self->log_file ); 
-        $self->_cleanup_logs( $self->log_file ); 
+        $self->_log_zip( $self->log_file );
+        $self->_cleanup_logs( $self->log_file );
     }
 }
 
@@ -80,17 +80,17 @@ sub run {
 }
 
 sub run_start {
-    my ($self, %opts)=@_; 
+    my ($self, %opts)=@_;
 
     $self->check_initialized;
 
     $self->check_migrations;
-    
+
     $self->check_pid_exists();
 
     require Plack::Runner;
     my $runner = Plack::Runner->new( default_middleware => 0 );
-    
+
     # prepare plackup options (Plack::Runner)
     if( !exists $self->opts->{standalone} && $self->engine ) {
         $runner->{server} = $self->engine;
@@ -99,20 +99,20 @@ sub run_start {
         $runner->{loader} = "Restarter";
         $runner->loader->watch(split ",", $arg );
     }
-    
+
     $self->setup_vars( %opts );
-    
+
     TOP:
-    
+
     my @listen = ref $self->listen eq 'ARRAY' ? @{ $self->listen } : ($self->listen);
-    say 'Starting web server: ' . 
-        ( @listen 
-            ? join(' ', @listen) 
+    say 'Starting web server: ' .
+        ( @listen
+            ? join(' ', @listen)
             : sprintf( "http://%s:%s", $self->host // '*', $self->port)
     );
-    
+
     $runner->{argv} = [];
-    my $proc = sub { 
+    my $proc = sub {
         $runner->run('Clarive::PSGI::Web');
     };
     my $super_runner = sub{
@@ -163,21 +163,21 @@ sub run_start {
         }
     };
 
-    $runner->{options} = [ 
+    $runner->{options} = [
         $self->workers ? (workers => $self->workers) : (),
         pid => $self->pid_web_file,
-        ( 
+        (
             map { ( $_ => $self->$_ ) }
-                grep { defined $self->$_ } 
-                qw(min_servers min_spare_servers max_spare_servers max_requests max_servers) 
+                grep { defined $self->$_ }
+                qw(min_servers min_spare_servers max_spare_servers max_requests max_servers)
         ),
         # TODO Starlet: --max-workers --timeout --keepalive-timeout --max-keepalive-reqs --max-reqs-per-child --min-reqs-per-child --spawn-interval
         $runner->mangle_host_port_socket( $self->host, $self->port, $self->socket, @{ ref $self->listen ? $self->listen : [$self->listen] } )
     ];
     if( exists $self->opts->{daemon} ) {
-        
+
         $self->nohup( $super_runner );
-        
+
         # $self->_install_server_starter();
         #require Clarive::Starter;
         #Clarive::Starter::start_server(
@@ -203,13 +203,13 @@ sub error_pid_is_running {
     say sprintf "ERROR: Server is already running on port %s with pid %s", $self->port, $pid;
 }
 
-# deprecated ? 
+# deprecated ?
 
-sub _install_server_starter { 
+sub _install_server_starter {
     no strict;
     no warnings;
     require Clarive::Starter;
-    
+
     # monkey patch
     *Server::Starter::_start_worker = sub {
         my $opts = shift;

@@ -21,7 +21,7 @@ register 'service.db.deploy_sql' => {
 sub deploy_sql {
     my ( $self, $c, $config ) = @_;
     _fail 'Missing db connection' unless length $config->{db};
-    
+
     my $job          = $c->stash->{job};
     my $log          = $job->logger;
     my $stash        = $c->stash;
@@ -33,24 +33,24 @@ sub deploy_sql {
     my $mode         = $config->{mode} // 'direct';
     my $exists_action = $config->{exists_action} // 'drop';
     my $error_mode   = $config->{error_mode} // 'fail';
-    my ($include_path,$exclude_path,$include_content,$exclude_content) = 
+    my ($include_path,$exclude_path,$include_content,$exclude_content) =
         @{ $config }{qw(include_path exclude_path include_content exclude_content)};
-    
+
     my $tran_cnt = $stash->{_db_transaction_count} // 0;
-    
+
     # get db CI
     for my $db ( Util->_array_or_commas( $config->{db} ) ) {
         $db = ci->new( $db ) unless ci->is_ci($db);
-            
+
         $tran_cnt += 1;
-    
+
         if( $config->{transactional} ) {
             push @{ $stash->{_state_db_transactions} }, { id=>$tran_cnt, db=>$db };
             try { $db->begin_work } catch { _debug "BEGIN WORK WARNING: " . shift() };
         }
-        
+
         ITEM: for my $item ( _array( $items ) ) {
-            
+
             # path checks
             my $path = ref $item ? $item->path : $item;   # from nature_items or from items?
             my $file = _file( $job_dir, $path );
@@ -72,9 +72,9 @@ sub deploy_sql {
                     next ITEM;
                 }
             }
-            
+
             _debug "Checking content for sql item path: " . $path;
-            
+
             # content check
             my $sql = $file->slurp;
             $flag = undef;
@@ -94,9 +94,9 @@ sub deploy_sql {
                     next ITEM;
                 }
             }
-            
+
             _log "Calling do for item path: " . $path;
-            
+
             # call connection do
             my $ret = $db->dosql(
                 sql          => $sql,
@@ -134,13 +134,13 @@ LOG
                 } else {
                     my @errmsg = ( _loc('SQL %1 Query error (mode %3): %2',"$tran_cnt.$k",substr($st->{err},0,30),$st->{mode}), $msg );
                     if( $error_mode eq 'fail' ) {
-                        $log->error( @errmsg ); 
+                        $log->error( @errmsg );
                         _fail( _loc('Error processing SQL') );
                     } elsif( $error_mode eq 'warn' ) {
-                        $log->warn( @errmsg ); 
+                        $log->warn( @errmsg );
                     } elsif( $error_mode eq 'ignore' ) {
                         # ignore...
-                        $log->error( @errmsg ); 
+                        $log->error( @errmsg );
                     } else {
                         # silent
                         # _debug( @errlog );  # not needed, should be enough with dbi_connection _log
@@ -151,10 +151,10 @@ LOG
     }
     $stash->{_db_transaction_count} = $tran_cnt;
     $tran_cnt;
-}   
+}
 
 register 'service.db.commit_all_transactions' => {
-    name    => 'Commit All Transactions', 
+    name    => 'Commit All Transactions',
     icon    => '/static/images/icons/repo.gif',
     #icon    => '/static/images/ci/dbconn.png',
     job_service  => 1,
@@ -162,7 +162,7 @@ register 'service.db.commit_all_transactions' => {
 };
 
 register 'service.db.rollback_all_transactions' => {
-    name    => 'Rollback All Transactions', 
+    name    => 'Rollback All Transactions',
     icon    => '/static/images/icons/repo.gif',
     #icon    => '/static/images/ci/dbconn.png',
     job_service  => 1,
@@ -179,17 +179,17 @@ register 'service.db.backup' => {
 
 sub backup_schema {
     my ( $self, $c, $config ) = @_;
-    
+
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    
+
     $log->info( _loc('Schema backup ok') );
 }
 
 sub commit_all {
     my ( $self, $c, $config ) = @_;
-    
+
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
@@ -201,22 +201,22 @@ sub commit_all {
         }
         $log->info( _loc( 'DB COMMIT transactions: %1', scalar(@msgs) ), join("\n",@msgs) );
     } catch {
-        my $err = shift;   
+        my $err = shift;
         $log->info( _loc( 'DB COMMIT transactions: %1', scalar(@msgs) ), join("\n",@msgs) );
         _fail _loc 'Error during commit transactions: %1', $err;
     };
 
     # delete connection DBI object to avoid serialization problems, it can be ref'd by tmp variables
     for my $tran ( _array $stash->{_state_db_transactions} ) {
-        delete $tran->{db}{_connection}; 
+        delete $tran->{db}{_connection};
     }
     delete $stash->{_state_db_transactions};  # cant' be seraialized
     return;
-}   
+}
 
 sub rollback_all {
     my ( $self, $c, $config ) = @_;
-    
+
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
@@ -226,7 +226,7 @@ sub rollback_all {
     }
     delete $stash->{_state_db_transactions};  # cant' be seraialized
     return;
-}   
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

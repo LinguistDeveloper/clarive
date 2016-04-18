@@ -11,7 +11,7 @@ sub default : Path {
     my $file = $c->path_to('lib', 'Baseliner', 'I18N', $lang . '.po');
     try {
         $c->serve_static_file( $file );
-    } catch {	
+    } catch {
         $c->res->body( "" );
     };
 }
@@ -21,7 +21,7 @@ sub js : Local {
     my $p = $c->req->parameters;
     # set the language here if possible
     my @languages = $c->user_languages;
-    $c->languages([ @languages ]); 
+    $c->languages([ @languages ]);
     $lang ||= $c->language;
     my $offset = ' ' x 4;
     my $text = Baseliner::I18N->parse_po($c->path_to('lib', 'Baseliner', 'I18N', $lang . '.po'), $offset );

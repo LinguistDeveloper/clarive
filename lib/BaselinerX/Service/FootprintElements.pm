@@ -10,7 +10,7 @@ use Encode::Guess qw/utf8/;
 
 with 'Baseliner::Role::Service';
 
-## COMPILA 
+## COMPILA
 register 'service.job.footprint' => {
     name    => _loc( 'Footprint elements' ),
     job_service  => 1,
@@ -35,7 +35,7 @@ register 'service.job.footprint' => {
         my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
         $Year += 1900;
         $Month +=1;
-    
+
         my $now= Class::Date->new([$Year,$Month,$Day,$Hour, $Minute]);
 
         foreach my $filename (@FOUND) {
@@ -73,7 +73,7 @@ register 'service.job.footprint' => {
                 }
             }
             #logdebug "Footprinting fichero:\n'$filename'\n";
-            if ( $elto_found ) {			
+            if ( $elto_found ) {
                 if( (-f $filename) && (-T $filename)) {
                     my $newdata = "";
                     open FP,"<$filename";

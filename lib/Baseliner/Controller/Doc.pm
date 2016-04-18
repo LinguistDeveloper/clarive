@@ -35,7 +35,7 @@ sub content : Local {
         { text=>_loc('Created By'), value=>$$doc{created_by} },
         { text=>_loc('Version'), value=>$$doc{_version}//'1.0' },
     ];
-    my $moniker = Util->_name_to_id($title) =~ s/_/-/gr; 
+    my $moniker = Util->_name_to_id($title) =~ s/_/-/gr;
     $c->stash->{json} = { body=>$body, title=>$title, info=>$info, moniker=>$moniker };
     $c->forward('View::JSON');
 }
@@ -44,7 +44,7 @@ sub menu : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $username = $c->username;
-    
+
     # gen_tree does not return children, gotta recurse here
     #my $prj = ci->project->find_one({ name=>$prjname }) || _fail(_loc('Project %1 not found', $prjname));
     #my @tree = Baseliner::Controller::FileVersion->gen_tree({ username=>$username, id_project=>$prj->{mid} });
@@ -60,7 +60,7 @@ sub menu : Local {
         }
         _debug( \@tree );
         my $menuify; $menuify = sub{
-            my ($item_path,@t) = @_;    
+            my ($item_path,@t) = @_;
             _debug "Item path " . _dump($item_path);
             return map {
                 my $row = $_;
@@ -68,7 +68,7 @@ sub menu : Local {
                 #_debug( $_ );
                 my $id_folder = $$row{data}{id_folder} || -1;
                 my @tree2 = Baseliner::Controller::FileVersion->gen_tree({ username=>$username, id_folder=>$id_folder });
-                +{ 
+                +{
                    text       => $text,
                    moniker    => ( $$row{moniker} =~ s/_/-/gr ),  # dash is more webish
                    topic_mid  => $$row{data}{topic_mid},
@@ -83,7 +83,7 @@ sub menu : Local {
     }
     elsif( $doc_id =~ /topic:(.+)/ ) {
         my $parent_mid = $1;
-        my $meta = model->Topic->get_meta_hash( $parent_mid ); 
+        my $meta = model->Topic->get_meta_hash( $parent_mid );
         my %topics;
         for my $rel ( mdb->master_rel->find({ from_mid=>$parent_mid, rel_type=>'topic_topic' })->all ) {
             my $mid = $$rel{to_mid};
@@ -93,18 +93,18 @@ sub menu : Local {
             $topics{$id_field}{text} ||= $field->{name_field};
             # children
             my $topic = ci->topic->find_one($mid) // _fail _loc 'Topic mid not found: %1', $mid;
-            my $tt = { text=>$$topic{title}, 
+            my $tt = { text=>$$topic{title},
                 path => '', #join( '/', map{ s{/}{&frasl;}r } @$item_path, $text),
                 id_folder  => -1,
                 children => [],
-                topic_name=>$$topic{title}, topic_mid=>$$topic{mid}, moniker=>( $$topic{moniker}=~ s/_/-/gr ), }; 
+                topic_name=>$$topic{title}, topic_mid=>$$topic{mid}, moniker=>( $$topic{moniker}=~ s/_/-/gr ), };
             _debug( $tt );
-            push @{ $topics{$id_field}{children} }, $tt; 
+            push @{ $topics{$id_field}{children} }, $tt;
         }
         @tree = values \%topics;
     }
-    
-    
+
+
     _debug( \@tree );
         #my @tree = (
         #{ text=>'Uno', id=>'uno', children=>[
@@ -127,4 +127,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

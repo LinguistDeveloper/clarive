@@ -23,29 +23,29 @@ my $id_rule;
 $id_rule = get_seq(seq_id => 'rule')+1;
 
 sub get_seq {
-	my %p = @_;
-	my $seq_id = $p{seq_id};
-	$url = '/repl/sequence_test';
-	%data = ( option => 2, seq_id => $seq_id );
-	$ag->post( URL($url), \%data );
-	my $json = _decode_json( $ag->content );
-	$json->{seq};
+    my %p = @_;
+    my $seq_id = $p{seq_id};
+    $url = '/repl/sequence_test';
+    %data = ( option => 2, seq_id => $seq_id );
+    $ag->post( URL($url), \%data );
+    my $json = _decode_json( $ag->content );
+    $json->{seq};
 }
 
 sub simulate_statements_change {
-	$url = '/rule/rule_test';
-	%data = ( option => 0, id_rule => $id_rule );
-	$ag->post( URL($url), \%data );
+    $url = '/rule/rule_test';
+    %data = ( option => 0, id_rule => $id_rule );
+    $ag->post( URL($url), \%data );
 }
 
 sub reset_previous_state {
-	$url = '/rule/rule_test';
-	%data = ( option => -1, id_rule => $id_rule );
-	$ag->post( URL($url), \%data );
-	
+    $url = '/rule/rule_test';
+    %data = ( option => -1, id_rule => $id_rule );
+    $ag->post( URL($url), \%data );
+
 }
 
-## Rule creation 
+## Rule creation
 $url = '/rule/save';
 %data = ('chain_default' => '-', 'rule_event' => 'event.user.create', 'rule_name' => 'prueba', 'rule_type' => 'event', 'rule_when' => 'post-offline');
 $ag->post( URL($url), \%data );
@@ -63,11 +63,11 @@ $url = '/rule/stmts_save';
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
 if ($json->{msg} eq  'An other user changed rule statements during edition process!'){
-	say "Result: " . $json->{msg};
-	ok $json->{success}, 'Modification of rule detected successfully';
+    say "Result: " . $json->{msg};
+    ok $json->{success}, 'Modification of rule detected successfully';
 }else{
-	say "Result: " . $json->{msg};
-	ok $json->{success}, 'Modification of rule not detected';
+    say "Result: " . $json->{msg};
+    ok $json->{success}, 'Modification of rule not detected';
 }
 
 reset_previous_state();

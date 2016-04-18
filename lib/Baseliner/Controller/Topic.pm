@@ -2155,7 +2155,7 @@ sub grid_count : Local {
     my $p = $c->req->params;
 
     if( my $lq = $p->{lq} ) {
-        if($lq->{'$and'}){  
+        if($lq->{'$and'}){
             my $where = Baseliner->model('Topic')->build_where_clause_with_reg_exp($p->{query}, $p->{username}, $p->{id_project});
             $lq->{'$and'} = $where->{'$and'};
         }

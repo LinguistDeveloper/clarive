@@ -6,7 +6,7 @@ use DateTime;
 
 with 'Baseliner::Role::Service';
 
-BEGIN { 
+BEGIN {
     ## Oracle needs this
     $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 }
@@ -27,15 +27,15 @@ register 'config.job' => {
         { id=>'endtime', label => 'EndDate', type=>'text' },
         { id=>'status', label => 'Status', type=>'text', default=>'READY' },
         { id=>'mask', label => 'Job Naming Mask', type=>'text', default=>'%s.%s-%08d' },
-        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.rule' } }, 
-        { id=>'default_chain_id', label => 'Default Pipeline ID', type=>'text', default=>1 }, 
+        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.rule' } },
+        { id=>'default_chain_id', label => 'Default Pipeline ID', type=>'text', default=>1 },
         { id=>'comment', label => 'Comment', type=>'text' },
         { id=>'check_rfc', label => 'Check RFC on creation', type=>'text', default=>0 },
         { id=>'step', label => 'Which phase of the job, pre, post or run', default => 'RUN' },
         { id=>'normal_window', label => 'Normal Window Name', default => 'N' },
         { id=>'emer_window', label => 'Emergency Window Name', default => 'U' },
-        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ N=>"1D", U=>"1h" }' }, 
-        { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' }, 
+        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ N=>"1D", U=>"1h" }' },
+        { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' },
         { id=>'approval_delay', label => 'Delay after start running job to allow approval', default=>'0h' },
         { id=>'demote_to_bl', label => '1 to offer demote to each bl in destination state', default=>'0' },
         { id=>'changeset_comment_field', label => 'Changeset field to use as comment in monitor', default=>'' }

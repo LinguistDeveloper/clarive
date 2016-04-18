@@ -69,13 +69,13 @@ has excerpt_length => ( is => 'rw', isa => 'Num', default=>300 );
 
 sub _build__index_schema{
     my $self = shift;
-    
+
     my $schema = Lucy::Plan::Schema->new;
 
     my $types = {
         'fulltext' => 'Lucy::Plan::FullTextType',
         'blob' => 'Lucy::Plan::BlobType',
-        'float32' => 'Lucy::Plan::Float32Type', 
+        'float32' => 'Lucy::Plan::Float32Type',
         'float64' => 'Lucy::Plan::Float64Type',
         'int32' => 'Lucy::Plan::Int32Type',
         'int64' => 'Lucy::Plan::Int64Type',
@@ -113,7 +113,7 @@ sub _build__indexer{
     my $self = shift;
 
     return Lucy::Index::Indexer->new(
-        schema => $self->_index_schema,   
+        schema => $self->_index_schema,
         index  => $self->_index_path,
         create => 1,
     );
@@ -127,7 +127,7 @@ has _searcher => (
 );
 
 sub _build__searcher{
-    return Lucy::Search::IndexSearcher->new( 
+    return Lucy::Search::IndexSearcher->new(
         'index' => shift->_index_path,
     );
 }
@@ -184,8 +184,8 @@ sub sorted_search{
 
     my @rules;
     foreach my $key ( keys( %{$criteria} ) ){
-        push( 
-            @rules,  
+        push(
+            @rules,
             Lucy::Search::SortRule->new(
                 field   => $key,
                 reverse => $criteria->{ $key },
@@ -196,7 +196,7 @@ sub sorted_search{
     return $self->search( $query, $page, Lucy::Search::SortSpec->new( rules => \@rules ) );
 }
 
-{ 
+{
     package Baseliner::Lucy::Highlighter;
     use base 'Lucy::Highlight::Highlighter';
 }
@@ -228,7 +228,7 @@ sub search{
         }
         # create excerpt
         if( my $highlighter_class = $self->highlighter ) {
-            my $highlighter = $highlighter_class->new( 
+            my $highlighter = $highlighter_class->new(
                 searcher => $self->_searcher,
                 query    => $query,
                 field    => 'text',
@@ -296,7 +296,7 @@ sub commit{
     use strict;
     use warnings;
 
-    sub new{ 
+    sub new{
         my ( $self, $data ) = @_;
         return $data;
     }

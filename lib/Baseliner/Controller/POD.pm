@@ -15,11 +15,11 @@ if( $ENV{BASELINER_POD} ) {
         use base 'Catalyst::Controller';
         sub pod : Global {
             my($self,$c)=@_;
-            $c->res->body('<pre><b>Attention</b>: Baseliner POD Reference is turned off by default. To turn it on, 
-           set the environment variable BASELINER_POD=1 and restart the web server.</pre>'); 
+            $c->res->body('<pre><b>Attention</b>: Baseliner POD Reference is turned off by default. To turn it on,
+           set the environment variable BASELINER_POD=1 and restart the web server.</pre>');
         }
     };
-        
+
 }
 
 1;

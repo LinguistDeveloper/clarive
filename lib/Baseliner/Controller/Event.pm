@@ -58,10 +58,10 @@ sub log : Local {
     for( mdb->event_log->find({ id_event => mdb->in(@eventids) })->all ) {
         push @{ $rule_log{$_->{id_event}} }, $_;
     }
-    my $all_rules = +{ map{ $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all }; 
+    my $all_rules = +{ map{ $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all };
     my @final;
     EVENT: for my $e ( @rows ) {
-        # event_key event_status event_data 
+        # event_key event_status event_data
         delete $e->{event_data};
         my $desc = cache->get('event:'.$e->{event_key});
         if ( !$desc ) {
@@ -71,7 +71,7 @@ sub log : Local {
                 cache->set( 'event:' . $e->{event_key}, $ev->description );
             }
             catch {
-                 _error( shift() ); 
+                 _error( shift() );
                 next EVENT; };
         } ## end if ( !$ev )
         $e->{description} = _loc($desc);
@@ -86,14 +86,14 @@ sub log : Local {
             my $log = $_;
             my $rule = $all_rules->{$log->{id_rule}} if exists $log->{id_rule};
             +{
-                %$log, 
+                %$log,
                 _parent       => $e->{_id},
                 _id           => $e->{_id} . '-' . $k++,  # $rule->{id} useless and may repeat
                 _is_leaf      => \1,
                 id_rule_log   => $log->{id},
                 event_status  => $log->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
-                event_key     => $rule 
+                event_key     => $rule
                     ? _loc('rule: [%1] %2', $rule->{id}, $rule->{rule_name} )
                     : _loc("Notifications"),
             }
@@ -148,7 +148,7 @@ sub event_data : Local {
     my $id = $p->{id_rule_log} || $p->{id_event};
     given( $type ) {
         when( 'stash' ) {
-            my $row = $p->{id_rule_log} 
+            my $row = $p->{id_rule_log}
                 ? mdb->event_log->find_one({ id=>$id },{ stash_data=>1 })
                 : mdb->event->find_one({ id=>$id }, { event_data=>1 });
             $data = $p->{id_rule_log} ? $row->{stash_data} : $row->{event_data} if $row;

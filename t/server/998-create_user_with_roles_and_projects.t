@@ -533,7 +533,7 @@ my $role_dev;
     my $res = $ag->json( URL('ci/update') => $data );
     $project_mid1 = $res->{mid};
     is( ${ $res->{success} }, 1,  "$res->{msg}: project created succesfully" );
-     
+
 }
 
 {
@@ -556,7 +556,7 @@ my $role_dev;
     my $res = $ag->json( URL('ci/update') => $data );
     $project_mid2 = $res->{mid};
     is( ${ $res->{success} }, 1,  "$res->{msg}: project created succesfully" );
-     
+
 }
 
 #########################
@@ -592,7 +592,7 @@ my $role_dev;
         pass_cfrm=>                 'test_user',
         phone=>                     '33334444',
         projects_checked=>          [$project_mid1,$project_mid2],
-        projects_parents_checked=>  '',  
+        projects_parents_checked=>  '',
         realname=>                  'test_user',
         roles_checked=>             [$role_id1,$role_id2,$role_dev],
         type=>                      'roles_projects',

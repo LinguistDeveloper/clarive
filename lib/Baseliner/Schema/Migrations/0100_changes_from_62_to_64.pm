@@ -1,7 +1,7 @@
 package Baseliner::Schema::Migrations::from62;
 use Moose;
 
-#cla db-upgrade --migrate from62 
+#cla db-upgrade --migrate from62
 
 sub upgrade {
     # 6.2:
@@ -13,12 +13,10 @@ sub upgrade {
 }
 
 sub downgrade {
-    
+
 }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-
-

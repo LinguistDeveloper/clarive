@@ -18,7 +18,7 @@ has _doc => qw(is rw isa HashRef);
 #has_cis 'posts';
 
 sub rel_type {
-    { 
+    {
         projects => [ from_mid => 'topic_project' ] ,
         assets   => [ from_mid => 'topic_asset' ] ,
         posts    => [ from_mid => 'topic_post' ] ,
@@ -38,9 +38,9 @@ around delete => sub {
     my ($orig, $self, $mid ) = @_;
     $mid = $mid // $self->mid;
     mdb->topic->remove({ mid=>"$mid" },{ multiple=>1 });
-	my $cnt = $self->$orig($mid);
+    my $cnt = $self->$orig($mid);
 };
-    
+
 # adds extra data to _ci during loading
 after load_data => sub {
     my ($class, $mid, $data ) = @_;
@@ -49,9 +49,9 @@ after load_data => sub {
     delete $topic_data->{mid};
 
     # XXX avoid strange errors in parse_vars_raw during job run: can't call method value on unblessed ref MongoDB/OID.pm
-    delete $topic_data->{category}{_id}; 
+    delete $topic_data->{category}{_id};
     # cannot return data and expect merge to be done outside anymore, merge has to be done here
-    #    don't expect to see fields in the normal topic CI! They're only in _ci => {} in case you using _ci() 
+    #    don't expect to see fields in the normal topic CI! They're only in _ci => {} in case you using _ci()
     $data->{$_} = $topic_data->{$_} for keys %$topic_data;
 };
 
@@ -66,18 +66,18 @@ sub files {
     my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
         to_mid=>mid=>master_doc=>{} );
     return @files;
-} 
+}
 
 sub topic_name {
     my ($self) = @_;
-    return sprintf '%s #%s - %s', $self->name_category, $self->mid, ( $self->title // $self->name ); 
+    return sprintf '%s #%s - %s', $self->name_category, $self->mid, ( $self->title // $self->name );
 }
 
 sub timeline {
     my ($self, $p) = @_;
-    
+
     my @data;
-    
+
     # master cal entries
     my @cal =
         mdb->master_cal->find({ mid => $self->mid })->sort({ start_data=>1 })->all;
@@ -89,7 +89,7 @@ sub timeline {
             $end=$start;
             $start=$old;
         }
-        
+
         +{
             start         => $start,
             $end ? ( end => $end ) : (),
@@ -104,7 +104,7 @@ sub timeline {
             description => $_->{slotname},
         }
     } grep { $_->{plan_end_date} } @cal;
-    
+
     # events
     my %events = map { $_->{text} => $_ } @{ Baseliner::Model::Activity->find_by_mid( $self->mid ) };
     push @data, map {
@@ -120,11 +120,11 @@ sub timeline {
             caption     => $_->{text},
             description => $_->{text},
         }
-    } values %events; 
-    
+    } values %events;
+
     my %same_date;
     $same_date{ substr($_->{start},0,10) }+=1 for grep { $_->{start} } @data;
-    my $max_same_date = ( sort { $b <=> $a } values %same_date )[0]; 
+    my $max_same_date = ( sort { $b <=> $a } values %same_date )[0];
     my $k = 1;
     @data = map { $_->{trackNum}=$k++; $_ } sort { $a->{start} cmp $b->{start} } @data;
     return { events => \@data, max_same_date=>$max_same_date }
@@ -151,21 +151,21 @@ sub is_release {
 sub projects {
     my ($self) = @_;
     $self->related( rel_type=>'topic_project' );
-} 
+}
 
 sub revisions {
     my ($self) = @_;
     $self->related( rel_type=>'topic_revision' );
-} 
+}
 
 sub bl {
     my ($self)=@_;
-    ci->status->find_one({ id_status=>''. $self->id_category_status })->{bl};    
+    ci->status->find_one({ id_status=>''. $self->id_category_status })->{bl};
 }
 
 sub status_name {
     my ($self)=@_;
-    ci->status->find_one({ id_status=>''. $self->id_category_status })->{name};    
+    ci->status->find_one({ id_status=>''. $self->id_category_status })->{name};
 }
 
 sub items {
@@ -175,11 +175,11 @@ sub items {
     my @revisions = $self->revisions;
     my $type = $p{type} // 'promote';
     my $bl   = $p{bl} // $self->bl;
-    
+
     my %repos;
     # group revisions by repo
     for my $rev ( @revisions ) {
-        push @{ $repos{$rev->repo->mid}{revisions} }, $rev; 
+        push @{ $repos{$rev->repo->mid}{revisions} }, $rev;
         $repos{$rev->repo->mid}{repo} //= $rev->repo;
     }
 
@@ -215,8 +215,8 @@ sub activity {
     # control activity visualiz permissions
     my $name_category = Util->_name_to_id($self->name_category);
     my %topic_category = ();
-    my $user_categories_fields_meta = model->Users->get_categories_fields_meta_by_user( 
-        username=>$$p{username}, categories=>{ $self->id_category => $self->name_category }, 
+    my $user_categories_fields_meta = model->Users->get_categories_fields_meta_by_user(
+        username=>$$p{username}, categories=>{ $self->id_category => $self->name_category },
     );
     my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $activity );
     if ( !Baseliner->model('Permissions')->user_has_action(username => $$p{username},action => "action.topics.$name_category.comment" )) {
@@ -232,14 +232,14 @@ sub comments {
     my $is_root = model->Permissions->is_root($$p{username});
     my $comments = model->Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
-        #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
+        #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format
         $$com{topic_mid} = $self->mid;
         $$com{can_edit} = $is_root ? \1 : $$com{created_by} eq $$p{username} ? \1:\0;   # XXX for now the owner cannot edit or delete her own post
         $$com{can_delete} = $is_root ? \1 : \0;
     }
     wantarray ? @$comments : $comments;
 }
-            
+
 sub is_in_active_job {
     my ($self )=@_;
     my @active_jobs;
@@ -260,7 +260,7 @@ sub get_doc {
     my $doc = $self->_doc;
     return $doc if defined $doc;
     @rest = ( { _txt=>0 } ) unless @rest;
-    $doc = mdb->topic->find_one({ mid=>$self->mid }, @rest ); 
+    $doc = mdb->topic->find_one({ mid=>$self->mid }, @rest );
     $self->_doc($doc);
     return $doc;
 }

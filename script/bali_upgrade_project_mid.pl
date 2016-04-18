@@ -190,5 +190,3 @@ $dbh->do(
 
 
 print "Finished bali_project to mid migration\n\n";
-
-

@@ -166,14 +166,14 @@ sub group_items_for_revisions {
     #      $it->path( $rel_path, $it->path ) if length $rel_path && $rel_path ne '/';
     #      $it;
     #  } @items;
-    return @items; 
+    return @items;
 }
 
 sub items {
     my ($self, %p ) = @_;
     my $revisions = $p{revisions};
     my $tag = $p{tag};
-    
+
 }
 
 method verify_revisions( :$revisions, :$tag, :$type='promote' ) {
@@ -416,7 +416,7 @@ sub list_elements {
     $log->info( _loc( "*Git* Job Elements %1", $count ), data => join "\n", map {
             my ( $status, $blanks, $path ) = /^(.*?)(\s+)(.*)$/;
             $status.$blanks._dir $self->rel_path,$path;
-        }@elems 
+        }@elems
     );
     @elems = map {
         my ( $status, $path ) = /^(.*?)\s+(.*)$/;
@@ -472,10 +472,10 @@ method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
 
             next;
         }
-        
+
         # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
         #    to a undefined deployment situation
-        
+
         if( $type eq 'promote' ) {
             _debug( _loc "Promote baseline $tag to $top_rev: tag -f $tag $top_rev" );
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
@@ -520,7 +520,7 @@ sub get_last_commit {
 
 #   my @log = $git->exec( qw/log --pretty=oneline/);
     if ( scalar @commits == 1 ) { return $commits[0]->{sha} };
-    
+
     for my $change_commit ( @commits ) {
         $log->debug( "Mirando si el commit ".$change_commit->{sha}." incluye al resto");
         my $direction;
@@ -532,7 +532,7 @@ sub get_last_commit {
 
         my @gitlog =
             $git->exec( 'rev-list', '--pretty=oneline', $direction );
-        
+
         $log->debug("Salida de rev-list", data => join "\n", @gitlog);
 
         @gitlog = map { my @parts = split " ", $_; shift @parts;} @gitlog;
@@ -564,12 +564,12 @@ sub list_branches {
                                  #$p{bl} and @heads = grep { $_->name =~ /^$p{bl}/ } @heads;
 
     if ( _array($self->include) ) {
-        my $includes = '^('.join('|', _array($self->include)).')$'; 
+        my $includes = '^('.join('|', _array($self->include)).')$';
         @heads = grep { $_->{name} =~ /$includes/ } @heads;
     }
 
     if ( _array($self->exclude) ) {
-        my $excludes = '^('.join('|', _array($self->exclude)).')$'; 
+        my $excludes = '^('.join('|', _array($self->exclude)).')$';
         @heads = grep { $_->{name} !~ /$excludes/ } @heads;
     }
 

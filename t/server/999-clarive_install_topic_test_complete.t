@@ -534,7 +534,7 @@ my $role_dev;
     my $res = $ag->json( URL('ci/update') => $data );
     $project_mid1 = $res->{mid};
     is( ${ $res->{success} }, 1,  "$res->{msg}: project created succesfully" );
-     
+
 }
 
 {
@@ -557,7 +557,7 @@ my $role_dev;
     my $res = $ag->json( URL('ci/update') => $data );
     $project_mid2 = $res->{mid};
     is( ${ $res->{success} }, 1,  "$res->{msg}: project created succesfully" );
-     
+
 }
 
 #########################
@@ -593,7 +593,7 @@ my $role_dev;
         pass_cfrm=>                 'test_user',
         phone=>                     '33334444',
         projects_checked=>          [$project_mid1,$project_mid2],
-        projects_parents_checked=>  '',  
+        projects_parents_checked=>  '',
         realname=>                  'test_user',
         roles_checked=>             [$role_id1,$role_id2,$role_dev],
         type=>                      'roles_projects',
@@ -609,20 +609,20 @@ my $role_dev;
 
 
 #########################
-#		entorno			#
+#        entorno            #
 #########################
 
 $url = 'ci/update';
 $data = {
     as_json   => 1,
     form_data => {
-        name           	=> 'Entorno de pruebas',
-        description    	=> 'Entorno de pruebas',
-        bl             	=> '*',
-        moniker        	=> '',
-        active         	=> 'on',
-        children       	=> '',
-        seq 			=> '100'
+        name               => 'Entorno de pruebas',
+        description        => 'Entorno de pruebas',
+        bl                 => '*',
+        moniker            => '',
+        active             => 'on',
+        children           => '',
+        seq             => '100'
     },
     _merge_with_params => 1,
     action             => 'add',
@@ -631,10 +631,10 @@ $data = {
 $res = $ag->json( URL($url) => $data );
 my $bl = $res->{mid};
 is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-     
+
 
 #########################
-#		status			#
+#        status            #
 #########################
 
 $url = 'ci/update';
@@ -683,7 +683,7 @@ $res = $ag->json( URL($url) => $data );
 my $progress_status = $res->{mid};
 push @cats, $res->{mid};
 is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-     
+
 
 #finalizado
 $data = {
@@ -706,10 +706,10 @@ $res = $ag->json( URL($url) => $data );
 my $finish_status = $res->{mid};
 push @cats, $res->{mid};
 is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-     
+
 
 #############################
-#		categoria			#
+#        categoria            #
 #############################
 
 $url = 'topicadmin/update_category';
@@ -727,15 +727,15 @@ $data = {
 };
 
 $res = $ag->json( URL($url) => $data );
-is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
+is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );
 my $cat = $res->{category_id};
 #add fields to a category
 
 $url = 'topicadmin/update_fields';
 
 $res = $ag->post( URL($url) => [ fields =>'title', fields =>'moniker', fields=>'description', id_category=>$cat,
-                                 params=>'{"bd_field":"title","origin":"system","name_field":"Title","section":"head","font_weigth":"bold","system_force":true,"allowBlank":false,"html":"/fields/system/html/field_title.html","js":"/fields/templates/js/textfield.js","field_order":-1,"field_order_html":1}', 
-                                 params=>'{"bd_field":"moniker","origin":"system","name_field":"Moniker","section":"body","html":"/fields/templates/html/row_body.html","allowBlank":true,"js":"/fields/templates/js/textfield.js","field_order":-8}', 
+                                 params=>'{"bd_field":"title","origin":"system","name_field":"Title","section":"head","font_weigth":"bold","system_force":true,"allowBlank":false,"html":"/fields/system/html/field_title.html","js":"/fields/templates/js/textfield.js","field_order":-1,"field_order_html":1}',
+                                 params=>'{"bd_field":"moniker","origin":"system","name_field":"Moniker","section":"body","html":"/fields/templates/html/row_body.html","allowBlank":true,"js":"/fields/templates/js/textfield.js","field_order":-8}',
                                  params=>'{"bd_field":"description","origin":"system","name_field":"Description","section":"head","html":"/fields/templates/html/dbl_row_body.html","js":"/fields/templates/js/html_editor.js","field_order":-7,"field_order_html":2}' ] );
 
 $json = _decode_json( $ag->content );
@@ -750,7 +750,7 @@ $data = {
     idsstatus_to    => $progress_status,
     id              => $cat,
     status_from     => $new_status,
-    job_type        => '' 
+    job_type        => ''
 };
 
 $ag->post( URL($url), $data);
@@ -763,7 +763,7 @@ $data = {
     idsstatus_to    => $finish_status,
     id              => $cat,
     status_from     => $progress_status,
-    job_type        => '' 
+    job_type        => ''
 };
 
 $ag->post( URL($url), $data);

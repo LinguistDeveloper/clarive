@@ -22,15 +22,15 @@ sub rel_type {
 
 use Baseliner::Utils;
 sub parse {
-    my ($self,$item) = @_; 
-    my $file = $item->path; 
+    my ($self,$item) = @_;
+    my $file = $item->path;
     my $tmout = $self->timeout;
-    my $regex = $self->regex; 
+    my $regex = $self->regex;
     $regex = eval 'qr{' . $regex . '}'. $self->regex_options;
     Util->_fail( 'Missing or invalid regex: %1', $@ ) unless $regex;
 
     _debug ( _loc "Matcher scanning file %1...", $file );
-    
+
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
 
     my $tree = [];
@@ -38,9 +38,9 @@ sub parse {
     my $has_match = 0;
     if( $path_mode ) {
         $has_match = $file =~ /$regex/;
-    } 
+    }
     else {
-        my $source = $item->source; 
+        my $source = $item->source;
         # index line numbers
         my @newline;
         my $i=0;
@@ -69,7 +69,7 @@ sub parse {
     }
 
     if( @$tree ) {
-        $tree = $self->process_item_tree( $item, $tree ); 
+        $tree = $self->process_item_tree( $item, $tree );
         $tree = $item->add_parse_tree( $tree );
         return $tree;
     } else {
@@ -78,5 +78,3 @@ sub parse {
 }
 
 1;
-
-

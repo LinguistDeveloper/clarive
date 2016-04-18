@@ -9,13 +9,13 @@ has wait_frequency => qw(is rw default 5);
 
 has user   => qw(is rw isa Str);
 has key    => qw(is rw isa Str), default=>sub{
-    return  BaselinerX::Type::Model::ConfigStore->get('balix_key', value=>1) 
-        || 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';  
+    return  BaselinerX::Type::Model::ConfigStore->get('balix_key', value=>1)
+        || 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';
 };
 has port   => qw(is rw isa Num lazy 1), default=>sub{
     my $self = shift;
     my $os_port_key = BaselinerX::Type::Model::ConfigStore->get('balix_port_' . $self->os, value=>1);
-    return  $os_port_key // BaselinerX::Type::Model::ConfigStore->get('balix_port', value=>1) 
+    return  $os_port_key // BaselinerX::Type::Model::ConfigStore->get('balix_port', value=>1)
         || 11800;
 };
 has _blow   => qw(is rw isa Any lazy 1), default => sub {
@@ -90,14 +90,14 @@ method chown ( $perms, $path ) {
 
 method execute( @cmd ) {
     my $tmout = $self->timeout;
-    alarm $tmout if $tmout; 
+    alarm $tmout if $tmout;
     local $SIG{ALRM} = sub { _fail _loc 'balix agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
     if( $opts->{chdir} ) {
-       @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
+       @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );
     }
     if( (my $user = $self->user) && !$self->is_win ) {
-        @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
+        @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted
         @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
     }
     #_debug \@cmd;
@@ -110,12 +110,12 @@ method put_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     my $tarfile = Util->_tmp_file( prefix=>'balix-put-dir', extension=>'tar' );
     my $tarfile_remote = _dir( $remote, _file( $tarfile)->basename );
     $self->mkpath( $remote );
-    Util->tar_dir( source_dir=>$local, tarfile=>$tarfile, files=>$files ); 
+    Util->tar_dir( source_dir=>$local, tarfile=>$tarfile, files=>$files );
     $self->put_file( local=>$tarfile, remote=>"$tarfile_remote" );
     $self->execute( \"cd '$remote' && ", \'tar', \'xvf', $tarfile_remote );
     $self->execute( rm => $tarfile_remote );
     unlink "$tarfile" if -e $tarfile;
-    return $self->tuple;  
+    return $self->tuple;
 }
 
 method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user  ) {
@@ -133,7 +133,7 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     chdir $orig;
     $self->output( $out ),
     unlink "$tarfile" if -e $tarfile;
-    return $self->tuple;  
+    return $self->tuple;
 }
 
 method is_remote_dir( $dir ) {
@@ -153,7 +153,7 @@ method file_exists( $file_or_dir ) {
         return !!( $ret =~ /CLAX_EXIST/s );
     } else {
         my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
-        return !$rc; 
+        return !$rc;
     }
 }
 
@@ -202,7 +202,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     # check file writeable
     my ($rc,$ret) = $self->check_writeable($remote);
     _fail _loc("balix: cannot send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
-    # check we are not trying to write a directory 
+    # check we are not trying to write a directory
     my $is_dir = $self->is_remote_dir($remote);
     _fail _loc("balix: cannot send file: destination is a directory `%1`", $remote) if $is_dir;
     # send
@@ -210,15 +210,15 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     if( $user ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );
     }
-    $self->_crc_match( $local, $remote )  
+    $self->_crc_match( $local, $remote )
         or Util->_fail( Util->_loc("Failed CRC check for remote file '%1'. Remote filesystem full?", $remote ) );
-    return $self->tuple;  
+    return $self->tuple;
 }
 
 method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     $remote = $self->normalize_path( $remote );
     $self->_get_file( $remote, $local );
-    return $self->tuple;  
+    return $self->tuple;
 }
 
 method remote_eval( $code ) {
@@ -227,15 +227,15 @@ method remote_eval( $code ) {
     my $fpcode = $self->fatpack_perl_code( qq{
         use Storable;
         my \@ret = (do {
-            $code 
+            $code
         });
         open my \$ff, ">$filepath" or die "Could not open output file `$filepath`: \$!";
         binmode \$ff;
         print \$ff Storable::freeze([\@ret]);
-        close \$ff; 
+        close \$ff;
     });
     my $tmp_remote = _file( $self->remote_temp, 'balix_remote_eval_' . $id . ".pl" );
-    $self->put_data( data=>$fpcode, remote=>$tmp_remote ); 
+    $self->put_data( data=>$fpcode, remote=>$tmp_remote );
     $self->execute( $self->remote_perl, $tmp_remote );
     $self->execute( \'rm', $tmp_remote );
     my $dump = $self->get_data( remote=>$filepath );
@@ -299,7 +299,7 @@ sub _send_data {
 
     my $socket = $self->socket;
     $socket->print( $self->encodeCMD("F $rfile") . $self->EOL );
-    
+
     $self->_checkRC();
 
     $socket->print( $self->encodeCMD("D") . $self->EOL . $self->encodeDATA($data) . $self->EOL );
@@ -456,7 +456,7 @@ sub _crc_match {
 sub _execute {
     my ( $self, @cmd ) = @_;
     @cmd or Util->_fail('Missing argument cmd');
-    my $rcmd = join ' ', ( @cmd == 1 ? ($cmd[0]) : ($self->_quote_cmd(@cmd)) ); 
+    my $rcmd = join ' ', ( @cmd == 1 ? ($cmd[0]) : ($self->_quote_cmd(@cmd)) );
     #_debug "BALIX CMD=$rcmd";
     $self->socket->print( $self->encodeCMD("X $rcmd") . $self->EOL );
     $self->_checkRC();
@@ -464,7 +464,7 @@ sub _execute {
 
 sub _checkRC {
     my ($self,$noshift) = @_;
-    my ($buf,$ret); 
+    my ($buf,$ret);
     my $socket = $self->socket;
     #warn "READ....";
     #my $ret    = <$socket>;
@@ -484,7 +484,7 @@ sub _checkRC {
     }
     my $ret_parsed = $self->_parseReturn($ret);
     if( $self->os ne 'win' && !$noshift ) {
-        $rc >>= 8;   
+        $rc >>= 8;
     }
     $self->rc( $rc );
     $self->ret( $ret_parsed );

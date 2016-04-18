@@ -25,7 +25,7 @@ use Baseliner::Utils qw(
 use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5);
 use Clarive::mdb;
 
-####### _pointer 
+####### _pointer
 
 subtest '_pointer returns value from valid structures' => sub {
     is _pointer( 'foo', { foo => 'bar' } ), 'bar';

@@ -4,9 +4,9 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
 # not being used:
-has 'bl' => ( is=>'rw', isa=>'Str', required=>1 ); 
-has 'bl_name' => ( is=>'rw', isa=>'Str', required=>1 ); 
-has 'bl_type' => ( is=>'rw', isa=>'Str', required=>1 ); 
+has 'bl' => ( is=>'rw', isa=>'Str', required=>1 );
+has 'bl_name' => ( is=>'rw', isa=>'Str', required=>1 );
+has 'bl_type' => ( is=>'rw', isa=>'Str', required=>1 );
 
 no Moose;
 ## ----- static methods
@@ -20,23 +20,23 @@ register 'config.baseline' => {
     ],
 };
 
-=head2 find_text 
+=head2 find_text
 
 Finds a descriptive representation for the Namespace. Heavly used, heavly memoized.
 
 =cut
 our %bl_text_cache;
 sub name {
-    my $self = shift; 
+    my $self = shift;
     my $bl = shift;
-    return $bl_text_cache{$bl} if defined $bl_text_cache{$bl}; 
+    return $bl_text_cache{$bl} if defined $bl_text_cache{$bl};
     my $r = ci->find( moniker=>$bl );
     return $bl unless ref $r;
     return $bl_text_cache{$bl} = _loc($r->name) || $bl;
 }
 
 sub baselines {
-    my $self = shift; 
+    my $self = shift;
     return sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
 }
 
@@ -50,4 +50,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

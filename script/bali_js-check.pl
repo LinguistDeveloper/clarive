@@ -29,7 +29,7 @@ dir($dir)->recurse(callback=>sub{
     while ( $d =~ /(\r?\n)/gsm ) {
         push @lines, [ ++$i, $+[1] ];
     }
-    
+
     my $find_line = sub {
         my $pos = shift;
         # find which line
@@ -37,7 +37,7 @@ dir($dir)->recurse(callback=>sub{
             map { $_->[0] } grep { $pos >= $_->[1] } reverse @lines
         ]->[0];
     };
-    
+
     while ( $d =~ /(\n.*\n)?(,\s*\n*[\]\}])/gsm ) {
         my $err = $2;
         my $lin = $find_line->( $+[2] );
@@ -50,7 +50,7 @@ dir($dir)->recurse(callback=>sub{
         my $lin = $find_line->( $+[1] );
         say "*** IE keyword default in $f (line $lin): $err";
     }
-    
+
     while ( $d =~ /( \n [^\n]* console\.\w+ )/xgsm ) {
         my $err = $1;
         my $lin = $find_line->( $+[1] );

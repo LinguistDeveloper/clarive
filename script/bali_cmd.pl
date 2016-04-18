@@ -14,5 +14,3 @@ use Catalyst::Test 'Baseliner';
 print request('/service/run/$service')->content . "\n";
 
 1;
-
-

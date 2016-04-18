@@ -5,6 +5,3 @@ with 'Baseliner::Role::CI';
 sub url { +{} }
 
 1;
-
-
-

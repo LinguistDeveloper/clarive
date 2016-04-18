@@ -2,7 +2,7 @@ package Baseliner::Schema::Migrations::0105_ci_rel_class;
 use Moose;
 
 sub upgrade {
-    my %mid_colls = map { $$_{mid} => $$_{collection} } 
+    my %mid_colls = map { $$_{mid} => $$_{collection} }
         mdb->master->find->fields({ mid=>1, collection=>1 })->all;
     my $rs = mdb->master_rel->find->sort({ _id=>1 });
     while( my $rel = $rs->next ) {
@@ -22,5 +22,3 @@ sub downgrade {
 }
 
 1;
-
-
