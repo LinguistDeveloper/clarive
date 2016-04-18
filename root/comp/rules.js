@@ -287,15 +287,19 @@
     var rule_add = function(){
         rule_editor({ origin: 'rule_add'});
     };
-    var rule_editor = function(rec){
-        Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
-            if( comp ) {
+    var rule_editor = function(rec) {
+        Baseliner.ajaxEval('/comp/rule_new.js', {
+            rec: rec
+        }, function(comp) {
+            if (comp) {
                 var win = new Baseliner.Window({
                     title: _('Edit Rule'),
-                    width: 900,
-                    items: [ comp ]
+                    cls: 'edit_rule_window',
+                    bodyCssClass: 'edit_rule_window_body',
+                    autoScroll: true,
+                    items: [comp]
                 });
-                comp.on('destroy', function(){
+                comp.on('destroy', function() {
                     win.close()
                     rules_store.reload();
                     reload_tree();
@@ -304,7 +308,6 @@
             }
         });
     };
-
     var render_actions = function(value,row){
         return '';
     };
