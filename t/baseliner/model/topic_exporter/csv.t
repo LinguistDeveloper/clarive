@@ -9,7 +9,7 @@ use Test::Fatal;
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
-
+use Test::LongString;
 use Encode;
 
 use_ok 'Baseliner::Model::TopicExporter::Csv';
@@ -47,15 +47,57 @@ subtest 'export: appends new lines until length is 1024' => sub {
     is length $content, 1025;
 };
 
+
+subtest 'export: split the field more_info in 4 field' => sub {
+    _setup();
+
+    my $exporter = _build_exporter();
+
+    my $content = $exporter->export(
+        [   {   title          => 'Test',
+                user           => 'Developer',
+                value          => '100',
+                numcomment     => '2',
+                referenced_in  => '3',
+                references_out => '2',
+                num_file       => '1'
+            },
+            {   title          => 'Test2',
+                user           => 'Developer',
+                value          => '50',
+                numcomment     => '1',
+                referenced_in  => '1',
+                references_out => '3',
+                num_file       => '2'
+            }
+        ],
+        columns => [
+            { id => 'title',      name => 'Title' },
+            { id => 'user',       name => 'User Name' },
+            { id => 'value',      name => 'Value Name' },
+            { id => 'numcomment', name => 'More Info' }
+        ]
+    );
+
+    $content =~ s/\n//g;
+    $content =~ s/\n//g;
+
+    is_string $content,"\xEF\xBB\xBF"."\"Title\";\"User Name\";\"Value Name\";\"More Info\";\"Referenced In\";\"References\";\"file_name\"\"Test\";\"Developer\";\"100\";\"2\";\"3\";\"2\";\"1\"\"Test2\";\"Developer\";\"50\";\"1\";\"1\";\"3\";\"2\"";
+};
+
+
 done_testing;
 
 sub _setup {
 }
 
 sub _build_exporter {
+
     Baseliner::Model::TopicExporter::Csv->new(
         renderer => sub {
             return [@_];
         }
     );
+
+
 }
