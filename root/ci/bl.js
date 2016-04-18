@@ -6,7 +6,8 @@
         name: 'bl',
         fieldLabel: _('Baseline ID'),
         anchor: '100%',
-        value: params.rec.bl
+        value: params.rec.bl,
+        allowBlank: false
     }, {
         xtype: 'textfield',
         name: 'seq',
