@@ -464,7 +464,7 @@ sub _say {
 }
 
 sub _tz {
-    my $tz = try { Baseliner->config->{time_zone} } catch {''};
+    my $tz = try { Clarive->config->{time_zone} } catch {''};
     $tz || DateTime::TimeZone->new( name => 'local' )->name() || 'UTC';
 }
 

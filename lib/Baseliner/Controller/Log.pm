@@ -1,12 +1,13 @@
 package Baseliner::Controller::Log;
 use Moose;
-use Baseliner::Utils;
-use JavaScript::Dumper;
-use Compress::Zlib;
-use Try::Tiny;
-use JSON::XS;
-
 BEGIN { extends 'Catalyst::Controller' }
+
+use Compress::Zlib qw(uncompress);
+use Try::Tiny;
+use Encode ();
+use JSON ();
+use Baseliner::Core::Registry;
+use Baseliner::Utils;
 
 sub logs_list : Path('/job/log/list') {
     my ( $self, $c, $mid ) = @_;
@@ -46,25 +47,32 @@ sub _select_words {
     return join '_', @ret;
 }
 
-# used by log_grid to refresh the log
 sub auto_refresh : Path('/job/log/auto_refresh') {
-    my ( $self,$c )=@_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
-    my $mid = ''. $p->{mid};
+
+    my $mid = '' . ( $p->{mid} // '' );
+
     my $filter = $p->{filter};
-       $filter = decode_json( $filter ) if $filter;
-    my $where = { mid => $mid, 'exec' => 0+($p->{job_exec} || 1) };
-    #_debug ( $filter );
+    $filter = JSON::decode_json($filter) if $filter;
+
+    my $where = { mid => $mid, 'exec' => 0 + ( $p->{job_exec} || 1 ) };
+
     $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter ) if ref($filter) eq 'HASH';
-    my $rs = mdb->job_log->find($where)->sort({ id=>-1 });
+
+    my $rs = mdb->job_log->find($where)->sort( { id => -1 } );
     my $top = $rs->next;
-    my $job = ci->job->find_one({ mid=>$mid });
-    if( $job ) {
+
+    my $job = ci->job->find_one( { mid => $mid } );
+    if ($job) {
         my $stop_now = $job->{status} ne 'RUNNING' ? \1 : \0;
-        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>$stop_now };
-    } else {
-        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>\1 };
+        $c->stash->{json} = { count => $rs->count, top_id => $top->{id}, stop_now => $stop_now };
     }
+    else {
+        $c->stash->{json} = { count => $rs->count, top_id => $top->{id}, stop_now => \1 };
+    }
+
     $c->forward('View::JSON');
 }
 
@@ -73,12 +81,12 @@ sub log_rows : Private {
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
     $limit||=50;
-    ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
+    ($sort, $dir) = split /\s+/, $sort if $sort && $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
     $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1;
     # include direction in sort, so that both fields follow the same sort
     my $sort_ix = Tie::IxHash->new( $sort ? ( $sort => $dir ) : (), (defined($sort) && $sort ne 'id') || !defined($sort) ? ( id => $dir ): () );
-    $filter = decode_json( $filter ) if $filter;
-    my $config = $c->registry->get( 'config.job.log' );
+    $filter = JSON::decode_json( $filter ) if $filter;
+    my $config = Baseliner::Core::Registry->get( 'config.job.log' );
     my @rows = ();
     $mid //= $p->{mid};
     _fail 'Missing mid' unless length $mid;
@@ -416,15 +424,13 @@ sub jesFile : Path('/job/log/jesFile') {
 
 sub log_data : Path('/job/log/data') {
     my ( $self, $c, $id ) = @_;
+
     my $p = $c->req->params;
-    my $log = mdb->job_log->find_one({ id=> 0+$id || 0+$p->{id} });
-    my $logd = $log->{data} ? mdb->grid->get( $log->{data} ) : '';
-    my $data = $logd ? $logd->slurp : '';
-    if( $data ) {
-        $data = uncompress($data) || $data;
-        $data = _fixascii_sql( $data );
-    }
-    $c->res->body( "<pre>" . $data  . " " );
+    $id //= $p->{id};
+
+    my $log = $self->_load_log_by_job_id($id);
+
+    $c->res->body( "<pre>" . _html_escape($log->{data}) . "</pre>" );
 }
 
 sub log_elements : Path('/job/log/elements') {
@@ -453,39 +459,33 @@ sub log_delete : Path('/job/log/delete') {
 
 sub log_highlight : Path('/job/log/highlight') {
     my ( $self, $c, $id ) = @_;
+
     my $p = $c->req->params;
-    $id ||= $p->{id};
-    my $log = mdb->job_log->find_one({ id=>0+$id });
-    _fail _loc 'Log row not found: %1', $id unless $log;
-    if( my $viewer_key = $log->{provider} ) {
-        if( my $viewer = $c->model('Registry')->get( $viewer_key ) ) {
-            # viewer options
-        }
-    }
+    $id //= $p->{id};
+
+    my $log = $self->_load_log_by_job_id($id);
+
     $c->stash->{class} = $log->{data_length} > 1000000 ? '' : $log->{highlight_class} || 'spool';
-    $c->stash->{style} = $log->{highlight_style} || 'golden';
-    my $logd = mdb->grid->find_one({ _id=>$log->{data} });
-    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
-    my $data = $logd->slurp;
-    $data = uncompress($data) || $data;
-    $data = _fixascii_sql( $data );
-    $c->stash->{data} = $data;
+    $c->stash->{style} = $log->{highlight_style}                                      || 'golden';
+    $c->stash->{data}  = $log->{data};
+
     $c->stash->{template} = '/site/highlight.html';
 }
 
 sub log_file : Path('/job/log/download_data') {
     my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-    my $id = $p->{id};
-    my $log = mdb->job_log->find_one({ id=>0+$id });
-    _fail _loc 'Log row not found: %1', $id unless $log;
-    my $logd = mdb->grid->find_one({ _id=>$log->{data} });
-    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
-    my $file_id = $log->{mid}.'-'.$p->{id};
-    my $data = $logd->slurp;
+
+    my $p   = $c->req->params;
+    my $id  = $p->{id};
+
+    my $log = $self->_load_log_by_job_id($id);
+
+    my $file_id  = $log->{mid} . '-' . $id;
     my $filename = $file_id . '-' . ( $p->{file_name} || $log->{data_name} || 'attachment.txt' );
+
     $c->stash->{serve_filename} = $filename;
-    $c->stash->{serve_body} = uncompress($data) || $data;
+    $c->stash->{serve_body}     = Encode::encode('UTF-8', $log->{data});
+
     $c->forward('/serve_file');
 }
 
@@ -511,6 +511,23 @@ sub upload_file : Path('/job/log/upload_file') {
         $c->stash->{ json } = { success => \0, msg => $err };
     };
     $c->forward( 'View::JSON' );
+}
+
+sub _load_log_by_job_id {
+    my $self = shift;
+    my ($id) = @_;
+
+    my $log = mdb->job_log->find_one( { id => 0 + $id } );
+    _fail _loc 'Log row not found: %1', $id unless $log;
+
+    my $logd = mdb->grid->find_one( { _id => $log->{data} } );
+    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
+
+    my $data = $logd->slurp;
+    $data = uncompress($data) || $data;
+    $data = Encode::decode('UTF-8', $data );
+
+    return { %$log, data => $data };
 }
 
 no Moose;

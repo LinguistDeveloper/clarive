@@ -2,8 +2,9 @@ package Baseliner::JobLogger;
 use Moose;
 
 use Try::Tiny;
-use Compress::Zlib;
-use Baseliner::Utils;
+use Encode ();
+use Compress::Zlib qw(compress);
+use Baseliner::Utils qw(_log _dump);
 
 with 'Baseliner::Role::Logger';
 
@@ -36,7 +37,7 @@ A file:
 =cut
 
 has jobid           => ( is => 'rw', isa => 'Int', required => 1 );
-has job             => ( is => 'rw', isa => 'Object', weak_ref=>1 );
+has job             => ( is => 'rw', isa => 'Object', weak_ref=>1, required => 1 );
 has exec            => ( is => 'rw', isa => 'Int', required => 1 );
 has current_section => ( is => 'rw', isa => 'Str', default => 'general' );
 has current_service => ( is => 'rw', isa => 'Maybe[Str]', required =>1 );
@@ -57,6 +58,25 @@ All data is compressed.
 =cut
 sub common_log {
     my ( $self, $lev, $text )= ( shift, shift, shift );
+    my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...
+
+    my $data = $p{data} // '';
+    $data = _dump $data if ref $data;
+    $data = Encode::encode('UTF-8', $data) if Encode::is_utf8($data);
+
+    if (my $dump = $p{dump}) {
+        $dump = _dump $dump if ref $dump;
+        $data = $dump;
+    }
+
+    my $more       = $p{more};
+    my $data_name  = $p{data_name};
+    my $prefix     = $p{prefix};
+    my $milestone  = $p{milestone};
+    my $stmt_level = int( $p{stmt_level} // 0 );
+    my $username   = $p{username};
+    my $return_row = $p{return_row};
+
     my ($package, $filename, $line);
     if( ref $lev eq 'ARRAY' ) {
         if( @$lev == 4 ) {
@@ -71,10 +91,7 @@ sub common_log {
         ($package, $filename, $line) = caller 1;
     }
     my $module = "$package - $filename ($line)";
-    my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...
-    $p{data}||='';
-    ref $p{data} and $p{data}=_dump( $p{data} );  # auto dump data if its a ref
-    $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
+
     my $job_exec = 0+$self->exec;
     my $jobid = $self->jobid;
     my $jobmid = ''.$self->job->mid;
@@ -84,19 +101,15 @@ sub common_log {
         $self->max_service_level( $log_level ) if $log_level > $self->max_service_level;
         $self->max_step_level( $log_level ) if $log_level > $self->max_step_level;
     }
+
     if( length($text) > 2000 ) {
         # publish exceeding log to data
-        $p{data}.= '=' x 50;
-        $p{data}.= "\n$text";
-        # rewrite text message
-        $text = substr( $text, 0, 2000 );
-        $text .= '=' x 20;
-        $text .= "\n(continue...)";
+        $data.= '=' x 50;
+        $data.= "\n" . Encode::encode('UTF-8', $text);
+        $text = Baseliner::Utils::_truncate($text, 2000, "\n\n(continue...)");
     }
-    # check for password patterns - TODO put this in config
-#    $text =~ s{(\S+/)\S+@}{$1\************@}g;  # XXX the asterisk is "bold" in log textile
-    # Using config.global.password_patterns
-    $text = Baseliner::Utils::hide_passwords($text);
+
+    $text = Baseliner::Utils::hide_passwords($text);    
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
         my $doc = { id=>$id, mid =>$jobmid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };
@@ -104,19 +117,27 @@ sub common_log {
         $doc->{_id} = mdb->job_log->insert($doc);
 
         $doc->{pid} = $$;
-        $doc->{more} = $p{more} if defined $p{more};
-        $doc->{data_name} = $p{data_name} if $p{data_name};
-        $doc->{data_length} = length( $p{data} ) if $p{data};
-        $doc->{prefix} = $p{prefix} if $p{prefix};
-        $doc->{milestone} = "$p{milestone}" if $p{milestone};
-        $doc->{stmt_level} = int($p{stmt_level} // 0);
+        $doc->{more} = $more if defined $more;
+        $doc->{data_name} = $data_name if $data_name;
+        $doc->{data_length} = length( $data ) if $data;
+        $doc->{prefix} = $prefix if $prefix;
+        $doc->{milestone} = "$milestone" if $milestone;
+        $doc->{stmt_level} = $stmt_level;
         $doc->{service_key} = $self->current_service;
-        $doc->{rule} =  $self->job->{id_rule} if defined $self->job->{id_rule};
-        if( $p{data} ) {
-            my $data = Util->hide_passwords( $p{data});
-            my $d = try { compress($data) } catch { $data };  ## asset in grid  TODO find a better solution than storing the raw data... encode/decode?
-            my $id_ass = mdb->grid_add( $d, filename=>($doc->{data_name}//'logdata'), parent_collection=>'log', id_log=>$id, parent=>$doc->{_id}, parent_mid=>$jobmid, );
-            $doc->{data} = $id_ass;
+        $doc->{rule} =  $self->job->id_rule if defined $self->job->id_rule;
+
+        if ($data) {
+            my $filtered_data = Util->hide_passwords($data);
+            $filtered_data = try { compress($filtered_data) } catch { $filtered_data };
+            my $id_asset = mdb->grid_add(
+                $filtered_data,
+                filename => ( $doc->{data_name} // 'logdata' ),
+                parent_collection => 'log',
+                id_log            => $id,
+                parent            => $doc->{_id},
+                parent_mid        => $jobmid,
+            );
+            $doc->{data} = $id_asset;
         }
 
         # save top level for this statement if higher
@@ -132,14 +153,13 @@ sub common_log {
         {
             local $Baseliner::logger = undef;  # prevent recursivity
             Baseliner::Utils::_log_lev( $lev, 5, sprintf "[JOB %d] %s", $self->jobid, $text );
-            Baseliner::Utils::_log_lev( $lev, 5, substr($p{data},0,1024*10) )
-                if Clarive->debug && defined $p{data} && !$p{data_name}; # no files wanted!
+            Baseliner::Utils::_log_lev( $lev, 5, substr($data,0,1024*10) )
+                if Clarive->debug && defined $data && !$data_name; # no files wanted!
         }
 
         # store the current section
-        ;
-        $p{username} && $lev eq 'comment'
-            ? $doc->{section} = $p{username}
+        $username && $lev eq 'comment'
+            ? $doc->{section} = $username
             : $doc->{section} = $self->current_section;
 
         # store the current step
@@ -156,7 +176,7 @@ sub common_log {
         _log "*** Error writing log entry: $err";
         _log "*** Log text: $text (lev=$lev, jobid=$jobid)";
     };
-    return $p{return_row} ? $row : undef;
+    return $return_row ? $row : undef;
 }
 
 sub comment { shift->common_log('comment',@_) }
