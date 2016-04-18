@@ -1098,3 +1098,21 @@ textarea.x-form-textarea.x-form-field {
     padding-left: 10px;
 }
 
+.edit_rule_window {
+    max-height:485px;
+    width: 900px;
+    max-width: 900px;
+    min-width:330px;
+}
+
+.edit_rule_window_body {
+    max-height:455px;
+    min-width:324px;
+    max-width: 894px;
+}
+
+.edit_rule_window .x-panel-bbar ,
+.edit_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct{
+   width: 99.8% !important;
+   height: auto;
+}

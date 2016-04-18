@@ -177,7 +177,7 @@
             { xtype:'hidden', name:'rule_id', value: rule_id }, 
             {
                 xtype: 'radiogroup',
-                anchor: '50%',
+                anchor: '80%',
                 fieldLabel: _('Event Type'),
                 defaults: {xtype: "radio",name: "rule_when"},
                 value: params.rec.rule_when,
