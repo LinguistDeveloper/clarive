@@ -61,7 +61,7 @@ subtest 'get_with_condition: returns topics with alphanumeric ids' => sub {
         not_in_status => ''
     };
 
-    my $c = mock_catalyst_c( username => $user->{username}, stash => {} );
+    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
 
     my $gs = _build_topic_services();
 
@@ -71,6 +71,8 @@ subtest 'get_with_condition: returns topics with alphanumeric ids' => sub {
     is $data[0][1]->{title}, 'Topic_Test_2';
     is $data[0][2]->{title}, 'Topic_Test_3';
 };
+
+
 
 subtest 'get_with_condition: returns topic filtering by not in status' => sub {
     _setup();
@@ -120,7 +122,7 @@ subtest 'get_with_condition: returns topic filtering by not in status' => sub {
         not_in_status => 'on'
     };
 
-    my $c = mock_catalyst_c( username => $user->{username}, stash => {} );
+    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
 
     my $gs = _build_topic_services();
     my @data = $gs->get_with_condition( $c, $config );
@@ -165,7 +167,7 @@ subtest 'get_with_condition: returns topics filtering by current user' => sub {
 
     my $gs = BaselinerX::Service::TopicServices->new();
 
-    my $c = mock_catalyst_c( username => $user->{username}, stash => {} );
+    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
 
     my @data = $gs->get_with_condition( $c, $config );
 

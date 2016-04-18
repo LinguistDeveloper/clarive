@@ -386,7 +386,7 @@ sub get_with_condition {
 
     if ( $filter_user && $filter_user ne 'Any' ) {
         if ( $filter_user eq 'Current' ) {
-            $filter_user = $c->username;
+            $filter_user = $c->stash->{username};
         }
         my $ci_user = ci->user->find_one( { name => $filter_user } );
         if ($ci_user) {
@@ -408,16 +408,17 @@ sub get_with_condition {
         where         => $where,
         categories    => $categories,
         statuses      => $statuses,
-        username      => $c->username,
+        username      => $c->stash->{username},
         not_in_status => $not_in_status
     );
 
-    my @topics = map { { hash_flatten($_) } } $rs->all;
+    my @topics = map {
+        { hash_flatten($_) }
+    } $rs->all;
 
     return \@topics;
 
 }
-
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
