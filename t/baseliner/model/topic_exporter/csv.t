@@ -83,10 +83,10 @@ subtest 'export: split the field more_info in 4 field' => sub {
 
     is_string $content,
         "\xEF\xBB\xBF"
-      . qq{"Title";"User Name";"Value Name";"More Info";"Referenced In";"References";"file_name"\n}
+      . qq{"Title";"User Name";"Value Name";"More Info";"Referenced In";"References";"Attachments"\n}
       . qq{"Test";"Developer";"100";"2";"2";"1";"1"\n}
       . qq{"Test2";"Developer";"50";"1";"1";"1";"2"}
-      . ( "\n" x 855 );
+      . ( "\n" x 853 );
 };
 
 done_testing;

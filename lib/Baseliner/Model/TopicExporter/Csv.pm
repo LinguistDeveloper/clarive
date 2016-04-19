@@ -153,7 +153,7 @@ sub _prepare_columns {
             push @columns,
               {
                 id   => 'num_file',
-                name => 'file_name',
+                name => 'Attachments',
               };
         }
     }
