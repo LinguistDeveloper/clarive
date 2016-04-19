@@ -211,4 +211,3 @@ sub _setup {
     mdb->topic->drop;
     mdb->category->drop;
 }
-
