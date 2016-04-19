@@ -1735,9 +1735,6 @@ msgstr "Seleccione al menos un rol y estado destino"
 msgid "Calendar '%1' modified"
 msgstr "Calendario '%1' modificado"
 
-msgid "Error modifying the calendar: "
-msgstr "Error al modificar el calendario: "
-
 msgid "Calendar Modified"
 msgstr "Calendario Modificado"
 
@@ -7495,23 +7492,29 @@ msgstr "La precedencia del semáforo %1 ha cambiado a %2"
 msgid "Semaphore request active"
 msgstr "Petición del semáforo activa"
 
-msgid "Calendar with id '%1' $msgs[0]"
-msgstr "Calendario con id '%1' $msgs[0]"
+msgid "Calendar with id '%1' modified"
+msgstr "Calendario con id '%1' modificado"
 
-msgid "Error $msgs[1] the calendar: "
-msgstr "Error $msgs[1] el calendario: "
+msgid "Calendar with id '%1' deleted"
+msgstr "Calendario con id '%1' borrado"
+
+msgid "Calendar with id '%1' created"
+msgstr "Calendario con id '%1' creado"
 
 msgid "Calendar modified."
 msgstr "Calendario modificado."
 
-msgid "Error modifying the calendar: %1"
-msgstr "Error modificando el calendario: %1"
+msgid "Error modifying the calendar: "
+msgstr "Error al modificar el calendario: "
 
 msgid "Calendar deleted."
 msgstr "Calendario borrado."
 
 msgid "Error deleting the calendar: "
-msgstr "Error borrando el calendario: "
+msgstr "Error al borrar el calendario: "
+
+msgid "Error creating the calendar: "
+msgstr "Error al crear el calendario: "
 
 msgid "invalid sessionid"
 msgstr "No válido el id de la sesión"
@@ -8750,269 +8753,11 @@ msgstr "Error: Los ficheros locales no fueron encontrados"
 msgid "Commit Owner"
 msgstr "Creador del commit"
 
-msgid "Compile Mode"
-msgstr "Modo de Compilación"
+msgid "Create as New"
+msgstr "Crear nuevo"
 
-msgid "Authentication"
-msgstr "Autenticación"
+msgid "Create as Copy"
+msgstr "Crear copia"
 
-msgid "Message Level"
-msgstr "Nivel de Mensaje"
-
-msgid "Expression"
-msgstr "Expresión"
-
-msgid "Repeatable"
-msgstr "Repetible"
-
-msgid "Notify"
-msgstr "Notificar"
-
-msgid "Shortcut ID"
-msgstr "ID Acceso directo"
-
-msgid "Source Key"
-msgstr "Clave de Fuente"
-
-msgid "Stash Data"
-msgstr "Datos del Stash"
-
-msgid "Children Stash Keys to Export"
-msgstr "Claves de Stash Hijos a Exportar"
-
-msgid "Old Statuses"
-msgstr "Anteriores Estados"
-
-msgid "Scheduled Time"
-msgstr "Tiempo Planificado"
-
-msgid "Expiration Time"
-msgstr "Tiempo de Expiración"
-
-msgid "Title of the Topic"
-msgstr "Título del Tópico"
-
-msgid "Category (id or name)"
-msgstr "Categoría (id o name)"
-
-msgid "Status (id or name)"
-msgstr "Estado (id o name)"
-
-msgid "Owner of the Topic (Blank for 'clarive')"
-msgstr "Dueño del Tópico (Blank para 'clarive')"
-
-msgid "Topic data. Type id_field in Key and string or variable (${variable}) in Value"
-msgstr "Datos del Tópico. Escribir id_field en Clave y string o variable (${variable}) en Valor"
-
-msgid "Select CI Classes"
-msgstr "Seleccionar Clases CI"
-
-msgid "Exist Mode Remote"
-msgstr "Existe Modo Remoto"
-
-msgid "Copy File Attributes"
-msgstr "Copiar Atributos de Archivo"
-
-msgid "Expires"
-msgstr "Expira"
-
-msgid "Include Files"
-msgstr "Incluir Archivos"
-
-msgid "Exclude Files"
-msgstr "Excluir Archivos"
-
-msgid "Clean Path Mode"
-msgstr "Limpiar Modo de Ruta"
-
-msgid "Variables to Update"
-msgstr "Variables a Actualizar"
-
-msgid "Accept any server certificate"
-msgstr "Aceptar cualquier certificado de servidor"
-
-msgid "Input Type"
-msgstr "Tipo de Entrada"
-
-msgid "Input Stash Variable"
-msgstr "Variable Stash de Entrada"
-
-msgid "Zip File Path"
-msgstr "Ruta del Fichero Zip"
-
-msgid "Topic mid"
-msgstr "Mid del Tópico"
-
-msgid "Field Name"
-msgstr "Nombre del Campo"
-
-msgid "Repository mid"
-msgstr "Mid del Repositorio"
-
-msgid "Tag Name"
-msgstr "Nombre de la Etiqueta"
-
-msgid "Tag Filter"
-msgstr "Filtro de Etiqueta"
-
-msgid "Tags separated by commas"
-msgstr "Etiquetas separadas por comas"
-
-msgid "Date (or blank for CURRENT date)"
-msgstr "Fecha (o vacío para fecha ACTUAL)"
-
-msgid "Query type"
-msgstr "Tipo de Query"
-
-msgid "Filter statuses"
-msgstr "Filtrar Estados"
-
-msgid "Filter categories"
-msgstr "Filtrar Categorías"
-
-msgid "Do not exclude event mid"
-msgstr "No Excluir mid de Evento"
-
-msgid "LDAP user"
-msgstr "Usuario LDAP"
-
-msgid "LDAP port"
-msgstr "Puerto LDAP"
-
-msgid "Default View"
-msgstr "Vista por Defecto"
-
-msgid "Show Jobs?"
-msgstr "Mostrar Jobs?"
-
-msgid "Graph Type"
-msgstr "Tipo de Gráfico"
-
-msgid "Override CI with current context?"
-msgstr "Sobreescribir CI con el Contexto Actual?"
-
-msgid "CI as Graph Starting Point"
-msgstr "CI como Punto de Inicio de Gráfico"
-
-msgid "Show Toolbar?"
-msgstr "Mostrar Barra de Herramientas?"
-
-msgid "Include Classes"
-msgstr "Incluir Clases"
-
-msgid "Exclude selected classes?"
-msgstr "Excluir Clases Seleccionadas?"
-
-msgid "Sample Snippets"
-msgstr "Snippets Ejemplo"
-
-msgid "Data Url (optional)"
-msgstr "Url Datos (opcional)"
-
-msgid "HTML Code"
-msgstr "Código HTML"
-
-msgid "JS Code"
-msgstr "Código JS"
-
-msgid "Number of days before today to list jobs"
-msgstr "Número de días antes de hoy para listar jobs"
-
-msgid "Show totals row?"
-msgstr "Mostrar fila de totales?"
-
-msgid "Repeat the animation"
-msgstr "Repetir la animación"
-
-msgid "Max characters in legend (0 = no limit)"
-msgstr "Máximo de caracteres en leyenda (0 = sin límite)"
-
-msgid "Input"
-msgstr "Entrada"
-
-msgid "Not in statuses"
-msgstr "No en Estados"
-
-msgid "Amazon Account"
-msgstr "Cuenta Amazon"
-
-msgid "Amazon Instance"
-msgstr "Instancia Amazon"
-
-msgid "Expected State"
-msgstr "Estado Esperado"
-
-msgid "Timeout Action"
-msgstr "Acción tras tiempo de Espera"
-
-msgid "Check Interval"
-msgstr "Intervalo de verificación"
-
-msgid "Image ID"
-msgstr "Id de Imagen"
-
-msgid "Template Use"
-msgstr "Uso de Plantilla"
-
-msgid "No Template"
-msgstr "Sin Plantilla"
-
-msgid "Instance Name"
-msgstr "Nombre de Instancia"
-
-msgid "Instance Type"
-msgstr "Tipo de Instancia"
-
-msgid "Key Name Settings"
-msgstr "Configuración de Clave"
-
-msgid "Use local"
-msgstr "Usar Local"
-
-msgid "Use existing AWS key"
-msgstr "Usar Clave Existente"
-
-msgid "Key Name"
-msgstr "Nombre de Clave"
-
-msgid "Private Key Location"
-msgstr "Ubicación Clave Privada"
-
-msgid "Max Count"
-msgstr "Número Máximo"
-
-msgid "Min Count"
-msgstr "Número Mínimo"
-
-msgid "Subnet Id"
-msgstr "Id Subred"
-
-msgid "Associate Public IP"
-msgstr "Asociar IP Pública"
-
-msgid "Programming language"
-msgstr "Lenguaje de programación"
-
-msgid "Height"
-msgstr "Altura"
-
-msgid "Page size"
-msgstr "Tamaño de página"
-
-msgid "Parent field"
-msgstr "Campo padre"
-
-msgid "Filter field"
-msgstr "Campo filtro"
-
-msgid "Filter data"
-msgstr "Datos filtro"
-
-msgid "Table format?"
-msgstr "Formato tabla?"
-
-msgid "List of columns to show in grid"
-msgstr "Lista de columnas a mostrar en grid"
-
-msgid "Height of grid in edit mode"
-msgstr "Altura de grid en modo edición"
+msgid "Creation Mode"
+msgstr "Modo de Creación"
