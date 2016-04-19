@@ -7,6 +7,7 @@ use Try::Tiny;
 use MIME::Base64 qw(encode_base64);
 use Compress::Zlib;
 use Encode ();
+use File::Basename qw(basename);
 use Baseliner::Model::Messaging;
 use Baseliner::Core::Registry ':dsl';
 use BaselinerX::Type::Model::ConfigStore;
@@ -238,11 +239,13 @@ sub send {
         Encoding => 'base64',
     );
 
+    my $img_path = $self->_path_to_about_icon;
+    my $img_filename = basename($img_path);
     $msg->attach(
-        Type     => 'image/png',
-        Path     => $self->_path_to_about_icon,
-        Filename => 'about.png',
-        Id      => '<about.png>',
+        Type     => 'image/jpg',
+        Path     => $img_path,
+        Filename => $img_filename,
+        Id      => "<$img_filename>",
     );
 
     foreach my $attach (@attach) {
@@ -292,8 +295,7 @@ sub filter_queue {
 sub _path_to_about_icon {
     my $self = shift;
 
-    # TODO: Baseliner should be removed from here
-    return '' . Baseliner->path_to( 'root', 'static/images/about.png' );
+    return '' . Clarive->path_to( 'root', 'static/images/about_email.jpg' );
 }
 
 sub _init_connection {

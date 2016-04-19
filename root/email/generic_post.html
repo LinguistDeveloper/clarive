@@ -30,8 +30,8 @@
                 <br>
                 <table border="0" width="800" cellpadding="0" cellspacing="0" class="container">
                     <tr>
-                        <td class="container-padding header" align="center">
-                            <img src="cid:about.png" alt="Clarive Software Inc - Clarive.Com" />
+                        <td class="container-padding header" align="right">
+                            <img src="cid:about_email.jpg" alt="Clarive Software Inc - Clarive.Com" />
                         </td>
                     </tr>
                     <tr>
@@ -41,55 +41,27 @@
                             <table width="364" border="0" cellpadding="0" cellspacing="0" align="left" class="force-row">
                                 <tr>
                                     <td class="col" valign="top">
-                                        <strong>ID</strong>
+                                        <strong>ID: <% $mid %></strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="col" valign="top">
-                                        <strong><% _loc('Title') %></strong>
+                                        <strong><% _loc('Title') %>: <% $title %></strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="col" valign="top">
-                                        <strong><% _loc('Category') %></strong>
+                                        <strong><% _loc('Category') %>: <% $name_category %></strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="col" valign="top">
-                                        <strong><% _loc('User') %></strong>
+                                        <strong><% _loc('User') %>: <% $username %></strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="col" valign="top">
-                                        <strong><% _loc('Project') %></strong>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <table width="364" border="0" cellpadding="0" cellspacing="0" align="right" class="force-row">
-                                <tr>
-                                    <td class="col" valign="top">
-                                        <strong><% $mid %></strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col" valign="top">
-                                        <strong><% $title %></strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col" valign="top">
-                                        <strong><% $name_category %></strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col" valign="top">
-                                        <strong><% $username %></strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col" valign="top">
-                                        <strong><% join ",",@{$project} %>&nbsp;</strong>
+                                        <strong><% _loc('Project') %>: <% join ",",@{$project} %></strong>
                                     </td>
                                 </tr>
                             </table>
