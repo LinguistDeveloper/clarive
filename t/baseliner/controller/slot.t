@@ -388,7 +388,7 @@ subtest 'calendar_submit: merges slots with specific date' => sub {
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
 
-subtest 'calendar_grid: user has permissions to show only the edit button' => sub {
+subtest 'calendar_grid: check permissions in the stash to edit calendar' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
@@ -400,12 +400,12 @@ subtest 'calendar_grid: user has permissions to show only the edit button' => su
     my $controller = _build_controller();
     $controller->calendar_grid($c);
 
-    is $c->stash->{can_edit}, 1;
-    is $c->stash->{admin},    0;
+    is $c->stash->{can_edit},  1;
+    is $c->stash->{can_admin}, 0;
 
 };
 
-subtest 'calendar_grid: user has not permissions to show the edit,create and delete buttons' => sub {
+subtest 'calendar_grid: check permissions in the stash to view calendar' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
@@ -418,12 +418,12 @@ subtest 'calendar_grid: user has not permissions to show the edit,create and del
     my $controller = _build_controller();
     $controller->calendar_grid($c);
 
-    is $c->stash->{can_edit}, 0;
-    is $c->stash->{admin},    0;
+    is $c->stash->{can_edit},  0;
+    is $c->stash->{can_admin}, 0;
 
 };
 
-subtest 'calendar: user has permissions to modify calendars' => sub {
+subtest 'calendar: check permissions in the stash to admin calendar' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
@@ -448,11 +448,11 @@ subtest 'calendar: user has permissions to modify calendars' => sub {
     my $controller = _build_controller();
     $controller->calendar($c);
 
-    is $c->stash->{admin}, 1;
+    is $c->stash->{can_admin}, 1;
 
 };
 
-subtest 'calendar: user has not permissions to modify calendars' => sub {
+subtest 'calendar: check permissions in the stash to view calendar' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
@@ -477,8 +477,8 @@ subtest 'calendar: user has not permissions to modify calendars' => sub {
     my $controller = _build_controller();
     $controller->calendar($c);
 
-    is $c->stash->{can_edit}, 0;
-    is $c->stash->{admin},    0;
+    is $c->stash->{can_edit},  0;
+    is $c->stash->{can_admin}, 0;
 
 };
 
