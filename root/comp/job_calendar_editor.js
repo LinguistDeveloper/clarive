@@ -9,9 +9,9 @@
        data : <% js_dumper( $c->stash->{baselines} ) %>
     });
 
-    var id_cal = '<% $c->stash->{id_cal} %>' ;
-    var admin = '<% $c->stash->{admin} %>' ;
-    var can_edit = '<% $c->stash->{can_edit} %>' ;
+    var id_cal = '<% $c->stash->{id_cal} %>';
+    var can_admin = Cla.eval_boolean(<% $c->stash->{can_admin} %>);
+    var can_edit = Cla.eval_boolean(<% $c->stash->{can_edit} %>);
 
     var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';    
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
@@ -271,10 +271,9 @@
 
     });
 
-    if (can_edit == 0 && admin == 0) {
-
-        cal_form.getComponent('text').getComponent('form').buttons[0].disable();
-        cal_form.getComponent('text').getComponent('form').buttons[1].disable();
+    if (!can_edit && !can_admin) {
+        cal_form.getComponent('text').getComponent('form').buttons[0].hide();
+        cal_form.getComponent('text').getComponent('form').buttons[1].hide();
         cal_form.getComponent('text').disable();
         cal_windows.getComponent('week').disable();
     }
