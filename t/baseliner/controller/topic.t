@@ -10,7 +10,7 @@ use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-use TestUtils ':catalyst';
+use TestUtils qw(:catalyst mock_time);
 use TestSetup;
 
 use POSIX ":sys_wait_h";
@@ -2172,25 +2172,28 @@ subtest 'view: strips html from fields' => sub {
 subtest 'check_modified_on: check topic was modified before' => sub {
     _setup();
 
-    TestSetup->_setup_user();
-    my $base_params = TestSetup->_topic_setup();
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $controller = _build_controller();
+    my $topic_mid = mock_time '2016-01-01 00:05:00' => sub { TestSetup->create_topic(username => $user->username) };
 
-    my $modified  = Class::Date->now() - '5m';
-    my $signature = '';
+    my $modified = '2016-01-01 00:00:00';
 
     my $c =
-      _build_c( req => { params => { topic_mid => $topic_mid, modified => $modified, rel_signature => $signature } } );
+      _build_c( req => { params => { topic_mid => $topic_mid, modified => $modified, rel_signature => '' } } );
+
+    my $controller = _build_controller();
+
     $controller->check_modified_on($c);
+
     cmp_deeply(
         $c->stash->{json},
         {
             'success'                  => \1,
             'modified_before_duration' => "5m 0s",
             'modified_rel'             => ignore(),
-            'modified_before'          => "test",
+            'modified_before'          => $user->username,
             'msg'                      => "Test"
         }
     );
