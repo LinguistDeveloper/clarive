@@ -1,7 +1,3 @@
-<%args>
-    $admin => 0
-    $can_edit => 0
-</%args>
 (function(){
     var store=new Baseliner.JsonStore({
         root: 'data' , 
@@ -40,12 +36,16 @@
                 v, grid.id, rowIndex );
         };
 
+        var can_admin = Cla.eval_boolean(<% $c->stash->{can_admin} %>);
+        var can_edit = Cla.eval_boolean(<% $c->stash->{can_edit} %>);
+
         Baseliner.show_calendar = function( id_or_rec, ix ) {
             var r = ( typeof id_or_rec == 'object' ) ? id_or_rec : Ext.getCmp( id_or_rec ).getStore().getAt( ix );
             Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id') , r.get('name'), { tab_icon:'/static/images/icons/calendar_view_month.png' } );
         };
         
         var btn_add = new Baseliner.Grid.Buttons.Add({    
+            hidden: true,
             handler: function() {
                 //Window
                 var ns_store = new Ext.data.SimpleStore({ 
@@ -161,6 +161,7 @@
                     text: _('Edit'),
                     icon:'/static/images/icons/edit.gif',
                     cls: 'x-btn-text-icon',
+                    hidden: true,
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection()) {
@@ -176,6 +177,7 @@
                     text: _('View'),
                     icon:'/static/images/icons/views.png',
                     cls: 'x-btn-text-icon',
+                    hidden: true,
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection()) {
@@ -191,6 +193,7 @@
                     text: _('Delete'),
                     icon:'/static/images/icons/delete_.png',
                     cls: 'x-btn-text-icon',
+                    hidden: true,
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
@@ -233,6 +236,7 @@
                     }
                 });
 
+ 
         // create the grid
         var grid = new Ext.grid.GridPanel({
             title: _('Job Calendars'),
@@ -282,17 +286,10 @@
                     store: store,
                     params: {start: 0, limit: ps}
                 }),
-% if( $admin ) {
+                btn_view,
                 btn_add,
                 btn_edit,
                 btn_delete,
-% }
-% elsif( $can_edit && !$admin ) {
-                btn_edit,
-% }
-%  else {
-    btn_view,
-% }
 
                 new Ext.Toolbar.Button({
                     text: _('Previsualizar'),
@@ -334,14 +331,27 @@
                 ]
         });
 
+    if (can_admin) {
+        btn_add.show();
+        btn_edit.show();
+        btn_delete.show();
+    }
+    else if (can_edit) {
+        btn_edit.show();
+    }
+    else {
+        btn_view.show();
+    }
+
     grid.getView().forceFit = true;
 
-% if( $can_edit || $admin ) {
+
+ if( can_edit || can_admin ) {
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
         Baseliner.show_calendar( grid.id, rowIndex );
     });
-% }
-        
+ }
+
     return grid;
 })();
 
