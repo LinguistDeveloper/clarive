@@ -273,10 +273,11 @@
 
     if (can_edit == 0 && admin == 0) {
 
-          cal_form.getComponent('text').getComponent('form').buttons[0].disable();
-          cal_form.getComponent('text').getComponent('form').buttons[1].disable();
-          cal_windows.getComponent('week').disable();
-     }
+        cal_form.getComponent('text').getComponent('form').buttons[0].disable();
+        cal_form.getComponent('text').getComponent('form').buttons[1].disable();
+        cal_form.getComponent('text').disable();
+        cal_windows.getComponent('week').disable();
+    }
 
     var panel = new Ext.Panel({
         id: id2,

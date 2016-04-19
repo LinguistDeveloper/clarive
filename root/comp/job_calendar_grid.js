@@ -36,11 +36,11 @@
         };
 
         var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
-            return String.format('<a href="" onclick="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\'); return false" style="font-size: 13px;">{0}</a>',
+            return String.format('<a href="" onclick="javascript:Baseliner.show_calendar(\'{1}\', \'{2}\'); return false" style="font-size: 13px;">{0}</a>',
                 v, grid.id, rowIndex );
         };
 
-        Baseliner.edit_calendar = function( id_or_rec, ix ) {
+        Baseliner.show_calendar = function( id_or_rec, ix ) {
             var r = ( typeof id_or_rec == 'object' ) ? id_or_rec : Ext.getCmp( id_or_rec ).getStore().getAt( ix );
             Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id') , r.get('name'), { tab_icon:'/static/images/icons/calendar_view_month.png' } );
         };
@@ -165,11 +165,25 @@
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection()) {
                             var sel = sm.getSelected();
-                            Baseliner.edit_calendar( sel );
+                            Baseliner.show_calendar( sel );
                         } else {
                             Ext.Msg.alert('Error', _('Select at least one row'));
                         };
-                        
+                    }
+                });
+
+        var btn_view = new Ext.Toolbar.Button({
+                    text: _('View'),
+                    icon:'/static/images/icons/views.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection()) {
+                            var sel = sm.getSelected();
+                            Baseliner.show_calendar( sel );
+                        } else {
+                            Ext.Msg.alert('Error', _('Select at least one row'));
+                        };
                     }
                 });
 
@@ -273,9 +287,13 @@
                 btn_edit,
                 btn_delete,
 % }
-% if( $can_edit && !$admin ) {
+% elsif( $can_edit && !$admin ) {
                 btn_edit,
 % }
+%  else {
+    btn_view,
+% }
+
                 new Ext.Toolbar.Button({
                     text: _('Previsualizar'),
                     icon:'/static/gui/extjs/resources/images/default/shared/calendar.gif',
@@ -320,7 +338,7 @@
 
 % if( $can_edit || $admin ) {
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
-        Baseliner.edit_calendar( grid.id, rowIndex );
+        Baseliner.show_calendar( grid.id, rowIndex );
     });
 % }
         
