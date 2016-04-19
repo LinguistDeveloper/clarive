@@ -388,7 +388,6 @@ subtest 'calendar_submit: merges slots with specific date' => sub {
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
 
-
 subtest 'calendar_grid: user has permissions to show only the edit button' => sub {
     _setup();
 
