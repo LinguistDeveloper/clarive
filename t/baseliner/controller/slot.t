@@ -388,6 +388,101 @@ subtest 'calendar_submit: merges slots with specific date' => sub {
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
 
+
+subtest 'calendar_grid: user has permissions to show only the edit button' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.edit', bl => '*' } ] );
+    my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+
+    my $c = _build_c( username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->calendar_grid($c);
+
+    is $c->stash->{can_edit}, 1;
+    is $c->stash->{admin},    0;
+
+};
+
+subtest 'calendar_grid: user has not permissions to show the edit,create and delete buttons' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.view', bl => '*' } ] );
+    my $user   = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+    my $id_cal = TestSetup->create_calendar();
+
+    my $c = _build_c( username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->calendar_grid($c);
+
+    is $c->stash->{can_edit}, 0;
+    is $c->stash->{admin},    0;
+
+};
+
+subtest 'calendar: user has permissions to modify calendars' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.admin', bl => '*' } ] );
+    my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my $params = {
+        id       => '',
+        id_cal   => $id_cal,
+        cmd      => 'A',
+        ven_dia  => '4',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '24:00',
+        date     => ''
+    };
+
+    my $c = _build_c( req => { params => $params }, username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->calendar($c);
+
+    is $c->stash->{admin}, 1;
+
+};
+
+subtest 'calendar: user has not permissions to modify calendars' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.view', bl => '*' } ] );
+    my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my $params = {
+        id       => '',
+        id_cal   => $id_cal,
+        cmd      => 'A',
+        ven_dia  => '4',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '24:00',
+        date     => ''
+    };
+
+    my $c = _build_c( req => { params => $params }, username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->calendar($c);
+
+    is $c->stash->{can_edit}, 0;
+    is $c->stash->{admin},    0;
+
+};
+
 done_testing;
 
 sub _create_initial_slots {
@@ -421,9 +516,18 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry();
-
+    TestUtils->register_ci_events();
     TestUtils->cleanup_cis;
-
     mdb->calendar->drop;
     mdb->calendar_window->drop;
+    mdb->role->drop;
+
+}
+
+sub _build_c {
+    mock_catalyst_c(
+        username => 'test',
+        model    => Baseliner::Model::Permissions->new(),
+        @_
+    );
 }

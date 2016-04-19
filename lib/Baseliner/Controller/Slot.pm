@@ -21,6 +21,7 @@ register 'menu.job.calendar' => {
 };
 register 'action.calendar.view' => { name => 'View Job Calendar' };
 register 'action.calendar.edit' => { name => 'Edit Job Calendar' };
+register 'action.calendar.admin' => { name => 'Admin Job Calendar'};
 
 register 'config.job.calendar' => {
     metadata=> [
@@ -56,6 +57,16 @@ sub calendar : Path( '/job/calendar' ) {
         : (!$id_cal || $id_cal < 0)
             ? $p   # new calendar, from ci editor
             : +{ mdb->calendar->find_one({ id => $id_cal }) };  # regular existing calendar
+
+    $c->stash->{admin} =
+        $c->model('Permissions')->is_root( $c->username )
+        ||
+        $c->model('Permissions')
+            ->user_has_action( username=>$c->username, action=>'action.calendar.admin', bl=>'*' );
+
+    $c->stash->{can_edit} =
+        $c->model('Permissions')
+            ->user_has_action( username=>$c->username, action=>'action.calendar.edit', bl=>'*' );
 
     $c->stash->{ id_cal } = $id_cal;
     $c->stash->{ template } = '/comp/job_calendar_editor.js';
@@ -117,11 +128,17 @@ sub calendar_grid : Path('/job/calendar_grid') {
     my ( $self, $c ) = @_;
 
     #$c->stash->{ns_query} = { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-    $c->stash->{can_edit} =
+
+    $c->stash->{admin} =
         $c->model('Permissions')->is_root( $c->username )
         ||
         $c->model('Permissions')
-            ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
+            ->user_has_action( username=>$c->username, action=>'action.calendar.admin', bl=>'*' );
+
+    $c->stash->{can_edit} =
+        $c->model('Permissions')
+            ->user_has_action( username=>$c->username, action=>'action.calendar.edit', bl=>'*' );
+
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->stash->{namespaces} = [];
     #$c->forward( '/namespace/load_namespaces' );
