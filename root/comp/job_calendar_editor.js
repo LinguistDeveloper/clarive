@@ -7,9 +7,11 @@
     var bl_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{baselines} ) %>
-    }); 
+    });
 
     var id_cal = '<% $c->stash->{id_cal} %>' ;
+    var admin = '<% $c->stash->{admin} %>' ;
+    var can_edit = '<% $c->stash->{can_edit} %>' ;
 
     var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';    
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
@@ -18,6 +20,7 @@
     calendar_type_help += '</TABLE>';
     
     var cal_ns = '<% $cal->{ns} %>';
+
     
     var cal_form = new Ext.FormPanel({
         url: '/job/calendar_update',
@@ -29,9 +32,11 @@
             width: 300
         },
         items: [{
+            itemId: 'text',
             layout: 'column',
             anchor: '90%',
             items: [{
+
                 layout: 'form',
                 columnWidth: 0.5,
                 defaults: {
@@ -54,6 +59,7 @@
                     value: '<% $cal->{description} %>'
                 }]
             }, {
+                itemId: 'form',
                 layout: 'form',
                 columnWidth: 0.5,
                 items: [{
@@ -194,6 +200,7 @@
         },
         height: 450,
         items: [{
+            itemId: 'week',
             layout: 'column',
             columnWidth: 0.7,
             anchor: '90%',
@@ -214,6 +221,7 @@
                 width: 100
             },
             items: [{
+                    itemId: 'date',
                     xtype: 'datepickerplus',
                     value: _CurrentDate,
                     noOfMonth: 1,
@@ -262,6 +270,13 @@
         }]
 
     });
+
+    if (can_edit == 0 && admin == 0) {
+
+          cal_form.getComponent('text').getComponent('form').buttons[0].disable();
+          cal_form.getComponent('text').getComponent('form').buttons[1].disable();
+          cal_windows.getComponent('week').disable();
+     }
 
     var panel = new Ext.Panel({
         id: id2,
