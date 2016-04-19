@@ -8754,10 +8754,10 @@ msgid "Commit Owner"
 msgstr "Creador del commit"
 
 msgid "Create as New"
-msgstr "Crear nuevo"
+msgstr "Crear Nuevo"
 
 msgid "Create as Copy"
-msgstr "Crear copia"
+msgstr "Crear Copia"
 
 msgid "Creation Mode"
 msgstr "Modo de Creación"
