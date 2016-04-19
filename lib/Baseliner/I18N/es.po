@@ -8752,3 +8752,6 @@ msgstr "Creador del commit"
 
 msgid "Compile Mode"
 msgstr "Modo de Compilación"
+
+msgid "Authentication"
+msgstr "Autenticación"
