@@ -384,8 +384,8 @@ sub get_with_condition {
 
     $where = $condition;
 
-    if ( $filter_user && $filter_user ne 'Any' ) {
-        if ( $filter_user eq 'Current' ) {
+    if ( $filter_user && $filter_user ne 'any' ) {
+        if ( $filter_user eq 'current' ) {
             $filter_user = $c->stash->{username};
         }
         my $ci_user = ci->user->find_one( { name => $filter_user } );
@@ -424,3 +424,4 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
+

@@ -57,7 +57,7 @@ subtest 'get_with_condition: returns topics with alphanumeric ids' => sub {
     my $config = {
         categories    => $id_release_category,
         statuses      => [ $status->{id_status}, $status2->{id_status}, $status3->{id_status} ],
-        assigned_to   => 'Any',
+        assigned_to   => 'any',
         not_in_status => ''
     };
 
@@ -118,7 +118,7 @@ subtest 'get_with_condition: returns topic filtering by not in status' => sub {
     my $config = {
         categories    => $id_release_category,
         statuses      => [ $status->{id_status}, $status2->{id_status}, $status3->{id_status} ],
-        assigned_to   => 'Any',
+        assigned_to   => 'any',
         not_in_status => 'on'
     };
 
