@@ -1348,6 +1348,7 @@ sub json_tree : Local {
     my $k=0;
     $c->stash->{json} = try {
         my @all;
+        _fail(_loc("Items must be selected")) unless $mids;
         for my $mid ( _array( $mids ) ) {
             $mid =~ s{^.+__#__(.+)$}{$1};
             my $ci = ci->new( $mid );

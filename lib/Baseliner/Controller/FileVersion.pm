@@ -236,8 +236,9 @@ sub get_menu_folder {
                                     handler => 'Baseliner.open_topic_grid_from_folder'
                                 }
                             };
-    my $is_root = Baseliner->model('Permissions')->is_root($username);
-    my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.home.generate_docs' );
+
+    my $is_root = Baseliner->model::Permissions->is_root($username);
+    my $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.home.generate_docs' );
     if ( $has_permission || $is_root ) {
         push @menu_folder, {  text => _loc('Doc'),
                                     icon => '/static/images/icons/document.png',

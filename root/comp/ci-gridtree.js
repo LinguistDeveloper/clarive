@@ -326,6 +326,23 @@
             }
         }
     });
+    check_sm.on('selectionchange', function(){
+
+        var midsSelected = 0;
+
+        Ext.each( check_sm.getSelections(), function(r){
+            if (r.data.mid ) {
+                ++midsSelected;
+            }
+        });
+
+        if(midsSelected > 0){
+            btn_graph.enable();
+        }else{
+            btn_graph.disable();
+        }
+
+    });
 
     var id_auto = Ext.id();
     
@@ -368,6 +385,14 @@
         cls: 'ui-comp-ci-create'
     })
 
+    var btn_graph = new Ext.Button({
+        icon:'/static/images/icons/ci-grey.png',
+        disabled: true,
+        cls: 'x-btn-icon',
+        tooltip:_('Show Graph'),
+        handler: show_graph
+    })
+
 
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
@@ -405,8 +430,8 @@
                 ]
             },
 	       '->',
-            { icon:'/static/images/icons/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
-        ],
+            btn_graph
+             ],
         viewConfig: {
             enableRowBody: true,
             scrollOffset: 2,

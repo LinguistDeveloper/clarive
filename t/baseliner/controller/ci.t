@@ -1232,6 +1232,40 @@ subtest 'service_run: service is run if user have permissions to do it' => sub {
     }
 };
 
+subtest 'json_tree: returns selected data' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status = TestUtils->create_ci( 'status', name => 'Status' );
+
+    my $c = _build_c( req => { params => { mid => $status->mid } } );
+    my $controller = _build_controller();
+
+    my @res = $controller->json_tree($c);
+
+    cmp_deeply $c->stash->{json}->{data},
+      {
+        'children' => ignore(),
+        'data'     => ignore(),
+        'id'       => ignore(),
+        'name'     => 'Status'
+      };
+};
+
+subtest 'json_tree: returns error when mids are not selected' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { mid => '' } } );
+    my $controller = _build_controller();
+
+    $controller->json_tree($c);
+
+    like $c->stash->{json}->{msg}, qr/Items must be selected/;
+};
+
 done_testing;
 
 sub _create_changeset_form {

@@ -31,14 +31,13 @@ icon: combo_box
 
 
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico:  
+* Permite definir la apariencia de la tabla en el tópico:
 
 **Único** - Permite seleccionar unicamente una opción.
 
 **Múltiple** - Permite al usuario añadir tantas opciones como desee.
 
 **Tabla** - Las opciones seleccionadas se muestran en una tabla.
-
 
 ### Campo visible
 * En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
@@ -50,12 +49,11 @@ Permite añadir un filtro avanzado JSON
 
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-
-
 Donde id es el [MID](Conceptos/mid) de la categoría.
 
-
 ### Clase CI
+* Especifica la clase de CI que se va a mostrar en las opciones. 
+* En este combo, lo comun es que aparezcan los CI de tipo *proyecto*.
 * Especifica los proyectos que se van a mostrar. Por defecto, hay dos opciones.
 
 **Área**.
@@ -64,7 +62,6 @@ Donde id es el [MID](Conceptos/mid) de la categoría.
 
 * Por defecto, está marcada la opción Proyecto.
 * Este campo es obligatorio y único.
-
 
 ### Valor por defecto
 * Permite mostrar un valor por defecto en el combo.

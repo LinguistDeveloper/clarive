@@ -8833,3 +8833,12 @@ msgstr "Solo si hay paginación"
 
 msgid "Never"
 msgstr "Nunca"
+
+msgid "Authentication"
+msgstr "Autenticación"
+
+msgid "Items must be selected"
+msgstr "Se debe de seleccionar un elemento"
+
+msgid "Show Graph"
+msgstr "Mostrar Gráfico"
