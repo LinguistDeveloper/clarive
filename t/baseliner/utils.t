@@ -447,71 +447,48 @@ subtest '_md5: calculates md5 of a with unicode' => sub {
     is _md5($fh), '608333adc72f545078ede3aad71bfe74';
 };
 
-subtest 'hash_diff_ignore_empty: modified one field' => sub {
-    my $field_a = "field_a";
-    my $field_b = "field_b";
-    my $field_c = "field_c";
-    my $field_a_new = "field_a_new";
+subtest 'hash_diff_ignore_empty: returns modified field' => sub {
+    my $old_values = { a => 'old_value', b => 'b', c => 'c' };
+    my $new_values = { a => 'new_value', b => 'b', c => 'c' };
 
-    my $old_values = { a=> $field_a, b=> $field_b, c=> $field_c };
-    my $new_values = { a=> $field_a_new, b=> $field_b, c=> $field_c };
 
-    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
-    cmp_deeply $diff, { a => $field_a, };
-
+    cmp_deeply $diff, { a => 'new_value' };
 };
 
-subtest 'hash_diff_ignore_empty: remove one field' => sub {
-    my $field_a = "field_a";
-    my $field_b = "field_b";
-    my $field_c = "field_c";
+subtest 'hash_diff_ignore_empty: returns removed field' => sub {
+    my $old_values = { removed_field => 'a', b => 'b', c => 'c' };
+    my $new_values = { b => 'b', c => 'c' };
 
-    my $old_values = { a=> $field_a, b=> $field_b, c=> $field_c };
-    my $new_values = { b=> $field_b, c=> $field_c };
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
-    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
-
-    cmp_deeply $diff, { a => $field_a, };
-
+    cmp_deeply $diff, { removed_field => 'a' };
 };
 
-subtest 'hash_diff_ignore_empty: add one field' => sub {
-    my $field_a = "field_a";
-    my $field_b = "field_b";
-    my $field_c = "field_c";
+subtest 'hash_diff_ignore_empty: returns added field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => 'a', b => 'b', c => 'c' };
 
-    my $old_values = { b=> $field_b, c=> $field_c };
-    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
-    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
-
-    cmp_deeply $diff, { a => "$field_a", };
-
+    cmp_deeply $diff, { new_field => 'a' };
 };
 
-subtest 'hash_diff_ignore_empty: add one empty field' => sub {
-    my $field_a = "field_a";
-    my $field_b = "field_b";
-    my $field_c = "field_c";
+subtest 'hash_diff_ignore_empty: does not return added undefined field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => undef, b => 'b', c => 'c' };
 
-    my $old_values = { b=> $field_b, c=> $field_c };
-    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
-    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
-
-    cmp_deeply $diff, { a => "$field_a", };
+    cmp_deeply $diff, {};
 };
 
-subtest 'hash_diff_ignore_empty: add empty field' => sub {
-    my $field_a = "";
-    my $field_b = "field_b";
-    my $field_c = "field_c";
+subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => '', b => 'b', c => 'c' };
 
-    my $old_values = { b=> $field_b, c=> $field_c };
-    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
-
-    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
     cmp_deeply $diff, {};
 };

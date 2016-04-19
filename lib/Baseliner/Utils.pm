@@ -320,18 +320,19 @@ sub _log_me {
     }
 }
 
-sub hash_diff_ignore_empty{
-    my ($old_values, $current_values) = @_;
-    my $removed_modified_fields = Hash::Diff::left_diff( $old_values, $current_values );
-    my $added_fields = Hash::Diff::left_diff( $current_values, $old_values );
+sub hash_diff_ignore_empty {
+    my ( $old_values, $current_values ) = @_;
 
-    foreach my $key (keys %$added_fields) {
-        if (!defined $added_fields->{$key} || $added_fields->{$key} eq ''){
+    my $removed_modified_fields = Hash::Diff::left_diff( $old_values,     $current_values );
+    my $added_fields            = Hash::Diff::left_diff( $current_values, $old_values );
+
+    foreach my $key ( keys %$added_fields ) {
+        if ( !defined $added_fields->{$key} || $added_fields->{$key} eq '' ) {
             delete $added_fields->{$key};
         }
     }
 
-    return {%$added_fields, %$removed_modified_fields};
+    return { %$removed_modified_fields, %$added_fields };
 }
 
 sub _log {
