@@ -2,9 +2,10 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More;
+use Test::Deep;
 use Test::Fatal;
 use Test::LongString;
+use Test::More;
 use TestEnv;
 
 use File::Temp qw(tempfile);
@@ -444,6 +445,75 @@ subtest '_md5: calculates md5 of a with unicode' => sub {
     seek $fh, 0, 0;
 
     is _md5($fh), '608333adc72f545078ede3aad71bfe74';
+};
+
+subtest 'hash_diff_ignore_empty: modified one field' => sub {
+    my $field_a = "field_a";
+    my $field_b = "field_b";
+    my $field_c = "field_c";
+    my $field_a_new = "field_a_new";
+
+    my $old_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+    my $new_values = { a=> $field_a_new, b=> $field_b, c=> $field_c };
+
+    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+
+    cmp_deeply $diff, { a => $field_a, };
+
+};
+
+subtest 'hash_diff_ignore_empty: remove one field' => sub {
+    my $field_a = "field_a";
+    my $field_b = "field_b";
+    my $field_c = "field_c";
+
+    my $old_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+    my $new_values = { b=> $field_b, c=> $field_c };
+
+    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+
+    cmp_deeply $diff, { a => $field_a, };
+
+};
+
+subtest 'hash_diff_ignore_empty: add one field' => sub {
+    my $field_a = "field_a";
+    my $field_b = "field_b";
+    my $field_c = "field_c";
+
+    my $old_values = { b=> $field_b, c=> $field_c };
+    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+
+    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+
+    cmp_deeply $diff, { a => "$field_a", };
+
+};
+
+subtest 'hash_diff_ignore_empty: add one empty field' => sub {
+    my $field_a = "field_a";
+    my $field_b = "field_b";
+    my $field_c = "field_c";
+
+    my $old_values = { b=> $field_b, c=> $field_c };
+    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+
+    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+
+    cmp_deeply $diff, { a => "$field_a", };
+};
+
+subtest 'hash_diff_ignore_empty: add empty field' => sub {
+    my $field_a = "";
+    my $field_b = "field_b";
+    my $field_c = "field_c";
+
+    my $old_values = { b=> $field_b, c=> $field_c };
+    my $new_values = { a=> $field_a, b=> $field_b, c=> $field_c };
+
+    my $diff = Util->hash_diff_ignore_empty($old_values, $new_values);
+
+    cmp_deeply $diff, {};
 };
 
 done_testing;
