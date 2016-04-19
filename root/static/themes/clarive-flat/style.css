@@ -998,6 +998,8 @@ textarea.x-form-textarea.x-form-field {
 .topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body .x-grid3 .x-grid3-viewport .x-grid3-scroller  {
   width: 99.2% !important;
 }
+
+
 .user_grid_edit_window {
     border:1px solid #C1C1C1;
     width: 99.5% !important;
@@ -1285,7 +1287,7 @@ label.no_calendar_windows {
 
 
 /*********  User preferences window  *********/
-
+/*
 .prefs_window .x-form-element .x-form-field-wrap {
     margin: 5px 0 3px 0px;
 }
@@ -1436,7 +1438,7 @@ label.no_calendar_windows {
 
 .x-form-element textarea.wmd-input {
     width: 99.5% !important;
-}
+}*/
 
 /*********  Grid Editor fieldlet *********/
 
@@ -1584,3 +1586,41 @@ label.no_calendar_windows {
 input.combo_box_fieldlet {
   height: 18px !important;
 }
+
+
+
+/************* New notification menu  ********/
+
+.notification_edit_menu .first_notification_menu_row .x-form-label-left.x-column .x-form-element {
+    margin-top: 4px;
+}
+
+.notification_edit_menu #pnl_subject .x-form-element .x-form-check-wrap {
+      margin-top: 4px;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-toolbar.x-small-editor.x-toolbar-layout-ct {
+    width: 100% !important;
+    padding: 5px 5px 5px 6px;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-panel-body.x-panel-body-noheader,
+.notification_edit_menu .recipients_notification_edit .x-grid3-body,
+.notification_edit_menu .recipients_notification_edit .x-grid3-scroller,
+.notification_edit_menu .recipients_notification_edit .x-grid3,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-table,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-selected {
+    padding:0;
+    width: 100% !important;
+    border: none;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-table {
+      padding: 4px;
+}
+
+.notification_edit_menu .x-panel-tbar.x-panel-tbar-noheader {
+    width: 100% !important;
+}
+>>>>>>> add new styles to new/edit notification window
