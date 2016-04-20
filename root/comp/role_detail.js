@@ -444,7 +444,7 @@
                             }
 
                             action_tree.getRootNode().reload();
-
+                            role_panel.setTitle(_('Role: %1', ff.findField('name').getValue() ));
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
 
                         },
