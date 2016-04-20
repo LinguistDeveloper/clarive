@@ -317,7 +317,7 @@ Baseliner.TopicBox = Ext.extend(Baseliner.SuperBox, {
             self.tpl = new Ext.XTemplate('<tpl for=".">',
                 '<div class="x-combo-list-item">',
                 '<span class="bl-label" style="background: {color}">{short_name}</span>',
-                (self.display_field ? '&nbsp;[{' + self.display_field + '}]' : ''),
+                (self.display_field ==undefined || self.display_field =='title' ? '' : '&nbsp;[{' + self.display_field + '}]'),
                 '<span style="padding-left:4px"><b>{title}</b></span>',
                 '</div></tpl>');
         }
