@@ -243,9 +243,8 @@ Baseliner.store.Topics = function(c) {
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 
-Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
+Baseliner.TopicBox = Ext.extend(Baseliner.SuperBox, {
     minChars: 2,
-    //forceSelection: true,
     typeAhead: false,
     loadingText: _('Searching...'),
     resizable: true,
@@ -260,43 +259,42 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
     displayField: 'name',
     hiddenName: 'projects',
     valueField: 'mid',
-    // stackItems: true,
-    initComponent: function(){
+    initComponent: function() {
         var self = this;
-        if (self.tpl_cfg){
+        if (self.tpl_cfg) {
             var columns = self.tpl_cfg.split(';');
             var header = [];
             var body = [];
             header.push('<p>');
             body.push('<p><div class="x-combo-list-item">');
-            for (i=0;i<columns.length;i++){
+            for (i = 0; i < columns.length; i++) {
                 var properties = columns[i].split(':');
                 var width_column;
                 var name_column;
-                if (properties[0] == 'mid'){
+                if (properties[0] == 'mid') {
                     width_column = properties[1] ? properties[1] : '75';
                     header.push('<div class="titulo" style="width:' + width_column + 'px;">&nbsp;');
                     name_column = _(properties[0]).toUpperCase();
-                    header.push( name_column );
+                    header.push(name_column);
                     header.push('</div>');
 
                     body.push('<div class="columna" style="width:' + width_column + 'px;"><span class="bl-label" style="background: {color}; cursor:pointer;">');
-                    body.push( properties[0] == 'mid' ? '{short_name}' : '{' + properties[0] + '}' );
+                    body.push(properties[0] == 'mid' ? '{short_name}' : '{' + properties[0] + '}');
                     body.push('</span></div>');
-                }else{
+                } else {
                     width_column = properties[1] ? properties[1] : undefined;
-                    if (width_column){
+                    if (width_column) {
                         header.push('<div class="titulo" style="width:' + width_column + 'px;">&nbsp;');
-                        body.push('<div class="columna" style="width:' + width_column +'px;">{');
-                    }else{
+                        body.push('<div class="columna" style="width:' + width_column + 'px;">{');
+                    } else {
                         header.push('<div class="titulo">&nbsp;');
                         body.push('<div class="columna">{');
                     }
                     name_column = _(properties[0]).toUpperCase();
-                    header.push( name_column );
+                    header.push(name_column);
                     header.push('</div>');
 
-                    body.push( properties[0] );
+                    body.push(properties[0]);
                     body.push('}</div>');
                 }
             }
@@ -315,45 +313,36 @@ Baseliner.TopicBox = Ext.extend( Baseliner.SuperBox, {
                 '</tpl>',
                 '</div>',
                 '</tpl>');
-        }else{
-            self.tpl = new Ext.XTemplate( '<tpl for=".">',
+        } else {
+            self.tpl = new Ext.XTemplate('<tpl for=".">',
                 '<div class="x-combo-list-item">',
                 '<span class="bl-label" style="background: {color}">{short_name}</span>',
-                ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
+                (self.display_field ? '&nbsp;[{' + self.display_field + '}]' : ''),
                 '<span style="padding-left:4px"><b>{title}</b></span>',
-                '</div></tpl>' );
+                '</div></tpl>');
         }
 
-        self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
+        self.displayFieldTpl = new Ext.XTemplate('<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
             '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored(\'{mid}\', \'{name}\', \'{color}\');">{short_name}</span>',
-            ( self.display_field ? '&nbsp;{'+self.display_field+'}' : '' ),
-            // '<span style="padding-left:4px">{title}</span>',
-            '</div></tpl>' );
+            (self.display_field ? '&nbsp;{' + self.display_field + '}' : ''),
+            '</div></tpl>');
 
         Baseliner.TopicBox.superclass.initComponent.call(this);
     },
-    // },
-    listeners:{
-        additem: function(obj,v){
-            if(obj.getValue()){
+    listeners: {
+        additem: function(obj, v) {
+            if (obj.getValue()) {
                 obj.hidden_value = obj.getValue();
             }
 
         },
-        removeItem: function(obj,v){
+        removeItem: function(obj, v) {
             obj.hidden_value = obj.getValue();
         }
 
     }
 
-    //     var self = this;
-    //     var mids = [];
-    //     self.store.each(function(row){
-    //         mids.push( row.data.mid );
-    //     });
-    //     return mids;
-    // }
 });
 
 //
