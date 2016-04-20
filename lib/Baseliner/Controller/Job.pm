@@ -392,19 +392,23 @@ sub refresh_now : Local {
 
 register 'event.job.new' => {
     description => 'New job',
-    vars => ['username', 'bl', 'jobname', 'id_job']
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify => { scope => ['bl'] }
 };
 register 'event.job.delete' => {
     description => 'Job deleted',
-    vars => ['username', 'bl', 'jobname', 'id_job']
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify => { scope => ['bl'] }
 };
 register 'event.job.cancel' => {
     description => 'Job cancelled',
-    vars => ['username', 'bl', 'jobname', 'id_job']
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify => { scope => ['bl'] }
 };
 register 'event.job.cancel_running' => {
     description => 'Running job cancelled',
-    vars => ['username', 'bl', 'jobname', 'id_job']
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify => { scope => ['bl'] }
 };
 
 sub submit : Local {

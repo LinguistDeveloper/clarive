@@ -8842,3 +8842,6 @@ msgstr "Se debe de seleccionar un elemento"
 
 msgid "Show Graph"
 msgstr "Mostrar Gráfico"
+
+msgid "bl"
+msgstr "Entorno"

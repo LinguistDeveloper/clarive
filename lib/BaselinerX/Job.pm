@@ -114,7 +114,7 @@ register 'event.job.new' => {
     description => 'New job',
     vars => ['username', 'bl', 'jobname', 'id_job'],
     notify => {
-        scope => ['project','baseline'],
+        scope => ['project','bl'],
     }
 };
 

@@ -610,25 +610,26 @@ register 'service.approval.request' => {
 };
 
 register 'event.job.approval_request' => {
-    text => 'Approval requested for job %3 (user %1)',
+    text        => 'Approval requested for job %3 (user %1)',
     description => 'approval requested for job',
-    vars => ['username', 'ts', 'name', 'bl', 'status','step'],
-    notify => {
-        scope => ['project'],
+    vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step' ],
+    notify      => {
+        scope => [ 'project', 'bl' ],
     },
 };
 register 'event.job.approved' => {
     text        => 'Job %3 Approved',
     description => 'Job Approved',
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
-    notify => { scope => ['project'] },
+    notify => { scope => [ 'project', 'bl' ] },
 };
 register 'event.job.rejected' => {
     text        => 'Job %3 Rejected',
     description => 'Job Rejected',
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
-    notify => { scope => ['project'] },
+    notify => { scope => [ 'project', 'bl' ] },
 };
+
 sub request_approval {
     my ( $self, $c, $config ) = @_;
 
