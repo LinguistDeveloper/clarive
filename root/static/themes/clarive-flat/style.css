@@ -1588,7 +1588,6 @@ input.combo_box_fieldlet {
 }
 
 
-
 /************* New notification menu  ********/
 
 .notification_edit_menu .first_notification_menu_row .x-form-label-left.x-column .x-form-element {
@@ -1623,4 +1622,58 @@ input.combo_box_fieldlet {
 .notification_edit_menu .x-panel-tbar.x-panel-tbar-noheader {
     width: 100% !important;
 }
->>>>>>> add new styles to new/edit notification window
+
+/************* New rule window  ********/
+
+.new_rule_window .x-form-item {
+    padding-bottom: 5px;
+}
+
+.new_rule_window h4 {
+    padding: 10px 35px 5px 35px !important;
+}
+
+.new_rule_window .x-grid3-viewport {
+    border-bottom: 1px solid #E9E9E9;
+    border-right: 1px solid #e9e9e9;
+}
+
+
+.new_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct {
+    width: 100% !important;
+    padding: 5px 5px 5px 6px;
+}
+
+.new_rule_window .x-grid3-row-table {
+      padding: 4px 0px;
+}
+
+.new_rule_window .x-panel-tbar.x-panel-tbar-noheader,
+.new_rule_window .x-grid3-header-offset table,
+.new_rule_window .x-grid3-header-inner  {
+    width: 100% !important;
+}
+
+.new_rule_window .x-grid3-scroller {
+  height: 185px !important;
+}
+
+.new_rule_window .x-grid3-hd-checker {
+  display: none;
+}
+
+.new_rule_window .x-grid3 {
+  height: 100% !important;
+}
+
+.new_rule_window .x-panel.x-panel-noborder.x-grid-panel {
+  margin-left:35px;
+}
+
+.new_rule_window .x-form-element input {
+  padding-left: 4px;
+}
+
+.new_rule_window input.name_combo_edit_rule  {
+  height: 26px;
+}

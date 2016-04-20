@@ -160,12 +160,8 @@
             anchor: '90%'
         },
         border: false,
-        items: [{
-                xtype: 'textfield',
-                fieldLabel: _('Name'),
-                name: 'rule_name',
-                value: params.rec.rule_name
-            },
+        items: [
+            { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', cls:'name_combo_edit_rule', value: params.rec.rule_name },
             combo_type, compile_mode, msg_ev, msg_job, grid_events, job_pipeline_form, webservice_form
         ]
     });
@@ -193,6 +189,7 @@
     //------------ Card Navigation 
     var wiz = new Baseliner.Wizard({
         height: 450,
+        cls:'new_rule_window',
         done_handler: function(){
             var d = form_events.getValues();
             var rule_type = combo_type.getValue();
