@@ -1268,6 +1268,9 @@ Baseliner.show_revision = function( mid ) {
             sha: res.url.rev_num,
             repo_mid: res.url.repo_mid
         };
+        if (title == params.sha) {
+            url =  "/comp/view_commits_history.js";
+        }
         Baseliner.add_tabcomp( url, title, params );             
     });
 };
