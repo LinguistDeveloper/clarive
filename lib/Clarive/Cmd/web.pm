@@ -96,6 +96,9 @@ sub run_start {
         $runner->{server} = $self->engine;
     }
     if( my $arg = $self->opts->{R} ) {
+        if ($arg eq '1') {
+            die 'Error: option -R needs arguments. Use -r for default directories';
+        }
         $runner->{loader} = "Restarter";
         $runner->loader->watch(split ",", $arg );
     }
@@ -112,8 +115,9 @@ sub run_start {
     );
 
     $runner->{argv} = [];
+    $runner->{options} = [];
     my $proc = sub {
-        $runner->run('Clarive::PSGI::Web');
+        $runner->run('.');
     };
     my $super_runner = sub{
         my @sigs=();
