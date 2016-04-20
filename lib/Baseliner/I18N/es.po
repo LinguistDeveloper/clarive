@@ -8749,3 +8749,9 @@ msgstr "Error: Los ficheros locales no fueron encontrados"
 
 msgid "Commit Owner"
 msgstr "Creador del commit"
+
+msgid "Compile Mode"
+msgstr "Modo de Compilación"
+
+msgid "Authentication"
+msgstr "Autenticación"

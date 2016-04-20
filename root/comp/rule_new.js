@@ -156,10 +156,16 @@
     var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Pipeline Details') + ':</h4></p>' });
     // PAGE 1
     var form_events = new Baseliner.FormPanel({
-        defaults: { anchor: '90%' },
+        defaults: {
+            anchor: '90%'
+        },
         border: false,
-        items: [
-            { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
+        items: [{
+                xtype: 'textfield',
+                fieldLabel: _('Name'),
+                name: 'rule_name',
+                value: params.rec.rule_name
+            },
             combo_type, compile_mode, msg_ev, msg_job, grid_events, job_pipeline_form, webservice_form
         ]
     });
@@ -171,7 +177,7 @@
             { xtype:'hidden', name:'rule_id', value: rule_id }, 
             {
                 xtype: 'radiogroup',
-                anchor: '50%',
+                anchor: '80%',
                 fieldLabel: _('Event Type'),
                 defaults: {xtype: "radio",name: "rule_when"},
                 value: params.rec.rule_when,
