@@ -2007,7 +2007,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     readOnly: false,
     constructor: function(c){
         //var dragger = new Baseliner.RowDragger({});
-        var sm = new Baseliner.CheckboxSelectionModel({
+        var sm = c.sm || new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
         });
@@ -2079,7 +2079,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             name: 'ci',
             hiddenName: 'ci', 
             allowBlank: true
-        }); 
+        });
         self.ci_box.on('select', function(combo,rec,ix) {
             if( combo.id != self.ci_box.id ) return; // strange bug: this event gets fired with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
@@ -2087,17 +2087,18 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.ddGroup = 'bali-grid-data-' + self.id;
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
+            disabled: self.readOnly ? self.readOnly : false,
             handler: function() {
                 var sm = self.getSelectionModel();
                 if (sm.hasSelection()) {
                     Ext.each( sm.getSelections(), function( sel ){
                         self.getStore().remove( sel );
-                    });
-                    btn_delete.disable();
-                    self.refresh_field();
+                        self.store.commitChanges();
+                        self.refresh_field();
+                        });
                 } else {
-                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
-                };                
+                    Baseliner.message( _('ERROR'), _('Select at least one row'));
+                };
             }
         });
         var tbar_items = []; //[ self.ci_box, btn_delete ];
@@ -2108,11 +2109,12 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         self.tbar = new Ext.Toolbar({ hidden: self.readOnly, items: tbar_items });
         self.on('rowclick', function(grid, rowIndex, e) {
             btn_delete.enable();
-        });     
+        });
 
         var val = self.value;
+
         if( Ext.num(val) != undefined ) val=[val];
-        
+
         if( Ext.isArray(val) && val.length>0 ) {
             var p = { mids: val, _whoami: 'CIGrid_mids' };
             if( self.ci.role ) p.role = self.ci.role;
@@ -2161,14 +2163,14 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
                         self.refresh_field();
                     }
                 }
-            }); 
+            });
         });
     },
     refresh_field : function(){
         var self = this;
         var mids = [];
         self.store.each(function(row){
-            mids.push( row.data.mid ); 
+            mids.push( row.data.mid )
         });
         self.field.setValue( mids.join(',') );
     },

@@ -2,8 +2,7 @@
     $meta
     $data
 </%args>
-% my $d = $data->{ $meta->{id_field} };
-% my @rows = _array( $data->{$meta->{id_field}} );
+% my @rows = _array_or_commas($data->{$meta->{id_field}});
 
 % if( @rows && !$meta->{hidden} ){
   <tr><th><h5 style="border-bottom: 1px solid #bbb; margin-top: 15px"><% _loc($meta->{name_field}) %>:</h5></th></tr>

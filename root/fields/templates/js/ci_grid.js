@@ -5,7 +5,7 @@ params:
     relation: 'system'
     js: '/fields/templates/js/ci_grid.js'
     html: '/fields/templates/html/ci_grid.html'
-    get_method: 'get_cis'    
+    get_method: 'get_cis'
     set_method: 'set_cis'
     section: 'head'
     field_order: 100
@@ -23,24 +23,31 @@ params:
     var ci_meta = {};
     if( meta.ci_role ) ci_meta['role'] = meta.ci_role;
     if( meta.ci_class ) ci_meta['class'] = meta.ci_class;
-    
-    var value = data[ meta.id_field ];
-    var cis = new Baseliner.CIGrid({ 
+
+    var list = data[ meta.id_field ];
+    if (list) {
+        var value = list.split(",");
+    }
+    var sm = new Baseliner.CheckboxSelectionModel({
+        checkOnly: true,
+        singleSelect: false
+    });
+
+    var cis = new Baseliner.CIGrid({
         fieldLabel: _( meta.name_field ),
+        sm: sm,
         ci: ci_meta,
         title: null,
         columns: meta.columns || [],
-        //labelAlign: 'top', 
+        //labelAlign: 'top',
         readOnly: Baseliner.eval_boolean(meta.readOnly,false),
-        //style: 'margin-top: 20px', 
+        //style: 'margin-top: 20px',
         height: ( meta.height ? parseInt(meta.height) : 200 ),
-        value: value, 
+        value: value,
         filter: meta.filter ? meta.filter : '',
-        name: meta.id_field 
+        name: meta.id_field
     });
 	return [
         cis
     ]
 })
-
-
