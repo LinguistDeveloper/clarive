@@ -226,7 +226,7 @@ for(my $hh=0; $hh<=24; $hh++) {
     var win = new Ext.Window({
         layout: 'fit',
         cls: 'edit_job_window',
-        height: 273, width: 500,
+        height: 273, width: 600,
         title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'), 
         items: fpanel
     });
