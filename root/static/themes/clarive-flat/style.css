@@ -1350,25 +1350,6 @@ label.no_calendar_windows {
     float: left;
 }
 
-.edit_rule_window {
-    max-height:485px;
-    width: 900px;
-    max-width: 900px;
-    min-width:330px;
-}
-
-.edit_rule_window_body {
-    max-height:455px;
-    min-width:324px;
-    max-width: 894px;
-}
-
-.edit_rule_window .x-panel-bbar ,
-.edit_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct{
-   width: 99.8% !important;
-   height: auto;
-}
-
 .prefs_window .x-form-element .x-form-field-wrap {
     margin: 5px 0 3px 0px;
 }
@@ -1625,6 +1606,30 @@ input.combo_box_fieldlet {
 
 /************* New rule window  ********/
 
+
+.edit_rule_window {
+    max-height:485px;
+    width: 900px;
+    max-width: 900px;
+    min-width:330px;
+}
+
+.edit_rule_window_body {
+    max-height:455px;
+    min-width:324px;
+    max-width: 894px;
+}
+/*
+.edit_rule_window .x-form-label-right label.x-form-item-label {
+        margin-right: 10px;
+}*/
+
+.edit_rule_window .x-panel-bbar ,
+.edit_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct{
+   width: 99.8% !important;
+   height: auto;
+}
+
 .new_rule_window .x-form-item {
     padding-bottom: 5px;
 }
@@ -1674,6 +1679,14 @@ input.combo_box_fieldlet {
   padding-left: 4px;
 }
 
+.new_rule_window .wdsl_rule {
+  border: 1px solid #E8E8E8;
+}
+/*
 .new_rule_window input.name_combo_edit_rule  {
   height: 26px;
 }
+.new_rule_window td.x-toolbar-right {
+    padding-right: 10px;
+}
+*/
