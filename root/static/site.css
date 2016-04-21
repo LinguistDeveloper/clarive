@@ -15,7 +15,7 @@
 	background-image:url('ext/resources/images/default/s.gif') !important;
 }
 
-/* 
+/*
  * for making greyscale images - doesn't work on Safari5 though. Tested in FF and Chrome
  *
  */
@@ -208,7 +208,7 @@
     z-index:20000;
 }
 
-.form-label-1 { font-size: 20px; font-weight: bold; } 
+.form-label-1 { font-size: 20px; font-weight: bold; }
 .form-field-help { font-size: 10px; padding: 0px 0px 0px 100px }
 
 /* Calendar */
@@ -216,7 +216,7 @@
 .job-calendar th { font-size: 12pt; font-weight: bold; text-transform: capitalize }
 .job-calendar td { font-size: 9pt; }
 
-td.cal_slot { 
+td.cal_slot {
     padding: 0;
     border: transparent 1px dashed;
     font-family: Calibri, OpenSans, Arial, sans-serif;
@@ -312,13 +312,13 @@ pre { font-family: Consolas, Courier New, mono; }
     color: #9F263A;
     font-weight: bold;
     margin: 5px 0px 5px 5px;
-    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif;
 }
 #baseliner-help-win h4 {
     color: #111;
     font-style: italic;
     margin: 5px 0px 5px 5px;
-    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif;
 }
 #baseliner-help-win table {
     border: 1px dashed #ccc;
@@ -328,13 +328,13 @@ pre { font-family: Consolas, Courier New, mono; }
     color: #222;
     padding: 2px 2px 2px 2px;
     border: 1px dashed #ccc;
-    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif;
 }
 #baseliner-help-win th {
     color: #222;
     padding: 2px 2px 2px 2px;
     font-weight: bold;
-    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif;
 }
 
 .x-form-spinner-proxy{
@@ -395,7 +395,7 @@ pre { font-family: Consolas, Courier New, mono; }
     background-position:-14px 0;
 }
 
-/*** 
+/***
  *
  *
  *
@@ -404,6 +404,7 @@ pre { font-family: Consolas, Courier New, mono; }
  *
  *
 ***/
+/*
 .loading-indicator {
     font-size:55px;
     background-image:url('../../resources/images/default/grid/loading22.gif')!important;
@@ -425,7 +426,8 @@ pre { font-family: Consolas, Courier New, mono; }
     background-position:left 5px;
     padding:10px 10px 10px 38px;
     text-align:left;
-}
+}*/
+
 #loading-mask{
     position:absolute;
     left:0;
@@ -446,6 +448,7 @@ pre { font-family: Consolas, Courier New, mono; }
 #loading img {
     margin-bottom:50px;
 }
+/*
 #loading .loading-indicator{
     background:black;
     color:#444444;
@@ -455,7 +458,7 @@ pre { font-family: Consolas, Courier New, mono; }
     margin:0;
     text-align:center;
     height:500px;
-}
+}*/
 a {
 	color: #1E4176;
 }
