@@ -181,6 +181,7 @@ Cla.help_show = function(params) {
     var help_win = new Cla.Window({
         height: 750,
         width: 1000,
+        cls:'help_docs',
         //top: 20, left: 3,
         autoScroll: false,
         title: _('Help'),

@@ -6,10 +6,10 @@
         checkOnly: true
     });
     var store_events = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         url: '/rule/event_list',
         baseParams: Ext.apply({}, params),
         fields: [ 'type', 'name', 'description', 'key' ]
@@ -38,14 +38,14 @@
             { header: _('Description'), width: 100, dataIndex: 'description', renderer: Baseliner.render_wrap }
         ]
     });
-    var combo_type = new Ext.form.ComboBox({ 
-               fieldLabel:_('Type'), 
-               name: 'rule_type', 
-               hiddenName: 'rule_type', 
-               valueField: 'rule_type', 
+    var combo_type = new Ext.form.ComboBox({
+               fieldLabel:_('Type'),
+               name: 'rule_type',
+               hiddenName: 'rule_type',
+               valueField: 'rule_type',
                value: params.rec.rule_type || 'event',
                displayField: 'rule_type_name',
-               typeAhead: false, minChars: 1, mode: 'local', 
+               typeAhead: false, minChars: 1, mode: 'local',
                cls: 'ui-comp-rule-new-type',
                store: [
                   [ 'event', _('Event') ],
@@ -114,35 +114,37 @@
         }
     }
 
-    var compile_mode = new Baseliner.ComboSingle({ 
+    var compile_mode = new Baseliner.ComboSingle({
         fieldLabel: _('Compile Mode'), name:'rule_compile_mode', value: params.rec.rule_compile_mode, data: [
                'none',
                'precompile'
            ]});
-    
+
     // job pipeline form
     var job_pipeline_form = new Ext.form.FieldSet({
-        hidden: true, border: false,
+        hidden: true, cls:'pipeline_options', border: false,
         items: [
-            new Baseliner.ComboSingle({ fieldLabel: _('Default'), name:'pipeline_default', value: params.rec.pipeline_default, data: [
+            new Baseliner.ComboSingle({ fieldLabel: _('Default'), cls:'default_pipeline', name:'pipeline_default', value: params.rec.pipeline_default, data: [
                 '-',
                 'promote',
                 'demote',
                 'static'
             ]}),
-            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Pipeline Description'), name: 'rule_desc', value: params.rec.rule_desc }
+            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Pipeline Description'),cls:'descr_pipeline', name: 'rule_desc', value: params.rec.rule_desc }
         ]
     });
     // webservice-soap form
-    var wsdl = Ext.isIE 
-        ? new Ext.form.TextArea({ height: 300, anchor:'100%', fieldLabel:_('WSDL'), name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' })
-        : new Cla.AceEditor({ fieldLabel:_('WSDL'), anchor:'100%', height: 300, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
+    var authtype = new Baseliner.ComboDouble({ fieldLabel: _('Authentication'), name:'authtype', value: params.rec.authtype||'required',
+            data: [ ['required',_('Auth Required')], ['none',_('No login needed')] ]});
+    var wsdl = Ext.isIE
+        ? new Ext.form.TextArea({ height: 300, anchor:'100%', fieldLabel:_('WSDL'),name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' })
+        : new Cla.AceEditor({ fieldLabel:_('WSDL'),  cls:'wdsl_rule', anchor:'99.5%', height: 155, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
+
     var subtype = new Baseliner.ComboSingle({ fieldLabel: _('Web Service Type'), name:'subtype', value: params.rec.subtype, data: [
                 '-', 'soap' ]});
-    var authtype = new Baseliner.ComboDouble({ fieldLabel: _('Authentication'), name:'authtype', value: params.rec.authtype||'required', 
-            data: [ ['required',_('Auth Required')], ['none',_('No login needed')] ]});
+
     var webservice_form = new Ext.form.FieldSet({
-        hidden: true, border: false, height: 400, anchor:'100%', items: [ subtype, wsdl, authtype ]
+        hidden: true, cls:'webservice_options', border: false, height: 400, anchor:'100%', items: [ authtype,subtype, wsdl ]
     });
     subtype.on('select', function(){
         if( subtype.getValue() == 'soap' ) {
@@ -160,12 +162,8 @@
             anchor: '90%'
         },
         border: false,
-        items: [{
-                xtype: 'textfield',
-                fieldLabel: _('Name'),
-                name: 'rule_name',
-                value: params.rec.rule_name
-            },
+        items: [
+            { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', cls:'name_combo_edit_rule', value: params.rec.rule_name },
             combo_type, compile_mode, msg_ev, msg_job, grid_events, job_pipeline_form, webservice_form
         ]
     });
@@ -174,11 +172,12 @@
     var form_when = new Ext.FormPanel({
         border: false,
         items: [
-            { xtype:'hidden', name:'rule_id', value: rule_id }, 
+            { xtype:'hidden', name:'rule_id', value: rule_id },
             {
                 xtype: 'radiogroup',
                 anchor: '80%',
                 fieldLabel: _('Event Type'),
+                cls:'type_event_rule',
                 defaults: {xtype: "radio",name: "rule_when"},
                 value: params.rec.rule_when,
                 items: [
@@ -190,9 +189,10 @@
         ]
     });
 
-    //------------ Card Navigation 
+    //------------ Card Navigation
     var wiz = new Baseliner.Wizard({
         height: 450,
+        cls:'new_rule_window',
         done_handler: function(){
             var d = form_events.getValues();
             var rule_type = combo_type.getValue();

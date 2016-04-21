@@ -384,7 +384,7 @@ table.x-btn.x-btn-over.x-btn-menu-active {
 
 /* Menu */
 div.x-menu.x-menu-floating.x-layer {
-    border: 1px solid #999; 
+    border: 1px solid #999;
 }
 
 /* x-btn-tl tc tr ml mc mr bl bc br */
@@ -394,8 +394,8 @@ div.x-menu.x-menu-floating.x-layer {
     background-position: 0 0 !important;
 }
 
-.x-toolbar .x-btn-click td, 
-.x-toolbar .x-btn-menu-active td, 
+.x-toolbar .x-btn-click td,
+.x-toolbar .x-btn-menu-active td,
 .x-toolbar .x-btn-pressed td {
     background: transparent;
     background-position: 0 0 !important;
@@ -841,7 +841,7 @@ body {
 }*/
 
 .rule-op-edit-form {
-    padding: 4px; 
+    padding: 4px;
     background-color: #f5f5f5;
 }
 
@@ -891,6 +891,7 @@ color: #000 !important;
 .x-date-middle .x-btn .x-btn-text {
     color:#fff;
 }
+
 /*.x-date-middle .x-btn .x-btn-text {
    /* background-color: #fff;
     color: #000;
@@ -929,7 +930,7 @@ table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMont
 
 .x-form-element .x-panel.x-grid-panel.x-form-label-top .x-panel-bwrap .x-panel-body.x-panel-body-noheader {
     border-color: #c1c1c1;
-    width: 99% !important;
+    width: auto !important;
 }
 
 .x-panel.x-column .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
@@ -991,12 +992,14 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body {
-   height: 190px !important; 
+   height: 190px !important;
 }
 
 .topic_admin_edit_panels.x-grid-panel.x-box-item .x-panel-bwrap .x-panel-body .x-grid3 .x-grid3-viewport .x-grid3-scroller  {
   width: 99.2% !important;
 }
+
+
 .user_grid_edit_window {
     border:1px solid #C1C1C1;
     width: 99.5% !important;
@@ -1040,7 +1043,7 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_job_statistics_column  {
-   margin-left: 20px;
+   margin-left: 0px;
 }
 
 .job_new_main_form_when_column {
@@ -1049,8 +1052,8 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_time_column {
-   margin: 20 0 20 0;
-   padding: 15 15 15 15;
+   margin: 20px 0 20px 0;
+   padding: 15px 15px 15px 15px;
 }
 
 .job_new_main_form_time_column_advice {
@@ -1071,6 +1074,168 @@ textarea.x-form-textarea.x-form-field {
    border: solid #ccc 1px;
 }
 
+.x-date-picker {
+    border: 1px solid #000;
+
+}
+
+/********* New job tab ***********/
+
+.new_job_time_combo {
+    clear:both;
+    width: 470px;
+    margin-right: 10px;
+}
+
+.new_job_date_combo {
+    width: 225px;
+    margin-bottom: 5px;
+}
+
+.job_new_main_form .x-form-item {
+    margin-bottom: 10px;
+
+}
+
+.job_new_main_form_general .x-form-item .x-form-element .x-form-check-wrap {
+    margin-left:10px;
+}
+
+.job_new_main_form_job_statistics_column .job_new_main_form {
+        width: 98% !important;
+}
+
+.new_job_time_combo .job_new_main_form_when_column div.x-form-element,
+.new_job_date_combo .job_new_main_form_when_column div.x-form-element {
+    padding-left: 46px !important;
+}
+
+.new_job_date_combo .job_new_main_form_when_column input.x-form-text.x-form-field {
+    width: 100px !important;
+}
+
+label.no_calendar_windows {
+    margin: 5px 10px 0px 0px;
+}
+
+/*********  Job calendar *********/
+
+.job-calendar form,
+.job-calendar form  {
+
+    margin-bottom: 5px;
+}
+
+.job-calendar #days_week,
+.x-menu-date-item {
+    text-align: center;
+}
+.job-calendar #leyend_key,
+.x-menu-date-item {
+    text-align: left;
+}
+
+.job_calendar_edit_cal_windows .x-date-picker.x-column,
+.x-menu-date-item .x-date-picker.x-column {
+        width: auto !important;
+}
+
+.x-date-multiselect,
+.x-menu-date-item {
+  width: auto;
+}
+.job_calendar_edit_cal_windows .x-date-pickerplus,
+.x-menu-date-item .x-date-pickerplus  {
+  width: 100% !important;
+}
+
+.job_calendar_edit_cal_windows .x-date-weeknumber-header th,
+.x-menu-date-item  .x-date-weeknumber-header th {
+  background-color: #D8D8D8;
+}
+
+.x-date-pickerplus .x-date-right a,
+.x-menu-date-item .x-date-right a {
+
+    margin-right: 4px;
+}
+
+.job_calendar_edit_cal_windows .x-date-bottom,
+.job_calendar_edit_cal_windows .x-date-mp-btns,
+.x-menu-date-item .x-date-bottom,
+.x-menu-date-item .x-date-mp-btns {
+  background: #D8D8D8;
+}
+
+.job_calendar_edit_cal_windows .x-date-middle,
+.job_calendar_edit_cal_windows  .x-date-left,
+.job_calendar_edit_cal_windows  .x-date-right,
+.x-menu-date-item .x-date-middle,
+.x-menu-date-item  .x-date-left,
+.x-menu-date-item  .x-date-right {
+  background: #6B6B6B;
+}
+
+.job_calendar_edit_cal_windows table.x-btn,
+.x-menu-date-item table.x-btn {
+  border: 1px solid transparent;
+}
+
+.job_calendar_edit_cal_windows .x-date-inner .x-date-active a > em > span,
+.x-menu-date-item .x-date-inner .x-date-active a > em > span {
+    color: #000000;
+}
+
+.job_calendar_edit_cal_windows .x-date-prevday .x-datepickerplus-weekends  a > em > span,
+.x-menu-date-item .x-date-prevday .x-datepickerplus-weekends  a > em > span {
+    color: #D8D8D8;
+}
+
+.job_calendar_edit_cal_windows .x-date-inner .x-date-today a,
+.x-menu-date-item .x-date-inner .x-date-today a {
+    border-color: #000000;
+}
+
+.job_calendar_edit_cal_windows .x-date-weeknumber em > span,
+.x-menu-date-item .x-date-weeknumber em > span {
+    color: #6B6B6B;
+}
+
+.job_calendar_edit_cal_windows  .x-date-multiselect th.x-date-weeknumber-header a:hover,
+.job_calendar_edit_cal_windows .x-date-multiselect .x-date-weeknumber-cell a:hover,
+..x-menu-date-item  .x-date-multiselect th.x-date-weeknumber-header a:hover,
+..x-menu-date-item .x-date-multiselect .x-date-weeknumber-cell a:hover {
+    background-color: #D8D8D8 !important;
+}
+
+.job_calendar_edit_cal_windows .x-datepickerplus-nationalholidays,
+.x-menu-date-item .x-datepickerplus-nationalholidays {
+  background-color: transparent !important;
+}
+
+.job_calendar_edit_cal_windows .x-date-mp-btns button,
+.x-menu-date-item .x-date-mp-btns button {
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #000;
+}
+
+
+.x-menu-date-item .x-btn.x-btn-over td > em > button {
+    color:#000;
+}
+
+.job_calendar_edit_cal_windows .x-date-mp-btns button:hover,
+.x-menu-date-item .x-date-mp-btns button:hover {
+  background-color: #fff;
+}
+
+.job_calendar_edit_cal_windows td.x-date-mp-sel a,
+.x-menu-date-item td.x-date-mp-sel a {
+  background: #D8D8D8;
+}
+
+.job-calendar th,
 .job-calendar th {
     font-size: 12pt;
     font-weight: bold;
@@ -1079,14 +1244,18 @@ textarea.x-form-textarea.x-form-field {
     text-align: center;
 }
 
+.job_calendar_edit_cal_windows_column,
 .job_calendar_edit_cal_windows_column {
     margin:50px 5px 15px 10px;
 }
 
+.job_calendar_edit_cal_windows,
 .job_calendar_edit_cal_windows {
     margin-top: 20px
 }
 
+.x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
+.x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
 .x-panel.x-form-label-left .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc,
 .x-panel.job_calendar_edit_cal_windows .x-panel-bwrap .x-panel-ml .x-panel-mr .x-panel-mc {
     border: 0px solid #c1c1c1;
@@ -1094,9 +1263,349 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
+.x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
+.x-panel.x-form-label-left .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text,
 .x-panel.job_calendar_edit_cal_windows .x-panel-tl .x-panel-tr .x-panel-tc .x-panel-header.x-unselectable .x-panel-header-text {
     padding-left: 10px;
 }
+
+
+/********* Edit job window  *********/
+
+.edit_job_window .x-form-item {
+  margin-top: 10px;
+}
+
+.edit_job_window  .x-combo-list-item {
+  border: 1px solid #fff;
+}
+
+.search-item.combo_type_job {
+  border: 1px solid #f0f0f0 !important;
+}
+
+
+
+/*********  User preferences window  *********/
+
+.prefs_window .x-form-element .x-form-field-wrap {
+    margin: 5px 0 3px 0px;
+}
+
+.prefs_window .x-form-text.x-superboxselect.x-superboxselect-display-btns {
+  width:452px !important;
+}
+
+.prefs_window .x-panel-footer .x-panel-footer-noborder .x-panel-btns {
+  width: 611px;
+}
+
+.prefs_window .x-tab-strip-top .x-tab-strip-active .x-tab-right {
+  background-color: #ffffff !important;
+}
+
+.prefs_window .x-tab-panel-header {
+    background-color: #ffffff !important;
+    padding: 0px;
+}
+
+.prefs_window .qq-upload-button {
+    margin-top: 10px;
+}
+
+.prefs_window .x-form-label-right label.x-form-item-label {
+    width: 142px !important;
+}
+
+
+.prefs_window .api_tab label.x-form-item-label {
+    margin-top: 9px;
+    text-align: right;
+    width: 100px !important;
+    margin-left: 44px;
+    margin-right: 7px;
+}
+
+.prefs_window .api_tab textarea.x-form-textarea {
+    width: 75% !important;
+    height: 20px !important;
+    border: none;
+    margin-top: 9px;
+  }
+
+.prefs_window .avatar_tab label.x-form-item-label {
+    text-align: right;
+    margin-left: 43px;
+    margin-top: 8px;
+  }
+
+.prefs_window .avatar_tab div.x-form-element {
+    padding-left:155px !important;
+}
+
+.prefs_window .avatar_tab .upload_avatar {
+    width: 513px;
+    vertical-align: middle;
+    margin-top: -5px;
+    float: left;
+}
+
+.prefs_window .x-form-element .x-form-field-wrap {
+    margin: 5px 0 3px 0px;
+}
+
+.prefs_window .x-form-text.x-superboxselect.x-superboxselect-display-btns {
+  width:452px !important;
+}
+
+.prefs_window .x-panel-footer .x-panel-footer-noborder .x-panel-btns {
+  width: 611px;
+}
+
+.prefs_window .x-tab-strip-top .x-tab-strip-active .x-tab-right {
+  background-color: #ffffff !important;
+}
+
+.prefs_window .x-tab-panel-header {
+    background-color: #ffffff !important;
+    padding: 0px;
+}
+
+.prefs_window .qq-upload-button {
+    margin-top: 10px;
+}
+
+.prefs_window .x-form-label-right label.x-form-item-label {
+    width: 142px !important;
+}
+
+
+.prefs_window .api_tab label.x-form-item-label {
+    margin-top: 9px;
+    text-align: right;
+    width: 100px !important;
+    margin-left: 44px;
+    margin-right: 7px;
+}
+
+.prefs_window .api_tab textarea.x-form-textarea {
+    width: 75% !important;
+    height: 20px !important;
+    border: none;
+    margin-top: 9px;
+  }
+
+.prefs_window .avatar_tab label.x-form-item-label {
+    text-align: right;
+    margin-left: 43px;
+    margin-top: 8px;
+  }
+
+.prefs_window .avatar_tab div.x-form-element {
+    padding-left:155px !important;
+}
+
+.prefs_window .avatar_tab .upload_avatar {
+    width: 513px;
+    vertical-align: middle;
+    margin-top: -5px;
+    float: left;
+}
+
+.cleditorMain {
+    width: auto !important;
+}
+
+
+.x-form-element textarea.wmd-input {
+    width: 99.5% !important;
+}
+
+/*********  Grid Editor fieldlet *********/
+
+.grid_editor_look .x-row-editor-body,
+.grid_editor_look .x-row-editor-footer,
+.milestone_table .x-row-editor-body,
+.milestone_table .x-row-editor-footer,
+.planner .x-row-editor-body,
+.planner .x-row-editor-footer {
+    background: #F5F5F5;
+    padding-bottom: 14px;
+    padding-top: 3px;
+}
+.grid_editor_look .x-grid-panel .x-panel-mc .x-panel-body,
+.grid_editor_look .x-panel-mc .x-panel-body,
+.milestone_table .x-grid-panel .x-panel-mc .x-panel-body,
+.milestone_table .x-panel-mc .x-panel-body,
+.planner .x-grid-panel .x-panel-mc .x-panel-body,
+.planner .x-panel-mc .x-panel-body {
+    padding: 0;
+}
+
+.grid_editor_look .x-row-editor .x-btns,
+.milestone_table .x-row-editor .x-btns,
+.planner .x-row-editor .x-btns
+ {
+    position: relative;
+    background: #f5f5f5;
+    border-bottom: 1px solid #D3D0D0;
+    border-left: 1px solid #D3D0D0;
+    border-right: 1px solid #D3D0D0;
+    top:0px !important;
+    margin-top: -1px;
+
+}
+
+.grid_editor_look .x-row-editor .x-btns .x-plain-body,
+.milestone_table .x-row-editor .x-btns .x-plain-body,
+.planner .x-row-editor .x-btns .x-plain-body  {
+    height: auto;
+    background: #f5f5f5;
+}
+
+.grid_editor_look .x-row-editor .x-btns .x-plain-bwrap,
+.milestone_table .x-row-editor .x-btns .x-plain-bwrap,
+.planner .x-row-editor .x-btns .x-plain-bwrap {
+    background: #f5f5f5;
+    padding: 0;
+}
+
+
+.grid_editor_look .x-row-editor-footer,
+.milestone_table .x-row-editor-footer,
+.planner .x-row-editor-footer {
+    border-bottom: 1px solid #D3D0D0;
+    width: 1621px !important;
+/*    border-left: 1px solid #D3D0D0;
+    border-right: 1px solid #D3D0D0;*/
+}
+
+/*.grid_editor_look .x-panel-body,
+.milestone_table .x-panel-body,
+.planner .x-panel-body {
+    padding: 0px;
+}*/
+
+.grid_editor_look .x-btn-small.x-btn-icon-small-left,
+.milestone_table .x-btn-small.x-btn-icon-small-left,
+.planner .x-btn-small.x-btn-icon-small-left {
+    border: 1px solid #F5F5F5;
+}
+
+.grid_editor_look table.x-btn.x-btn-over,
+.milestone_table table.x-btn.x-btn-over,
+.planner table.x-btn.x-btn-over {
+        border: 1px solid #bbb;
+}
+
+.grid_editor_look  .x-row-editor .x-small-editor,
+.milestone_table  .x-row-editor .x-small-editor,
+.planner  .x-row-editor .x-small-editor {
+    width: 100% !important;
+}
+
+.grid_editor_look .x-row-editor-body .x-column-layout-ct,
+.milestone_table .x-row-editor-body .x-column-layout-ct,
+.planner .x-row-editor-body .x-column-layout-ct {
+    width: 1621px !important;
+}
+
+.grid_editor_look .x-row-editor-body,
+.milestone_table .x-row-editor-body,
+.planner .x-row-editor-body {
+    width: 1621px !important;
+    padding-left: 8px;
+}
+
+.grid_editor_look .x-grid3-body,
+.grid_editor_look .x-grid3-row,
+.grid_editor_look .x-grid3-row-selected,
+.milestone_table .x-grid3-body,
+.milestone_table .x-grid3-row,
+.milestone_table .x-grid3-row-selected,
+.planner .x-grid3-body,
+.planner .x-grid3-row,
+.planner .x-grid3-row-selected {
+  width: auto !important;
+}
+
+
+.grid_editor_look .x-row-editor-header,
+.milestone_table .x-row-editor-header,
+.planner .x-row-editor-header {
+    background:#F5F5F5;
+}
+
+.grid_editor_look .x-grid3-header-inner .x-grid3-header-offset table,
+.milestone_table .x-grid3-header-inner .x-grid3-header-offset table,
+.planner .x-grid3-header-inner .x-grid3-header-offset table {
+    /*max-width: 1628px !important;*/
+    width: 100% !important;
+}
+
+
+/*********  Environment planner fieldlet *********/
+.cleditorToolbar {
+  background: #F5F5F5 !important;
+  border-bottom: 1px solid #D3D0D0;
+}
+
+.cleditorGroup {
+    margin-left: 5px;
+}
+
+/************* Markdown editor fieldlet  ********/
+
+.x-form-element textarea.wmd-input {
+    margin-bottom: 10px;
+  }
+
+#boot .well {
+    margin-top: 5px;
+}
+
+input.combo_box_fieldlet {
+  height: 18px !important;
+}
+
+
+/************* New notification menu  ********/
+
+.notification_edit_menu .first_notification_menu_row .x-form-label-left.x-column .x-form-element {
+    margin-top: 4px;
+}
+
+.notification_edit_menu #pnl_subject .x-form-element .x-form-check-wrap {
+      margin-top: 4px;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-toolbar.x-small-editor.x-toolbar-layout-ct {
+    width: 100% !important;
+    padding: 5px 5px 5px 6px;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-panel-body.x-panel-body-noheader,
+.notification_edit_menu .recipients_notification_edit .x-grid3-body,
+.notification_edit_menu .recipients_notification_edit .x-grid3-scroller,
+.notification_edit_menu .recipients_notification_edit .x-grid3,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-table,
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-selected {
+    padding:0;
+    width: 100% !important;
+    border: none;
+}
+
+.notification_edit_menu .recipients_notification_edit .x-grid3-row-table {
+      padding: 4px;
+}
+
+.notification_edit_menu .x-panel-tbar.x-panel-tbar-noheader {
+    width: 100% !important;
+}
+
+/************* New rule window  ********/
+
 
 .edit_rule_window {
     max-height:485px;
@@ -1110,9 +1619,82 @@ textarea.x-form-textarea.x-form-field {
     min-width:324px;
     max-width: 894px;
 }
+/*
+.edit_rule_window .x-form-label-right label.x-form-item-label {
+        margin-right: 10px;
+}*/
 
 .edit_rule_window .x-panel-bbar ,
 .edit_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct{
    width: 99.8% !important;
    height: auto;
+}
+
+.new_rule_window .x-form-item {
+    padding-bottom: 5px;
+}
+
+.new_rule_window h4 {
+    padding: 10px 35px 5px 35px !important;
+}
+
+.new_rule_window .x-grid3-viewport {
+    border-bottom: 1px solid #E9E9E9;
+    border-right: 1px solid #e9e9e9;
+}
+
+
+.new_rule_window .x-toolbar.x-small-editor.x-toolbar-layout-ct {
+    width: 100% !important;
+    padding: 5px 5px 5px 6px;
+}
+
+.new_rule_window .x-grid3-row-table {
+      padding: 4px 0px;
+}
+
+.new_rule_window .x-panel-tbar.x-panel-tbar-noheader,
+.new_rule_window .x-grid3-header-offset table,
+.new_rule_window .x-grid3-header-inner  {
+    width: 100% !important;
+}
+
+.new_rule_window .x-grid3-scroller {
+  height: 185px !important;
+}
+
+.new_rule_window .x-grid3-hd-checker {
+  display: none;
+}
+
+.new_rule_window .x-grid3 {
+  height: 100% !important;
+}
+
+.new_rule_window .x-panel.x-panel-noborder.x-grid-panel {
+  margin-left:35px;
+}
+
+.new_rule_window .x-form-element input {
+  padding-left: 4px;
+}
+
+.new_rule_window .wdsl_rule {
+  border: 1px solid #E8E8E8;
+}
+
+.edit_rule_window .x-toolbar-right {
+  padding-right: 7px;
+}
+
+.edit_rule_window .type_event_rule .x-column {
+  display: block;
+  clear: both;
+}
+/*
+.new_rule_window input.name_combo_edit_rule  {
+  height: 26px;
+}
+.new_rule_window td.x-toolbar-right {
+    padding-right: 10px;
 }

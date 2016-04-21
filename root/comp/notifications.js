@@ -1055,8 +1055,10 @@
         var form_notification = new Ext.FormPanel({
             frame: true,
             padding: 15,
+            cls:'notification_edit_menu',
             items: [{
                     layout: 'column',
+                    cls:'first_notification_menu_row',
                     defaults: {
                         layout: 'form'
                     },
@@ -1091,6 +1093,7 @@
                 }, {
                     xtype: 'panel',
                     fieldLabel: _('Recipients'),
+                    cls:'recipients_notification_edit',
                     items: grid_recipients
                 }, {
                     xtype: 'hidden',
@@ -1392,6 +1395,7 @@
 	
 	var grid = new Ext.grid.GridPanel({
 		renderTo: 'main-panel',
+		cls:'notification_menu',
 		sm: check_notifications_sm,
         store: store_notifications,
         viewConfig: {

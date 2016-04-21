@@ -46,6 +46,7 @@ params:
     
     var editor = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
+        cls: 'milestone_table',
         allowBlank: readonly ? true : allow,
         name: meta.id_field,
         id_field: meta.id_field,

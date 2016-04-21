@@ -103,18 +103,11 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     }
                 });
             };
-            var save_apikey = function() {
-                Baseliner.ci_call('user', 'save_api_key', {
-                    api_key_param: api_key_field.getValue()
-                }, function(res) {
-                    Baseliner.message(_('API Key'), res.msg);
-                });
-            };
+
             var api_key_field = new Ext.form.TextArea({
-                height: 50,
-                anchor: '90%',
                 fieldLabel: _('API Key'),
-                value: api_key
+                value: api_key,
+                readOnly: true
             });
 
             var data_language = language_prefs(res, Prefs);
@@ -149,7 +142,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                     var change_dashboard_form = prefs_form(language, timezone, country, currency, decimal, date_format, time_format, dashboard, username, Prefs, language_pref, opts);
 
 
-                    var preftabs = tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey, save_apikey);
+                    var preftabs = tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey);
                     var win = window_prefs(username, preftabs);
                     win.show();
                 });
@@ -360,7 +353,7 @@ function prefs_form(language, timezone, country, currency, decimal, date_format,
                 xtype: 'panel',
                 layout: 'form',
                 border: false,
-                bodyStyle: 'margin-top: 5px',
+                bodyStyle: 'margin-top: 5px;margin-bottom: 6px',
                 fieldLabel: _('Current Server Timezone'),
                 html: _('<b>%1</b>', Prefs.server_timezone)
             },
@@ -404,7 +397,7 @@ function prefs_form(language, timezone, country, currency, decimal, date_format,
     return change_dashboard_form;
 }
 
-function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey, save_apikey) {
+function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_field, gen_apikey) {
     var preftabs = new Ext.TabPanel({
         activeTab: 0,
         plugins: [new Ext.ux.panel.DraggableTabs()],
@@ -427,9 +420,10 @@ function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_fiel
             frame: false,
             border: false,
             title: _('Avatar'),
+            cls: 'avatar_tab',
             bodyStyle: {
                 'background-color': '#fff',
-                padding: '10px 10px 10px 10px'
+                padding: '15px 10px 10px 10px'
             },
             items: [{
                 xtype: 'container',
@@ -444,34 +438,29 @@ function tabs_prefs(change_dashboard_form, img, gen_avatar, upload, api_key_fiel
                 handler: gen_avatar
             }, {
                 xtype: 'container',
+                cls:'upload_avatar',
                 fieldLabel: _('Upload avatar'),
                 items: [upload]
             }]
         }, {
             title: _('API'),
+            cls: 'api_tab',
             layout: 'form',
             frame: false,
             border: false,
             bodyStyle: {
                 'background-color': '#fff',
-                padding: '10px 10px 10px 10px'
+                padding: '7px 10px 10px 10px'
             },
             items: [
-                api_key_field, {
+                {
                     xtype: 'button',
                     fieldLabel: _('Generate API Key'),
                     width: 150,
                     scale: 'large',
                     text: _('Generate API Key'),
                     handler: gen_apikey
-                }, {
-                    xtype: 'button',
-                    fieldLabel: _('Save API Key'),
-                    width: 150,
-                    scale: 'large',
-                    text: _('Save Current API Key'),
-                    handler: save_apikey
-                }
+                }, api_key_field
             ]
         }]
     });
@@ -483,7 +472,8 @@ function window_prefs(username, preftabs) {
         title: username ? _('Preferences for %1', username) : _('Preferences'),
         layout: 'fit',
         width: 650,
-        height: 320,
+        height: 380,
+        cls: 'prefs_window',
         items: [preftabs]
     });
     return win;

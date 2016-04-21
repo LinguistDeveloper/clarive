@@ -103,10 +103,10 @@ for(my $hh=0; $hh<=24; $hh++) {
     }); 
     var tpl_type = new Ext.XTemplate(
         '<tpl for=".">',
-            '<div class="search-item"><table><tr><td class="slot_{value}" width="20" height="20">&nbsp</td><td style="font-size:13px">{name}</td></tr></table></div>',
+            '<div class="search-item combo_type_job"><table><tr><td class="slot_{value}" width="20" height="20">&nbsp</td><td style="font-size:13px">{name}</td></tr></table></div>',
         '</tpl>'
     );
-    var ven_tipo_store = new Ext.data.SimpleStore({ 
+    var ven_tipo_store = new Ext.data.SimpleStore({
        fields: ['value', 'name'], 
        data : <% js_dumper( [ ['N', _loc('Normal') ],[ 'U', _loc('Urgent Only') ] ,[ 'X', _loc('No Job') ] ] ) %>
     }); 
@@ -151,7 +151,7 @@ for(my $hh=0; $hh<=24; $hh++) {
             {  xtype: 'combo', 
                        name: 'ven_dia', 
                        hiddenName: 'ven_dia',
-                       fieldLabel: 'Dia', 
+                       fieldLabel: 'Dia',
                        mode: 'local', 
                        editable: false,
                        //disabled: true,
@@ -168,7 +168,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                        name: 'ven_tipo', 
                        hiddenName: 'ven_tipo',
                        fieldLabel: _loc('Type'), 
-                       mode: 'local', 
+                       mode: 'local',
                        editable: false,
                        forceSelection: true,
                        triggerAction: 'all',
@@ -225,7 +225,8 @@ for(my $hh=0; $hh<=24; $hh++) {
     });
     var win = new Ext.Window({
         layout: 'fit',
-        height: 230, width: 650,
+        cls: 'edit_job_window',
+        height: 273, width: 600,
         title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'), 
         items: fpanel
     });
