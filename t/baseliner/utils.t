@@ -2,9 +2,10 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More;
+use Test::Deep;
 use Test::Fatal;
 use Test::LongString;
+use Test::More;
 use TestEnv;
 
 use File::Temp qw(tempfile);
@@ -444,6 +445,52 @@ subtest '_md5: calculates md5 of a with unicode' => sub {
     seek $fh, 0, 0;
 
     is _md5($fh), '608333adc72f545078ede3aad71bfe74';
+};
+
+subtest 'hash_diff_ignore_empty: returns modified field' => sub {
+    my $old_values = { a => 'old_value', b => 'b', c => 'c' };
+    my $new_values = { a => 'new_value', b => 'b', c => 'c' };
+
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { a => 'new_value' };
+};
+
+subtest 'hash_diff_ignore_empty: returns removed field' => sub {
+    my $old_values = { removed_field => 'a', b => 'b', c => 'c' };
+    my $new_values = { b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { removed_field => 'a' };
+};
+
+subtest 'hash_diff_ignore_empty: returns added field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => 'a', b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { new_field => 'a' };
+};
+
+subtest 'hash_diff_ignore_empty: does not return added undefined field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => undef, b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, {};
+};
+
+subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => '', b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, {};
 };
 
 done_testing;

@@ -128,6 +128,7 @@ use utf8;
 use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : ();
 use Class::Date;
+use Hash::Diff ();
 use YAML::XS;
 use List::Util qw(sum);
 use List::MoreUtils qw(:all);
@@ -317,6 +318,21 @@ sub _log_me {
             print STDERR $msg , "\n";
         }
     }
+}
+
+sub hash_diff_ignore_empty {
+    my ( $old_values, $current_values ) = @_;
+
+    my $removed_modified_fields = Hash::Diff::left_diff( $old_values,     $current_values );
+    my $added_fields            = Hash::Diff::left_diff( $current_values, $old_values );
+
+    foreach my $key ( keys %$added_fields ) {
+        if ( !defined $added_fields->{$key} || $added_fields->{$key} eq '' ) {
+            delete $added_fields->{$key};
+        }
+    }
+
+    return { %$removed_modified_fields, %$added_fields };
 }
 
 sub _log {

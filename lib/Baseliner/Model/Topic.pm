@@ -2005,8 +2005,7 @@ sub save_doc {
     $self->update_category_status( $doc, $ci_topic->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $ci_topic->{modified_on}, 0 );
 
     # detect modified fields
-    require Hash::Diff;
-    my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
+    my $diff = Util->hash_diff_ignore_empty( $old_doc, $doc );
     my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields
     for my $changed ( grep { exists $diff->{$_} } map { $_->{column} } @custom_fields ){
         next if ref $doc->{$changed} || ref $old_doc->{$changed};
