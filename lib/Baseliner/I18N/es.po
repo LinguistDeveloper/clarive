@@ -8996,3 +8996,23 @@ msgstr "Lenguaje de programación"
 msgid "Height"
 msgstr "Altura"
 
+msgid "Page size"
+msgstr "Tamaño de página"
+
+msgid "Parent field"
+msgstr "Campo padre"
+
+msgid "Filter field"
+msgstr "Campo filtro"
+
+msgid "Filter data"
+msgstr "Datos filtro"
+
+msgid "Table format?"
+msgstr "Formato tabla?"
+
+msgid "List of columns to show in grid"
+msgstr "Lista de columnas a mostrar en grid"
+
+msgid "Height of grid in edit mode"
+msgstr "Altura de grid en modo edición"
