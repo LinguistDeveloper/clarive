@@ -1287,7 +1287,7 @@ label.no_calendar_windows {
 
 
 /*********  User preferences window  *********/
-/*
+
 .prefs_window .x-form-element .x-form-field-wrap {
     margin: 5px 0 3px 0px;
 }
@@ -1419,7 +1419,7 @@ label.no_calendar_windows {
 
 .x-form-element textarea.wmd-input {
     width: 99.5% !important;
-}*/
+}
 
 /*********  Grid Editor fieldlet *********/
 
