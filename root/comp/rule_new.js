@@ -177,6 +177,7 @@
                 xtype: 'radiogroup',
                 anchor: '80%',
                 fieldLabel: _('Event Type'),
+                cls:'type_event_rule',
                 defaults: {xtype: "radio",name: "rule_when"},
                 value: params.rec.rule_when,
                 items: [

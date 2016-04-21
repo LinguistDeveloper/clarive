@@ -1682,6 +1682,15 @@ input.combo_box_fieldlet {
 .new_rule_window .wdsl_rule {
   border: 1px solid #E8E8E8;
 }
+
+.edit_rule_window .x-toolbar-right {
+  padding-right: 7px;
+}
+
+.edit_rule_window .type_event_rule .x-column {
+  display: block;
+  clear: both;
+}
 /*
 .new_rule_window input.name_combo_edit_rule  {
   height: 26px;
@@ -1689,4 +1698,3 @@ input.combo_box_fieldlet {
 .new_rule_window td.x-toolbar-right {
     padding-right: 10px;
 }
-*/
