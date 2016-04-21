@@ -2,16 +2,18 @@
     $save => 0;
 </%args>
 (function(params){
+    var can_save = Cla.eval_boolean(<% $save %>);
+
     var menu_services = new Ext.Button({
         text: _('Services'),
         icon:'/static/images/icons/service.png',
         cls: 'x-btn-icon-text',
+        disabled: !can_save,
         menu: { items:[] }
     });
 
     var load_form = function(opts){
         if( opts.rec == undefined ) opts.rec = {};            // master row record
-        var can_save = Cla.eval_boolean(<% $save %>);
         var mid = opts.mid;
         var ci_form = opts.ci_form; 
         var has_bl = Cla.eval_boolean( opts.rec.has_bl );
@@ -114,7 +116,7 @@
                     var save_foo = function(de, de_data){
                         form.getForm().setValues( de_data ); 
                     };
-                    data_panel = new Baseliner.DataEditor({ data: opts.rec, hide_cancel: true, save_only: true, on_save: save_foo });
+                    data_panel = new Baseliner.DataEditor({ data: opts.rec, hide_cancel: true, save_only: true, on_save: save_foo, disabled: !can_save, hide_save: !can_save });
                     cardpanel.add( data_panel );
                     cardpanel.getLayout().setActiveItem( data_panel );
                 } else {
@@ -134,6 +136,7 @@
                         from_mid: opts.mid, 
                         collection: opts.collection,
                         field: children,
+                        disabled: !can_save,
                         columns: ['mid','name','version','collection','rel_type'] });
                     cardpanel.add( depend_panel );
                     cardpanel.getLayout().setActiveItem( depend_panel );
@@ -165,9 +168,12 @@
             }
         });
 
+        var text_button = can_save ?  _('Edit') : _('View');
+        var text_img = can_save ? '/static/images/icons/edit.png' : '/static/images/icons/views.png';
+
         var btn_edit = new Ext.Button({
-            text: _('Edit'),
-            icon:'/static/images/icons/edit.png',
+            text: text_button,
+            icon: text_img,
             cls: 'x-btn-icon-text',
             pressed: true, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
             handler: function(){ cardpanel.getLayout().setActiveItem(form) }
@@ -193,6 +199,7 @@
             text: _('Calendar'),
             icon:'/static/images/icons/calendar.png',
             cls: 'x-btn-icon-text',
+            disabled: !can_save,
             pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
             handler: show_calendar
         });
@@ -224,15 +231,16 @@
             txt_cont.update( _( '<b>'+txt+'</b>', Cla.ci_loc(collection), mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: opts.rec.bl || ['*'], colspan: 1 });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: opts.rec.bl || ['*'], colspan: 1, disabled: !can_save });
         var children = new Ext.form.Hidden({ name: 'children', value: opts.rec.children });
-        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: opts.rec.description, height: 80 };
+        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, disabled: !can_save, value: opts.rec.description, height: 80 };
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
             padding: 10,
             defaults: {
                allowBlank: false,
                anchor: '100%',
+               disabled: !can_save,
             },
             bodyStyle: {
                 'background-color': 'white',
@@ -243,13 +251,13 @@
                 children,
                 { layout:'column', border: false, defaults:{ layout:'form', border: false, padding: '0px 2px 10px 2px'}, items:[
                     { columnWidth : .65, defaults: { anchor: '100%' }, items:[
-                        { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: opts.rec.name, height: 30, style:'font-size: 18px;' },
+                        { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, disabled: !can_save, value: opts.rec.name, height: 30, style:'font-size: 18px;' },
                         ( has_description > 0 ? desc : [] )
                     ]},
                     { columnWidth : .35, defaults: { anchor: '100%' }, items:[
-                        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: opts.rec.moniker, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: opts.rec.versionid, allowBlank: true },
+                        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, disabled: !can_save, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: opts.rec.moniker, disabled: !can_save, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: opts.rec.versionid, disabled: !can_save, allowBlank: true },
                         ( has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},

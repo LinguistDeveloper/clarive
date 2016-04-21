@@ -1428,11 +1428,17 @@ sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    my $collection = (split("::", $class))[-1];
     require Baseliner::Core::Logger::Quiet;
     my $logger = Baseliner::Core::Logger::Quiet->new;
-    my $ret;
+
+    my $permissions = $self->_build_permissions;
+
+    _fail( _loc( 'User %1 not authorized to admin CIs of class %2', $c->username, $collection ) )
+        unless $permissions->user_can_admin_ci( $c->username, $collection );
+
     $c->stash->{json} = try {
-        my $service = $c->registry->get( $p->{key} );
+        my $service = Baseliner::Core::Registry->get( $p->{key} );
         my $service_js_output = $service->js_output;
 
         local $ENV{BASELINER_LOGCOLOR} = 0;

@@ -4,6 +4,7 @@ use v5.10;
 
 use Try::Tiny;
 require Baseliner::CI;
+use Baseliner::Core::Registry;
 use Baseliner::Types;
 use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
@@ -998,7 +999,7 @@ sub service_list {
 sub run_service {
     my ($self_or_class, $key, %p ) = @_;
     _throw 'Missing argument service key' unless $key;
-    my $reg = Baseliner->registry->get( $key );
+    my $reg = Baseliner::Core::Registry->get( $key );
     _log "running container for $key";
     my $stash = {};
     my $config = \%p;

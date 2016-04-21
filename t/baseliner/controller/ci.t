@@ -967,6 +967,80 @@ subtest 'sync: attaches GitRevision to the changeset' => sub {
       };
 };
 
+subtest 'service_run: throws an error when user does not have access' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.view.Repository.GitRepository' } ] );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+       my $c = mock_catalyst_c(
+        req => {
+            params => {
+                mid         => $repo->mid,
+                classname   => 'BaselinerX::CI::GitRepository',
+                key         => "service.gitrepository.create_tags",
+                data   => JSON::encode_json(
+                    {
+                        'existing'      => 'detect',
+                        'tag_filter'    => '',
+                        'ref'           => ''
+                    }
+                )
+            }
+        },
+        username => $user->username
+    );
+
+    like exception{
+        $controller->service_run($c);
+    }, qr/User user not authorized to admin CIs of class GitRepository/;
+};
+
+subtest 'service_run: service is run if user have permissions to do it' => sub {
+    _setup();
+
+    TestUtils->create_ci('bl', bl => 'TEST');
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Repository.GitRepository' } ] );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+       my $c = mock_catalyst_c(
+        req => {
+            params => {
+                mid         => $repo->mid,
+                classname   => "BaselinerX::CI::GitRepository",
+                key         => "service.gitrepository.create_tags",
+                data   => {}
+            }
+        },
+        username => $user->username
+    );
+
+    $controller->service_run($c);
+
+    cmp_deeply $c->stash, {
+        json => {
+            success     => \1,
+            console     => ignore(),
+            data        => ignore(),
+            js_output   => ignore(),
+            ret         => ignore()
+        }
+    }
+};
+
 done_testing;
 
 sub _create_changeset_form {
@@ -1010,9 +1084,10 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event',   'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',            'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',   'Baseliner::Model::Rules',
+        'BaselinerX::Type::Service', 'BaselinerX::CI::GitRepository'
     );
 
     TestUtils->cleanup_cis();
