@@ -770,7 +770,7 @@ sub _strip_html_editor {
             ul   => [],
             li   => [],
             ol   => [],
-            img  => ['src'],
+            img  => ['src', 'class'],
             hr   => [],
         }
     );
