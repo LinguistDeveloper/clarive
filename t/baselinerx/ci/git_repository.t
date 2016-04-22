@@ -1164,7 +1164,7 @@ subtest 'list_branches: includes branch names' => sub {
     is $branches[0]->name, 'new2';
 };
 
-subtest 'commits_for_branch: gets tag from bl' => sub {
+subtest 'commits_for_branch: gets tag from bl diff repository' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2' );
@@ -1182,6 +1182,27 @@ subtest 'commits_for_branch: gets tag from bl' => sub {
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
     like $commits[2], qr/^[a-z0-9]{40} first$/;
+};
+
+subtest 'commits_for_branch: gets tag from bl individual commits repository' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2', revision_mode=>'show' );
+    TestGit->commit( $repo, message => 'initial' );
+    TestGit->commit( $repo, message => 'first' );
+    TestGit->tag( $repo, tag => 'TEST' );
+
+    TestGit->commit( $repo, message => 'second' );
+    TestGit->commit( $repo, message => 'third' );
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+
+    my @commits = $repo->commits_for_branch( branch => 'master', project => '' );
+    is scalar @commits, 4;
+    like $commits[0], qr/^[a-z0-9]{40} third$/;
+    like $commits[1], qr/^[a-z0-9]{40} second$/;
+    like $commits[2], qr/^[a-z0-9]{40} first$/;
+    like $commits[3], qr/^[a-z0-9]{40} initial$/;
 };
 
 subtest 'get_system_tags: get tags without project just bl ' => sub {
