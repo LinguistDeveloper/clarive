@@ -1698,3 +1698,10 @@ input.combo_box_fieldlet {
 .new_rule_window td.x-toolbar-right {
     padding-right: 10px;
 }
+*/
+
+.x-panel-body img {
+  height: 16px;
+  width: 16px;
+  vertical-align: top !important;
+ } 

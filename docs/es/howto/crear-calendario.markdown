@@ -4,9 +4,9 @@ index: 1
 icon: wrench.gif
 ---
 
-Seleccionar <img src="/static/images/icons/slot.png" />**Ventanas de pases** en
+Seleccionar <img src="/static/images/icons/slot.png" /> **Ventanas de pases** en
 el menu principal `Pases`. A continuación seleccionar la opción <img
-src="/static/images/icons/add.gif" />Crear.
+src="/static/images/icons/add.gif" /> Crear.
 
 En la siguiente ventana se muestran las siguiente opciones:
 
@@ -16,7 +16,7 @@ obligatorio.
 - **Descripción**: Descripción del calendario.
 
 - **Precedencia**: Indica el nivel de precedencia sobre otros calendarios.
-  Tendra mayor prioridad el calendario que tenga mayor número de precedencia.
+  Tendrá mayor prioridad el calendario que tenga mayor número de precedencia.
 
 - **Modo de Creación**: Dos opciones:
 
@@ -24,7 +24,8 @@ obligatorio.
 
   *Crear Copia*: Crea una copia de otro calendario.
 
-  
+ 
+
 - **Copia de**: Si se ha seleccionado la opcion Crear Copia, en esta opción
 seleccionamos el calendario a copiar.
 
@@ -33,7 +34,7 @@ seleccionamos el calendario a copiar.
 - **Ámbito**: Seleccionamos el ámbito al que se aplica el calendario.
 
 Para finalizar pulsamos el botón <img src="/static/images/icons/save.png"
-/>Guardar.
+/> Guardar.
 
 Una vez guardado se puede editar en la sección [Editar
 calendario](howto/editar-calendario).
