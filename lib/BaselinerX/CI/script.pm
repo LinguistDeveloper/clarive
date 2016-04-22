@@ -31,7 +31,7 @@ service 'run_script' => {
 method run( :$user='' ) {
     my $servers = $self->server;
     my @output;
-    _fail _loc 'Missing attribute `path`' unless length $self->path;
+    _fail _loc('Missing attribute `path`') unless length $self->path;
     if( my @agents = _array( $self->agent ) ) {
         _debug( 'Running agent...' );
         for my $ag ( @agents ) {
@@ -41,7 +41,7 @@ method run( :$user='' ) {
         }
     }
     else {
-        _fail _loc 'Missing parameter `user`' unless length $user;
+        _fail _loc('Missing parameter `user`') unless length $user;
         for my $server ( _array( $servers ) ) {
             my $ag = $server->connect( user=>$user );
             $ag->throw_errors(1);

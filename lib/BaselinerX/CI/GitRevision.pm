@@ -57,8 +57,8 @@ sub items {
     my ($self, %p)=@_;
 
     my $type = $p{type} // 'promote';
-    my $tag = $p{tag} // _fail _loc 'Missing parameter tag';
-    my $bl = $p{bl} // _fail _loc 'Missing parameter bl';
+    my $tag = $p{tag} // _fail _loc('Missing parameter tag');
+    my $bl = $p{bl} // _fail _loc('Missing parameter bl');
     my $project = $p{project};
 
     # TODO Comprobar si tengo last_commit
@@ -105,7 +105,7 @@ sub items {
 
     @items = map {
         my ( $status, $path ) = /^(.*?)\s+(.*)$/;
-        my $info = $repo_items{ Girl->unquote($path) } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
+        my $info = $repo_items{ Girl->unquote($path) } // _fail _loc("Could not find diff-tree data for item '%1'", $path); #{ status=>$status };
         my $fullpath = Util->_dir( "/", $path );
         BaselinerX::CI::GitItem->new(
             repo    => $repo,
@@ -194,7 +194,7 @@ sub show {
     my %demote_statuses = ( M=>'M', D=>'A', A=>'D' );
     my @items = map {
         my $path = $_;
-        my $info = $repo_items{ $path } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
+        my $info = $repo_items{ $path } // _fail _loc("Could not find diff-tree data for item '%1'", $path); #{ status=>$status };
         my $fullpath = Util->_dir( "/", $path );
         my $status = $type eq 'demote' ? $demote_statuses{ $$info{status} } : $$info{status}; # invert status on demote
         $status ||= 'M'; # just in case...

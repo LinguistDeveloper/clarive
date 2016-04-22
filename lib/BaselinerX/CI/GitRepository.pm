@@ -190,7 +190,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
 
         my $sha = try { $git->exec('rev-parse', $ref) }
         catch {
-            _fail _loc "Error: revision `%1` not found in repository %2", $ref,
+            _fail _loc("Error: revision `%1` not found in repository %2", $ref, $self->name),
               $self->name
         };
 
@@ -213,7 +213,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     my $top_rev;
     if ($type eq 'promote') {
         my $first_sha = $sorted[0];
-        _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha
+        _warn _loc("Tag %1 (sha %2) is already on top", $tag, $tag_sha)
           if $first_sha eq $tag_sha;
         $top_rev = BaselinerX::CI::GitRevision->new(
             sha  => $first_sha,
@@ -243,7 +243,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
               substr($last_sha, 0, 8);
         };
 
-        _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha
+        _warn _loc("Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha)
           if $before_last eq $tag_sha;
         $top_rev = BaselinerX::CI::GitRevision->new(
             sha  => $before_last,
@@ -476,17 +476,17 @@ method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
         #    to a undefined deployment situation
 
         if( $type eq 'promote' ) {
-            _debug( _loc "Promote baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            _debug( _loc("Promote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
         }
         elsif( $type eq 'demote' ) {
-            _debug( _loc "Demote baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            _debug( _loc("Demote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;
         }
         elsif( $type eq 'static' ) {
-            _debug( _loc "Updating baseline $tag to $top_rev: tag -f $tag $top_rev" );
+            _debug( _loc("Updating baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
             $out = $git->exec( qw/tag -f/, $tag, $top_rev );
             _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
         }
@@ -667,7 +667,7 @@ sub _order_revisions {
     $repo->command_close_pipe($fh, $ctx);
 
     if (@sorted != $shas_count) {
-        _fail _loc "Not all given commits were found: %1", join(', ', keys %shas);
+        _fail _loc("Not all given commits were found: %1", join(', ', keys %shas));
     }
 
     return @sorted;

@@ -145,7 +145,7 @@ sub take {
     TAKEN: while ( !$updated ) {
         # 10 seconds for every message
         my $print_msgs = !( ($cont-1) % int(10/$wait_interval) );
-        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $cont && $print_msgs;
+        _debug(_loc('Waiting for semaphore %1 (%2)', $self->key, $self->who)) if $cont && $print_msgs;
 
         # check the current queue
         my $doc = mdb->sem->find_one({ key=>$self->key });
@@ -184,7 +184,7 @@ sub take {
         $updated = $res->{updatedExisting};
         if( $updated ) {
             $self->must_release(1);
-            _debug(_loc 'Taken semaphore %1 (%2), seq %3 from min %4', $self->key,$self->who,$self->seq, $minseq );
+            _debug(_loc('Taken semaphore %1 (%2), seq %3 from min %4', $self->key,$self->who,$self->seq, $minseq ));
             last TAKEN;
         } elsif ( $cont > 0 ) {
             if ( @active_queues ) {

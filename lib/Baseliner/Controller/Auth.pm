@@ -448,7 +448,7 @@ sub saml_check : Private {
 sub login_from_session : Local {
     my ( $self, $c ) = @_;
     # the Root controller creates the session for this
-    _throw _loc 'Invalid session' unless $c->session_is_valid;
+    _throw _loc('Invalid session') unless $c->session_is_valid;
     $c->res->redirect( $c->config->{web_url} );
 }
 
@@ -458,7 +458,7 @@ sub create_user_session : Local {
         _fail _loc('S0003: create_user_session not enabled') unless $c->config->{create_user_session};
         _fail _loc('S0001: User %1 not authorized: action.create_user_session', $c->username)
             if $c->username && !$c->has_action('action.create_user_session');
-        my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc 'Missing userid';
+        my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc('Missing userid');
         # check that username is in the database
         my $uid = ci->user->find({ username=>$username })->next;
         _fail _loc( 'S0002: User not found: %1', $username ) unless ref $uid;
@@ -466,7 +466,7 @@ sub create_user_session : Local {
         $c->_sessionid($sid);
         $c->reset_session_expires;
         $c->set_session_id($sid);
-        _throw _loc 'Invalid session' unless $c->session_is_valid;
+        _throw _loc('Invalid session') unless $c->session_is_valid;
         $c->session->{username} = $username;
         $c->session->{user} = $c->user_ci;
         $c->_save_session();

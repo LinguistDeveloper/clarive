@@ -187,7 +187,7 @@ sub put_dir {
     my $method = $self->_method . "_put";
 
     # check if exists
-    _throw _loc ( "put-dir error: local file/dir not found: %1", $local)
+    _throw _loc( "put-dir error: local file/dir not found: %1", $local)
         if $local !~ /\*/ && ! -e $local;  # don't check if contains asterisks
 
     # run

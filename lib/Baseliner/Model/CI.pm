@@ -29,11 +29,11 @@ register 'service.ci.update' => {
     handler=>sub{
         my ($self,$c,$config)=@_;
         my $args = $config->{args};
-        my $coll = $args->{collection} || $args->{coll} || _fail _loc 'Missing parameter: collection';
+        my $coll = $args->{collection} || $args->{coll} || _fail _loc('Missing parameter: collection');
         my $ci = ci->$coll->search_ci( %{ $args->{query} || _fail('Missing parameter: query') } );
-        _fail _loc 'User not found for query %1', JSON::XS->new->encode($args->{query}) unless $ci;
+        _fail _loc('User not found for query %1', JSON::XS->new->encode($args->{query})) unless $ci;
         $ci->update( %{ $args->{update} || _fail('Missing parameter: update') } );
-        _log _loc "Update user ok";
+        _log _loc("Update user ok");
     },
      icon => '/static/images/icons/class.svg',
 };

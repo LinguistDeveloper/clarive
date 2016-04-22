@@ -158,8 +158,8 @@ sub file_foreach {
     my $path_mode = $config->{path_mode} // 'files_flat';
     my $dir_mode = $config->{dir_mode} // 'file_only';
 
-    _fail _loc 'Root path not configured' if $path_mode ne 'nature_items' && !length $path;
-    _fail _loc 'Path does not exist or is not readable: `%1`', $path if length $path && $path!~/\*|\?/ && !-e $path;
+    _fail _loc('Root path not configured') if $path_mode ne 'nature_items' && !length $path;
+    _fail _loc('Path does not exist or is not readable: `%1`', $path) if length $path && $path!~/\*|\?/ && !-e $path;
     my $job_dir = $stash->{job_dir};
 
     my @files;
@@ -270,7 +270,7 @@ sub run_tar_nature {
         if( $clean_path_mode eq 'force' ) {
             $f =~ s{^/}{}g;
         } else {
-            _warn _loc 'Nature path not relative for file `%1`. This file will not be included in the tar. Check your IF NATURE `Cut Path` has at least a slash `/`', $f;
+            _warn _loc('Nature path not relative for file `%1`. This file will not be included in the tar. Check your IF NATURE `Cut Path` has at least a slash `/`', $f);
         }
     }
     $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}),
@@ -331,7 +331,7 @@ sub run_write {
     $dir->mkpath;
     my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
     open my $ff, $open_str, $filepath
-        or _fail _loc 'Could not open file for writing (%1): %2', $!;
+        or _fail _loc('Could not open file for writing (%1): %2', $!);
     print $ff $body;
     close $ff;
     $log->info( _loc("File content written: '%1'", $filepath), $log_body eq 'yes' ? ( data=>$body ) : () );
@@ -346,12 +346,12 @@ sub run_store {
     my $stash = $c->stash;
 
     my $job_dir = $job->job_dir;
-    my $file = $config->{file} // _fail _loc 'Missing parameter file';
-    my $filename = $config->{filename} // _fail _loc 'Missing parameter filename';
+    my $file = $config->{file} // _fail _loc('Missing parameter file');
+    my $filename = $config->{filename} // _fail _loc('Missing parameter filename');
 
     my $f = _file( $job_dir, $file );
     $f = _file( $file ) unless -e $f;
-    _fail _loc 'Could not find file `%1` nor `%2` to store', $f, _file($job_dir, $file)
+    _fail _loc('Could not find file `%1` nor `%2` to store', $f, _file($job_dir, $file))
         unless -e $f;
     $log->info(
         _loc($config->{message}//'%1', $filename),
@@ -392,7 +392,7 @@ sub run_ship {
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
 
-    _fail _loc "Server not configured" unless length $config->{server};
+    _fail _loc("Server not configured") unless length $config->{server};
 
     my $sent_files = $stash->{sent_files} // {};
 
@@ -404,7 +404,7 @@ sub run_ship {
             $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
             next;
         }
-        _fail _loc "Could not instanciate CI for server `%1`", $server unless ref $server;
+        _fail _loc("Could not instanciate CI for server `%1`", $server) unless ref $server;
         my $remote_path = $server->parse_vars( "$remote_path_orig" );
         my $server_str = join '@', ($user // ''), $server->name;
         _debug "Connecting to server " . $server_str;
@@ -489,7 +489,7 @@ sub run_ship {
                             my $err = shift;
                             if( $backup_mode eq 'backup_fail' ) {
                                 $log->error( _loc("Error reading backup file from remote. Ignored: '%1'", $remote), "$err" );
-                                _fail _loc 'Error during file backup';
+                                _fail _loc('Error during file backup');
                             } else {
                                 $log->warn( _loc("Error reading backup file from remote. Ignored: '%1'", $remote), "$err" );
                             }
@@ -505,7 +505,7 @@ sub run_ship {
                     $log->debug( _loc( "Rollback switch to local file '%1'", $bkp_local ) );
                     $local = $bkp_local;
                 } elsif( $rollback_mode eq 'rollback_force' ) {
-                    _fail _loc 'Could not find rollback file %1', $bkp_local;
+                    _fail _loc('Could not find rollback file %1', $bkp_local);
                 } else {
                     $is_rollback_no_backup = 1;
                     $log->debug( _loc( "Rollback switch to local file '%1', but no for the file '%2'", $bkp_local, $remote ) );
@@ -648,10 +648,10 @@ sub run_rm {
     my $log   = $job->logger;
     my $stash = $c->stash;
 
-    my $file = $config->{file} // _fail _loc 'Missing parameter file';
+    my $file = $config->{file} // _fail _loc('Missing parameter file');
 
     my $f = _file( $job->job_dir, $file );
-    _fail _loc "Could not find file '%1'", $f
+    _fail _loc("Could not find file '%1'", $f)
         unless -e $f;
     if( unlink "$f" ) {
         $log->info( _loc("Successfully delete file '%1'", $f) );
@@ -667,10 +667,10 @@ sub run_rmtree {
     my $log   = $job->logger;
     my $stash = $c->stash;
 
-    my $dir = $config->{dir} // _fail _loc 'Missing parameter dir';
+    my $dir = $config->{dir} // _fail _loc('Missing parameter dir');
 
     my $f = _dir( $job->job_dir, $dir );
-    _fail _loc "Could not find dir '%1'", $f
+    _fail _loc("Could not find dir '%1'", $f)
         unless -d $f;
     if( $f->rmtree ) {
         $log->info( _loc("Successfully deleted directory '%1'", $f) );
@@ -786,7 +786,7 @@ sub run_write_config {
         : $type eq 'ini' ? do {
             require Config::Tiny;
             my $ct = Config::Tiny->new;
-            _fail _loc 'Config data is not a hash' unless ref $data eq 'HASH';
+            _fail _loc('Config data is not a hash') unless ref $data eq 'HASH';
             # recursively create a ini compatible structure
             my $loadhash;
             $loadhash = sub{

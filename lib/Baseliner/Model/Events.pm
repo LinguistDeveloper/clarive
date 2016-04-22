@@ -36,7 +36,7 @@ register 'service.event.daemon' => {
     handler => sub {
         my ($self, $c, $config ) = @_;
         $config->{frequency} ||= 15 ;
-        _log _loc "Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout};
+        _log _loc("Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout});
         require Baseliner::Sem;
         for( 1..1000 ) {
             $self->run_once( $c, $config );
@@ -66,7 +66,7 @@ sub run_once {
         my ($ev) = mdb->event->find({ event_status => 'new' })->sort({ '_id'=>1 })->limit(1)->all;
         if ( $ev ) {
             my $event_status = '??';
-            _debug _loc 'Running event %1 (id %2)', $ev->{event_key}, $ev->{id};
+            _debug _loc('Running event %1 (id %2)', $ev->{event_key}, $ev->{id});
             try {
                 local $SIG{ALRM} = sub { die "timeout running event rules for post-offline\n" };
                 alarm $data->{timeout} if $data->{timeout};  # 0 turns off timeout
@@ -154,7 +154,7 @@ sub run_once {
             } catch {
                 my $err = shift;
                 # TODO global error or a rule by rule (errors go into rule, but event needs a global)
-                _error _loc 'event %1 failed (id=%2): %3', $ev->{event_key}, $ev->{id}, $err;
+                _error _loc('event %1 failed (id=%2): %3', $ev->{event_key}, $ev->{id}, $err);
                 if( $err =~ m/^alarm/s ) {
                     alarm 0;
                     $event_status = 'timeout';
@@ -163,7 +163,7 @@ sub run_once {
                 }
                 mdb->event->update( {id => $ev->{id}}, {'$set'=>{event_status=>$event_status}});
             };
-            _debug _loc 'Finished event %1 (id %2), status: %3', $ev->{event_key}, $ev->{id}, $event_status;
+            _debug _loc('Finished event %1 (id %2), status: %3', $ev->{event_key}, $ev->{id}, $event_status);
         } else {
             $more_events = 0;
         }

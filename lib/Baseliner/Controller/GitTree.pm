@@ -297,9 +297,9 @@ sub newjob : Local {
 
     $c->stash->{json} = try {
         my @contents = map {
-            _log _loc "Adding namespace %1 to job", $_;
+            _log _loc("Adding namespace %1 to job", $_);
             my $item = Baseliner->model('Namespaces')->get( $_ );
-            _throw _loc 'Could not find revision "%1"', $_ unless ref $item;
+            _throw _loc('Could not find revision "%1"', $_) unless ref $item;
             $item;
         } ($ns);
 

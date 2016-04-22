@@ -74,7 +74,7 @@ sub general_prefs_save {
     my $data = $p->{data} // _fail(_loc('Missing data') );
     # check if user can edit prefs for somebody else
     if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
-        _fail _loc 'User does not have permission to edit users';
+        _fail _loc('User does not have permission to edit users');
     }
     my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
     $self = ci->user->search_ci( name=>$username ) unless ref $self;
@@ -121,7 +121,7 @@ sub save_api_key  {
     my ($self, $p) = @_;
     # check if user can edit prefs for somebody else
     if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
-        _fail _loc 'User does not have permission to edit users';
+        _fail _loc('User does not have permission to edit users');
     }
     my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
     $self = ref $self ? $self : Baseliner->user_ci( $username );

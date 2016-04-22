@@ -125,7 +125,7 @@ sub load_tree {
 
         my $rule = mdb->rule->find_one(
             {'$or' => [{id => "$id_rule"}, {rule_name => "$id_rule"}]});
-        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+        _fail _loc('Could not find rule %1', $id_rule) unless $rule;
     }
 
     my $tree = try { Util->_decode_json( $rule->{rule_tree} ) } catch { +{} };
@@ -146,14 +146,14 @@ sub build_tree {
     else {
         # TODO run query just once and work with a hash ->hash_for( id_parent )
         $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
-        _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+        _fail _loc('Could not find rule %1', $id_rule) unless $rule;
     }
 
     my $rule_tree_json = $rule->{rule_tree};
 
     if( $rule_tree_json ) {
         my $rule_tree = Util->_decode_json( $rule_tree_json );
-        _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
+        _fail _loc('Invalid rule tree json data: not an array') unless ref $rule_tree eq 'ARRAY';
         my @tf = $self->tree_format( @$rule_tree );
         return @tf;
     } else {
@@ -171,7 +171,7 @@ sub build_tree {
             was        => $p{ts} || ''._ts
         );
 
-        # _warn _loc 'Rule tree is empty for rule %1', $id_rule;
+        # _warn _loc('Rule tree is empty for rule %1', $id_rule);
         return @tf;
     }
 }
@@ -289,7 +289,7 @@ sub dsl_build {
             my $key = $attr->{key};
             use Baseliner::Model::Registry;
             my $reg = Baseliner::Model::Registry->get( $key );
-            _fail _loc 'Could not find rule key `%1`', $key unless blessed $reg;
+            _fail _loc('Could not find rule key `%1`', $key) unless blessed $reg;
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, '{';
                 if( length $attr->{sub_name} ) {
@@ -313,7 +313,7 @@ sub dsl_build {
             push @dsl, '});' if $closure; # current_task close
         } else {
             _debug $s;
-            _fail _loc 'Missing dsl/service key for node %1', $name;
+            _fail _loc('Missing dsl/service key for node %1', $name);
         }
         push @dsl, "}\n" if $rb_close_me;
         if( length $attr->{sub_name} ) {
@@ -730,7 +730,7 @@ register 'service.echo' => {
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $data->{hello} = $data->{msg} || 'world';
-        _info (_loc "%1", $data->{hello});
+        _info (_loc("%1", $data->{hello}));
         $data;
     }
 };
@@ -1260,7 +1260,7 @@ sub write_rule {
     my ($self,%p)=@_;
 
     my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
-    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
+    _fail _loc('Rule not found, id=%1', $p{id_rule}) unless $doc;
 
     my $ts_modified = 0;
     my $old_timestamp = ''.($p{old_ts} //'');
@@ -1293,7 +1293,7 @@ sub delete_rule {
     my ($self,%p)=@_;
 
     my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
-    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
+    _fail _loc('Rule not found, id=%1', $p{id_rule}) unless $doc;
 
     my $ts_modified = 0;
     my $old_timestamp = ''.$doc->{ts};
@@ -1323,7 +1323,7 @@ sub restore_rule {
     my ($self,%p)=@_;
 
     my $rule = mdb->rule_version->find_one({ id => "$p{id_rule}", deleted => '1'});
-    _fail _loc 'Rule version not found for restore, id=%1', $p{id_rule} unless $rule;
+    _fail _loc('Rule version not found for restore, id=%1', $p{id_rule}) unless $rule;
 
     delete $rule->{_id};
     delete $rule->{deleted};
@@ -1375,7 +1375,7 @@ sub save_rule {
             => { username=>$params{username}, rule_id=>$params{rule_id}, rule_name=>$params{rule_name}, rule_type=>$params{rule_type}}
             => sub {
                 my $doc = mdb->rule->find_one({ id=>"$params{rule_id}" });
-                _fail _loc 'Rule %1 not found', $params{rule_id} unless $doc;
+                _fail _loc('Rule %1 not found', $params{rule_id}) unless $doc;
                 mdb->rule->update({ id=>"$params{rule_id}" },{ %$doc, %$data });
             }
     } else {

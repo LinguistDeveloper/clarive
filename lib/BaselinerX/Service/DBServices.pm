@@ -199,7 +199,7 @@ sub commit_all {
     } catch {
         my $err = shift;
         $log->info( _loc( 'DB COMMIT transactions: %1', scalar(@msgs) ), join("\n",@msgs) );
-        _fail _loc 'Error during commit transactions: %1', $err;
+        _fail _loc('Error during commit transactions: %1', $err);
     };
 
     # delete connection DBI object to avoid serialization problems, it can be ref'd by tmp variables

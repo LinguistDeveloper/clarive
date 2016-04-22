@@ -46,7 +46,7 @@ sub connect {
     my $tmout = $self->timeout;
     return $self->_connection if ref $self->_connection;
     my $conn;
-    local $SIG{ALRM} = sub { _fail _loc 'timeout connecting to database %1 (timeout=%2)', $self->name, $tmout } if $tmout;
+    local $SIG{ALRM} = sub { _fail _loc('timeout connecting to database %1 (timeout=%2)', $self->name, $tmout) } if $tmout;
     if( $tmout ) {
         alarm $tmout;
     }

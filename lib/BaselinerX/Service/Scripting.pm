@@ -60,7 +60,7 @@ sub run_local {
     my $ret;
     my $orig;
     if( $home ) {
-        _fail _loc "Could not change dir to directory `%1`: does not exist", $home unless -e $home;
+        _fail _loc("Could not change dir to directory `%1`: does not exist", $home) unless -e $home;
         $orig = Cwd::cwd;
         chdir $home;
         _log "CHDIR $home";
@@ -89,7 +89,7 @@ sub run_local {
         Util->_debug( _loc('Custom error detected: %1 (rc=%2)', $lev_custom, join(',',map { $_ } _array($rc)) ) );
     }
     if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
-        my $ms = _loc 'Error running command %1', join ' ', @cmd; #, ($out // 'script not found or could not be executed (check chmod or chown)');
+        my $ms = _loc('Error running command %1', join ' ', @cmd); #, ($out // 'script not found or could not be executed (check chmod or chown)');
         Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
         Util->_warn($ms) if $errors eq 'warn' || $lev_custom eq 'warn';
         Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
@@ -168,7 +168,7 @@ sub run_remote {
         }
 
         if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
-            my $ms = _loc 'Error during script (%1) execution: %2', $path_parsed, ($out // 'script not found or could not be executed (check chmod or chown)');
+            my $ms = _loc('Error during script (%1) execution: %2', $path_parsed, ($out // 'script not found or could not be executed (check chmod or chown)'));
             Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
             Util->_warn($ms) if $errors eq 'warn' || $lev_custom eq 'warn';
             Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
@@ -207,7 +207,7 @@ sub check_output_errors {
         if( my @match = ( $output =~ _regex($oerr) ) ) {
            %found = %+;
            $log->error( _loc("Output error detected by '%1'", $oerr), data=>$output ) ;
-           _fail _loc 'Output error detected' if $error_mode eq 'fail' && !$ignore_errors;
+           _fail _loc('Output error detected') if $error_mode eq 'fail' && !$ignore_errors;
         }
     }
 
@@ -248,7 +248,7 @@ sub run_eval {
             $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
             next;
         }
-        _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
+        _log _loc("===========> RUNNING remote eval: %1\@%2", $user, $server->hostname);
 
         my $agent = $server->connect( user=>$user );
         # TODO some agents may not support eval, check this out first, call exec instead?
@@ -257,7 +257,7 @@ sub run_eval {
         my $rc = $agent->rc;
         my $ret = $agent->ret;
         if( $rc == 99 ) {
-            _fail _loc 'Error during eval execution: %1', $out;
+            _fail _loc('Error during eval execution: %1', $out);
         } else {
             if( ref $ret eq 'HASH' && ref $ret->{job_logs} eq 'ARRAY' ) {
                 for my $msg ( @{$ret->{job_logs}} ) {

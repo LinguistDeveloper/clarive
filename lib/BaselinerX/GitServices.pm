@@ -152,9 +152,9 @@ sub newjob {
     # TODO check if rev has lineal history to bl (DEV)
 
     my @contents = map {
-        _log _loc "Adding namespace %1 to job", $_;
+        _log _loc("Adding namespace %1 to job", $_);
         my $item = Baseliner->model('Namespaces')->get( $_ );
-        _throw _loc 'Could not find revision "%1"', $_ unless ref $item;
+        _throw _loc('Could not find revision "%1"', $_) unless ref $item;
         $item;
     } _array $p->{revision};
 
@@ -216,7 +216,7 @@ sub checkout {
         _log "Project=$prj, Repo=$repo_name, RepoDir=$path, Rev=$rev";
         my $prjdir =  _dir $prj, $repo_name;
         my $dir = _dir $job->root, $prjdir;
-        $log->info( _loc "*Git*: cloning project %1 repository %2 (%3) into `%4`", $prj, $repo_name, $path, $dir );
+        $log->info( _loc("*Git*: cloning project %1 repository %2 (%3) into `%4`", $prj, $repo_name, $path, $dir ) );
         _rmpath $dir if -e $dir;
         _mkpath $dir;
         #$git->run( qw/clone/, $repo->path, "$dir" );  # not working, ignores $dir
@@ -231,7 +231,7 @@ sub checkout {
             # checkout a bl, then merge-force the rev into it
             #  problem: the job element list comes out untrue
             my $lc = Baseliner->model('LCModel')->lc;
-            my $bl_to = $lc->bl_to( $bl ) or _throw _loc "No bl_to defined for bl %1", $bl;
+            my $bl_to = $lc->bl_to( $bl ) or _throw _loc("No bl_to defined for bl %1", $bl);
             $repo_job->git->exec( qw/checkout/, $bl );
             $repo_job->git->exec( qw/merge -s recursive -X theirs/, $rev );
         }

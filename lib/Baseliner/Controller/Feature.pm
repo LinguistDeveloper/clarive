@@ -27,10 +27,10 @@ sub restart_server : Local {
     _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
-        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}";
+        _log _loc("Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}");
         kill HUP => $ENV{BASELINER_PARENT_PID};
     } else {
-        _log _loc "Server restart requested. Using bali-web restart";
+        _log _loc("Server restart requested. Using bali-web restart");
         `bali-web restart`;  # TODO this is brute force
     }
 }
@@ -168,7 +168,7 @@ sub upload_cpan : Local {
         $p->{filepath} = $dir->file( $p->{filename} );
         _debug "CPAN filepath = $p->{filepath}";
         open( my $ff, '>', "$p->{filepath}" )
-            or _fail _loc 'Error opening file %1: %2', $p->{filepath}, $!;
+            or _fail _loc('Error opening file %1: %2', $p->{filepath}, $!);
         binmode $ff;
         print $ff from_base64( $p->{data} );
         close $ff;
@@ -187,7 +187,7 @@ sub upload_file_b64 : Private {
     $data = from_base64( $data );
     # dump to file
     open( my $ff, '>', $p->{filepath} )
-        or _fail _loc 'Error opening file: %1', $!;
+        or _fail _loc('Error opening file: %1', $!);
     binmode $ff;
     print $ff $data;
     close $ff;
@@ -202,14 +202,14 @@ sub pull : Local {
         my $data = $p->{data} or _fail 'Missing data';
         my $id = $p->{id} // _md5( rand() ) ;
         # dump to file
-        push @log, _loc "upgrade id: %1", $id;
-        my $branch = $p->{branch} // _fail _loc 'Missing branch';
+        push @log, _loc("upgrade id: %1", $id);
+        my $branch = $p->{branch} // _fail _loc('Missing branch');
         my $filename = "upgrade-$id.bundle";
         my ($feature) = grep { $_->name eq $p->{feature} } $c->features->list;
         my $filepath =  $p->{feature} eq 'clarive'
             ? $c->path_to( $filename )
             : $c->path_to( 'features', $feature->id, $filename );
-        push @log, _loc "file: %1", $filepath;
+        push @log, _loc("file: %1", $filepath);
 
         $self->upload_file_b64({ data=>$data, id=>$id, filepath=>$filepath });
 
@@ -221,12 +221,12 @@ sub pull : Local {
         my @verify = $git->bundle('verify', "$filepath" );
         # add / replace remote patch
         my $remote = 'patch';
-        push @log, _loc 'remote setup: remote add %1 %2', $remote, $filepath;
+        push @log, _loc('remote setup: remote add %1 %2', $remote, $filepath);
         try { $git->remote( 'add', $remote, "$filepath" ) } catch {
             push @log, _loc('ok, remote %1 already exists: %2', $remote, shift() );
             $git->remote( 'set-url', $remote, "$filepath" );
         };
-        push @log, _loc 'remote add/set-url: %1', $remote;
+        push @log, _loc('remote add/set-url: %1', $remote);
         push @log, _loc('Fetching from remote %1 into branch %2', $remote, $branch);
         my @fetch;
         push @fetch, $git->fetch( $remote );
@@ -241,7 +241,7 @@ sub pull : Local {
         { success=>\1, msg=>'ok', filepath=>"$filepath", verify=>\@verify, fetch=>\@fetch, log=>\@log };
     } catch {
         my $err = shift;
-        push @log, _loc 'Error: %1', $err;
+        push @log, _loc('Error: %1', $err);
         { success=>\0, msg=>"$err", log=>\@log };
     };
     $c->forward('View::JSON');
@@ -315,8 +315,8 @@ sub checkout : Local {
         my $repos = _from_json( $p->{repos} );
         my %repositories = $self->repositories( $c );
         for my $repo ( _array $repos ) {
-            my $dir = $repositories{ $repo->{feature} } or _fail _loc 'Feature %1 not found', $repo->{feature};
-            -d $dir or _fail _loc 'Invalid feature %1 directory: %2', $repo->{feature}, $dir;
+            my $dir = $repositories{ $repo->{feature} } or _fail _loc('Feature %1 not found', $repo->{feature});
+            -d $dir or _fail _loc('Invalid feature %1 directory: %2', $repo->{feature}, $dir);
             my $git = Git::Wrapper->new( $dir );
             $repo->{branch} ||= 'master';
             push @log, "\n*** Current commit for $repo->{version}:";

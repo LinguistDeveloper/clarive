@@ -45,7 +45,7 @@ sub change_status : Local {
         my $sem = $params->{sem};
         my $who = $params->{who};
         my $res = mdb->sem->update({ 'queue._id'=>mdb->oid($id), 'queue.status'=>mdb->in($from_status->{$status}) },{  '$set'=>{ 'queue.$.status'=>$status } });
-        _fail _loc 'Semaphore not found or status changed from %1', $status unless $res->{updateExisting};
+        _fail _loc('Semaphore not found or status changed from %1', $status) unless $res->{updateExisting};
         $c->stash->{json} = { message=>_loc("Granted semaphore %1 to %2", $sem, $who) };
     } catch {
         $c->stash->{json} = { message=>shift };
@@ -161,7 +161,7 @@ sub change_slot  : Local {
         elsif( $p->{action} eq 'del' ) {
             $sem = mdb->sem->find_and_modify({ query=>{ key=>$p->{key} }, update=>{ '$inc'=>{ maxslots=>-1 } }, new=>1 });
         }
-        $sem or _fail _loc 'Semaphore not found %1', $p->{key};
+        $sem or _fail _loc('Semaphore not found %1', $p->{key});
         $c->stash->{json} = { message=>_loc("Semaphore %1 slots changed to %2", $p->{key}, $sem->{maxslots}) };
     } catch {
         $c->stash->{json} = { message=>shift };
@@ -186,14 +186,14 @@ sub queue_move  : Local {
         $to = mdb->sem->find_and_modify({
                 query=>{ queue=>{'$elemMatch'=>{_id=>mdb->oid($id_to), status=>'waiting'}}},
                 update=>{ '$set'=>{'queue.$.seq'=>-1} } });
-        _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to;
+        _fail _loc('Destination semaphore does not exist. Please, refresh') unless $to;
         ($to_queue) = grep { "$$_{_id}" eq $id_to } _array( $to->{queue} );
-        _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to_queue;
+        _fail _loc('Destination semaphore does not exist. Please, refresh') unless $to_queue;
 
         my $from = mdb->sem->find_and_modify({
                 query=>{ queue=>{ '$elemMatch'=>{ _id=>mdb->oid($id_from), status=>'waiting' }}},
                 update=>{ '$set'=>{'queue.$.seq'=>$to_queue->{seq}} } });
-        _fail _loc 'Source semaphore does not exist. Please, refresh' unless $from;
+        _fail _loc('Source semaphore does not exist. Please, refresh') unless $from;
         my ($from_queue) = grep { "$$_{_id}" eq $id_from } _array( $from->{queue} );
 
         mdb->sem->update({ 'queue._id'=>mdb->oid($id_to) },{ '$set'=>{'queue.$.seq'=>$from_queue->{seq} } });
@@ -222,10 +222,10 @@ sub activate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     try {
-        defined $p->{id} or _throw _loc "Missing parameter id";
-        defined $p->{active} or _throw _loc "Missing parameter active";
+        defined $p->{id} or _throw _loc("Missing parameter id");
+        defined $p->{active} or _throw _loc("Missing parameter active");
         my $q = mdb->sem_queue->find_one({ _id=>mdb->oid($p->{id}) });
-        _throw _loc "Error: Semaphore is already busy." if $q->{status} !~ m/waiting|idle/;
+        _throw _loc("Error: Semaphore is already busy.") if $q->{status} !~ m/waiting|idle/;
         $q->{active} = 0+$p->{active} ;
         mdb->sem_queue->save( $q );
         my $msg = $p->{active} ? _loc('Semaphore request active') : _loc('Semaphore request inactive');

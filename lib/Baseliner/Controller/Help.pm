@@ -45,7 +45,7 @@ sub get_doc : Local {
         $data = $self->_build_help->parse_body( $root, $docs );
     }
 
-    _fail _loc 'Invalid doc path: `%1`', $path unless $data;
+    _fail _loc('Invalid doc path: `%1`', $path) unless $data;
 
     $c->stash->{json} = { data => $data };
     $c->forward('View::JSON');

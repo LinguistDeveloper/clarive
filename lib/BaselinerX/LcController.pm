@@ -450,7 +450,7 @@ sub list_repo_contents : Local {
         #if( $config->{show_changes_in_tree} || !$p->{id_status} ) {
 
         my @items = $repo->list_contents( request=>$p );
-        _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @items;
+        _debug _loc("---- provider ".$repo->name." has %1 changesets", scalar @items);
 
         # loop through the repo objects
         for my $it ( @items ) {
@@ -509,7 +509,7 @@ sub branches : Local {
             } else {
                 @changes = $repo->can('list_contents') ? $repo->list_contents( request=>$p ) : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
             }
-            _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
+            _debug _loc("---- provider ".$repo->name." has %1 changesets", scalar @changes);
             # loop through the branch objects
             for my $cs ( @changes ) {
                 my $menu = [];
@@ -573,7 +573,7 @@ sub changeset : Local {
                 try {
                     my $prov = $provider->new( project=>$project );
                     my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-                    _debug _loc "---- provider $provider has %1 changesets", scalar @changes;
+                    _debug _loc("---- provider $provider has %1 changesets", scalar @changes);
                     push @cs, @changes;
                 } catch {
                     my $err = shift;
@@ -849,7 +849,7 @@ sub promotes_and_demotes {
     $id_status_from //= $topic->{category_status}{id};
     my %statuses = ci->status->statuses;
 
-    _fail _loc 'Missing topic parameter' unless $topic;
+    _fail _loc('Missing topic parameter') unless $topic;
 
     #Personalized _workflow!
     if($topic->{_workflow} && $topic->{_workflow}->{$id_status_from}){
@@ -1460,7 +1460,7 @@ sub favorite_rename : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc "Invalid name" unless length $p->{text};
+        _fail _loc("Invalid name") unless length $p->{text};
 
         # TODO rename id_folder in case it's a folder?
         my $user = $c->user_ci;
@@ -1486,7 +1486,7 @@ sub favorite_add_to_folder : Local {
         # get data
         my $user = ci->new($user_mid);
         my $d = $user->favorites->{ $id_folder };
-        _fail _loc "Not found: %1", $id_folder unless defined $d;
+        _fail _loc("Not found: %1", $id_folder) unless defined $d;
         $d->{contents} //= {};
         # delete old
         my $fav = delete $user->favorites->{ $id_favorite};

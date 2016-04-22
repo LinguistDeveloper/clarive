@@ -30,7 +30,7 @@ sub parse_files {
     for my $parser ( Util->_array_or_commas($parsers)  ) {
         my $p = ci->new( $parser );
         for my $path ( _array( $paths ) ) {
-            _throw _loc 'Path not found: `%1`', $path unless -e $path;
+            _throw _loc('Path not found: `%1`', $path) unless -e $path;
             my $file = ci->file->new( path=>$path );
             my $tree = $p->parse( $file );
             if( ref($tree) && ! keys %$tree ) {

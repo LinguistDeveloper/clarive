@@ -95,7 +95,7 @@ method connect( :$user='' ) {
     if( $err ) {
         my $meths = join ',', grep { defined } map { my $m="connect_".$_; ($self->$m ? $_ : undef); } qw(worker balix ssh);
         if( !$agent ) {
-            _fail _loc 'ERROR: could not find agent for this server (methods attempted: %1): %2', $meths, $err;
+            _fail _loc('ERROR: could not find agent for this server (methods attempted: %1): %2', $meths, $err);
         }
         else {
             _debug 'Some connection methods failed: ' . $err;

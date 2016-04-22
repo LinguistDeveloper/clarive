@@ -181,8 +181,8 @@ sub run {
 sub run_container {
     my ($self,$stash,$config,$obj) = @_;
     my $handler = $self->handler ;
-    _fail _loc 'Service handler missing' unless ref $handler eq 'CODE';
-    _fail _loc 'Missing argument 1, stash' unless ref $stash eq 'HASH';
+    _fail _loc('Service handler missing') unless ref $handler eq 'CODE';
+    _fail _loc('Missing argument 1, stash') unless ref $stash eq 'HASH';
     $config //= {};
     # create dummy job if we don't have one
     $stash->{job} or local $stash->{job} = BaselinerX::Type::Service::Container::Job->new( job_stash=>$stash );

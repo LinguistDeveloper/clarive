@@ -51,7 +51,7 @@ sub launch {
     # put logfile in the stash
     #
     if( defined $data->{logfile} && length $data->{logfile} ) {
-        _log _loc "Service logfile '%1'", $data->{logfile};
+        _log _loc("Service logfile '%1'", $data->{logfile});
         $c->stash->{logfile} = $data->{logfile};
     }
 

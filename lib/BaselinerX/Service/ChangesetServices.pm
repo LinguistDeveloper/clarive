@@ -103,12 +103,12 @@ sub topic_status {
     my ( $self, $c, $config ) = @_;
 
     my $stash    = $c->stash;
-    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics';
-    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
+    my $topics = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
+    my $new_status = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
 
     for my $mid ( Util->_array_or_commas( $topics) ) {
         my $topic = ci->new( $mid );
-        _log _loc 'Changing status for topic %1 to status %2', $topic->topic_name, $new_status;
+        _log _loc('Changing status for topic %1 to status %2', $topic->topic_name, $new_status);
         Baseliner->model('Topic')->change_status(
             change     => 1,
             id_status  => $new_status,
@@ -133,7 +133,7 @@ sub changeset_update {
     my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
-        $self->log->info( _loc "Changesets status not updated. Static job." );
+        $self->log->info( _loc("Changesets status not updated. Static job." ) );
         return;
     }
 
@@ -155,7 +155,7 @@ sub changeset_update {
             # rollback to previous status
             $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
             if( !length $status ) {
-                _debug _loc 'No last status data for changeset %1. Skipped.', $cs->title;
+                _debug _loc('No last status data for changeset %1. Skipped.', $cs->title);
                 next;
             }
         } elsif ($job_type eq 'demote') {
@@ -166,7 +166,7 @@ sub changeset_update {
             $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
         }
         my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
-        _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
+        _fail _loc('Status row not found for status `%1`', $status_name) unless $status_name;
         $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1,
@@ -236,7 +236,7 @@ sub update_baselines {
                         type      => $type
                     );
                 } else {
-                    _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
+                    _warn _loc('Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid);
                 }
             } else {
                 $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
@@ -416,7 +416,7 @@ sub checkout_bl {
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my @project_changes = @{ $stash->{project_changes} || [] };
 
@@ -445,7 +445,7 @@ sub checkout_bl_all_repos {
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my @project_changes = @{ $stash->{project_changes} || [] };
 
@@ -499,7 +499,7 @@ sub checkout {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my $cnt = 0;
     # TODO group all items by repo provider and ask repo for a multi-item checkout

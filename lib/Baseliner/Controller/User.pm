@@ -62,7 +62,7 @@ sub preferences : Local {
         ->search_for( key => 'config', preference => 1 );
     $c->stash->{ns}    = 'user/' . ( $c->user->username || $c->user->id );
     $c->stash->{bl}    = '*';
-    $c->stash->{title} = _loc 'User Preferences';
+    $c->stash->{title} = _loc('User Preferences');
     if (@config) {
         $c->stash->{metadata} = [ map { $_->metadata } @config ];
         $c->stash->{ns_query}
@@ -535,7 +535,7 @@ sub update : Local {
 
    # regenerate project security for all users TODO work with my ci only: DONE
                     my $ci = ci->user->search_ci( name => $p->{username} );
-                    _fail _loc 'Could not find ci for user %1', $p->{username}
+                    _fail _loc('Could not find ci for user %1', $p->{username})
                         unless $ci;
                     _debug 'Re-generating user project security...';
                     $ci->gen_project_security( $projects_checked,

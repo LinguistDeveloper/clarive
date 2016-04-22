@@ -962,8 +962,7 @@ sub update : Local {
     my $p = $c->req->params;
 
     my $form_data = $p->{form_data};
-    _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
-
+    _fail _loc('Invalid data format: form data is not hash') unless ref $form_data eq 'HASH';
     # cleanup
     for my $k ( keys %$form_data ) {
         delete $p->{$k} if $k =~ /^ext-comp-/;
@@ -998,7 +997,7 @@ sub update : Local {
             $mid = $ci->mid;
         }
         elsif ( $action eq 'edit' && defined $mid ) {
-            my $ci = ci->find($mid) || _fail _loc 'CI %1 not found', $mid;
+            my $ci = ci->find($mid) || _fail _loc('CI %1 not found', $mid);
 
             if ( $collection eq 'status' ) {
                 mdb->topic->update(
@@ -1247,7 +1246,7 @@ sub export : Local {
         }elsif( $format eq 'csv' ) {
             $data = export_csv($p->{ci_type}, @cis);
         } else {
-            _fail _loc "Unknown export format: %1", $format;
+            _fail _loc("Unknown export format: %1", $format);
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs exported ok' ), data=>$data };
     } catch {
@@ -1539,7 +1538,7 @@ sub edit : Local {
     my $permissions = $self->_build_permissions;
     if ($mid) {
         my $doc = mdb->master->find_one( { mid => "$mid" } );
-        _fail _loc 'Could not find CI %1 in database', $mid unless $doc;
+        _fail _loc('Could not find CI %1 in database', $mid) unless $doc;
 
         $collection = $doc->{collection};
 
@@ -1636,7 +1635,7 @@ sub import_one_ci {
         }
         return $d->save;
     } else {
-        _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
+        _fail _loc('No class name defined for ci %1 (%2)', $d->{name}, $mid);
     }
 }
 
@@ -1667,7 +1666,7 @@ sub update_csv_fields{
         next unless $class->field_is_ci( $field );
         if(length $row->{$field} > 0) {
             my $rel_ci = ci->find( name=>$row->{$field} );   # se instancia el CI relacionado
-            _fail _loc "Related CI not found: %1", $row->{$field} unless ref $rel_ci;  # no existe!!!
+            _fail _loc("Related CI not found: %1", $row->{$field}) unless ref $rel_ci;  # no existe!!!
             $row->{ $field } = $rel_ci->{mid};
         }
     }
@@ -1795,7 +1794,7 @@ sub default : Path Args(2) {
     my $json = $p;
     delete $p->{api_key};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
-    _fail( _loc "Missing param method" ) unless length $meth;
+    _fail( _loc("Missing param method") ) unless length $meth;
     # if( my $field = $p->{_file_field} ) {
     #     $p->{$field} = $self->upload_file( $field );
     # }
@@ -1809,26 +1808,26 @@ sub default : Path Args(2) {
         my $class = 'BaselinerX::CI::' . $mid_or_class;
         if( length $mid_as_param ) {
             my $ci = ci->new( $mid_as_param );
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            _fail( _loc("Method '%1' not found in class '%2'", $meth, ref $ci)) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif( Util->_package_is_loaded($class) ) {
             # it's a static class
             # _debug( 'static class' );
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
+            _fail( _loc("Method '%1' not found in class '%2'", $meth, $class)) unless $class->can($meth) ;
             $ret = $class->$meth( $to_args->($class) );
         #} elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {
         } elsif( my $ci = ci->new($mid_or_class) ) {
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            _debug( _loc "Method '%1' found in class '%2'", $meth, ref $ci);
+            _fail( _loc("Method '%1' not found in class '%2'", $meth, ref $ci)) unless $ci->can( $meth) ;
+            _debug( _loc("Method '%1' found in class '%2'", $meth, ref $ci));
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $mid_or_class eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
+            _fail( _loc("Method '%1' not found in class '%2'", $meth, $pkg)) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $to_args->($pkg) );
         } else {
-            _fail( _loc "Method '%1' not found in mid or class '%2'", $meth, $mid_or_class);
+            _fail( _loc("Method '%1' not found in mid or class '%2'", $meth, $mid_or_class));
         }
 
         # prepare response

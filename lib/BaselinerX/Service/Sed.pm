@@ -55,7 +55,7 @@ sub run {
 
     $log->info( _loc('Sed: starting: %1', $path ) );
 
-    -e $path or _fail _loc "Sed: Invalid path '%1'", $path;
+    -e $path or _fail _loc("Sed: Invalid path '%1'", $path);
 
     # check config
     my $sed = {

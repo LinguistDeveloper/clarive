@@ -162,9 +162,9 @@ sub change_status {
     my ( $self, $c, $config ) = @_;
 
     my $stash = $c->stash;
-    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics';
+    my $topics = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
     my $old_status = $config->{old_status};
-    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
+    my $new_status = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
 
     # Let's check that all topics exist in the system
     my @topic_mids = Util->_array_or_commas($topics);
@@ -216,7 +216,7 @@ sub create {
     my ( $self, $c, $config ) = @_;
 
     my $stash = $c->stash;
-    my $category = $config->{category} // _fail( _loc 'Missing parameter category' );
+    my $category = $config->{category} // _fail( _loc('Missing parameter category' ) );
     my $data = $config->{variables};
     my $username = $config->{username} // 'clarive';
     my $new_status = $config->{status} // _fail(_loc('Missing parameter status'));

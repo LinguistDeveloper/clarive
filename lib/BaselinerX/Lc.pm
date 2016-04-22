@@ -24,7 +24,7 @@ has 'lc' => (
             my $tfile = _file( $feature->root, '..', 'etc', 'lc.yaml.example' );
             File::Copy::copy( $tfile, $file );
         }
-        open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
+        open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc("Error loading file %1: %2", $file, $!);
         my $fi = join '', <$ff>;
         utf8::downgrade( $fi );
         my $lc = _load( $fi );

@@ -27,10 +27,10 @@ sub run {
 
     for my $pid ( @pids ) {
         try {
-            _log _loc "Server restart requested. Using kill HUP $pid";
+            _log _loc("Server restart requested. Using kill HUP $pid");
             kill HUP => $pid;
         } catch {
-            _error _loc ("Error restarting $pid: "). shift;
+            _error _loc("Error restarting $pid: "). shift;
         };
     }
 }

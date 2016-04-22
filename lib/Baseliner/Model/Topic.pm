@@ -1212,7 +1212,7 @@ sub get_update_system_fields {
     my ($self, $id_category) = @_;
 
     my $system_fields = $self->get_system_fields();
-    my $cat = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
+    my $cat = mdb->category->find_one({id=>"$id_category" }) // _fail _loc('Category not found: %1', $id_category);
     my @rs_categories_fields = _array( $cat->{fieldlets} );
     my %fields = map { $$_{id_field} => $_ } @rs_categories_fields;
     for my $category ( @rs_categories_fields ){
@@ -1332,7 +1332,7 @@ sub get_meta {
     if($id_category){
         my $cat = mdb->category->find_one({ id=>"$id_category" });
         my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
-        _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.'
+        _warn _loc('Topic category has no form rule associated with it. Please contact your administrator.')
             unless length $default_form;
         return [] unless length $default_form;
         my $stash = { name_category=>$$cat{name},id_category=>$id_category, rule_context=>'form' };
@@ -1349,7 +1349,7 @@ sub get_meta {
             my $cat = mdb->category->find_one({ id=>"$category" });
             my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
             if( !$default_form ) {
-                _warn _loc 'Category %1 does not have an associated form', $cat->{name};
+                _warn _loc('Category %1 does not have an associated form', $cat->{name});
                 next;
             }
             my $stash = { id_category=>$category, rule_context=>'form' };
@@ -1404,7 +1404,7 @@ sub rule_node_to_fieldlet {
         } catch {
             my $err = shift;
             # TODO consider showing the form, but with a special "error" fieldlet
-            _error _loc "Fieldlet `$%1` not found in registry: %2", $key, $err;
+            _error _loc("Fieldlet `$%1` not found in registry: %2", $key, $err);
         };
     }
     @cat_fields =
@@ -1437,7 +1437,7 @@ sub get_fieldlet_nodes {
     my $all_fields = !length $id_category;
     my $where = { id=>mdb->in($id_category) } if !$all_fields;
     my $cats = mdb->category->find($where)->fields({ name=>1, default_form=>1 });
-    _throw _loc 'One or more categories not found: %1', join(',',_array($id_category))
+    _throw _loc('One or more categories not found: %1', join(',',_array($id_category)))
         if ref $id_category && scalar(_array($id_category)) != $cats->count;
     my @all_nodes;
     while( my $cat = $cats->next ) {
@@ -1833,8 +1833,8 @@ sub save_data {
                                             $ci->{_ci_updated} = 1;
                                         }
                                         default {
-                                            _throw _loc "Invalid ci action '%1' for mid '%2'",
-                                                $ci->{ci_action}, $ci->{ci_mid};
+                                            _throw _loc("Invalid ci action '%1' for mid '%2'",
+                                                $ci->{ci_action}, $ci->{ci_mid});
                                         }
                                     }
                                 }
@@ -1969,7 +1969,7 @@ sub save_doc {
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
-    _fail _loc 'save_doc failed: no mid' unless length $mid;
+    _fail _loc('save_doc failed: no mid') unless length $mid;
     $doc->{mid} = $mid;
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
@@ -1996,7 +1996,7 @@ sub save_doc {
                     my $slot = Util->_name_to_id( $cal->{slotname} ) || $cal->{slotname};
                     $doc->{$field}{$slot} = $cal;
                 } else {
-                    _fail _loc 'Field `%1` is missing the `slotname` column to properly be stored as a calendar', $field;
+                    _fail _loc('Field `%1` is missing the `slotname` column to properly be stored as a calendar', $field);
                 }
             }
         }
@@ -2142,12 +2142,12 @@ sub update_rels {
 sub update_category {
     my ($self,$mid_or_doc, $id_cat ) = @_;
     my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_mid( $mid_or_doc );
-    _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
+    _fail _loc("Cannot update topic category, topic not found: %1", $mid_or_doc) unless ref $doc;
 
     $id_cat //= $doc->{id_category};
 
     my $category = mdb->category->find_one({ id=>"$id_cat" },{ workflow=>0, fieldlets=>0 })
-        or _fail _loc 'Category %1 not found', $id_cat;
+        or _fail _loc('Category %1 not found', $id_cat);
     my $d = {
         category             => $category,
         color_category       => $$category{color},
@@ -2176,13 +2176,13 @@ sub update_category_status {
         ref $mid_or_doc
         ? $mid_or_doc
         : mdb->topic->find_one( { mid => "$mid_or_doc" }, { _status_changes => 1, id_category_status => 1, 'category_status.name' => 1, 'category_status.id' => 1 } );
-    _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
+    _fail _loc("Cannot update topic category status, topic not found: %1", $mid_or_doc) unless ref $doc;
 
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
-    _fail _loc "Topic %1 does not have a status id", $$doc{mid} unless $id_category_status;
+    _fail _loc("Topic %1 does not have a status id", $$doc{mid}) unless $id_category_status;
 
     my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
-        || _fail _loc 'Status `%1` not found', $id_category_status;
+        || _fail _loc('Status `%1` not found', $id_category_status);
 
     $$category_status{seq} += 0 if defined $$category_status{seq};
     $$category_status{id} = $$category_status{id_status};
@@ -2244,7 +2244,7 @@ sub update_projects {
        push @{ $prjs{ $d->{rel_field} } }, $d->{to_mid};
     }
     my $doc = mdb->topic->find_one({ mid=>"$mid" });
-    _fail _loc 'Topic document not found for topic mid %1', $mid;
+    _fail _loc('Topic document not found for topic mid %1', $mid);
     $doc = { %$doc, %prjs };
     mdb->topic->save( $doc );
 }
@@ -2387,11 +2387,11 @@ sub set_topics {
     if( @new_topics ) {
         # check if field is editable
         if( ! $$field_meta{editable} ) {
-            _fail _loc 'Field `%1` is not editable in topic #%2', $$field_meta{name_field}, $mid;
+            _fail _loc('Field `%1` is not editable in topic #%2', $$field_meta{name_field}, $mid);
         }
         # apply filters, if any
         $self->test_field_match( field_meta=>$field_meta, mids=>\@new_topics )
-            or _fail _loc 'Incorrect type of topics added to field %1', _loc($$field_meta{name_field});
+            or _fail _loc('Incorrect type of topics added to field %1', _loc($$field_meta{name_field}));
         # Tenemos que ver primero que los new topics para ese campo exista que sea single
         my @category_single_mode;
         my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
@@ -3268,8 +3268,8 @@ sub change_status {
 
         if ( $p{change} ) {
             _fail( _loc( 'Id not found: %1', $mid ) ) unless $doc;
-            _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.",
-                $doc->{category_status}{name}, $old_status
+            _fail _loc("Current topic status '%1' does not match the real status '%2'. Please refresh.",
+                $doc->{category_status}{name}, $old_status)
                 if $doc->{category_status}{id} ne $id_old_status;
 
             my $modified_on = mdb->ts;

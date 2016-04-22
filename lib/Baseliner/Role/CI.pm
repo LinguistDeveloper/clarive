@@ -134,7 +134,7 @@ sub gen_mid {
 sub update {
     my $self = shift;
     my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_;
-    my $class = ref $self || _fail _loc 'CI must exist for update to work';
+    my $class = ref $self || _fail _loc('CI must exist for update to work');
 
     # detect changed fields, in case it's a new row then all data is changed
     # TODO there's contaminated data coming thru from project variables
@@ -585,8 +585,8 @@ sub _build_ci_instance_from_rec {
     } catch {
         my $err = shift;
         Util->_error( "MID=$rec->{mid} rec=" . _dump( $rec ) );
-        _fail _loc 'Could not instanciate CI `%1`%2: %3',
-            Util->to_base_class($ci_class), ($rec->{mid} ? " ($rec->{mid})": ''), $err;
+        _fail _loc('Could not instanciate CI `%1`%2: %3',
+            Util->to_base_class($ci_class), ($rec->{mid} ? " ($rec->{mid})": ''), $err);
     };
     # add the original record to _ci
     if( ! $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
@@ -1012,8 +1012,8 @@ sub run_service {
     } catch {
         my $err = shift;
         if( $p{fail} ) {
-            _fail _loc "Error running service %1 against ci %2: %3",
-                $key, ( ref $self_or_class ? $self_or_class->mid : $self_or_class ), $err;
+            _fail _loc("Error running service %1 against ci %2: %3",
+                $key, ( ref $self_or_class ? $self_or_class->mid : $self_or_class ), $err);
         } else {
             $output .= "\n$err";
         }

@@ -33,7 +33,7 @@ sub has_bl { 0 }
 # checks if an item belongs to this nature
 sub item_match {
     my ($self, %p ) = @_;
-    my $item = $p{item} // _fail _loc 'Missing parameter item';
+    my $item = $p{item} // _fail _loc('Missing parameter item');
     my @include = Util->_array( $self->include );
     my @exclude = Util->_array( $self->exclude );
     my $match = 0;

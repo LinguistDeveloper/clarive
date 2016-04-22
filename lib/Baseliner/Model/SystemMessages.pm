@@ -15,12 +15,12 @@ register 'event.sms.remove' => { name => 'Deleted System Message', description =
 sub update {
     my ( $self, $p ) = @_;
     my $action = $p->{action};
-    my $_id = $p->{_id} || _fail _loc 'Missing message id';
+    my $_id = $p->{_id} || _fail _loc('Missing message id');
     if($action eq 'add'){
-        model->Permissions->user_has_action( username=>$p->{username}, action=>'action.admin.sms' ) || _fail _loc 'Unauthorized';
+        model->Permissions->user_has_action( username=>$p->{username}, action=>'action.admin.sms' ) || _fail _loc('Unauthorized');
         $self->sms_set_indexes;
-        my $title = $p->{title} || _fail _loc 'Missing message title';
-        my $text = $p->{text} || _fail _loc 'Missing message text';
+        my $title = $p->{title} || _fail _loc('Missing message title');
+        my $text = $p->{text} || _fail _loc('Missing message text');
         my $more = $p->{more} || '';
         my $username = $p->{username} || undef;
         my $from = $p->{from} || undef;
