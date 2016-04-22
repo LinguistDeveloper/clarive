@@ -2,7 +2,7 @@
     var data = params.data || {};
     return [
         new Baseliner.ArrayGrid({
-            fieldLabel: _('Children stash keys to export'),
+            fieldLabel: _('Children Stash Keys to Export'),
             name: 'parallel_stash_keys',
             value: data.parallel_stash_keys,
             default_value:'variable_name_here'
