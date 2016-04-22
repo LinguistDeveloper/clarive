@@ -146,6 +146,7 @@
 
     var grid = new Ext.ux.maximgb.tg.GridPanel({
         renderTo: 'main-panel',
+        cls:'events_grid',
         store: store_events,
         master_column_id : '_id',
         autoExpandColumn: '_id',
