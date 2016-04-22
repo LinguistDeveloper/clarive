@@ -1,5 +1,5 @@
 ---
-title: Edit calendar
+title: Edit Calendar
 index: 1
 icon: wrench.gif
 ---
@@ -11,16 +11,43 @@ In the next window there are two sections:
 
 - **Calendar Info**: Where you can edit all information calendar.
 
-- **Calendar Windows**: Assign tasks to the calendar.
+- **Calendar Windows**: Assign windows to the calendar.
 
 In the left graph you can see the days of the week that have been indicated in the calendar on the right.
 
-Clicking the day to which you want to assign a task on the chart, you can
-indicate the time and the type of emergency: Normal, Urgent or No Job.
+Clicking in the graph, edit job slot. The options are:
 
-After editing the job slot you can indicate if you want to create a <img
-src="/static/images/icons/slot_green.png" />slot active or <img
-src="/static/images/icons/slot_red.png" />inactive slot.
+**Day**: Select the day.
 
-This task will be assigned to every week. If you only want to assign it to a
-specific day we click the link new slot below the graph.
+**Type**: Select the slot type with one of the following states:
+
+*Normal*: Enables the job slot.
+
+*Urgent*: Gives more priority than the type Normal.
+
+*No Job*: Disallow jobs in the specified time slot. This option takes precedence over the others options.
+
+**Start Time**: Set the start time of the slot.
+
+**End Time**: Indicates the end time of the slot.
+
+The actions that can be performed once established the options are:
+
+**Modify Slot**: Deletes the previous slot and modified by the new.
+
+**Overwrite**: Overrides the interval selected by the type indicated.
+
+**Delete**: Deletes the slot.
+
+**Activate Slot**: Activates the slot.
+
+**Disable (No Job)**: Disables the slot.
+
+**Create Active Slot**: Create an active slot.
+
+**Create Inactive Slot**: Create an inactive slot.
+
+**Close**: Close the window without save the changes.
+
+If you want to define a slot for a specific day, click on `New Slot` below each day.
+

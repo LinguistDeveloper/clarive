@@ -1,5 +1,5 @@
 ---
-title: Create calendar
+title: Create Calendar
 index: 1
 icon: wrench.gif
 ---
@@ -14,27 +14,22 @@ In the next window there are the following options:
 
 - **Description**: Description calendar.
 
-- **Precedence**: Give the level of preference over other calendars.
+- **Precedence**: It indicates the level of precedence over other calendars.
+  The calendar that has more precedence, has higher priority.
 
 - **Creation Mode**: Two options:
 
-  - Create as New: Create a new calendar.
+  *Create as New*: Create a new calendar.
 
-  - Create as Copy: Create a copy of another calendar.
+  *Create as Copy*: Create a copy of another calendar.
 
   
 - **Copy of**: If you have selected the option Create as Copy, select the calendar to copy.
 
-- **Environment**: Select the environment calendar.
+- **Environment**: Select the environment to which the calendar applies.
 
-- **Scope**: Select the scope calendar.
+- **Scope**: Select the scope to which the calendar applies.
 
 To finish click the <img src="/static/images/icons/save.png" />Save button.
 
 To edit the calendar, go to the [Edit calendar](howto/edit-calendar) section.
-
-After editing the calendar, when you create a job in the section **Create a new
-job** in the menu bar `JOBS`, we can assign the calendar to the job clicking on
-<img src="/static/images/icons/calendar_view_month.png" />. In the box time,
-you can indicate the time of execution of the job which appear with the format
-indicated in the calendar, urgent or normal.

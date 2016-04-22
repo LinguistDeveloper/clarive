@@ -1,5 +1,5 @@
 ---
-title: Crear calendario
+title: Crear Calendario
 index: 1
 icon: wrench.gif
 ---
@@ -15,31 +15,25 @@ obligatorio.
 
 - **Descripción**: Descripción del calendario.
 
-- **Precedencia**: Indica el nivel de preferencia sobre otros calendarios.
+- **Precedencia**: Indica el nivel de precedencia sobre otros calendarios.
+  Tendra mayor prioridad el calendario que tenga mayor número de precedencia.
 
 - **Modo de Creación**: Dos opciones:
 
-  - Crear Nuevo: Crea un nuevo calendario.
+  *Crear Nuevo*: Crea un nuevo calendario.
 
-  - Crear Copia: Crea una copia de otro calendario.
+  *Crear Copia*: Crea una copia de otro calendario.
 
   
 - **Copia de**: Si se ha seleccionado la opcion Crear Copia, en esta opción
 seleccionamos el calendario a copiar.
 
-- **Entorno**: Seleccionamos el entorno.
+- **Entorno**: Seleccionamos el entorno al que se aplica el calendario.
 
-- **Ámbito**: Seleccionamos el ámbito.
+- **Ámbito**: Seleccionamos el ámbito al que se aplica el calendario.
 
-Para finalizar cliqueamos en el botón <img src="/static/images/icons/save.png"
+Para finalizar pulsamos el botón <img src="/static/images/icons/save.png"
 />Guardar.
 
-Una vez guardado podemos editarlo en la sección [Editar
+Una vez guardado se puede editar en la sección [Editar
 calendario](howto/editar-calendario).
-
-Tras editar el calendario, cuando creamos un pase en la sección **Nuevo pase**
-en el menu principal `Pases`, podemos asignar el calendario al pase cliqueando
-en el icono <img src="/static/images/icons/calendar_view_month.png" />. En el
-apartado hora, se indicará la hora de ejecución del pase el cual aparecerá con
-el formato indicado en el calendario, Urgente o Normal.
-
