@@ -368,6 +368,8 @@ subtest '_strip_html_editor: strips html preserving allowed html formatting' => 
                 <hr>
                 <img src="http://123">
                 <br>
+                <img class="bali-topic-editor-image">
+                <br>
                 <font size="5">12312</font>
                 <br>
             </div>
