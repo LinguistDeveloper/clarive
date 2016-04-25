@@ -6,9 +6,10 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
+
 use TestEnv;
-use TestSetup;
 BEGIN { TestEnv->setup; }
+use TestSetup;
 use TestUtils ':catalyst';
 
 use Clarive::mdb;
@@ -223,28 +224,43 @@ subtest 'update: does not update role with same name as another' => sub {
     );
 };
 
-subtest 'delete: consult user ' => sub {
+subtest 'delete: asks for confirmation when role has assigned users' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { id_role => $id_role } } );
+
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
-    $controller->update($c);
+    $controller->delete($c);
 
-    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ],
-        moniker      => '6.4'
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success    => \1,
+                users => ['developer']
+            }
+        }
     );
-    use Data::Dumper;
+};
 
-    my $role = mdb->role->find_one( { role => 'Developer' } );
+subtest 'delete: deletes role with users when confirmed' => sub {
+    _setup();
 
-    my $user = TestSetup->create_user( id_role => $role->{id}, project => $project );
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
-    $c = _build_c( req => { params => { id_role => $role->{id}, delete_confirm => '0' } } );
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { id_role => $id_role, delete_confirm => '1' } } );
+
+    my $controller = _build_controller();
     $controller->delete($c);
 
     is_deeply(
@@ -252,36 +268,19 @@ subtest 'delete: consult user ' => sub {
         {
             json => {
                 success => \1,
-                msg     => "developer<br>",
-                user_number => '1'
             }
         }
     );
 };
 
-
-subtest 'delete: user delete' => sub {
+subtest 'delete: deletes role without users' => sub {
     _setup();
 
+    my $id_role = TestSetup->create_role();
+
+    my $c = _build_c( req => { params => { id_role => $id_role, delete_confirm => '1' } } );
+
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
-    $controller->update($c);
-
-    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo', tags_mode => 'project' );
-
-    my $project = TestUtils->create_ci(
-        'project',
-        name         => 'Project',
-        repositories => [ $repo->mid ],
-        moniker      => '6.4'
-    );
-    use Data::Dumper;
-
-    my $role = mdb->role->find_one( { role => 'Developer' } );
-
-    my $user = TestSetup->create_user( id_role => $role->{id}, project => $project );
-    
-    $c = _build_c( req => { params => { id_role => $role->{id}, consult_role => '0', name => 'Developer'} } );
     $controller->delete($c);
 
     is_deeply(
@@ -289,15 +288,12 @@ subtest 'delete: user delete' => sub {
         {
             json => {
                 success => \1,
-                msg     => "Role 'Developer' modified"
             }
         }
     );
 };
-
 
 sub _setup {
-
    TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
         'BaselinerX::CI',          'BaselinerX::Events',
@@ -306,7 +302,7 @@ sub _setup {
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
 
-    );    
+    );
 
     mdb->master->drop;
     mdb->master_rel->drop;

@@ -106,75 +106,73 @@
                 }),
 
                 new Ext.Toolbar.Button({
-                           text: _('Delete'),
-                           icon: '/static/images/icons/delete_.png',
-                           cls: 'x-btn-text-icon',
-                           handler: function() {
-                               var sm = grid.getSelectionModel();
-                               var sel = undefined;
-                               sel = sm.getSelected();
-                               if (sel !== undefined) {
-                                   var consult_role_user = new Ext.data.Connection();
-                                   consult_role_user.request({
-                                        url: '/role/delete',
-                                        params: {
-                                        id_role: sel.data.id,
-                                        delete_confirm: '0'
-                                    },
-                                    success: function(resp, opt) {
-                                        var info = Ext.util.JSON.decode(resp.responseText);
-                                        var message = undefined;
-                                        if (info.user_number < 10) {
+                    text: _('Delete'),
+                    icon: '/static/images/icons/delete_.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
 
-                                            if (info.user_number === 0){
+                        var sel = undefined;
+                        sel = sm.getSelected();
 
-                                                message = _('This Role does not have user assigned, delete this role');
+                        if (sel === undefined) {
+                            Ext.Msg.alert('Status', _('Please, select the role to delete'));
+                            return;
+                        }
 
-                                            }else{
+                        var consult_role_user = new Ext.data.Connection();
+                        consult_role_user.request({
+                            url: '/role/delete',
+                            params: {
+                                id_role: sel.data.id
+                            },
+                            success: function(resp, opt) {
+                                var info = Ext.util.JSON.decode(resp.responseText);
 
-                                                message = _('Are you sure you want to delete role:  ') +
-                                                        sel.json.role.bold() + '<br>' + _('The next users have this role: ') +
-                                                        '<br>' + info.msg ;
-                                            }
-                                        }else{
+                                var message = undefined;
 
-                                            message = _('Are you sure you want to delete role:  ') +
-                                                        sel.json.role.bold() + '<br>' + _('Exist more than 10 user that have this role ....');
-                                        }
+                                var role_name = sel.json.role.bold();
+                                var role_users = info.users;
+                                var user_list = role_users.slice(0, 10).join('<br>');
 
-                                        Ext.Msg.confirm( _('Confirmation'), message,
-                                            function (btn){
-                                                if (btn == 'yes') {
-                                                    var conn = new Ext.data.Connection();
-                                                    conn.request({
-                                                        url: '/role/delete',
-                                                        params: {
-                                                        id_role: sel.data.id,
-                                                        delete_confirm:'1'
-                                                    },
-                                                    success: function(resp, opt) {
-                                                        grid.getStore().remove(sel);
-                                                    },
-                                                    failure: function(resp, opt) {
-                                                        Ext.Msg.alert(_('Error'), _('Could not delete the role'));
-                                                    }
-                                                    });
-                                                }
-                                            })
-                                       },
+                                if (role_users.length == 0) {
+                                    message = _('The role %1 does not have users assigned, delete this role?', role_name);
+                                } else {
+                                    message = _('The role %1 have %2 user(s) assigned, delete this role?', role_name, role_users.length) + '<br><br>' + user_list;
 
-                                       failure: function(resp, opt) {
-                                           Ext.Msg.alert(_('Error'), _('El rol consultado no existe'));
-                                       }
-                                   });
+                                    if (role_users.length > 10) {
+                                        message += '<br>[...]';
+                                    }
 
-                                } else{
-
-                                    Ext.Msg.alert('Status', _('Please, select the role to delete'));
-
+                                    message += '<br>';
                                 }
-                           }
-                       }),
+
+                                Ext.Msg.confirm(_('Confirmation'), message,
+                                    function(btn) {
+                                        if (btn == 'yes') {
+                                            var conn = new Ext.data.Connection();
+                                            conn.request({
+                                                url: '/role/delete',
+                                                params: {
+                                                    id_role: sel.data.id,
+                                                    delete_confirm: '1'
+                                                },
+                                                success: function(resp, opt) {
+                                                    grid.getStore().remove(sel);
+                                                },
+                                                failure: function(resp, opt) {
+                                                    Ext.Msg.alert(_('Error'), _('Could not delete the role'));
+                                                }
+                                            });
+                                        }
+                                    });
+                            },
+                            failure: function(resp, opt) {
+                                Ext.Msg.alert(_('Error'), _('El rol consultado no existe'));
+                            }
+                        });
+                    }
+                }),
 
                  new Ext.Toolbar.Button({
                     text: _('Duplicate'),

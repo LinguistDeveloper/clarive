@@ -317,21 +317,10 @@ sub update : Local {
 
 sub delete : Local {
     my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
 
-    if ($p->{delete_confirm} eq '0'){
-
-        my @users_role_name = ci->user->find({"project_security.$p->{id_role}"=>{'$exists'=>1}})->fields({name=>1})->all;
-        my $msg_error;
-        my $amount_user = 0 ;
-        foreach my $name ( @users_role_name ){
-            $msg_error .= $name->{name} . "<br>";
-            $amount_user++;
-        }
-        $c->stash->{json} = { success => \1, user_number => $amount_user , msg =>$msg_error};
-        $c->forward('View::JSON');
-    }
-    else{
+    if ($p->{delete_confirm} && $p->{delete_confirm} eq '1'){
         eval {
             mdb->role->remove({ id=>"$p->{id_role}" });
 
@@ -349,12 +338,22 @@ sub delete : Local {
             warn $@;
             $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
         } else {
-            $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
+            $c->stash->{json} = { success => \1 };
         }
         cache->remove("roles:tree:$p->{id_role}:");
         cache->remove(':role:ids:');
         cache->remove({ d=>'security' });
         cache->remove({ d=>"topic:meta" });
+        $c->forward('View::JSON');
+    }
+    else{
+        my @role_users =
+          ci->user->find( { "project_security.$p->{id_role}" => { '$exists' => 1 } } )->fields( { name => 1 } )
+          ->sort( { name => 1 } )->all;
+
+        my @user_names = map { $_->{name} } @role_users;
+
+        $c->stash->{json} = { success => \1, users => \@user_names };
         $c->forward('View::JSON');
     }
 }
