@@ -117,7 +117,8 @@ sub run_start {
     $runner->{argv} = [];
     $runner->{options} = [];
     my $proc = sub {
-        $runner->run('.');
+        my $app = require Clarive::PSGI::Web;
+        $runner->run($app);
     };
     my $super_runner = sub{
         my @sigs=();
