@@ -1,5 +1,5 @@
 ---
-title: Cla.log - Logging Classes
+title: cla/log - Logging Classes
 ---
 
 Logging is useful to correctly print and report messages to 
@@ -16,39 +16,43 @@ The first argument is either a message string or an object to be dumped.
 The second argument can either be an object to be dumped or a file with contents
 to be downloaded, in case of a job log. 
 
-### Cla.log.info(msg, args)
+### log.info(msg, args)
 
 An informational message. 
 
 ```javascript
-Cla.log.info("This is plain information", { foo: 123 }); 
+var log = require('cla/log');
+log.info("This is plain information", { foo: 123 }); 
 ```
 
-### Cla.log.debug(msg, args)
+### log.debug(msg, args)
 
 A lower level informational message. 
 
 ```javascript
-Cla.log.debug("This is plain information", { foo: 123 }); 
+var log = require('cla/log');
+log.debug("This is plain information", { foo: 123 }); 
 ```
 
-### Cla.log.warn(msg, args)
+### log.warn(msg, args)
 
 A warning message. 
 
 ```javascript
-Cla.log.warn("A warning"); 
+var log = require('cla/log');
+log.warn("A warning"); 
 ```
 
-### Cla.log.error(msg, args)
+### log.error(msg, args)
 
 Error message.
 
 ```javascript
-Cla.log.error("An error"); 
+var log = require('cla/log');
+log.error("An error"); 
 ```
 
-### Cla.log.fatal(msg, args)
+### log.fatal(msg, args)
 
 Error message that also raises an exception.
 

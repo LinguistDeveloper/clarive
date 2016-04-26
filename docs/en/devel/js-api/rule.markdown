@@ -1,12 +1,12 @@
 ---
-title: Cla.rule - rule execution
+title: cla/rule - rule execution
 ---
 
 This namespace contains functions 
 that enables your code to interop with the 
 rule system.
 
-### Cla.rule.create(options,tree)
+### rule.create(options,tree)
 
 Creates a new rule from a rule tree.
 
@@ -14,7 +14,8 @@ The rule tree is an Array data structure with one or more operations (nodes)
 that conform its implemented logic. 
 
 ```javascript
-var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
+var rule = require("cla/rule");
+var ruleId = rule.create({ name: "myrule", type: "independent" }, [
     {
         attributes: {
             icon: "/static/images/icons/code.png",
@@ -22,7 +23,7 @@ var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
             name: "Server CODE",
             data: {
                 lang: "js",
-                code: "Cla.stash('returning_value', 999)",
+                code: "cla.stash('returning_value', 999)",
             },
         },
         children: []
@@ -30,7 +31,7 @@ var ruleId = Cla.rule.create({ name: "myrule", type: "independent" }, [
 ]);
 ```
 
-### Cla.rule.run(rule,[stash])
+### rule.run(rule,[stash])
 
 Runs the rule identified by the argument
 `rule`, which can be either a rule name or
@@ -39,20 +40,22 @@ id.
 The `stash` is an Object that can be created by the user
 and sent to the rule. If no `stash` is set
 the current program stash will be used. That's the 
-one contained in `Cla.stash()`.
+one contained in `cla.stash()`.
 
 The function returns the stash after the rule execution. 
 
 Run with an empty stash:
 
 ```javascript
-var stash = Cla.rule.run('myrule', {});
+var rule = require("cla/rule");
+var stash = rule.run('myrule', {});
 ```
 
 Run with the current stash:
 
 ```javascript
-Cla.rule.run('myrule');
-print( Cla.stash("returning_value") );
+var rule = require("cla/rule");
+rule.run('myrule');
+print( cla.stash("returning_value") );
 ```
 

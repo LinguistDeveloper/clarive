@@ -1,19 +1,20 @@
 ---
-title: Cla.sem - semaphore control
+title: cla/sem - semaphore control
 ---
 
 This namespace contains 
 functions that allow the developer to 
 use semaphores in their code. 
 
-#### Cla.sem.take(key,code)
+#### sem.take(key,code)
 
 Takes a semaphore to execute the code block
 passed as an argument. 
 
 ```javascript
-var ret = Cla.sem.take('abc', function(){
-    Cla.sleep(0.05);
+var sem = require("cla/sem");
+var ret = sem.take('abc', function(){
+    cla.sleep(0.05);
     print( 111 );
     return 123;
 });
@@ -27,7 +28,7 @@ in which case more process can be taken.
 
 The semaphore slot is released at the end.
 
-#### Cla.sem.purge(key)
+#### sem.purge(key)
 
 Purges all semaphores that are blocked for the 
 given key, releasing all processes that are waiting 

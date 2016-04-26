@@ -1,5 +1,5 @@
 ---
-title: Cla.web - Web tools
+title: cla/web - Web tools
 ---
 
 This namespace contains useful functions
@@ -27,7 +27,7 @@ timeout                  180
 ---------------------------------------------------------
 </pre>
 
-### Cla.web.agent(options) 
+### web.agent(options) 
 
 Creates a new web agent object. 
 The web agent object is analogous to a browser 
@@ -38,17 +38,19 @@ In this example, we invoke a REST `GET` webservice
 that returns JSON content. 
 
 ```javascript
-    var ag = Cla.web.agent();
-    var res = ag.get('http://jsonplaceholder.typicode.com/posts');
-    if( res.isSuccess() ) {
-        var content = res.content();   // this is text content, in JSON format
-        var arr = Cla.util.loadJSON( res.content() );
-        Cla.dump( arr[4] );
-        Cla.printf( "The title is: %s", arr[4].title );
-    } else {
-        Cla.printf("Something went wrong (code=%d): %s", res.code(), res.message() )
-        // or: throw Error( Cla.sprintf("Something went wrong (code=%d): %s", res.code(), res.message() ) );
-    }
+var web = require("cla/web");
+var util = require("cla/util");
+var ag = web.agent();
+var res = ag.get('http://jsonplaceholder.typicode.com/posts');
+if( res.isSuccess() ) {
+    var content = res.content();   // this is text content, in JSON format
+    var arr = util.loadJSON( res.content() );
+    cla.dump( arr[4] );
+    cla.printf( "The title is: %s", arr[4].title );
+} else {
+    cla.printf("Something went wrong (code=%d): %s", res.code(), res.message() )
+    // or: throw Error( cla.sprintf("Something went wrong (code=%d): %s", res.code(), res.message() ) );
+}
 ```
 
 Here are the agent REST methods, which have very similar handling:
@@ -69,9 +71,10 @@ as `Content-Type`, etc.
 with different header and content formats
 
 ```javascript
-    var ag = Cla.web.agent();
-    var url = 'http://jsonplaceholder.typicode.com/posts';
-    ag.post( url, { foo: 11, bar: 22 });
+var web = require("cla/web");
+var ag = web.agent();
+var url = 'http://jsonplaceholder.typicode.com/posts';
+ag.post( url, { foo: 11, bar: 22 });
 ```
 
 All methods return a `response` object, which is described bellow:
@@ -105,7 +108,8 @@ Mirror (downloads) the URL to the file, but only
 if necessary (ie. it has changed and files differ).
 
 ```javascript
-var ag = Cla.web.agent();
+var web = require("cla/web");
+var ag = web.agent();
 ag.mirror('http://jsonplaceholder.typicode.com/posts', '/tmp/posts.json');
 ```
 
@@ -115,7 +119,8 @@ Checks if the agent is online and can make requests, ie. if
 the Clarive server has network connectivity.
 
 ```javascript
-var ag = Cla.web.agent();
+var web = require("cla/web");
+var ag = web.agent();
 if( ag.isOnline() ) {
     // ... call some webservices ...
 }

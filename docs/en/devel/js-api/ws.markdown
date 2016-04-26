@@ -1,5 +1,5 @@
 ---
-title: Cla.ws - webservice namespace
+title: cla/ws - webservice namespace
 ---
 
 This namespace holds Clarive webservice call
@@ -11,7 +11,7 @@ For every webservice rule, the developer needs to
 cater to a *consumer*, which is the user that 
 makes the call to the webservice. 
 
-### Cla.ws.request()
+### ws.request()
 
 Returns the request object, with the 
 following values:
@@ -22,7 +22,8 @@ Returns the request path arguments broken down
 into an Array.
 
 ```javascript
-var req = Cla.ws.request();
+var ws = require("cla/ws");
+var req = ws.request();
 var args = req.args();
 for( var i=0; i<args.length; i++) {
     print( args[i] );
@@ -38,7 +39,8 @@ the `req.args()` will return the array `['path1','path2']`.
 Returns the request body.  
 
 ```javascript
-var req = Cla.ws.request();
+var ws = require("cla/ws");
+var req = ws.request();
 print( req.body() );  // the body can be a huge text string
 ```
 
@@ -48,7 +50,8 @@ Returns the request headers as an object. If the
 header parameters is sent, returns only the value for that given header.
 
 ```javascript
-var req = Cla.ws.request();
+var ws = require("cla/ws");
+var req = ws.request();
 print( req.headers('accept-language') ); 
 ```
 
@@ -65,7 +68,8 @@ How to send headers (myheader and another) with a `curl` command call:
 Returns the request query parameters.
 
 ```javascript
-var req = Cla.ws.request();
+var ws = require("cla/ws");
+var req = ws.request();
 var fooParam = req.params('foo');  // in case this was called http://.../?foo=bar
 ```
 
@@ -80,16 +84,18 @@ but it maybe useful when returning specifically built responses.
 The full URL of the request. 
 
 ```javascript
-var req = Cla.ws.request();
+var ws = require("cla/ws");
+var req = ws.request();
 print( req.url() );   // something like: http://clariveurl/rule/json/myrule
 ```
 
-### Cla.ws.response()
+### ws.response()
 
 Manipulate the webservice response values and options.
 
 ```javascript
-var res = Cla.ws.response();
+var ws = require("cla/ws");
+var res = ws.response();
 ```
 
 #### res.data(key,value)
@@ -99,7 +105,8 @@ Sets a key-value pair in a hashed (object) response data.
 This is useful for returning JSON formats for webservice-like consumers.
 
 ```javascript
-var res = Cla.ws.response();
+var ws = require("cla/ws");
+var res = ws.response();
 res.data("foo", 1234);
 res.data("bar", { xx: 10, yy: [1,2,100] });
 ```
@@ -110,7 +117,8 @@ The response body let's you freely define
 what text will be in the content body. 
 
 ```javascript
-var res = Cla.ws.response();
+var ws = require("cla/ws");
+var res = ws.response();
 res.body("<html><body><h1>Title</h1></body></html>");
 ```
 

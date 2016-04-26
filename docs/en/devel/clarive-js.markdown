@@ -4,22 +4,21 @@ index: 300
 ---
 
 Accessing the powerful Clarive functionality from the JS DSL
-is done through the `Cla` singleton object, from where a hierarchy 
-of modules and namespaces hang:
+starts with the `cla` singleton object:
 
 These are the top-level namespaces available:
 
-- `Cla` - top level namespace and shortcuts to other often used utilities
-- `Cla.ci` - CI manipulation
-- `Cla.db` - MongoDB database manipulation
-- `Cla.log` - Logging
-- `Cla.fs` - Filesystem manipulation
-- `Cla.path` - File path manipulation
-- `Cla.rule` - Rule manipulation
-- `Cla.sem` - Semaphores
-- `Cla.util` - Generic utilities
-- `Cla.web` - Web tools 
-- `Cla.ws` - Webservice rule Request/Response
+- `cla` - top level namespace and shortcuts to other often used utilities
+- `cla/ci` - CI manipulation
+- `cla/db` - MongoDB database manipulation
+- `cla/log` - Logging
+- `cla/fs` - Filesystem manipulation
+- `cla/path` - File path manipulation
+- `cla/rule` - Rule manipulation
+- `cla/sem` - Semaphores
+- `cla/util` - Generic utilities
+- `cla/web` - Web tools 
+- `cla/ws` - Webservice rule Request/Response
 
 More namespaces may be available to the developer 
 as they can be added by `require()` modules. 
@@ -34,17 +33,17 @@ but many common utility functions are provided as direct properties of the Cla n
 
 Many applications are initiated with Ext.application which is called once the DOM is ready. This ensures all scripts have been loaded, preventing dependency issues. For example:
 
-#### Cla.stash()
+#### cla.stash()
 
 Gets and sets data in and out of the current [stash](concepts/stash). 
 
 ```javascript
-Cla.stash("filename", "/tmp/file.txt");  
-print( Cla.stash("filename") );
+cla.stash("filename", "/tmp/file.txt");  
+print( cla.stash("filename") );
 
 // it also supports nested data structures with JSON pointers
-Cla.stash("/domain/filename", "/tmp/file.txt");  
-print( Cla.stash("domain.filename") );
+cla.stash("/domain/filename", "/tmp/file.txt");  
+print( cla.stash("domain.filename") );
 ```
 
 To read or set data in nested levels, Clarive implements 
@@ -57,7 +56,7 @@ slash `/`, so it get/sets the key `stash["foo/bar"]`
 - `/foo/0` - get/sets the key `stash["foo"][0]` from an array 
 - `/foo/0/bar` - get/sets the key `stash["foo"][0]["bar"]` from an object within an array 
 
-#### Cla.config()
+#### cla.config()
 
 Gets and sets configuration data into the Clarive config system.
 
@@ -69,16 +68,16 @@ layers of values:
 
 ```javascript
 // gets the value from workers in the clarive.yml file
-var wks = Cla.config("workers");
+var wks = cla.config("workers");
 
 // our current database name
-var dbname = Cla.config("/mongo/dbname");
+var dbname = cla.config("/mongo/dbname");
 ```
 
 This is useful for creating site specific .yml files
 and putting your automation configuration in there. 
 
-#### Cla.configTable()
+#### cla.configTable()
 
 Gets and sets configuration data from/to the [config table](concepts/config-table).
 
@@ -87,7 +86,7 @@ layers of values:
 
 ```javascript
 // gets the value from workers in the clarive.yml file
-var gitHome = Cla.configTable('config.git.home');
+var gitHome = cla.configTable('config.git.home');
 ```
 
 The config table is a flat table with values separated with
@@ -97,7 +96,7 @@ This is also useful for creating administrator modifiable global configuration
 values that can be easily changed without editing the rule, although 
 in general, it's better to use [variables](concepts/variable) (CI) for that.
 
-#### Cla.parseVars(target,data)
+#### cla.parseVars(target,data)
 
 This function replaces Clarive variables (`${varname}`) 
 in strings or any nested data 
@@ -106,36 +105,38 @@ variables will come either from the `data` argument or
 the [stash](concepts/stash).
 
 ```javascript
-Cla.stash("foo", 99);
-var txt = Cla.parseVars("This is feet"); // This is 99 feet
+cla.stash("foo", 99);
+var txt = cla.parseVars("This is feet"); // This is 99 feet
 
-Cla.stash("name", "Haley");
-var txt = Cla.parseVars("Hello ${name}", { name: "Joe" });  // Hello Joe
+cla.stash("name", "Haley");
+var txt = cla.parseVars("Hello ${name}", { name: "Joe" });  // Hello Joe
 ```
 
-### Cla.printf(fmt,args)
+### cla.printf(fmt,args)
 
 Prints a string formatted by the usual printf conventions of the C library function sprintf. 
 
 ```javascript
-Cla.printf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
+var fs = require('cla/fs');
+cla.printf("This file is %d bytes long", fs.stat("/tmp/myfile").size );
 ```
 
-### Cla.sprintf(fmt,args)
+### cla.sprintf(fmt,args)
 
 Returns a string formatted by the usual printf conventions of the C library function sprintf. 
 
 ```javascript
-var msg = Cla.sprintf("This file is %d bytes long", Cla.fs.stat("/tmp/myfile").size );
+var fs = require('cla/fs');
+var msg = cla.sprintf("This file is %d bytes long", fs.stat("/tmp/myfile").size );
 print( msg );
 ```
 
-### Cla.dump(data)
+### cla.dump(data)
 
 Prints the data in the data structure
 dumped using YAML format. 
 
-### Cla.loc(lang,str,arguments)
+### cla.loc(lang,str,arguments)
 
 Localizes the string using I18N formatting 
 for the lang specified in the lang string.
@@ -143,11 +144,11 @@ This function uses the Clarive I18N translation files.
 
 ```javascript
 var jobNum = 1234;
-var msg = Cla.loc("es","Job %1 started", jobNum );
+var msg = cla.loc("es","Job %1 started", jobNum );
 print( msg );
 ```
 
-### Cla.lastError()
+### cla.lastError()
 
 Returns the last error string.
 

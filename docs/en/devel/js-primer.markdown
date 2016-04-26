@@ -135,34 +135,73 @@ function nada(name) {
 print( nada("Bob") );
 ```
 
-## Heredocs
+## Templating and multiline strings
 
-To write multi-line strings, this is 
-the recommended way:
+For writing multi-line strings, and templated 
+strings, Clarive implments the Ecmascript ES6 templating literals
+standard.
+
+(https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+
+This is done by enclosing your string in between backticks:
 
 ```javascript
-var txt = <<END;
-My long text starts here.
+var txt = `This is 
+a muiltiline
+string
+`;
 
-See, this is how we use this.
-
-But make sure you ident it to the beginning of the line. 
-END;
+print(txt);
 ```
 
-Don't forget the colon `;` after the "END" identifier. 
+This is also a good templating mechanism since it
+can be interpolated with expressions (including variables)
+that can be executed as javascript in a function.
 
-This syntax is popularly known as heredoc or [Here Document](https://en.wikipedia.org/wiki/Here_document).
+```javascript
+var name = 'Joe';
+var address = `111 Elm St.
+Nowhere, NY 10001
+`;
+var html = `
+<div>
+    <strong>${name}</strong>
+    <strong>${address}</strong>
+</div>
+`;
+
+print(html);
+```
+
+Not only variables can be interpolated, but also expressions:
+
+```javascript
+num = 100;
+print(`
+This is normal: ${num}
+This is double: ${num * 2}
+`);
+```
+
+To escape interpolation of variable and expressions, 
+use backslash: `\${...}`
+
+```javascript
+var bashScript = `
+echo \${var};
+exit 1;
+`;
+```
 
 ## Error management 
 
 Error raising should be done using the
 `throw` statement (unless a Clarive JS logging error is to be thrown, in which 
-case it's better to use the more powerful `Cla.error()` function). 
+case it's better to use the more powerful `cla.error()` function). 
 
 To catch errors, use the `try-catch` statements. 
 
-```javascript
+```js
 try {
     if( somethingIsNotright ) {
         throw new Error("This is not ok");
@@ -187,7 +226,7 @@ an Object or Array type was expected.
 
 For example:
 
-```javascript
+```js
 var myfunc = function(){ return undefined };
 var foo = myfunc();  // say myfunc() returns undefined
 print( foo.arg );   // Invalid base value error
@@ -197,7 +236,7 @@ print( foo.doIt() );   // Invalid base value error too
 To fix it, always check for undefined or null objects and arrays before
 calling methods or attributes on objects you are not sure are correct.
 
-```javascript
+```js
 var myfunc = function(){ return undefined };
 var foo = myfunc();  
 if( foo != undefined ) {
@@ -212,7 +251,7 @@ if( foo != undefined ) {
 This error is thrown when there's an attempt to 
 use a variable or function that has not been defined. 
 
-```javascript
+```
 print( xxx );
 // ReferenceError: identifier 'xxx' undefined 
 ```
@@ -225,7 +264,7 @@ which requires every variable to be declared in the current context.
 This error occurs when trying to call a method that
 is not part of an object. For example:
 
-```javascript
+```js
 var obj = { age: function(){ return 19 } };
 print( obj.age() ); // prints 19
 print( obj.name() ); // TypeError: not callable 

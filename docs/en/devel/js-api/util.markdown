@@ -1,55 +1,73 @@
 ---
-title: Cla.util - general utilities namespace
+title: cla/util - general utilities namespace
 ---
 
 General utilities. 
 
-### Cla.util.dumpYAML(data)
+### util.dumpYAML(data)
 
 Dumps the `data` argument as [YAML](devel/yaml). 
 
-    var data = { foo: 123 };
-    print( Cla.util.dumpYAML(data) );
+```javascript
+var util = require("cla/util");
+var data = { foo: 123 };
+print( util.dumpYAML(data) );
+```
 
-### Cla.util.loadYAML()
+### util.loadYAML()
 
 Loads `data` from a [YAML](devel/yaml) string. 
 
-    var yaml = "---\nfoo: 12\n";
-    print( Cla.util.loadYAML(yaml) );
+```javascript
+var util = require("cla/util");
+var yaml = "---\nfoo: 12\n";
+print( util.loadYAML(yaml) );
+```
 
-### Cla.util.dumpJSON(data)
+### util.dumpJSON(data)
 
 Dumps the `data` argument as [JSON](https://en.wikipedia.org/wiki/JSON).
 
-    var data = { foo: 123 };
-    print( Cla.util.dumpJSON(data) );
+```javascript
+var util = require("cla/util");
+var data = { foo: 123 };
+print( util.dumpJSON(data) );
+```
 
-### Cla.util.loadJSON()
+### util.loadJSON()
 
 Loads `data` from a [JSON](https://en.wikipedia.org/wiki/JSON) string. 
 
-    var json = '{ "foo": 30 }'
-    print( Cla.util.loadJSON(json) );
+```javascript
+var util = require("cla/util");
+var json = '{ "foo": 30 }'
+print( util.loadJSON(json) );
+```
 
-### Cla.util.unaccent(str)
+### util.unaccent(str)
 
 Removes accents and other strange characters from a given string, 
 replacing them with their equivalent character without accent;
 
-    print( Cla.util.unaccent("résumé") ); // returns "resume"
+```javascript
+var util = require("cla/util");
+print( util.unaccent("résumé") ); // returns "resume"
+```
 
-### Cla.util.benchmark(n,code)
+### util.benchmark(n,code)
 
 Executes the block of `code` a total of `n` times and prints the 
 timing results. This is useful to help debug performance issues
 test how performant a code is before using it in production.
 
-    Cla.util.benchmark(1000, function(){
-        for( var i=0; i<100; i++) {
-            var x = i * 2;
-        }
-    });
+```javascript
+var util = require("cla/util");
+util.benchmark(1000, function(){
+    for( var i=0; i<100; i++) {
+        var x = i * 2;
+    }
+});
+```
 
 Which prints out the following results (depending on your system performance):
 
