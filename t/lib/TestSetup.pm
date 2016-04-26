@@ -10,11 +10,13 @@ our @EXPORT_OK = qw(_setup_user _setup_clear _topic_setup);
 
 use Carp;
 use JSON ();
+use Capture::Tiny qw(capture);
 use Baseliner::CI;
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use Baseliner::Model::Topic;
 use BaselinerX::Type::Fieldlet;
+use BaselinerX::CI::job;
 
 sub _setup_clear {
     Baseliner::Core::Registry->clear();
@@ -195,6 +197,151 @@ sub create_calendar {
     mdb->calendar->insert( { id => "$id_cal", active => 1, bl => '*', name => 'Calendar', %params } );
 
     return "$id_cal";
+}
+
+sub create_job {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_rule = $class->create_rule(
+        rule_when => 'promote',
+        rule_tree => JSON::encode_json(
+            [
+                {
+                    "attributes" => {
+                        "disabled" => 0,
+                        "active"   => 1,
+                        "key"      => "statement.step",
+                        "text"     => "CHECK",
+                        "expanded" => 1,
+                        "leaf"     => \0,
+                    },
+                    "children" => []
+                },
+                {
+                    "attributes" => {
+                        "disabled" => 0,
+                        "active"   => 1,
+                        "key"      => "statement.step",
+                        "text"     => "INIT",
+                        "expanded" => 1,
+                        "leaf"     => \0,
+                    },
+                    "children" => []
+                },
+                {
+                    "attributes" => {
+                        "disabled" => 0,
+                        "active"   => 1,
+                        "key"      => "statement.step",
+                        "text"     => "PRE",
+                        "expanded" => 1,
+                        "leaf"     => \0,
+                    },
+                    "children" => [
+                        {
+                            "attributes" => {
+                                "palette"        => 0,
+                                "disabled"       => 0,
+                                "on_drop_js"     => undef,
+                                "key"            => "statement.code.server",
+                                "who"            => "root",
+                                "text"           => "Server CODE",
+                                "expanded"       => 1,
+                                "run_sub"        => 1,
+                                "leaf"           => \1,
+                                "active"         => 1,
+                                "name"           => "Server CODE",
+                                "holds_children" => 0,
+                                "data"           => {
+                                    "lang" => "perl",
+                                    "code" => "sleep(10);"
+                                },
+                                "nested"  => "0",
+                                "on_drop" => ""
+                            },
+                            "children" => []
+                        },
+                    ]
+                },
+                {
+                    "attributes" => {
+                        "disabled" => 0,
+                        "active"   => 1,
+                        "key"      => "statement.step",
+                        "text"     => "RUN",
+                        "expanded" => 1,
+                        "leaf"     => \0,
+                    },
+                    "children" => [
+                        {
+                            "attributes" => {
+                                "palette"        => 0,
+                                "disabled"       => 0,
+                                "on_drop_js"     => undef,
+                                "key"            => "statement.code.server",
+                                "who"            => "root",
+                                "text"           => "Server CODE",
+                                "expanded"       => 1,
+                                "run_sub"        => 1,
+                                "leaf"           => \1,
+                                "active"         => 1,
+                                "name"           => "Server CODE",
+                                "holds_children" => 0,
+                                "data"           => {
+                                    "lang" => "perl",
+                                    "code" => "sleep(10);"
+                                },
+                                "nested"  => "0",
+                                "on_drop" => ""
+                            },
+                            "children" => []
+                        }
+                    ]
+                },
+                {
+                    "attributes" => {
+                        "disabled" => 0,
+                        "active"   => 1,
+                        "key"      => "statement.step",
+                        "text"     => "POST",
+                        "expanded" => 1,
+                        "leaf"     => \0,
+                    },
+                    "children" => [
+                        {
+                            "attributes" => {
+                                "palette"        => 0,
+                                "disabled"       => 0,
+                                "on_drop_js"     => undef,
+                                "key"            => "statement.code.server",
+                                "who"            => "root",
+                                "text"           => "Server CODE",
+                                "expanded"       => 1,
+                                "run_sub"        => 1,
+                                "leaf"           => \1,
+                                "active"         => 1,
+                                "name"           => "Server CODE",
+                                "holds_children" => 0,
+                                "data"           => {
+                                    "lang" => "perl",
+                                    "code" => "sleep(10);"
+                                },
+                                "nested"  => "0",
+                                "on_drop" => ""
+                            },
+                            "children" => []
+                        }
+                    ]
+                }
+            ]
+        )
+    );
+
+    my $job = BaselinerX::CI::job->new(id_rule => $id_rule, %params);
+    capture { $job->save };
+
+    return $job;
 }
 
 sub _topic_setup {

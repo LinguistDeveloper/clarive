@@ -180,7 +180,7 @@ sub setup {
 
 sub load_config_registry {
     my $self= shift;
-    my $keys = Baseliner->config->{registry}{'keys'};
+    my $keys = Clarive->config->{registry}{'keys'};
     return unless ref $keys eq 'HASH';
     for my $key ( keys %$keys ) {
         $self->add( 'config', $key, $keys->{$key} );
@@ -374,7 +374,7 @@ sub search_for_node {
     my $q_depth = delete $query{depth};
     my $allowed_actions = delete $query{allowed_actions};
     my $username = delete $query{username};
-    my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
+    my $disabled_keys = Clarive->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
     my $reg = $self->registrar;

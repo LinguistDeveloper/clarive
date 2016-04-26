@@ -210,6 +210,9 @@ sub runner_fork {
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
+
+            binmode STDOUT, ':raw';
+            binmode STDERR, ':raw';
         }
         my $job;
         try {

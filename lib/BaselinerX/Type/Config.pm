@@ -1,9 +1,11 @@
 package BaselinerX::Type::Config;
 use Moose;
+
+with 'Baseliner::Role::Registrable';
+
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
-use Try::Tiny;
-with 'Baseliner::Role::Registrable';
 
 register_class 'config' => __PACKAGE__;
 

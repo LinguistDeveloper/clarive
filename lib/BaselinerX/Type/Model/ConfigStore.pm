@@ -27,6 +27,7 @@ extends qw/Catalyst::Model/;
 #with 'Catalyst::Component::InstancePerContext';
 
 use Baseliner::Utils;
+use Baseliner::Core::Registry;
 use BaselinerX::Type::Config;
 use Scalar::Util qw(blessed);
 
@@ -349,9 +350,9 @@ sub config_for_key {
     my ($self, $key) = @_;
     my $config;
     my $single_key = 0;
-    eval { $config = Baseliner->registry->get( $key ) };
+    eval { $config = Baseliner::Core::Registry->get( $key ) };
     if( $@ || !$config ) {  # try a shorter key if the key is not found
-        eval { $config = Baseliner->registry->get( Util->_cut(-1, '\.', $key ) ) };
+        eval { $config = Baseliner::Core::Registry->get( Util->_cut(-1, '\.', $key ) ) };
         $single_key = 1 unless $@;
     }
     return $config;

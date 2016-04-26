@@ -6,7 +6,6 @@ use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
-use utf8::all;
 with 'Baseliner::Role::Service';
 
 register 'service.ldap.search' => {
