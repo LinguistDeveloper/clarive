@@ -11,16 +11,19 @@ has elapsed   => qw(is rw isa Num default 0);
 
 sub eval_code {
     my $self = shift;
-    my ( $code, $stash ) = @_;
+    my ( $code, $stash, $opts ) = @_;
 
     if ( $self->lang eq 'js' ) {
         require Clarive::Code::JS;
         my $js = Clarive::Code::JS->new;
         my $t0;
+
         if( $self->benchmark ) {
             $t0=[gettimeofday];
         } 
-        my $ret = ( $js->eval_code( $code, $stash ) );
+
+        my $ret = ( $js->eval_code( $code, $stash, $opts ) );
+
         if( $self->benchmark ) {
             $self->elapsed( tv_interval( $t0 ) );
         } 

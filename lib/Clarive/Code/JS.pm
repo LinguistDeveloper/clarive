@@ -22,7 +22,7 @@ use Clarive::Plugins;
 
 my $prefix = <<"EOF";
 Duktape.modSearch = function (id) {
-    var res = Cla.loadModule(id);
+    var res = cla.loadModule(id);
     return res;
 };
 EOF
@@ -36,7 +36,7 @@ sub eval_code {
     $code = template_literals( $code );
 
     $stash ||= {};
-    
+
     my $js = JavaScript::Duktape->new;
     $js->set(
         toJSON => js_sub {
@@ -47,8 +47,19 @@ sub eval_code {
         }
     );
 
-    my $cla_ns = $self->_generate_top_level($stash);
-    $js->set(Cla => $cla_ns);
+    my $cla_ns = $self->_generate_cla($stash);
+
+    if( ref $opts->{extended} ) {
+        $cla_ns->{$_} = $opts->{extended}{$_} for keys %{ $opts->{extended} };
+    }
+
+    my %top_level = ( cla => $cla_ns );
+
+    if( ref $opts->{global} ) {
+        %top_level = %{ $opts->{global} };
+    }
+
+    $js->set( %top_level );
 
     local $Clarive::Code::Utils::GLOBAL_ERR = '';
 
@@ -197,20 +208,34 @@ sub _to_json {
     JSON->new->pretty(1)->canonical(1)->encode($doc);
 }
 
-sub _generate_top_level {
+sub _generate_cla {
     my $self = shift;
     my ($stash) = @_;
-    {
+    return {
+        loadCla => js_sub {
+            shift;
+            my $id = shift;
+            my $ns = $self->_generate_ns($id,$stash) || die "Clarive standard library namespace not found: $id\n";
+            return $ns;
+        },
         loadModule => js_sub {
             shift;
             my $id = shift;
 
-            if( my $path = Clarive::Plugins->locate_path( "modules/$id", "modules/$id.js") ) {
+            if( $id =~ /^cla\/(.+)$/ ) {
+                return sprintf q{
+                    (function(){
+                        module.exports = cla.loadCla("%s");
+                    }());
+                }, $1;
+            }
+            elsif( my $path = Clarive::Plugins->locate_path( "modules/$id", "modules/$id.js") ) {
                 return scalar Util->_file($path)->slurp;
-            } else {
+            }
+            else {
                 die sprintf(
                     "Could not find module `%s` in the following plugins: %s\n",
-                    $id, join( ',', Clarive::Plugins->all_plugins( name_only=>1 ) ) 
+                    $id, join( ',', Clarive::Plugins->all_plugins( name_only=>1 ) )
                 );
             }
         },
@@ -270,6 +295,40 @@ sub _generate_top_level {
             my $s = shift;
             usleep( $s * 1_000_000 );
         },
+        stash => js_sub {
+            shift;
+            my ( $pointer, $value ) = @_;
+
+            return $stash if @_ == 0;
+
+            @_ == 2 ? 
+                _json_pointer( $stash, $pointer, $value ) :
+                _json_pointer( $stash, $pointer );
+        },
+        config => js_sub {
+            shift;
+            my ( $pointer, $value ) = @_;
+
+            @_ == 2 ? 
+                _json_pointer( Clarive->app->config, $pointer, $value ) :
+                _json_pointer( Clarive->app->config, $pointer );
+        },
+        configTable => js_sub {
+            shift;
+            my ( $key, $value ) = @_;
+
+            @_ == 2 ? 
+                BaselinerX::Type::Model::ConfigStore->set( key=>$key, value=>$value ) :
+                BaselinerX::Type::Model::ConfigStore->get( $key, value=>1 );
+        },
+    };
+}
+
+sub _generate_ns {
+    my $self = shift;
+    my ($id,$stash) = @_;
+
+    my $all_ns = {
         db => {
             seq => js_sub {
                 my $js = shift;
@@ -396,12 +455,12 @@ sub _generate_top_level {
             join     => js_sub { shift; File::Spec->catfile(@_) },
         },
         sem => {
-            take => js_sub { 
+            take => js_sub {
                 shift;
                 my $key = shift || die "Missing semaphore key\n";
                 my $cb = shift || die "Missing semaphore function\n";
 
-                my $sem = Baseliner::Sem->new( key=>$key ); 
+                my $sem = Baseliner::Sem->new( key=>$key );
                 $sem->take;
                 return $cb->($sem);
             },
@@ -439,7 +498,7 @@ sub _generate_top_level {
 
                 my $package = 'BaselinerX::CI::' . $classname;
 
-                die "Class `$classname` already exists\n" if is_class_loaded( $package ); 
+                die "Class `$classname` already exists\n" if is_class_loaded( $package );
 
                 my $attributes = delete( $obj->{has} ) || {};
                 my $methods    = delete( $obj->{methods} ) || {};
@@ -451,7 +510,7 @@ sub _generate_top_level {
                         map { Moose::Meta::Attribute->new( $_, %{ $attributes->{$_} } ) } keys %$attributes
                     ],
                     roles => ['Baseliner::Role::CI', @$roles ],
-                    methods => { 
+                    methods => {
                         icon  => sub { '/static/images/icons/ci.png' },
                         _lang => sub { 'js' },
                         map { $_ => $methods->{$_} } keys %$methods
@@ -467,7 +526,7 @@ sub _generate_top_level {
             },
             listClasses => js_sub {
                 shift;
-                my $role = shift; 
+                my $role = shift;
                 [ map { ucfirst _to_camel_case( to_base_class($_) ) } packages_that_do($role || 'Baseliner::Role::CI') ];
             },
             find => js_sub {
@@ -482,7 +541,7 @@ sub _generate_top_level {
                     my $query = $class_or_query;
                     $self->_db_wrap_cursor( Baseliner::Role::CI->find($query, @_) );
                 }
-                
+
             },
             findOne => js_sub {
                 shift;
@@ -509,44 +568,18 @@ sub _generate_top_level {
             error => js_sub { shift; _error( @_ ) },
             fatal => js_sub { shift; _fail( @_ ) },
         },
-        stash => js_sub {
-            shift;
-            my ( $pointer, $value ) = @_;
-
-            return $stash if @_ == 0;
-
-            @_ == 2 ? 
-                _json_pointer( $stash, $pointer, $value ) :
-                _json_pointer( $stash, $pointer );
-        },
-        config => js_sub {
-            shift;
-            my ( $pointer, $value ) = @_;
-
-            @_ == 2 ? 
-                _json_pointer( Clarive->app->config, $pointer, $value ) :
-                _json_pointer( Clarive->app->config, $pointer );
-        },
-        configTable => js_sub {
-            shift;
-            my ( $key, $value ) = @_;
-
-            @_ == 2 ? 
-                BaselinerX::Type::Model::ConfigStore->set( key=>$key, value=>$value ) :
-                BaselinerX::Type::Model::ConfigStore->get( $key, value=>1 );
-        },
         rule => {
             create => js_sub {
                 shift;
                 my ($opts,$rule_tree) = @_;
 
                 Baseliner::Model::Rules->save_rule(
-                    rule_tree         => $rule_tree, 
+                    rule_tree         => $rule_tree,
                     rule_active       => '1',
                     rule_name         => $opts->{name},
                     rule_when         => $opts->{when},
                     rule_event        => $opts->{event},
-                    rule_type         => $opts->{type}, 
+                    rule_type         => $opts->{type},
                     rule_compile_mode => $opts->{compileMode},
                     rule_desc         => $opts->{description},
                     subtype           => $opts->{subtype},
@@ -573,7 +606,7 @@ sub _generate_top_level {
                 my $opts = shift;
 
                 require LWP::UserAgent;
-                 
+
                 my $ua = LWP::UserAgent->new( agent=>'clarive/js', %{ $opts || {} } );
 
                 # rgo: map_instance does not work for $ua
@@ -592,7 +625,7 @@ sub _generate_top_level {
             },
             request => js_sub {
                 shift;
-                my ($method, $endpoint, $opts) = @_; 
+                my ($method, $endpoint, $opts) = @_;
 
                 require HTTP::Request::Common;
                 my $req = HTTP::Request->new( $method => $endpoint, %{ $opts || {} } );
@@ -621,16 +654,16 @@ sub _generate_top_level {
                     headers => js_sub {
                         shift;
                         my $header = shift;
-                        return length $header 
-                            ? $stash->{ws_headers}{$header} 
-                            : $stash->{ws_headers} 
+                        return length $header
+                            ? $stash->{ws_headers}{$header}
+                            : $stash->{ws_headers}
                     },
                     params => js_sub {
                         shift;
                         my $param = shift;
-                        return length $param 
-                            ? $stash->{ws_params}{$param} 
-                            : $stash->{ws_params} 
+                        return length $param
+                            ? $stash->{ws_params}{$param}
+                            : $stash->{ws_params}
                     }
                 }
             },
@@ -692,7 +725,8 @@ sub _generate_top_level {
                 Benchmark::timethis($count,$cb);
             },
         },
-    }
+    };
+    return $all_ns->{$id};
 }
 
 sub _generate_db_methods {
@@ -770,6 +804,7 @@ sub _db_wrap_cursor {
             return;
         },
         count => js_sub { $cursor->count },
+        fields=> js_sub { shift; $cursor->fields(@_) },
         limit => js_sub { shift; $cursor->limit(@_) },
         skip  => js_sub { shift; $cursor->skip(@_) },
         sort  => js_sub { shift; $cursor->sort(@_) },
