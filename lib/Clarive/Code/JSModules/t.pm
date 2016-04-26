@@ -50,6 +50,9 @@ sub generate {
             my ($cond, $val, $msg) = @_;
             unlike( $cond, $val, $msg );
         },
+        plan => js_sub {
+            plan( @_ );
+        },
         pass => js_sub {
             my ($msg) = @_;
             pass( $msg );
@@ -65,6 +68,42 @@ sub generate {
         skip => js_sub {
             my ($msg) = @_;
             skip( $msg );
+        },
+        bag => js_sub {
+            _serialize({ wrap_blessed=>1 }, bag( @_ ) );
+        },
+        shallow => js_sub {
+            _serialize({ wrap_blessed=>1 }, shallow( @_ ) );
+        },
+        set => js_sub {
+            _serialize({ wrap_blessed=>1 }, set( @_ ) );
+        },
+        noneof => js_sub {
+            _serialize({ wrap_blessed=>1 }, noneof( @_ ) );
+        },
+        supersetof => js_sub {
+            _serialize({ wrap_blessed=>1 }, supersetof( @_ ) );
+        },
+        subsetof => js_sub {
+            _serialize({ wrap_blessed=>1 }, subsetof( @_ ) );
+        },
+        superbagof => js_sub {
+            _serialize({ wrap_blessed=>1 }, superbagof( @_ ) );
+        },
+        subbagof => js_sub {
+            _serialize({ wrap_blessed=>1 }, subbagof( @_ ) );
+        },
+        re => js_sub {
+            _serialize({ wrap_blessed=>1 }, re( @_ ) );
+        },
+        any => js_sub {
+            _serialize({ wrap_blessed=>1 }, any( @_ ) );
+        },
+        all => js_sub {
+            _serialize({ wrap_blessed=>1 }, all( @_ ) );
+        },
+        ignore => js_sub {
+            _serialize({ wrap_blessed=>1 }, ignore( @_ ) );
         },
     }
 }

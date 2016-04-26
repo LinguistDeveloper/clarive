@@ -24,6 +24,8 @@ use Exporter::Tidy default => [
 
 use Try::Tiny;
 use PadWalker qw(closed_over);
+use Scalar::Util;
+use Class::Inspector;
 
 use Baseliner::Utils qw(_array _package_is_loaded _to_camel_case _unbless);
 
@@ -94,9 +96,14 @@ sub unwrap_types {
         my $v = shift;
         if( ref $v eq 'HASH' ) {
             if( my $type = $v->{__cla_js} ) {
-                my $opts = $v->{opts} ? "(?$v->{opts})" : '';
-                my $re = $v->{re} // '';
-                return qr/$opts$re/;
+                if( $type eq 'regex' ) {
+                    my $opts = $v->{opts} ? "(?$v->{opts})" : '';
+                    my $re = $v->{re} // '';
+                    return qr/$opts$re/;
+                }
+                else {
+                    return Util->_load( pack( 'H*', $v->{obj} ) );
+                }
             } else {
                 return +{ map { $_ => $unwrap->($v->{$_}) } keys %$v };
             }
@@ -174,8 +181,15 @@ sub _serialize {
             }
         }
 
-        if ( Scalar::Util::blessed($doc) ) {
-            push @result, _map_instance( $doc );
+        if ( ref $doc eq 'Regexp' ) {
+            push @result, { __cla_js=>'regex', re=>"$doc" };
+        }
+        elsif ( Scalar::Util::blessed($doc) ) {
+            if( $options->{wrap_blessed} ) {
+                push @result, { __cla_js=>ref($doc), obj=>scalar unpack('H*', Util->_dump($doc)) };
+            } else {
+                push @result, _map_instance( $doc );
+            }
         }
         elsif ( ref $doc eq 'CODE' ) {
             push @result, $options->{to_bytecode} ? _bc_sub( $doc ) : js_sub(\&$doc);

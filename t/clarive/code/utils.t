@@ -3,15 +3,15 @@ use warnings;
 
 use Test::More;
 use Test::Fatal;
-use Test::TempDir::Tiny;
+use Test::Deep;
 use TestEnv;
+
 BEGIN { TestEnv->setup }
-use TestUtils;
-use Try::Tiny;
 
 use Baseliner::Utils qw(_slurp);
 use BaselinerX::CI::generic_server;
 use JavaScript::Duktape;
+
 use_ok 'Clarive::Code::Utils';
 
 subtest 'from_camel_class' => sub {
@@ -78,6 +78,62 @@ subtest 'to_bytecode: turn js into bytecode' => sub {
         like $bc_hex, qr/^ff00/; # duktape bytecode always start with ff00 (but could change...)
     });
     $js->eval("foo(function(){ return { aa:101 } });");
+};
+
+subtest '_serialize: HASH' => sub{
+    cmp_deeply( _serialize({}, { aa=>11 } ), { aa=>11 } );
+};
+
+subtest '_serialize: ARRAY' => sub{
+    cmp_deeply( _serialize({}, [1,2,3] ), [1,2,3] );
+};
+
+subtest '_serialize: SCALAR' => sub{
+    is( _serialize({}, 'str' ), 'str' );
+};
+
+subtest '_serialize: CODE into js_sub' => sub{
+    is( _serialize({}, sub{ 11 } )->(), 11 );
+    is( _serialize({}, sub{ shift } )->(undef,33), 33 );
+};
+
+subtest '_serialize: CODE into bytecode' => sub{
+    my $vm = JavaScript::Duktape->new;
+    local $Clarive::Code::JS::CURRENT_VM = $vm;
+    my $code = $vm->eval('var x = function(){ }; x');
+    my $ser =_serialize({ to_bytecode=>1 }, $code );
+    is ref($ser), 'CODE';
+};
+
+subtest '_serialize: blessed methods camelized' => sub{
+    { package Foo; sub bar_bar { 22 } };
+    my $obj = bless { aa=>11 } => 'Foo';
+    my $serial = _serialize({}, $obj );
+    is $serial->{barBar}->(), 22;
+};
+
+subtest '_serialize: blessed wrapped' => sub{
+    my $obj = bless { aa=>11 } => 'Foo';
+    cmp_deeply( _serialize({ wrap_blessed=>1 }, $obj ), { __cla_js=>'Foo', obj=>unpack('H*',Util->_dump($obj)) } );
+};
+
+subtest 'unwrap_types: basic scalar' => sub{
+    cmp_deeply( [unwrap_types('foo')], ['foo'] );
+    cmp_deeply( [unwrap_types(22)], [22] );
+};
+
+subtest 'unwrap_types: blessed is reblessed' => sub{
+    { package TestFoo; sub aa { shift->{aa} } };
+    my $serial = { __cla_js=>'TestFoo', obj=>unpack('H*',Util->_dump(bless { aa=>12 } => 'TestFoo')) };
+    my ($obj) = unwrap_types($serial);
+    is $obj->aa, 12;
+};
+
+subtest 'serialize and unwrap a regexp' => sub{
+    my $doc = qr/a.c/;
+    my $ser = _serialize({}, $doc );
+    my ($re) = unwrap_types( $ser );
+    like 'abc', $re;
 };
 
 done_testing;
