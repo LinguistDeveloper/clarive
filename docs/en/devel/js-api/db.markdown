@@ -3,8 +3,8 @@ title: cla/db - MongoDB namespace
 ---
 
 The database namespace has functions
-designed to make use of the MongoDB 
-database where Clarive runs. 
+designed to make use of the MongoDB
+database where Clarive runs.
 
 ### General Considerations
 
@@ -12,8 +12,8 @@ database where Clarive runs.
 
 Using regular expressions is necessary for searching Mongo,
 for that you need to generate a `cla.regex()` object
-since *javascript regular expressions are not supported 
-through the Mongo interface*. 
+since *javascript regular expressions are not supported
+through the Mongo interface*.
 
 Example:
 
@@ -24,12 +24,26 @@ var doc = db
         .findOne({ title: cla.regex("there","i") });
 ```
 
+##### Chaining cursor methods
+
+Cursor methods can be chained together
+before they are executed.
+
+```javascript
+var db = require("cla/db");
+var docs = db.getCollection('master_doc')
+    .find()
+    .fields({ bl: true, bls: true, _id: 0 })
+    .limit(100)
+    .all();
+```
+
 ### db.getDatabase(dbname)
 
 Returns a connection to a MongoDB database
 within the Clarive MongoDB instance.
 
-With the returning object, you can use any other 
+With the returning object, you can use any other
 `db.` method.
 
 ```javascript
@@ -37,14 +51,14 @@ var db = require('cla/db');
 var mydb = db.getDatabase("mydb");
 var coll = mydb.getCollection("mycoll");
 coll.insert({ id: 1, txt:"my first doc" });
-coll.findOne({ id: 1 }); 
+coll.findOne({ id: 1 });
 ```
 
 ### db.getCollection(collectionName)
 
 Returns a Mongo collection from the database.
 
-A collection is analogous to a table in the relational 
+A collection is analogous to a table in the relational
 database world.
 
 There is no need to create a new collection, just use it
@@ -74,7 +88,7 @@ coll.insert({ title: 'test', priority: 80, other: [ 1,2,3 ], nested: { a: 11, b:
 
 ### collection.remove(query)
 
-Removes one or more documents from a collection. 
+Removes one or more documents from a collection.
 
 ```javascript
 var db = require('cla/db');
@@ -94,7 +108,7 @@ coll.update({ title: 'test' }, { $set : { title: 'test2' } });
 
 ### collection.drop()
 
-Drops a collection. 
+Drops a collection.
 
 ```javascript
 var db = require('cla/db');
@@ -104,7 +118,7 @@ coll.drop();
 
 ### collection.clone()
 
-Copies one collection to another. 
+Copies one collection to another.
 
 ```javascript
 var db = require('cla/db');
@@ -115,10 +129,10 @@ coll.clone('mycoll-copy');
 ### collection.findOne(query, [fields])
 
 Finds one document in the collection
-and returns the document. 
+and returns the document.
 
-Returns `undefined` if no documents were 
-found. 
+Returns `undefined` if no documents were
+found.
 
 ```javascript
 var db = require('cla/db');
@@ -158,8 +172,8 @@ var doc = cursor.next();
 
 ### cursor.hasNext()
 
-Returns true or false depending if the cursor 
-has already gone through all its rows. 
+Returns true or false depending if the cursor
+has already gone through all its rows.
 
 ```javascript
 var db = require('cla/db');
@@ -181,10 +195,23 @@ print( doc.mid );
 });
 ```
 
+### cursor.all()
+
+Returns all the documents in the cursor at once.
+
+```javascript
+var db = require('cla/db');
+var cursor = db.getCollection('topic').find();
+var docs = cursor.all();
+for( var i=0; i < docs.length; i++ ) {
+    print( docs[i].mid );
+}
+```
+
 ### cursor.count()
 
-Returns the number of documents retrieved by 
-a cursor. 
+Returns the number of documents retrieved by
+a cursor.
 
 ```javascript
 var db = require('cla/db');
@@ -194,7 +221,7 @@ cla.printf( "Found %d rows", cursor.count() );
 
 ### cursor.limit(numberOfRows)
 
-Limit the number of documents returned by the cursor. 
+Limit the number of documents returned by the cursor.
 
 ```javascript
 var db = require('cla/db');
@@ -205,7 +232,7 @@ cla.printf( "Found %d rows", cursor.count() );   // should print 10 rows
 
 ### cursor.skip(numberOfRows)
 
-Skip the first few rows of the result set returned. 
+Skip the first few rows of the result set returned.
 
 ```javascript
 var db = require('cla/db');
@@ -219,12 +246,12 @@ cla.dump( doc );  // should dump docs 50 to 60 in the result set
 
 ### cursor.sort(sortObject)
 
-Configures the sorting for the result set to be returned. 
+Configures the sorting for the result set to be returned.
 
 ```javascript
 var db = require('cla/db');
 var cursor = db.getCollection('topic').find();
-cursor.sort({ title: 1 }); // sort by mid (as numeric) 
-cursor.sort({ m: 1 }); // sort by mid (as numeric) 
+cursor.sort({ title: 1 }); // sort by mid (as numeric)
+cursor.sort({ m: 1 }); // sort by mid (as numeric)
 ```
 
