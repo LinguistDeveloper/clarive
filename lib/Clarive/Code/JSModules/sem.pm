@@ -17,7 +17,10 @@ sub generate {
 
             my $sem = Baseliner::Sem->new( key => $key );
             $sem->take;
-            return $cb->( _serialize({}, $sem) );
+
+            my $ret = js_sub(\&$cb)->( undef );
+
+            return $ret;
         },
     };
 }

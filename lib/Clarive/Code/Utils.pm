@@ -178,7 +178,7 @@ sub _serialize {
             push @result, _map_instance( $doc );
         }
         elsif ( ref $doc eq 'CODE' ) {
-            push @result, _bc_sub( $doc );
+            push @result, $options->{to_bytecode} ? _bc_sub( $doc ) : js_sub(\&$doc);
         }
         elsif ( ref $doc eq 'ARRAY' ) {
             my $array = [];

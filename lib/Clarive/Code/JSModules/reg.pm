@@ -14,7 +14,7 @@ sub generate {
             my ( $key, $obj ) = @_;
 
             Baseliner::Core::Registry->add( 'Clarive::Code::JS::Service', $key,
-                _serialize( {}, $obj ) );
+                _serialize( { to_bytecode=>1 }, $obj ) );
         },
         launch => js_sub {
             my $key  = shift;
