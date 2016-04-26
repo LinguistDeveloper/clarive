@@ -1,4 +1,5 @@
 package Clarive::Code::JS;
+use v5.10;
 use Moose;
 
 BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }
@@ -67,11 +68,18 @@ sub initialize {
 
     $js_duk->set(
         toJSON => js_sub {
-            my ($what) = @_;
+            my ($what,$opts) = @_;
 
-            return _to_json($what);
+            return _to_json($what,$opts);
         }
     );
+
+    $js_duk->set( __filename=>$self->current_file );
+    $js_duk->set( __dirname =>$self->current_dir );
+
+    require Clarive::Code::JSModules::console;
+    my $console_ns = Clarive::Code::JSModules::console->generate($stash,$self);
+    $js_duk->set( console=>$console_ns );
 
     # cla ns setup
     require Clarive::Code::JSModules::cla;
@@ -168,6 +176,11 @@ sub _process_pragmas {
 sub current_filename {
     my $self = shift;
     return _file( $self->current_file )->basename;
+}
+
+sub current_dir {
+    my $self = shift;
+    return '' . _file( $self->current_file )->parent;
 }
 
 package Clarive::Code::JS::Service; {

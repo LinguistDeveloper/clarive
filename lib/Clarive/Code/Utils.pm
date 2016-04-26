@@ -315,14 +315,19 @@ sub _map_methods {
 }
 
 sub _to_json {
-    my ($what) = @_;
+    my ($what,$opts) = @_;
 
     return 'undefined' unless defined $what;
 
     my $doc = _serialize( { convert_subs => 1 }, $what );
     return $doc unless ref $doc;
 
-    JSON->new->pretty(1)->canonical(1)->encode($doc);
+    my $json = JSON::XS->new;
+    if( $opts->{pretty} ) {
+        $json->pretty( 1 );
+        $json->canonical( 1 );
+    }
+    $json->encode($doc);
 }
 
 1;

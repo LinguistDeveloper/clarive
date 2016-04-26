@@ -26,6 +26,14 @@ subtest 'evals js' => sub {
     is $ret, 2;
 };
 
+subtest 'console available' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( 'console', {} );
+
+    ok ref $ret;
+};
+
 subtest 'extend cla namespace' => sub {
     my $code = _build_code( lang => 'js' );
 
@@ -85,12 +93,12 @@ subtest 'dispatches to toJSON' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    is $code->eval_code(q/toJSON('')/), '';
-    is $code->eval_code(q/toJSON('foo')/), 'foo';
-    is $code->eval_code(q/toJSON([1, 2, 3])/), qq/[\n   1,\n   2,\n   3\n]\n/;
-    is $code->eval_code(q/toJSON({"foo":"bar"})/), qq/{\n   "foo" : "bar"\n}\n/;
+    is $code->eval_code(q/toJSON('',{ pretty:true })/), '';
+    is $code->eval_code(q/toJSON('foo',{ pretty:true })/), 'foo';
+    is $code->eval_code(q/toJSON([1, 2, 3],{ pretty:true })/), qq/[\n   1,\n   2,\n   3\n]\n/;
+    is $code->eval_code(q/toJSON({"foo":"bar"},{ pretty:true })/), qq/{\n   "foo" : "bar"\n}\n/;
 
-    is $code->eval_code(q/toJSON([1, [2, 3], 4])/), qq/[\n   1,\n   [\n      2,\n      3\n   ],\n   4\n]\n/;
+    is $code->eval_code(q/toJSON([1, [2, 3], 4],{ pretty: true })/), qq/[\n   1,\n   [\n      2,\n      3\n   ],\n   4\n]\n/;
 };
 
 subtest 'exceptions catch internal errors' => sub {

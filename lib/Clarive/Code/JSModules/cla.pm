@@ -72,7 +72,6 @@ sub generate {
         },
         sprintf => js_sub {
             my $fmt = shift;
-
             sprintf( $fmt, @_ );
         },
         dump => js_sub {
