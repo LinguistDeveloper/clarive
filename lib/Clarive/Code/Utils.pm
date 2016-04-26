@@ -13,6 +13,7 @@ use Exporter::Tidy default => [
         peek
         pv_address
         to_bytecode
+        load_module
         _serialize
         _map_ci
         _map_methods
@@ -27,7 +28,7 @@ use PadWalker qw(closed_over);
 use Scalar::Util;
 use Class::Inspector;
 
-use Baseliner::Utils qw(_array _package_is_loaded _to_camel_case _unbless);
+use Baseliner::Utils qw(_array _package_is_loaded _to_camel_case _unbless _file _dir);
 
 our $GLOBAL_ERR;
 
@@ -307,6 +308,27 @@ sub _map_methods {
     }
 
     return @methods;
+}
+
+sub load_module {
+    my $id = shift;
+    if ( $id =~ /^cla\/(.+)$/ ) {
+        return sprintf q{
+            (function(){
+                module.exports = cla.loadCla("%s");
+            }());
+        }, $1;
+    }
+    elsif ( my $item = Clarive->app->plugins->locate_first( "modules/$id.js", "modules/$id") ) {
+        return scalar _file( $item->{path} )->slurp( iomode => '<:utf8' );
+    }
+    else {
+        die sprintf(
+            "Could not find module `%s` in the following plugins: %s\n",
+            $id,
+            join( ',', Clarive->app->plugins->all_plugins( id_only => 1 ) )
+        );
+    }
 }
 
 sub _to_json {

@@ -13,7 +13,7 @@ use JavaScript::Duktape 1.0;
 use Baseliner::Mongo ();
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case
-                    :logging _load _dump _encode_json _decode_json
+                    :logging _load _dump _encode_json _decode_json _md5
                     _json_pointer _array _file _dir );
 
 use Clarive::Code::Utils;
@@ -22,8 +22,9 @@ has app           => qw(is rw isa Maybe[Clarive::App] weak_ref 1);
 has options       => qw(is rw isa HashRef), default => sub { +{} };
 has dump_code     => qw(is rw isa Bool default 0);
 has enclose_code  => qw(is rw isa Bool default 0);
+has transpiler    => qw(is rw isa Str), default=>'';
 has strict_mode   => qw(is rw isa Bool default 0);
-has allow_pragmas => qw(is rw isa Bool default 0);
+has allow_pragmas => qw(is rw isa Bool default 1);
 
 has current_file      => qw(is rw isa Str), default=>'EVAL';
 
@@ -109,9 +110,6 @@ sub eval_code {
     my $self = shift;
     my ( $code, $stash ) = @_;
 
-    $code = heredoc( $code );
-    $code = template_literals( $code );
-
     $stash ||= {};
 
     my $js_duk = $self->initialize( $stash );
@@ -122,22 +120,29 @@ sub eval_code {
         $self->_process_pragmas($code);
     }
 
-    my $fullcode;
+    my $processed_code;
 
-    if( $self->enclose_code ) {
-        $fullcode = $self->prefix . "(function(){$code}())";
+    if( my $tp = $self->transpiler ) {
+        $processed_code = $self->transpile( $tp, $code );
     } else {
-        $fullcode = $self->prefix . $code;
+        $processed_code = heredoc( $code );
+        $processed_code = template_literals( $processed_code );
     }
 
-    printf STDERR $fullcode if $self->dump_code;
+    if( $self->enclose_code ) {
+        $processed_code = $self->prefix . "(function(){$processed_code}())";
+    } else {
+        $processed_code = $self->prefix . $processed_code;
+    }
+
+    printf STDERR $processed_code if $self->dump_code;
 
     return try {
         local $CURRENT_VM = $js_duk;
-        $js_duk->eval( $fullcode );
+        $js_duk->eval( $processed_code );
     } catch {
         my $err = shift;
-        $err =~ s{^(.+) at .+/JS.pm line \d+\.$}{$1};
+        $err =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1}s;
 
         my $file = $self->current_file;
 
@@ -149,7 +154,7 @@ sub eval_code {
 
         if( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
             $err_line--;
-            my @lines = ( split "\n", $fullcode );
+            my @lines = ( split "\n", $processed_code );
             my $start_line = $err_line > ($self->_prefix_lines+2) ? $err_line - 2 : $self->_prefix_lines;
             my $end_line   = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
             for my $line ( $start_line..$end_line ) {
@@ -170,14 +175,48 @@ sub eval_code {
 sub _process_pragmas {
     my $self = shift;
     my $code = shift;
-
-    for my $pragma ( $code =~ m{//CLA-PRAGMA (\S+)}g ) {
-        if( $pragma =~ 'enclose=(\d+)' ) {
+    for my $pragma ( grep !/^["']$/, "\n$code" =~ m{\n[\s\t]*(["'])use (.+)\1;}g ) {
+        if( $pragma =~ 'enclose\((\d+)\)' ) {
             $self->enclose_code($1);
         }
-        elsif( $pragma =~ 'dump_code=(\d+)' ) {
+        elsif( $pragma =~ 'dump_code\((\d+)\)' ) {
             $self->dump_code($1);
         }
+        elsif( $pragma =~ 'transpiler\((\S+)\)' ) {
+            $self->transpiler($1);
+        }
+    }
+}
+
+sub transpile {
+    my $self = shift;
+    my ($lang, $code) = @_;
+
+    my $md5 = _md5($code);
+    if( my $cached = cache->get({ d=>'code-js:transpiler', md5=>$md5 }) ) {
+        return $cached;
+    }
+
+    my $tp = Clarive->app->plugins->locate_first("transpiler/$lang.js")
+        or die "Transpiler not found: $lang\n";
+    my $tp_code = _file($tp->{path})->slurp(iomode=>'<:utf8');
+
+    my $js = JavaScript::Duktape->new;
+
+    $js->set( loadModule=>sub{ load_module( shift() ) } );
+    my $loader = q{ Duktape.modSearch = function(id) { return loadModule(id) }; };
+    $js->eval($loader);
+
+    my $duk = $js->duk;
+    $duk->eval_string($tp_code);
+    $duk->push_string("$code");
+    if( my $rc = $duk->pcall(1) ) {
+        die sprintf "Transpile Error (%s): %s\n", $lang, $duk->safe_to_string(-1);
+    } else {
+        my $transpiled = $duk->to_perl(-1);
+        die "Transpiled code empty or invalid\n" if !length $transpiled;
+        cache->set({ d=>'code-js:transpiler', md5=>$md5 }, $transpiled );
+        return $transpiled;
     }
 }
 

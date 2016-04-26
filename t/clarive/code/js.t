@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
@@ -7,14 +8,22 @@ use Test::Deep;
 use Test::TempDir::Tiny;
 
 use TestEnv;
-BEGIN { TestEnv->setup }
+use Cwd ();
+my $root;
+
+BEGIN {
+    use File::Basename qw(dirname);
+    $root = Cwd::realpath( dirname(__FILE__) );
+    TestEnv->setup( base => "$root/../../data/app-base" );
+}
+
 use TestUtils;
-use Try::Tiny;
 
 use BaselinerX::CI::generic_server;
 use BaselinerX::CI::status;
 use BaselinerX::Type::Menu;
 use BaselinerX::Type::Service;
+
 use_ok 'Clarive::Code::JS';
 use Clarive::Code::Utils;
 
@@ -50,6 +59,27 @@ subtest 'extend global namespace' => sub {
     my $ret = $code->eval_code( 'foo();', {});
 
     is $ret, 999;
+};
+
+subtest 'pragma transpile' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( q{
+        "use transpiler(babel)";
+        evens = [2,4,6,8]
+        var odds = evens.map(v => v + 1);
+        odds;
+    });
+    cmp_deeply $ret, [3,5,7,9];
+};
+
+subtest 'pragma transpile convert code' => sub {
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( q{
+        "use transpiler(test-trans)";
+        ({ aa: 22 })});
+    is $ret, 33;
 };
 
 subtest 'save vm creates globals' => sub {
@@ -107,6 +137,18 @@ subtest 'exceptions catch internal errors' => sub {
     my $code = _build_code( lang => 'js' );
     like exception { $code->eval_code( q/throw new Error('foo error!')/) }, qr/foo error!/;
     ok !exception { $code->eval_code( q/try { throw new Error('error!') } catch(e) {}/) };
+};
+
+subtest 'exceptions without JS.pm reference' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+    $code->save_vm(1);
+    my $vm = $code->initialize;
+
+    $vm->set( errorHere => sub { die "died here" });
+
+    unlike exception { $code->eval_code( q[errorHere()]) }, qr/at.*JS.pm/;
 };
 
 subtest 'exceptions catch external errors' => sub {

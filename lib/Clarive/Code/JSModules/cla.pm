@@ -5,7 +5,7 @@ use warnings;
 use Time::HiRes qw(usleep);
 
 use Baseliner::Utils qw(parse_vars :logging _dump _encode_json _decode_json
-                    _json_pointer _array _file _dir);
+                    _json_pointer _array);
 use Clarive::Code::Utils;
 
 sub generate {
@@ -23,24 +23,8 @@ sub generate {
         loadModule => js_sub {
             my $id = shift;
 
-            if ( $id =~ /^cla\/(.+)$/ ) {
-                return sprintf q{
-                    (function(){
-                        module.exports = cla.loadCla("%s");
-                    }());
-                }, $1;
-            }
-            elsif ( my $item = Clarive->app->plugins->locate_first( "modules/$id.js", "modules/$id") ) {
-                return scalar _file( $item->{path} )->slurp( iomode => '<:utf8' );
-            }
-            else {
-                die sprintf(
-                    "Could not find module `%s` in the following plugins: %s\n",
-                    $id,
-                    join( ',',
-                        Clarive->app > plugins->all_plugins( id_only => 1 ) )
-                );
-            }
+            load_module($id);
+
         },
         each => js_sub {
             my ( $arr, $cb ) = @_;
