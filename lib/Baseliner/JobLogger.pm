@@ -109,7 +109,7 @@ sub common_log {
         $text = Baseliner::Utils::_truncate($text, 2000, "\n\n(continue...)");
     }
 
-    $text = Baseliner::Utils::hide_passwords($text);    
+    $text = Baseliner::Utils::hide_passwords($text);
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
         my $doc = { id=>$id, mid =>$jobmid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };

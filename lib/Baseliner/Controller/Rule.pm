@@ -75,9 +75,8 @@ sub actions : Local {
     my $p = $c->req->params;
     my @tree;
     my $field = $p->{field} || 'name';
-    use utf8;
     push @tree, (
-        { id=>'service.email.send', text=>_loc('Envío de Notificación por Email') }
+        { id=>'service.email.send', text=>_loc('Send notification by email') }
     );
     foreach my $key ( $c->registry->starts_with( 'service' ) ) {
         my $service = Baseliner::Core::Registry->get( $key );
@@ -258,7 +257,6 @@ sub tree : Local {
     my $p = $c->req->params;
 
     my @tree;
-    use utf8;
     my @rules = mdb->rule->find->fields({ rule_tree=>0 })->all;
     my $cnt = 1;
     for my $rule ( @rules ) {

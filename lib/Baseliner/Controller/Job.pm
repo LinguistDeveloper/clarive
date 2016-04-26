@@ -7,6 +7,7 @@ use DateTime;
 use JSON::XS;
 use Try::Tiny;
 use List::Util qw(max);
+use Encode ();
 use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Jobs;
@@ -263,6 +264,9 @@ sub job_logfile : Local {
         #$file //= Baseliner->loghome( $job->name . '.log' );
         _fail _loc( "Error: logfile not found or invalid: %1", $file ) if !$file || ! -f $file;
         my $data = _file( $file )->slurp;
+
+        $data = Encode::decode('UTF-8', $data);
+
         { data=>$data, success=>\1 };
     } catch {
         my $err = shift;

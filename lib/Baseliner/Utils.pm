@@ -124,7 +124,6 @@ common => [qw(
 ;
 
 use strict;
-use utf8;
 use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : ();
 use Class::Date;
@@ -276,7 +275,8 @@ sub _log_lev {
     my ($cl,$fi,$li) = caller($calllev);
     $cl =~ s{^Baseliner}{B};
     my $pid = sprintf('%s', $$);
-    print STDERR ( '('.uc(substr($lev,0,1)//'?').') '. _now()."[$pid] [$cl:$li] ", @_, "\n" );
+    my @data = map { !ref $_ && Encode::is_utf8($_) ? Encode::encode('UTF-8', $_) : $_ } @_;
+    print STDERR ( '('.uc(substr($lev,0,1)//'?').') '. _now()."[$pid] [$cl:$li] ", @data, "\n" );
 }
 
 sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
@@ -293,6 +293,7 @@ sub _log_me {
     }
 
     if( $log_out ) {
+        @msgs = map { !ref $_ && Encode::is_utf8($_) ? Encode::encode('UTF-8', $_) : $_ } @msgs;
         my $first = shift @msgs;
         if( my $rf = ref $first ) {
             $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
@@ -2208,6 +2209,7 @@ sub stat_mode {
 sub hide_passwords {
     my ($string) = @_;
 
+    require BaselinerX::Type::Model::ConfigStore;
     my @patterns = split "\n", BaselinerX::Type::Model::ConfigStore->get('config.global')->{password_patterns};
     for my $line ( @patterns ) {
         my ($pattern,$replace) = split /\|\|/,$line;

@@ -1,13 +1,14 @@
 package BaselinerX::Service::Scripting;
 use Moose;
+
+with 'Baseliner::Role::Service';
+
+use Try::Tiny;
+use Encode qw(encode decode);
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;
-use Try::Tiny;
-use utf8::all;
-use Encode qw(encode decode);
-with 'Baseliner::Role::Service';
 
 #our $ICON_DEFAULT = '/static/images/icons/step_run.png';
 our $ICON_DEFAULT = '/static/images/icons/cog_java.png';
@@ -78,8 +79,6 @@ sub run_local {
         chdir $orig;
         _log "CHDIR $orig";
     }
-    $out = encode("utf8",$out);
-    $out = _fixascii_sql( $out );
 
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 

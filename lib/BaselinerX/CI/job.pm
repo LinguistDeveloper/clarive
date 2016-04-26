@@ -7,7 +7,6 @@ use Baseliner::JobLogger;
 use Baseliner::RuleRunner;
 use Try::Tiny;
 use v5.10;
-use utf8;
 use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
