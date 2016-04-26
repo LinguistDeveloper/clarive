@@ -4,16 +4,16 @@ index: 200
 ---
 
 This is a quick primer to help you getting started with Javascript in case you
-never seen it before. 
+never seen it before.
 
-To try this out, use the Clarive REPL. 
-The REPL is a useful tool to getting started with JavaScript 
-within the Clarive automation environment. Refer to the [REPL](devel/repl) documentation 
-to learn more. 
+To try this out, use the Clarive REPL.
+The REPL is a useful tool to getting started with JavaScript
+within the Clarive automation environment. Refer to the [REPL](devel/repl) documentation
+to learn more.
 
 ## Hello World
 
-This is the most basic program you can 
+This is the most basic program you can
 write:
 
 ```javascript
@@ -34,9 +34,9 @@ print(xx); // syntax error due to undefined variable xx
 
 ## Declaring variables
 
-Variables are declared with the keyword `var`. 
-JavaScript has no types, so you don't need to 
-define its type. 
+Variables are declared with the keyword `var`.
+JavaScript has no types, so you don't need to
+define its type.
 
 ```javascript
 var foo;
@@ -55,15 +55,15 @@ var foo = false;
 if( foo ) {
     bar();
 } else {
-    // ... 
+    // ...
 }
 
 // you can also use switch-case to dispatch conditional values
 
 var xx = 100;
 switch(xx) {
-    case 100: 
-    print('low'); 
+    case 100:
+    print('low');
     break;
     case 200: print('high');
 }
@@ -72,7 +72,7 @@ switch(xx) {
 ## Loops
 
 Loops allows us to repeat a block of code many times over.
-Most loops in JS are built using `for` and `while`. 
+Most loops in JS are built using `for` and `while`.
 
 ```javascript
 for( var i=10; i<100; i++ ) {
@@ -109,7 +109,7 @@ print( arr3.join(',') );
 
 ```javascript
 var obj = {};
-obj[ 'myvalue' ] = 100; 
+obj[ 'myvalue' ] = 100;
 
 // object keys can also be nested
 obj = { address: {} };
@@ -137,8 +137,8 @@ print( nada("Bob") );
 
 ## Templating and multiline strings
 
-For writing multi-line strings, and templated 
-strings, Clarive implments the Ecmascript ES6 templating literals
+For writing multi-line strings that can also be templated (ie. that have variables interpolated),
+Clarive implments the Ecmascript ES6 templating literals
 standard.
 
 (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
@@ -146,7 +146,7 @@ standard.
 This is done by enclosing your string in between backticks:
 
 ```javascript
-var txt = `This is 
+var txt = `This is
 a muiltiline
 string
 `;
@@ -183,7 +183,7 @@ This is double: ${num * 2}
 `);
 ```
 
-To escape interpolation of variable and expressions, 
+To escape interpolation of variable and expressions,
 use backslash: `\${...}`
 
 ```javascript
@@ -193,13 +193,70 @@ exit 1;
 `;
 ```
 
-## Error management 
+### Heredocs
+
+Templated strings can be extremely powerful, so *heredocs*
+(or [here-documents](https://en.wikipedia.org/wiki/Here_document)),
+a simpler, multi-line string format is also implemented.
+
+The advantage of using heredocs is that it avoids having to
+escape templated variables (ie. `${myvar}`) which can clash
+with the current Clarive variable system, which also uses
+the Ecmascript `${...}` enclosure for variable formatting.
+Also, other scripting languages and templating systems share
+this enclosure (ie. Bash, Perl, etc.) so it's always handy to be able to
+count on a *non-interpolated*  multi-line string such as heredocs.
+
+A here-document allows you to create a string that spreads on multiple lines
+and preserves white spaces and new-lines. If you run the following code it will
+print exactly what you see starting from the word Dear till the line before the
+second appearance of END_MESSAGE.
+
+The here document starts with two less-than characters `<<` followed by an
+arbitrary string that becomes the designated end-mark of the here-document,
+followed by the semi-colon `;` (or newline) marking the end of the statement.
+
+This is a bit strange as the statement does not really end here. Actually the content of the
+here document just starts on the line after the semi-colon, (in our case with
+the word "Dear"), and continues till perl finds the arbitrarily selected
+end-mark. In our case the string END_MESSAGE.
+
+All of these are valid uses of heredocs.
+
+```javascript
+var str = <<END_MESSAGE;
+So here it starts.
+
+A long "string".
+
+END_MESSAGE
+
+// note that the closing END_MESSAGE above does not have an ending semicolon ;
+print(str);
+```
+Another example, no semicolon after the end-mark.
+
+```javascript
+var str = <<"END"
+Hello.
+
+There.
+
+END
+print(str);
+```
+
+Chosing the right end-mark is the trick for holding long, abritary
+strings. End marks cannot have spaces and only alphanumeric character,
+plus underscore `_`.
+
+## Error management
 
 Error raising should be done using the
-`throw` statement (unless a Clarive JS logging error is to be thrown, in which 
-case it's better to use the more powerful `cla.error()` function). 
+`throw` statement (unless a Clarive JS logging error is to be thrown, in which
+case it's better to use the more powerful `cla.error()` function).
 
-To catch errors, use the `try-catch` statements. 
+To catch errors, use the `try-catch` statements.
 
 ```js
 try {
@@ -214,7 +271,7 @@ try {
 
 ## General JavaScript Error Messages
 
-Here are some of the general, language related 
+Here are some of the general, language related
 error messages that can be issued by the Clarive JS
 interpreter.
 
@@ -238,7 +295,7 @@ calling methods or attributes on objects you are not sure are correct.
 
 ```js
 var myfunc = function(){ return undefined };
-var foo = myfunc();  
+var foo = myfunc();
 if( foo != undefined ) {
     print( foo.arg );
 } else {
@@ -248,16 +305,16 @@ if( foo != undefined ) {
 
 ### `ReferenceError: identifier '...' undefined `
 
-This error is thrown when there's an attempt to 
-use a variable or function that has not been defined. 
+This error is thrown when there's an attempt to
+use a variable or function that has not been defined.
 
 ```
 print( xxx );
-// ReferenceError: identifier 'xxx' undefined 
+// ReferenceError: identifier 'xxx' undefined
 ```
 
-Remember that Clarive JS has strictures turned on by default, 
-which requires every variable to be declared in the current context. 
+Remember that Clarive JS has strictures turned on by default,
+which requires every variable to be declared in the current context.
 
 ### `TypeError: not callable`
 
@@ -267,12 +324,12 @@ is not part of an object. For example:
 ```js
 var obj = { age: function(){ return 19 } };
 print( obj.age() ); // prints 19
-print( obj.name() ); // TypeError: not callable 
+print( obj.name() ); // TypeError: not callable
 ```
 
 ### `SyntaxError: parse error`
 
-This error may be caused by an internal error, which 
+This error may be caused by an internal error, which
 can be probably have more data or info further down the message.
 
 ### `SyntaxError: error parsing token`
@@ -282,17 +339,17 @@ using invalid or incorrect characters.
 
 ### `SyntaxError: unterminated statement`
 
-This error usually indicates there is a missing semicolon `;` 
-somewhere in the code. 
+This error usually indicates there is a missing semicolon `;`
+somewhere in the code.
 
 ## Modules Included
 
-Clarive JS can load JavaScript modules from the filesystem. 
+Clarive JS can load JavaScript modules from the filesystem.
 The software is shipped with useful modules such as Handlebars.js
-and Underscore.js. 
+and Underscore.js.
 
-More can be included by adding them to 
-the `plugins/[plugin]/modules` directory in the Clarive base.  
+More can be included by adding them to
+the `plugins/[plugin]/modules` directory in the Clarive base.
 
 [Read more about plugins here](devel/plugins).
 
@@ -334,7 +391,7 @@ Clarive JS server interpreter:
 - `alert()`, `confirm()` and other messaging features
 - `console.log()` and other `console` methods
 - `window`, `document` and other DOM-related features
-- `system.` and other NodeJS features 
+- `system.` and other NodeJS features
 - an evented machine: Clarive JS has a blocking interface and code is non-reentrant
 
 So, basically, just remember:
@@ -344,7 +401,7 @@ So, basically, just remember:
 
 ## Recommended Reading
 
-Our intention here is just to give the reader 
+Our intention here is just to give the reader
 enough basic concepts for getting off the ground
 with the language, adding some of the pe
 

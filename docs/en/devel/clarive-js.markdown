@@ -17,50 +17,50 @@ These are the top-level namespaces available:
 - `cla/rule` - Rule manipulation
 - `cla/sem` - Semaphores
 - `cla/util` - Generic utilities
-- `cla/web` - Web tools 
+- `cla/web` - Web tools
 - `cla/ws` - Webservice rule Request/Response
 
-More namespaces may be available to the developer 
-as they can be added by `require()` modules. 
+More namespaces may be available to the developer
+as they can be added by `require()` modules.
 
 ## Cla functions
 
 The Cla namespace encapsulates all classes, singletons and
-functions provided by Clarive's JS API. 
+functions provided by Clarive's JS API.
 
-Most useful functions are at a lower level of nesting in the namespace, 
+Most useful functions are at a lower level of nesting in the namespace,
 but many common utility functions are provided as direct properties of the Cla namespace.
 
 Many applications are initiated with Ext.application which is called once the DOM is ready. This ensures all scripts have been loaded, preventing dependency issues. For example:
 
 #### cla.stash()
 
-Gets and sets data in and out of the current [stash](concepts/stash). 
+Gets and sets data in and out of the current [stash](concepts/stash).
 
 ```javascript
-cla.stash("filename", "/tmp/file.txt");  
+cla.stash("filename", "/tmp/file.txt");
 print( cla.stash("filename") );
 
 // it also supports nested data structures with JSON pointers
-cla.stash("/domain/filename", "/tmp/file.txt");  
+cla.stash("/domain/filename", "/tmp/file.txt");
 print( cla.stash("domain.filename") );
 ```
 
-To read or set data in nested levels, Clarive implements 
+To read or set data in nested levels, Clarive implements
 a subset of the standard ISO JSON pointers:
 
 - `/foo/bar` - get/sets the key `stash.foo.bar`
 - `//foo/bar` - turns off pointers, get/sets the key `stash["/foo/bar"]`
-- `foo/bar` - not a pointer if it doesn't start with a forward 
+- `foo/bar` - not a pointer if it doesn't start with a forward
 slash `/`, so it get/sets the key `stash["foo/bar"]`
-- `/foo/0` - get/sets the key `stash["foo"][0]` from an array 
-- `/foo/0/bar` - get/sets the key `stash["foo"][0]["bar"]` from an object within an array 
+- `/foo/0` - get/sets the key `stash["foo"][0]` from an array
+- `/foo/0/bar` - get/sets the key `stash["foo"][0]["bar"]` from an object within an array
 
 #### cla.config()
 
 Gets and sets configuration data into the Clarive config system.
 
-The config system in Clarive is built through the combination of 3 
+The config system in Clarive is built through the combination of 3
 layers of values:
 
 - From the current and global environment files (clarive.yml, env.yml)
@@ -75,13 +75,13 @@ var dbname = cla.config("/mongo/dbname");
 ```
 
 This is useful for creating site specific .yml files
-and putting your automation configuration in there. 
+and putting your automation configuration in there.
 
 #### cla.configTable()
 
 Gets and sets configuration data from/to the [config table](concepts/config-table).
 
-The config system in Clarive is built through the combination of 3 
+The config system in Clarive is built through the combination of 3
 layers of values:
 
 ```javascript
@@ -90,17 +90,17 @@ var gitHome = cla.configTable('config.git.home');
 ```
 
 The config table is a flat table with values separated with
-dots `.`, such as `config.git.home`. 
+dots `.`, such as `config.git.home`.
 
 This is also useful for creating administrator modifiable global configuration
-values that can be easily changed without editing the rule, although 
+values that can be easily changed without editing the rule, although
 in general, it's better to use [variables](concepts/variable) (CI) for that.
 
 #### cla.parseVars(target,data)
 
-This function replaces Clarive variables (`${varname}`) 
-in strings or any nested data 
-structure, such as arrays and objects. The values for the 
+This function replaces Clarive variables (`${varname}`)
+in strings or any nested data
+structure, such as arrays and objects. The values for the
 variables will come either from the `data` argument or
 the [stash](concepts/stash).
 
@@ -114,7 +114,7 @@ var txt = cla.parseVars("Hello ${name}", { name: "Joe" });  // Hello Joe
 
 ### cla.printf(fmt,args)
 
-Prints a string formatted by the usual printf conventions of the C library function sprintf. 
+Prints a string formatted by the usual printf conventions of the C library function sprintf.
 
 ```javascript
 var fs = require('cla/fs');
@@ -123,7 +123,7 @@ cla.printf("This file is %d bytes long", fs.stat("/tmp/myfile").size );
 
 ### cla.sprintf(fmt,args)
 
-Returns a string formatted by the usual printf conventions of the C library function sprintf. 
+Returns a string formatted by the usual printf conventions of the C library function sprintf.
 
 ```javascript
 var fs = require('cla/fs');
@@ -134,11 +134,11 @@ print( msg );
 ### cla.dump(data)
 
 Prints the data in the data structure
-dumped using YAML format. 
+dumped using YAML format.
 
 ### cla.loc(lang,str,arguments)
 
-Localizes the string using I18N formatting 
+Localizes the string using I18N formatting
 for the lang specified in the lang string.
 This function uses the Clarive I18N translation files.
 
