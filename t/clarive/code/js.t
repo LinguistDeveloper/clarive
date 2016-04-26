@@ -14,6 +14,8 @@ use Try::Tiny;
 use Baseliner::Utils qw(_slurp);
 use BaselinerX::CI::generic_server;
 use BaselinerX::CI::status;
+use BaselinerX::Type::Menu;
+use BaselinerX::Type::Service;
 use_ok 'Clarive::Code::JS';
 use Clarive::Code::Utils;
 
@@ -781,15 +783,51 @@ subtest 'bytecode call serialized from js to perl' => sub {
     is $ci->connect->{bb}, 'xxx';
 };
 
+subtest 'cla.register: register a menu' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add_class( undef, 'menu' => 'BaselinerX::Type::Menu' );
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code(q{
+        var reg = require('cla/reg');
+        reg.register('menu.test',{ name: 'FooMenu' });
+    });
+    is( Baseliner::Core::Registry->get('menu.test')->name, 'FooMenu' );
+};
+
+subtest 'cla.launch: register and launch a service' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code(q{
+        var reg = require('cla/reg');
+        reg.register('service.test',{
+            name: 'FooService',
+            handler: function(){ return 99 }
+        });
+        reg.launch('service.test');
+    });
+
+    is $ret, 99;
+    is( Baseliner::Core::Registry->get('service.test')->name, 'FooService' );
+};
+
 subtest 'docs code snippet testing' => sub {
     _setup();
 
     my $status = TestUtils->create_ci( 'status', mid => '123', name => 'New' );
+    Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
 
     my $code = _build_code( lang => 'js' );
+
     my @docs = ('en/devel/clarive-js.markdown','en/devel/js-primer.markdown');
     my $root = Util->_dir(Clarive->app->home, 'docs');
-    push @docs, $_ for map { $_->relative( $root ) } Util->_dir( $root, 'en/devel/js-api')->children; 
+    push @docs, $_ for map { $_->relative( $root ) } Util->_dir( $root, 'en/devel/js-api')->children;
     for my $id_doc ( @docs ) {
 
         note "*** Testing snippets in doc $id_doc\n";

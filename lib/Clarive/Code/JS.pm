@@ -13,6 +13,7 @@ use Class::Load qw(is_class_loaded);
 use Time::HiRes qw(usleep);
 
 use Baseliner::Mongo;
+use Baseliner::RuleFuncs;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils qw(parse_vars packages_that_do _to_camel_case to_base_class _unbless :logging _load _dump _encode_json _decode_json _json_pointer _array);
 
@@ -507,6 +508,20 @@ sub _generate_ns {
                 return $cb->($sem);
             },
         },
+        reg => {
+            register => js_sub {
+                my ($key, $obj ) = @_;
+                my ($package) = caller;
+                Baseliner::Core::Registry->add( 'Clarive::Code::JS::Service', $key, $self->_serialize({}, $obj ) );
+            },
+            launch => js_sub {
+                my $key = shift;
+                my %opts = @_;
+                Baseliner::RuleFuncs::launch( $key, $opts{name},
+                    $opts{stash} // $stash,
+                    $opts{config}, $opts{dataKey} );
+            },
+        },
         ci => {
             getClass => js_sub {
                 shift;
@@ -898,4 +913,9 @@ sub _process_pragmas {
         }
     }
 }
+
+package Clarive::Code::JS::Service; {
+    use Moose;
+    with 'Baseliner::Role::Service';
+};
 1;
