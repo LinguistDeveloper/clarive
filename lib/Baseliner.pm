@@ -97,13 +97,11 @@ after 'setup_finalize' => sub {
     for my $key ( keys %{Baseliner->config}) {
         Clarive->config->{$key}  = Baseliner->config->{$key};
     }
-
-    if( Clarive->app->load_plugins ) {
-        require Clarive::Plugins;
-        my $plugins = Clarive::Plugins->new;
-        foreach my $public_path ( $plugins->locate_all_paths('public') ) {
+    if( Clarive->app->enable_plugins ) {
+        my $plugins = Clarive->app->plugins;
+        foreach my $public_item ( $plugins->locate_all('public') ) {
             # change static paths
-            push( @{ $app->config->{static}{include_path} }, $public_path );
+            push( @{ $app->config->{static}{include_path} }, $public_item->{path} );
         }
     }
 };
@@ -218,9 +216,8 @@ sub build_app {
     cache->remove( qr/registry:/ );
 
     # load plugins /init
-    if( Clarive->app->load_plugins ) {
-        require Clarive::Plugins;
-        Clarive::Plugins->new->run_dir( 'init' );
+    if( Clarive->app->enable_plugins ) {
+        Clarive->app->plugins->run_dir( 'init' );
     }
 
     # Beep
