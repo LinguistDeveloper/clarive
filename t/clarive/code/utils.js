@@ -28,4 +28,25 @@ subtest 'template_literals: kung foo' => sub {
     is template_literals(q{`x'x`}), q{'x\'x'};
 };
 
+subtest 'here docs: kung foo' => sub {
+
+    is heredoc(qq{var x = <<END;\nEND\n}), qq{var x = '';};
+    is heredoc(qq{var x = <<END;\ntext\nEND\n}), qq{var x = 'text\\\n';};
+    is heredoc(qq{var x = <<"END";\ntext\nEND\n}), qq{var x = 'text\\\n';};
+    is heredoc(qq{var x = <<'END';\ntext\nEND\n}), qq{var x = 'text\\\n';};
+    is heredoc(qq{var x = <<END;\n'text'\nEND\n}), qq{var x = '\\'text\\'\\\n';};
+    is heredoc(qq{var x = <<END;\n"text"\nEND\n}), qq{var x = '"text"\\\n';};
+    is heredoc(qq{var x = <<END;\n\\"text\\"\nEND\n}), qq{var x = '\\"text\\"\\\n';};
+    is heredoc(qq{var x = <<END;\n\\'text\\'\nEND\n}), qq{var x = '\\\\'text\\\\'\\\n';};
+    is heredoc(qq{var x = <<END\ntext\nEND\n}), qq{var x = 'text\\\n';};
+    is heredoc(qq{var x = <<ANOTHER_TEXT\ntext\nANOTHER_TEXT\n}), qq{var x = 'text\\\n';};
+    is heredoc(qq{var x = <<END\n\n\ntext\nEND\n}), qq{var x = '\\\n\\\ntext\\\n';};
+    is heredoc(qq{var x = <<END;\r\nlala\r\nEND\r\n}), qq{var x = 'lala\\\n';};
+
+    # not heredoc
+    isnt heredoc(qq{var x = << END;\ntext\nEND\n}), qq{var x = 'text\\\n';};
+    isnt heredoc(qq{var x = <<END;\ntext\nEND;\n}), qq{var x = 'text\\\n';};
+    isnt heredoc(qq{var x = <<END-HERE;\ntext\nEND-HERE\n}), qq{var x = 'text\\\n';};
+};
+
 done_testing;
