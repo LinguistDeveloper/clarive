@@ -1,10 +1,12 @@
 package BaselinerX::Service::TopicServices;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
-use Path::Class;
+
 use experimental 'smartmatch';
-#use Try::Tiny;
+use Try::Tiny;
+use Path::Class;
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::DataView::Topic;
+use Baseliner::Utils;
 
 with 'Baseliner::Role::Service';
 
@@ -362,86 +364,61 @@ sub related {
 sub get_with_condition {
     my ( $self, $c, $config ) = @_;
 
-    _warn $c;
     my $categories = $config->{categories} || [];
-    my $statuses = $config->{statuses} || [];
+    my $statuses   = $config->{statuses}   || [];
     my $not_in_status = $config->{not_in_status};
-    my $filter_user = $config->{assigned_to};
-    my $limit = $config->{limit} // 100;
-    my $condition = {};
-    my $where = {};
+    my $filter_user   = $config->{assigned_to};
+    my $limit         = $config->{limit} // 100;
+    my $condition     = {};
+    my $where         = {};
 
     if ( $config->{condition} ) {
         try {
-            my $cond = eval('q/'.$config->{condition}.'/');
+            my $cond = eval( 'q/' . $config->{condition} . '/' );
             $condition = Util->_decode_json($cond);
-        } catch {
-            _error "JSON condition malformed (".$config->{condition}."): ".shift;
         }
+        catch {
+            _error "JSON condition malformed (" . $config->{condition} . "): " . shift;
+        };
     }
 
     $where = $condition;
 
-    if ( $filter_user && $filter_user ne 'Any') {
-        if ( $filter_user eq _loc('Current')) {
-            $filter_user = $c->username;
+    if ( $filter_user && $filter_user ne 'any' ) {
+        if ( $filter_user eq 'current' ) {
+            $filter_user = $c->stash->{username};
         }
-        my $ci_user = ci->user->find_one({ name=>$filter_user });
+        my $ci_user = ci->user->find_one( { name => $filter_user } );
         if ($ci_user) {
-            my @topic_mids =
-                map { $_->{from_mid} }
-                mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
+            my @topic_mids
+                = map { $_->{from_mid} }
+                mdb->master_rel->find( { to_mid => $ci_user->{mid}, rel_type => 'topic_users' } )
+                ->fields( { from_mid => 1 } )->all;
             if (@topic_mids) {
                 $where->{'mid'} = mdb->in(@topic_mids);
-            } else {
+            }
+            else {
                 $where->{'mid'} = -1;
             }
         }
     }
 
-    my $main_conditions = {};
+    my $rs = Baseliner::DataView::Topic->find(
+        limit         => $limit,
+        where         => $where,
+        categories    => $categories,
+        statuses      => $statuses,
+        username      => $c->stash->{username},
+        not_in_status => $not_in_status
+    );
 
-    if ( _array($statuses) ) {
-        my @local_statuses = _array($statuses);
-        if ( $not_in_status ) {
-            @local_statuses = map { $_ * -1 } @local_statuses;
-            $main_conditions->{'statuses'} = \@local_statuses;
-        } else {
-            $main_conditions->{'statuses'} = \@local_statuses;
-        }
-    }
-    my $username = $c->{username} || 'root';
-    my $perm = Baseliner->model('Permissions');
+    my @topics = map {
+        { hash_flatten($_) }
+    } $rs->all;
 
-    my @user_categories =  map {
-        $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-
-    if ( _array($categories) ) {
-        use Array::Utils qw(:all);
-        my @categories_ids = _array($categories);
-        @user_categories = intersect(@categories_ids,@user_categories);
-    }
-
-    my $is_root = $perm->is_root( $username );
-    if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-
-    $main_conditions->{'categories'} = \@user_categories;
-
-    my ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ limit => $limit, clear_filter => 1, where => $where, %$main_conditions, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
-
-    my @topic_cis = map {$_->{mid}} @topics;
-    @topics = map { my $t = {};  $t = hash_flatten($_); $t } @topics;
-    # my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
-    # my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
-
-    # $c->stash->{json} = { success => \1, data=>\@topics, cis=>\%ci_names };
     return \@topics;
 
 }
-
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
