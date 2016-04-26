@@ -2,70 +2,26 @@ package Baseliner::Model::TopicExporter::Csv;
 use Moose;
 
 use Encode ();
-use Text::Unaccent::PurePerl qw(unac_string);
 use Baseliner::Model::Topic;
-use Baseliner::Utils qw(_dump _utf8 _array _strip_html _log _dump _loc);
+use Baseliner::Utils qw(_array _strip_html _loc);
 
 has renderer => qw(is ro);
-
-sub split_columns_csv {
-    my $self           = shift;
-    my (%params)       = @_;
-    my @column_csv     = ();
-    my $splited_column = {};
-
-    for my $column ( grep { length $_->{name} } _array( $params{columns} ) ) {
-
-        if ( $column->{id} ne 'numcomment' ) {
-
-            push( @column_csv, $column );
-
-        }
-        else {
-
-            push( @column_csv, $column );
-
-            $splited_column->{id}   = 'referenced_in';
-            $splited_column->{name} = 'REF_IN_SPLIT';
-            push( @column_csv, $splited_column );
-
-            $splited_column         = {};
-            $splited_column->{id}   = 'references_out';
-            $splited_column->{name} = 'REF_OUT_SPLIT';
-            push( @column_csv, $splited_column );
-
-            $splited_column         = {};
-            $splited_column->{id}   = 'num_file';
-            $splited_column->{name} = 'file_name';
-            push( @column_csv, $splited_column );
-
-        }
-
-    }
-
-    return @column_csv;
-}
-
 
 sub export {
     my $self = shift;
     my ( $data, %params ) = @_;
+
+    my @columns = $self->_prepare_columns(%params);
+
     my @csv;
-    my @cols;
-    my @colum_print_csv = split_columns_csv ( params => %params );
-    my $header_file;
-    my $referencia_in =_loc("Referenced In");
-    my $referencia_out =_loc("References");
+    my $headers;
 
-    $header_file = join (';', map { "\"" . _loc($_->{name}) ."\""} @colum_print_csv) . "\n";
-
-    $header_file=~s/REF_IN_SPLIT/$referencia_in/;
-    $header_file=~s/REF_OUT_SPLIT/$referencia_out/;
+    $headers = join( ';', map { "\"" . _loc( $_->{name} ) . "\"" } @columns ) . "\n";
 
     for my $row ( _array $data) {
         my $main_category = $row->{category}->{name} || $row->{category_name};
         my @cells;
-        for my $col ( @colum_print_csv ) {
+        for my $col (@columns) {
             my $col_id = $col->{id};
 
             my $v = $row->{$col_id};
@@ -89,13 +45,10 @@ sub export {
                     $v = join ';', @res;
                 }
                 else {
-
-                    if($col->{name} eq 'REF_IN_SPLIT' || $col->{name} eq 'REF_OUT_SPLIT'){
-
-                    $v = scalar  @$v;
-
-                    }else{
-
+                    if ( $col->{id} eq 'referenced_in' || $col->{id} eq 'references_out' ) {
+                        $v = scalar @$v;
+                    }
+                    else {
                         $v = join ',', @$v;
                     }
                 }
@@ -160,18 +113,52 @@ sub export {
         push @csv, join ';', @cells;
     }
 
-    my $body = join("\n", @csv);
-    $body = $header_file .  $body;
+    my $body = join( "\n", @csv );
+    $body = $headers . $body;
 
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file
     my $len = length $body;
     $body .= "\n" x ( 1024 - $len + 1 - 3 ) if $len < 1024;
 
-    $body = Encode::encode('UTF-8', $body);
+    $body = Encode::encode( 'UTF-8', $body );
 
     $body = "\xEF\xBB\xBF" . $body;
 
     return $body;
+}
+
+sub _prepare_columns {
+    my $self = shift;
+    my (%params) = @_;
+
+    my @columns = ();
+
+    for my $column ( grep { length $_->{name} } _array( $params{columns} ) ) {
+        push @columns, $column;
+
+        # This is a special Info columns. Yes, the column name suggests that the author was under drugs probably
+        if ( $column->{id} eq 'numcomment' ) {
+            push @columns,
+              {
+                id   => 'referenced_in',
+                name => _loc("Referenced In"),
+              };
+
+            push @columns,
+              {
+                id   => 'references_out',
+                name => _loc("References"),
+              };
+
+            push @columns,
+              {
+                id   => 'num_file',
+                name => 'file_name',
+              };
+        }
+    }
+
+    return @columns;
 }
 
 1;
