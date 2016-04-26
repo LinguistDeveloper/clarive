@@ -24,7 +24,7 @@ subtest 'run_info: gets plugin info' => sub {
     ok $cmd->run_info(plugin=>'my-plugin');
 };
 
-subtest 'run_bootstrap: generates dir' => sub {
+subtest 'run_new: generates dir' => sub {
     my $cmd = _build_cmd();
 
     my $tmp = Util->_tmp_dir;
@@ -35,7 +35,7 @@ subtest 'run_bootstrap: generates dir' => sub {
     my $plugin_home = dir( $tmp, $plugin_id );
     $plugin_home->rmtree;
 
-    $cmd->run_bootstrap(plugin=>$plugin_id);
+    $cmd->run_new(plugin=>$plugin_id);
 
     ok -e $plugin_home . '/plugin.yml';
 

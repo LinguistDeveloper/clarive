@@ -128,7 +128,7 @@ sub run_test {
     $harness->runtests( @test_files );
 }
 
-sub run_bootstrap {
+sub run_new {
     my ($self, %opts)=@_;
 
     my $id = $opts{plugin};
