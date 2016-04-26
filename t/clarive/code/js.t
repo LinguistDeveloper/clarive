@@ -200,6 +200,23 @@ EOF
     is $ret, 2;
 };
 
+subtest 'chained DB cursor call' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<'EOF', {} );
+        var db = require("cla/db");
+        db.getCollection('master_doc')
+            .find()
+            .fields({ bl: true, bls: true, _id: 1 })
+            .limit(100)
+            .all();
+EOF
+
+    is ref $ret, 'ARRAY';
+};
+
 subtest 'dispatches to DB find and cursor skip' => sub {
     _setup();
 

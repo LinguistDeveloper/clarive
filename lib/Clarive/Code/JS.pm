@@ -831,7 +831,7 @@ sub _db_wrap_cursor {
     my $self = shift;
     my $cursor = shift;
     return {
-        next    => js_sub { $self->_serialize( {}, $cursor->next ) },
+        next    => js_sub { _unbless( $cursor->next ) },
         hasNext => js_sub { $cursor->has_next },
         forEach => js_sub {
             my $js = shift;
@@ -839,17 +839,18 @@ sub _db_wrap_cursor {
 
             return unless $cb && ref $cb eq 'CODE';
 
-            while ( my $entry = $cursor->next ) {
-                $cb->( $self->_serialize( {}, $entry ) );
+            while ( my $doc = $cursor->next ) {
+                $cb->( _unbless( $doc ) );
             }
 
             return;
         },
         count => js_sub { $cursor->count },
-        fields=> js_sub { shift; $cursor->fields(@_) },
-        limit => js_sub { shift; $cursor->limit(@_) },
-        skip  => js_sub { shift; $cursor->skip(@_) },
-        sort  => js_sub { shift; $cursor->sort(@_) },
+        all   => js_sub { shift; [ map { _unbless($_) } $cursor->all(@_) ] },
+        fields=> js_sub { shift; $self->_db_wrap_cursor( $cursor->fields(@_) ) },
+        limit => js_sub { shift; $self->_db_wrap_cursor( $cursor->limit(@_) ) },
+        skip  => js_sub { shift; $self->_db_wrap_cursor( $cursor->skip(@_) ) },
+        sort  => js_sub { shift; $self->_db_wrap_cursor( $cursor->sort(@_) ) },
     };
 }
 
