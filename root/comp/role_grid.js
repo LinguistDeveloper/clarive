@@ -136,9 +136,9 @@
                                 var user_list = role_users.slice(0, 10).join('<br>');
 
                                 if (role_users.length == 0) {
-                                    message = _('The role %1 does not have users assigned, delete this role? ', role_name);
+                                    message = _('The role %1 does not have users assigned, delete this role?', role_name);
                                 } else {
-                                    message = _('The role %1 has %2 user(s) assigned, delete this role? ', role_name, role_users.length) + '<br><br>' + user_list;
+                                    message = _('The role %1 has %2 user(s) assigned, delete this role?', role_name, role_users.length) + '<br><br>' + user_list;
 
                                     if (role_users.length > 10) {
                                         message += '<br>[...]';
