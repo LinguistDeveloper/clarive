@@ -3,6 +3,7 @@ use warnings;
 use lib 't/lib';
 
 use Test::More;
+use Test::Deep;
 
 use TestEnv;
 
@@ -86,10 +87,9 @@ subtest 'paths_to: returns all available paths' => sub {
         home   => "$root/../data/app-base/app-home"
     );
 
-    my @paths = $app->paths_to('docs/en');
+    my @paths = map { "$_" } $app->paths_to('docs/en');
 
-    like $paths[0], qr{app-base/features/testfeature/docs/en};
-    like $paths[1], qr{app-home/docs/en};
+    cmp_deeply \@paths, [ re('plugins/my-plugin/docs/en'), re('app-base/features/testfeature/docs/en'), re('app-home/docs/en') ];
 };
 
 subtest 'paths_to: returns all available existings files' => sub {
