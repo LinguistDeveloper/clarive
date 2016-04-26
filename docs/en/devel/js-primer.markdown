@@ -135,6 +135,19 @@ function nada(name) {
 print( nada("Bob") );
 ```
 
+## The console
+
+A set of JavaScript `console` methods are implemented
+in Clarive JS.
+
+```javascript
+console.log({aa:11});
+console.warn('hello there');  // to standard error
+console.dir({aa:22});
+console.info({aa:22});
+console.assert(true, 'nada');
+```
+
 ## Templating and multiline strings
 
 For writing multi-line strings that can also be templated (ie. that have variables interpolated),
@@ -143,7 +156,7 @@ standard.
 
 (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
 
-This is done by enclosing your string in between backticks:
+This is done by enclosing your string between backticks:
 
 ```javascript
 var txt = `This is

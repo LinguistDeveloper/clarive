@@ -10,12 +10,14 @@ These are the top-level namespaces available:
 
 - `cla` - top level namespace and shortcuts to other often used utilities
 - `cla/ci` - CI manipulation
+- `cla/console` - JavaScript console object
 - `cla/db` - MongoDB database manipulation
 - `cla/log` - Logging
 - `cla/fs` - Filesystem manipulation
 - `cla/path` - File path manipulation
 - `cla/rule` - Rule manipulation
 - `cla/sem` - Semaphores
+- `cla/t` - Testing
 - `cla/util` - Generic utilities
 - `cla/web` - Web tools
 - `cla/ws` - Webservice rule Request/Response
