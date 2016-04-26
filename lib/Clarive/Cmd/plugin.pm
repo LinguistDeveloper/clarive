@@ -18,6 +18,7 @@ use Test::Harness;
 use Test::More;
 
 has color => qw(is rw default 1);
+has verbose_tests => qw(is rw isa Num default 0);
 
 *run = \&run_list;
 
@@ -31,6 +32,12 @@ sub run_list {
         my $ver_str = $info->{version} ? "($info->{version})" : '';
         say sprintf '%s: %s %s', $info->{id}, $info->{name}, $ver_str;
     }
+}
+
+sub run_search_path {
+    my ($self, %opts)=@_;
+
+    say for $self->app->plugins->search_path
 }
 
 sub run_info {
@@ -66,7 +73,7 @@ sub run_test {
 
     my $harness = TAP::Harness->new({
             color => $self->color,
-            verbosity => $self->verbose,
+            verbosity => $self->verbose || $self->verbose_tests,
             exec => sub{
                 my ( $harness, $test_file ) = @_;
 
@@ -100,7 +107,7 @@ sub run_test {
 
     my $plugins = $self->app->plugins;
 
-    if( my @arg_files = @{ $opts{argv} || [] } ) {
+    if( my @arg_files = @{ $opts{args}{''} || [] } ) {
         for my $file ( @arg_files ) {
             if( my $first = $plugins->locate_first( "t/$file" ) ) {
                 if( -d $first->{path} ) {

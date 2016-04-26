@@ -32,6 +32,13 @@ sub load_info {
     return $info;
 }
 
+sub search_path {
+    my $self = shift;
+
+    my $cla_home = $self->app->home;
+    return ( _dir($self->app->plugins_home), _dir($cla_home,'plugins') );
+}
+
 sub all_plugins {
     my $self = shift;
     my %opts = @_;
@@ -39,9 +46,7 @@ sub all_plugins {
     my @plugins;
     my @ids;
 
-    my $cla_home = $self->app->home;
-
-    for my $base ( _dir($self->app->plugins_home), _dir($cla_home,'plugins') ) {
+    for my $base ( $self->search_path ) {
         next unless -e $base;
 
         if( exists $opts{id} ) {
