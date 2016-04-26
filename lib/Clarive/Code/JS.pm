@@ -520,8 +520,8 @@ sub _generate_ns {
 
                 $self->_map_ci($classname);
             },
-            new => js_sub {
-                shift;
+            build => js_sub {
+                my $duk = shift;
                 my ($camel,$obj) = @_;
 
                 die "Missing parameter `classname`\n" unless $camel;
