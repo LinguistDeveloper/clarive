@@ -1111,7 +1111,7 @@ sub delete : Local {
             foreach my $user ( keys %ps_users ) {
                 foreach my $mid ( _array $mids ){
                     if ($mid ~~ $ps_users{$user}){
-                        $err .= _loc("%1 is already assigned in user: %2",$mid,$user) . "<br>";
+                        $err .= _loc("%1 is already assigned in user: %2",_ci($mid)->{name},$user) . "<br>";
                         $found = 1;
                     }
                 }

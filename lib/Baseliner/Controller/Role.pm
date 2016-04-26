@@ -317,31 +317,45 @@ sub update : Local {
 
 sub delete : Local {
     my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-    eval {
-        mdb->role->remove({ id=>"$p->{id_role}" });
 
-        #borramos roles del project_security de los usuarios que tengan ese rol
-        my @users = ci->user->find({"project_security.$p->{id_role}"=>{'$exists'=>1}})->fields({project_security=>1,mid=>1, _id=>0})->all;
-        foreach my $user (@users){
-            #quitar de project security del usuario ese rol que es $p->{id_role}
-            my $project_security = $user->{project_security};
-            delete $project_security->{$p->{id_role}};
-            my $ci = ci->new($user->{mid});
-            $ci->update(project_security=>$project_security);
+    my $p = $c->req->params;
+
+    if ($p->{delete_confirm} && $p->{delete_confirm} eq '1'){
+        eval {
+            mdb->role->remove({ id=>"$p->{id_role}" });
+
+            #borramos roles del project_security de los usuarios que tengan ese rol
+            my @users = ci->user->find({"project_security.$p->{id_role}"=>{'$exists'=>1}})->fields({project_security=>1,mid=>1, _id=>0})->all;
+            foreach my $user (@users){
+                #quitar de project security del usuario ese rol que es $p->{id_role}
+                my $project_security = $user->{project_security};
+                delete $project_security->{$p->{id_role}};
+                my $ci = ci->new($user->{mid});
+                $ci->update(project_security=>$project_security);
+            }
+        };
+        if( $@ ) {
+            warn $@;
+            $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
+        } else {
+            $c->stash->{json} = { success => \1 };
         }
-    };
-    if( $@ ) {
-        warn $@;
-        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
-    } else {
-        $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
+        cache->remove("roles:tree:$p->{id_role}:");
+        cache->remove(':role:ids:');
+        cache->remove({ d=>'security' });
+        cache->remove({ d=>"topic:meta" });
+        $c->forward('View::JSON');
     }
-    cache->remove("roles:tree:$p->{id_role}:");
-    cache->remove(':role:ids:');
-    cache->remove({ d=>'security' });
-    cache->remove({ d=>"topic:meta" });
-    $c->forward('View::JSON');
+    else{
+        my @role_users =
+          ci->user->find( { "project_security.$p->{id_role}" => { '$exists' => 1 } } )->fields( { name => 1 } )
+          ->sort( { name => 1 } )->all;
+
+        my @user_names = map { $_->{name} } @role_users;
+
+        $c->stash->{json} = { success => \1, users => \@user_names };
+        $c->forward('View::JSON');
+    }
 }
 
 sub duplicate : Local {

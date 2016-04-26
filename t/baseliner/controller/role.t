@@ -6,11 +6,16 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::MonkeyMock;
+
 use TestEnv;
 BEGIN { TestEnv->setup; }
+use TestSetup;
 use TestUtils ':catalyst';
 
 use Clarive::mdb;
+
+use Baseliner::CI;
+use Baseliner::Role::CI;
 
 use_ok 'Baseliner::Controller::Role';
 
@@ -219,14 +224,94 @@ subtest 'update: does not update role with same name as another' => sub {
     );
 };
 
+subtest 'delete: asks for confirmation when role has assigned users' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { id_role => $id_role } } );
+
+    my $controller = _build_controller();
+    $controller->delete($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success    => \1,
+                users => ['developer']
+            }
+        }
+    );
+};
+
+subtest 'delete: deletes role with users when confirmed' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = _build_c( req => { params => { id_role => $id_role, delete_confirm => '1' } } );
+
+    my $controller = _build_controller();
+    $controller->delete($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success => \1,
+            }
+        }
+    );
+};
+
+subtest 'delete: deletes role without users' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role();
+
+    my $c = _build_c( req => { params => { id_role => $id_role, delete_confirm => '1' } } );
+
+    my $controller = _build_controller();
+    $controller->delete($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success => \1,
+            }
+        }
+    );
+};
+
 sub _setup {
+   TestUtils->setup_registry(
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
+        'BaselinerX::CI',          'BaselinerX::Events',
+        'Baseliner::Model::Rules',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+
+    );
+
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
     mdb->role->drop;
 
-    TestUtils->setup_registry();
+    TestUtils->register_ci_events();
+
 }
 
 sub _build_controller {
