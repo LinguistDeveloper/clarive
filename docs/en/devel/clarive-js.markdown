@@ -152,3 +152,7 @@ print( msg );
 
 Returns the last error string.
 
+```javascript
+print( cla.lastError() );
+```
+
