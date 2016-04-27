@@ -2008,7 +2008,8 @@ sub save_doc {
     my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields
     for my $changed ( grep { exists $diff->{$_} } map { $_->{column} } @custom_fields ){
         next if ref $doc->{$changed} || ref $old_doc->{$changed};
-        next if $doc->{$changed} eq $old_doc->{$changed};
+        next if !defined $doc->{$changed} && !defined $old_doc->{$changed};
+        next if defined $doc->{$changed} && defined $old_doc->{$changed} && $doc->{$changed} eq $old_doc->{$changed};
         my $md = $meta{ $changed };
         my $notify = {
             category        => $doc->{id_category},
