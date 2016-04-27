@@ -1,5 +1,4 @@
 var ci = require('cla/ci');
-ci.create("TestClassFromStatus",{
+ci.createClass("TestClassFromStatus",{
     superclasses: ['Status']
 });
-

@@ -2,7 +2,7 @@ package Clarive::Code::JSModules::db;
 use strict;
 use warnings;
 
-use Baseliner::Utils qw(_unbless);
+use Baseliner::Utils qw(_unbless _blessed);
 use Clarive::Code::Utils;
 
 sub generate {
@@ -10,7 +10,7 @@ sub generate {
     my $stash = shift;
     my $js    = shift;
 
-    +{
+    return {
         seq => js_sub {
             mdb->seq(@_);
         },
@@ -49,17 +49,14 @@ sub _generate_db_methods {
                     return $col->drop;
                 },
                 findOne => js_sub {
+                    my $doc = $col->find_one(@_);
 
-                    my $doc = $col->find_one( @_ );
                     return _serialize( {}, $doc );
                 },
-                clone => js_sub {
-                    return $col->clone( @_ );
-                },
                 find => js_sub {
-
                     my $cursor = $col->find(@_);
-                    return $class->_db_wrap_cursor( $cursor );
+
+                    return $class->_db_wrap_cursor($cursor);
                 }
             };
         }
@@ -68,29 +65,33 @@ sub _generate_db_methods {
 
 sub _db_wrap_cursor {
     my $class = shift;
-    my $cursor = shift;
+    my ($cursor) = @_;
+
     return {
-        next    => js_sub { _unbless( $cursor->next ) },
+        next    => js_sub { _smart_serialize( $cursor->next ) },
         hasNext => js_sub { $cursor->has_next },
         forEach => js_sub {
             my ($cb) = @_;
 
-            return unless $cb && ref $cb eq 'CODE';
+            return unless ref $cb eq 'CODE';
 
             while ( my $doc = $cursor->next ) {
-                js_sub(\&$cb)->( _unbless( $doc ) );   # unbless is much faster than _serialize()
+                js_sub( \&$cb )->( _smart_serialize($doc) );
             }
 
             return;
         },
-        count => js_sub { $cursor->count },
-        all   => js_sub { [ map { _unbless($_) } $cursor->all(@_) ] },
-        fields=> js_sub { $class->_db_wrap_cursor( $cursor->fields(@_) ) },
-        limit => js_sub { $class->_db_wrap_cursor( $cursor->limit(@_) ) },
-        skip  => js_sub { $class->_db_wrap_cursor( $cursor->skip(@_) ) },
-        sort  => js_sub { $class->_db_wrap_cursor( $cursor->sort(@_) ) },
+        count => js_sub { $cursor->count(@_) },
+        all   => js_sub {
+            return [ map { _smart_serialize($_) } $cursor->all ]
+        },
+        fields => js_sub { $class->_db_wrap_cursor( $cursor->fields(@_) ) },
+        limit  => js_sub { $class->_db_wrap_cursor( $cursor->limit(@_) ) },
+        skip   => js_sub { $class->_db_wrap_cursor( $cursor->skip(@_) ) },
+        sort   => js_sub { $class->_db_wrap_cursor( $cursor->sort(@_) ) },
     };
 }
 
-1;
+sub _smart_serialize { _blessed( $_[0] ) ? _serialize( {}, $_[0] ) : _unbless( $_[0] ) }
 
+1;

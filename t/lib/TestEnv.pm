@@ -22,6 +22,7 @@ sub version { '' }
 
 use Carp qw(longmess);
 use Test::MockTime ();
+use Cwd ();
 use Path::Class    ();
 use Baseliner::Core::Registry;
 
@@ -36,7 +37,7 @@ my @WARNINGS;
 
 sub setup {
     my $class = shift;
-    my %opts = @_;
+    my %opts  = @_;
 
     my $prev_dir = Cwd::getcwd();
 
@@ -44,15 +45,33 @@ sub setup {
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
     Clarive->config->{root} = Path::Class::dir('root')->absolute;
 
+    chdir $prev_dir;
+
     require Clarive::mdb;
     require Clarive::model;
     require Clarive::cache;
 
-    *Baseliner::registry = sub { 'Baseliner::Core::Registry' };
-    *Baseliner::config   = sub { {} };
-    *Baseliner::app      = sub { };
+    *Baseliner::app = sub {
+        {
+            _logger => sub { }
+        };
+    };
 
-    chdir $prev_dir;
+    $SIG{__WARN__} = sub {
+        push @WARNINGS, longmess( $_[0] );
+        warn @_;
+    };
+}
+
+END {
+    if ( $ENV{TEST_FATAL_WARNINGS} && @WARNINGS ) {
+        print STDERR "WARNINGS!\n";
+        for (@WARNINGS) {
+            print STDERR "$_\n";
+        }
+
+        exit 1;
+    }
 }
 
 1;

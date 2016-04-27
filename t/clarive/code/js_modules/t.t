@@ -2,9 +2,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Fatal;
-use Test::Deep;
-use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
@@ -26,7 +23,7 @@ subtest 't: testing more js' => sub {
             t.like('hello',cla.regex('h.'));
             t.unlike('foo',cla.regex('h.'));
         });
-        t.pass('my test');
+        t.isDeeply([1,2],[1,2]);
         t.cmpDeeply([1,2],[1,2]);
         t.cmpDeeply({aa:10, bb:20},{bb:20, aa:10});
         t.cmpDeeply([1,2],[1, t.ignore() ]);
@@ -35,6 +32,14 @@ subtest 't: testing more js' => sub {
         t.cmpDeeply([11], t.subsetof(22,11) );
         t.cmpDeeply([11,{ aa: 22 }], [t.ignore(),{ aa: t.ignore() }], 'multiple ignore' );
         t.cmpDeeply( ['abc'], [ t.re('b') ] );
+        t.cmpDeeply( 'abc', t.all(t.re('b')) );
+        t.cmpDeeply( 'abc', t.any(t.re('b')) );
+        t.cmpDeeply( ['foo'], t.subbagof('foo') );
+        t.cmpDeeply( ['foo', 'bar'], t.superbagof('foo') );
+        t.cmpDeeply( ['foo', 'bar'], t.supersetof('foo') );
+        t.cmpDeeply( ['bar'], t.noneof('foo') );
+        t.cmpDeeply( 'foo', t.shallow('foo') );
+        t.doneTesting();
     });
 };
 

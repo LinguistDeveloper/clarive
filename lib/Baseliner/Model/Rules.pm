@@ -1363,14 +1363,14 @@ sub save_rule {
     };
 
     if ( exists $params{rule_tree} && ref $params{rule_tree} ) {
-        $data->{rule_tree} = JSON::encode_json( $params{rule_tree} ); 
+        $data->{rule_tree} = JSON::encode_json( $params{rule_tree} );
     }
 
     if ( length $params{rule_id} ) {
         $id_rule = $params{rule_id};
         event_new 'event.rule.update'
             => { username=>$params{username}, rule_id=>$params{rule_id}, rule_name=>$params{rule_name}, rule_type=>$params{rule_type}}
-            => sub { 
+            => sub {
                 my $doc = mdb->rule->find_one({ id=>"$params{rule_id}" });
                 _fail _loc 'Rule %1 not found', $params{rule_id} unless $doc;
                 mdb->rule->update({ id=>"$params{rule_id}" },{ %$doc, %$data });

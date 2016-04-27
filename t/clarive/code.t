@@ -4,20 +4,36 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 
+use TestEnv;
+BEGIN { TestEnv->setup }
+use TestUtils;
+
 use_ok 'Clarive::Code';
 
 subtest 'eval_code: dispatches to js' => sub {
-    my $code = _build_code(lang => 'js');
+    my $code = _build_code( lang => 'js' );
 
-    my $ret = $code->eval_code('1 + 1', {});
+    my $ret = $code->eval_code( '1 + 1', {} );
 
     is $ret, 2;
 };
 
 subtest 'eval_code: benchmark js code' => sub {
-    my $code = _build_code( lang => 'js', benchmark=>1 );
+    my $code = _build_code( lang => 'js', benchmark => 1 );
+
     $code->eval_code(q{var x=1; x++;});
-    ok $code->elapsed > 0;   
+
+    ok $code->elapsed > 0;
+};
+
+subtest 'run_file: executes code from file' => sub {
+    my $filename = TestUtils->create_temp_file("1 + 1", 'file.js');
+
+    my $code = _build_code();
+
+    my $ret = $code->run_file($filename);
+
+    is $ret, 2;
 };
 
 done_testing;

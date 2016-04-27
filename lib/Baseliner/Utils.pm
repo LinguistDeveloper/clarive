@@ -103,6 +103,7 @@ use Exporter::Tidy default => [
     _slurp
     _to_camel_case
     _unbless
+    _blessed
     _trend_line
     _truncate
     to_base_class
@@ -1188,7 +1189,7 @@ sub _to_json {
 
 sub _from_json {
     require JSON::XS;
-    goto &JSON::XS::decode_json;   
+    goto &JSON::XS::decode_json;
 }
 
 =head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
@@ -2324,7 +2325,7 @@ sub _json_pointer {
 
     if( substr($key,0,1) ne '/' || ( my $is_double = substr($key,0,2) eq '//' ) ) {
         $key = substr($key,1) if $is_double;
-        return $data->{$key} if @_ == 2; 
+        return $data->{$key} if @_ == 2;
         return $data->{$key} = $val;
     }
 
@@ -2334,14 +2335,14 @@ sub _json_pointer {
         return $obj unless @$keys && ref( $obj ) =~ /HASH|ARRAY/;
         my $key  = shift @$keys;
         my $is_arr = is_number($key);
-        my $slot = do{ 
+        my $slot = do{
             if( $is_setting && !@$keys ) {
-                $is_arr 
+                $is_arr
                     ? ( $obj->[$key] = $val )
                     : ( $obj->{$key} = $val );
             } else {
-                $is_arr 
-                    ? $obj->[$key] 
+                $is_arr
+                    ? $obj->[$key]
                     : $obj->{$key};
             }
         };

@@ -6,12 +6,13 @@ use Test::Fatal;
 use Test::Deep;
 
 use Cwd ();
+use TestEnv;
 my $root;
 
 BEGIN {
     use File::Basename qw(dirname);
     $root = Cwd::realpath( dirname(__FILE__) );
-    TestEnv->setup( base => "$root/../data/app-base", home => "$root/../data/app-base/app-home" );
+    TestEnv->setup( base => "$root/data/app-base", home => "$root/data/app-base/app-home" );
 }
 
 use Class::Load qw(is_class_loaded);
@@ -26,7 +27,6 @@ use Baseliner::Utils;
 # mock Baseliner subs
 our $config = {};
 require Baseliner;
-no warnings 'redefine';
 sub Baseliner::config { $config };    # XXX had to monkey patch this one so config works
 
 subtest 'core encrypt-decrypt working' => sub {
@@ -39,7 +39,7 @@ subtest 'core encrypt-decrypt working' => sub {
 subtest 'plugins public/ available for static serving' => sub {
     my $app = Baseliner->build_app();   ## FIXME this can only be done once! Baseliner->new doesnt work, etc.
 
-    cmp_deeply( Baseliner->config->{static}{include_path}, bag( re('app-base/plugins/foo-plugin/public'), ignore() ) );
+    ok grep { $_ =~ m{app-base/plugins/foo-plugin/public} } @{ Baseliner->config->{static}->{include_path} };
 
     my $classname = Util->to_ci_class('TestClassFromStatus');
     ok is_class_loaded( $classname );

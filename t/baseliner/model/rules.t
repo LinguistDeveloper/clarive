@@ -270,9 +270,9 @@ subtest 'meta key with attributes sent to service op' => sub {
 
     Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
     Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
-    { package DummyPKG; sub new { } };
+    { package DummyPKGMetaKey; sub new { } };
     Baseliner::Core::Registry->add(
-        'DummyPKG',
+        'DummyPKGMetaKey',
         'service.test.op' => {
             name => 'Test Op',
             icon => '',
@@ -508,7 +508,7 @@ subtest 'save_rule: saves the tree' => sub {
 
     my $ret = $rules->save_rule( %$data );
     my $tree = mdb->rule->find_one({ id=>$ret->{id_rule} })->{rule_tree};
-    
+
     is_deeply( Util->_decode_json($tree), $data->{rule_tree} );
 };
 

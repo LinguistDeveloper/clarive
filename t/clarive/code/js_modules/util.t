@@ -4,60 +4,47 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
-use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
 
+use Time::HiRes qw(gettimeofday tv_interval);
+
 use_ok 'Clarive::Code::JS';
 
-subtest 'load yaml util' => sub {
+subtest 'sleep: sleeps for n seconds' => sub {
     _setup();
 
     my $code = _build_code( lang => 'js' );
 
-    my $hash = $code->eval_code(q{
-        var util = require("cla/util");
-        var yaml="---\nfoo: bar\n"; util.loadYAML(yaml)});
+    my $t0 = [ gettimeofday() ];
 
-    is_deeply $hash, { foo=>'bar' };
+    $code->eval_code(
+        q{
+        var util = require("cla/util");
+        util.sleep(0.1);
+        }
+    );
+
+    ok tv_interval($t0) > 0.1;
 };
 
-subtest 'dump yaml util' => sub {
+subtest 'benchmark: benchmarks code' => sub {
     _setup();
 
     my $code = _build_code( lang => 'js' );
 
-    my $yaml = $code->eval_code(q{
+    my $t0 = [ gettimeofday() ];
+
+    $code->eval_code(
+        q{
         var util = require("cla/util");
-        util.dumpYAML({ foo: 'bar' })});
+        util.benchmark(1, function() { util.sleep(0.1) });
+        }
+    );
 
-    like $yaml, qr/foo: bar/;
-};
-
-subtest 'load json util' => sub {
-    _setup();
-
-    my $code = _build_code( lang => 'js' );
-
-    my $hash = $code->eval_code(q{
-        var util = require("cla/util");
-        var json='{ "foo":"bar" }'; util.loadJSON(json)});
-
-    is_deeply $hash, { foo=>'bar' };
-};
-
-subtest 'dump json util' => sub {
-    _setup();
-
-    my $code = _build_code( lang => 'js' );
-
-    my $json = $code->eval_code(q{
-        var util = require("cla/util");
-        util.dumpJSON({ foo: 'bar' })});
-
-    like $json, qr/"foo"\s*:\s*"bar"/;
+    ok tv_interval($t0) > 0.1;
 };
 
 done_testing;
@@ -69,4 +56,3 @@ sub _setup {
 sub _build_code {
     Clarive::Code::JS->new(@_);
 }
-

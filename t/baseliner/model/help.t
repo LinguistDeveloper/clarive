@@ -48,14 +48,14 @@ subtest 'build_doc_tree: help tree is built from directory and in correct order'
         {
             'icon' => ignore(),
             'text' => 'External',
-            children => [
-            ],
-            'expanded' => \1,
-            index => ignore(),
-            'data' => {
-                'path' => 'ext-test',
+            'search_results' => {
+                'matches' => undef,
+                'found'   => undef
             },
-            'leaf' => \0
+            'data' => {
+                'path' => 'ext-test.markdown',
+            },
+            'leaf' => \1
         },
         {
             'icon' => ignore(),
@@ -124,17 +124,6 @@ subtest 'build_doc_tree: returns only matches results when query' => sub {
 
     cmp_deeply \@tree,
       [
-        {
-            'icon' => ignore(),
-            'text' => 'External',
-            children => [],
-            'data' => {
-                'path' => 'ext-test',
-            },
-            expanded => \1,
-            index => ignore(),
-            'leaf' => \0
-        },
         {
             'icon' => ignore(),
             'text' => 'Help Test',

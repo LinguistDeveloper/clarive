@@ -210,7 +210,7 @@ sub eval : Local {
                     my $runner = Clarive::Code->new( lang=>'js', benchmark=>1 );
                     my $stash = {}; # TODO it would be great if we could set a YAML stash in the REPL
                     try {
-                        $res = [ $runner->eval_code( $code, $stash ) ]; 
+                        $res = [ $runner->eval_code( $code, $stash ) ];
                     } catch {
                         my $err = shift;
                         $res = [];
@@ -219,7 +219,7 @@ sub eval : Local {
                     $elapsed = $runner->elapsed;
                 } else {
                     $t0 = [gettimeofday]; # this one is in case of error; the next one is for a more accurate measurement
-                    $code = "use v5.10;\$t0=[gettimeofday];$code";
+                        $code = "use v5.10;\$t0=[gettimeofday]; binmode STDOUT, ':utf8'; binmode STDERR, ':utf8'; $code";
                     $res  = [ eval $code ];
                     $elapsed = tv_interval( $t0 );
                 }
@@ -239,8 +239,8 @@ sub eval : Local {
     my ( $line ) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
 
     $c->stash->{json} = {
-        stdout  => $stdout,
-        stderr  => $stderr,
+        stdout  => Encode::decode('UTF-8', $stdout),
+        stderr  => Encode::decode('UTF-8', $stderr),
         elapsed => sprintf('%.08f', $elapsed),
         result  => "$res",
         error   => "$err",
@@ -540,7 +540,7 @@ sub tidy : Local {
         $c->stash->{json} = {success => \0, msg => shift};
     };
     $c->forward( 'View::JSON' );
-} 
+}
 
 sub push_to_history {
     my ( $self, $session, $code, $lang, $output ) = @_;
