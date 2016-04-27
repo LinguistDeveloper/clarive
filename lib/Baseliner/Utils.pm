@@ -105,6 +105,7 @@ use Exporter::Tidy default => [
     _unbless
     _trend_line
     _truncate
+    to_base_class
 )],
 other => [qw(
     _load_yaml_from_comment
