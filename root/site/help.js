@@ -265,7 +265,7 @@ Cla.help_push = function(params) {
         text: params.title,
         help_path: params.path,
         handler: function() { 
-            Cla.help_show({ path: params.path+'.markdown' });
+            Cla.help_show({ path: params.path +'.markdown' });
         },
         icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
     };
