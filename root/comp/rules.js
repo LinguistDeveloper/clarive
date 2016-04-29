@@ -1486,7 +1486,7 @@
                 if( attr.parallel_mode && attr.parallel_mode!='none' ) {
                     parallel_mode.push( attr.parallel_mode );
                 }
-                if( attr.data.parallel_stash_keys && attr.data.parallel_stash_keys.length ) {
+                if( attr.data && attr.data.parallel_stash_keys && attr.data.parallel_stash_keys.length ) {
                     parallel_stash_keys = '\u21D0 ' + attr.data.parallel_stash_keys;
                 }
                 if( attr.data_key ) {
