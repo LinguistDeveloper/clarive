@@ -8773,3 +8773,6 @@ msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
 
 msgid "The role %1 has %2 user(s) assigned, delete this role?"
 msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
+
+msgid "Attachments"
+msgstr "Adjuntos"

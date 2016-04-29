@@ -2,9 +2,8 @@ package Baseliner::Model::TopicExporter::Csv;
 use Moose;
 
 use Encode ();
-use Text::Unaccent::PurePerl qw(unac_string);
 use Baseliner::Model::Topic;
-use Baseliner::Utils qw(_dump _utf8 _array _strip_html);
+use Baseliner::Utils qw(_array _strip_html _loc);
 
 has renderer => qw(is ro);
 
@@ -12,31 +11,19 @@ sub export {
     my $self = shift;
     my ( $data, %params ) = @_;
 
-    my @csv;
-    my @cols;
+    my @columns = $self->_prepare_columns(%params);
 
-    my ( $ref_in, $ref_out, $num_file, $numcomment );
+    my @csv;
+    my $headers;
+
+    $headers = join( ';', map { "\"" . _loc( $_->{name} ) . "\"" } @columns ) . "\n";
+
     for my $row ( _array $data) {
         my $main_category = $row->{category}->{name} || $row->{category_name};
         my @cells;
-        for my $col ( grep { length $_->{name} } _array( $params{columns} ) ) {
+        for my $col (@columns) {
             my $col_id = $col->{id};
-          COMMENTS:
-            if ( $col->{id} eq 'numcomment' && $params{id_report} !~ /report/ )
-            {    # Look for all fields managed in this column
-                if ( $col_id eq 'numcomment' ) {
-                    $col_id = 'referenced_in';
-                }
-                elsif ( $col_id eq 'referenced_in' ) {
-                    $col_id = 'references_out';
-                }
-                elsif ( $col_id eq 'references_out' ) {
-                    $col_id = 'num_file';
-                }
-                elsif ( $col_id eq 'num_file' ) {
-                    $col_id = 'numcomment';
-                }
-            }
+
             my $v = $row->{$col_id};
             if ( ref $v eq 'ARRAY' ) {
                 if ( $col->{id} eq 'projects' ) {
@@ -58,7 +45,12 @@ sub export {
                     $v = join ';', @res;
                 }
                 else {
-                    $v = join ',', @$v;
+                    if ( $col->{id} eq 'referenced_in' || $col->{id} eq 'references_out' ) {
+                        $v = scalar @$v;
+                    }
+                    else {
+                        $v = join ',', @$v;
+                    }
                 }
             }
             elsif ( ref $v eq 'HASH' ) {
@@ -121,17 +113,52 @@ sub export {
         push @csv, join ';', @cells;
     }
 
-    my $body = join("\n", @csv);
+    my $body = join( "\n", @csv );
+    $body = $headers . $body;
 
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file
     my $len = length $body;
     $body .= "\n" x ( 1024 - $len + 1 - 3 ) if $len < 1024;
 
-    $body = Encode::encode('UTF-8', $body);
+    $body = Encode::encode( 'UTF-8', $body );
 
     $body = "\xEF\xBB\xBF" . $body;
 
     return $body;
+}
+
+sub _prepare_columns {
+    my $self = shift;
+    my (%params) = @_;
+
+    my @columns = ();
+
+    for my $column ( grep { length $_->{name} } _array( $params{columns} ) ) {
+        push @columns, $column;
+
+        # This is a special Info columns. Yes, the column name suggests that the author was under drugs probably
+        if ( $column->{id} eq 'numcomment' ) {
+            push @columns,
+              {
+                id   => 'referenced_in',
+                name => _loc("Referenced In"),
+              };
+
+            push @columns,
+              {
+                id   => 'references_out',
+                name => _loc("References"),
+              };
+
+            push @columns,
+              {
+                id   => 'num_file',
+                name => 'Attachments',
+              };
+        }
+    }
+
+    return @columns;
 }
 
 1;
