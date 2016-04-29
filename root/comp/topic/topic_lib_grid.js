@@ -315,7 +315,13 @@ Cla.topic_grid = function(params){
     });
 
     var status_menu = new Ext.menu.Menu({ items: [] });
-    var btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.gif'), menu: status_menu, disabled: true });
+    var btn_change_status = new Ext.Toolbar.Button({
+        text: _("Change Status"),
+        icon:IC('state.gif'),
+        menu: status_menu,
+        disabled: true,
+        hidden: id_report,
+    });
 
     var add_view = function() {
         var win;
@@ -388,7 +394,7 @@ Cla.topic_grid = function(params){
 
     var btn_add = new Baseliner.Grid.Buttons.Add({
         disabled: false,
-
+        hidden : id_report,
             handler: function() {
             store_category.load({params:{action: 'create'}});
             add_topic();
@@ -586,6 +592,7 @@ Cla.topic_grid = function(params){
 
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
         disabled: true,
+        hidden: id_report,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -617,7 +624,7 @@ Cla.topic_grid = function(params){
 %}
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
-        hidden: can_delete,
+        hidden: id_report ? true : can_delete,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
@@ -1238,6 +1245,7 @@ Cla.topic_grid = function(params){
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         _checker: true,
         singleSelect: false,
+        hidden: id_report,
         sortable: false,
         checkOnly: true
     });
