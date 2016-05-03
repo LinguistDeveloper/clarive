@@ -30,16 +30,6 @@ icon: calendar
 ### Campo obligatorio
 * Indica si el campo tiene que ser completado obligatoriamente.
 
-
-<br />
-### Formato de fecha
-* Permite personalizar el formato en el que se mostrará la fecha. 
-* Si el usuario deja el campo en blanco el formato por defecto es *y-m-d* <br />
-
-&nbsp; &nbsp;• *Ejemplo*: d/m/y mostrará 13/06/2013 <br />
-
-&nbsp; &nbsp;• *Ejemplo*: D-M-Y mostrará Vie-Jun-2013
-
 <br />
 ### Establecer hoy como fecha predeterminada.
 * Habilitando esta opción en el formulario aparecerá por defecto el día actual.
