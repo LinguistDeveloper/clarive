@@ -156,7 +156,7 @@ params:
             function generate_txt (mids){
                 var meta_filter = meta.filter;
                 var txt_filter;
-                if ( meta.filter != 'none' && meta_filter.length>0 ) {
+                if ( meta_filter && meta_filter != 'none' && meta_filter.length>0 ) {
                    meta_filter = "," + meta_filter.replace("{","");
                 } else {
                   meta_filter = "}";
