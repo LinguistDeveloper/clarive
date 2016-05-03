@@ -8776,3 +8776,15 @@ msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
 
 msgid "Attachments"
 msgstr "Adjuntos"
+
+msgid "Commits history of branch"
+msgstr "Historial de commits por rama"
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Ago"
+msgstr "Cuando"
+
+msgid "Bls"
+msgstr "Entornos"
