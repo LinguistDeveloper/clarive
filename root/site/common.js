@@ -1258,19 +1258,18 @@ Baseliner.read_pdf = function( url ) {
 
 Baseliner.show_revision = function( mid ) {
     Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-        var url =  res.url.url;
         var title =  res.url.title;
+        var sha = res.url.rev_num;
+        var branch = title == sha ? sha : res.url.branch;
         var params = {
             repo_dir: res.url.repo_dir,
             rev_num: res.url.rev_num,
-            branch: res.url.branch,
+            branch: branch,
             controller: res.url.controller,
             sha: res.url.rev_num,
             repo_mid: res.url.repo_mid
         };
-        if (title == params.sha) {
-            url =  "/comp/view_commits_history.js";
-        }
+        var url =  title == sha ? "/comp/view_commits_history.js" : res.url.url;
         Baseliner.add_tabcomp( url, title, params );             
     });
 };
