@@ -4287,12 +4287,18 @@ Baseliner.generic_list_fields = function(params,opts){
         mode: 'local',
         allowBlank: false,
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('Type'),
         emptyText: _('Select one'),
-        autoLoad: true
+        autoLoad: true,
+        listeners: {
+            afterrender: function() {
+                if (!!opts.list_type) {
+                    this.addClass( "x-item-disabled" );
+                }
+            }
+        }
     });
-
     value_combo.on('select', function(combo,rec,ix) {
         list_type.setValue(rec.data.value_type);
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
