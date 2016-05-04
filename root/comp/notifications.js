@@ -1392,12 +1392,29 @@
         });
         return notifications_checked;
     }  	
+
+    var filters = new Ext.ux.grid.GridFilters({
+        local: true,
+        filters: [{
+            type: 'list',
+            dataIndex: 'action',
+            options: ['SEND', 'EXCLUDE']
+        }, {
+            type: 'list',
+            dataIndex: 'is_active',
+            options: [
+                ["0", "Inactive"],
+                ["1", "Active"]
+            ]
+        }]
+    });
 	
 	var grid = new Ext.grid.GridPanel({
 		renderTo: 'main-panel',
 		cls:'notification_menu',
 		sm: check_notifications_sm,
         store: store_notifications,
+        plugins:[filters],
         viewConfig: {
             forceFit: true
         },
