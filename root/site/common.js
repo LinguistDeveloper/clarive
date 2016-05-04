@@ -4213,7 +4213,19 @@ Baseliner.generic_fields = function(params){
         ],
         value: data.colspan || '12',
     });
-    var mandatory_cb = new Baseliner.CBox({ name: 'mandatory_cb', checked: !Baseliner.eval_boolean(data.allowBlank, true), fieldLabel: _('Mandatory field') });
+    var is_mandatory = data.fieldletType == 'fieldlet.system.title'|| data.fieldletType == 'fieldlet.system.status_new' ? true : false;
+
+    if(is_mandatory){
+        data.allowBlank = false;
+    }
+
+    var mandatory_cb = new Baseliner.CBox({
+        name: 'mandatory_cb',
+        checked: !Baseliner.eval_boolean(data.allowBlank, true),
+        disabled: Baseliner.eval_boolean( is_mandatory, true ),
+        fieldLabel: _('Mandatory field')
+    });
+
     mandatory_cb.on('check', function(cb){
         allowBlank_field.setValue(!cb.checked);
     });

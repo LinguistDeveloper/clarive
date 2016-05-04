@@ -130,6 +130,7 @@
                                 Baseliner.message(_('Calendar'), action.result.msg);
                                 id_cal = '';
                                 cal_windows.hide();
+                                Baseliner.closeCurrentTab();
                             },
                             failure: function(form, action) {
                                 Baseliner.message(_('Failure'), action.result.msg);
