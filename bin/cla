@@ -2,6 +2,9 @@
 
 #set -x
 
+[ "${0:0:1}" == "/" ]
+RELATIVE=$?
+
 BINDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 LOCALDIR=`$BINDIR/realpath "$BINDIR/../../local"`
 PERL="$LOCALDIR/bin/perl"
@@ -9,10 +12,10 @@ if [ ! -e $PERL ]; then
     PERL=`which perl`
 fi
 export PATH="$BINDIR:$LOCALDIR/bin:$LOCALDIR/sbin:$PATH"
-if [ "$CLARIVE_BASE" == "" ]; then
+if [ "$CLARIVE_BASE" == "" ] || [ "$RELATIVE" == "1" ]; then
     export CLARIVE_BASE=`realpath "$BINDIR/../../"`
 fi
-if [ "$CLARIVE_HOME" == "" ]; then
+if [ "$CLARIVE_HOME" == "" ] || [ "$RELATIVE" == "1" ]; then
     export CLARIVE_HOME=`realpath "$BINDIR/../"`
 fi
 export LD_LIBRARY_PATH="$LOCALDIR/lib:$LD_LIBRARY_PATH"
