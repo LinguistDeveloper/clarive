@@ -43,7 +43,8 @@ sub update_category : Local {
     cache->remove({ d=>"topic:meta" });
     cache->remove({ d=>"topic:data" });
 
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
+
     my $assign_type = sub {
         my ($category) = @_;
         given ($type) {
@@ -84,7 +85,7 @@ sub update_category : Local {
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
 
-                    $c->registry->reload_all;
+                    Baseliner::Core::Registry->reload_all;
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=>$category->{id} };
                 }
                 else{
@@ -114,9 +115,11 @@ sub update_category : Local {
                     }
                 });
                 # change all topics
+
                 if( $old->{name} ne $p->{name} || $old->{color} ne $p->{category_color} ) {
                     mdb->topic->update({ 'category.id'=>"$id_category" },
                         { '$set'=>{
+                                'color_category'=> $p->{category_color},
                                 'category.name'=>$p->{name}, name_category => $p->{name}, category_name=> $p->{name},
                                 'category.description' => $p->{description},
                                 'category.color' => $p->{category_color}, category_color => $p->{category_color},
@@ -125,7 +128,8 @@ sub update_category : Local {
                     );
                     cache->remove_like( qr/^topic:/ );
                 }
-                $c->registry->reload_all;
+
+                Baseliner::Core::Registry->reload_all;
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
@@ -140,7 +144,7 @@ sub update_category : Local {
                     _fail _loc('Delete all topics first from the selected categories to delete them');
                 }else{
                     mdb->category->remove({ id=>mdb->in($ids_category) });
-                    $c->registry->reload_all;
+                    Baseliner::Core::Registry->reload_all;
                     $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
                 }
             }
@@ -203,7 +207,7 @@ sub update_status : Local {
     my $action = $p->{action};
 
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     given ($action) {
         when ('add') {
             try{
@@ -282,7 +286,7 @@ sub update_label : Local {
     my $username = $c->username;
 
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     given ($action) {
         when ('add') {
             try{
@@ -340,7 +344,7 @@ sub update_category_admin : Local {
     my $job_type = $p->{job_type};
 
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
 
     foreach my $role (_array $idsroles){
         mdb->category->update({ id=>"$id_category" },
@@ -646,7 +650,7 @@ sub update_fields : Local {
     cache->remove_like( qr/^topic:/ );
     cache->remove_like( qr/^roles:/ );
     cache->remove({ d=>"topic:meta" });
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
 
     my $order = 1;
     my $param_field;
@@ -736,7 +740,7 @@ sub workflow : Local {
     my $p = $c->request->parameters;
     my $cnt=0;
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     if( $action eq 'delete' ) {
         try {
             my $up = mdb->category->update({ id=>''.$p->{id} },
@@ -759,7 +763,7 @@ sub create_clone : Local {
     my $p = $c->req->params;
 
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     try {
         my ($row) =
             grep { $$_{id_field} eq $$p{name_field} }
@@ -801,7 +805,7 @@ sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     try{
         my $id_from = $$p{id_category};
         my $cat = mdb->category->find_one({ id=>$id_from },{ _id=>0 });
@@ -832,7 +836,7 @@ sub delete_row : Local {
     my $id_status_from = $p->{id_status_from};
 
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     try{
         mdb->category->update({ id =>"$id_category" },
             { '$pull' => { workflow => { id_role => "$id_role", id_status_from => $id_status_from } } }, { multiple=>1 });
@@ -884,7 +888,7 @@ sub import_category : Local {
     my $p = $c->req->params;
     my @log;
     cache->remove_like( qr/^topic:/ );
-    $c->registry->reload_all;
+    Baseliner::Core::Registry->reload_all;
     try{
         mdb->txn( sub{
             my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
