@@ -15,8 +15,7 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-
-    var df = meta.format || 'Y-m-d';
+	var date_format = Cla.user_js_date_format();
 
     var value = data ? data[meta.id_field]: ''; 
 
@@ -31,7 +30,7 @@ params:
 			name: meta.id_field,
 			value: value, 
 			//style: { 'font-size': '16px' },
-			format:  df || Prefs.js_date_format,
+			format:  date_format,
 			width: 165,
 			//height: 30,
 			allowBlank: Baseliner.eval_boolean(meta.allowBlank),

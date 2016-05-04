@@ -27,11 +27,5 @@ icon: calendar
 * Check if you want the field as mandatory.
 
 <br />
-### Data time format
-* Insert a custom format to show the date. If the user leave the field blank, the default date format is *Y-M-D*
-
-&nbsp; &nbsp;• *Ex*: d/m/y
-
-<br />
 ### Default today
 * Check this option for insert today as date by default
