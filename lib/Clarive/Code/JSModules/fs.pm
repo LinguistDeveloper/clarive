@@ -4,7 +4,7 @@ use warnings;
 
 use File::Spec;
 use Baseliner::Utils qw(_fail);
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

@@ -381,6 +381,16 @@ subtest 'wait_for_children: throws when one of the forks fails in fail errors mo
       qr/^Error detected in children, pids failed: \d+\./;
 };
 
+subtest 'eval_code: evals code' => sub {
+    _setup();
+
+    my $stash = {};
+
+    my $ret = eval_code( 'js', '1 + 1', $stash );
+
+    is $ret->{ret}, 2;
+};
+
 done_testing;
 
 sub _mock_job_logger {

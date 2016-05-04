@@ -144,7 +144,7 @@ sub run_dir {
         _debug("Running plugin init: $file");
 
         require Clarive::Code;
-        Clarive::Code->new->run_file("$file");
+        Clarive::Code->new->eval_file("$file");
     });
 }
 

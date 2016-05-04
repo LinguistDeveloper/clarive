@@ -7,7 +7,7 @@ use File::Spec;
 use Test::Builder;
 use Test::More;
 use Test::Deep;
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

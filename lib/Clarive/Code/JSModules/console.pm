@@ -5,7 +5,7 @@ use warnings;
 
 use Encode ();
 use Baseliner::Utils qw(_to_json);
-use Clarive::Code::Utils qw(js_sub);
+use Clarive::Code::JSUtils qw(js_sub);
 
 sub generate {
     my $class = shift;

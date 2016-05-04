@@ -166,22 +166,19 @@ subtest 'regex param unwrap' => sub {
     _setup();
 
     my $code = _build_code( lang => 'js' );
-    $code->save_vm(1);
-
-    my $vm = $code->initialize;
-    $vm->set(
-        barfoo => sub {
-            my $arg  = shift;
-            my ($re) = Clarive::Code::Utils::unwrap_types($arg);
-            my @r    = ( 'aa bb cc dd' =~ m/$re/g );
-            return scalar @r;
-        }
-    );
 
     my $ret = $code->eval_code(
         q{
-        barfoo( cla.regex('( )') );
-    }
+        cla.stash('barfoo')( cla.regex('( )') );
+    },
+        {
+            barfoo => sub {
+                my $arg  = shift;
+                my ($re) = Clarive::Code::JSUtils::unwrap_types($arg);
+                my @r    = ( 'aa bb cc dd' =~ m/$re/g );
+                return scalar @r;
+            }
+        }
     );
 
     is $ret, 3;

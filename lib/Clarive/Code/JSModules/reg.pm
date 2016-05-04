@@ -5,7 +5,7 @@ use warnings;
 use Baseliner::RuleFuncs ();
 use Baseliner::Core::Registry;
 use Clarive::Code::JS::Service;
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

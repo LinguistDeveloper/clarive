@@ -1,5 +1,6 @@
 package Clarive::Code::JS;
 use Moose;
+BEGIN { extends 'Clarive::Code::Base' }
 
 BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }
 
@@ -7,18 +8,15 @@ use Try::Tiny;
 use Scalar::Util qw(blessed);
 use JavaScript::Duktape 1.0;
 use Baseliner::Utils qw(:logging _md5 _file);
-use Clarive::Code::Utils;
-
+use Clarive::Code::JSUtils;
 use Clarive::Code::JSModules::console;
 use Clarive::Code::JSModules::process;
 
-has options      => qw(is rw isa HashRef), default => sub { +{} };
-has enclose_code => qw(is rw isa Bool default 0);
-has transpiler => qw(is rw isa Str), default => '';
-has strict_mode   => qw(is rw isa Bool default 1);
+has enclose_code  => qw(is rw isa Bool default 0);
+has transpiler    => qw(is rw isa Str), default => '';
 has allow_pragmas => qw(is rw isa Bool default 1);
 
-has current_file => qw(is rw isa Str), default => 'EVAL';
+has filename => qw(is rw isa Str), default => 'EVAL';
 
 has extend_cla => qw(is rw isa HashRef default), sub { +{} };
 has global_ns  => qw(is rw isa HashRef default), sub { +{} };
@@ -54,7 +52,78 @@ has
 
 our $CURRENT_VM;
 
-sub initialize {
+sub eval_code {
+    my $self = shift;
+    my ( $code, $stash ) = @_;
+
+    $stash ||= {};
+
+    my $js_duk = $self->_initialize($stash);
+
+    local $Clarive::Code::JSUtils::GLOBAL_ERR = '';
+
+    if ( $self->allow_pragmas ) {
+        $self->_process_pragmas($code);
+    }
+
+    my $processed_code;
+
+    if ( my $tp = $self->transpiler ) {
+        $processed_code = $self->_transpile( $tp, $code );
+    }
+    else {
+        $processed_code = heredoc($code);
+        $processed_code = template_literals($processed_code);
+    }
+
+    if ( $self->enclose_code ) {
+        $processed_code = $self->prefix . "(function(global){$processed_code}(this))";
+    }
+    else {
+        $processed_code = $self->prefix . $processed_code;
+    }
+
+    return try {
+        local $CURRENT_VM = $js_duk;
+
+        $js_duk->eval($processed_code);
+    }
+    catch {
+        my $err = shift;
+        $err =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1}s;
+
+        my $file = $self->filename;
+
+        my $msg = "Error executing JavaScript ($file): $err";
+
+        if ( $err =~ /parse error/ && $Clarive::Code::JSUtils::GLOBAL_ERR ) {
+            warn("$Clarive::Code::JSUtils::GLOBAL_ERR\n");
+        }
+
+        if ( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
+            $err_line--;
+
+            my @lines = ( split "\n", $processed_code );
+
+            my $start_line = $err_line > ( $self->_prefix_lines + 2 ) ? $err_line - 2 : $self->_prefix_lines;
+            my $end_line = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
+
+            for my $line ( $start_line .. $end_line ) {
+                my $real_line = $line + 1 - $self->_prefix_lines;
+
+                if ( $line == $err_line ) {
+                    $msg =~ s/(\(line )(\d+)\)/(line $real_line)/;
+                }
+
+                $msg .= sprintf "%d%s %s\n", $real_line, ( $line == $err_line ? '>>>' : ':  ' ), $lines[$line];
+            }
+        }
+
+        _fail "$msg";
+    };
+}
+
+sub _initialize {
     my $self = shift;
     my ($stash) = @_;
 
@@ -62,13 +131,12 @@ sub initialize {
         return $last_vm;
     }
 
-    # create / load / save JS vm
     my $js_duk = JavaScript::Duktape->new;
     if ( $self->save_vm ) {
         $self->_last_vm($js_duk);
     }
 
-    $js_duk->set( __filename => $self->current_file );
+    $js_duk->set( __filename => $self->filename );
     $js_duk->set( __dirname  => $self->current_dir );
 
     $js_duk->set(
@@ -100,77 +168,6 @@ sub initialize {
     return $js_duk;
 }
 
-sub eval_code {
-    my $self = shift;
-    my ( $code, $stash ) = @_;
-
-    $stash ||= {};
-
-    my $js_duk = $self->initialize($stash);
-
-    local $Clarive::Code::Utils::GLOBAL_ERR = '';
-
-    if ( $self->allow_pragmas ) {
-        $self->_process_pragmas($code);
-    }
-
-    my $processed_code;
-
-    if ( my $tp = $self->transpiler ) {
-        $processed_code = $self->transpile( $tp, $code );
-    }
-    else {
-        $processed_code = heredoc($code);
-        $processed_code = template_literals($processed_code);
-    }
-
-    if ( $self->enclose_code ) {
-        $processed_code = $self->prefix . "(function(global){$processed_code}(this))";
-    }
-    else {
-        $processed_code = $self->prefix . $processed_code;
-    }
-
-    return try {
-        local $CURRENT_VM = $js_duk;
-
-        $js_duk->eval($processed_code);
-    }
-    catch {
-        my $err = shift;
-        $err =~ s{^(.+) at /.+/JS.pm line \d+\.$}{$1}s;
-
-        my $file = $self->current_file;
-
-        my $msg = "Error executing JavaScript ($file): $err";
-
-        if ( $err =~ /parse error/ && $Clarive::Code::Utils::GLOBAL_ERR ) {
-            warn("$Clarive::Code::Utils::GLOBAL_ERR\n");
-        }
-
-        if ( my ($err_line) = $err =~ /\(line (\d+)\)/ ) {
-            $err_line--;
-
-            my @lines = ( split "\n", $processed_code );
-
-            my $start_line = $err_line > ( $self->_prefix_lines + 2 ) ? $err_line - 2 : $self->_prefix_lines;
-            my $end_line = $err_line < ( $#lines - 2 ) ? $err_line + 2 : $#lines;
-
-            for my $line ( $start_line .. $end_line ) {
-                my $real_line = $line + 1 - $self->_prefix_lines;
-
-                if ( $line == $err_line ) {
-                    $msg =~ s/(\(line )(\d+)\)/(line $real_line)/;
-                }
-
-                $msg .= sprintf "%d%s %s\n", $real_line, ( $line == $err_line ? '>>>' : ':  ' ), $lines[$line];
-            }
-        }
-
-        _fail "$msg";
-    };
-}
-
 sub _process_pragmas {
     my $self = shift;
     my $code = shift;
@@ -182,7 +179,7 @@ sub _process_pragmas {
     }
 }
 
-sub transpile {
+sub _transpile {
     my $self = shift;
     my ( $lang, $code ) = @_;
 
@@ -218,7 +215,7 @@ sub transpile {
 sub current_dir {
     my $self = shift;
 
-    return '' . _file( $self->current_file )->parent;
+    return '' . _file( $self->filename )->parent;
 }
 
 1;

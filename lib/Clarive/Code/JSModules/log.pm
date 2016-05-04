@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Baseliner::Utils qw(:logging);
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

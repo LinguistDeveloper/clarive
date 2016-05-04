@@ -2,7 +2,7 @@ package Clarive::Code::JSModules::ws;
 use strict;
 use warnings;
 
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

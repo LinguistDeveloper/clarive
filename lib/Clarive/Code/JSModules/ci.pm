@@ -5,7 +5,7 @@ use warnings;
 use Class::Load qw(is_class_loaded load_class);
 use Baseliner::Utils qw(packages_that_do to_base_class _to_camel_case);
 use Baseliner::MongoCursorCI;
-use Clarive::Code::Utils qw(js_sub _map_ci _map_instance from_camel_class _bc_sub _serialize);
+use Clarive::Code::JSUtils qw(js_sub _map_ci _map_instance from_camel_class _bc_sub _serialize);
 use Clarive::Code::JSModules::db;
 
 sub generate {

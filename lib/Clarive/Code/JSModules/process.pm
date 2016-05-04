@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Config qw( %Config );
-use Clarive::Code::Utils qw(js_sub);
+use Clarive::Code::JSUtils qw(js_sub);
 
 sub generate {
     my $class = shift;

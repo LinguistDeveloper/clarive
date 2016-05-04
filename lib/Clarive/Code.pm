@@ -2,51 +2,74 @@ package Clarive::Code;
 use Moose;
 
 use Time::HiRes qw(gettimeofday tv_interval);
-use Moose::Util::TypeConstraints qw(enum);
-use Baseliner::Utils qw(_fail _loc _file);
-use Clarive::Code::JS;
+use Try::Tiny;
+use Class::Load qw(load_class);
+use Baseliner::Utils qw(_file _fail);
 
-has lang => qw(default js is rw isa), enum( [qw(js perl)] );
-has benchmark    => qw(is rw isa Bool default 0);
-has elapsed      => qw(is rw isa Num default 0);
-has current_file => qw(is rw isa Str), default => 'EVAL';
-has app          => qw(is rw isa Maybe[Clarive::App] weak_ref 1);
-has options      => qw(is rw isa HashRef), default => sub { +{} };
+has strict_mode => qw(is rw isa Bool default 1);
+has benchmark   => qw(is rw isa Bool default 0);
 
-sub run_file {
+my %LANGS = (
+    js   => 'JS',
+    perl => 'Perl',
+);
+
+sub eval_file {
     my $self = shift;
-    my ( $file, $stash ) = @_;
+    my ( $file, %options ) = @_;
 
-    my ($ext) = _file($file)->basename =~ /\.(\w+)$/;
-    my $lang = { pl => 'perl', t => 'perl' }->{$ext} // $ext;
-    $self->lang($lang);
-
-    $self->current_file("$file");
+    my ($lang) = delete $options{lang} || $file =~ m/\.(.*?)/;
+    $lang ||= 'js';
 
     my $code = _file($file)->slurp( iomode => '<:utf8' );
 
-    return $self->eval_code( $code, $stash );
+    return $self->eval_code( $code, filename => $file, lang => $lang, %options );
 }
 
 sub eval_code {
     my $self = shift;
-    my ( $code, $stash, $opts ) = @_;
+    my ( $code, %options ) = @_;
 
-    my $js =
-      Clarive::Code::JS->new( app => $self->app, options => $self->options, current_file => $self->current_file );
+    my $lang  = delete $options{lang}  || 'js';
+    my $stash = delete $options{stash} || {};
 
-    my $t0;
+    my $evaler = $self->_build_evaler( $lang, strict_mode => $self->strict_mode, %options );
+
+    my ( $t0, $elapsed );
     if ( $self->benchmark ) {
         $t0 = [ gettimeofday() ];
     }
 
-    my $ret = ( $js->eval_code( $code, $stash, $opts ) );
+    my $error;
+
+    my $ret;
+    try {
+        $ret = $evaler->eval_code( $code, $stash )
+    } catch {
+        $error = $_;
+    };
 
     if ( $self->benchmark ) {
-        $self->elapsed( tv_interval($t0) );
+        $elapsed = tv_interval($t0);
     }
 
-    return $ret;
+    return {
+        ret   => $ret,
+        error => $error,
+        $self->benchmark ? ( elapsed => $elapsed ) : ()
+    };
+}
+
+sub _build_evaler {
+    my $self = shift;
+    my ( $lang, %options ) = @_;
+
+    _fail "Unknown language $lang" unless exists $LANGS{$lang};
+
+    my $evaler = __PACKAGE__ . '::' . $LANGS{$lang};
+    load_class $evaler;
+
+    return $evaler->new(%options);
 }
 
 1;

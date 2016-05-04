@@ -11,7 +11,7 @@ use TestUtils;
 
 use JavaScript::Duktape;
 
-use_ok 'Clarive::Code::Utils';
+use_ok 'Clarive::Code::JSUtils';
 
 subtest 'from_camel_class' => sub {
     { package BaselinerX::CI::FooBar; use Moose; };
@@ -191,7 +191,7 @@ subtest 'js_sub: wrap funcs' => sub {
     local $Clarive::Code::JS::CURRENT_VM = $vm;
 
     $vm->set(
-        each => Clarive::Code::Utils::js_sub(
+        each => Clarive::Code::JSUtils::js_sub(
             sub {
                 my $arr = shift;
                 my $cb  = shift;
@@ -213,12 +213,12 @@ subtest 'js_sub: rewrap funcs' => sub {
     local $Clarive::Code::JS::CURRENT_VM = $vm;
 
     $vm->set(
-        each => Clarive::Code::Utils::js_sub(
+        each => Clarive::Code::JSUtils::js_sub(
             sub {
                 my $arr = shift;
                 my $cb  = shift;
                 for (@$arr) {
-                    Clarive::Code::Utils::js_sub( \&$cb )->($_);
+                    Clarive::Code::JSUtils::js_sub( \&$cb )->($_);
                 }
             }
         )
@@ -235,19 +235,19 @@ subtest 'js_sub: rewrap func with nested call' => sub {
     local $Clarive::Code::JS::CURRENT_VM = $vm;
 
     $vm->set(
-        inc => Clarive::Code::Utils::js_sub(
+        inc => Clarive::Code::JSUtils::js_sub(
             sub {
                 return 1 + shift();
             }
         )
     );
     $vm->set(
-        each => Clarive::Code::Utils::js_sub(
+        each => Clarive::Code::JSUtils::js_sub(
             sub {
                 my $arr = shift;
                 my $cb  = shift;
                 for (@$arr) {
-                    Clarive::Code::Utils::js_sub( \&$cb )->($_);
+                    Clarive::Code::JSUtils::js_sub( \&$cb )->($_);
                 }
             }
         )
@@ -264,19 +264,19 @@ subtest 'js_sub: handle rewrap func with error in nested call' => sub {
     local $Clarive::Code::JS::CURRENT_VM = $vm;
 
     $vm->set(
-        inc => Clarive::Code::Utils::js_sub(
+        inc => Clarive::Code::JSUtils::js_sub(
             sub {
                 die("failing here");
             }
         )
     );
     $vm->set(
-        each => Clarive::Code::Utils::js_sub(
+        each => Clarive::Code::JSUtils::js_sub(
             sub {
                 my $arr = shift;
                 my $cb  = shift;
                 for (@$arr) {
-                    Clarive::Code::Utils::js_sub( \&$cb )->($_);
+                    Clarive::Code::JSUtils::js_sub( \&$cb )->($_);
                 }
             }
         )
@@ -290,8 +290,8 @@ subtest 'to_duk_bool: transforms perl boolean to js boolean' => sub {
 
     local $Clarive::Code::JS::CURRENT_VM = $vm;
 
-    $vm->set( val_true  => Clarive::Code::Utils::to_duk_bool(1) );
-    $vm->set( val_false => Clarive::Code::Utils::to_duk_bool(0) );
+    $vm->set( val_true  => Clarive::Code::JSUtils::to_duk_bool(1) );
+    $vm->set( val_false => Clarive::Code::JSUtils::to_duk_bool(0) );
 
     my $ret = $vm->eval(q{ val_true === true && val_false === false });
 
@@ -299,16 +299,16 @@ subtest 'to_duk_bool: transforms perl boolean to js boolean' => sub {
 };
 
 subtest 'load_module: throws when unknown module' => sub {
-    like exception { Clarive::Code::Utils::load_module('unknown') },
+    like exception { Clarive::Code::JSUtils::load_module('unknown') },
       qr/Could not find module `unknown` in the following plugins:/;
 };
 
 subtest 'load_module: loads modules from cla' => sub {
-    like Clarive::Code::Utils::load_module('cla/util'), qr/cla.loadCla/;
+    like Clarive::Code::JSUtils::load_module('cla/util'), qr/cla.loadCla/;
 };
 
 subtest 'load_module: loads module' => sub {
-    like Clarive::Code::Utils::load_module('handlebars'), qr/handlebars/;
+    like Clarive::Code::JSUtils::load_module('handlebars'), qr/handlebars/;
 };
 
 subtest '_map_instance: returns undef when nothing passed' => sub {

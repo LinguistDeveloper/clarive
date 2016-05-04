@@ -4,7 +4,7 @@ use warnings;
 
 use File::Spec;
 use File::Basename ();
-use Clarive::Code::Utils qw(js_sub);
+use Clarive::Code::JSUtils qw(js_sub);
 
 sub generate {
     my $class = shift;

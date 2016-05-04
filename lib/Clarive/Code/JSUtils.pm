@@ -1,4 +1,4 @@
-package Clarive::Code::Utils;
+package Clarive::Code::JSUtils;
 use strict;
 use warnings;
 

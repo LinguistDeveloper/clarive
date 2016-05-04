@@ -32,12 +32,6 @@ use Exporter::Tidy default => [
 
 our $DATA;
 
-sub eval_code {
-    my ( $lang, $code, $stash ) = @_;
-
-    Clarive::Code->new( lang=>$lang )->eval_code($code,$stash);
-}
-
 sub parallel_run {
     my ( $name, $mode, $stash, $code ) = @_;
 
@@ -427,6 +421,12 @@ sub variables_for_bl {
     my $vars_for_bl = $vars->{$bl} // { _no_vars_for_bl=>$bl } if length $bl && $bl ne '*';
     $vars_for_bl //= {};
     +{ %$vars_common_bl, %$vars_for_bl };
+}
+
+sub eval_code {
+    my ($lang, $code, $stash) = @_;
+
+    Clarive::Code->new->eval_code($code, lang => $lang, stash => $stash);
 }
 
 1;

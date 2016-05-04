@@ -181,7 +181,9 @@ sub main : Local {
 
 sub eval : Local {
     my ( $self, $c ) = @_;
-    my $p    = $c->req->parameters;
+
+    my $p = $c->req->parameters;
+
     my $code = $p->{code};
     my $eval = $p->{eval};
     my $lang = $p->{lang};
@@ -191,64 +193,60 @@ sub eval : Local {
     # save history
     $self->push_to_history( $c->session, $code, $p->{lang} );
 
-    my ( $res, $err );
+    my ( $ret,    $err );
     my ( $stdout, $stderr );
 
     require Capture::Tiny;
     local $ENV{BASELINER_LOGCOLOR} = 0;
-    my $t0; # = [ gettimeofday ];
-    my $elapsed; # = tv_interval( $t0 );
+    my $t0;         # = [ gettimeofday ];
+    my $elapsed;    # = tv_interval( $t0 );
     _log "================================ REPL START ==========================\n";
-    ($stdout, $stderr) = Capture::Tiny::tee(
+    ( $stdout, $stderr ) = Capture::Tiny::tee(
         sub {
-            if ( $sql ) {
-                $t0=[gettimeofday];
-                eval { $res = $self->sql( $sql, $code ); };
-                $elapsed = tv_interval( $t0 );
-            } else {
-                if( $lang eq 'js-server' ) {
-                    my $runner = Clarive::Code->new( lang=>'js', benchmark=>1 );
-                    my $stash = {}; # TODO it would be great if we could set a YAML stash in the REPL
-                    try {
-                        $res = [ $runner->eval_code( $code, $stash ) ];
-                    } catch {
-                        my $err = shift;
-                        $res = [];
-                        $@ = $err;
-                    };
-                    $elapsed = $runner->elapsed;
-                } else {
-                    $t0 = [gettimeofday]; # this one is in case of error; the next one is for a more accurate measurement
-                        $code = "use v5.10;\$t0=[gettimeofday]; binmode STDOUT, ':utf8'; binmode STDERR, ':utf8'; $code";
-                    $res  = [ eval $code ];
-                    $elapsed = tv_interval( $t0 );
-                }
-                $res  = $res->[ 0 ] if @$res <= 1;
+            if ($sql) {
+                $t0 = [gettimeofday];
+                eval { $ret = $self->sql( $sql, $code ); };
+                $elapsed = tv_interval($t0);
             }
+            else {
+                my $code_evaler = Clarive::Code->new( benchmark => 1 );
 
-            #my @arr  = eval $code;
-            #$res = @arr > 1 ? \@arr : $arr[0];
-            $err = $@;
+                my $stash = {};    # TODO it would be great if we could set a YAML stash in the REPL
+
+                my $code_lang;
+                if ( $lang eq 'js-server' ) {
+                    $code_lang = 'js';
+                }
+                else {
+                    $code_lang = 'perl';
+                }
+
+                my $eval_ret = $code_evaler->eval_code( $code, lang => $code_lang, stash => $stash );
+
+                $elapsed = $eval_ret->{elapsed};
+                $ret     = $eval_ret->{ret};
+                $err     = $eval_ret->{error} // '';
+            }
         }
     );
     _log "================================ REPL END ============================\n";
 
-    $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
-    $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) )
-        if $dump eq 'json' && ref $res && !blessed $res;
-    my ( $line ) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
+    $ret = _to_utf8( _dump($ret) ) if $dump eq 'yaml';
+    $ret = _to_utf8( JSON::XS->new->pretty->encode( _damn($ret) ) )
+      if $dump eq 'json' && ref $ret && !blessed $ret;
+    my ($line) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
 
     $c->stash->{json} = {
-        stdout  => Encode::decode('UTF-8', $stdout),
-        stderr  => Encode::decode('UTF-8', $stderr),
-        elapsed => sprintf('%.08f', $elapsed),
-        result  => "$res",
-        error   => "$err",
+        stdout  => Encode::decode( 'UTF-8', $stdout ),
+        stderr  => Encode::decode( 'UTF-8', $stderr ),
+        elapsed => sprintf( '%.08f',        $elapsed ),
+        result  => "$ret",
+        error   => $err,
         line    => $line,
         success => \( $err ? 0 : 1 ),
     };
-    $c->forward( 'View::JSON' );
-} ## end sub eval :
+    $c->forward('View::JSON');
+}
 
 sub sql {
     my ( $self, $sql_out, $code ) = @_;

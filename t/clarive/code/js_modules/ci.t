@@ -75,7 +75,7 @@ subtest 'ci.build: builds an object with default values' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -97,7 +97,7 @@ subtest 'ci.build: builds an object with custom values' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -232,7 +232,7 @@ subtest 'ci.createClass: creates a new class' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -252,7 +252,7 @@ subtest 'ci.createClass: creates a new class with default icon' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -272,7 +272,7 @@ subtest 'ci.createClass: creates a new class with custom icon' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -294,7 +294,7 @@ subtest 'ci.createClass: creates a new class with superclass' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -316,7 +316,7 @@ subtest 'ci.createClass: creates a new class with roles' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -338,7 +338,7 @@ subtest 'ci.createClass: creates a new class with attributes' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -360,7 +360,7 @@ subtest 'ci.createClass: creates a new class with methods' => sub {
 
     my $code = _build_code( lang => 'js' );
 
-    my $class_name = 'JsCiTest' . int( rand(1000) );
+    my $class_name = 'JsCiTest' . _random_string();
 
     my $ret = $code->eval_code(
         qq{
@@ -622,6 +622,12 @@ sub _setup {
     mdb->rule->drop;
 
     mdb->test_collection->drop;
+}
+
+sub _random_string {
+    my $s = '';
+    $s .= int( rand(1000) ) for 1 .. 12;
+    return $s;
 }
 
 sub _build_code {

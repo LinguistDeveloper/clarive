@@ -22,10 +22,10 @@ use BaselinerX::CI::status;
 
 use_ok 'Clarive::Code::JS';
 
-use Clarive::Code::Utils qw(js_sub);
+use Clarive::Code::JSUtils qw(js_sub);
 
 subtest 'JSON: parses/stringifies' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q/JSON.parse(JSON.stringify({foo: 'bar'}))/);
 
@@ -33,7 +33,7 @@ subtest 'JSON: parses/stringifies' => sub {
 };
 
 subtest 'JSON: parses/stringifies unicode' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q/JSON.parse(JSON.stringify({привет: 'всем'}))/);
 
@@ -41,7 +41,7 @@ subtest 'JSON: parses/stringifies unicode' => sub {
 };
 
 subtest 'JSON: stringifies unicode' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q/JSON.stringify({привет: 'всем'})/);
 
@@ -49,7 +49,7 @@ subtest 'JSON: stringifies unicode' => sub {
 };
 
 subtest 'YAML: parses/stringifies' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q/YAML.parse(YAML.stringify({foo: 'bar'}))/);
 
@@ -57,7 +57,7 @@ subtest 'YAML: parses/stringifies' => sub {
 };
 
 subtest 'YAML: stringifies unicode' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q/YAML.stringify({привет: 'всем'})/);
 
@@ -65,7 +65,7 @@ subtest 'YAML: stringifies unicode' => sub {
 };
 
 subtest 'evals js' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code( '1 + 1', {} );
 
@@ -73,7 +73,7 @@ subtest 'evals js' => sub {
 };
 
 subtest 'console available' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code( 'console', {} );
 
@@ -81,7 +81,7 @@ subtest 'console available' => sub {
 };
 
 subtest 'extend cla namespace' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     $code->extend_cla( { foo => js_sub { 321 } } );
     my $ret = $code->eval_code( 'cla.foo();', {} );
@@ -90,7 +90,7 @@ subtest 'extend cla namespace' => sub {
 };
 
 subtest 'extend global namespace' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     $code->global_ns( { foo => js_sub { 999 } } );
     my $ret = $code->eval_code( 'foo();', {} );
@@ -114,7 +114,7 @@ subtest 'does not process pragmas when not allowed' => sub {
 };
 
 subtest 'ignores unknown pragmas' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(
         q{
@@ -127,17 +127,19 @@ subtest 'ignores unknown pragmas' => sub {
 };
 
 subtest 'transpile: throws when unknown transpile' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
-    like exception { $code->eval_code(
-        q{
+    like exception {
+        $code->eval_code(
+            q{
         "use transpiler(unknown)";
     }
-    ) }, qr/Transpiler not found: unknown/;
+          )
+    }, qr/Transpiler not found: unknown/;
 };
 
 subtest 'pragma transpile' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(
         q{
@@ -151,7 +153,7 @@ subtest 'pragma transpile' => sub {
 };
 
 subtest 'pragma transpile convert code' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(
         q{
@@ -162,29 +164,33 @@ subtest 'pragma transpile convert code' => sub {
 };
 
 subtest 'rethrows transpiler error' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
-    like exception { $code->eval_code(
-        q{
+    like exception {
+        $code->eval_code(
+            q{
         "use transpiler(test-trans)";
         ('error')
         }
-    ) }, qr/Transpile Error \(test-trans\): Error: some error/;
+          )
+    }, qr/Transpile Error \(test-trans\): Error: some error/;
 };
 
 subtest 'throws when empty transpiler code' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
-    like exception { $code->eval_code(
-        q{
+    like exception {
+        $code->eval_code(
+            q{
         "use transpiler(test-trans)";
         ('empty')
         }
-    ) }, qr/Transpiled code empty or invalid/;
+          )
+    }, qr/Transpiled code empty or invalid/;
 };
 
 subtest 'save vm creates globals' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     $code->save_vm(1);
     $code->eval_code( 'this.x = 100;', {} );
@@ -195,7 +201,7 @@ subtest 'save vm creates globals' => sub {
 };
 
 subtest 'save_vm enclose_code protects against globals' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     $code->save_vm(1);
     $code->enclose_code(1);
@@ -204,7 +210,7 @@ subtest 'save_vm enclose_code protects against globals' => sub {
 };
 
 subtest 'enclose code doesnt return value' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     $code->enclose_code(1);
     my $ret = $code->eval_code( '100', {} );
@@ -213,7 +219,7 @@ subtest 'enclose code doesnt return value' => sub {
 };
 
 subtest 'require module underscore' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $arr = $code->eval_code( 'var _ = require("underscore"); _.each([1,2],function(){})', {} );
 
@@ -223,7 +229,7 @@ subtest 'require module underscore' => sub {
 subtest 'strict mode by default' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     like exception {
         $code->eval_code( q/x = 1;/, )
@@ -233,7 +239,7 @@ subtest 'strict mode by default' => sub {
 subtest 'rethrows perl error' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     like exception {
         $code->eval_code(
@@ -248,7 +254,7 @@ subtest 'rethrows perl error' => sub {
 subtest 'exceptions catch internal errors' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
     like exception { $code->eval_code(q/throw new Error('foo error!')/) }, qr/foo error!/;
     ok !exception { $code->eval_code(q/try { throw new Error('error!') } catch(e) {}/) };
 };
@@ -256,19 +262,23 @@ subtest 'exceptions catch internal errors' => sub {
 subtest 'exceptions without JS.pm reference' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
     $code->save_vm(1);
-    my $vm = $code->initialize;
 
-    $vm->set( errorHere => sub { die "died here" } );
-
-    unlike exception { $code->eval_code(q[errorHere()]) }, qr/at.*JS.pm/;
+    unlike exception {
+        $code->eval_code(
+            q[cla.stash('errorHere')()],
+            {
+                errorHere => sub { die 'died here' }
+            }
+          )
+    }, qr/at.*JS.pm/;
 };
 
 subtest 'exceptions catch external errors' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     like exception {
         $code->eval_code(
@@ -283,42 +293,37 @@ subtest 'exceptions catch external errors' => sub {
 subtest 'exceptions catch class not found errors' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     like exception { $code->eval_code(q{ require('cla/ci').getClass('XYZ123') }) }, qr/class.*XYZ123/;
 };
 
 subtest 'exceptions trap nested error' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     like exception { $code->eval_code(q{ cla.each([1,2],function(i){ cla.fooABC('foo') }); 11; }) }, qr/not callable/;
 };
 
 subtest 'exceptions throws double nested error' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
     $code->save_vm(1);
 
-    my $vm = $code->initialize;
-    $vm->set(
-        barfoo => sub {
-            die 123;
-        }
-    );
-
-    my $ret;
     like exception {
         $code->eval_code(
             q{
             cla.each([1,2],function(i){
-                barfoo();
+                cla.stash('barfoo')();
             });
-        }
+        },
+            {
+                barfoo => sub { die 123 }
+            }
         );
     }, qr/123/;
 };
 
 subtest 'exceptions trap try-catch nested error' => sub {
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret;
     ok !exception {
@@ -338,16 +343,7 @@ subtest 'exceptions trap try-catch nested error' => sub {
 };
 
 subtest 'exceptions trap double try-catch nested error' => sub {
-    my $code = _build_code( lang => 'js' );
-
-    $code->save_vm(1);
-
-    my $vm = $code->initialize;
-    $vm->set(
-        barfoo => sub {
-            die 123;
-        }
-    );
+    my $code = _build_code();
 
     my $ret;
     ok !exception {
@@ -356,13 +352,18 @@ subtest 'exceptions trap double try-catch nested error' => sub {
             var t = require('cla/t');
             cla.each([1,2],function(i){
                 try {
-                    barfoo();
+                    cla.stash('barfoo')();
                 } catch(e) {
                     t.like( e+'', cla.regex('123') );
                 }
             });
             11;
-        }
+        },
+            {
+                barfoo => sub {
+                    die 123;
+                }
+            }
         );
     };
     is $ret => 11;
@@ -371,7 +372,7 @@ subtest 'exceptions trap double try-catch nested error' => sub {
 subtest 'returns js array' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q{var x = [1,2,3]; x});
 
@@ -381,7 +382,7 @@ subtest 'returns js array' => sub {
 subtest 'returns js array from bare structure' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(q{[1,2,3];});
 
@@ -392,7 +393,7 @@ subtest 'bytecode call serialized from js to js' => sub {
     _setup();
 
     {
-        my $code = _build_code( lang => 'js' );
+        my $code = _build_code();
 
         $code->eval_code(
             q{
@@ -409,7 +410,7 @@ subtest 'bytecode call serialized from js to js' => sub {
         );
     }
     {
-        my $code = _build_code( lang => 'js' );
+        my $code = _build_code();
 
         is $code->eval_code(
             q{
@@ -434,7 +435,7 @@ subtest 'bytecode call serialized from js to js' => sub {
 subtest 'bytecode call serialized from js to perl' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $json = $code->eval_code(
         q{
@@ -461,7 +462,7 @@ subtest 'bytecode call serialized from js to perl' => sub {
 subtest '__dirname: returns current dirname' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(
         q{
@@ -475,7 +476,7 @@ subtest '__dirname: returns current dirname' => sub {
 subtest '__filename: returns current filename' => sub {
     _setup();
 
-    my $code = _build_code( lang => 'js' );
+    my $code = _build_code();
 
     my $ret = $code->eval_code(
         q{

@@ -4,7 +4,7 @@ use warnings;
 
 use Time::HiRes qw(usleep);
 use Benchmark ();
-use Clarive::Code::Utils qw(js_sub);
+use Clarive::Code::JSUtils qw(js_sub);
 
 sub generate {
     my $self  = shift;

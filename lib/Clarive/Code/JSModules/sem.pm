@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Baseliner::Sem;
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $class = shift;

@@ -8,7 +8,7 @@ use Class::Load qw(load_class);
 use Baseliner::Utils qw(parse_vars :logging _dump _encode_json _decode_json
   _json_pointer _array);
 use BaselinerX::Type::Model::ConfigStore;
-use Clarive::Code::Utils;
+use Clarive::Code::JSUtils;
 
 sub generate {
     my $self  = shift;
