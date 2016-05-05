@@ -1092,51 +1092,58 @@ sub new_ci : Local {
 }
 
 sub delete : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    my $mids = delete $p->{mids};
-    my $collection = delete $p->{collection};
+    my ( $self, $c ) = @_;
+    my $p           = $c->req->params;
+    my $mids        = delete $p->{mids};
+    my $collection  = delete $p->{collection};
     my $remove_data = delete $p->{remove_data} // 0;
 
     my $permissions = $self->_build_permissions;
     _fail( _loc( 'User %1 not authorized to delete CI %2', $c->username, $collection ) )
-      unless $permissions->user_can_admin_ci( $c->username, $collection );
+        unless $permissions->user_can_admin_ci( $c->username, $collection );
 
     try {
-        if ($collection eq 'project' && !$remove_data){
-            my @all_users = grep { values $_->{project_security} } ci->user->find->fields({ mid=>1,name=>1,project_security=>1,_id=>0 })->all;
-            my %ps_users = map { $_->{name} => [_unique map { _array($_->{project}) } values $_->{project_security}] } @all_users;
-            my $err = "<br>";
-            my $found = 0;
-            foreach my $user ( keys %ps_users ) {
-                foreach my $mid ( _array $mids ){
-                    if ($mid ~~ $ps_users{$user}){
-                        $err .= _loc("%1 is already assigned in user: %2",_ci($mid)->{name},$user) . "<br>";
-                        $found = 1;
-                    }
+        if ( $collection eq 'project' && !$remove_data ) {
+            my @all_users = grep { values $_->{project_security} }
+                ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
+            my %ps_users = map {
+                $_->{name} => [ _unique map { _array( $_->{project} ) } values $_->{project_security} ]
+            } @all_users;
+
+            my $info_project;
+            my $count_user = 0;
+            my @data;
+
+            foreach my $project ( _array $mids ) {
+
+                $info_project->{name_project} = _ci($project)->{name};
+
+                foreach my $user ( keys %ps_users ) {
+
+                    $count_user++ if ( $project ~~ $ps_users{$user} );
                 }
+
+                $info_project->{number_user} = $count_user;
+                push @data, $info_project;
+
+                $count_user = 0;
+                undef $info_project;
             }
-            if ($found){
-                $c->stash->{json} = { success=>\1, exists=>\1, msg=>_loc('Error deleting CIs: %1', $err) };
-            } else {
-                cache->clear;
-                for( grep { length } _array( $mids ) ) {
-                    my $ci = ci->find($_);
-                    $ci ? $ci->delete : ci->delete($_);
-                }
-                $c->stash->{json} = { success=>\1, exists=>\0, msg=>_loc('CIs deleted ok' ) };
-            }
-        } elsif ($collection eq 'project' && $remove_data) {
-            my @all_users = grep { values $_->{project_security} } ci->user->find->fields({ mid=>1,name=>1,project_security=>1,_id=>0 })->all;
-            foreach my $user (@all_users){
+
+            $c->stash->{json} = { success => \1, info => \@data };
+        }
+        elsif ( $collection eq 'project' && $remove_data ) {
+            my @all_users = grep { values $_->{project_security} }
+                ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
+            foreach my $user (@all_users) {
                 my $ps = $user->{project_security};
-                foreach my $ps_key (keys $ps){
+                foreach my $ps_key ( keys $ps ) {
                     my $project = $ps->{$ps_key}->{project};
-                    foreach my $mid (_array $mids){
-                        if ($mid ~~ $project){
-                            _debug _loc("Remove mid project %1 for %2",$mid,$user->{name});
+                    foreach my $mid ( _array $mids) {
+                        if ( $mid ~~ $project ) {
+                            _debug _loc( "Remove mid project %1 for %2", $mid, $user->{name} );
                             my @new_proj = grep { $_ ne $mid } _array($project);
-                            my $ci_update = ci->new($user->{mid});
+                            my $ci_update = ci->new( $user->{mid} );
                             $ci_update->{project_security}->{$ps_key}->{project} = \@new_proj;
                             $ci_update->update;
                             $project = \@new_proj;
@@ -1145,24 +1152,27 @@ sub delete : Local {
                 }
             }
             cache->clear;
-            for( grep { length } _array( $mids ) ) {
+            for ( grep {length} _array($mids) ) {
                 my $ci = ci->find($_);
                 $ci ? $ci->delete : ci->delete($_);
             }
-            $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
-        } else {
-            cache->clear;
-            for( grep { length } _array( $mids ) ) {
-                my $ci = ci->find($_);
-                $ci ? $ci->delete : ci->delete($_);
-            }
-            $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
+            $c->stash->{json} = { success => \1, msg => _loc('CIs deleted ok') };
         }
-    } catch {
+        else {
+            cache->clear;
+            for ( grep {length} _array($mids) ) {
+                my $ci = ci->find($_);
+                $ci ? $ci->delete : ci->delete($_);
+            }
+            $c->stash->{json} = { success => \1, msg => _loc('CIs deleted ok') };
+        }
+    }
+    catch {
         my $err = shift;
-        _error( $err );
-        $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
+        _error($err);
+        $c->stash->{json} = { success => \0, msg => _loc( 'Error deleting CIs: %1', $err ) };
     };
+
     $c->forward('View::JSON');
 }
 
