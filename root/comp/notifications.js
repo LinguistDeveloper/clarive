@@ -1395,6 +1395,7 @@
 
     var filters = new Ext.ux.grid.GridFilters({
         local: true,
+        menuFilterText: _('Filters'),
         filters: [{
             type: 'list',
             dataIndex: 'action',
@@ -1406,8 +1407,8 @@
             type: 'list',
             dataIndex: 'is_active',
             options: [
-                ["0", "Inactive"],
-                ["1", "Active"]
+                ["0", _("Inactive")],
+                ["1", _("Active")]
             ]
         }]
     });
