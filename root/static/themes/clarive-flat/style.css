@@ -1703,7 +1703,6 @@ input.combo_box_fieldlet {
 .help_docs .x-panel-body img {
   height: 16px;
   width: 16px;
-  vertical-align: top !important;
  }
  
 .x-tab-panel-body .events_grid.ux-maximgb-tg-panel {
