@@ -231,7 +231,7 @@ sub _dump {
 }
 
 sub _loc {
-    return unless $_[0];
+    return '' unless $_[0];
     return Baseliner::I18N->localize(@_);
 }
 
