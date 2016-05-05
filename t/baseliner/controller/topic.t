@@ -703,7 +703,7 @@ subtest 'topic_drop: correctly select relese field when something was previously
     );
 
     Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset_mid, sprint => [$sprint_mid] } );
+        { action => 'update', topic_mid => $changeset_mid, sprint => [$sprint_mid], username => $user->username } );
 
     my $controller = _build_controller();
 
@@ -781,7 +781,7 @@ subtest 'topic_drop: correctly adds existing release' => sub {
     );
 
     Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset_mid, release => [$release_mid] } );
+        { action => 'update', topic_mid => $changeset_mid, release => [$release_mid], username => $user->username } );
 
     my $controller = _build_controller();
 
@@ -859,7 +859,7 @@ subtest 'topic_drop: correctly replaces existing release when value_type is sing
     );
 
     Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset_mid, release => [$release_mid] } );
+        { action => 'update', topic_mid => $changeset_mid, release => [$release_mid], username => $user->username } );
 
     my $controller = _build_controller();
 
@@ -2019,6 +2019,7 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
 
     my $topic_mid = TestSetup->create_topic(
         status => $status,
+        username => $user->username,
         id_category => $id_changeset_category,
         title  => "Topic"
     );
@@ -2227,6 +2228,8 @@ subtest 'check_modified_on: check topic was not modified before' => sub {
     );
 };
 
+done_testing;
+
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 
@@ -2355,8 +2358,6 @@ sub _create_sprint_form {
         ],
     );
 }
-
-done_testing;
 
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );

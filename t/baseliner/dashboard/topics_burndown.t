@@ -672,7 +672,7 @@ subtest 'burndown: filters by topic_mid' => sub {
     };
 
     Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset1_mid, sprint => [$sprint1_mid] } );
+        { action => 'update', topic_mid => $changeset1_mid, sprint => [$sprint1_mid], username => $user->username } );
 
     my $sprint2_mid = TestSetup->create_topic(
         project     => $project,
@@ -691,7 +691,7 @@ subtest 'burndown: filters by topic_mid' => sub {
     };
 
     Baseliner::Model::Topic->new->update(
-        { action => 'update', topic_mid => $changeset2_mid, sprint => [$sprint2_mid] } );
+        { action => 'update', topic_mid => $changeset2_mid, sprint => [$sprint2_mid], username => $user->username } );
 
     my $dashboard = _build_dashboard();
 
