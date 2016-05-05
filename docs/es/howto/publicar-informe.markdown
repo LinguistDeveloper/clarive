@@ -30,4 +30,4 @@ A continuación configuramos el servicio:
 
 Una vez configurados los parámetros y guardada la regla, relizamos una exportación de un informe o de un grid de tópicos a uno de los formatos disponibles en Clarive (HTML, CSV o YAML).
 
-Para comprobar que la regla ha funcionado de manera correcta, accedemos a Herrramientas -> Artefactos y observamos que en el repositorio *Public* se ha guardado el informe con el nombre y la extensión configurados en la regla. En caso de querer compartir dichos informes, basta con copiar la ruta del informe deseado.
+Para comprobar que la regla ha funcionado de manera correcta, accedemos a Herrramientas - Artefactos y observamos que en el repositorio *Public* se ha guardado el informe con el nombre y la extensión configurados en la regla. En caso de querer compartir dichos informes, basta con copiar la ruta del informe deseado.
