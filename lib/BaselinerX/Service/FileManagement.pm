@@ -623,7 +623,7 @@ sub run_sync_remote {
     my $local_orig  = $config->{local_path}  // _fail 'Missing parameter local_file';
     my $direction   = $config->{direction}   // _fail 'Missing parameter direction';
     my $delete_extraneous = $config->{delete_extraneous} && $config->{delete_extraneous} eq 'on' ? 1 : 0;
-    my $user = $config->{user};
+    my $user = $config->{user} // '';
 
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
