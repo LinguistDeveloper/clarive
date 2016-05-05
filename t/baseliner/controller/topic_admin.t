@@ -83,8 +83,6 @@ subtest 'list_status: returns statuses by query' => sub {
 
     my $ci = TestUtils->create_ci('status', name => 'New');
 
-    TestUtils->create_ci('status', name => 'Something Else');
-
     my $c = _build_c(req => {params => {query => 'New'}});
 
     $controller->list_status($c);
@@ -115,11 +113,90 @@ subtest 'list_status: returns statuses by query and category' => sub {
     is $stash->{json}->{data}->[0]->{id}, $ci_new->mid;
 };
 
+subtest 'update_category: changes the color of category and topics that belong to it' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci( 'project', name => 'Project', );
+    my $id_role    = TestSetup->create_role(
+        actions => [
+            {   action => 'action.topics.issue.edit',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $status = TestUtils->create_ci( 'status', name => 'New' );
+
+    my $form = _create_form();
+
+    my $category_id = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $form,
+        id_status => $status->mid,
+        color     => '#42FF02'
+    );
+
+    my $topic = TestSetup->create_topic(
+        id_category    => $category_id,
+        title          => 'Test_color',
+        color_category => '#42FF02'
+    );
+
+    my $c = _build_c(
+        req => {
+            params => {
+                action         => 'update',
+                idsstatus      => $status->mid,
+                type           => 'N',
+                id             => $category_id,
+                name           => 'Category',
+                category_color => '#FF0202'
+            }
+        }
+    );
+
+    $controller->update_category($c);
+
+    is $c->stash->{json}->{msg}, 'Category modified';
+
+    my $check_color = mdb->topic->find_one( { category_id => $category_id } );
+    is $check_color->{color_category} , '#FF0202';
+};
+
+sub _create_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            }
+        ],
+    );
+}
+
 sub _setup {
     TestUtils->cleanup_cis;
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::CI',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+    );
+    mdb->topic->drop;
+    mdb->role->drop;
+    mdb->rule->drop;
     mdb->category->drop;
-
-    TestUtils->setup_registry('BaselinerX::Type::Event', 'BaselinerX::CI');
 }
 
 sub _build_c {
