@@ -48,7 +48,7 @@
 % if( exists $title->{$key}->{positive}) {
                <div class ="span7" style="margin-bottom: 1%">
                   <img src="/static/images/icons/add.png" />
-% my $topics = join ("," , @{$title->{$key}->{positive}});
+% my $topics = join (", " , @{$title->{$key}->{positive}});
                   <% _loc( $topics ) %>
 
                </div>
@@ -56,7 +56,7 @@
 % if( exists $title->{$key}->{negative}) {
                <div class ="span7">
                   <img src="/static/images/icons/delete.png" />
-% my $topics = join ("," , @{$title->{$key}->{negative}});
+% my $topics = join (", " , @{$title->{$key}->{negative}});
                   <% _loc( $topics ) %>
 
                </div>
