@@ -280,7 +280,7 @@ sub _log_lev {
     print STDERR ( '('.uc(substr($lev,0,1)//'?').') '. _now()."[$pid] [$cl:$li] ", @data, "\n" );
 }
 
-sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
+sub isatty { open(my $tty, '+<', '/dev/tty'); }
 
 # internal log engine used by _log and _debug
 sub _log_me {
@@ -1046,7 +1046,7 @@ sub _dir { goto &Path::Class::dir }
 sub _slurp {
     my $file = shift;
     return unless -e $file;
-    CORE::open(my $f, '<', $file) or _throw _loc("Could not open file %1: %2", $file, $!);
+    open(my $f, '<', $file) or _throw _loc("Could not open file %1: %2", $file, $!);
     return join'',<$f>;
 }
 
