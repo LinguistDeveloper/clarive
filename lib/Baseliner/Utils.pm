@@ -425,8 +425,11 @@ sub _decode_json {
 
 sub _decode_json_safe {
     my $json = shift;
+    my ($default_on_error) = @_;
 
-    eval { _decode_json($json) } or do { +{} }
+    $default_on_error //= {};
+
+    eval { _decode_json($json) } or do { $default_on_error }
 }
 
 sub _encode_json {

@@ -133,6 +133,21 @@ subtest 'export: correctly saves data with unicode to temp file' => sub {
     unlink $temp_file;
 };
 
+subtest 'export: produces correct export using JSON title' => sub {
+    _setup();
+
+    my $exporter = _build_exporter();
+
+    my $content = $exporter->export(
+        'test', JSON::encode_json( { foo => 'bar' } ),
+        username => 'user',
+        title    => JSON::encode_json( { categories => 'foo', statuses => 'bar' } ),
+        params => JSON::encode_json( { query => 'params' } )
+    );
+
+    is_deeply $content, {foo => 'bar'};
+};
+
 done_testing;
 
 sub _setup {
