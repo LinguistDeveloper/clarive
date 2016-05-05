@@ -5,6 +5,7 @@ use File::Temp  ();
 use Class::Load ();
 use Encode ();
 use Baseliner::Model::Events;
+use Try::Tiny;
 use Baseliner::Utils qw(_fail _decode_json _decode_json_safe);
 
 has renderer => qw(is ro);
@@ -20,8 +21,7 @@ sub export {
     my $content;
     Baseliner::Model::Events->new_event(
         'event.topic_list.export',
-        {
-            username         => $params{username},
+        {   username         => $params{username},
             export_format    => $format,
             export_title     => $params{title},
             export_params    => _decode_json_safe( $params{params} ),
@@ -29,11 +29,12 @@ sub export {
         },
         sub {
             $data = _decode_json($data) unless ref $data;
+            $params{title} = _decode_json_safe( $params{title}, $params{title} );
 
-            $content = $exporter->export($data, %params);
+            $content = $exporter->export( $data, %params );
 
-            if (Encode::is_utf8($content)) {
-                $content = Encode::encode('UTF-8', $content);
+            if ( Encode::is_utf8($content) ) {
+                $content = Encode::encode( 'UTF-8', $content );
             }
 
             print $fh $content;

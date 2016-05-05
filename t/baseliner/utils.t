@@ -23,7 +23,7 @@ use Baseliner::Utils qw(
   _strip_html
   _strip_html_editor
 );
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5);
+use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5 _decode_json_safe);
 use Clarive::mdb;
 
 ####### _pointer
@@ -493,6 +493,12 @@ subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
     my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
     cmp_deeply $diff, {};
+};
+
+subtest 'decode_json_safe: catches json errors and sets default value' => sub {
+    is_deeply _decode_json_safe('asdfasdf'), {};
+    is_deeply _decode_json_safe('asdfasdf', 'default_value'), 'default_value';
+    is_deeply _decode_json_safe('{"foo":"bar"}'), {foo => 'bar'};
 };
 
 done_testing;

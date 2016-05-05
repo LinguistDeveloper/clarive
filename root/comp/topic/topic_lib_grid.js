@@ -476,18 +476,47 @@ Cla.topic_grid = function(params){
         win.show();
     };
 
+    var create_title = function(value, title, node) {
 
-    var make_title = function(){
-        var title = [];
-        if( report_name ) {
+        if (!(value in title)) {
+            title[value] = {};
+        }
+        if (node.attributes.checked3 == 1 || node.attributes.default == true) {
+            if (!("positive" in title[value])) {
+                title[value]["positive"] = [];
+            }
+            title[value]["positive"].push(node.text);
+        } else {
+            if (!("negative" in title[value])) {
+                title[value]["negative"] = [];
+            }
+            title[value]["negative"].push(node.text);
+        }
+        return title;
+    }
+
+    var make_title = function() {
+
+        if (report_name) {
             return report_name;
         }
+
         var selNodes = tree_filters.getChecked();
-        Ext.each(selNodes, function(node){
-            //var type = node.parentNode.attributes.id;
-            title.push(node.text);
+        var title = {};
+        Ext.each(selNodes, function(node) {
+
+            if (node.parentNode.id == 'C') {
+                title = create_title('Categories', title, node);
+            } else if (node.parentNode.id == 'L') {
+                title = create_title('Labels', title, node);
+            } else if (node.parentNode.id == 'S') {
+                title = create_title('Statuses', title, node);
+            } else if (node.parentNode.id == 'V') {
+                title = create_title('Filters', title, node);
+            }
         });
-        return title.length > 0 ? title.join(', ') : _('(no filter)');
+
+        return title;
     };
 
     var form_report = new Ext.form.FormPanel({
@@ -502,55 +531,67 @@ Cla.topic_grid = function(params){
     });
 
     var form_report_submit = function(args) {
-        var data = { rows:[], columns:[] };
-        // find current columns
+        var data = {
+            rows: [],
+            columns: []
+        };
+
         var cfg = grid_topics.getColumnModel().config;
 
-        if( !args.store_data ) {
+        if (!args.store_data) {
 
-            var row=0, col=0;
+            var row = 0,
+                col = 0;
             var gv = grid_topics.getView();
 
-            for( var row=0; row<9999; row++ ) {
-                if( !gv.getRow(row) ) break;
+            for (var row = 0; row < 9999; row++) {
+                if (!gv.getRow(row)) break;
                 var d = {};
-                for( var col=0; col<9999; col++ ) {
-                    if( !cfg[col] ) break;
-                    if( cfg[col].hidden || cfg[col]._checker ) continue;
-                    var cell = gv.getCell(row,col);
-                    if( !cell ) break;
+                for (var col = 0; col < 9999; col++) {
+                    if (!cfg[col]) break;
+                    if (cfg[col].hidden || cfg[col]._checker) continue;
+                    var cell = gv.getCell(row, col);
+                    if (!cell) break;
                     //console.log( cell.innerHTML );
                     var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
-                    text = text.replace(/^\s+/,'');
-                    text = text.replace(/\s+$/,'');
-                    d[ cfg[col].dataIndex ] = text;
+                    text = text.replace(/^\s+/, '');
+                    text = text.replace(/\s+$/, '');
+                    d[cfg[col].dataIndex] = text;
                 }
-                data.rows.push( d );
+                data.rows.push(d);
             }
 
         } else {
-            // get the grid store data
-            store_topics.each( function(rec) {
+
+            store_topics.each(function(rec) {
                 var d = rec.data;
-                var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
+                var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid)
                 d.topic_name = topic_name;
-                data.rows.push( d );
+                data.rows.push(d);
             });
 
         }
 
-        for( var i=0; i<cfg.length; i++ ) {
-            //console.log( cfg[i] );
-            if( ! cfg[i].hidden && ! cfg[i]._checker )
-                data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
+        for (var i = 0; i < cfg.length; i++) {
+
+            if (!cfg[i].hidden && !cfg[i]._checker)
+                data.columns.push({
+                    id: cfg[i].dataIndex,
+                    name: cfg[i].report_header || cfg[i].header
+                });
         }
-        // report so that it opens cleanly in another window/download
+
+        var title = make_title();
         var form = form_report.getForm();
-        form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
-        form.findField('title').setValue( make_title() );
-        form.findField('rows').setValue( store_topics.getCount() );
-        form.findField('total_rows').setValue( store_topics.getTotalCount() );
-        form.findField('params').setValue(Ext.util.JSON.encode( store_topics.baseParams));
+        form.findField('data_json').setValue(Ext.util.JSON.encode(data));
+        if (typeof title === "object") {
+            form.findField('title').setValue(Ext.util.JSON.encode(title));
+        } else {
+            form.findField('title').setValue(title);
+        }
+        form.findField('rows').setValue(store_topics.getCount());
+        form.findField('total_rows').setValue(store_topics.getTotalCount());
+        form.findField('params').setValue(Ext.util.JSON.encode(store_topics.baseParams));
         var el = form.getEl().dom;
         var target = document.createAttribute("target");
         target.nodeValue = args.target || "_blank";

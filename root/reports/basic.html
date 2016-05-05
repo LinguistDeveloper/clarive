@@ -7,7 +7,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title><% _loc( 'Topic Report' ) %> : <% $title %></title>
+    <title><% _loc( 'Topic Report' ) %> </title>
     <meta charset="utf-8">
     <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
@@ -27,14 +27,52 @@
 </head>
 <body>
 <div class="container">
-  <div class="row">
-        <div class="span3">
-            <h2><% _loc( 'Topic Report' ) %> :</h2>
-        </div>
-        <div class="span7">
-            <h2 style="color: #999"><% $title %></h2>
-        </div>
-  </div>
+<div class="row">
+   <div class="span3">
+      <h2><% _loc( 'Topic Report' ) %>:</h2>
+   </div>
+% if (ref $title eq 'HASH') {
+% my @sorted_keys = sort keys %$title;
+% if ($sorted_keys[0] eq 'Categories' && $sorted_keys[1] eq 'Filters') {
+% @sorted_keys = @sorted_keys[1,0,2..$#sorted_keys];
+% }
+   <div class ="span9">
+% for my $key (@sorted_keys) {
+% if ($title->{$key}) {
+      <div class ="row">
+         <div class ="span2">
+            <h3><% _loc( $key ) %>:</h3>
+         </div>
+         <div class ="span7">
+            <div class ="row" style="color: #999">
+% if( exists $title->{$key}->{positive}) {
+               <div class ="span7" style="margin-bottom: 1%">
+                  <img src="/static/images/icons/add.png" />
+% my $topics = join ("," , @{$title->{$key}->{positive}});
+                  <% _loc( $topics ) %>
+
+               </div>
+% }
+% if( exists $title->{$key}->{negative}) {
+               <div class ="span7">
+                  <img src="/static/images/icons/delete.png" />
+% my $topics = join ("," , @{$title->{$key}->{negative}});
+                  <% _loc( $topics ) %>
+
+               </div>
+% }
+            </div>
+         </div>
+      </div>
+      <br>
+% }
+% }
+   </div>
+% }
+% else {
+   <h2 style="color: #999"><% $title %></h2>
+% }
+</div>
   <div class="row">
         <div class="span12">
             <p>
