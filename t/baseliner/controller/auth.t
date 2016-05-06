@@ -188,7 +188,7 @@ subtest 'login: blocks user after failed attempts' => sub {
 
     my $controller = _build_controller();
 
-    for ( 1 .. 6 ) {
+    for ( 1 .. 5 ) {
         my $c = _build_c(
             req => { params => { login => 'local/wrong', password => 'wrong' } },
             model =>
@@ -196,9 +196,40 @@ subtest 'login: blocks user after failed attempts' => sub {
         );
 
         $controller->login($c);
+
+        cmp_deeply $c->stash->{json},
+          {
+            success        => \0,
+            msg            => ignore(),
+            attempts_login => ignore(),
+            block_datetime => ignore(),
+            errors         => {
+                login => ignore(),
+            }
+          };
     }
 
     my $c = _build_c(
+        req => { params => { login => 'local/wrong', password => 'wrong' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success           => \0,
+        msg               => ignore(),
+        attempts_login    => ignore(),
+        attempts_duration => 5,
+        block_datetime    => ignore(),
+        errors            => {
+            login => ignore(),
+        }
+      };
+
+    $c = _build_c(
         req => { params => { login => 'local/wrong', password => 'wrong' } },
         model =>
           { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
@@ -262,9 +293,13 @@ subtest 'login: denies logins when in maintenance mode' => sub {
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req => { params => { login => 'remote/users', password => 'password' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode'} ) }
+        req   => { params => { login => 'remote/users', password => 'password' } },
+        model => {
+            ConfigStore => FakeConfigStore->new(
+                'config.login'       => { delay_attempts => 5, delay_duration => 5 },
+                'config.maintenance' => { enabled        => 1, message        => 'Maintenance mode' }
+            )
+        }
     );
 
     $controller->login($c);
