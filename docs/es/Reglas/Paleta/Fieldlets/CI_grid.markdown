@@ -35,14 +35,7 @@ icon: grid
 
 
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico:
-
-**Único** - Permite seleccionar unicamente una opción.
-
-**Múltiple** - Permite al usuario añadir tantas opciones como desee.
-
-**Tabla** - Las opciones seleccionadas se muestran en una tabla.
-
+* El tipo de campo es **Grid** por defecto. Esto implica que los tópicos añadidos son mostrados en una tabla.
 
 
 ### Campo visible
@@ -70,7 +63,7 @@ icon: grid
 
 
 ### Método de selección
-* Permite filtrar las posibles opciones seleccionables. <br />
+* Permite filtrar las posibles opciones seleccionables.
 
 **Selección por rol**
 
