@@ -161,9 +161,9 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
         'BaselinerX::Type::Event',     'BaselinerX::Events',
         'BaselinerX::Type::Statement', 'Baseliner::Model::Rules'
     );
-    { package DummyPKG; sub new { } };
+    { package DummyPKGSemaphore; sub new { } };
     Baseliner::Core::Registry->add(
-        'DummyPKG',
+        'DummyPKGSemaphore',
         'service.test.op' => {
             name => 'Test Op',
             handler => sub {

@@ -258,7 +258,7 @@ subtest 'save_doc: correctly saved common environment entry in calendar fieldlet
         ],
     };
 
-    my %p = ( mid => $topic_mid, custom_fields => [] );
+    my %p = ( mid => $topic_mid, custom_fields => [], username => $user->username );
     my $meta = [ { id_field => 'calendar', meta_type => 'calendar' } ];
     my $topic_ci = ci->new($topic_mid);
 
@@ -333,7 +333,7 @@ subtest 'update: creates correct event.topic.modify' => sub {
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
 
-    Baseliner::Model::Topic->new->update( { action => 'update', topic_mid => $topic_mid, title => 'Second title' } );
+    Baseliner::Model::Topic->new->update( { action => 'update', topic_mid => $topic_mid, title => 'Second title', username => 'test' } );
 
     my $event = mdb->event->find_one( { event_key => 'event.topic.modify' } );
     my $event_data = _load $event->{event_data};
@@ -359,6 +359,7 @@ subtest 'update: creates correct event.topic.modify' => sub {
             is_changeset => ignore(),
             is_release => ignore(),
             mid => ignore(),
+            username => ignore(),
             modified_on => ignore(),
             name_status => $topic->{name_status},
             status_new => $topic->{status_new},
