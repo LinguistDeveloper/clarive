@@ -1398,7 +1398,10 @@
         filters: [{
             type: 'list',
             dataIndex: 'action',
-            options: ['SEND', 'EXCLUDE']
+            options: [
+            ["SEND", _('SEND')],
+            ["EXCLUDE", _('EXCLUDE')]
+            ]
         }, {
             type: 'list',
             dataIndex: 'is_active',
