@@ -568,6 +568,9 @@ sub view : Local {
 
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
 
+            $c->stash->{category_name} = $category->{name};
+            $c->stash->{category_color} = $category->{color};
+
             $c->stash->{dashboard} = $category->{dashboard};
             if ( $category->{is_changeset} ) {
                 my $menu = $self->get_menu_deploy( { topic_mid => $topic_mid, username => $c->username } );
