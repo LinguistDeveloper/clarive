@@ -121,15 +121,15 @@
                     }
                 };
 
-                if (res.success && checked.collection === 'project') {
+                if (res.success && (checked.collection === 'project' || checked.collection === 'area')) {
                     var num_ci = res.info.length;
                     var message = '';
 
                     for (var i = 0; i < num_ci && i < 10; i++) {
                         if (res.info[i].number_user === 0) {
-                            message += _('The project %1 does not have users asigned, delete this project?', res.info[i].name_project.bold()) + '<br>';
+                            message += _('The %1 %2 does not have users asigned, delete this %3?', checked.collection, res.info[i].ci_name.bold()) + '<br>';
                         } else {
-                            message += _('The project %1 has %2 user(s) assigned, delete this project?', res.info[i].name_project.bold(), res.info[i].number_user) + '<br>';
+                            message += _('The %1 %2 has %3 user(s) assigned, delete this %4?', checked.collection, res.info[i].ci_name.bold(), res.info[i].number_user, checked.collection) + '<br>';
                         }
                     }
 
