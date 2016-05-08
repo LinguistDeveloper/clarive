@@ -127,7 +127,7 @@
 
                     for (var i = 0; i < num_ci && i < 10; i++) {
                         if (res.info[i].number_user === 0) {
-                            message += _('The %1 %2 does not have users asigned, delete this %3?', checked.collection, res.info[i].ci_name.bold()) + '<br>';
+                            message += _('The %1 %2 does not have users asigned, delete this %3?', checked.collection, res.info[i].ci_name.bold(), checked.collection) + '<br>';
                         } else {
                             message += _('The %1 %2 has %3 user(s) assigned, delete this %4?', checked.collection, res.info[i].ci_name.bold(), res.info[i].number_user, checked.collection) + '<br>';
                         }
@@ -145,7 +145,7 @@
                                 Baseliner.ajaxEval('/ci/delete', {
                                     mids: checked.data,
                                     collection: checked.collection,
-                                    remove_data: '1'
+                                    delete_confirm: '1'
                                 }, function(res) {
                                     resultHandler(res);
                                 });
