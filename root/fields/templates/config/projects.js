@@ -11,7 +11,7 @@
         remoteSort: true,
         totalProperty: 'totalCount', 
         id: 'id', 
-        baseParams: Ext.apply({  start: 0, limit: 9999 }, this.baseParams ),
+        baseParams: Ext.apply({  start: 0, limit: 9999, role: 'Baseliner::Role::CI::Project' }, this.baseParams ),
         url: '/ci/classes',
         fields: [ 'name', 'classname' ],
         listeners:{
@@ -28,10 +28,11 @@
         store: ci_store,
         triggerAction: 'all',
         valueField: 'name',
+        allowBlank: false,
         displayField: 'name',
-        singleMode: false,
+        singleMode: true,
         mode: 'remote',
-        value: data.collection,
+        value: data.collection || 'project',
         listeners:{
             'change': function(elem,value){
                 collection.setValue(value);
