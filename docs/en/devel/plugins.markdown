@@ -2,38 +2,38 @@
 title: Plugins
 ---
 
-The Clarive plugin system is the official way of 
-extending the product. Every official entry point 
-into the product should be available to plugins. 
+The Clarive plugin system is the official way of
+extending the product. Every official entry point
+into the product should be available to plugins.
 
 ## Plugin locations
 
-There are 2 directories where plugins can be 
+There are 2 directories where plugins can be
 kept:
 
-- under the `CLARIVE_BASE/plugins` directory, intended for 
+- under the `CLARIVE_BASE/plugins` directory, intended for
 user-created, installation-specific or public-available downloable plugins.
 
 - under the `CLARIVE_HOME/plugins` directory, where **only
-product propietary** plugins are kept. 
+product propietary** plugins are kept.
 
 ## Overwriting plugins
 
 Public plugins can overwrite product plugins at anytime, as
 public plugins have precedence over product ones.
 
-To overwrite a product plugin, just create a plugin 
+To overwrite a product plugin, just create a plugin
 with the same name as the private ones and overwrite
-them. 
+them.
 
-**NOTE** - overwriting product plugins may lead to 
-unstable behaviour. In most cases, it's better to 
+**NOTE** - overwriting product plugins may lead to
+unstable behaviour. In most cases, it's better to
 just use a different module/library name.
 
 ## Plugin directory structure
 
-The plugin system loads files from a predefined folder structure. 
-The folder structure determines **where and when** the plugin files will 
+The plugin system loads files from a predefined folder structure.
+The folder structure determines **where and when** the plugin files will
 be loaded, but it does not determine what the exact contents of the loaded file will have.
 
 This is the directory structure:
@@ -45,14 +45,14 @@ This is the directory structure:
 
 ## What happened to Clarive Features?
 
-Features are still there. They remain as the Clarive provided lab additions 
-to the product. 
+Features are still there. They remain as the Clarive provided lab additions
+to the product.
 
-The feature system is not intended for general availability and 
-customization and any features added to the product are not officially 
-supported unless previously agreed up. 
+The feature system is not intended for general availability and
+customization and any features added to the product are not officially
+supported unless previously agreed up.
 
-The feature system is totally separate from the plugin system, with 
-a different directory structure, hook points and language. 
+The feature system is totally separate from the plugin system, with
+a different directory structure, hook points and language.
 
 
