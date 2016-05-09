@@ -8791,3 +8791,9 @@ msgstr "Entornos"
 
 msgid "Inactive"
 msgstr "Desactivado"
+
+msgid "The project %1 does not have users asigned, delete this project?"
+msgstr "El proyeto %1 no tiene usuarios asignados, desea borrarlo?"
+
+msgid "The project %1 has %2 user(s) assigned, delete this project?"
+msgstr "El proyeto %1 tiene %2 usuarios asignados, desea borrarlo?"

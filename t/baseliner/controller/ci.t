@@ -505,6 +505,46 @@ subtest 'delete: deletes ci' => sub {
       };
 };
 
+subtest 'delete: asks user before deleting a project' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci( 'project', name => 'Project1' );
+    my $project2 = TestUtils->create_ci( 'project', name => 'Project2' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user1 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo1' );
+    my $user2 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo2' );
+    my $user3 = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'foo3' );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req      => { params => { collection => 'project', mids => [ $project->mid, $project2->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'info' => [
+                {
+                    'name_project' => 'Project1',
+                    'number_user'  => '3'
+                },
+                {
+                    'name_project' => 'Project2',
+                    'number_user'  => '1'
+                }
+            ],
+            'success' => \1
+        }
+      };
+};
+
 subtest 'delete: throws error when no permission to delete ci' => sub {
     _setup();
 

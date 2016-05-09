@@ -111,27 +111,49 @@
         var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
             Baseliner.ajaxEval( '/ci/delete', { mids: checked.data, collection: checked.collection }, function(res) {
-                if( res.success && res.exists ) {
-                    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the project') + ' <b>' + checked.data  + '</b>? <br><br>'+ res.msg, 
-                    function(btn){ 
-                        if(btn=='yes') {
-                            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data, collection: checked.collection, remove_data: '1' }, function(res) {
-                                if( res.success ) {
-                                    Baseliner.message(_('CI'), res.msg );
-                                    check_sm.clearSelections();  // otherwise it refreshes current selected nodes
-                                    ci_grid.getStore().reload();
-                                } else {
-                                    Ext.Msg.alert( _('CI'), res.msg );
-                                }
-                            });
-                        };
-                    });
-                } else if( res.success && !res.exists ) {
-                    Baseliner.message(_('CI'), res.msg );
-                    check_sm.clearSelections();  // otherwise it refreshes current selected nodes
-                    ci_grid.getStore().reload();
-                } else {
-                    Ext.Msg.alert( _('CI'), res.msg );
+                var resultHandler = function(res) {
+                    if (res.success) {
+                        Baseliner.message(_('CI'), res.msg );
+                        check_sm.clearSelections();  // otherwise it refreshes current selected nodes
+                        ci_grid.getStore().reload();
+                    } else {
+                        Ext.Msg.alert( _('CI'), res.msg );
+                    }
+                };
+
+                if (res.success && checked.collection === 'project') {
+                    var num_ci = res.info.length;
+                    var message = '';
+
+                    for (var i = 0; i < num_ci && i < 10; i++) {
+                        if (res.info[i].number_user === 0) {
+                            message += _('The project %1 does not have users asigned, delete this project?', res.info[i].name_project.bold()) + '<br>';
+                        } else {
+                            message += _('The project %1 has %2 user(s) assigned, delete this project?', res.info[i].name_project.bold(), res.info[i].number_user) + '<br>';
+                        }
+                    }
+
+                    if ( num_ci > 10 ){
+                        message += '[...]' + '<br>';
+                    }
+
+                    message += '<br>';
+
+                    Ext.Msg.confirm(_('Confirmation'), message,
+                        function(btn) {
+                            if (btn == 'yes') {
+                                Baseliner.ajaxEval('/ci/delete', {
+                                    mids: checked.data,
+                                    collection: checked.collection,
+                                    remove_data: '1'
+                                }, function(res) {
+                                    resultHandler(res);
+                                });
+                            };
+                        });
+                }
+                else {
+                    resultHandler(res);
                 }
             });
         }
