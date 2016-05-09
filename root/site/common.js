@@ -4215,8 +4215,8 @@ Baseliner.generic_fields = function(params){
         ],
         value: data.colspan || '12',
     });
-    var is_mandatory = data.fieldletType == 'fieldlet.system.title'|| data.fieldletType == 'fieldlet.system.status_new' ? true : false;
 
+    var is_mandatory = (data.fieldletType == 'fieldlet.system.title'|| data.fieldletType == 'fieldlet.system.status_new') ? true : false;
     if(is_mandatory){
         data.allowBlank = false;
     }
@@ -4224,7 +4224,15 @@ Baseliner.generic_fields = function(params){
     var mandatory_cb = new Baseliner.CBox({
         name: 'mandatory_cb',
         checked: !Baseliner.eval_boolean(data.allowBlank, true),
-        disabled: Baseliner.eval_boolean( is_mandatory, true ),
+        listeners: {
+            check: function(){
+                if (is_mandatory){
+                    if(!this.getValue()){
+                    this.setValue(true);
+                    }
+                }
+            }
+        },
         fieldLabel: _('Mandatory field')
     });
 
