@@ -822,3 +822,11 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     width: 16px;
     vertical-align: top;
 }
+
+.x-item-disabled {
+    color: gray;
+    cursor: default !important;
+    opacity: .6;
+    -moz-opacity: .6;
+    filter: alpha(opacity=60);
+}
