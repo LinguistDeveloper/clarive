@@ -18,6 +18,7 @@ Ext.onReady(function() {
         */
         login_button.setText('<img src="/static/images/loading-fast.gif" />');
         login_button.disable();
+
         var ff = login_form.getForm();
         ff.submit({
             success: function(form, action) {
@@ -41,7 +42,7 @@ Ext.onReady(function() {
                         Ext.fly(document.body).unmask();
                     }, 4000);
                 } else if (action.result.attempts_duration && action.result.block_datetime != 0) {
-                    var interval = action.result.attempts_duration * 100
+                    var interval = action.result.attempts_duration * 100;
                     Ext.Msg.show({
                         title: '<% _loc("Login Failed") %>',
                         msg: '<% _loc("Attempts exhausted, please wait") %>',
@@ -62,6 +63,7 @@ Ext.onReady(function() {
     };
 
     var login_button = new Ext.Button({
+        id: 'login_btn',
         text: login_txt,
         handler: Baseliner.doLoginForm,
         cls: 'login_button'
@@ -79,6 +81,7 @@ Ext.onReady(function() {
         },
         buttons: [
             login_button, {
+                id: 'reset_btn',
                 text: '<% _loc("Reset") %>',
                 cls: 'login_button',
                 handler: function() {
@@ -101,29 +104,29 @@ Ext.onReady(function() {
             inputType: 'password',
             fieldLabel: "<% _loc('Password') %>",
             selectOnFocus: true
-        }]
+        }],
+        listeners: {
+            render: function() {
+                Ext.get('bali-loading').remove();
+                Ext.get('bali-loading-mask').fadeOut({
+                    remove: true
+                });
+
+                var map = new Ext.KeyMap(document, [{
+                    key: [10, 13],
+                    fn: Baseliner.doLoginForm
+                }]);
+
+                var last_login = Baseliner.cookie.get('last_login');
+                if (last_login != undefined && last_login.length > 0) {
+                    this.getForm().findField('login').setValue(last_login);
+                    this.getForm().findField('password').focus('', 100);
+                } else {
+                    this.getForm().findField('login').focus('', 100);
+                }
+            }
+        }
     });
 
-    var map = new Ext.KeyMap(document, [{
-        key: [10, 13],
-        fn: Baseliner.doLoginForm
-    }]);
-
-    var last_login = Baseliner.cookie.get('last_login');
-
-    setTimeout(function() {
-        Ext.get('bali-loading').remove();
-        login_form.render(document.body);
-        if (last_login != undefined && last_login.length > 0) {
-            login_form.getForm().findField('login').setValue(last_login);
-            login_form.getForm().findField('password').focus('', 100);
-        } else {
-            login_form.getForm().findField('login').focus('', 100);
-        }
-
-        Ext.get('bali-loading-mask').fadeOut({
-            remove: true
-        });
-    }, 400);
-
+    login_form.render(document.body);
 });

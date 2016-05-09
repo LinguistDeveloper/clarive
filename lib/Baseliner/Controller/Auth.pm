@@ -355,6 +355,7 @@ sub login : Global {
                     $c->stash->{json} = {
                         success => \0,
                         msg => $msg,
+                        errors => {login => $msg},
                         attempts_login => $attempts_login-$num_attempts,
                         block_datetime => $block_datetime,
                         attempts_duration => $attempts_duration };

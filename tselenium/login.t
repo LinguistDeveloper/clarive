@@ -9,9 +9,11 @@ use TestDriver;
 my $driver = TestDriver->new;
 
 subtest 'shows an error when no password or username' => sub {
-    $driver->get_fresh();
+    $driver->get_fresh_and_ready;
 
-    $driver->wait_for_element_visible('.ui-button-login button')->click;
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
+
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
 
     my $error_message = $driver->wait_for_element_visible('div.x-form-invalid-msg');
 
@@ -20,12 +22,30 @@ subtest 'shows an error when no password or username' => sub {
 };
 
 subtest 'shows an error when invalid user' => sub {
-    $driver->get_fresh();
+    $driver->get_fresh_and_ready;
+
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
 
     $driver->wait_for_element_visible('input[name=login]')->send_keys('unknown user');
     $driver->wait_for_element_visible('input[name=password]')->send_keys('unknown password');
 
-    $driver->wait_for_element_visible('.ui-button-login button')->click;
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
+
+    my $error_message = $driver->wait_for_element_visible('.x-form-invalid-msg');
+
+    ok $error_message;
+    like $error_message->get_text, qr/Invalid User or Password/;
+};
+
+subtest 'shows an error when correct user but wrong password' => sub {
+    $driver->get_fresh_and_ready;
+
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
+
+    $driver->wait_for_element_visible('input[name=login]')->send_keys('local/root');
+    $driver->wait_for_element_visible('input[name=password]')->send_keys('unknown password');
+
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
 
     my $error_message = $driver->wait_for_element_visible('div.x-form-invalid-msg');
 
@@ -33,18 +53,71 @@ subtest 'shows an error when invalid user' => sub {
     like $error_message->get_text, qr/Invalid User or Password/;
 };
 
-subtest 'shows an error when correct user but wrong password' => sub {
+subtest 'successfully logins with correct credentials' => sub {
+    $driver->get_fresh_and_ready;
 
-    # TODO
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
 
-    ok 1;
+    $driver->wait_for_element_visible('input[name=login]')->send_keys('local/root');
+    $driver->wait_for_element_visible('input[name=password]')->send_keys('admin');
+
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
+
+    $driver->wait_for_element_visible('.img-main-logo-file');
+
+    $driver->find_extjs_component('.ui-user-menu')->elem->click;
+
+    $driver->find_extjs_component('.ui-user-menu-logout')->elem->click;
+
+    ok $driver->wait_for_element_visible('.logo');
 };
 
-subtest 'successfully logins with correct credentials' => sub {
+subtest 'login attempts reach' => sub {
+    $driver->get_fresh_and_ready;
 
-    # TODO
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
 
-    ok 1;
+    $driver->wait_for_element_visible('input[name=login]')->send_keys('local/root');
+    $driver->wait_for_element_visible('input[name=password]')->send_keys('admin');
+
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
+
+    $driver->wait_for_element_visible('.img-main-logo-file');
+
+    $driver->find_extjs_component('.ui-user-menu')->elem->click;
+
+    $driver->find_extjs_component('.ui-user-menu-logout')->elem->click;
+
+    $driver->wait_for_element_not_visible('#bali-loading-mask');
+
+    $driver->wait_for_element_visible('input[name=login]')->clear;
+    $driver->wait_for_element_visible('input[name=password]')->clear;
+
+    for my $i ( 1 .. 5 ) {
+        $driver->wait_for_element_visible('input[name=login]')->send_keys( 'User', $i );
+        $driver->wait_for_element_visible('input[name=password]')->send_keys('test');
+
+        $driver->wait_for_element_not_visible('#bali-loading-mask');
+
+        $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
+
+        $driver->wait_for_element_visible('div.x-form-invalid-msg');
+
+        $driver->wait_for_element_visible('#reset_btn')->click;
+
+        $driver->wait_for_element_not_visible('div.x-form-invalid-msg');
+
+        $driver->wait_for_element_visible('input[name=login]')->clear;
+        $driver->wait_for_element_visible('input[name=password]')->clear;
+    }
+
+    $driver->wait_for_element_visible('input[name=login]')->send_keys('User');
+    $driver->wait_for_element_visible('input[name=password]')->send_keys('test');
+
+    $driver->wait_for_extjs_component_enabled('#login_btn')->elem->click;
+
+    my $error_text = $driver->wait_for_element_visible('.ext-mb-text');
+    like $error_text->get_text, qr/Attempts exhausted, please wait/;
 };
 
 $driver->quit;
