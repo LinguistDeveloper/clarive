@@ -23,12 +23,12 @@ sub run {
     my $smoke_conf            = "config/$smoke_env.yml";
     my $smoke_nightwatch_conf = 'ui-tests/smoke.json';
 
+    my $is_headless = !!delete $opts{args}->{headless};
+
     if ( !%{ $opts{args} } ) {
         $opts{args}->{unit} = 1;
         $opts{args}->{ui}   = 1;
     }
-
-    my $is_headless = !!$opts{args}->{headless};
 
     print 'Running smoke tests...', "\n";
 
