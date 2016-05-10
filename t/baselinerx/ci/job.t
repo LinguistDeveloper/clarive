@@ -160,7 +160,7 @@ subtest 'finish: create notify in event.job.end_step' => sub {
 
 };
 
-subtest 'finish: create the notify in event.job.end' => sub {
+subtest 'finish: creates notify in event.job.end' => sub {
     _setup();
     use Data::Dumper;
     my $project   = TestUtils->create_ci_project();
