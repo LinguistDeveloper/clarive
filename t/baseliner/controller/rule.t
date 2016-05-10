@@ -123,8 +123,7 @@ subtest 'stmts_load: returns rule tree with versions' => sub {
         );
     };
 
-    my $c = mock_catalyst_c(
-        req => { params => { id_rule => $id_rule, load_versions => 1 } } );
+    my $c = mock_catalyst_c( req => { params => { id_rule => $id_rule, load_versions => 1 } } );
 
     my $controller = _build_controller();
 
@@ -164,12 +163,61 @@ subtest 'stmts_load: returns rule tree with versions' => sub {
                         'leaf'     => JSON::false
                     }
                 ],
-                'version_id' => ignore(),
-                'is_version' => \1,
-                'leaf'       => \0
+                'version_id'  => ignore(),
+                'version_tag' => '',
+                'is_version'  => \1,
+                'leaf'        => \0
             }
         ]
       };
+};
+
+subtest 'stmts_load: returns rule tree with versions and version tags' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    mock_time '2015-01-01' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule    => $id_rule,
+            username   => 'newuser',
+            stmts_json => JSON::encode_json($rule_tree)
+        );
+    };
+
+    mock_time '2015-01-02' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule    => $id_rule,
+            username   => 'anotheruser',
+            stmts_json => JSON::encode_json($rule_tree)
+        );
+    };
+
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    Baseliner::Model::Rules->tag_version( version_id => $version_id, version_tag => 'production' );
+
+    my $c = mock_catalyst_c( req => { params => { id_rule => $id_rule, load_versions => 1 } } );
+
+    my $controller = _build_controller();
+
+    $controller->stmts_load($c);
+
+    like $c->stash->{json}->[1]->{text}, qr/\[ production \]/;
 };
 
 subtest 'rollback_version: rolls back to previous version' => sub {
@@ -227,17 +275,15 @@ subtest 'rollback_version: rolls back to previous version' => sub {
         }
       };
 
-    $c = mock_catalyst_c(
-        req => { params => { id_rule => $id_rule, load_versions => 1 } } );
+    $c = mock_catalyst_c( req => { params => { id_rule => $id_rule, load_versions => 1 } } );
     $controller->stmts_load($c);
 
     cmp_deeply $c->stash->{json}->[0],
       {
         'icon'       => '/static/images/icons/history.png',
         'is_current' => \1,
-        'text' =>
-          'Current: 2016-01-03 12:15:00 (someuser) was: 2016-01-01 12:15:00',
-        'children' => [
+        'text'       => 'Current: 2016-01-03 12:15:00 (someuser) was: 2016-01-01 12:15:00',
+        'children'   => [
             {
                 'disabled' => \0,
                 'text'     => 'CHECK',
@@ -249,6 +295,216 @@ subtest 'rollback_version: rolls back to previous version' => sub {
             }
         ],
         'leaf' => \0
+      };
+};
+
+subtest 'tag_version: tags version' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $c =
+      mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'production' } } );
+
+    my $controller = _build_controller();
+
+    $controller->tag_version($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'Rule version tagged',
+            'success' => \1
+        }
+      };
+
+    my $rule_version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+
+    is $rule_version->{tag}, 'production';
+};
+
+subtest 'tag_version: throws when unknown version' => sub {
+    _setup();
+
+    my $c =
+      mock_catalyst_c( req => { params => { version_id => 'unknown', tag => 'production' } } );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->tag_version($c) }, qr/Version not found: unknown/;
+};
+
+subtest 'tag_version: returns validation errors' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $c =
+      mock_catalyst_c( req => { params => { version_id => $version_id } } );
+
+    my $controller = _build_controller();
+
+    $controller->tag_version($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'    => 'Validation failed',
+            'errors' => {
+                tag => 'REQUIRED'
+            },
+            'success' => \0
+        }
+      };
+};
+
+subtest 'tag_version: returns validation errors when tag already exists' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
+
+    $controller->tag_version($c);
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK3';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    $version_id =
+      mdb->rule_version->find( { _id => { '$ne' => mdb->oid($version_id) } } )->sort( { ts => 1 } )->next->{_id} . '';
+    $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
+
+    $controller->tag_version($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'    => 'Validation failed',
+            'errors' => {
+                tag => 'Already exists'
+            },
+            'success' => \0
+        }
+      };
+};
+
+subtest 'tag_version: returns no validation errors when saving same tag with same version' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
+
+    $controller->tag_version($c);
+
+    $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
+
+    $controller->tag_version($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'Rule version tagged',
+            'success' => \1
+        }
       };
 };
 
@@ -382,9 +638,9 @@ subtest 'webservice: returns result' => sub {
 
     my $id_rule = _create_rule(
         rule_active => 1,
-        rule_type => 'independent',
-        rule_name => 'Rule',
-        rule_tree => [
+        rule_type   => 'independent',
+        rule_name   => 'Rule',
+        rule_tree   => [
             {
                 "attributes" => {
                     "disabled" => 0,
@@ -403,7 +659,7 @@ subtest 'webservice: returns result' => sub {
 
     my $controller = _build_controller();
 
-    $controller->default($c, 'json', $id_rule, 'foo', 'bar');
+    $controller->default( $c, 'json', $id_rule, 'foo', 'bar' );
 
     my $stash = $c->stash->{json}->{stash};
 
@@ -419,8 +675,8 @@ subtest 'stmts_save: saves statements' => sub {
 
     my $id_rule = _create_rule(
         rule_active => 1,
-        rule_type => 'independent',
-        rule_name => 'Rule',
+        rule_type   => 'independent',
+        rule_name   => 'Rule',
     );
 
     my $c = mock_catalyst_c(
@@ -470,8 +726,8 @@ subtest 'stmts_save: returns error when cannot compile dsl' => sub {
 
     my $id_rule = _create_rule(
         rule_active => 1,
-        rule_type => 'independent',
-        rule_name => 'Rule',
+        rule_type   => 'independent',
+        rule_name   => 'Rule',
     );
 
     my $c = mock_catalyst_c(
@@ -513,7 +769,7 @@ subtest 'stmts_save: returns error when cannot compile dsl' => sub {
       };
 };
 
-subtest 'default: call a rule as json webservice' => sub{
+subtest 'default: call a rule as json webservice' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule(
@@ -521,15 +777,15 @@ subtest 'default: call a rule as json webservice' => sub{
         rule_type => 'webservice',
         rule_tree => [
             {
-                "attributes"=> {
-                    "icon"=> "/static/images/icons/cog_perl.png",
-                    "key"=> "statement.code.server",
-                    "text"=> "Server CODE",
-                    "id"=> "rule-ext-gen38276-1456842988061",
-                    "name"=> "Server CODE",
-                    "data"=> {
-                        "lang"=> "js",
-                        "code"=> q{
+                "attributes" => {
+                    "icon" => "/static/images/icons/cog_perl.png",
+                    "key"  => "statement.code.server",
+                    "text" => "Server CODE",
+                    "id"   => "rule-ext-gen38276-1456842988061",
+                    "name" => "Server CODE",
+                    "data" => {
+                        "lang" => "js",
+                        "code" => q{
                             var ws = require('cla/ws');
                             var req = ws.request();
                             var res = ws.response();
@@ -538,16 +794,17 @@ subtest 'default: call a rule as json webservice' => sub{
                         }
                     },
                 },
-                "children"=> [],
+                "children" => [],
             }
         ]
     );
 
     my $controller = _build_controller();
-    my $c = mock_catalyst_c( req => { params => { }, headers=>{ 'accept-language'=>'foo' }, uri=>URI->new('http://localhost') } );
+    my $c          = mock_catalyst_c(
+        req => { params => {}, headers => { 'accept-language' => 'foo' }, uri => URI->new('http://localhost') } );
     $c->{username} = 'root';    # change context to root
 
-    $controller->default($c,'json',$id_rule);
+    $controller->default( $c, 'json', $id_rule );
 
     my $data = $c->stash->{json};
     is $c->stash->{json}{hola}, 'foo';

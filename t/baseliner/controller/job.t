@@ -103,9 +103,10 @@ subtest 'pipeline_versions: returns versions data' => sub {
 
     my $id_rule = '1';
 
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 10:00:00', username => 'foo'} );
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 11:00:00', username => 'bar'} );
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', username => 'baz'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 10:00:00', tag => 'one', username => 'foo'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 11:00:00', tag => 'two', username => 'bar'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', tag => 'three', username => 'baz'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', username => 'ignore me'} );
 
     my $c = mock_catalyst_c(username => 'developer', req => {params => {id_rule => $id_rule}});
 
@@ -123,15 +124,15 @@ subtest 'pipeline_versions: returns versions data' => sub {
                 },
                 {
                     id => ignore(),
-                    rule_version => '2015-01-02 11:00:00 (baz)',
+                    rule_version => 'three (baz)',
                 },
                 {
                     id => ignore(),
-                    rule_version => '2015-01-01 11:00:00 (bar)',
+                    rule_version => 'two (bar)',
                 },
                 {
                     id => ignore(),
-                    rule_version => '2015-01-01 10:00:00 (foo)',
+                    rule_version => 'one (foo)',
                 },
             ],
             totalCount => 4,

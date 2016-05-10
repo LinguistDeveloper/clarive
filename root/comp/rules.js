@@ -1232,6 +1232,64 @@
             });
             return;
         }
+        var tag_version = function( btn, node ) {
+            var tag_form = new Baseliner.FormPanel({
+                url: '/rule/tag_version',
+                frame: true,
+                defaults: {
+                    msgTarget: 'under'
+                },
+                items: [{
+                    xtype: 'hidden',
+                    name: 'version_id',
+                    value: node.attributes.version_id
+                }, {
+                    xtype: 'textfield',
+                    allowBlank: false,
+                    fieldLabel: _('Tag'),
+                    name: 'tag',
+                    value: node.attributes.version_tag,
+                    anchor: '95%'
+                }],
+                buttons: [{
+                    text: _('Save'),
+                    handler: function() {
+                        var fp = this.ownerCt.ownerCt,
+                            form = fp.getForm();
+
+                        if (form.isValid()) {
+                            form.submit({
+                                success: function(form, action) {
+                                    win.close();
+                                    rule_load( null, true );
+                                }
+                            });
+                        }
+                    }
+                }, {
+                    text: _('Cancel'),
+                    handler: function() {
+                        win.close();
+                    }
+                }]
+            });
+
+            var win = new Ext.Window({
+                title: _("Tag"),
+                width: 350,
+                modal: true,
+                maximizable: false,
+                resizable: false,
+                colapsible: false,
+                minimizable: false,
+                items: [tag_form]
+            });
+
+            win.show();
+            tag_form.getForm().findField('tag').focus('', 100);
+
+            return;
+        }
         var short_name = name.length > 10 ? name.substring(0,20) : name;
         var node_dbl_click = function(node,event){
             edit_node( node );
@@ -1242,7 +1300,8 @@
                 node.select();
                 var stmts_menu = new Ext.menu.Menu({
                     items: [
-                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' }
+                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
+                        { text: _('Tag'), handler: function(){ tag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
                     ]
                 });
                 stmts_menu.showAt(event.xy);

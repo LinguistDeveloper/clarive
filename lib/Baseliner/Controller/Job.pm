@@ -89,7 +89,9 @@ sub pipeline_versions : Local {
 
     my $id_rule = $p->{id_rule};
 
-    my @rule_versions = mdb->rule_version->find( { id_rule => $id_rule } )->sort( { ts => -1 } )->all;
+    my @rule_versions =
+      mdb->rule_version->find( { id_rule => $id_rule, tag => { '$exists' => 1, '$ne' => undef, '$ne' => '' } } )
+      ->sort( { ts => -1 } )->all;
 
     my @data;
     push @data,
@@ -99,7 +101,7 @@ sub pipeline_versions : Local {
       };
 
     foreach my $rule_version (@rule_versions) {
-        my $version = $rule_version->{ts};
+        my $version = $rule_version->{tag};
 
         if ($rule_version->{username}) {
             $version .= sprintf ' (%s)', $rule_version->{username};

@@ -14,6 +14,7 @@ use Baseliner::Model::Rules;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 
+with 'Baseliner::Role::ControllerValidator';
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
@@ -671,6 +672,49 @@ sub rollback_version : Local {
     $c->forward("View::JSON");
 }
 
+sub tag_version : Local {
+    my ( $self, $c ) = @_;
+
+    return
+      unless my $p = $self->validate_params(
+        $c,
+        version_id => { isa => 'Str' },
+        tag        => { isa => 'Str' }
+      );
+
+    my $version_id = $p->{version_id};
+    my $tag        = $p->{tag};
+
+    my $ver = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+    _fail _loc 'Version not found: %1', $version_id unless $ver;
+
+    if (
+        mdb->rule_version->find_one(
+            { id_rule => $ver->{id_rule}, _id => { '$ne' => mdb->oid($version_id) }, tag => $tag }
+        )
+      )
+    {
+        $c->stash->{json} = { success => \0, msg => 'Validation failed', errors => { tag => 'Already exists' } };
+        $c->forward("View::JSON");
+        return;
+    }
+
+    try {
+        mdb->rule_version->update( { _id => mdb->oid($version_id) }, { '$set' => { tag => $tag } } );
+        $c->stash->{json} = { success => \1, msg => _loc('Rule version tagged') };
+    }
+    catch {
+        my $err = shift;
+
+        _error $err;
+        chomp($err);
+
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+
+    $c->forward("View::JSON");
+}
+
 sub stmts_load : Local {
     my ( $self, $c ) = @_;
 
@@ -703,18 +747,20 @@ sub stmts_load : Local {
             );
 
             while ( my $rv = $rs->next ) {
-                my @ver_tree = Baseliner::Model::Rules->new->load_tree(rule => $rv);
+                my @ver_tree = Baseliner::Model::Rules->new->load_tree( rule => $rv );
 
-                my $text     = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                my $text = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                $text .= " [ $rv->{version_tag} ]" if $rv->{version_tag};
                 $text .= ' was: ' . $rv->{was} if $rv->{was};
                 push @tree,
                   +{
-                    text       => $text,
-                    icon       => '/static/images/icons/history.png',
-                    is_version => \1,
-                    version_id => '' . $rv->{_id},
-                    leaf       => \0,
-                    children   => \@ver_tree
+                    text        => $text,
+                    icon        => '/static/images/icons/history.png',
+                    is_version  => \1,
+                    version_id  => '' . $rv->{_id},
+                    version_tag => $rv->{version_tag} // '',
+                    leaf        => \0,
+                    children    => \@ver_tree
                   };
             }
         }
