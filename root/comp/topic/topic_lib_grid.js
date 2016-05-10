@@ -740,7 +740,7 @@ Cla.topic_grid = function(params){
                });
             }
             var kanban = new Baseliner.Kanban({ topics: mids, data_source: { base_params: store_topics.baseParams } });
-            kanban.fullscreen();
+            kanban.goto_tab();
         }
     });
 
