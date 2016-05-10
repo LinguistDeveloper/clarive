@@ -199,6 +199,120 @@ subtest 'run_sync_remote: runs sync_dir on agent' => sub {
       };
 };
 
+subtest 'run_retrieve: writes correct messages into the log' => sub {
+    _setup();
+
+    my $log = _mock_logger();
+
+    my $job = _mock_job( logger => $log );
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'run_retrieve' } );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost', name => 'MyServer' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server   => sub { $server } );
+    $agent->mock( get_file => sub { } );
+
+    $service->run_retrieve(
+        $c,
+        {
+            local_path  => '/local/path',
+            remote_path => '/remote/path/',
+            server      => $server
+        }
+    );
+
+    my ($message) = $log->mocked_call_args('info');
+
+    like $message, qr/\/remote\/path\/' to '\/local\/path/;
+};
+
+subtest 'run_retrieve: calls agent returns correct parameters' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'run_retrieve' } );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost', name => 'MyServer' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server   => sub { $server } );
+    $agent->mock( get_file => sub { } );
+
+    $service->run_retrieve(
+        $c,
+        {
+            local_path  => '/local/path',
+            remote_path => '/remote/path/',
+            server      => $server
+        }
+    );
+
+    my (%args) = $agent->mocked_call_args('get_file');
+
+    is_deeply \%args,
+      {
+        'remote' => '/remote/path/',
+        'local'  => '/local/path'
+      };
+};
+
+subtest 'run_retrieve: throws an error when no local path' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'run_retrieve' } );
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost', name => 'MyServer' );
+
+    like exception {
+        $service->run_retrieve(
+            $c,
+            {
+                remote_path => "/tmp/unlikely-to-exist123",
+                server      => $server
+            }
+        );
+    }, qr/Missing parameter local_file/;
+};
+
+subtest 'run_retrieve: throws an error when no remote path' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'run_retrieve' } );
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost', name => 'MyServer' );
+
+    like exception {
+        $service->run_retrieve(
+            $c,
+            {
+                local_path => "tmp/foo/bar",
+                server     => $server
+            }
+        );
+    }, qr/Missing parameter remote_file/;
+};
+
 done_testing;
 
 sub _setup {
