@@ -119,7 +119,11 @@ subtest 'pipeline_versions: returns versions data' => sub {
             data => [
                 {
                     id => ignore(),
-                    rule_version => 'Latest (baz)',
+                    rule_version => 'Latest',
+                },
+                {
+                    id => ignore(),
+                    rule_version => '2015-01-02 11:00:00 (baz)',
                 },
                 {
                     id => ignore(),
@@ -130,7 +134,7 @@ subtest 'pipeline_versions: returns versions data' => sub {
                     rule_version => '2015-01-01 10:00:00 (foo)',
                 },
             ],
-            totalCount => 3,
+            totalCount => 4,
         }
     };
 };

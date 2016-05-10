@@ -92,8 +92,14 @@ sub pipeline_versions : Local {
     my @rule_versions = mdb->rule_version->find( { id_rule => $id_rule } )->sort( { ts => -1 } )->all;
 
     my @data;
+    push @data,
+      {
+        id           => '',
+        rule_version => _loc('Latest'),
+      };
+
     foreach my $rule_version (@rule_versions) {
-        my $version = @data ? $rule_version->{ts} : _loc('Latest');
+        my $version = $rule_version->{ts};
 
         if ($rule_version->{username}) {
             $version .= sprintf ' (%s)', $rule_version->{username};
