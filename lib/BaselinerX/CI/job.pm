@@ -1,6 +1,6 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _now :other);
+use Baseliner::Utils qw(:logging _now :other _array);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
@@ -1270,23 +1270,45 @@ sub goto_next_step {
 }
 
 sub finish {
-    my ($self, $status ) = @_;
+    my ( $self, $status ) = @_;
     $status ||= 'FINISHED';
 
-    Util->_debug( "JOB FINISHED=$status, rollback=". $self->rollback );
+    Util->_debug( "JOB FINISHED=$status, rollback=" . $self->rollback );
+    my @projects = map { $_->{mid} } _array( $self->{projects} );
+    my $bl = ci->bl->find_one( { name => $self->bl } );
+    my $bl_mid = $bl->{mid};
 
-    event_new 'event.job.end_step' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
-    if( $self->step eq 'POST' ) {
-        event_new 'event.job.end' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
+    my $notify = {
+        project => \@projects,
+        status  => $status,
+        bl      => $bl_mid
+    };
+    event_new 'event.job.end_step' => {
+        notify    => $notify,
+        job       => $self,
+        job_stash => $self->stash,
+        status    => $self->status,
+        bl        => $self->bl,
+        step      => $self->step
+    };
+
+    if ( $self->step eq 'POST' ) {
+        event_new 'event.job.end' => {
+            notify    => $notify,
+            job       => $self,
+            job_stash => $self->stash,
+            status    => $self->status,
+            bl        => $self->bl,
+            step      => $self->step
+        };
     }
-
-    $self->status( $status );
+    $self->status($status);
     $self->step_status->{ $self->step } = $status;
-    $self->last_finish_status( $status );  # saved for POST
-    $self->endtime( _now );
+    $self->last_finish_status($status);    # saved for POST
+    $self->endtime(_now);
     my $milestones = $self->milestones;
-    $milestones->{$self->exec}->{$self->step}->{end} = _now;
-    $self->milestones( $milestones );
+    $milestones->{ $self->exec }->{ $self->step }->{end} = _now;
+    $self->milestones($milestones);
 
 }
 
