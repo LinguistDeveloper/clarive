@@ -1179,6 +1179,15 @@ msgstr "Hora Inicio"
 msgid "End Time"
 msgstr "Hora Fin"
 
+msgid "Planned start date is after planned end date"
+msgstr "Fecha de inicio planificada es posterior a la fecha fin planificada"
+
+msgid "Start date is after end date"
+msgstr "Fecha de inicio es posterior a la fecha de finalización"
+
+msgid "Planned start and start date are after ends dates"
+msgstr "Fecha Planificada y Fecha de Inicio son posteriores a las fechas de fin"
+
 msgid "Max Start Date"
 msgstr "Fecha Máxima de Inicio"
 
