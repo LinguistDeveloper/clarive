@@ -265,12 +265,13 @@ sub get_projects_from_user{
 
 sub get_projectnames_and_descriptions_from_user{
     my ($self, $username, $collection, $query, $roles) = @_;
-    $collection ||='project';
+    $collection ||= 'project';
     my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     my $where;
     my @roles_filter_names = Util->_array_or_commas($roles);
+    my @collections = Util->_array_or_commas($collection);
     if ($is_root){
-        $where = {collection=>"$collection"};
+        $where = { collection => mdb->in(@collections) };
     }else{
         my @roles_filter_ids;
         if ( @roles_filter_names ) {
@@ -282,17 +283,31 @@ sub get_projectnames_and_descriptions_from_user{
         my @id_roles = keys %project_security;
         foreach my $id_role (@id_roles){
             next if ( @roles_filter_ids && !($id_role ~~ @roles_filter_ids ));
-            #my @project_types = keys $project_security{$id_role};
-            push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
+            for my $collection (@collections) {
+                push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
+            }
         }
-        $where = {collection=>"$collection", mid=>mdb->in(@id_projects)};
+        $where = {
+            collection => mdb->in(@collections),
+            mid        => mdb->in(@id_projects)
+        };
     }
 
     if ( !is_number($query) ) { # Exclude mids
         $where->{name} = qr/$query/i if length($query);
     }
     $where->{active} = '1';
-    mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->sort({ name=>1 })->all;
+    my @documents = mdb->master_doc->find($where)
+        ->fields( { name => 1, description => 1, mid => 1, _id => 0, bls => 1, moniker => 1, collection => 1 } )
+        ->sort( { name => 1 } )->all;
+
+    for my $document (@documents){
+        $document->{bl} =  join ',', map { $_->{name} } ci->bl->find({mid=>mdb->in( $document->{bls} )})->fields({name=>1,_id=>0})->all;
+        my $ci_class = 'BaselinerX::CI::' . $document->{collection};
+        my $generic_icon = $ci_class->icon;
+        $document->{icon} = $generic_icon;
+    }
+    return @documents;
 }
 
 no Moose;

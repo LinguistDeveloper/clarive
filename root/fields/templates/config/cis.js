@@ -1,4 +1,3 @@
-
 (function(params){
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
@@ -127,7 +126,34 @@
         ci_class_box.enable();
     }
 
-    ret.push([ 
+    var store_display_mode = new Ext.data.SimpleStore({
+        fields: ['display_mode', 'name'],
+        data: [
+            ['collection', _('Name')],
+            ['bl', _('Baseline')],
+            ['class', _('Class')],
+            ['moniker', _('Moniker')]
+        ]
+    });
+
+    var display_mode = new Ext.form.ComboBox({
+        store: store_display_mode,
+        displayField: 'name',
+        value: data.display_mode || 'collection',
+        valueField: 'display_mode',
+        hiddenName: 'display_mode',
+        name: 'display_mode',
+        editable: false,
+        mode: 'local',
+        allowBlank: false,
+        forceSelection: true,
+        triggerAction: 'all',
+        fieldLabel: _('Description'),
+        emptyText: _('Select one'),
+        autoLoad: true
+    });
+
+    ret.push([
         // { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.cis' },
         {
             xtype: 'container',
@@ -166,7 +192,7 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
-        { xtype:'checkbox', name:'show_class', fieldLabel:_('Show class'), value: data.show_class, checked: data.show_class ? true : false }
+        display_mode
     ]);
 
     return ret;

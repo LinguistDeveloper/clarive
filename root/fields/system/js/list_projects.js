@@ -4,8 +4,8 @@ params:
     html: '/fields/system/html/field_projects.html'
     js: '/fields/system/js/list_projects.js'
     relation: 'system'
-    type: 'listbox'    
-    get_method: 'get_projects'    
+    type: 'listbox'
+    get_method: 'get_projects'
     set_method: 'set_projects'
     field_order: 9
     section: 'details'
@@ -18,7 +18,7 @@ params:
 
 ---
 */
-(function(params){
+(function(params) {
     var data = params.topic_data;
     var meta = params.topic_meta;
 
@@ -27,99 +27,130 @@ params:
 
     var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
-    if(data && data[meta.bd_field] ){
+    if (data && data[meta.bd_field]) {
         var val_projects = data[meta.bd_field];
-        for(i=0; i<val_projects.length;i++){
+        for (i = 0; i < val_projects.length; i++) {
             var p = val_projects[i];
-            if( p==undefined || p.mid == undefined ) continue;
+            if (p == undefined || p.mid == undefined) continue;
             projects.push(p.mid);
         }
     } else {
-        projects = meta.default_value ? [ meta.default_value ] : [];
+        projects = meta.default_value ? [meta.default_value] : [];
     }
     var ps = meta.page_size || 20;
 
     var project_box_store;
     var project_box_store_user;
 
-    if (meta.collection == 'project'){
-       project_box_store_user = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
-            tree_level: meta.tree_level || '',
-            limit: ps, 
-            include_root: true, 
-            level: meta.level, 
-            collection: meta.collection,
-            autoLoad: false,
-            roles: meta.roles
-        } });
+    if (meta.collection == 'project') {
+        project_box_store_user = new Baseliner.store.UserProjects({
+            id: 'id',
+            baseParams: {
+                tree_level: meta.tree_level || '',
+                limit: ps,
+                include_root: true,
+                level: meta.level,
+                collection: meta.collection,
+                autoLoad: false,
+                roles: meta.roles
+            }
+        });
 
-        project_box_store = new Baseliner.store.AllProjects({ id: 'id', baseParams: {
-            tree_level: meta.tree_level || '',
-            limit: ps, 
-            include_root: true, 
-            level: meta.level, 
-            collection: meta.collection,
-            autoLoad: false,
-            roles: meta.roles
-        } });
+        project_box_store = new Baseliner.store.AllProjects({
+            id: 'id',
+            baseParams: {
+                tree_level: meta.tree_level || '',
+                limit: ps,
+                include_root: true,
+                level: meta.level,
+                collection: meta.collection,
+                autoLoad: false,
+                roles: meta.roles
+            }
+        });
     } else {
-        project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
-            tree_level: meta.tree_level || '',
-            limit: ps, 
-            include_root: true, 
-            level: meta.level, 
-            collection: meta.collection,
-            autoLoad: false,
-            roles: meta.roles
-        } });
+        project_box_store = new Baseliner.store.UserProjects({
+            id: 'id',
+            baseParams: {
+                tree_level: meta.tree_level || '',
+                limit: ps,
+                include_root: true,
+                level: meta.level,
+                collection: meta.collection,
+                autoLoad: false,
+                roles: meta.roles
+            }
+        });
     }
 
     var no_items = _('No items found');
-    var tpl = new Ext.XTemplate( 
-        '<tpl for="."><div class="x-combo-list-item">'
-        + '<span id="boot" style="background: transparent"><strong>{name}</strong><tpl if="description.length &gt; 0"> - ({description})</tpl>'
-        + '</span></div></tpl>' 
-    );
+    var tpl;
+    if (meta.display_mode == 'description') {
+        tpl = new Ext.XTemplate(
+            '<tpl for="."><div class="x-combo-list-item">'
+          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name} </strong></span>'
+          + '<tpl if="description.length &gt; 0"><span class="x-combo-name-list-description">{description} </span></tpl>'
+          + '</div></tpl>'
+        );
+    } else if (meta.display_mode == 'baseline') {
+        tpl = new Ext.XTemplate(
+            '<tpl for="."><div class="x-combo-list-item">'
+          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name}</strong> <span class="x-combo-name-list-description">{values.bl} </span></span>'
+          + '</div></tpl>'
+        );
+    } else if (meta.display_mode == 'moniker') {
+        tpl = new Ext.XTemplate(
+            '<tpl for="."><div class="x-combo-list-item">'
+          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name}</strong> <span class="x-combo-name-list-description">{values.moniker} </span></span>'
+          + '</div></tpl>'
+        );
+    } else {
+        tpl = new Ext.XTemplate(
+            '<tpl for="."><div class="x-combo-list-item">'
+          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name} </strong></span>'
+          + '</div></tpl>'
+        );
+    }
     var project_box = new Baseliner.PagingProjects({
         origin: 'custom',
         fieldLabel: _(meta.name_field),
         pageSize: '',
         tpl: tpl,
         name: meta.id_field,
-        hiddenName: meta.id_field,          
-        listEmptyText: no_items, 
-        emptyText: _( meta.emptyText ),
+        hiddenName: meta.id_field,
+        listEmptyText: no_items,
+        emptyText: _(meta.emptyText),
         field_ready: false,
         allowBlank: Baseliner.eval_boolean(meta.allowBlank),
         disabled: Baseliner.eval_boolean(meta.readonly),
         store: project_box_store,
         singleMode: single_mode
     });
-    
+
     project_box.field_ready = false;
 
-    project_box_store.on('load',function(){
+    project_box_store.on('load', function() {
         project_box.field_ready = true;
-        if ( projects && firstload ) { 
+        if (projects && firstload) {
             firstload = false;
-            project_box.setValue( projects );
-            if (meta.collection == 'project'){
+            project_box.setValue(projects);
+            if (meta.collection == 'project') {
                 project_box.store = project_box_store_user;
-                project_box_store_user.on('load', function(){
+                project_box_store_user.on('load', function() {
                     var removed_elems = {};
-                    project_box_store_user.each(function(elem){
+                    project_box_store_user.each(function(elem) {
                         var user_elem = elem;
-                        project_box.items.items.forEach(function(elem){
-                            if(user_elem.json.mid == elem.value){
+                        project_box.items.items.forEach(function(elem) {
+                            if (user_elem.json.mid == elem.value) {
                                 removed_elems[elem.value] = 1;
                                 project_box_store_user.remove(user_elem);
                             }
                         });
                     });
-                    project_box.items.items.forEach(function(elem){
-                        if(!removed_elems[elem.value]){
-                            if(project_box.buttonClear.isDisplayed()){ 
-                                project_box.buttonClear.hide(); 
+                    project_box.items.items.forEach(function(elem) {
+                        if (!removed_elems[elem.value]) {
+                            if (project_box.buttonClear.isDisplayed()) {
+                                project_box.buttonClear.hide();
                             }
                             elem.disableAllListeners();
                         }
@@ -132,28 +163,28 @@ params:
 
     project_box_store.load();
 
-    if( meta.parent_field ) {
+    if (meta.parent_field) {
         var form = params.form.getForm();
-        var parent_field = form.findField( meta.parent_field );
-        if( parent_field ) {
+        var parent_field = form.findField(meta.parent_field);
+        if (parent_field) {
             var parent_last = parent_field.value;
             project_box_store.baseParams['root_mid'] = parent_last;
-            var parent_foo = function(){ 
-                if( !project_box.field_ready || !parent_field.field_ready ) return;
+            var parent_foo = function() {
+                if (!project_box.field_ready || !parent_field.field_ready) return;
                 //Baseliner.message( 'nada', String.format('parent changed = {0}, {1} = {2}', parent_last, parent_field.getValue(), parent_last != parent_field.getValue() ) );
                 var cvalue = project_box.getValue();
-                if( parent_last != parent_field.getValue() ) {
-                    if( cvalue!=undefined && cvalue!='' ) {
-                        Baseliner.warning( _('Warning'), _('Field %1 reset due to change in %2', _(meta.name_field), _(parent_field.fieldLabel) ) );
+                if (parent_last != parent_field.getValue()) {
+                    if (cvalue != undefined && cvalue != '') {
+                        Baseliner.warning(_('Warning'), _('Field %1 reset due to change in %2', _(meta.name_field), _(parent_field.fieldLabel)));
                         project_box.setValue(null);
                         project_box.removeAllItems();
                         project_box.killItems();
                         // FIXME - should reset store everytime, so a new dataview is shown
                     }
                     parent_last = parent_field.getValue();
-                    if( parent_last==undefined || parent_last=='' ) {   // parent is unselected, make an impossible query with -1
+                    if (parent_last == undefined || parent_last == '') { // parent is unselected, make an impossible query with -1
                         project_box_store.baseParams['root_mid'] = -1;
-                        project_box.listEmptyText = _('Select field %1 first or reload', _(parent_field.fieldLabel) );
+                        project_box.listEmptyText = _('Select field %1 first or reload', _(parent_field.fieldLabel));
                     } else {
                         project_box_store.baseParams['root_mid'] = parent_last;
                         project_box_store.removeAll();
@@ -161,8 +192,12 @@ params:
                     }
                 }
             };
-            parent_field.on( 'additem', function(){ return parent_foo.call(this,arguments) } );
-            parent_field.on( 'removeitem', function(){ return parent_foo.call(this,arguments) } );
+            parent_field.on('additem', function() {
+                return parent_foo.call(this, arguments)
+            });
+            parent_field.on('removeitem', function() {
+                return parent_foo.call(this, arguments)
+            });
         }
     }
 
@@ -171,10 +206,10 @@ params:
         enableDragDrop: true,
         anchor: meta.anchor || '100%',
         border: false,
-        items: [ project_box ]
+        items: [project_box]
     });
-    
-    pb_panel.on( 'afterrender', function(){
+
+    pb_panel.on('afterrender', function() {
         var el = pb_panel.el.dom; //.childNodes[0].childNodes[1];
         var project_box_dt = new Baseliner.DropTarget(el, {
             comp: pb_panel,
@@ -187,32 +222,32 @@ params:
                     var data = node.attributes.data;
                     var swOk = true;
                     projects = (project_box.getValue()).split(",");
-                    for(var i=0; i<projects.length; i++) {
-                        if (projects[i] == data.id_project){
+                    for (var i = 0; i < projects.length; i++) {
+                        if (projects[i] == data.id_project) {
                             swOk = false;
                             break;
                         }
                     }
-                    if(swOk){
+                    if (swOk) {
                         projects.push(data.id_project);
-                        project_box.setValue( projects );
-                    }else{
-                        Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));  
+                        project_box.setValue(projects);
+                    } else {
+                        Baseliner.message(_('Warning'), _('Project %1 is already assigned', data.project));
                     }
                 };
                 var attr = n.attributes;
-                if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
-                    Baseliner.message( _('Error'), _('Node is not a project'));
+                if (typeof attr.data.id_project == 'undefined') { // is a project?
+                    Baseliner.message(_('Error'), _('Node is not a project'));
                 } else {
                     add_node(n);
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
-                return (true); 
+                return (true);
             }
         });
     });
-    
-    
+
+
     return [
         pb_panel
     ]
