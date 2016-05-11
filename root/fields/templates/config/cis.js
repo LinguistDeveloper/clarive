@@ -3,6 +3,7 @@
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
+    Cla.help_push({ title:_('CI Combo'), path:'Rules/Palette/Fieldlets/ci_combo' });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
@@ -20,6 +21,7 @@
 
     var roles_store = new Ext.data.JsonStore({
         root: 'data', 
+        allowBlank: false,
         remoteSort: true,
         totalProperty: 'totalCount', 
         id: 'id', 
@@ -65,7 +67,7 @@
         valueField: 'name',
         displayField: 'name',
         singleMode: false,
-        value: data.var_ci_role,
+        value: data.var_ci_role || 'CI',
         allowBlank: Boolean(ci_class_field.value),
         mode: 'remote',
         listeners:{
@@ -75,6 +77,7 @@
             'additem': function(obj){
                 return this.deal_combo_change(obj);
             }
+
         }
     });
 
@@ -110,6 +113,7 @@
             }
         }
     });
+
    
     if(!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value){
         role_box_multiselect.allowBlank = false;
@@ -144,6 +148,7 @@
                             if(checked.id == 'rdoRole'){
                                 ci_class_box.allowBlank = true;
                                 class_selected = false;
+                                role_box_multiselect.allowBlank = false;
                                ci_class_box.disable();
                             }else{
                                 ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});            
