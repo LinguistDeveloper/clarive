@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
@@ -28,16 +27,19 @@ subtest 'run_single_rule: runs rule' => sub {
       {
         ret => {
             stash => ignore(),
-            dsl   => 'Clarive::RULE_1',
         },
-        dsl => ''
+        rule => {
+            id          => $id_rule,
+            version_id  => ignore(),
+            version_tag => undef
+        }
       };
 };
 
 subtest 'run_single_rule: runs rule by name' => sub {
     _setup();
 
-    my $id_rule = _create_rule(rule_name => 'my rule');
+    my $id_rule = _create_rule( rule_name => 'my rule' );
 
     my $runner = _build_runner();
 
@@ -47,9 +49,73 @@ subtest 'run_single_rule: runs rule by name' => sub {
       {
         ret => {
             stash => ignore(),
-            dsl   => 'Clarive::RULE_1',
         },
-        dsl => ''
+        rule => {
+            id          => $id_rule,
+            version_id  => ignore(),
+            version_tag => undef
+        }
+      };
+};
+
+subtest 'run_single_rule: throws when unknown version tag' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    my $runner = _build_runner();
+
+    like exception { $runner->run_single_rule( id_rule => $id_rule, version_tag => '123' ) },
+      qr/Version tag `123` of rule `1` not found/;
+};
+
+subtest 'run_single_rule: runs rule by version tag' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'newuser',
+    );
+
+    my $runner = _build_runner();
+
+    my @versions = Baseliner::Model::Rules->new->list_versions($id_rule);
+
+    Baseliner::Model::Rules->new->tag_version( version_id => $versions[0]->{_id}, version_tag => 'production' );
+
+    my $ret = $runner->run_single_rule( id_rule => $id_rule, version_tag => 'production' );
+
+    cmp_deeply $ret->{rule},
+      {
+        id          => $id_rule,
+        version_id  => ignore(),
+        version_tag => 'production',
+      };
+};
+
+subtest 'run_single_rule: runs rule by version id' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'newuser',
+    );
+
+    my $runner = _build_runner();
+
+    my @versions = Baseliner::Model::Rules->new->list_versions($id_rule);
+
+    my $ret = $runner->run_single_rule( id_rule => $id_rule, version_id => '' . $versions[0]->{_id} );
+
+    cmp_deeply $ret->{rule},
+      {
+        id          => $id_rule,
+        version_id  => ignore(),
+        version_tag => undef
       };
 };
 
@@ -90,7 +156,7 @@ subtest 'run_dsl: merges default vars' => sub {
 
     my $runner = _build_runner();
 
-    my $ret = $runner->run_dsl(dsl => $dsl, stash => $stash);
+    my $ret = $runner->run_dsl( dsl => $dsl, stash => $stash );
 
     is $ret->{output}, 'bar';
 };
@@ -105,12 +171,12 @@ subtest 'run_dsl: default vars do not overwrite existing ones' => sub {
         variables => { '*' => 'bar' }
     );
 
-    my $dsl   = 'print $stash->{foo}';
-    my $stash = {foo => 'baz'};
+    my $dsl = 'print $stash->{foo}';
+    my $stash = { foo => 'baz' };
 
     my $runner = _build_runner();
 
-    my $ret = $runner->run_dsl(dsl => $dsl, stash => $stash);
+    my $ret = $runner->run_dsl( dsl => $dsl, stash => $stash );
 
     is $ret->{output}, 'baz';
 };
@@ -176,4 +242,5 @@ sub _setup {
 
     TestUtils->cleanup_cis;
     mdb->rule->drop;
+    mdb->rule_version->drop;
 }

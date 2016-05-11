@@ -685,31 +685,17 @@ sub tag_version : Local {
     my $version_id = $p->{version_id};
     my $tag        = $p->{tag};
 
-    my $ver = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
-    _fail _loc 'Version not found: %1', $version_id unless $ver;
-
-    if (
-        mdb->rule_version->find_one(
-            { id_rule => $ver->{id_rule}, _id => { '$ne' => mdb->oid($version_id) }, tag => $tag }
-        )
-      )
-    {
-        $c->stash->{json} = { success => \0, msg => 'Validation failed', errors => { tag => 'Already exists' } };
-        $c->forward("View::JSON");
-        return;
-    }
+    my $rules = Baseliner::Model::Rules->new;
 
     try {
-        mdb->rule_version->update( { _id => mdb->oid($version_id) }, { '$set' => { tag => $tag } } );
+        $rules->tag_version(version_id => $version_id, version_tag => $tag);
+
         $c->stash->{json} = { success => \1, msg => _loc('Rule version tagged') };
-    }
-    catch {
-        my $err = shift;
+    } catch {
+        my $error = shift;
 
-        _error $err;
-        chomp($err);
-
-        $c->stash->{json} = { success => \0, msg => $err };
+        $c->stash->{json} = { success => \0, msg => 'Validation failed', errors => { tag => $error } };
+        $c->forward("View::JSON");
     };
 
     $c->forward("View::JSON");
@@ -960,7 +946,7 @@ sub default : Path {
             _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
 
             my $rule_runner = Baseliner::RuleRunner->new;
-            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
+            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash);
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response}
                 ? $stash->{ws_response}

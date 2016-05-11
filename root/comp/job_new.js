@@ -189,7 +189,7 @@
         totalProperty: 'totalCount',
         id: 'id',
         autoLoad: false,
-        fields: ['id','rule_version']
+        fields: ['id','label']
     });
     store_versions.on('load', function(){
         var row = this.getAt(0);
@@ -200,9 +200,9 @@
 
     var combo_versions = new Ext.form.ComboBox({
         fieldLabel: _('Version'),
-        name: 'rule_version',
-        displayField:'rule_version',
-        hiddenName:'rule_version', 
+        name: 'rule_version_tag',
+        displayField:'label',
+        hiddenName:'rule_version_tag', 
         valueField: 'id',
         store: store_versions,
         //singleMode: true,
@@ -212,7 +212,23 @@
         allowBlank: false,
         editable: false,
         lazyRender: true,
-        hidden: <% $has_chain_perm ? 'false':'true' %>
+        hidden: <% $has_chain_perm ? 'false':'true' %>,
+        listeners: {
+            select: function(combo, record, index) {
+                if (index == 0) {
+                    versions_flag.hide();
+                }
+                else {
+                    versions_flag.show();
+                }
+            }
+        }
+    });
+
+    var versions_flag = new Ext.form.Checkbox({
+        boxLabel: _('Dynamic tags (version is calculated during execution)'),
+        name: 'rule_version_dynamic',
+        hidden: true
     });
 
     var store_chain = new Baseliner.JsonStore({
@@ -1036,7 +1052,8 @@
                         hidden_state_to,
                         combo_transitions,
                         combo_chain,
-                        combo_versions
+                        combo_versions,
+                        versions_flag
                     ]
                 }, {
                     columnWidth: .5,

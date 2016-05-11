@@ -343,18 +343,7 @@ subtest 'tag_version: tags version' => sub {
 
     my $rule_version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
 
-    is $rule_version->{tag}, 'production';
-};
-
-subtest 'tag_version: throws when unknown version' => sub {
-    _setup();
-
-    my $c =
-      mock_catalyst_c( req => { params => { version_id => 'unknown', tag => 'production' } } );
-
-    my $controller = _build_controller();
-
-    like exception { $controller->tag_version($c) }, qr/Version not found: unknown/;
+    is $rule_version->{version_tag}, 'production';
 };
 
 subtest 'tag_version: returns validation errors' => sub {
@@ -400,110 +389,6 @@ subtest 'tag_version: returns validation errors' => sub {
                 tag => 'REQUIRED'
             },
             'success' => \0
-        }
-      };
-};
-
-subtest 'tag_version: returns validation errors when tag already exists' => sub {
-    _setup();
-
-    my $rule_tree = [
-        {
-            "attributes" => {
-                "disabled" => 0,
-                "active"   => 1,
-                "key"      => "statement.step",
-                "text"     => "CHECK",
-                "expanded" => 1,
-                "leaf"     => \0,
-            },
-            "children" => []
-        },
-    ];
-    my $id_rule = _create_rule( rule_tree => $rule_tree );
-
-    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
-    Baseliner::Model::Rules->new->write_rule(
-        id_rule    => $id_rule,
-        username   => 'newuser',
-        stmts_json => JSON::encode_json($rule_tree)
-    );
-
-    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
-
-    my $controller = _build_controller();
-
-    my $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
-
-    $controller->tag_version($c);
-
-    $rule_tree->[0]->{attributes}->{text} = 'CHECK3';
-    Baseliner::Model::Rules->new->write_rule(
-        id_rule    => $id_rule,
-        username   => 'newuser',
-        stmts_json => JSON::encode_json($rule_tree)
-    );
-
-    $version_id =
-      mdb->rule_version->find( { _id => { '$ne' => mdb->oid($version_id) } } )->sort( { ts => 1 } )->next->{_id} . '';
-    $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
-
-    $controller->tag_version($c);
-
-    cmp_deeply $c->stash,
-      {
-        'json' => {
-            'msg'    => 'Validation failed',
-            'errors' => {
-                tag => 'Already exists'
-            },
-            'success' => \0
-        }
-      };
-};
-
-subtest 'tag_version: returns no validation errors when saving same tag with same version' => sub {
-    _setup();
-
-    my $rule_tree = [
-        {
-            "attributes" => {
-                "disabled" => 0,
-                "active"   => 1,
-                "key"      => "statement.step",
-                "text"     => "CHECK",
-                "expanded" => 1,
-                "leaf"     => \0,
-            },
-            "children" => []
-        },
-    ];
-    my $id_rule = _create_rule( rule_tree => $rule_tree );
-
-    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
-    Baseliner::Model::Rules->new->write_rule(
-        id_rule    => $id_rule,
-        username   => 'newuser',
-        stmts_json => JSON::encode_json($rule_tree)
-    );
-
-    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
-
-    my $controller = _build_controller();
-
-    my $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
-
-    $controller->tag_version($c);
-
-    $c = mock_catalyst_c( req => { params => { version_id => $version_id, tag => 'tag' } } );
-
-    $controller->tag_version($c);
-
-    cmp_deeply $c->stash,
-      {
-        'json' => {
-            'msg'     => 'Rule version tagged',
-            'success' => \1
         }
       };
 };

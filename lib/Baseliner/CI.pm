@@ -7,6 +7,7 @@ use Moose::Util::TypeConstraints;
 use Baseliner::Utils qw(_throw _loc);
 use Baseliner::Types;
 use Baseliner::Role::CI;
+use BaselinerX::CI::Empty;
 
 our $_no_record = 1;
 our $no_throw_on_search = 1;

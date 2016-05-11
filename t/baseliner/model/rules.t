@@ -2,10 +2,12 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::LongString;
+use Test::Fatal;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-use TestUtils;
+use TestUtils qw(mock_time);
 
 use Baseliner::Role::CI;
 use BaselinerX::Type::Statement;
@@ -95,9 +97,9 @@ subtest 'statement.call' => sub {
 
     my $dsl = $statement->{param}->{dsl};
 
-    my $code = $dsl->(undef, {id_rule => '123'});
+    my $code = $dsl->( undef, { id_rule => '123' } );
 
-    my $package = 'test_statement_call_' . int(rand(1000));
+    my $package = 'test_statement_call_' . int( rand(1000) );
 
     $code = sprintf q/package %s; use Baseliner::Utils 'parse_vars'; my $stash = {}; sub call { \@_ } sub { %s }/,
       $package, $code;
@@ -116,11 +118,13 @@ subtest 'statement.call with parse_vars' => sub {
 
     my $dsl = $statement->{param}->{dsl};
 
-    my $code = $dsl->(undef, {id_rule => '${some_var}'});
+    my $code = $dsl->( undef, { id_rule => '${some_var}' } );
 
-    my $package = 'test_statement_call_' . int(rand(1000));
+    my $package = 'test_statement_call_' . int( rand(1000) );
 
-    $code = sprintf q/package %s; use Baseliner::Utils 'parse_vars'; my $stash = {some_var => 'hi!'}; sub call { \@_ } sub { %s }/,
+    $code =
+      sprintf
+      q/package %s; use Baseliner::Utils 'parse_vars'; my $stash = {some_var => 'hi!'}; sub call { \@_ } sub { %s }/,
       $package, $code;
 
     $code = eval $code;
@@ -137,18 +141,17 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
 
     my $dsl = $statement->{param}->{dsl};
 
-    my $code = $dsl->(undef, {data_key => 'output'});
+    my $code = $dsl->( undef, { data_key => 'output' } );
 
-    my $package = 'test_statement_call_' . int(rand(1000));
+    my $package = 'test_statement_call_' . int( rand(1000) );
 
-    $code = sprintf q/package %s; my $stash = {}; sub wait_for_children { '123' } sub { %s; $stash }/,
-      $package, $code;
+    $code = sprintf q/package %s; my $stash = {}; sub wait_for_children { '123' } sub { %s; $stash }/, $package, $code;
 
     $code = eval $code;
 
     my $args = $code->();
 
-    is_deeply $args, {output => '123'};
+    is_deeply $args, { output => '123' };
 };
 
 subtest 'dsl_build: semaphore key test with fork' => sub {
@@ -157,22 +160,26 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
     mdb->_test_sem->drop;
 
     TestUtils->setup_registry(
-        'BaselinerX::Type::Service',
-        'BaselinerX::Type::Event',     'BaselinerX::Events',
-        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Service', 'BaselinerX::Type::Event',
+        'BaselinerX::Events',        'BaselinerX::Type::Statement',
+        'Baseliner::Model::Rules'
     );
-    { package DummyPKGSemaphore; sub new { } };
+    {
+
+        package DummyPKGSemaphore;
+        sub new { }
+    };
     Baseliner::Core::Registry->add(
         'DummyPKGSemaphore',
         'service.test.op' => {
-            name => 'Test Op',
+            name    => 'Test Op',
             handler => sub {
-                my ($self, $c, $config ) = @_;
+                my ( $self, $c, $config ) = @_;
                 my $stash = $c->stash;
-                mdb->_test_sem->update({},{ '$inc'=>{ cnt=>1 } }, { upsert=>1 });
+                mdb->_test_sem->update( {}, { '$inc' => { cnt => 1 } }, { upsert => 1 } );
                 Time::HiRes::usleep( int rand 500000 );
                 $stash->{sem_cnt} = mdb->_test_sem->find_one->{cnt};
-                mdb->_test_sem->update({},{ '$inc'=>{ cnt=>-1 } });
+                mdb->_test_sem->update( {}, { '$inc' => { cnt => -1 } } );
             }
         }
     );
@@ -194,7 +201,7 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
                 "children" => [
                     {
                         "attributes" => {
-                            'icon' => '/static/images/icons/script-local.png',
+                            'icon'                => '/static/images/icons/script-local.png',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',
@@ -254,32 +261,36 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
     );
 
     my $package = 'test_sem_rule_' . int rand 9999;
-    my $code = eval sprintf q{
+    my $code    = eval sprintf q{
         package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars';
         my $stash = {}; sub { %s; $stash } }, $package, $dsl;
 
     my $stash = $code->();
 
     is scalar( @{ $stash->{foo} } ), 10;
-    is $_->{sem_cnt}, 1 for @{ $stash->{foo} }
+    is $_->{sem_cnt}, 1 for @{ $stash->{foo} };
 };
 
 subtest 'meta key with attributes sent to service op' => sub {
     TestUtils->cleanup_cis();
     mdb->rule->drop;
 
-    Baseliner::Core::Registry->add_class( undef, 'event'    => 'BaselinerX::Type::Event' );
+    Baseliner::Core::Registry->add_class( undef, 'event'   => 'BaselinerX::Type::Event' );
     Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
-    { package DummyPKGMetaKey; sub new { } };
+    {
+
+        package DummyPKG;
+        sub new { }
+    };
     Baseliner::Core::Registry->add(
         'DummyPKGMetaKey',
         'service.test.op' => {
-            name => 'Test Op',
-            icon => '',
-            form => '/forms/tar_local.js',
+            name        => 'Test Op',
+            icon        => '',
+            form        => '/forms/tar_local.js',
             job_service => 1,
-            handler => sub {
-                my ($self, $c, $config ) = @_;
+            handler     => sub {
+                my ( $self, $c, $config ) = @_;
                 my $stash = $c->stash;
                 $stash->{is_ok} = exists $config->{meta};
             }
@@ -319,7 +330,7 @@ subtest 'meta key with attributes sent to service op' => sub {
                             'data_key'            => 'find_c_files',
                             'trap_timeout'        => 0,
                             'run_forward'         => 1,
-                            "data" => {
+                            "data"                => {
                                 'stdin'          => '',
                                 'output_capture' => [],
                                 'errors'         => 'fail',
@@ -328,12 +339,12 @@ subtest 'meta key with attributes sent to service op' => sub {
                                 'path'           => 'ls',
                                 'output_error'   => [],
                                 'output_ok'      => [],
-                                'environment'  => {},
-                                'rc_ok'        => '',
-                                'rc_error'     => '',
-                                'output_files' => [],
-                                'output_warn'  => [],
-                                'home'         => '',
+                                'environment'    => {},
+                                'rc_ok'          => '',
+                                'rc_error'       => '',
+                                'output_files'   => [],
+                                'output_warn'    => [],
+                                'home'           => '',
                             },
                             "key" => "service.test.op",
                         }
@@ -346,8 +357,8 @@ subtest 'meta key with attributes sent to service op' => sub {
     $rules->compile_rules();
     my $cr = Baseliner::CompiledRule->new( id_rule => $id_rule, @_ );
     $cr->compile();
-    my $stash = { abc=>11 };
-    $cr->run(stash => $stash);
+    my $stash = { abc => 11 };
+    $cr->run( stash => $stash );
     ok $stash->{is_ok};
 };
 
@@ -358,7 +369,7 @@ subtest 'delete_rule: actually deletes the rule' => sub {
 
     $rules->delete_rule( id_rule => '1', username => 'john_doe' );
 
-    my $rule = mdb->rule->find_one({ id => '1' });
+    my $rule = mdb->rule->find_one( { id => '1' } );
 
     ok !$rule;
 };
@@ -370,7 +381,7 @@ subtest 'delete_rule: creates a delete version' => sub {
 
     $rules->delete_rule( id_rule => '1', username => 'john_doe' );
 
-    my $version = mdb->rule_version->find_one({ id => '1', deleted => '1'});
+    my $version = mdb->rule_version->find_one( { id => '1', deleted => '1' } );
 
     ok $version;
 };
@@ -382,7 +393,7 @@ subtest 'delete_rule: creates the correct event' => sub {
 
     $rules->delete_rule( id_rule => '1', username => 'john_doe' );
 
-    my @events = mdb->event->find({event_key => 'event.rule.delete'})->all;
+    my @events = mdb->event->find( { event_key => 'event.rule.delete' } )->all;
 
     is scalar @events, 1;
 };
@@ -393,20 +404,20 @@ subtest 'save_rule: actually creates a new rule' => sub {
     my $rules = _build_model();
 
     my $data = {
-        rule_active => '1',
-        rule_name  => 'Test rule',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule',
-        ts =>  mdb->ts,
-        username => 'john_doe'
+        rule_active       => '1',
+        rule_name         => 'Test rule',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule',
+        ts                => mdb->ts,
+        username          => 'john_doe'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    my @rules = mdb->rule->find({})->all;
+    my @rules = mdb->rule->find( {} )->all;
 
     is scalar @rules, 2;
 };
@@ -518,40 +529,40 @@ subtest 'save_rule: updates the rule data' => sub {
     my $rules = _build_model();
 
     my $data = {
-        rule_active => '1',
-        rule_name  => 'Test rule',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule',
-        ts =>  mdb->ts,
-        username => 'john_doe'
+        rule_active       => '1',
+        rule_name         => 'Test rule',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule',
+        ts                => mdb->ts,
+        username          => 'john_doe'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    my $rule = mdb->rule->find_one({ rule_name => 'Test rule'});
+    my $rule = mdb->rule->find_one( { rule_name => 'Test rule' } );
 
     $data = {
-        rule_id => $rule->{id},
-        rule_active => '1',
-        rule_name  => 'Test rule updated',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule updated',
-        ts =>  mdb->ts,
-        username => 'mary_key'
+        rule_id           => $rule->{id},
+        rule_active       => '1',
+        rule_name         => 'Test rule updated',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule updated',
+        ts                => mdb->ts,
+        username          => 'mary_key'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    $rule = mdb->rule->find_one({ id => $rule->{id} });
+    $rule = mdb->rule->find_one( { id => $rule->{id} } );
 
     is $rule->{rule_desc}, 'Test rule updated';
-    is $rule->{username}, 'mary_key';
+    is $rule->{username},  'mary_key';
 };
 
 subtest 'save_rule: creates the correct event when updated' => sub {
@@ -560,37 +571,37 @@ subtest 'save_rule: creates the correct event when updated' => sub {
     my $rules = _build_model();
 
     my $data = {
-        rule_active => '1',
-        rule_name  => 'Test rule',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule',
-        ts =>  mdb->ts,
-        username => 'john_doe'
+        rule_active       => '1',
+        rule_name         => 'Test rule',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule',
+        ts                => mdb->ts,
+        username          => 'john_doe'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    my $rule = mdb->rule->find_one({ rule_name => 'Test rule'});
+    my $rule = mdb->rule->find_one( { rule_name => 'Test rule' } );
 
     $data = {
-        rule_id => $rule->{id},
-        rule_active => '1',
-        rule_name  => 'Test rule updated',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule updated',
-        ts =>  mdb->ts,
-        username => 'mary_key'
+        rule_id           => $rule->{id},
+        rule_active       => '1',
+        rule_name         => 'Test rule updated',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule updated',
+        ts                => mdb->ts,
+        username          => 'mary_key'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    my @events = mdb->event->find({event_key => 'event.rule.update'})->all;
+    my @events = mdb->event->find( { event_key => 'event.rule.update' } )->all;
 
     is scalar @events, 1;
 };
@@ -601,20 +612,20 @@ subtest 'save_rule: creates the correct event for new rule' => sub {
     my $rules = _build_model();
 
     my $data = {
-        rule_active => '1',
-        rule_name  => 'Test rule',
-        rule_when  => 'post-offline',
-        rule_event => undef,
-        rule_type  => 'independent',
-        rule_compile_mode  => 'none',
-        rule_desc  => 'Test rule',
-        ts =>  mdb->ts,
-        username => 'john_doe'
+        rule_active       => '1',
+        rule_name         => 'Test rule',
+        rule_when         => 'post-offline',
+        rule_event        => undef,
+        rule_type         => 'independent',
+        rule_compile_mode => 'none',
+        rule_desc         => 'Test rule',
+        ts                => mdb->ts,
+        username          => 'john_doe'
     };
 
-    $rules->save_rule( %$data );
+    $rules->save_rule(%$data);
 
-    my @events = mdb->event->find({event_key => 'event.rule.create'})->all;
+    my @events = mdb->event->find( { event_key => 'event.rule.create' } )->all;
 
     is scalar @events, 1;
 };
@@ -627,7 +638,7 @@ subtest 'restore_rule: actually restores the rule' => sub {
     $rules->delete_rule( id_rule => '1', username => 'john_doe' );
 
     $rules->restore_rule( id_rule => '1' );
-    my $rule = mdb->rule->find_one({ id => '1' });
+    my $rule = mdb->rule->find_one( { id => '1' } );
 
     ok $rule;
 };
@@ -662,7 +673,7 @@ subtest 'dsl_build: builds dsl' => sub {
                 "active"         => 1,
                 "name"           => "Server CODE",
                 "holds_children" => 0,
-                "data"           => {"lang" => "perl", "code" => "foo();"},
+                "data"           => { "lang" => "perl", "code" => "foo();" },
                 "nested"         => "0",
                 "on_drop"        => ""
             },
@@ -699,7 +710,7 @@ subtest 'dsl_build: builds dsl with correct nested level' => sub {
                 "name"           => "IF var THEN",
                 "active"         => 1,
                 "holds_children" => 1,
-                "data"           => {variable => 'foo', value => 'bar'},
+                "data"           => { variable => 'foo', value => 'bar' },
                 "nested"         => "0",
                 "on_drop"        => ""
             },
@@ -743,21 +754,171 @@ if ( $stash->{'foo'} eq 'bar' ) {
 EOF
 };
 
+subtest 'tag_version: tags version' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = '1';
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id = mdb->rule_version->find_one->{_id} . '';
+
+    my $model = _build_model();
+
+    $model->tag_version( version_id => $version_id, version_tag => 'production' );
+
+    my $rule_version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+
+    is $rule_version->{version_tag}, 'production';
+};
+
+subtest 'tag_version: throws when unknown version' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->tag_version( version_id => 'unknown', version_tag => 'production' ) },
+      qr/Version not found: unknown/;
+};
+
+subtest 'tag_version: throws when tag already exists' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'newuser',
+    );
+
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $model = _build_model();
+    $model->tag_version( version_id => $version_id, version_tag => 'tag' );
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'newuser',
+    );
+
+    $version_id =
+      mdb->rule_version->find( { _id => { '$ne' => mdb->oid($version_id) } } )->sort( { ts => 1 } )->next->{_id} . '';
+
+    like exception { $model->tag_version( version_id => $version_id, version_tag => 'tag' ) },
+      qr/Version tag already exists/;
+};
+
+subtest 'tag_version: does not throw when saving same tag with same version' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'newuser',
+    );
+
+    my $version_id = mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $model = _build_model();
+
+    $model->tag_version( version_id => $version_id, version_tag => 'tag' );
+
+    ok $model->tag_version( version_id => $version_id, version_tag => 'tag' );
+};
+
+subtest 'list_versions: returns rule versions' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    mock_time '2015-01-01' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule  => $id_rule,
+            username => 'newuser',
+        );
+    };
+
+    mock_time '2015-01-02' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule  => $id_rule,
+            username => 'anotheruser',
+        );
+    };
+
+    my $model = _build_model();
+
+    my @versions = $model->list_versions($id_rule);
+
+    is scalar @versions, 2;
+    is $versions[0]->{username}, 'anotheruser';
+    is $versions[1]->{username}, 'newuser';
+};
+
+subtest 'list_versions: returns rule versions only with tags' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    mock_time '2015-01-01' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule  => $id_rule,
+            username => 'newuser',
+        );
+    };
+
+    mock_time '2015-01-02' => sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule  => $id_rule,
+            username => 'anotheruser',
+        );
+    };
+
+    my $model = _build_model();
+
+    my @versions = $model->list_versions($id_rule);
+    $model->tag_version( version_id => $versions[0]->{_id}, version_tag => 'production' );
+
+    @versions = $model->list_versions($id_rule, only_tags => 1);
+
+    is scalar @versions, 1;
+    is $versions[0]->{username}, 'anotheruser';
+};
+
 sub _setup {
     my (%params) = @_;
 
-    TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Events',
-        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules'
-    );
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Events',
+        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules' );
 
     my $code = $params{code} || q%return 'hi there';%;
-    my $ts = $params{ts} || ''.Class::Date->now();
+    my $ts   = $params{ts}   || '' . Class::Date->now();
     my $iso_ts = $ts;
     $iso_ts =~ s/\s/T/;
 
     mdb->event->drop;
     mdb->rule->drop;
+    mdb->rule_version->drop;
+
     mdb->rule->insert(
         {
             id                => '1',

@@ -101,11 +101,11 @@ subtest 'monitor_json: returns jobs data' => sub {
 subtest 'pipeline_versions: returns versions data' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = TestSetup->create_rule;
 
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 10:00:00', tag => 'one', username => 'foo'} );
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 11:00:00', tag => 'two', username => 'bar'} );
-    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', tag => 'three', username => 'baz'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 10:00:00', version_tag => 'one', username => 'foo'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-01 11:00:00', version_tag => 'two', username => 'bar'} );
+    mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', version_tag => 'three', username => 'baz'} );
     mdb->rule_version->insert( { id => '1', id_rule => $id_rule, ts => '2015-01-02 11:00:00', username => 'ignore me'} );
 
     my $c = mock_catalyst_c(username => 'developer', req => {params => {id_rule => $id_rule}});
@@ -119,25 +119,165 @@ subtest 'pipeline_versions: returns versions data' => sub {
             success => \1,
             data => [
                 {
-                    id => ignore(),
-                    rule_version => 'Latest',
+                    id => '',
+                    label => 'Latest',
                 },
                 {
-                    id => ignore(),
-                    rule_version => 'three (baz)',
+                    id => 'three',
+                    label => 'three (baz)',
                 },
                 {
-                    id => ignore(),
-                    rule_version => 'two (bar)',
+                    id => 'two',
+                    label => 'two (bar)',
                 },
                 {
-                    id => ignore(),
-                    rule_version => 'one (foo)',
+                    id => 'one',
+                    label => 'one (foo)',
                 },
             ],
             totalCount => 4,
         }
     };
+};
+
+subtest 'submit: creates a new job' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule;
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'developer',
+        req      => { params => { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N' } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->submit($c);
+    };
+
+    my ($job_name) = $c->stash->{json}->{msg} =~ m/Job (.*?) created/;
+    my $job = ci->job->find_one({name => $job_name});
+
+    ok $job;
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            success => \1,
+            msg => re(qr/Job .*? created/)
+        }
+      };
+};
+
+subtest 'submit: creates a new job with rule version tag' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule;
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'anotheruser',
+    );
+    my @versions = Baseliner::Model::Rules->new->list_versions($id_rule);
+    Baseliner::Model::Rules->new->tag_version(version_id => $versions[0]->{_id}, version_tag => 'tag');
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'developer',
+        req      => {
+            params =>
+              { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N', rule_version_tag => 'tag' }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->submit($c);
+    };
+
+    my ($job_name) = $c->stash->{json}->{msg} =~ m/Job (.*?) created/;
+    my $job = ci->job->find_one({name => $job_name});
+
+    is $job->{rule_version_id}, '' . $versions[0]->{_id};
+    is $job->{rule_version_tag}, 'tag';
+};
+
+subtest 'submit: creates a new job without version id when dynamic' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule;
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'anotheruser',
+    );
+    my @versions = Baseliner::Model::Rules->new->list_versions($id_rule);
+    Baseliner::Model::Rules->new->tag_version(version_id => $versions[0]->{_id}, version_tag => 'tag');
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'developer',
+        req      => {
+            params => {
+                id_rule              => $id_rule,
+                changesets           => $changeset_mid,
+                window_type          => 'N',
+                rule_version_tag     => 'tag',
+                rule_version_dynamic => 1
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->submit($c);
+    };
+
+    my ($job_name) = $c->stash->{json}->{msg} =~ m/Job (.*?) created/;
+    my $job = ci->job->find_one({name => $job_name});
+
+    is $job->{rule_version_id}, undef;
+    is $job->{rule_version_tag}, 'tag';
 };
 
 done_testing;
@@ -146,8 +286,10 @@ sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Config',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
+        'BaselinerX::Job',
         'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',
         'Baseliner::Model::Jobs',
@@ -176,4 +318,65 @@ sub _setup {
 
 sub _build_controller {
     Baseliner::Controller::Job->new( application => '' );
+}
+
+sub _create_changeset_form {
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_name => 'Changeset',
+        rule_tree => [
+            _build_stmt(
+                id   => 'title',
+                name => 'Title',
+                type => 'fieldlet.system.title'
+            ),
+            _build_stmt(
+                id       => 'status_new',
+                bd_field => 'id_category_status',
+                name     => 'Status',
+                type     => 'fieldlet.system.status_new'
+            ),
+            _build_stmt(
+                id   => 'project',
+                name => 'Project',
+                type => 'fieldlet.system.projects'
+            ),
+            _build_stmt(
+                id   => 'release',
+                name => 'Release',
+                type => 'fieldlet.system.release'
+            ),
+            _build_stmt(
+                id   => 'revisions',
+                name => 'Revisions',
+                type => 'fieldlet.system.revisions'
+            ),
+        ],
+    );
+}
+
+sub _build_stmt {
+    my (%params) = @_;
+
+    return {
+        attributes => {
+            active => 1,
+            data   => {
+                active       => 1,
+                id_field     => $params{id},
+                bd_field     => $params{bd_field} || $params{id},
+                fieldletType => $params{type},
+            },
+            disabled       => \0,
+            expanded       => 1,
+            leaf           => \1,
+            holds_children => \0,
+            palette        => \0,
+            key            => $params{type},
+            name           => $params{name},
+            text           => $params{name},
+        },
+        children => []
+    };
 }

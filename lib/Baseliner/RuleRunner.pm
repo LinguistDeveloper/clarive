@@ -1,5 +1,5 @@
 package Baseliner::RuleRunner;
-use Moose;
+use Baseliner::Moose;
 
 use Time::HiRes ();
 use Try::Tiny;
@@ -9,6 +9,8 @@ use Baseliner::Sem;
 use BaselinerX::CI::variable;
 use Baseliner::Utils qw(_fail _loc _debug _error);
 use Baseliner::Model::Rules;
+use Baseliner::CompiledRule;
+use Baseliner::RuleCompiler;
 
 has tidy_up => qw(is ro), default => sub { 1 };
 
@@ -136,26 +138,41 @@ sub run_rules {
     return { stash => $stash, rule_log => \@rule_log };
 }
 
-sub run_single_rule {
-    my ( $self, %p ) = @_;
-
+method run_single_rule(:$id_rule, :$stash = {}, :$version_id = '', :$version_tag = '', :$logging = 0, :$simple_error = 0) {
     local $Baseliner::_no_cache = 0;
 
-    my $id_rule = $p{id_rule} or _fail 'id_rule required';
-    my $stash = $p{stash} // {};
-    my $rule_version = $p{rule_version};
-
     my $rule = $self->_find_rule_by_id_or_name($id_rule);
-    _fail _loc 'Rule with id `%1` not found', $id_rule unless $rule;
+    _fail _loc( 'Rule with id or name `%1` not found', $id_rule ) unless $rule;
+
+    $id_rule = $rule->{id};
+
+    if ($version_id) {
+        $rule = mdb->rule_version->find_one( { id_rule => $rule->{id}, _id => mdb->oid($version_id) } );
+        _fail _loc( 'Version `%1` of rule `%2` not found', $version_id, $id_rule ) unless $rule;
+    }
+    elsif ($version_tag) {
+        $rule = mdb->rule_version->find_one( { id_rule => $rule->{id}, version_tag => $version_tag } );
+        _fail _loc( 'Version tag `%1` of rule `%2` not found', $version_tag, $id_rule ) unless $rule;
+    }
+
+    my $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
+
+    my $suffix = $id_rule;
+    $suffix .= '_' . $rule->{_id} if $version_tag;
 
     my $ret = try {
-        $self->dsl_run( rule_version => $rule_version, stash => $stash, %p, id_rule => $rule->{id} );
+        $self->_run_dsl( stash => $stash, suffix => $suffix, dsl => $dsl, logging => $logging, simple_error => $simple_error );
     }
     catch {
-        _fail( _loc( "Error running rule '%1': %2", $rule->{rule_name}, shift() ) );
+        my $error = shift;
+
+        _fail( _loc( "Error running rule '%1': %2", $rule->{rule_name}, $error ) );
     };
 
-    return { ret => $ret, dsl => '' };
+    return {
+        ret  => $ret,
+        rule => { id => $id_rule, version_id => '' . $rule->{_id}, version_tag => $rule->{version_tag} }
+    };
 }
 
 sub run_dsl {
@@ -238,6 +255,40 @@ sub dsl_run {
     };    # TODO storing dsl everywhere maybe a waste of space
 }
 
+sub _run_dsl {
+    my ( $self, %p ) = @_;
+
+    my $dsl          = $p{dsl};
+    my $stash        = $p{stash} // {};
+    my $simple_error = $p{simple_error};
+    my $logging      = $p{logging};
+    my $suffix       = $p{suffix};
+
+    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash );
+
+    my $compiler = Baseliner::RuleCompiler->new( dsl => $dsl, $suffix ? ( suffix => $suffix ) : () );
+    $compiler->compile;
+    $compiler->run( stash => $stash );
+
+    my $rules_model = Baseliner::Model::Rules->new;
+
+    if ( my $err = $compiler->errors ) {
+        if ($simple_error) {
+            _error( _loc( "Error during DSL Execution: %1", $err ) ) unless $simple_error > 1;
+            _fail $err;
+        }
+        else {
+            _fail( _loc( "Error during DSL Execution: %1", $err ) );
+        }
+        _debug "DSL:\n", $rules_model->dsl_listing( $dsl );
+    }
+    else {
+        _debug "DSL:\n", $rules_model->dsl_listing( $dsl ) if $logging;
+    }
+
+    return { stash => $stash };
+}
+
 sub merge_into_stash {
     my ( $stash, $data ) = @_;
     return unless ref $data eq 'HASH';
@@ -252,6 +303,25 @@ sub _find_rule_by_id_or_name {
     my ($param) = @_;
 
     return mdb->rule->find_one( { '$or' => [ { id => "$param" }, { rule_name => "$param" } ] } );
+}
+
+sub _build_dsl_from_rule {
+    my $self = shift;
+    my ($id_rule, $rule) = @_;
+
+    my $rules_model = Baseliner::Model::Rules->new;
+    my @tree = $rules_model->build_tree( $rule, undef );
+
+    my $dsl = try {
+        $rules_model->dsl_build( \@tree, no_tidy => 0, id_rule => $id_rule, rule_name => $rule->{name} );
+    }
+    catch {
+        my $error = shift;
+
+        _fail( _loc( "Error building DSL for rule `%1`: %2", $id_rule, $error ) );
+    };
+
+    return $dsl;
 }
 
 1;
