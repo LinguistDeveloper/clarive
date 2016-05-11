@@ -31,7 +31,7 @@ subtest 'docs_tree: help tree is built from directory' => sub {
 
     $controller->docs_tree($c);
     is ref $c->stash->{json}, 'ARRAY';
-    is scalar @{ $c->stash->{json} }, 5;
+    is scalar @{ $c->stash->{json} }, 6;
 };
 
 subtest 'docs_tree: gets user language from user preferences' => sub {

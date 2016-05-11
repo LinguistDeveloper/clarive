@@ -91,7 +91,7 @@ sub run_test {
 
                 # run the test
                 try {
-                    Clarive::Code->new->run_file( $test_file );
+                    Clarive::Code->new->eval_file( $test_file );
                 } catch {
                     my $err = shift;
                     fail( $err );

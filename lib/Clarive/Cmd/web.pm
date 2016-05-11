@@ -8,6 +8,8 @@ use experimental 'smartmatch';
 our $CAPTION = 'Start/Stop web server';
 
 has r          => qw(is rw default) => sub { 0 };
+has d          => qw(is rw default) => sub { 0 };
+has R          => qw(is rw isa Str);
 has host       => qw(is ro);
 has listen     => qw(is ro), default => sub{ [] };
 has workers    => qw(is ro);

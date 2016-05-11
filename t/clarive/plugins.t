@@ -76,6 +76,16 @@ subtest 'for_each_file: recurse modules/ dir' => sub {
     cmp_deeply \@plugins, ['my-plugin','my-plugin'];
 };
 
+subtest 'load_command: loads command package' => sub {
+
+    my ( $pkg, $runcmd ) = Clarive::Plugins->new->load_command( 'testcmd' );
+
+    is $pkg, 'Clarive::Cmd::Plugin::testcmd';
+    ok $pkg->can( $runcmd );
+
+    # is $pkg->new( app=>Clarive->app, opts=>{} )->$runcmd, 123;
+};
+
 done_testing;
 
 sub _setup { }

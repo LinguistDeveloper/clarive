@@ -2,24 +2,17 @@ package Clarive::Cmd::db;
 use Mouse;
 use Path::Class;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
-extends 'Clarive::Cmd';
 use v5.10;
 
-our $CAPTION = 'database diff and deploy tool';
+extends 'Clarive::Cmd';
+with 'Clarive::CmdStrict';
+
+our $CAPTION = 'database utilities';
 our $t0;
 
-with 'Clarive::Role::Baseliner';
-
-has all => qw(is rw isa Bool default 0);  # dump all or just essential?
-has drop => qw(is rw isa Bool default 0);  # drop index on rebuid
-has collection => qw(is rw isa Str default),'';  # drop index on rebuid
-
-BEGIN {
-    $ENV{ DBIC_TRACE }                   = 0;
-    $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = 't';
-    chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
-    #XXX _load_features('lib', use_lib=>1 );
-}
+has all        => qw(is rw isa Bool default 0);    # dump all or just essential?
+has drop       => qw(is rw isa Bool default 0);    # drop index on rebuid
+has collection => qw(is rw isa Str default), '';   # drop index on rebuid
 
 sub now {
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -75,23 +68,5 @@ sub run_dump {
     }
     Util->_log("Done." );
 }
-
-=pod
-
-Clarive DB Schema Management
-
-=head1 cla db-reindex
-
-Reindexes the database, dropping old-indexes.
-
-Uses all standard indexes, plus any
-feature-defined index in C<etc/index/*.yml>
-
-=head1 cla db-dump
-
-Creates a database dump, dropping log and
-filesystem collections
-
-=cut
 
 1;

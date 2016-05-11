@@ -3,6 +3,7 @@ use Mouse;
 use v5.10;
 use Try::Tiny;
 
+has h            => qw(is rw required 0);
 has env          => qw(is rw required 0);
 has home         => qw(is rw required 1);
 has base         => qw(is rw required 1);
@@ -180,77 +181,19 @@ sub options {
 }
 
 sub do_cmd {
-    my ($self, %p)=@_;
-    my ($cmd,$altcmd,$altrun,$cmd_pkg) = @p{ qw/cmd altcmd altrun cmd_pkg/ };
+    my ($self, %params)=@_;
+    my $cmd = $params{cmd};
     $cmd or die "ERROR: missing or invalid command";
 
     my $opts = $self->options($cmd);
 
-    if( $cmd =~ /\./ ) {
-        $cmd_pkg = 'service';
-        $opts->{service_name} = $cmd;
-    }
-    elsif( my @cmds = split '-', $cmd  ) {
-        $cmd_pkg = join '::', @cmds;
-        if( @cmds > 1 ) {
-            $altcmd = $cmds[0];
-            $altrun = join '_', @cmds[1..$#cmds];
-        }
-    }
-
-    my $cmd_package = "Clarive::Cmd::$cmd_pkg";
-    my $runsub = 'run';
-
-    # run cmd from plugins?
-    for my $lang ( qw(js pl) ) {
-        if( my $first = $self->plugins->locate_first( "cmd/$cmd.$lang" ) ) {
-            require Clarive::Code;
-            my $stash = {};
-            try {
-                Clarive::Code->new( lang=>$lang, app=>$self, options=>$opts )->run_file( $first->{path}, $stash );
-            } catch {
-                my $err = shift;
-                die $err;
-            };
-            exit 0;
-        }
-    }
-
-    # load package
-    my $second = 0;
-    while( 1 ) {
-        eval "require $cmd_package";
-        if( $@ ) {
-            if( $@ =~ /^Can't locate Clarive\/Cmd\// ) {
-                if( $altcmd && !$second) {
-                    $cmd_package = "Clarive::Cmd::$altcmd";
-                    $runsub = "run_$altrun";
-                    $second = 1;
-                    next;
-                } else {
-                    die "ERROR: command not found: $cmd (${cmd_package}::${runsub})\n";
-                }
-            } else {
-                die "ERROR: loading command $cmd (${cmd_package}::${runsub}):\n$@\n";
-            }
-        }
-        last;
-    }
-
-    if( $self->verbose ) {
-        say "cmd_package: $cmd_package";
-        say "cmd opts: " . $self->yaml( $opts );
-    }
-
-    # check if method is available
-    if( ! $cmd_package->can( $runsub ) ) {
-        die "ERROR: command $cmd not available (${cmd_package}::${runsub})\n";
-    }
+    require Clarive::Cmd;
+    my ($cmd_package, $runsub ) = Clarive::Cmd->load_command( $self, $cmd, $opts );
 
     # run command
     if( $cmd_package->can('new') ) {
         # moose class command
-        my $instance = $cmd_package->new( app=>$self, opts=>$opts, %$opts );
+        my $instance = $cmd_package->new( %$opts, app=>$self, opts=>$opts );
         $instance->$runsub( %$opts );
     } else {
         # plain perl package, not a class

@@ -4,19 +4,19 @@ index: 5000
 icon: console
 ---
 
-`cla web` Performs operations related to Clarive web service.
+`cla web` starts and stops the Clarive web server.
 
-By itself it starts Clarive web service.
+## Common Options
 
-Supports the following options:
+The `web` subcommands generally support the following options:
 
 `--env <environment>` Used to configure parameters.
 
 `--r` Server restarts if there is any change these locations:
 
-- `CLARIVE_HOME/lib`
-- `CLARIVE_HOME/conf`
-- `features/\*/lib`, excepts changes in files located in features/#directory.
+* `CLARIVE_HOME/lib`
+* `CLARIVE_HOME/conf`
+* `features/\*/lib`, excepts changes in files located in features/#directory.
 
 The default value is off.
 
@@ -30,7 +30,7 @@ The default value is off.
 
 `--workers <workersnum>` Number of workers raised up.
 
-`--engine [Standalone|Twiggy|Starman|Starlet]` PSGI web server. Its default value is Starman.
+`--engine [Standalone|Twiggy|Starman|Starlet]` PSGI web server. `Starman` is the default value.
 
 The web server starts in daemon way, previous log will be compress and
 a cleanup log process starts, logs will be deleted depending on
@@ -40,35 +40,41 @@ the parameter log_keep that can be passed as an argument to cla web.
 
 `--log_file <logfile>` Name of log file.
 
-Subcommands supported can be displayed with the help option:
+### web-start
 
-        > cla help web
+Same as cla web, described above.
 
-        usage: cla [-h] [-v] [--config file] command <command-args>
+### web-stop
 
-        Subcommands available for web (Start/Stop web server):
+Stops the web server.  This call accepts the following options:
 
-        web-tail
-        web-start
-        web-stop
-        web-log
-        web-restart
+`--no_wait_kill` The dispatcher is killed immediately,
+if this option is not set, web will wait 30 seconds to shutdown.
 
-        cla help <command> to get all subcommands.
-        cla <command> -h for command options.
+`--keep_pidfile` - Keeps the file containing the process pid.
 
-`web-start` Same as cla web, describe above.
+### web-restart
 
-`web-stop`  Stops the web server.  This call accepts the following options:
+Restart the web server  (signal ‘HUP’ 1).
 
 - `--no_wait_kill` The dispatcher is killed without wait, if this option is not set, web will wait 30 seconds to shutdown.
 - `--keep_pidfile` - Keeps the file containing the process pid.
 
-`web-restart` Restart the web server  (signal ‘HUP’ 1).
+### web-log
 
-`web-log` Print logfile to screen.
+Print logfile to screen.
 
-`web-tail` Follows log file, it accepts some arguments when called to configure the output, these are:
+### web-tail
+
+Follows log file, it accepts some arguments when called to configure the output, these are:
+
+`--tail [lines]` Number of lines displayed, default is 500.
+
+`--interval [seconds]` The initial number of seconds will be spent
+sleeping, before the file is first checked, default is .5.
+
+`--maxinterval [seconds]` The maximum number of seconds that will be spent
+sleeping, by default is 1.
 
 - `--tail [lines]` Number of lines displayed, default is 500.
 - `--interval [seconds]` The initial number of seconds will be spent sleeping, before the file is first checked, default is .5.

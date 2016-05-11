@@ -12,6 +12,13 @@ sub generate {
 
     return {
         argv => js_sub { \@ARGV },
+        args => js_sub {
+            my ($arg) = @_;
+
+            return defined $arg
+                ? Clarive->args->{$arg}
+                : Clarive->args;
+        },
         env  => js_sub {
             my ($key) = @_;
 

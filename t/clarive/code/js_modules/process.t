@@ -24,6 +24,18 @@ EOF
     is_deeply $ret, ['foo'];
 };
 
+subtest 'process.args: returns processed ARGV' => sub {
+    _setup();
+
+    my $code = _build_code( lang => 'js' );
+
+    my $ret = $code->eval_code( <<'EOF', {} );
+        process.args();
+EOF
+
+    cmp_deeply $ret, superhashof({'config'=>ignore(), env=>ignore() });
+};
+
 subtest 'process.pid: returns pid' => sub {
     _setup();
 
@@ -71,7 +83,7 @@ subtest 'process.os: returns arch' => sub {
         process.arch();
 EOF
 
-    like $ret, qr/64|32/;
+    like $ret, qr/darwin|64|32/;
 };
 
 subtest 'process.env: returns ENV' => sub {

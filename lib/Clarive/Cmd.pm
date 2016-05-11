@@ -2,6 +2,8 @@ package Clarive::Cmd;
 use Mouse;
 use v5.10;
 
+use Class::Load qw(is_class_loaded try_load_class load_class);
+
 has app => qw(is ro required 1),
             handles=>[qw/
                 lang
@@ -18,7 +20,7 @@ has app => qw(is ro required 1),
 
 # command opts have the app opts + especific command opts from config
 has opts   => qw(is ro isa HashRef required 1);
-has help => qw(is rw default 0);
+has help   => qw(is rw default 0);
 
 around BUILDARGS => sub {
     my $orig = shift;
@@ -30,21 +32,128 @@ around BUILDARGS => sub {
 
 sub BUILD {
     my $self = shift;
-    # placeholder for role hooks
+
+    # this runs when you do cla help <cmd>
+
     if( $self->help ) {
-        $self->show_help;
+        print STDERR $self->help_header;
+        print STDERR $self->cli_options;
+        print STDERR $self->subcommands;
+        print STDERR "\ntry: cla help <command> for command documentation\n";
+
         exit 0;
     }
 };
 
+sub show_cla_help {
+    my $self = shift;
+
+    print STDERR $self->help_header;
+    my @commands = $self->locate_all_commands;
+    print STDERR "Available commands:\n";
+    for my $found ( @commands ) {
+        my $cmd = $found->{cmd};
+        if( my $caption = $found->{caption} ) {
+            say STDERR sprintf '    %-20s %s', $cmd, $caption;
+        } else {
+            say STDERR "    $cmd";
+        }
+    }
+    say STDERR "\ntry:\n    cla help <command> for command documentation";
+    say STDERR "    cla <command> -h for command options";
+}
+
+
 sub show_help {
     my $self = shift;
-    require Pod::Text::Termcap;
-    my $pkg = ref $self;
-    $self->_pod_for_package( $pkg );
-    for my $role( $self->meta->calculate_all_roles ) {
-        $self->_pod_for_package( $role->name );
+
+    my $help_doc =
+        $self->help_header
+        . $self->help_doc( @_ )
+        . "\n"
+        . "try: cla <command> -h for command options\n";
+
+    print STDERR $help_doc;
+}
+
+sub help_doc {
+    my $self = shift;
+    my (%opts) = @_;
+
+    my $cmd = $self->command_name;
+    my $lang = $opts{lang} // 'en';
+
+    require Baseliner::Utils;
+    my $home_dir =  $opts{docs_home} // $opts{home} // Clarive->home;
+    my $filename = Util->_file( $home_dir, "docs/$lang/cmd/cla-$cmd.markdown" );
+
+    open my $fm, '<', $filename
+       or do {
+           print STDERR "ERROR: no documentation for command $cmd (file: $filename)\nCommand options:";
+           print STDERR $self->cli_options;
+           exit 1;
+       };
+    my $markdown = do { local $/; <$fm> };
+
+    return $self->_markdown_to_term( $markdown );
+}
+
+sub _markdown_to_term {
+    my $self = shift;
+    my ($str) = @_;
+
+    my $BOLD = "\e[1m";
+    my $UNDL = "\e[4m";
+    my $NORM = "\e[m";
+
+    my ( $yaml, $body ) = $str =~ m{^(---.*?)---(.*)$}s;
+    my $title = eval { Util->_load( $yaml )->{title} } // '';
+
+    $body =~ s{`([^`]+)`}{$BOLD$1$NORM}g;
+    $body =~ s{\*\*([^\*]+)\*\*}{$BOLD$1$NORM}g;
+    $body =~ s{\n#+\s+([^\n]+)}{\n$UNDL$1$NORM\n}g;
+
+    my $final = "\n$UNDL$title$NORM\n$body";
+
+    $final =~ s{\n\n\n+}{\n\n}g;  # limit to 1 empty line
+    $final =~ s{\n+$}{\n}g;  # no ending in >1 newline
+    return $final;
+}
+
+sub check_cli_options {
+    my $self = shift;
+    my %params = @_;
+
+    my @missing;
+
+    my %attributes =
+        map { $_->name => $_ }
+        ( $self->_get_cli_attributes, Clarive::App->meta->get_all_attributes );
+
+    for my $arg ( grep { length } keys %{ $params{args} || {} } ) {
+        if( !exists $attributes{$arg} ) {
+            push @missing, $arg;
+        }
     }
+
+    return @missing;
+}
+
+sub cli_options {
+    my $self = shift;
+
+    my $txt = "Available options:\n";
+    for my $attr ( $self->_get_cli_attributes ) {
+        my $tc = !$attr->type_constraint ? ''
+            : do {
+                my $tc_name = lc $attr->type_constraint->name;
+                $tc_name = '0|1' if $tc_name eq 'bool';
+                "<$tc_name>";
+            };
+        $txt .= sprintf "    --%s %s\n", $attr->name , $tc;
+    }
+
+    return $txt;
 }
 
 sub command_name {
@@ -60,21 +169,6 @@ sub _get_cli_attributes {
            $self->meta->get_all_attributes;
 }
 
-sub _pod_for_package {
-    my ($self, $pkg) = @_;
-    $pkg =~ s/::/\//g;
-    $pkg = "$pkg.pm";
-    if( -e(  my $file = $INC{ $pkg } ) ) {
-        my $parser = Pod::Text::Termcap->new( indent=>2, sentence=>0 );
-        #my $output;
-        #$parser->output_string( \$output );
-        $parser->parse_from_file( $file );
-        #print "OUT=$output";
-    } else {
-        die "ERROR: file for $pkg not found\n";
-    }
-}
-
 sub load_command {
     my $self = shift;
     my ($app, $cmd, $opts) = @_;
@@ -87,7 +181,7 @@ sub load_command {
     # special command processing?
     my ($altrun, $altcmd, $cmd_long);
     if( $cmd =~ /\./ ) {
-        $cmd_long = 'service';
+        $cmd_long = 'bali';
         $opts->{service_name} = $cmd;
     }
     elsif( my @cmds = split '-', $cmd  ) {
@@ -111,12 +205,12 @@ sub load_command {
     }
 
     if( ! $cmd_package ) {
-        die "ERROR: command `$cmd` not found\n";
+        die "ERROR: command $cmd not found\n";
     }
 
     # check if method is available
     if( ! $cmd_package->can( $runsub ) ) {
-        die "ERROR: command `$cmd` not available (${cmd_package}::${runsub})\n";
+        die "ERROR: command $cmd not available (${cmd_package}::${runsub})\n";
     }
 
     if( $app && $app->verbose ) {
@@ -151,6 +245,32 @@ Clarive - Copyright(C) 2010-$year Clarive Software, Inc.
 usage: cla [-h] [-v] [--config file] command <command-options>
 
 FIN
+}
+
+sub locate_all_commands {
+    my $self = shift;
+    my (%opts) = @_;
+
+    my @commands;
+
+    # locate all the command files available in @INC
+    my @cmd_files;
+    for my $lib ( @INC ) {
+        push @cmd_files, glob "$lib/Clarive/Cmd/*";
+    }
+
+    for my $cmd_file ( sort { uc $a cmp uc $b } @cmd_files ) {
+
+        next if -d $cmd_file;
+
+        my ($cmd) = $cmd_file =~ /Clarive\/Cmd\/(.*).pm$/;
+
+        if( my $pkg = $self->load_package_for_command( $cmd ) ) {
+            push @commands, { cmd=>$cmd, caption=>$pkg->command_caption };
+        }
+    }
+
+    return @commands;
 }
 
 sub command_caption {
@@ -222,6 +342,30 @@ sub load_package_for_command {
     }
 
     return $package;
+}
+
+sub subcommands {
+    my $self = shift;
+    my ($cmd, %opts) = @_;
+
+    $cmd //= $self->command_name;
+
+    my $txt = '';
+
+    # foreach command, print some info
+    my @subcommands = $self->list_subcommands( $cmd, %opts );
+
+    my $main_caption = $self->command_caption;
+    $main_caption = $main_caption ? " ($main_caption)" : '';
+
+    if( !@subcommands ) {
+        $txt = "\nNo subcommands available for cla $cmd$main_caption";
+    } else {
+        $txt .= "\nSubcommands available for cla $cmd$main_caption:\n";
+        $txt .= "    cla $_\n" for @subcommands;
+    }
+
+    return $txt;
 }
 
 1;

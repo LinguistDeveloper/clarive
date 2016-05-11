@@ -27,7 +27,8 @@ subtest 'docs_dirs: finds all base and home docs dirs' => sub {
 
     my @dirs = $help->docs_dirs;
 
-    cmp_deeply [ map { "$_" } @dirs ], [ re(qr{app-home/docs/en}), re(qr{plugins/my-plugin/docs/en}), re(qr{features/testfeature/docs/en}) ];
+    cmp_deeply [ map { "$_" } @dirs ],
+      [ re(qr{app-home/docs/en}), re(qr{plugins/my-plugin/docs/en}), re(qr{features/testfeature/docs/en}) ];
 };
 
 subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
@@ -46,7 +47,7 @@ subtest 'build_doc_tree: no inactive docs' => sub {
     my $help = Baseliner::Model::Help->new;
     my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/en") );
 
-    ok ! grep { $_->{text} eq 'InactiveTest' } @tree;
+    ok !grep { $_->{text} eq 'InactiveTest' } @tree;
 };
 
 subtest 'build_doc_tree: help tree is built from directory and in correct order' => sub {
@@ -55,10 +56,34 @@ subtest 'build_doc_tree: help tree is built from directory and in correct order'
     my $help = Baseliner::Model::Help->new;
     my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/en") );
 
-    cmp_deeply \@tree, [
+    cmp_deeply \@tree,
+      [
         {
-            'icon' => ignore(),
-            'text' => 'External',
+            'text' => 'cmd',
+            'leaf' => \0,
+            'icon' => '/static/images/icons/catalog-folder.svg',
+            'data' => {
+                'path' => 'cmd'
+            },
+            'expanded' => \1,
+            'children' => [
+                {
+                    'search_results' => {
+                        'matches' => undef,
+                        'found'   => undef
+                    },
+                    'data' => {
+                        'path' => 'cmd/cla-TestShowHelp.markdown'
+                    },
+                    'leaf' => \1,
+                    'icon' => '/static/images/icons/page.svg',
+                    'text' => 'TestTitle'
+                }
+            ]
+        },
+        {
+            'icon'           => ignore(),
+            'text'           => 'External',
             'search_results' => {
                 'matches' => undef,
                 'found'   => undef
@@ -104,7 +129,7 @@ subtest 'build_doc_tree: help tree is built from directory and in correct order'
             'expanded' => \1,
             'leaf'     => \0
         },
-    ];
+      ];
 };
 
 subtest 'build_doc_tree: help tree is built from directory by language' => sub {
@@ -123,7 +148,7 @@ subtest 'build_doc_tree: help tree merges directories from plugins' => sub {
     my @dirs = $help->docs_dirs;
     my @tree = $help->build_doc_tree( { query => '' }, @dirs );
 
-    is $tree[0]->{text}, 'External';
+    ok grep { $_->{text} eq 'External' } @tree;
 };
 
 subtest 'build_doc_tree: returns only matches results when query' => sub {
@@ -133,8 +158,31 @@ subtest 'build_doc_tree: returns only matches results when query' => sub {
     my @tree =
       $help->build_doc_tree( { query => 'Help' }, _dir("$root/../../data/app-base/app-home/docs/en") );
 
-    cmp_deeply \@tree,
-      [
+    cmp_deeply \@tree, [
+        {
+            'children' => [
+                {
+                    'icon' => '/static/images/icons/page.svg',
+                    'text' => 'TestTitle',
+                    'data' => {
+                        'path' => 'cmd/cla-TestShowHelp.markdown'
+                    },
+                    'leaf'           => \1,
+                    'search_results' => {
+                        'matches' => 1,
+                        'found'   => 'show<strong>help</strong> body
+...'
+                    }
+                }
+            ],
+            'icon'     => '/static/images/icons/catalog-folder.svg',
+            'leaf'     => \0,
+            'expanded' => \1,
+            'text'     => 'cmd',
+            'data'     => {
+                'path' => 'cmd'
+            }
+        },
         {
             'icon' => ignore(),
             'text' => 'Help Test',
@@ -153,12 +201,12 @@ subtest 'build_doc_tree: returns only matches results when query' => sub {
             'data' => {
                 'path' => 'dir'
             },
-            children => [],
-            index => ignore(),
+            children   => [],
+            index      => ignore(),
             'expanded' => \1,
-            'leaf' => \0
+            'leaf'     => \0
         },
-      ];
+    ];
 };
 
 subtest 'doc_matches: finds simple string' => sub {
@@ -189,7 +237,6 @@ subtest 'doc_matches: doesnt find simple string' => sub {
     ok !exists $doc->{found};
 };
 
-
 subtest 'parse_body: parses windows line endings' => sub {
     _setup();
 
@@ -198,10 +245,7 @@ subtest 'parse_body: parses windows line endings' => sub {
 
     my $help = Baseliner::Model::Help->new;
 
-    my $data = $help->parse_body(
-        _file("$tempdir/test.markdown"),
-        _dir("$tempdir")
-    );
+    my $data = $help->parse_body( _file("$tempdir/test.markdown"), _dir("$tempdir") );
 
     cmp_deeply $data, {
         'name' => 'test',
@@ -230,10 +274,8 @@ subtest 'parse_body: parses body' => sub {
 
     my $help = Baseliner::Model::Help->new;
 
-    my $data = $help->parse_body(
-        _file("$root/../../data/app-base/app-home/docs/es/test.markdown"),
-        _dir("$root/../../data/app-base/app-home/docs/es")
-    );
+    my $data = $help->parse_body( _file("$root/../../data/app-base/app-home/docs/es/test.markdown"),
+        _dir("$root/../../data/app-base/app-home/docs/es") );
 
     cmp_deeply $data, {
         'name' => 'test',
