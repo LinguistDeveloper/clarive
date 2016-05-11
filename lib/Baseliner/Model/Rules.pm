@@ -387,53 +387,33 @@ register 'statement.if.var' => {
     text => 'IF var THEN',
     type => 'if',
     form => '/forms/variable_value.js',
-    data => { variable => '', value => '', data_key => '' },
-    dsl  => sub {
-        my ( $self, $n, %p ) = @_;
-        my $variable;
-        if ( $n->{data_key} ) {
-            $variable = '$stash->{' . $n->{data_key} . '}->{' . $n->{variable} . '}';
-        }
-        else {
-            $variable = '$stash->{' . $n->{variable} . '}';
-        }
-        sprintf(
-            q{
-            if( %s eq '%s' ) {
+    data => { variable=>'', value=>'' },
+    dsl => sub {
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( $stash->{'%s'} eq '%s' ) {
                 %s
             }
 
-        }, $variable, $n->{value}, $self->dsl_build( $n->{children}, %p )
-        );
+        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
-
 
 register 'statement.if_not.var' => {
     text => 'IF var ne value THEN',
     type => 'if',
     form => '/forms/variable_value.js',
-    data => { variable => '', value => '', data_key => '' },
-    dsl  => sub {
-        my ( $self, $n, %p ) = @_;
-        my $variable;
-        if ( $n->{data_key} ) {
-            $variable = '$stash->{' . $n->{data_key} . '}->{' . $n->{variable} . '}';
-        }
-        else {
-            $variable = '$stash->{' . $n->{variable} . '}';
-        }
-        sprintf(
-            q{
-            if( %s ne '%s' ) {
+    data => { variable=>'', value=>'' },
+    dsl => sub {
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( $stash->{'%s'} ne '%s' ) {
                 %s
             }
 
-        }, $variable, $n->{value}, $self->dsl_build( $n->{children}, %p )
-        );
+        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
-
 
 register 'statement.if.condition' => {
     text => 'IF condition THEN',
