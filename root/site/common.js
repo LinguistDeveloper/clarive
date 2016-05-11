@@ -3004,7 +3004,7 @@ Baseliner.cols_templates = {
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } },
       bl_combo : function(){ 
         //var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1, singleMode: true });
-        var bl_combo = Baseliner.combo_baseline({ value: '*' });
+        var bl_combo = Baseliner.combo_baseline({ no_common: 1 });
         return { editor: bl_combo, default_value:'', css: 'line-height: 40px', width: 20 }; 
       },
       color_combo : function(){ 

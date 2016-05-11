@@ -356,9 +356,9 @@ Baseliner.combo_baseline = function(params) {
         root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount",
-        baseParams: params.request || {},
-        id: 'id',
+        totalProperty:"totalCount", 
+        baseParams: params.request || params,
+        id: 'id', 
         url: '/baseline/json',
         fields: ['id','name','description', 'active']
     });
