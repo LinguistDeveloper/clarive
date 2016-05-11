@@ -20,6 +20,64 @@ use BaselinerX::CI::ssh_agent;
 
 use_ok 'Baseliner::Controller::CI';
 
+subtest 'tree_object_depend: returns dependencies tree correctly' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser');
+
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable');
+    my $mid = $variable->mid;
+
+    my $variable2 = TestUtils->create_ci( 'variable', name => 'My other variable', created_by => $user->username );
+    my $mid2 = $variable2->mid;
+
+    mdb->master_rel->insert( { from_mid => $mid, to_mid => $mid2, rel_type => 'ci_ci' } );
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_object_depend( parent => $mid, from => $mid, limit => 25, start => 0 );
+
+    is $count, 1;
+    cmp_deeply \@tree, [
+        {
+            '_id'      => "$mid-0",
+            '_parent'  => "$mid",
+            '_is_leaf' => \0,
+
+            'icon'        => ignore(),
+            'class'       => 'BaselinerX::CI::variable',
+            'properties'  => undef,
+            'versionid'   => '1',
+            'classname'   => 'BaselinerX::CI::variable',
+            'mid'         => "$mid2",
+            'modified_by' => undef,
+            'created_by'  => 'MyUser',
+            'bl'          => [ '*' ],
+            'type'        => 'object',
+            'collection'  => 'variable',
+            'moniker'     => undef,
+            'data'        => ignore(),
+            'item'        => 'My other variable',
+            'ts'          => ignore(),
+        }
+    ];
+};
+
+subtest 'tree_objects: returns created_by' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser');
+    my $variable = TestUtils->create_ci('folder', mid => '222', created_by => $user->username);
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    is $tree[0]->{created_by}, 'MyUser';
+};
+
 subtest 'tree_roles: returns no roles when user has no permissions' => sub {
     _setup();
 
@@ -858,6 +916,7 @@ subtest 'tree_object_depend: returns dependencies tree' => sub {
             'classname'   => 'BaselinerX::CI::variable',
             'mid'         => "$mid2",
             'modified_by' => undef,
+            'created_by'  => undef,
             'bl'          => [ '*' ],
             'type'        => 'object',
             'collection'  => 'variable',
