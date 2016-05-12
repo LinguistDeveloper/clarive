@@ -722,19 +722,40 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     border: none;
 }
 
+.div-logo-file{
+    border:0px;
+    width:220px;
+    height:35px;
+}
+
+.div-logo-file-custom{
+    border:0px;
+    height:28px;
+    text-align: center;
+}
+
+.div-logo-powered{
+    border:0px;
+    height:7px;
+    position:relative;
+}
+
 .img-main-logo-file{
     border:0px;
     max-width:220px;
-    max-height:40px;
+    max-height:35px;
+}
+
+.img-custom-logo-file{
+    border:0px;
+    max-width:220px;
+    max-height:28px;¡
 }
 
 .img-main-logo-powered {
+    height:7px;
     position:absolute;
-    border:0px;
-    width:150px;
-    height:50px;
-    left:90px;
-    top:-13px;
+    left: 55%;
 }
 
 
