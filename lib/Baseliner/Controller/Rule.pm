@@ -9,7 +9,6 @@ use v5.10;
 use BaselinerX::CI::variable;
 use Baseliner::RuleRunner;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::CompiledRule;
 use Baseliner::Model::Rules;
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -860,7 +859,7 @@ sub run_rule : Local {
     my $stash = $p->{stash};
 
     my $rule_runner = Baseliner::RuleRunner->new;
-    my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+    my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash );
 
     $c->stash->{json} = { stash=>$stash, ret=>$ret_rule };
     $c->forward("View::JSON");
@@ -946,7 +945,7 @@ sub default : Path {
             _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
 
             my $rule_runner = Baseliner::RuleRunner->new;
-            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash);
+            my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash);
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response}
                 ? $stash->{ws_response}

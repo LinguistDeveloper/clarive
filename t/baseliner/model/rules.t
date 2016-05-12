@@ -9,12 +9,14 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils qw(mock_time);
 
-use Baseliner::Role::CI;
-use BaselinerX::Type::Statement;
-use BaselinerX::Type::Service;
 use Class::Date;
 use Time::HiRes qw(usleep);
 use JSON ();
+use Baseliner::Role::CI;
+use BaselinerX::Type::Statement;
+use BaselinerX::Type::Service;
+use Baseliner::RuleCompiler;
+use Baseliner::RuleRunner;
 
 use_ok 'Baseliner::Model::Rules';
 
@@ -25,10 +27,8 @@ subtest 'does compile when config flag is conditional and rule is on' => sub {
 
     $rules->compile_rules( rule_precompile => 'depends' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok $cr->package->can('meta');
-    ok $cr->is_loaded;
-    $cr->unload;
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is conditional and rule is off' => sub {
@@ -38,8 +38,8 @@ subtest 'does not compile when config flag is conditional and rule is off' => su
 
     $rules->compile_rules( rule_precompile => 'depends' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok !$cr->package->can('meta');
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does compile when config flag is on and rule is off' => sub {
@@ -49,10 +49,8 @@ subtest 'does compile when config flag is on and rule is off' => sub {
 
     $rules->compile_rules( rule_precompile => 'always' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok $cr->package->can('meta');
-    ok $cr->is_loaded;
-    $cr->unload;
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does compile when config flag is on and rule is on' => sub {
@@ -62,10 +60,8 @@ subtest 'does compile when config flag is on and rule is on' => sub {
 
     $rules->compile_rules( rule_precompile => 'always' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok $cr->package->can('meta');
-    ok $cr->is_loaded;
-    $cr->unload;
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is off and rule is on' => sub {
@@ -75,8 +71,8 @@ subtest 'does not compile when config flag is off and rule is on' => sub {
 
     $rules->compile_rules( rule_precompile => 'none' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok !$cr->package->can('meta');
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is off and rule is off' => sub {
@@ -86,8 +82,8 @@ subtest 'does not compile when config flag is off and rule is off' => sub {
 
     $rules->compile_rules( rule_precompile => 'none' );
 
-    my $cr = Baseliner::CompiledRule->new( id_rule => 1, @_ );
-    ok !$cr->package->can('meta');
+    my $rule = mdb->rule->find_one({id => '1'});
+    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'statement.call' => sub {
@@ -279,7 +275,7 @@ subtest 'meta key with attributes sent to service op' => sub {
     Baseliner::Core::Registry->add_class( undef, 'service' => 'BaselinerX::Type::Service' );
     {
 
-        package DummyPKG;
+        package DummyPKGMetaKey;
         sub new { }
     };
     Baseliner::Core::Registry->add(
@@ -355,10 +351,12 @@ subtest 'meta key with attributes sent to service op' => sub {
     );
     my $rules = _build_model();
     $rules->compile_rules();
-    my $cr = Baseliner::CompiledRule->new( id_rule => $id_rule, @_ );
-    $cr->compile();
+
     my $stash = { abc => 11 };
-    $cr->run( stash => $stash );
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+    $rule_runner->find_and_run_rule(id_rule => $id_rule, stash => $stash);
+
     ok $stash->{is_ok};
 };
 
@@ -902,6 +900,92 @@ subtest 'list_versions: returns rule versions only with tags' => sub {
 
     is scalar @versions, 1;
     is $versions[0]->{username}, 'anotheruser';
+};
+
+subtest 'resolve_rule: loads rule by id' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    my $model = _build_model();
+
+    my $rule = $model->resolve_rule(id_rule => $id_rule);
+
+    ok $rule;
+};
+
+subtest 'resolve_rule: loads rule by name' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $rule = $model->resolve_rule(id_rule => 'test');
+
+    ok $rule;
+};
+
+subtest 'resolve_rule: throws when cannot load by id' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->resolve_rule(id_rule => 'unknown') }, qr/Rule with id or name `unknown` not found/;
+};
+
+subtest 'resolve_rule: loads rule version id' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'anotheruser',
+    );
+
+    my $model = _build_model();
+
+    my @versions = $model->list_versions($id_rule);
+
+    my $rule = $model->resolve_rule( id_rule => $id_rule, version_id => '' . $versions[0]->{_id} );
+
+    ok $rule;
+};
+
+subtest 'resolve_rule: throws when cannot load by version id' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->resolve_rule(id_rule => '1', version_id => '123') }, qr/Version `123` of rule `1` not found/;
+};
+
+subtest 'resolve_rule: loads rule version tag' => sub {
+    _setup();
+
+    my $id_rule = '1';
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => $id_rule,
+        username => 'anotheruser',
+    );
+
+    my $model = _build_model();
+
+    my @versions = $model->list_versions($id_rule);
+    $model->tag_version( version_id => $versions[0]->{_id}, version_tag => 'production' );
+
+    my $rule = $model->resolve_rule( id_rule => $id_rule, version_tag => 'production' );
+
+    ok $rule;
+};
+
+subtest 'resolve_rule: throws when cannot load by version tag' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->resolve_rule( id_rule => '1', version_tag => '123' ) },
+      qr/Version tag `123` of rule `1` not found/;
 };
 
 sub _setup {

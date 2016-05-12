@@ -1114,7 +1114,7 @@ sub run {
 
         my $rule_runner = Baseliner::RuleRunner->new;
 
-        my $ret = $rule_runner->run_single_rule(
+        my $ret = $rule_runner->find_and_run_rule(
             id_rule     => $self->id_rule,
             version_id  => $self->rule_version_id,
             version_tag => $self->rule_version_tag,

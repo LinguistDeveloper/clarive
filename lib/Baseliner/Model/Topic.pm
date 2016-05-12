@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Users;
+use Baseliner::RuleRunner;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -1339,10 +1340,11 @@ sub get_meta {
         _warn _loc 'Topic category has no form rule associated with it. Please contact your administrator.'
             unless length $default_form;
         return [] unless length $default_form;
-        my $cr = Baseliner::CompiledRule->new( id_rule=> $default_form );
-        $cr->compile;
         my $stash = { name_category=>$$cat{name},id_category=>$id_category, rule_context=>'form' };
-        $cr->run(stash=>$stash);
+
+        my $rule_runner = Baseliner::RuleRunner->new;
+        $rule_runner->find_and_run_rule(id_rule => $default_form, stash => $stash);
+
         push @custom_fieldlets, _array( $stash->{fieldlets} );
     } else {
         my @user_categories = $username
@@ -1355,10 +1357,11 @@ sub get_meta {
                 _warn _loc 'Category %1 does not have an associated form', $cat->{name};
                 next;
             }
-            my $cr = Baseliner::CompiledRule->new( id_rule=>$default_form );
-            $cr->compile;
             my $stash = { id_category=>$category, rule_context=>'form' };
-            $cr->run(stash=>$stash);
+
+            my $rule_runner = Baseliner::RuleRunner->new;
+            $rule_runner->find_and_run_rule(id_rule => $default_form, stash => $stash);
+
             push @custom_fieldlets, _array( $stash->{fieldlets} );
         }
     }

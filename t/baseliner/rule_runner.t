@@ -14,14 +14,14 @@ use JSON ();
 
 use_ok 'Baseliner::RuleRunner';
 
-subtest 'run_single_rule: runs rule' => sub {
+subtest 'find_and_run_rule: runs rule' => sub {
     _setup();
 
     my $id_rule = _create_rule();
 
     my $runner = _build_runner();
 
-    my $ret = $runner->run_single_rule( id_rule => $id_rule );
+    my $ret = $runner->find_and_run_rule( id_rule => $id_rule );
 
     cmp_deeply $ret,
       {
@@ -36,14 +36,14 @@ subtest 'run_single_rule: runs rule' => sub {
       };
 };
 
-subtest 'run_single_rule: runs rule by name' => sub {
+subtest 'find_and_run_rule: runs rule by name' => sub {
     _setup();
 
     my $id_rule = _create_rule( rule_name => 'my rule' );
 
     my $runner = _build_runner();
 
-    my $ret = $runner->run_single_rule( id_rule => 'my rule' );
+    my $ret = $runner->find_and_run_rule( id_rule => 'my rule' );
 
     cmp_deeply $ret,
       {
@@ -58,18 +58,18 @@ subtest 'run_single_rule: runs rule by name' => sub {
       };
 };
 
-subtest 'run_single_rule: throws when unknown version tag' => sub {
+subtest 'find_and_run_rule: throws when unknown version tag' => sub {
     _setup();
 
     my $id_rule = _create_rule();
 
     my $runner = _build_runner();
 
-    like exception { $runner->run_single_rule( id_rule => $id_rule, version_tag => '123' ) },
+    like exception { $runner->find_and_run_rule( id_rule => $id_rule, version_tag => '123' ) },
       qr/Version tag `123` of rule `1` not found/;
 };
 
-subtest 'run_single_rule: runs rule by version tag' => sub {
+subtest 'find_and_run_rule: runs rule by version tag' => sub {
     _setup();
 
     my $id_rule = _create_rule();
@@ -85,7 +85,7 @@ subtest 'run_single_rule: runs rule by version tag' => sub {
 
     Baseliner::Model::Rules->new->tag_version( version_id => $versions[0]->{_id}, version_tag => 'production' );
 
-    my $ret = $runner->run_single_rule( id_rule => $id_rule, version_tag => 'production' );
+    my $ret = $runner->find_and_run_rule( id_rule => $id_rule, version_tag => 'production' );
 
     cmp_deeply $ret->{rule},
       {
@@ -95,7 +95,7 @@ subtest 'run_single_rule: runs rule by version tag' => sub {
       };
 };
 
-subtest 'run_single_rule: runs rule by version id' => sub {
+subtest 'find_and_run_rule: runs rule by version id' => sub {
     _setup();
 
     my $id_rule = _create_rule();
@@ -109,7 +109,7 @@ subtest 'run_single_rule: runs rule by version id' => sub {
 
     my @versions = Baseliner::Model::Rules->new->list_versions($id_rule);
 
-    my $ret = $runner->run_single_rule( id_rule => $id_rule, version_id => '' . $versions[0]->{_id} );
+    my $ret = $runner->find_and_run_rule( id_rule => $id_rule, version_id => '' . $versions[0]->{_id} );
 
     cmp_deeply $ret->{rule},
       {

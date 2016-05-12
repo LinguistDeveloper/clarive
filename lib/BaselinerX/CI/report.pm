@@ -1,10 +1,12 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
-use Baseliner::Utils;
-use Baseliner::Model::Permissions;
+
 use v5.10;
 use Try::Tiny;
 use experimental 'autoderef', 'switch';
+use Baseliner::Utils;
+use Baseliner::Model::Permissions;
+use Baseliner::RuleRunner;
 
 with 'Baseliner::Role::CI::Internal';
 
@@ -184,8 +186,6 @@ sub reports_from_rule {
 
     my @tree;
     for my $rule (@active_report_rules) {
-        my $compiled_rule = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
-
         my $stash = {
             step          => 'meta',
             report_params => +{%$p},
@@ -199,8 +199,9 @@ sub reports_from_rule {
                 hide_tree   => \1,
             }
         };
-        $compiled_rule->compile;
-        $compiled_rule->run( stash => $stash );
+
+        my $rule_runner = Baseliner::RuleRunner->new;
+        $rule_runner->find_and_run_rule( id_rule => $rule->{id}, stash => $stash );
 
         my $permissions = Baseliner::Model::Permissions->new;
 
@@ -258,9 +259,8 @@ sub report_meta {
             }
         };
 
-        my $compiled_rule = Baseliner::CompiledRule->new( id_rule => $p->{id_report_rule} );
-        $compiled_rule->compile;
-        $compiled_rule->run( stash => $stash );
+        my $rule_runner = Baseliner::RuleRunner->new;
+        $rule_runner->find_and_run_rule( id_rule => $p->{id_report_rule}, stash => $stash );
 
         my $meta = ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};
         return $meta;

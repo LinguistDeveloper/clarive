@@ -4,7 +4,6 @@ use Moose;
 use Try::Tiny;
 use Capture::Tiny qw(tee_merged);
 use Clarive::mdb;
-use Baseliner::RuleRunner;
 use Baseliner::Model::SchedulerCalendar;
 use Baseliner::Utils qw(_log _loc _fail);
 
@@ -296,9 +295,11 @@ sub _run_rule {
 
     my $stash = $task->{parameters} || {};
 
+    # require here is needed because Moose coercion blows out
+    require Baseliner::RuleRunner;
     my $rule_runner = Baseliner::RuleRunner->new;
 
-    return $rule_runner->run_single_rule(
+    return $rule_runner->find_and_run_rule(
         id_rule => $task->{id_rule},
         logging => 1,
         stash   => $stash,

@@ -6,6 +6,7 @@ use Test::Fatal;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
+use TestUtils;
 
 use JSON ();
 use Baseliner::Role::CI;
@@ -147,7 +148,6 @@ subtest 'new_event: creates log' => sub {
     like $logs[0]->{t},      $RE_t;
     is $logs[0]->{id_event}, $event->{id};
     is $logs[0]->{id_rule},  $rule->{id};
-    is $logs[0]->{dsl},      'Clarive::RULE_' . $rule->{id};
 };
 
 subtest 'new_event: runs pre rules' => sub {
@@ -280,9 +280,7 @@ subtest 'new_event: rethrows error if catch block not provided' => sub {
 };
 
 sub _setup {
-    Baseliner::Core::Registry->clear;
-
-    Baseliner::Core::Registry->add_class(undef, 'event' => 'BaselinerX::Type::Event');
+    TestUtils->setup_registry('BaselinerX::Type::Event', 'Baseliner::Model::Rules');
 
     mdb->rule->drop;
     mdb->event->drop;

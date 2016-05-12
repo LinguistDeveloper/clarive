@@ -13,6 +13,7 @@ use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Dashboard::TopicsBurndown;
+use Baseliner::RuleRunner;
 use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line parse_dt);
 
 with 'Baseliner::Role::ControllerValidator';
@@ -40,7 +41,6 @@ sub init : Local {
     $id_rule or _fail _loc 'No dashboard defined';
 
     # now run the dashboard rule
-    my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
     my $stash = {
         project_id => $id_project,
         dashboard_data => { data=>[], count=>0 },
@@ -48,8 +48,10 @@ sub init : Local {
             %$p,
         }
     };
-    $cr->compile;
-    $cr->run( stash=>$stash );
+
+    my $rule_runner = Baseliner::RuleRunner->new;
+    $rule_runner->find_and_run_rule(id_rule => "$id_rule", stash => $stash);
+
     my $dashlets = $$stash{dashlets} // [];
 
     my $k = 1;

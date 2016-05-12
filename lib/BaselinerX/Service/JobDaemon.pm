@@ -1,9 +1,12 @@
 package BaselinerX::Service::JobDaemon;
 use Moose;
+
+use experimental 'smartmatch';
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
-use Try::Tiny;
-use experimental 'smartmatch';
+use Baseliner::RuleRunner;
+use Baseliner::Model::Rules;
 
 with 'Baseliner::Role::Service';
 
@@ -238,14 +241,18 @@ sub runner_fork {
 }
 
 sub precompile_rule {
-    my ($self,$id_rule) = @_;
+    my ( $self, $id_rule ) = @_;
+
     return unless length $id_rule;
-    require Baseliner::CompiledRule;
-    my $r = Baseliner::CompiledRule->new( id_rule=>$id_rule );
+
+    my $rule = Baseliner::Model::Rules->new->resolve_rule( id_rule => $id_rule );
+
     try {
-        $r->compile;
-        _log _loc "Rule %1 precompile status=%2", $r->rule_name, $r->compile_status;
-    } catch {
+        my $rule_runner = Baseliner::RuleRunner->new;
+        my $compiler = $rule_runner->compile_rule( rule => $rule );
+        _log _loc "Rule %1 precompile status=%2", $rule->{rule_name} | $id_rule, $compiler->compile_status;
+    }
+    catch {
         my $err = shift;
         _log _loc "Error trapped while precompiling rule %1. No action taken.", $id_rule;
     };

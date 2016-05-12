@@ -7,17 +7,10 @@ use Class::Unload;
 use Digest::MD5 ();
 use Baseliner::Utils qw(:logging _now);
 
-has dsl => qw(is ro isa Str), default => '';
-
-has
-  suffix  => qw(is ro isa Str),
-  default => sub {
-    my $str = _now . rand() . $$;
-    return Digest::MD5::md5_hex($str);
-  };
-
+has dsl        => qw(is ro isa Str),        default => '';
+has id_rule    => qw(is ro isa Maybe[Str]), default => '';
+has version_id => qw(is ro isa Maybe[Str]), default => '';
 has is_compiled   => qw(is rw isa Bool default 0);
-has is_temp_rule  => qw(is rw isa Bool default 0);
 has all_warnings  => qw(is rw isa ArrayRef lazy 1), default => sub { [] };
 has warnings_mode => qw(is rw isa Str default no);                           # no,use,print
 has compile_time  => qw(is rw isa Any);
@@ -25,11 +18,34 @@ has compile_error => qw(is rw isa Any);
 has runtime_error => qw(is rw isa Any);
 has return_value  => qw(is rw isa Any);
 has compile_status => qw(is rw isa Str), default => 'none';
+has ts => qw(is rw isa Str), default => sub { mdb->ts };
 
-sub package {
+has
+  package => qw(is ro isa Str lazy 1),
+  default => sub {
     my $self = shift;
 
-    return 'Clarive::RULE_' . $self->suffix;
+    my $suffix = '';
+    if ( $self->id_rule ) {
+        $suffix .= $self->id_rule;
+
+        if ( $self->version_id ) {
+            $suffix .= '_' . $self->version_id;
+        }
+    }
+    else {
+        my $str = _now . rand() . $$;
+        $suffix .= Digest::MD5::md5_hex($str);
+    }
+
+    return 'Clarive::RULE_' . $suffix;
+  };
+
+sub is_temp_rule {
+    my $self = shift;
+
+    return 1 unless $self->id_rule;
+    return 0;
 }
 
 sub errors {
@@ -53,7 +69,7 @@ sub is_loaded {
 sub compile {
     my $self = shift;
 
-    my $ts = mdb->ts;
+    my $ts = $self->ts;
 
     my $dsl = $self->dsl;
 
@@ -98,18 +114,22 @@ sub compile {
                     $dsl
                 };
                 sub call {
+                    shift if ref \$_[0] || \$_[0] eq __PACKAGE__;
                     my (\$id_rule, \$stash)=\@_;
 
-                    my \$rule = Baseliner::CompiledRule->new(id_rule => "\$id_rule");
-                    \$rule->compile;
-                    return \$rule->run(stash => \$stash)->{ret};
+                    my \$rule_runner = Baseliner::RuleRunner->new;
+                    my \$ret = \$rule_runner->find_and_run_rule(id_rule => \$id_rule, stash => \$stash);
+
+                    return \$ret->{ret};
                 }
                 1;
             }
         };
         my $compile_err = $@;
+
         $self->compile_time( Time::HiRes::tv_interval($t0) );
         $self->compile_error($compile_err);
+
         if ( !$compile_err ) {
             $self->is_compiled(1);
 
