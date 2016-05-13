@@ -150,7 +150,7 @@ Segunda selección - Selecciona los destinatarios, estos pueden ser:
 
 En algunos casos se necesita información adicional sobre el ámbito del evento, por ejemplo, las condiciones que se tienen que cumplir en un evento de despliegue. 
 
-*Evento de tipo job*. Campo adicional: Proyecto - Especifica el proyecto para ser notificado. 
+*Evento de tipo job*. Campo adicional: Proyecto/Entorno/Estado - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, entorno o estado. 
 
 *Post*. Campos adicionales - Proyecto/Categoría/Estado. - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, categoría o estado.
 
