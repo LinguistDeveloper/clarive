@@ -1302,22 +1302,21 @@
                                 frame: true,
                                 items: [
                                     {
-                                        xtype: 'datefield',
+                                        xtype: 'xdatefield',
                                         anchor: '100%',
                                         fieldLabel: _('Date'),
                                         name:'date',
-                                        value: curr,
-                                        format: 'Y-m-d'
+                                        value: curr
                                     },
-                                  {
-                                    xtype: 'uxspinner', 
-                                    name: 'time', 					
-                                    fieldLabel: _('Time'),
-                                        anchor: '100%',
-                                    allowBlank: false,
-                                    value: curr.format('H:i'),
-                                    strategy: new Ext.ux.form.Spinner.TimeStrategy()				  
-                                  }		   
+                                    {
+                                      xtype: 'uxspinner',
+                                      name: 'time',
+                                      fieldLabel: _('Time'),
+                                          anchor: '100%',
+                                      allowBlank: false,
+                                      value: curr.format('H:i'),
+                                      strategy: new Ext.ux.form.Spinner.TimeStrategy()
+                                    }
                                 ]
                             });
 

@@ -25,7 +25,7 @@ params:
 	
     return [
 		{
-			xtype:'datefield',
+			xtype:'xdatefield',
 			fieldLabel: _(meta.name_field),
 			name: meta.id_field,
 			value: value, 

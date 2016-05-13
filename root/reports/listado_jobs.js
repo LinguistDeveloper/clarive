@@ -195,17 +195,17 @@
         { xtype:'panel', layout:'column', items:[
             {layout:'form', columnWidth: .02, items: checkbox_inicio},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('Fecha inicio Desde'), anchor:'100%', format:'Y-m-d', name: 'fecha_inicio_desde', value: data.fecha_inicio_desde }},
+                { xtype:'xdatefield', fieldLabel: _('Fecha inicio Desde'), anchor:'100%', name: 'fecha_inicio_desde', value: data.fecha_inicio_desde }},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('Fecha inicio Hasta'), anchor:'100%', format:'Y-m-d', name: 'fecha_inicio_hasta', value: data.fecha_inicio_hasta }}
+                { xtype:'xdatefield', fieldLabel: _('Fecha inicio Hasta'), anchor:'100%', name: 'fecha_inicio_hasta', value: data.fecha_inicio_hasta }}
             ]
         },
         { xtype:'panel', layout:'column', items:[
             {layout:'form', columnWidth: .02, items: checkbox_fin},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('Fecha fin Desde'), anchor:'100%', format:'Y-m-d', name: 'fecha_fin_desde', value: data.fecha_fin_desde }},
+                { xtype:'xdatefield', fieldLabel: _('Fecha fin Desde'), anchor:'100%', name: 'fecha_fin_desde', value: data.fecha_fin_desde }},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('Fecha fin Hasta'), anchor:'100%', format:'Y-m-d', name: 'fecha_fin_hasta', value: data.fecha_fin_hasta }}
+                { xtype:'xdatefield', fieldLabel: _('Fecha fin Hasta'), anchor:'100%', name: 'fecha_fin_hasta', value: data.fecha_fin_hasta }}
           ]
         },
         { xtype:'panel', layout:'column', items:[

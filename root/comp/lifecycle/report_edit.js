@@ -108,7 +108,7 @@
                 field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };
                 break;
             case 'date': 
-                field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
+                field={ xtype:'xdatefield', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
                 break;
             case 'status': 
                 field=new Baseliner.SuperBox({ 
