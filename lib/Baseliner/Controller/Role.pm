@@ -1,16 +1,18 @@
 package Baseliner::Controller::Role;
 use Moose;
+BEGIN {  extends 'Catalyst::Controller' }
+
+use Try::Tiny;
+use Encode;
+use 5.010;
+use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
 use Baseliner::Model::Permissions;
 use BaselinerX::Type::Model::Actions;
-use Try::Tiny;
-use Encode;
-use 5.010;
 
-BEGIN {  extends 'Catalyst::Controller' }
-use experimental 'autoderef';
+with 'Baseliner::Role::ControllerValidator';
 
 register 'action.admin.role' => { name=>'Admin Roles' };
 register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
@@ -265,55 +267,63 @@ sub action_tree : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
 
-    my $p    = $c->req->params;
+    return
+      unless my $p = $self->validate_params(
+        $c,
+        id          => { isa => 'Str', default => undef },
+        name        => { isa => 'Str' },
+        description => { isa => 'Str', default => undef },
+        mailbox     => { isa => 'Str', default => undef },
+        dashboards  => { isa => 'Str', default => [] },
+        role_actions => { isa => 'ArrayJSON', default => [], default_on_error => 1 },
+      );
+
     my $name = $p->{name};
     my $id   = $p->{id};
-    my $row;
-
-    my $role_actions = _decode_json( encode( 'UTF-8', $p->{role_actions} ) );
-    $row = {
+    my $row  = {
+        id          => $id,
         role        => $p->{name},
         description => $p->{description},
         mailbox     => $p->{mailbox},
         dashboards  => $p->{dashboards},
-        actions     => $role_actions
+        actions     => $p->{role_actions}
     };
-    if ( $id ge 0 ) {
-        $row->{id} = "$p->{id}";
+
+    if ( mdb->role->find_one( { role => $name, $id ? ( id => { '$ne' => $id } ) : () } ) ) {
+        $c->stash->{json} = {
+            success => \0,
+            msg     => _loc('Validation failed'),
+            errors  => { name => _loc('Role with this name already exists') }
+        };
+        $c->forward('View::JSON');
+        return;
     }
 
-    if ( $id eq '-1' ) {
-        my $role_exists = mdb->role->find_one( { role => $name } );
+    if ( $id && !mdb->role->find_one( { id => "$id" }, { _id => 1 } ) ) {
+        $c->stash->{json} = { success => \0, msg => _loc( 'Unknown role `%1`', $id ) };
+        $c->forward('View::JSON');
+        return;
+    }
 
-        if ($role_exists) {
-            $c->stash->{json} = { success => \0, msg => 'Error: role exists' };
-        }
-        else {
-            $row->{id} = '' . mdb->seq('role');
-            mdb->role->insert($row);
-            $c->stash->{json} = { success => \1, msg => "Role created" };
-        }
+    if ( !$id ) {
+        $id = $row->{id} = '' . mdb->seq('role');
+        mdb->role->insert($row);
 
+        $c->stash->{json} = { success => \1, id => $id, msg => _loc('Role created') };
     }
     else {
-        my $another_role_exists = mdb->role->find_one( { role => $name, id => { '$ne' => $id } } );
-        if ($another_role_exists) {
-            $c->stash->{json} = { success => \0, msg => "Error: another role exists with same name" };
-        }
-        else {
-            mdb->role->update( { id => "$row->{id}" }, $row );
-            $c->stash->{json} = { success => \1, msg => "Role modified" };
-        }
+        mdb->role->update( { id => "$id" }, $row );
+        $c->stash->{json} = { success => \1, id => $id, msg => _loc('Role modified') };
     }
-    cache->remove("roles:tree:$p->{id}:")    if $p->{id};
-    cache->remove(":role:actions:$p->{id}:") if $p->{id};
+
+    cache->remove("roles:tree:$id:")    if $id;
+    cache->remove(":role:actions:$id:") if $id;
     cache->remove(':role:ids:');
     cache->remove( { d => 'security' } );
     cache->remove( { d => "topic:meta" } );
+
     $c->forward('View::JSON');
 }
-
-
 
 sub delete : Local {
     my ( $self, $c ) = @_;

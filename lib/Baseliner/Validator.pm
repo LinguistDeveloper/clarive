@@ -44,14 +44,19 @@ sub validate {
 
             my $type_constraint = find_type_constraint($isa) or die "Can't find type $isa";
 
+            my $coerce_error_message;
             if ($type_constraint->coercion) {
-                $value = $type_constraint->coerce($value);
+                eval {
+                    $value = $type_constraint->coerce($value);
+                } or do {
+                    $coerce_error_message = 'Coercion failed';
+                };
             }
 
-            my $error_message = $type_constraint->validate($value);
+            my $error_message = $coerce_error_message ? $coerce_error_message : $type_constraint->validate($value);
 
             if (defined $error_message) {
-                if ($field->{default} && $field->{default_on_error}) {
+                if (exists $field->{default} && $field->{default_on_error}) {
                     $value = $field->{default};
                 }
                 else {

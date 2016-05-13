@@ -68,6 +68,21 @@ subtest 'ExistingCI' => sub {
     like _validate_type('ExistingCI', '123'), qr/Validation failed/;
 };
 
+subtest 'HashJSON' => sub {
+    like _validate_type('HashJSON', ''), qr/Validation failed/;
+    like _validate_type('HashJSON', '[]'), qr/Validation failed/;
+
+    ok !defined _validate_type('HashJSON', '{}');
+    ok !defined _validate_type('HashJSON', '{"foo":"bar"}');
+};
+
+subtest 'ArrayJSON' => sub {
+    like _validate_type('ArrayJSON', ''), qr/Validation failed/;
+
+    ok !defined _validate_type('ArrayJSON', '[]');
+    ok !defined _validate_type('ArrayJSON', '["1"]');
+};
+
 done_testing;
 
 sub _validate_type {
@@ -76,7 +91,7 @@ sub _validate_type {
     my $type_constraint = find_type_constraint($isa) or die "Can't find type $isa";
 
     if ($type_constraint->coercion) {
-        $value = $type_constraint->coerce($value);
+        $value = eval { $type_constraint->coerce($value) } or do { return 'Validation failed' };
     }
 
     return $type_constraint->validate($value);

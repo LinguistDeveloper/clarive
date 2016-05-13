@@ -9,6 +9,7 @@ use Clarive::ci;
 subtype BoolCheckbox => as 'Bool';
 subtype Date         => as 'Class::Date';
 subtype HashJSON     => as 'HashRef';
+subtype ArrayJSON    => as 'ArrayRef';
 subtype TS           => as 'Str';
 subtype DT           => as 'DateTime';
 subtype BL           => as 'Maybe[Str]';
@@ -66,8 +67,12 @@ coerce 'TS' =>
 coerce 'BoolCheckbox' => from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 coerce 'HashJSON' => from
-  'Str'        => via { Util->_from_json($_) },
+  'Str'        => via { Util->_decode_json($_) },
   from 'Undef' => via { +{} };
+
+coerce 'ArrayJSON' => from
+  'Str'        => via { Util->_decode_json($_) },
+  from 'Undef' => via { +[] };
 
 coerce 'ExistingCI' => from 'Str', via { eval { ci->new($_) } };
 
