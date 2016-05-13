@@ -1,14 +1,3 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: clarive\n"
-"PO-Revision-Date: 2016-01-26\n"
-"Last-Translator: clarive\n"
-"Language-Team: clarive\n"
-"Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8    \n"
-"Content-Transfer-Encoding: 8bit\n"
-
 #: lib/Baseliner/CI.pm
 msgid "Unexpected reference when loading CI: "
 msgstr ""
@@ -1389,6 +1378,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Role.pm root/comp/catalog/manual_deploy.js
 #: root/comp/role_grid.js root/fields/templates/config/users.js
+#: root/forms/workflow_if_role.js root/forms/workflow_transition_match.js
 #: root/site/model.js
 msgid "Roles"
 msgstr ""
@@ -1479,7 +1469,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
 #: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/email/generic_rule.html
+#: root/email/generic_rule.html root/site/model.js
 msgid "Rule"
 msgstr ""
 
@@ -1493,9 +1483,8 @@ msgid ""
 "in CIs. USE AT YOUR OWN RISK"
 msgstr ""
 
-#: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
-#: root/site/tabfu.js
-msgid "Rules"
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Rule Designer"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -1548,31 +1537,24 @@ msgid "Error saving rule: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "if var"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if user"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if role"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if project"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
 msgid "Control"
 msgstr ""
 
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Job Services"
+#: lib/Baseliner/Controller/Rule.pm root/comp/rule_new.js
+#: root/comp/topic/topic_admin.js
+msgid "Workflow"
 msgstr ""
 
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Generic Services"
+#: lib/Baseliner/Controller/Rule.pm root/ci/status.js
+msgid "Generic"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm lib/BaselinerX/Job.pm root/comp/job_new.js
+#: root/comp/lifecycle/deploy.js root/comp/log_grid.js
+#: root/comp/monitor_grid.js root/dashlets/lastjobs.html
+#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
+#: root/email/approval_job.html root/site/common.js
+msgid "Job"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -1581,6 +1563,11 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Fieldlets"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
+#: root/site/tabfu.js
+msgid "Rules"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -1716,6 +1703,17 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Error deleting rule from folder: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm lib/BaselinerX/Reports/listado_jobs.pm
+#: root/comp/dashboard_job.html root/dashlets/lastjobs.html
+#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
+#: root/site/common.js
+msgid "Start"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Error building diagram: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Scheduler.pm
@@ -2285,7 +2283,7 @@ msgstr ""
 msgid "Changed status"
 msgstr ""
 
-#: lib/Baseliner/Controller/Topic.pm
+#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/CI/topic.pm
 msgid "Required field %1 is empty"
 msgstr ""
 
@@ -2379,8 +2377,8 @@ msgstr ""
 msgid "Categories admin"
 msgstr ""
 
-#: lib/Baseliner/Controller/TopicAdmin.pm lib/Baseliner/Model/Topic.pm
-msgid "Category %1 not found"
+#: lib/Baseliner/Controller/TopicAdmin.pm
+msgid "Missing category id"
 msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
@@ -3410,7 +3408,7 @@ msgstr ""
 #: root/fields/system/js/field_category.js
 #: root/fields/templates/config/origin_issue_chart_pie.js
 #: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
-#: root/forms/topic_create.js
+#: root/forms/topic_create.js root/site/model.js
 msgid "Category"
 msgstr ""
 
@@ -3496,11 +3494,15 @@ msgid "Error closing Topic: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User does not have a workflow for category `%1`"
+msgid "Error running the topic workflow: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Category id `%1` not found"
+msgid "Category `%1` does not have any statuses available"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "User does not have a workflow for category `%1`"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3557,6 +3559,10 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category, topic not found: %1"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Category %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3663,6 +3669,10 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm root/comp/topic/topic_admin.js
 msgid "Changeset"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Category not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -4625,7 +4635,8 @@ msgstr ""
 #: root/dashlets/filtered_topics.html root/dashlets/lastjobs.html
 #: root/dashlets/list_jobs.js root/dashlets/my_topics.html
 #: root/dashlets/pending_jobs.html root/fields/templates/config/listbox.js
-#: root/reports/listado_jobs.js root/site/explorer.js root/site/model.js
+#: root/forms/workflow_if_project.js root/reports/listado_jobs.js
+#: root/site/explorer.js root/site/model.js
 msgid "Projects"
 msgstr ""
 
@@ -4997,6 +5008,14 @@ msgstr ""
 
 #: lib/BaselinerX/CI/ssh_agent.pm
 msgid "Timeout %1 (%2)"
+msgstr ""
+
+#: lib/BaselinerX/CI/topic.pm
+msgid "No mid, can't change status"
+msgstr ""
+
+#: lib/BaselinerX/CI/topic.pm
+msgid "Could not find status `%1`"
 msgstr ""
 
 #: lib/BaselinerX/CI/topic_file.pm
@@ -5603,13 +5622,6 @@ msgstr ""
 msgid "Job Logs"
 msgstr ""
 
-#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/lifecycle/deploy.js
-#: root/comp/log_grid.js root/comp/monitor_grid.js root/dashlets/lastjobs.html
-#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
-#: root/email/approval_job.html root/site/common.js
-msgid "Job"
-msgstr ""
-
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
 #: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Id"
@@ -5895,12 +5907,6 @@ msgstr ""
 #: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
 #: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
 #: root/dashlets/pending_jobs.html root/site/common.js
-msgid "Start"
-msgstr ""
-
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
-#: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
-#: root/dashlets/pending_jobs.html root/site/common.js
 msgid "End"
 msgstr ""
 
@@ -5987,7 +5993,6 @@ msgid "a task step section: MENU,WIZZARD,RUN..."
 msgstr ""
 
 #: lib/BaselinerX/Service/Catalog.pm root/comp/rule_new.js
-#: root/comp/topic/topic_admin.js
 msgid "Form"
 msgstr ""
 
@@ -7178,6 +7183,42 @@ msgstr ""
 msgid "Config Baseliner"
 msgstr ""
 
+#: lib/BaselinerX/Workflow.pm
+msgid "Change Topic Status"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Change Topic Status If Matches"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'statuses_to' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'statuses_from' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'roles' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'categories' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF From Status IS"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF Role IS"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF Project IS"
+msgstr ""
+
 #: lib/Clarive/Api.pm
 msgid "Could not find key %1 in registry"
 msgstr ""
@@ -7739,10 +7780,6 @@ msgstr ""
 msgid "View in tree"
 msgstr ""
 
-#: root/ci/status.js
-msgid "Generic"
-msgstr ""
-
 #: root/ci/status.js root/comp/topic/topic_admin.js
 msgid "Initial"
 msgstr ""
@@ -7778,7 +7815,7 @@ msgstr ""
 
 #: root/ci/topic.js root/comp/ci-editor.js root/comp/config/config_grid.mas
 #: root/comp/configlist/grid.mas root/comp/job_calendar_grid.js
-#: root/comp/message_grid.js
+#: root/comp/message_grid.js root/comp/rules.js
 msgid "View"
 msgstr ""
 
@@ -9037,6 +9074,7 @@ msgid "Urgent Only"
 msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js root/comp/job_calendar_slots.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "No Job"
 msgstr ""
 
@@ -9272,10 +9310,12 @@ msgid "Live search requires a minimum of %1 characters."
 msgstr ""
 
 #: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "Promote"
 msgstr ""
 
 #: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "Demote"
 msgstr ""
 
@@ -9930,9 +9970,6 @@ msgstr ""
 #: root/comp/monitor_grid.js
 msgid "Force Rollback Warning"
 msgstr ""
-"<b>Warning</b>: Use this option with caution, forcing rollback <b>can "
-"destabilizing the functioning of environments</b>. If you are not sure of "
-"dependencies, <b>not continue the rollback</b>"
 
 #: root/comp/monitor_grid.js
 msgid "Yes, I'm sure"
@@ -10630,8 +10667,38 @@ msgstr ""
 msgid "Delete Invalid Actions"
 msgstr ""
 
+#: root/comp/rule_flowchart.js root/site/lifecycle-graph.js
+#: root/site/timeline-graph.js
+msgid "Overview"
+msgstr ""
+
+#: root/comp/rule_flowchart.js
+msgid "Export as SVG"
+msgstr ""
+
+#: root/comp/rule_flowchart.js
+msgid "Zoom In"
+msgstr ""
+
+#: root/comp/rule_flowchart.js
+msgid "Zoom Out"
+msgstr ""
+
+#: root/comp/rule_flowchart.js root/comp/rules.js
+msgid "Flowchart"
+msgstr ""
+
 #: root/comp/rule_new.js
 msgid "Event Type"
+msgstr ""
+
+#: root/comp/rule_new.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_msg.html root/site/common.js root/site/dashboard.js
+msgid "Dashboard"
+msgstr ""
+
+#: root/comp/rule_new.js
+msgid "Independent"
 msgstr ""
 
 #: root/comp/rule_new.js root/forms/create_job.js
@@ -10644,15 +10711,6 @@ msgstr ""
 
 #: root/comp/rule_new.js
 msgid "Webservice"
-msgstr ""
-
-#: root/comp/rule_new.js
-msgid "Independent"
-msgstr ""
-
-#: root/comp/rule_new.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_msg.html root/site/common.js root/site/dashboard.js
-msgid "Dashboard"
 msgstr ""
 
 #: root/comp/rule_new.js
@@ -11070,10 +11128,6 @@ msgid "Start: %1"
 msgstr ""
 
 #: root/comp/rules.js
-msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
-msgstr ""
-
-#: root/comp/rules.js
 msgid "(%1/%2)"
 msgstr ""
 
@@ -11101,6 +11155,14 @@ msgstr ""
 msgid "NO RUN"
 msgstr ""
 
+#: root/comp/rules.js root/site/help.js root/site/model.js
+msgid "Back"
+msgstr ""
+
+#: root/comp/rules.js
+msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
+msgstr ""
+
 #: root/comp/rules.js root/site/main.js
 msgid "Close Tab"
 msgstr ""
@@ -11115,6 +11177,10 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Palette"
+msgstr ""
+
+#: root/comp/rules.js
+msgid "Collapse"
 msgstr ""
 
 #: root/comp/rules.js
@@ -11509,6 +11575,18 @@ msgid "Default Grid"
 msgstr ""
 
 #: root/comp/topic/topic_admin.js
+msgid "Form Rule"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js root/site/model.js
+msgid "Defined in the Workflow Tab"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
+msgid "Workflow Rule: %1"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
 msgid "A brief description of the category"
 msgstr ""
 
@@ -11536,11 +11614,8 @@ msgstr ""
 msgid "Are you sure you want to delete the categories selected?"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js
-msgid "Workflow"
-msgstr ""
-
-#: root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_admin.js root/forms/workflow_transition.js
+#: root/forms/workflow_transition_match.js
 msgid "To Status"
 msgstr ""
 
@@ -11548,7 +11623,8 @@ msgstr ""
 msgid "select status..."
 msgstr ""
 
-#: root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_admin.js root/forms/workflow_if_status.js
+#: root/forms/workflow_transition_match.js
 msgid "From Status"
 msgstr ""
 
@@ -13485,7 +13561,8 @@ msgstr ""
 msgid "Query type"
 msgstr ""
 
-#: root/forms/create_job.js
+#: root/forms/create_job.js root/forms/workflow_transition.js
+#: root/forms/workflow_transition_match.js
 msgid "Static"
 msgstr ""
 
@@ -13777,6 +13854,10 @@ msgstr ""
 
 #: root/forms/retry.js
 msgid "Pause (s)"
+msgstr ""
+
+#: root/forms/rule_list.js
+msgid "Rule To Be Invoked"
 msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
@@ -14169,6 +14250,31 @@ msgstr ""
 
 #: root/forms/windows_service.js
 msgid "stop"
+msgstr ""
+
+#: root/forms/workflow_if_project.js root/forms/workflow_if_role.js
+#: root/forms/workflow_if_status.js
+msgid "IF INPUT MATCH..."
+msgstr ""
+
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Deployment Type"
+msgstr ""
+
+#: root/forms/workflow_transition.js
+msgid "SET TOPIC STATUS TO..."
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "Select Topic Categories"
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "IF INPUT MATCH THESE..."
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "THEN SET TOPIC STATUS TO..."
 msgstr ""
 
 #: root/forms/write_config.js
@@ -14970,10 +15076,6 @@ msgstr ""
 msgid "Show Help Index"
 msgstr ""
 
-#: root/site/help.js root/site/model.js
-msgid "Back"
-msgstr ""
-
 #: root/site/help.js
 msgid "Forward"
 msgstr ""
@@ -15028,10 +15130,6 @@ msgstr ""
 
 #: root/site/lifecycle-graph.js
 msgid "Unselect All"
-msgstr ""
-
-#: root/site/lifecycle-graph.js root/site/timeline-graph.js
-msgid "Overview"
 msgstr ""
 
 #: root/site/login.js root/site/main.js root/site/tabfu.js
@@ -15129,11 +15227,23 @@ msgid "select users or roles"
 msgstr ""
 
 #: root/site/model.js
+msgid "Select Roles"
+msgstr ""
+
+#: root/site/model.js
 msgid "Select CI Role"
 msgstr ""
 
 #: root/site/model.js
 msgid "Select CI Classes"
+msgstr ""
+
+#: root/site/model.js
+msgid "Select Statuses"
+msgstr ""
+
+#: root/site/model.js
+msgid "Select Topic Category"
 msgstr ""
 
 #: root/site/model.js

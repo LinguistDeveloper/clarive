@@ -1118,12 +1118,12 @@ sub list_category : Local {
                     default_grid  => $category->{default_grid},
                     default_form  => $category->{default_form}
                       // $category->{default_field},    ## FIXME default_field is legacy
-                    dashboard => $category->{dashboard},
-                    statuses  => \@statuses,
-                    fields    => \@fieldlets,
-
-                    #priorities    => \@priorities
+                    default_workflow => $category->{default_workflow},
+                    dashboard        => $category->{dashboard},
+                    statuses         => \@statuses,
+                    fields           => \@fieldlets,
                 };
+
             }
         }
         $cnt = @rows;
@@ -2008,7 +2008,6 @@ sub kanban_status : Local {
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        # my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
         my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
 
         my %workflow;

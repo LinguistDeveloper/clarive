@@ -23,102 +23,430 @@ use Baseliner::Utils qw(_load _file _get_extension_file);
 
 use_ok 'Baseliner::Model::Topic';
 
-subtest 'next_status_for_user: returns next status for user' => sub {
+subtest 'non_root_workflow: topic returns static workflow' => sub{
     _setup();
+    _setup_user();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role;
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $base_params = _topic_setup();
 
-    my $workflow = [
-        {
-            id_role        => $id_role,
-            id_status_from => $status_new->id_status,
-            id_status_to   => $status_in_progress->id_status,
-            job_type       => undef
-        },
-        {
-            id_role        => $id_role,
-            id_status_from => $status_in_progress->id_status,
-            id_status_to   => $status_finished->id_status,
-            job_type       => 'promote'
-        }
-    ];
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $id_status_from = $base_params->{status_new};
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
+    my $id_category = $base_params->{category};
 
-    my $id_category = TestSetup->create_category(
-        statuses => [ $status_in_progress->id_status, $status_new->id_status, $status_finished->id_status ],
-        workflow => $workflow
-    );
+    # create a workflow
+    my $workflow =
+      [ { id_role => $id_role, id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => $workflow, default_workflow=>'' }, '$push' => { statuses => $id_status_to } } );
 
-    my $topic_mid = TestSetup->create_topic();
+    my $model = _build_model();
 
-    my @statuses = _build_model()->next_status_for_user(
-        username       => $user->username,
-        id_category    => $id_category,
-        id_status_from => $status_new->id_status,
-        topic_mid      => $topic_mid
-    );
+    my %roles = map { $_=>1 } Baseliner::Model::Permissions->new->user_roles_ids( $user->username );
+    my @workflow = $model->non_root_workflow( $user->username, categories=>[$id_category] );
 
-    is @statuses, 1;
-    is $statuses[0]->{id_status_from}, $status_new->id_status;
-    is $statuses[0]->{id_status_to},   $status_in_progress->id_status;
+    is_deeply( \@workflow, [ {
+        id_status_from => $id_status_from,
+        id_status_to   => $id_status_to,
+        id_role        => $id_role,
+        job_type       => undef,
+        id_category    => $id_category
+    } ]);
 };
 
-subtest 'next_status_for_user: returns job statuses if user has status change permission' => sub {
+subtest 'non_root_workflow: topic returns rule workflow' => sub{
     _setup();
-
-    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
-    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
-    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
-
-    my $id_category = TestSetup->create_category(
-        statuses => [ $status_in_progress->id_status, $status_new->id_status, $status_finished->id_status ],
-    );
+    _setup_user();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.logical_change_status',
-                bounds => [ { id_category => $id_category } ]
-            }
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $base_params = _topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $id_status_from = $base_params->{status_new};
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
+    my $id_category = $base_params->{category};
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Workflow',
+        rule_type => 'workflow',
+        rule_when => 'post-offline',
+        rule_tree => [
+            {   attributes => {
+                    leaf           => \1,
+                    nested         => 0,
+                    holds_children => \0,
+                    run_sub        => \1,
+                    palette        => \0,
+                    text           => "CODE",
+                    key            => "statement.perl.code",
+                    name           => 'workflow from code',
+                    ts             => "2015-06-30T13=>42=>57",
+                    who            => "root",
+                    expanded       => \0,
+                    data => {
+                        code=>sprintf(q{
+                            $stash->{workflow} = [
+                                {
+                                    id_role        => '%s',
+                                    id_status_from => '%s',
+                                    id_status_to   => '%s',
+                                    job_type       => undef
+                                }
+                            ];
+                        }, $id_role, $id_status_from, $id_status_to)
+                    },
+                },
+                children => [],
+            },
+        ],
+    );
+
+    mdb->category->update(
+        { id => "$base_params->{category}" },
+        {
+            '$set' => { workflow => [], default_workflow => $id_rule },
+            '$push' => { statuses => $id_status_to }
+        }
+    );
+
+    my $model = _build_model();
+
+    my %roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids( $user->username );
+    my @workflow = $model->non_root_workflow( $user->username, categories => [$id_category] );
+
+    cmp_deeply(
+        \@workflow,
+        [
+            superhashof( {
+                    id_status_from => $id_status_from,
+                    id_status_to   => $id_status_to,
+                    id_role        => $id_role,
+                    job_type       => undef,
+                    id_category    => $id_category
+                }
+            )
         ]
     );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+};
 
-    my $workflow = [
-        {
-            id_role        => $id_role,
-            id_status_from => $status_new->id_status,
-            id_status_to   => $status_in_progress->id_status,
-            job_type       => undef
-        },
-        {
-            id_role        => $id_role,
-            id_status_from => $status_in_progress->id_status,
-            id_status_to   => $status_finished->id_status,
-            job_type       => 'promote'
-        }
-    ];
+subtest 'next_status_for_user: return static workflow for root' => sub {
+    _setup();
+    _setup_user();
 
-    mdb->category->update( { id => $id_category }, { '$set' => { workflow => $workflow } } );
+    my $base_params = _topic_setup();
 
-    my $topic_mid = TestSetup->create_topic();
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $id_status_from = $base_params->{status_new};
+    my $id_status_to   = ci->status->new( name => 'Dev', type => 'I' )->save;
+    my $id_category    = "$base_params->{category}";
 
-    my @statuses = _build_model()->next_status_for_user(
-        username       => $user->username,
+    # create a workflow
+    my $workflow =
+      [ { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
+    mdb->category->update( { id => $id_category },
+        { '$set' => { workflow => $workflow, default_workflow => '' }, '$push' => { statuses => $id_status_to } } );
+
+    my @to_status = Baseliner::Model::Topic->next_status_for_user(
+        username       => 'root',
         id_category    => $id_category,
-        id_status_from => $status_in_progress->id_status,
+        id_status_from => $id_status_from,
         topic_mid      => $topic_mid
     );
 
-    is @statuses, 1;
-    is $statuses[0]->{id_status_from}, $status_in_progress->id_status;
-    is $statuses[0]->{id_status_to},   $status_finished->id_status;
+    cmp_deeply \@to_status, [
+        {
+            id_category      => $id_category,
+            id_status_from   => $id_status_from,
+            id_status_to     => $id_status_to,
+            id_status        => $id_status_to,
+            seq              => ignore(),
+            seq_from         => ignore(),
+            seq_to           => ignore(),
+            status_bl        => '*',
+            status_name      => 'Dev',
+            status_name_from => 'New',
+        }
+      ];
+};
+
+subtest 'next_status_for_user: return static workflow for user' => sub {
+    _setup();
+
+    my $id_status_from = TestUtils->create_ci( 'status', name => 'New' )->id_status;
+    my $id_status_to   = TestUtils->create_ci( 'status', name => 'Dev', type  => 'G' )->id_status;
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category =
+      TestSetup->create_category( id_rule => $id_rule, id_status => [ $id_status_from, $id_status_to ] );
+
+    my $id_role = TestSetup->create_role;
+    my $project = TestUtils->create_ci_project;
+    my $user    = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+
+    my $topic_mid =
+      TestSetup->create_topic( id_status => $id_status_from, id_category => $id_category, username => $user->username );
+
+    my $workflow = [
+        { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef },
+        { id_role => $id_role, id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef }
+    ];
+    mdb->category->update( { id => $id_category },
+        { '$set' => { workflow => $workflow, default_workflow => '' }, '$push' => { statuses => $id_status_to } } );
+
+    my @to_status = Baseliner::Model::Topic->next_status_for_user(
+        username       => 'developer',
+        id_category    => $id_category,
+        id_status_from => $id_status_from,
+        topic_mid      => $topic_mid
+    );
+
+    cmp_deeply \@to_status, [
+        {
+            id_category        => $id_category,
+            id_status_from     => $id_status_from,
+            id_status_to       => $id_status_to,
+            id_status          => $id_status_to,
+            job_type           => undef,
+            seq                => ignore(),
+            status_type        => 'G',
+            status_bl_from     => '*',
+            status_description => undef,
+            status_bl          => '*',
+            status_name        => 'Dev',
+            statuses_name_from   => 'New',
+        }
+      ];
+};
+
+subtest 'next_status_for_user: rule workflow' => sub {
+    _setup();
+    _setup_user();
+
+    my $base_params = _topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $id_status_from = $base_params->{status_new};
+    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Workflow',
+        rule_type => 'workflow',
+        rule_when => 'post-offline',
+        rule_tree => [
+            {   attributes => {
+                    leaf           => \1,
+                    nested         => 0,
+                    holds_children => \0,
+                    run_sub        => \1,
+                    palette        => \0,
+                    text           => "CODE",
+                    key            => "statement.perl.code",
+                    name           => 'workflow from code',
+                    ts             => "2015-06-30T13=>42=>57",
+                    who            => "root",
+                    expanded       => \0,
+                    data => {
+                        code=>sprintf(q{
+                            $stash->{workflow} = [
+                                {
+                                    id_role        => '1',
+                                    id_status_from => '%s',
+                                    id_status_to   => '%s',
+                                    job_type       => undef
+                                }
+                            ];
+                        }, $id_status_from, $id_status_to)
+                    },
+                },
+                children => [],
+            },
+        ],
+    );
+
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set'=>{ workflow=>[], default_workflow=>$id_rule }, '$push' => { statuses => $id_status_to } } );
+
+    my @statuses = Baseliner::Model::Topic->next_status_for_user(
+        username       => 'root',
+        id_category    => $base_params->{category},
+        id_status_from => $id_status_from,
+        topic_mid      => $topic_mid
+    );
+
+    my $transition = shift @statuses;
+    is $transition->{id_status_from}, $id_status_from;
+    is $transition->{id_status_to},   $id_status_to;
+};
+
+subtest 'category_workflow: returns static workflow' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $bl          = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+    my $id_role     = TestSetup->create_role();
+    my $status1     = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_category = "$base_params->{category}";
+    my $workflow    = [ {
+            id_role        => $id_role,
+            id_status_from => $base_params->{status},
+            id_status_to   => $status1->mid,
+            job_type       => 'promote'
+        }
+    ];
+    mdb->category->update( { id => $id_category },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my $model = _build_model();
+
+    my @ret = $model->category_workflow($id_category);
+
+    cmp_deeply $ret[0],
+      {
+        id_category      => $id_category,
+        id_role          => $id_role,
+        id_status_from   => ignore(),
+        role             => 'Role',
+        role_job_type    => 'promote',
+        status_color     => ignore(),
+        status_from      => 'New',
+        status_time      => ignore(),
+        status_type      => 'I',
+        statuses_to      => ['Deploy [promote]'],
+        statuses_to_type => ['D [promote]'],
+      };
+};
+
+subtest 'category_workflow: returns rule workflow' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $bl          = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+    my $id_role     = TestSetup->create_role();
+    my $status1     = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_category    = "$base_params->{category}";
+    my $id_status_from = "$base_params->{status}";
+    my $id_status_to   = $status1->id_status;
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Workflow',
+        rule_type => 'workflow',
+        rule_when => 'post-offline',
+        rule_tree => [
+            {   attributes => {
+                    leaf           => \1,
+                    nested         => 0,
+                    holds_children => \0,
+                    run_sub        => \1,
+                    palette        => \0,
+                    text           => "CODE",
+                    key            => "statement.perl.code",
+                    name           => 'workflow from code',
+                    ts             => "2015-06-30T13=>42=>57",
+                    who            => "root",
+                    expanded       => \0,
+                    data => {
+                        code=>sprintf(q{
+                            $stash->{workflow} = [
+                                {
+                                    id_role        => '%s',
+                                    id_status_from => '%s',
+                                    id_status_to   => '%s',
+                                    job_type       => 'promote',
+                                }
+                            ];
+                        }, $id_role, $id_status_from, $id_status_to)
+                    },
+                },
+                children => [],
+            },
+        ],
+    );
+
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => [], default_workflow => $id_rule }, '$push' => { statuses => $id_status_to } } );
+
+    my $model = _build_model();
+
+    my @ret = $model->category_workflow($id_category, 'root');
+
+    cmp_deeply $ret[0],
+      {
+        id_category      => $id_category,
+        id_role          => $id_role,
+        id_status_from   => ignore(),
+        role             => 'Role',
+        role_job_type    => 'promote',
+        status_color     => ignore(),
+        status_from      => 'New',
+        status_time      => ignore(),
+        status_type      => 'I',
+        statuses_to      => ['Deploy [promote]'],
+        statuses_to_type => ['D [promote]'],
+      };
+};
+
+subtest 'topic_projects: returns project' => sub {
+    _setup();
+
+    my $topic = _build_model();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        id_field       => 'project',
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+
+                    },
+                    "key"      => "fieldlet.system.projects",
+                    name_field => 'Project',
+                }
+            }
+        ],
+    );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_rule,
+        id_status => $status->mid
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => 'Topic'
+    );
+
+    is_deeply( [ $topic->topic_projects( $topic_mid ) ], [ $project->mid ] );
 };
 
 subtest 'get_short_name: returns same name when no category exists' => sub {

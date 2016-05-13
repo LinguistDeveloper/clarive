@@ -15,6 +15,16 @@ use Baseliner::Sugar;
 
 with 'Baseliner::Role::ControllerValidator';
 
+my %RULE_ICONS = (
+    dashboard  => Util->icon_path('dashboard.svg'),
+    form       => Util->icon_path('form.svg'),
+    event      => Util->icon_path('event.svg'),
+    report     => Util->icon_path('report.svg'),
+    pipeline   => Util->icon_path('job.svg'),
+    workflow   => Util->icon_path('workflow.svg'),
+    webservice => Util->icon_path('webservice.svg'),
+);
+
 register 'action.admin.rules' => {
     name   => _locl('Admin Rules'),
     bounds => [
@@ -38,9 +48,9 @@ register 'config.rules' => {
 };
 
 register 'menu.admin.rule' => {
-    label    => _locl('Rules'),
-    title    => _locl('Rules'),
-    actions   => [{action => 'action.admin.rules', bounds => '*'}],
+    label    => 'Rule Designer',
+    title    => _locl('Rule Designer'),
+    actions  => [ { action => 'action.admin.rules', bounds => '*' } ],
     url_comp => '/comp/rules.js',
     icon     => '/static/images/icons/rule.svg',
     tab_icon => '/static/images/icons/rule.svg'
@@ -66,17 +76,27 @@ sub begin : Private {
 }
 
 sub list : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
+
     my $qry = $p->{query};
     my %query;
+
     $query{rule_active} = mdb->true;
-    $query{rule_type} = $p->{rule_type} if ($p->{rule_type});
-    $query{rule_name} = qr/$qry/i if length $qry && !$p->{valuesqry};
-    my @rows = mdb->rule->find({ %query })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
-    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
+    $query{rule_type}   = mdb->in( $p->{rule_type} ) if ( $p->{rule_type} );
+    $query{rule_name}   = qr/$qry/i if length $qry && !$p->{valuesqry};
+
+    my @rows = mdb->rule->find( {%query} )->sort( { rule_name => 1 } )->fields( { rule_tree => 0 } )->all;
+
+    @rows = map {
+        $_->{icon} = $RULE_ICONS{ $_->{rule_type} } // Util->icon_path('rule.svg');
+        $_;
+    } @rows;
+
+    $c->stash->{json} = { data => \@rows, totalCount => scalar(@rows) };
     $c->forward('View::JSON');
 }
+
 
 sub actions : Local {
     my ($self,$c)=@_;
@@ -283,15 +303,20 @@ sub tree : Local {
 }
 
 sub grid : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    $p->{destination} = 'grid';
 
+    $p->{destination} = 'grid';
     $p->{username} = $c->username;
 
     my @rules = Baseliner::Model::Rules->new->get_rules_info($p);
 
-    $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
+    @rules = map {
+        $_->{icon} = $RULE_ICONS{ $_->{rule_type} } // Util->icon_path('rule.svg');
+        $_;
+    } @rules;
+
+    $c->stash->{json} = { totalCount => scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
 
@@ -311,223 +336,171 @@ sub save : Local {
 }
 
 sub palette : Local {
-    my ($self,$c)=@_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
     my $query = $p->{query};
-    $query and $query = qr/$query/i;
 
     my @tree;
     my $cnt = 1;
 
     my $if_icon = '/static/images/icons/if.svg';
-    my %types = (
-        if     => { icon=>'/static/images/icons/if.svg' },
-        let    => { icon=>'/static/images/icons/if.svg' },
-        for    => { icon=>'/static/images/icons/if.svg' }
+    my %types   = (
+        if  => { icon => $if_icon },
+        let => { icon => $if_icon },
+        for => { icon => $if_icon },
     );
-    #my @ifs = (
-    #    { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
-    #    { text => _loc('if user'), statement=>'if_user', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-    #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-    #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-    #);
-    my @control =
-        sort { ($a->{text}//'') cmp ($b->{text}//'') }
-        grep { !$query || join(',',grep{defined}%$_) =~ $query }
-        map {
-            my $key = $_;
-            my $s = Baseliner::Core::Registry->get( $key );
-            next unless $s->{show_in_palette};
-            my $n= { palette => 1 };
-            $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
-            $n->{leaf} = \1;
-            $n->{key} = $key;
-            $n->{text} = $s->{text} // $key;
-            $n->{run_sub} = $s->{run_sub} // \1;
-            $n->{on_drop} = !!$s->{on_drop};
-            $n->{on_drop_js} = $s->{on_drop_js};
-            $n->{nested} = $s->{nested} // 0;
-            $n->{icon} = $s->icon // ( !$s->{type}
-                ? '/static/images/icons/help.svg'
-                : do{
-                    my $type = $types{ $s->{type} };
-                    "/static/images/icons/$s->{type}.svg";
-                });
-            $n;
-        }
-        Baseliner::Core::Registry->starts_with( 'statement.' );
-        push @tree, {
-            icon     => '/static/images/icons/controller.svg',
-            text     => _loc('Control'),
-            draggable => \0,
-            expanded => \1,
-            isTarget => \0,
-            leaf     => \0,
-            children => \@control,
+
+    my @statements = Baseliner::Core::Registry->starts_with('statement.');
+    my @dashlets   = Baseliner::Core::Registry->starts_with('dashlet.');
+    my @services   = Baseliner::Core::Registry->starts_with('service.');
+    my @fieldlets  = grep { $_ !~ /required/ } Baseliner::Core::Registry->starts_with('fieldlet.');
+    my @rules      = mdb->rule->find->fields( { id => 1, rule_name => 1 } )->all;
+
+    my @ops;
+    for my $key ( @statements, @dashlets, @services, @fieldlets ) {
+
+        my $reg = Baseliner::Core::Registry->get($key);
+        next unless $reg->show_in_palette;
+
+        ( my $name = $key ) =~ s{\.}{-}g;
+
+        my $op = {
+            key            => $key,
+            text           => $reg->{name} // $reg->{text} // $key,
+            isTarget       => \( $reg->{holds_children} ),
+            holds_children => \( $reg->{holds_children} ),
+            leaf           => \1,
+            icon           => $reg->{icon},
+            html           => $reg->{html},
+            palette        => \1,
+            palette_area   => ( $reg->{job_service} ? 'job' : $reg->palette_area ),
+            cls            => "ui-comp-palette-$name",
         };
 
-    my @services = sort Baseliner::Core::Registry->starts_with('service');
-    push @tree, {
-        id=>$cnt++,
-        leaf=>\0,
-        text=>_loc('Job Services'),
-        icon => '/static/images/icons/job.svg',
-        draggable => \0,
-        expanded => \1,
-        children=> [
-          sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
-          map {
-            my $n = $_;
-            my $service_key = $n->{key};
-            +{
-                isTarget => \0,
-                leaf=>\1,
-                key => $service_key,
-                icon => $n->{icon},
-                palette => \1,
-                text=>$n->{name} // $service_key,
-            }
+        if ( $key =~ /^statement\./ ) {
+            $op->{run_sub}    = $reg->{run_sub} // \1;
+            $op->{on_drop}    = !!$reg->{on_drop};
+            $op->{on_drop_js} = $reg->{on_drop_js};
+            $op->{nested}     = $reg->{nested} // 0;
+            $op->{icon}       = $reg->icon // (
+                !$reg->{type}
+                ? '/static/images/icons/help.svg'
+                : do {
+                    my $type = $types{ $reg->{type} };
+                    "/static/images/icons/$reg->{type}.svg";
+                  }
+            );
         }
-        grep {
-            $_->{job_service} && $_->{show_in_palette}
-        }
-        map {
-            Baseliner::Core::Registry->get( $_ );
-        }
-        @services ]
-    };
+        push @ops, $op;
+    }
 
-    push @tree, {
-        id=>$cnt++,
-        leaf=>\0,
-        text=>_loc('Generic Services'),
-        icon => '/static/images/icons/wrench.svg',
-        draggable => \0,
-        expanded => length $query ? \1 : \0,
-        children=> [
-          sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
-          map {
-            my $n = $_;
-            my $service_key = $n->{key};
-            +{
-                isTarget => \0,
-                leaf=>\1,
-                key => $service_key,
-                icon => $n->{icon},
-                palette => \1,
-                text=>$n->{name} // $service_key,
-            }
-        }
-        grep {
-            ! $_->{job_service} && $_->{show_in_palette}
-        }
-        map {
-            Baseliner::Core::Registry->get( $_ );
-        }
-        @services ]
-    };
+    # add rules from database directly as nodes
+    push @ops, map {
+        +{
+            key            => 'statement.call',
+            icon           => '/static/images/icons/rule.svg',
+            text           => $_->{rule_name},
+            isTarget       => \0,
+            holds_children => \0,
+            leaf           => \1,
+            palette_area   => 'rule',
+            id_rule        => $_->{id},
+            data           => { id_rule => $_->{id} },
+          }
+    } @rules;
 
-    ############ Dashlets
-    my @dashlets = sort Baseliner::Core::Registry->starts_with('dashlet');
-    push @tree, {
-        id=>$cnt++,
-        leaf=>\0,
-        text=>_loc('Dashlets'),
-        icon => '/static/images/icons/dashboard.svg',
-        draggable => \0,
-        expanded => \1,
-        children=> [
-          sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
-          map {
-            my $n = $_;
-            +{
-                isTarget  => \0,
-                leaf      => \1,
-                key       => $n->{key},
-                icon      => $n->{icon},
-                html      => $n->{html},
-                palette   => \1,
-                text      => $n->{name} // $n->{key},
-            }
-        }
-        grep { $_->{show_in_palette} }
-        map {
-            Baseliner::Core::Registry->get( $_ );
-        }
-        @dashlets ]
-    };
+    # sorting and querying
+    @ops = sort { uc $a->{text} cmp uc $b->{text} } (
+        $query
+        ? Util->query_grep( query => $query, all_fields => 1, rows => \@ops )
+        : @ops
+    );
 
+    # now build the tree groups
+    push @tree,
+      {
+        text      => _loc('Control'),
+        icon      => '/static/images/icons/controller.svg',
+        draggable => \0,
+        expanded  => \1,
+        isTarget  => \0,
+        leaf      => \0,
+        children  => [ grep { $_->{palette_area} eq 'control' } @ops ],
+      };
 
-    my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all;
-    push @tree, {
-        id=>$cnt++,
-        leaf=>\0,
-        text=>_loc('Rules'),
-        icon => '/static/images/icons/rule.svg',
+    push @tree,
+      {
+        text      => _loc('Workflow'),
+        leaf      => \0,
+        icon      => '/static/images/icons/workflow.svg',
         draggable => \0,
-        expanded => \1,
-        children=> [
-          sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', values %$_) =~ $query }
-          map {
-            +{
-                isTarget => \0,
-                leaf=>\1,
-                key => 'statement.include',
-                icon => '/static/images/icons/rule.svg',
-                palette => \1,
-                id_rule => $_->{id},
-                data=>{ id_rule => $_->{id} },
-                text=>$_->{rule_name},
-            }
-        } @rules ]
-    };
-    my @fieldlets = grep { $_ !~ /required/ } sort Baseliner::Core::Registry->starts_with('fieldlet.');
-    my $default_icon = '/static/images/icons/detail.svg';
-    push @tree, {
-        id=>$cnt++,
-        leaf=>\0,
-        text=>_loc('Fieldlets'),
-        icon => $default_icon,
+        expanded  => \1,
+        children  => [ grep { $_->{palette_area} eq 'workflow' } @ops ],
+      };
+
+    push @tree,
+      {
+        text      => _loc('Generic'),
+        leaf      => \0,
+        icon      => '/static/images/icons/wrench.svg',
         draggable => \0,
-        expanded => \1,
-        children=> [
-            grep { !$query || join(',',grep{defined}%$_) =~ $query }
+        expanded  => length $query ? \1 : \0,
+        children => [ grep { $_->{palette_area} eq 'generic' } @ops ],
+      };
+
+    push @tree,
+      {
+        text      => _loc('Job'),
+        leaf      => \0,
+        icon      => '/static/images/icons/job.svg',
+        draggable => \0,
+        expanded  => \1,
+        children  => [ grep { $_->{palette_area} eq 'job' } @ops ],
+      };
+
+    push @tree,
+      {
+        text      => _loc('Dashlets'),
+        leaf      => \0,
+        icon      => '/static/images/icons/dashboard.svg',
+        draggable => \0,
+        expanded  => \1,
+        children  => [ grep { $_->{palette_area} eq 'dashlet' } @ops ],
+      };
+
+    my $fieldlet_icon = '/static/images/icons/detail.svg';
+    push @tree, {
+        text      => _loc('Fieldlets'),
+        id        => $cnt++,
+        leaf      => \0,
+        icon      => $fieldlet_icon,
+        draggable => \0,
+        expanded  => \1,
+        children  => [
             map {
                 my $n = $_;
-                my $service_key = $n->{key};
-
-                my $name = $service_key;
-                $name =~ s{\.}{-}g;
-
-                +{
-                    isTarget => $n->{holds_children}? \1: \0,
-                    leaf=> \1,
-                    holds_children=>$n->{holds_children}? \1: \0,
-                    key => $service_key,
-                    active => \1,
-                    icon => $n->{icon} // $default_icon,
-                    palette => \1,
-                    text => _loc($n->{name}) // $service_key,
-                    cls => "ui-comp-palette-$name",
-                    id => "ui-comp-palette-$name",
-                }
-            }
-            grep { $_->{show_in_palette} }
-            map {
-                Baseliner::Core::Registry->get( $_ );
-            } @fieldlets
+                $n->{icon} //= $fieldlet_icon;
+                $n->{active} = \1;
+                $n
+              }
+              grep { $_->{palette_area} eq 'fieldlet' } @ops
         ]
     };
+
+    push @tree,
+      {
+        text      => _loc('Rules'),
+        leaf      => \0,
+        icon      => '/static/images/icons/rule.svg',
+        draggable => \0,
+        expanded  => \1,
+        children  => [ grep { $_->{palette_area} eq 'rule' } @ops ],
+      };
 
     $c->stash->{json} = \@tree;
     $c->forward("View::JSON");
 }
-
 sub stmts_save : Local {
     my ($self,$c)=@_;
 
@@ -1176,6 +1149,87 @@ sub delete_rule_from_folder : Local {
         { success=>\0, msg=>_loc('Error deleting rule from folder: %1', $err) };
     };
     $c->forward( 'View::JSON' );
+}
+
+sub flowchart : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+
+    my $id_rule = $p->{id_rule};
+    my $json    = $p->{json};
+
+    $c->stash->{json} = try {
+        my @nodes = ( { "key" => -1, "category" => "Start", "loc" => "15 0", "text" => _loc("Start") }, );
+
+        my @links;
+
+        my @tree =
+          length $json
+          ? Baseliner::Model::Rules->new->tree_format( _array( Util->_decode_json($json) ) )
+          : Baseliner::Model::Rules->new->build_tree( $id_rule, undef );
+
+        my $dig;
+        $dig = sub {
+            my ( $parent, @ops ) = @_;
+
+            for ( my $i = 0 ; $i < @ops ; $i++ ) {
+                my $op = $ops[$i];
+
+                #my $key = $op->{text};
+                my $key = $op->{id_op} // $op->{key} . Util->_md5();
+                my @children = _array( $op->{children} );
+                my ( $from, $to );
+
+                my $reg  = Baseliner::Core::Registry->get( $op->{key} );
+                my $node = {
+                    key          => $key,
+                    text         => $op->{text},
+                    color        => '#f0f0f0',
+                    has_children => !!scalar(@children),
+                    is_last_node => ( $i == $#ops )
+                };
+                if ( $reg->{type} eq 'if' ) {
+                    $node->{category} = 'if';
+                }
+                else {
+                    $node->{category} = '';
+                }
+
+                push @nodes, $node;
+
+                if ( @nodes > 1 && $parent ) {
+                    ( $from, $to ) =
+                      ( $parent->{has_children} && !$parent->{is_last_node} && $i == 0 )
+                      ? qw(R T)
+                      : qw(B T);
+                    push @links,
+                      {
+                        from     => $parent->{key},
+                        to       => $key,
+                        fromPort => $from,
+                        toPort   => $to
+                      };
+                }
+
+                $parent = $node;
+
+                if (@children) {
+                    $dig->( $node, @children );
+                }
+            }
+        };
+
+        $dig->( $nodes[0], @tree );
+
+        { success => \1, nodes => \@nodes, links => \@links };
+    }
+    catch {
+        my $err = shift;
+        my $msg = _loc( 'Error building diagram: %1', $err );
+        _error($msg);
+        { success => \0, msg => $msg };
+    };
+    $c->forward('View::JSON');
 }
 
 no Moose;

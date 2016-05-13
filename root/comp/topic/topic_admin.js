@@ -333,6 +333,7 @@
     var add_edit_category = function(rec) {
         var win;
         var title = 'Create category';
+        var workflowTab;
 
         // Combo Providers
         //   TODO read from provider.topic.*
@@ -373,25 +374,56 @@
             fieldLabel: _('Default Grid'),
             value: rec ? rec.data.default_grid : ''
         });
+
         // default form for Topic
-        var store_form = new Baseliner.JsonStore({
-            url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id',
-            fields:['id','rule_name'],
-            baseParams: Ext.apply({ rule_type: 'form' }),
-        });
-        var combo_form =new Baseliner.SuperBox({
+        var combo_form = new Cla.RuleBox({
             name: 'default_form',
             cls: 'ui-comp-topic-admin-window-form',
             hiddenName: 'default_form',
-            fieldLabel: _("Form"),
-            valueField: 'id',
-            displayField: 'rule_name',
+            fieldLabel: _("Form Rule"),
+            baseParams: { rule_type: ['form'] },
             value: rec ? rec.data.default_form : '',
             singleMode: true,
-            store: store_form,
-            forceSelection: true,
+            forceSelection: true
         });
-        store_form.load();
+
+        // workflow for Topic
+        var workflowCombo = new Cla.RuleBox({
+            name: 'default_workflow',
+            hiddenName: 'default_workflow',
+            fieldLabel: _("Workflow"),
+            emptyText: _('Defined in the Workflow Tab'),
+            baseParams: {
+                rule_type: ['workflow']
+            },
+            value: rec ? rec.data.default_workflow : '',
+            forceSelection: true
+        });
+        workflowCombo.store.on('load', function() {
+            syncWorkflow();
+        });
+        var syncWorkflow = function() {
+            var opt = workflowCombo.getValue();
+            if (opt == '') {
+                if (workflowTab) workflowTab.enable();
+                workflowTab.setTitle(_('Workflow'));
+            } else {
+                if (workflowTab) {
+                    var workflow_rule = workflowCombo.items.itemAt(0);
+                    workflowTab.disable();
+                    workflowTab.setTitle(_('Workflow Rule: %1', workflow_rule.display));
+                }
+            }
+        }
+        workflowCombo.on('change', function() {
+            syncWorkflow()
+        });
+        workflowCombo.on('clear', function() {
+            syncWorkflow()
+        });
+        workflowCombo.on('removeitem', function() {
+            syncWorkflow()
+        });
 
         // Topic dashboards
         var dashboard = new Baseliner.DashboardBox({ fieldLabel: _('Dashboard'), name:'dashboard', singleMode: true,
@@ -489,7 +521,7 @@
                         anchor: '98%'
                     },
                     layout: 'form',
-                    items: [combo_grid, combo_form, dashboard, combo_providers]
+                    items: [combo_grid, combo_form, workflowCombo, dashboard, combo_providers]
                 }, {
                     xtype: 'checkboxgroup',
                     name: 'readonly',
@@ -586,8 +618,9 @@
             title = String.format( '<span id="boot"><span class="label" style="background-color: {0}">{1}</span></span>',
                                                                 rec.data.color, rec.data.name );
         }
+        workflowTab = add_workflow(rec);
         var tabpanel = new Ext.TabPanel({
-            activeTab: 0, items: [ form_category, add_workflow(rec) ]
+            activeTab: 0, items: [ form_category, workflowTab ]
         });
         win = new Baseliner.Window({
             cls: 'ui-comp-topic-admin-window',
@@ -1169,29 +1202,28 @@
     };
 
     var btn_tools_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.svg',
+        icon: '/static/images/icons/wrench.svg',
         cls: 'x-btn-text-icon',
         disabled: false,
-        menu: [
-            { text: _('Import'),
-                icon: '/static/images/icons/import.svg',
-                handler: function(){
-                    category_import();
-                 }
-            },
-            { text: _('Export'), 
-                icon: '/static/images/icons/downloads_favicon.svg',
-                handler: function(){ 
-                    var sm = grid_categories.getSelectionModel();
-                    if (sm.hasSelection()) {
-                        var sel = sm.getSelected();
-                        category_export(sel);
-                    } else {
-                        Baseliner.message( _('ERROR'), _('Select at least one row'));
-                    };
-                 }
+        menu: [{
+            text: _('Import'),
+            icon: '/static/images/icons/import.svg',
+            handler: function() {
+                category_import();
             }
-        ]
+        }, {
+            text: _('Export'),
+            icon: '/static/images/icons/export.svg',
+            handler: function() {
+                var sm = grid_categories.getSelectionModel();
+                if (sm.hasSelection()) {
+                    var sel = sm.getSelected();
+                    category_export(sel);
+                } else {
+                    Baseliner.message(_('ERROR'), _('Select at least one row'));
+                };
+            }
+        }]
     });
 
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({

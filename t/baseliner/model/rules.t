@@ -24,8 +24,9 @@ use Baseliner::Utils qw(_retry);
 use_ok 'Baseliner::Model::Rules';
 
 subtest 'does compile when config flag is conditional and rule is on' => sub {
-    _setup( rule_compile_mode => 'precompile' );
+    _setup();
 
+    my $id_rule = _create_rule(rule_compile_mode => 'precompile');
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'depends' );
@@ -46,7 +47,9 @@ subtest 'does not compile when config flag is conditional and rule is off' => su
 };
 
 subtest 'does compile when config flag is on and rule is off' => sub {
-    _setup( rule_compile_mode => 'none' );
+    _setup();
+
+    my $id_rule = _create_rule();
 
     my $rules = _build_model();
 
@@ -59,6 +62,7 @@ subtest 'does compile when config flag is on and rule is off' => sub {
 subtest 'does compile when config flag is on and rule is on' => sub {
     _setup( rule_compile_mode => 'precompile' );
 
+    my $id_rule = _create_rule(rule_compile_mode => 'precompile');
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'always' );
@@ -1263,6 +1267,8 @@ subtest 'get_rules_info: returns nothing when user has no permissions' => sub {
 subtest 'get_rules_info: returns all rules when permissions without bounds' => sub {
     _setup();
 
+    TestSetup->create_rule();
+
     my $model = _build_model();
 
     my $project = TestUtils->create_ci('project');
@@ -1277,18 +1283,19 @@ subtest 'get_rules_info: returns all rules when permissions without bounds' => s
 subtest 'get_rules_info: returns only allowed rules' => sub {
     _setup();
 
-    TestSetup->create_rule();
+    my $id_rule = TestSetup->create_rule();
+    my $id_rule2 = TestSetup->create_rule();
 
     my $model = _build_model();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role(actions => [{action => 'action.admin.rules', bounds => [{id_rule => '1'}]}]);
+    my $id_role = TestSetup->create_role(actions => [{action => 'action.admin.rules', bounds => [{id_rule => $id_rule}]}]);
     my $user = TestSetup->create_user(project => $project, id_role => $id_role);
 
     my (@rows) = $model->get_rules_info({username => $user->username});
 
     is @rows, 1;
-    is $rows[0]->{id}, '1';
+    is $rows[0]->{id}, $id_rule;
 };
 
 done_testing;
@@ -1313,6 +1320,10 @@ sub _setup {
     );
 
     TestUtils->cleanup_cis;
+}
+
+sub _create_rule {
+    my (%params) = @_;
 
     my $code = $params{code} || q%return 'hi there';%;
     my $ts   = $params{ts}   || '' . Class::Date->now();

@@ -4,6 +4,8 @@ use Baseliner::Utils;
 use Baseliner::Model::Activity;
 use Baseliner::Model::Events;
 use Baseliner::Model::Permissions;
+use Baseliner::Model::Topic;
+
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
@@ -51,6 +53,7 @@ after load_data => sub {
         $topic_data = model->Topic->get_data( undef, $mid, with_meta => 1 );
     }
     return {} unless $topic_data;
+
     delete $topic_data->{mid};
 
     # XXX avoid strange errors in parse_vars_raw during job run: can't call method value on unblessed ref MongoDB/OID.pm
@@ -138,7 +141,7 @@ sub timeline {
 
 sub create_topic {
     my ($class, $p) = @_;
-    my ($msg, $topic_mid, $status, $title) = model->Topic->update({ action=>'add', %$p });
+    my ($msg, $topic_mid, $status, $title) = Baseliner::Model::Topic->update({ action=>'add', %$p });
     { msg=>$msg, mid=>$topic_mid, status=>$status, title=>$title };
 }
 
@@ -245,7 +248,7 @@ sub comments {
     my ($self, $p )=@_;
     # comments
     my $is_root = Baseliner::Model::Permissions->is_root($$p{username});
-    my $comments = model->Topic->list_posts( mid=>$self->mid );
+    my $comments = Baseliner::Model::Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
         #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format
         $$com{topic_mid} = $self->mid;
@@ -267,7 +270,7 @@ sub is_in_active_job {
 
 sub get_data {
     my ($self, $meta)=@_;
-    model->Topic->get_data( $meta, $self->mid, with_meta=>1 );
+    Baseliner::Model::Topic->get_data( $meta, $self->mid, with_meta=>1 );
 }
 
 sub get_doc {
@@ -283,7 +286,7 @@ sub get_doc {
 sub get_meta {
     my ($self)=@_;
     my $mid = $self->mid if ref $self;
-    model->Topic->get_meta( $mid );
+    Baseliner::Model::Topic->get_meta( $mid );
 }
 
 sub get_category {
@@ -294,6 +297,47 @@ sub get_category {
 sub velocities {
    my ($self,$p)=@_;
    return { data=>[] };
+}
+
+method change_status( :$username, :$to_status ) {
+    my @errors;
+    my $mid = $self->mid // _fail _loc("No mid, can't change status");
+
+    my ( $is_valid, $field_name ) = Baseliner::Model::Topic->check_fields_required( mid => $mid, username => $username );
+
+    if ($is_valid) {
+        Baseliner::Model::Topic->change_status(
+            change        => 1,
+            username      => $username,
+            id_status     => $to_status,
+            id_old_status => $self->id_category_status,
+            mid           => $mid,
+        );
+    }
+    else {
+        _fail _loc( 'Required field %1 is empty', $field_name );
+    }
+}
+
+method change_status_by_name( :$username, :$to_status ) {
+
+    my $status = ci->status->search_ci( name => $to_status );
+
+    _fail _loc( "Could not find status `%1`", $to_status ) unless $status;
+
+    $self->change_status(
+        username  => $username,
+        to_status => $status->id_status
+    );
+}
+
+method next_status_for_user( :$username ) {
+    Baseliner::Model::Topic->next_status_for_user(
+        id_category    => $self->id_category,
+        id_status_from => $self->id_category_status,
+        username       => $username,
+        topic_mid      => $self->mid,
+    );
 }
 
 method get_field_data( :$username, :$field ) {

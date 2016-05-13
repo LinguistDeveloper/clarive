@@ -519,6 +519,17 @@ sub run_query_builder {
     return @mids_in;
 }
 
+sub topic_projects {
+    my $self = shift;
+    my ($mid) = @_;
+
+    return mdb->master_rel->find_values(
+        to_mid => {
+            from_mid => $mid,
+            rel_type => 'topic_project'
+        }
+    );
+}
 
 # this is the main topic grid
 # MONGO:
@@ -1036,41 +1047,42 @@ sub append_category {
 
 # used by field_include_into.html fieldlet
 sub field_parent_topics {
-    my ($self,$meta,$data)=@_;
+    my ( $self, $meta, $data ) = @_;
     my $is_release = 0;
     my @parent_topics;
 
-    my $category = $data->{category};
-    my $release = $category->{is_release};
+    my $category        = $data->{category};
+    my $release         = $category->{is_release};
     my $include_options = $meta->{include_options} || 'all_parents';
-    my $id_category = $category->{id};
-    my @all_fieldlets = $self->get_fieldlet_nodes($id_category);
+    my $id_category     = $category->{id};
+    my @all_fieldlets   = $self->get_fieldlet_nodes($id_category);
     my @fieldlets =
-        map {
-            $_->{id_field}
-        }
-        grep {
-            my $params = $_->{params};
-            !defined $params->{origin} || $params->{origin} ne "system"
-        } @all_fieldlets;
+      map { $_->{id_field} }
+      grep {
+        my $params = $_->{params};
+        !defined $params->{origin} || $params->{origin} ne "system"
+      } @all_fieldlets;
 
     push @fieldlets, map {
-            my $params = $_->{params};
-            $params->{parent_field};
-        }
-        grep {
-            my $params = $_->{params};
-            $params->{parent_field};
-        } @all_fieldlets;
+        my $params = $_->{params};
+        $params->{parent_field};
+      }
+      grep {
+        my $params = $_->{params};
+        $params->{parent_field};
+      } @all_fieldlets;
 
-    my $includes = $include_options eq 'none' ? { '$and' => [{ is_release => {'$ne'=>'1'} }, { is_changeset => {'$ne'=>'1'} }] }
-                     : $include_options eq 'no_changesets' ? { is_changeset => {'$ne'=>'1'} }
-                     : $include_options eq 'no_releases' ? { is_release => {'$ne'=>'1'} }
-                     : $include_options eq 'changesets_and_releases' ? { '$or' => [{ is_changeset => '1' }, { is_release => '1' }] }
-                     : $include_options eq 'all_parents' ? {} : {};
+    my $includes =
+      $include_options eq 'none'
+      ? { '$and' => [ { is_release => { '$ne' => '1' } }, { is_changeset => { '$ne' => '1' } } ] }
+      : $include_options eq 'no_changesets' ? { is_changeset => { '$ne' => '1' } }
+      : $include_options eq 'no_releases'   ? { is_release   => { '$ne' => '1' } }
+      : $include_options eq 'changesets_and_releases' ? { '$or' => [ { is_changeset => '1' }, { is_release => '1' } ] }
+      : $include_options eq 'all_parents'             ? {}
+      :                                                 {};
 
     if ($release) {
-        $is_release     = 1;
+        $is_release    = 1;
         @parent_topics = mdb->joins(
             master_rel => {
                 rel_type => 'topic_topic',
@@ -1080,90 +1092,144 @@ sub field_parent_topics {
             to_mid => mid => topic => $includes
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
         @parent_topics = $self->append_category(@parent_topics);
-    } else {
+    }
+    else {
         @parent_topics = mdb->joins(
             master_rel => {
                 rel_type => 'topic_topic',
                 to_mid   => $data->{topic_mid},
-                '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ],
-                #'$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
+                '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
             from_mid => mid => topic => $includes
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
         @parent_topics = $self->append_category(@parent_topics);
     }
-    #- categories: {}
-    #  color: '#ff9900'
-    #  mid: '69'
-    #  name: 'Requerimiento #69'
-    #  progress: '0'
-    #  title: Requerimientos WebApp
-
-    return ($is_release, @parent_topics );
+    return ( $is_release, @parent_topics );
 }
 
 sub next_status_for_user {
-    my ($self, %p ) = @_;
-    my $username = $p{username};
-    my $topic_mid = $p{topic_mid};
-    my $id_category = ''.$p{id_category};
-    my $where = { id =>$id_category };
-    $where->{'workflow.id_status_from'} = mdb->in($p{id_status_from}) if defined $p{id_status_from};
-    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
+    my ( $self, %p ) = @_;
+
+    my $username    = $p{username};
+    my $topic_mid   = $p{topic_mid};
+    my $id_category = '' . $p{id_category};
+
     my @to_status;
 
-    if ( !$is_root ) {
-        my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic_mid  );
-        $where->{'workflow.id_role'} = mdb->in(@user_roles);
-        my %my_roles = map { $_=>1 } @user_roles;
-        my $_tos;
-        # check if custom workflow for topic
-        if( length $p{id_status_from} ) {
-            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ mid=>1, _workflow=>1, category_status=>1 });
-            if( $doc->{_workflow} && ( $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
-                $where->{"workflow.id_status_to"} = mdb->in($_tos);
-            }
+    my $cat_doc = mdb->category->find_one( { id => $id_category }, { workflow => 0, _id => 0, fieldlets => 0 } );
+    my $is_root = Baseliner::Model::Permissions->new->is_root($username);
+
+    if ( !$cat_doc ) {
+
+        _fail _loc 'Category id `%1` not found', $id_category;
+
+    }
+    elsif ($is_root) {
+        my @user_wf = $self->user_workflow($username);
+
+        @to_status =
+          sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
+          grep {
+            $_->{id_category} eq $p{id_category}
+              && (
+                (
+                       defined $_->{id_status_from}
+                    && defined $p{id_status_from}
+                    && $_->{id_status_from} eq $p{id_status_from}
+                )
+                || ( !defined $_->{id_status_from} && !defined $p{id_status_from} )
+              )
+              && (
+                (
+                    defined $_->{id_status_to} && defined $p{id_status_from} && $_->{id_status_to} ne $p{id_status_from}
+                )
+                || ( !( defined $_->{id_status_to} && defined $p{id_status_from} ) )
+              )
+          } @user_wf;
+
+    }
+    else {
+        my @user_roles =
+          Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic_mid );
+        my $user_roles = +{ map { $_ => 1 } @user_roles };
+
+        my $id_status_from = $p{id_status_from};
+        my $statuses       = +{ ci->status->statuses };
+
+        if ( my $id_rule = $cat_doc->{default_workflow} ) {
+
+            my @workflow = $self->_run_workflow_rule(
+                id_rule        => $id_rule,
+                category       => $cat_doc,
+                id_category    => $id_category,
+                id_status_from => $id_status_from,
+                username       => $username,
+                user_roles     => $user_roles,
+                topic_mid      => $topic_mid,
+                statuses       => $statuses,
+            );
+
+            my %uniq;
+
+            @to_status =
+              sort { $$a{seq} <=> $$b{seq} }
+              grep { $uniq{ $$_{id_status} } // ( $uniq{ $$_{id_status} } = 0 ) + 1 }    # make unique by status_to
+              map {
+                my $sfrom = $statuses->{ $$_{id_status_from} };
+                my $sto   = $statuses->{ $$_{id_status_to} };
+                +{
+                    id_status_from     => $$_{id_status_from},
+                    id_status_to       => $$_{id_status_to},
+                    statuses_name_from => $$sfrom{name},
+                    status_bl_from     => $$sfrom{bl},
+                    id_status          => $$_{id_status_to},
+                    id_role            => $$_{id_role},
+                    status_name        => $$sto{name},
+                    status_type        => $$sto{type},
+                    status_bl          => $$sto{bl},
+                    status_description => $$sto{description},
+                    id_category        => $$_{id_category},
+                    job_type           => $$_{job_type},
+                    seq                => ( $$sto{seq} // 0 )
+                };
+              } @workflow;
         }
+        else {
+            my ( $to_state_override, @workflow ) =
+              $self->_get_static_workflow( $username, $topic_mid, $id_category, \@user_roles, $cat_doc,
+                $id_status_from );
 
-        my %statuses = ci->status->statuses;
-
-        if( !( my $cat = mdb->category->find_one($where) ) ) {
-            my $catname = mdb->category->find_one({ id=>$id_category });
-            $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
-                    : _fail(_loc('Category id `%1` not found', $id_category));
-        } else {
             my %uniq;
             my @all_to_status =
-                sort { $$a{seq} <=> $$b{seq} }
-                grep { $uniq{$$_{id_status}} // ($uniq{$$_{id_status}}=0)+1 }  # make unique by status_to
-                map {
-                    my $sfrom = $statuses{ $$_{id_status_from} };
-                    my $sto   = $statuses{ $$_{id_status_to} };
-                    +{
-                        id_status_from     => $$_{id_status_from},
-                        id_status_to       => $$_{id_status_to},
-                        statuses_name_from => $$sfrom{name},
-                        status_bl_from     => $$sfrom{bl},
-                        id_status          => $$_{id_status_to},
-                        status_name        => $$sto{name},
-                        status_type        => $$sto{type},
-                        status_bl          => $$sto{bl},
-                        status_description => $$sto{description},
-                        id_category        => $$_{id_category},
-                        job_type           => $$_{job_type},
-                        seq                => ($$sto{seq} // 0)
-                    };
-                }
-                grep { $my_roles{$$_{id_role}} && $$_{id_status_from} eq $p{id_status_from}}
-                grep { defined } _array( $cat->{workflow} );
+              sort { $$a{seq} <=> $$b{seq} }
+              grep { $uniq{ $$_{id_status} } // ( $uniq{ $$_{id_status} } = 0 ) + 1 }    # make unique by status_to
+              map {
+                my $sfrom = $statuses->{ $$_{id_status_from} };
+                my $sto   = $statuses->{ $$_{id_status_to} };
+                +{
+                    id_status_from     => $$_{id_status_from},
+                    id_status_to       => $$_{id_status_to},
+                    statuses_name_from => $$sfrom{name},
+                    status_bl_from     => $$sfrom{bl},
+                    id_status          => $$_{id_status_to},
+                    status_name        => $$sto{name},
+                    status_type        => $$sto{type},
+                    status_bl          => $$sto{bl},
+                    status_description => $$sto{description},
+                    id_category        => $id_category,
+                    job_type           => $$_{job_type},
+                    seq                => ( $$sto{seq} // 0 )
+                };
+              }
+              grep { $user_roles->{ $$_{id_role} } && $$_{id_status_from} eq $id_status_from } @workflow;
 
-                if($_tos){
-                    my %tos = map { $_ => $_ } _array $_tos;
-                    @all_to_status = grep { $tos{$_->{id_status_to}}  } @all_to_status;
-                }
+            if ($to_state_override) {
+                my %tos = map { $_ => $_ } _array $to_state_override;
+                @all_to_status = grep { $tos{ $_->{id_status_to} } } @all_to_status;
+            }
 
-            my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
-            my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status;
+            my @no_deployable_status = grep { $_->{status_type} ne 'D' } @all_to_status;
+            my @deployable_status    = grep { $_->{status_type} eq 'D' } @all_to_status;
 
             push @to_status, @no_deployable_status;
 
@@ -1185,16 +1251,75 @@ sub next_status_for_user {
                 }
             }
         }
-    } else {
-        my @user_wf = $self->user_workflow( $username );
-        @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
-            $_->{id_category} eq $p{id_category}
-                && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
-                && (( defined $_->{id_status_to}   && defined $p{id_status_from} && $_->{id_status_to}   ne $p{id_status_from} ) || ( !( defined $_->{id_status_to} && defined $p{id_status_from})))
-        } @user_wf;
     }
 
     return @to_status;
+}
+
+sub _run_workflow_rule {
+    my $self = shift;
+    my (%args) = @_;
+
+    my $id_rule   = delete $args{id_rule};
+    my $topic_mid = $args{topic_mid};
+    my $category  = $args{category};
+
+    my $stash = { %args, rule_context => 'workflow', };
+
+    $stash->{statuses} //= +{ ci->status->statuses };
+
+    if ( defined $topic_mid ) {
+        $stash->{projects} //= [ $self->topic_projects($topic_mid) ];
+    }
+
+    try {
+        my $rule_runner = Baseliner::RuleRunner->new;
+        $rule_runner->find_and_run_rule(
+            id_rule => $id_rule,
+            stash   => $stash
+        );
+    }
+    catch {
+        my $err = shift;
+        _fail( _loc( 'Error running the topic workflow: %1', $err ) )
+          if $err;
+    };
+    my %cat_status = map { $_ => 1 } _array( $category->{statuses} );
+
+    _fail _loc( 'Category `%1` does not have any statuses available', $category->{name} ) unless %cat_status;
+
+    my @workflow = grep { exists $cat_status{ $$_{id_status_from} } && exists $cat_status{ $$_{id_status_to} } }
+      _array( $stash->{workflow} );
+
+    return @workflow;
+}
+
+sub _get_static_workflow {
+    my $self = shift;
+    my ( $username, $topic_mid, $id_category, $user_roles, $cat_doc, $id_status_from ) = @_;
+
+    my $to_state_override;
+    my @workflow;
+
+    my $where = { id => $id_category };
+    $where->{'workflow.id_status_from'} = mdb->in($id_status_from) if defined $id_status_from;
+    $where->{'workflow.id_role'} = mdb->in(@$user_roles);
+    if ( length $id_status_from ) {
+        my $doc = mdb->topic->find_one( { mid => "$topic_mid" }, { mid => 1, _workflow => 1, category_status => 1 } );
+        if ( $doc->{_workflow} && ( $to_state_override = $doc->{_workflow}{$id_status_from} ) ) {
+            $where->{"workflow.id_status_to"} = mdb->in($to_state_override);
+        }
+    }
+
+    if ( !( my $cat = mdb->category->find_one( $where, { workflow => 1 } ) ) ) {
+
+        _warn( _loc( 'User does not have a workflow for category `%1`', $cat_doc->{name} ) );
+    }
+    else {
+        @workflow = grep { defined } _array( $cat->{workflow} );
+    }
+
+    return ( $to_state_override, @workflow );
 }
 
 sub get_system_fields {
@@ -2009,7 +2134,7 @@ sub save_data {
                         );
                     } else {
                         # report event
-                        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$topic_mid, rel_type=>'topic_project' });
+                        my @projects = $self->topic_projects( $topic_mid );
                         my $notify = {
                             category        => $topic->id_category,
                             category_status => $topic->id_category_status,
@@ -3182,44 +3307,88 @@ Workflow for a user. Gets the user role, then search for workflows.
 sub user_workflow {
     my ( $self, $username, %p ) = @_;
 
+    my $categories = $p{categories};
+
     return Baseliner::Model::Permissions->new->is_root( $username )
-        ? $self->root_workflow(%p)
-        : $self->non_root_workflow($username, %p);
+        ? $self->root_workflow( $categories )
+        : $self->non_root_workflow( $username, $categories );
 }
 
-=head2 non_root_workflow
-
-Workflow for ordinary users. Usually
-called by user_workflow.
-
-=cut
 sub non_root_workflow {
-    my ( $self, $username, %p ) = @_;
-    my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username );
-    my %user_roles_map = map { $_ => 1 } @user_roles;
-    my $where = { 'workflow.id_role'=>mdb->in(@user_roles) };
-    $where->{id} = mdb->in($p{categories}) if exists $p{categories};
-    return _array( map {
-        # add category id to workflow array
-        my $id_cat = $$_{id};
-        [ map { $$_{id_category}=$id_cat; $_ } grep { $user_roles_map{$$_{id_role}} } _array($$_{workflow}) ]
-    } mdb->category->find($where)->all );
+    my $self = shift;
+    my ( $username, $categories ) = @_;
+
+    my @workflow;
+
+    # TODO needs to extract all possible transitions from rule
+    #
+    my %user_roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids($username);
+
+    my $where_id = ref $categories ? { id => mdb->in(@$categories) } : {};
+    my @all_categories = mdb->category->find($where_id)->fields( { id => 1, default_workflow => 1 } )->all;
+
+    my @rule_categories   = grep { length $_->{default_workflow} } @all_categories;
+    my @static_categories = grep { !length $_->{default_workflow} } @all_categories;
+
+    for my $cat (@rule_categories) {
+        my $id_rule     = $cat->{default_workflow};
+        my $id_category = $cat->{id};
+
+        my $cat_doc = mdb->category->find_one( { id => $id_category }, { workflow => 0, _id => 0, fieldlets => 0 } )
+          || _fail _loc('Category not found');
+
+        my @wkf = $self->_run_workflow_rule(
+            id_rule     => $id_rule,
+            id_category => $id_category,
+            category    => $cat_doc,
+            username    => $username,
+            user_roles  => \%user_roles,
+        );
+
+        for my $trans (@wkf) {
+            push @workflow,
+              {
+                id_category    => $id_category,
+                id_role        => $trans->{id_role},
+                id_status_from => $trans->{id_status_from},
+                id_status_to   => $trans->{id_status_to},
+                job_type       => $trans->{job_type},
+              };
+        }
+    }
+
+    if (@static_categories) {
+        my $where = {
+            'workflow.id_role' => mdb->in( keys %user_roles ),
+            '$or'              => [ { default_workflow => '' }, { default_workflow => { '$exists' => 0 } } ]
+        };
+        $where->{id} = mdb->in( map { $$_{id} } @static_categories );
+
+        push @workflow, _array(
+            map {
+                my $id_cat = $$_{id};
+                [
+                    map { $$_{id_category} = $id_cat; $_ }
+                    grep { $user_roles{ $$_{id_role} } } _array( $$_{workflow} )
+                ]
+            } mdb->category->find($where)->all
+        );
+    }
+
+    return @workflow;
 }
 
-=head2 root_workflow
-
-Maximum workflow possible (for root user),
-all categ statuses to all categ statuses.
-
-=cut
 sub root_workflow {
-    my ($self,%p) = @_;
-    my %statuses = ci->status->statuses;
-    my $where = {};
-    $where->{id} = mdb->in($p{categories}) if exists $p{categories};
+    my $self = shift;
+    my ($categories) = @_;
 
-    my @categories = mdb->category->find($where)->fields({ statuses=>1, id=>1 })->all;
-    my @wf;
+    my %statuses = ci->status->statuses;
+
+    my $where = {};
+    $where->{id} = mdb->in($categories) if ref $categories;
+
+    my @categories = mdb->category->find($where)->fields( { statuses => 1, id => 1 } )->all;
+    my @workflow;
 
     for my $cat (@categories) {
         my @stats = map { $statuses{$_} } _array( $cat->{statuses} );
@@ -3227,7 +3396,8 @@ sub root_workflow {
             my $stat_from = $_;
             map {
                 my $stat_to = $_;
-                push @wf, {
+                push @workflow,
+                  {
                     id_status_from   => $stat_from->{id_status},
                     seq_from         => $stat_from->{seq},
                     status_name_from => $stat_from->{name},
@@ -3238,12 +3408,107 @@ sub root_workflow {
                     status_bl        => $stat_to->{bl},
                     id_category      => $cat->{id},
                     seq              => $stat_to->{seq},
-                }
+                  }
             } @stats;
         } @stats;
     }
 
-    @wf;
+    return @workflow;
+}
+
+sub category_workflow {
+    my $self = shift;
+    my ( $id_category, $username ) = @_;
+
+    my @rows;
+
+    my %roles = mdb->role->find_hash_one( id => {}, { role => 1, _id => 0 } );
+    my %statuses = ci->status->statuses;
+    my %stat_to;
+
+    my $cat_doc = mdb->category->find_one( { id => "$id_category" } )
+      // _fail( _loc( "Category %1 not found", $id_category ) );
+
+    my @workflow;
+
+    if ( my $id_rule = $cat_doc->{default_workflow} ) {
+        my %user_roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids($username);
+
+        @workflow = $self->new->_run_workflow_rule(
+            id_rule      => $id_rule,
+            id_category  => $id_category,
+            category     => $cat_doc,
+            username     => $username,
+            user_roles   => \%user_roles,
+            all_workflow => 1,
+        );
+    }
+    else {
+        @workflow = _array( $cat_doc->{workflow} );
+    }
+
+    for (@workflow) {
+        push @{ $stat_to{ $$_{id_role} }{ $$_{id_status_from} } }, $_;
+    }
+
+    my %wkf_unique;
+    for (@workflow) {
+        $wkf_unique{ join( ',', @{$_}{qw(id_role id_status_from)} ) } = $_;
+    }
+
+    my @wkf =
+      sort {
+        sprintf( '%09d%09d%09d',
+            $$a{id_role},
+            $statuses{ $$a{id_status_from} }{_seq},
+            $statuses{ $$a{id_status_from} }{seq} ) <=> sprintf( '%09d%09d%09d',
+            $$b{id_role},
+            $statuses{ $$b{id_status_from} }{_seq},
+            $statuses{ $$b{id_status_from} }{seq} )
+      } values %wkf_unique;
+
+    for my $rec (@wkf) {
+        my @sts = sort { $statuses{ $$a{id_status_from} } <=> $statuses{ $$b{id_status_from} } }
+          _array( $stat_to{ $$rec{id_role} }{ $$rec{id_status_from} } );
+
+        my @statuses_to;
+        my @statuses_to_type;
+        for my $status_to (@sts) {
+            my $name = $statuses{ $status_to->{id_status_to} }{name};
+            my $type = $statuses{ $status_to->{id_status_to} }{type};
+
+            if ( $name && $type ) {
+                my $job_type = $status_to->{job_type};
+                if ( $job_type && $job_type ne 'none' ) {
+                    $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
+                    $type = sprintf '%s [%s]', $type, lc( _loc($job_type) );
+                }
+                push @statuses_to,      $name;
+                push @statuses_to_type, $type;
+            }
+        }
+
+        my $role   = $roles{ $$rec{id_role} };
+        my $status = $statuses{ $$rec{id_status_from} };
+        if ( @statuses_to && $role && $status->{name} ) {
+            push @rows, {
+                role             => $$role{role},
+                role_job_type    => $$rec{job_type},
+                status_from      => $$status{name},
+                status_type      => $$status{type},
+                status_time      => $$status{ts},
+                status_color     => $$status{color},
+                id_category      => $id_category,
+                id_role          => $$rec{id_role},
+                id_status_from   => $$rec{id_status_from},
+                statuses_to      => \@statuses_to,
+                statuses_to_type => \@statuses_to_type
+
+            };
+        }
+    }
+
+    return @rows;
 }
 
 sub list_posts {

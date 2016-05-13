@@ -2,18 +2,21 @@ package BaselinerX::Type::Dashlet;
 use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
+
 with 'Baseliner::Role::Registrable';
 with 'Baseliner::Role::Palette';
 
 register_class 'dashlet' => __PACKAGE__;
 sub service_noun { 'dashlet' }
 
-has name  => (is=>'rw', isa=>'Str', default=>'');
-has form  => (is=>'rw', isa=>'Str', default=>'');
-has html  => (is=>'rw', isa=>'Str', default=>'');
-has js_file  => (is=>'rw', isa=>'Str', default=>'');
-has no_boot  => ( is => 'rw', isa => 'Bool', default => 0);
-has id => (is=>'rw', isa=>'Str', default=>'');
+has name    => ( is => 'rw', isa => 'Str',  default => '' );
+has form    => ( is => 'rw', isa => 'Str',  default => '' );
+has html    => ( is => 'rw', isa => 'Str',  default => '' );
+has js_file => ( is => 'rw', isa => 'Str',  default => '' );
+has no_boot => ( is => 'rw', isa => 'Bool', default => 0 );
+has id      => ( is => 'rw', isa => 'Str',  default => '' );
+
+has palette_area => qw(is rw default dashlet);
 
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
     return sub{

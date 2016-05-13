@@ -8,6 +8,7 @@ use BaselinerX::Type::Service::Container::Job::Logger;
 use Try::Tiny;
 
 with 'Baseliner::Role::Registrable';
+with 'Baseliner::Role::Palette';
 
 register_class 'service' => __PACKAGE__;
 sub service_noun { 'service' };

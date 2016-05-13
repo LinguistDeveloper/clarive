@@ -1403,6 +1403,7 @@ msgstr "Administrar roles"
 
 #: lib/Baseliner/Controller/Role.pm root/comp/catalog/manual_deploy.js
 #: root/comp/role_grid.js root/fields/templates/config/users.js
+#: root/forms/workflow_if_role.js root/forms/workflow_transition_match.js
 #: root/site/model.js
 msgid "Roles"
 msgstr "Roles"
@@ -1493,7 +1494,7 @@ msgstr "Administrar reglas"
 
 #: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
 #: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/email/generic_rule.html
+#: root/email/generic_rule.html root/site/model.js
 msgid "Rule"
 msgstr "Regla"
 
@@ -1509,10 +1510,9 @@ msgstr ""
 "CUIDADO: Si se activa, los nombres de variable se cambiarán en las reglas "
 "cuando se renombren en CIs. Usa según tu propio riesgo"
 
-#: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
-#: root/site/tabfu.js
-msgid "Rules"
-msgstr "Reglas"
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Rule Designer"
+msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "SOAP WS ready to return"
@@ -1564,32 +1564,25 @@ msgid "Error saving rule: %1"
 msgstr "Error guardando la regla: %1"
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "if var"
-msgstr "si variable"
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if user"
-msgstr "si usuario"
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if role"
-msgstr "si rol"
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "if project"
-msgstr "si proyecto"
-
-#: lib/Baseliner/Controller/Rule.pm
 msgid "Control"
 msgstr "Control"
 
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Job Services"
-msgstr "Servicios de Job"
+#: lib/Baseliner/Controller/Rule.pm root/comp/rule_new.js
+#: root/comp/topic/topic_admin.js
+msgid "Workflow"
+msgstr "Flujo de Trabajo"
 
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Generic Services"
-msgstr "Servicios Genéricos"
+#: lib/Baseliner/Controller/Rule.pm root/ci/status.js
+msgid "Generic"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm lib/BaselinerX/Job.pm root/comp/job_new.js
+#: root/comp/lifecycle/deploy.js root/comp/log_grid.js
+#: root/comp/monitor_grid.js root/dashlets/lastjobs.html
+#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
+#: root/email/approval_job.html root/site/common.js
+msgid "Job"
+msgstr "Pase"
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Dashlets"
@@ -1598,6 +1591,11 @@ msgstr "Dashlets"
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Fieldlets"
 msgstr "Campos"
+
+#: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
+#: root/site/tabfu.js
+msgid "Rules"
+msgstr "Reglas"
 
 #: lib/Baseliner/Controller/Rule.pm
 #: lib/Baseliner/Schema/Migra/MongoMigration.pm
@@ -1734,6 +1732,17 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Error deleting rule from folder: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm lib/BaselinerX/Reports/listado_jobs.pm
+#: root/comp/dashboard_job.html root/dashlets/lastjobs.html
+#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
+#: root/site/common.js
+msgid "Start"
+msgstr "Iniciar"
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Error building diagram: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Scheduler.pm
@@ -2310,7 +2319,7 @@ msgstr "Error cargando el kanban: %1"
 msgid "Changed status"
 msgstr "Estado cambiado"
 
-#: lib/Baseliner/Controller/Topic.pm
+#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/CI/topic.pm
 msgid "Required field %1 is empty"
 msgstr "El campo %1 es obligatorio"
 
@@ -2408,9 +2417,9 @@ msgstr "Error borrando estados: %1"
 msgid "Categories admin"
 msgstr "Categorías de administrador"
 
-#: lib/Baseliner/Controller/TopicAdmin.pm lib/Baseliner/Model/Topic.pm
-msgid "Category %1 not found"
-msgstr "Categoría %1 no encontrada"
+#: lib/Baseliner/Controller/TopicAdmin.pm
+msgid "Missing category id"
+msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "System fields"
@@ -3450,7 +3459,7 @@ msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
 #: root/fields/system/js/field_category.js
 #: root/fields/templates/config/origin_issue_chart_pie.js
 #: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
-#: root/forms/topic_create.js
+#: root/forms/topic_create.js root/site/model.js
 msgid "Category"
 msgstr "Categoría"
 
@@ -3536,12 +3545,16 @@ msgid "Error closing Topic: %1"
 msgstr "Error cerrando tópico: %1"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User does not have a workflow for category `%1`"
-msgstr "El usuario no tiene ciclo de vida para la categoría `%1`"
+msgid "Error running the topic workflow: %1"
+msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Category id `%1` not found"
-msgstr "Id de categoría `%1` no encontrado"
+msgid "Category `%1` does not have any statuses available"
+msgstr "Categoría `%1`no tiene ningún estado disponible"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "User does not have a workflow for category `%1`"
+msgstr "El usuario no tiene ciclo de vida para la categoría `%1`"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Category not found: %1"
@@ -3602,6 +3615,10 @@ msgstr ""
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category, topic not found: %1"
 msgstr "No puedo actualizar categoría de tópico, tópico no encontrado: %1"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Category %1 not found"
+msgstr "Categoría %1 no encontrada"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category status, topic not found: %1"
@@ -3710,6 +3727,10 @@ msgstr "Release"
 #: lib/Baseliner/Model/Topic.pm root/comp/topic/topic_admin.js
 msgid "Changeset"
 msgstr "Cambio"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Category not found"
+msgstr "Categoría no encontrada"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Added %1 to changeset %2 bls"
@@ -4692,7 +4713,8 @@ msgstr "'%1' está en un pase activo al entorno %3: %2"
 #: root/dashlets/filtered_topics.html root/dashlets/lastjobs.html
 #: root/dashlets/list_jobs.js root/dashlets/my_topics.html
 #: root/dashlets/pending_jobs.html root/fields/templates/config/listbox.js
-#: root/reports/listado_jobs.js root/site/explorer.js root/site/model.js
+#: root/forms/workflow_if_project.js root/reports/listado_jobs.js
+#: root/site/explorer.js root/site/model.js
 msgid "Projects"
 msgstr "Proyectos"
 
@@ -5066,6 +5088,14 @@ msgstr ""
 
 #: lib/BaselinerX/CI/ssh_agent.pm
 msgid "Timeout %1 (%2)"
+msgstr ""
+
+#: lib/BaselinerX/CI/topic.pm
+msgid "No mid, can't change status"
+msgstr ""
+
+#: lib/BaselinerX/CI/topic.pm
+msgid "Could not find status `%1`"
 msgstr ""
 
 #: lib/BaselinerX/CI/topic_file.pm
@@ -5681,13 +5711,6 @@ msgstr "Evento del pase en fase POST"
 msgid "Job Logs"
 msgstr "Logs de Pase"
 
-#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/lifecycle/deploy.js
-#: root/comp/log_grid.js root/comp/monitor_grid.js root/dashlets/lastjobs.html
-#: root/dashlets/list_jobs.js root/dashlets/pending_jobs.html
-#: root/email/approval_job.html root/site/common.js
-msgid "Job"
-msgstr "Pase"
-
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
 #: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Id"
@@ -5975,12 +5998,6 @@ msgstr "releases"
 #: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
 #: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
 #: root/dashlets/pending_jobs.html root/site/common.js
-msgid "Start"
-msgstr "Iniciar"
-
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
-#: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
-#: root/dashlets/pending_jobs.html root/site/common.js
 msgid "End"
 msgstr "Fin"
 
@@ -6067,7 +6084,6 @@ msgid "a task step section: MENU,WIZZARD,RUN..."
 msgstr "una sección de fase de tarea: MENU,WIZZARD,RUN..."
 
 #: lib/BaselinerX/Service/Catalog.pm root/comp/rule_new.js
-#: root/comp/topic/topic_admin.js
 msgid "Form"
 msgstr "Formulario"
 
@@ -7283,6 +7299,42 @@ msgstr ""
 msgid "Config Baseliner"
 msgstr "Configurar Baseliner"
 
+#: lib/BaselinerX/Workflow.pm
+msgid "Change Topic Status"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Change Topic Status If Matches"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'statuses_to' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'statuses_from' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'roles' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "Missing 'categories' configuration for workflow transition"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF From Status IS"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF Role IS"
+msgstr ""
+
+#: lib/BaselinerX/Workflow.pm
+msgid "IF Project IS"
+msgstr ""
+
 #: lib/Clarive/Api.pm
 msgid "Could not find key %1 in registry"
 msgstr ""
@@ -7844,10 +7896,6 @@ msgstr "Sólo lectura"
 msgid "View in tree"
 msgstr "Ver en el árbol de proyecto"
 
-#: root/ci/status.js
-msgid "Generic"
-msgstr ""
-
 #: root/ci/status.js root/comp/topic/topic_admin.js
 msgid "Initial"
 msgstr "Inicial"
@@ -7883,7 +7931,7 @@ msgstr ""
 
 #: root/ci/topic.js root/comp/ci-editor.js root/comp/config/config_grid.mas
 #: root/comp/configlist/grid.mas root/comp/job_calendar_grid.js
-#: root/comp/message_grid.js
+#: root/comp/message_grid.js root/comp/rules.js
 msgid "View"
 msgstr "Ver"
 
@@ -9167,6 +9215,7 @@ msgid "Urgent Only"
 msgstr "Solo Urgente"
 
 #: root/comp/job_calendar_slot_edit.js root/comp/job_calendar_slots.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "No Job"
 msgstr "No Pase"
 
@@ -9406,10 +9455,12 @@ msgid "Live search requires a minimum of %1 characters."
 msgstr "Para iniciar la búsqueda es necesario un mínimo de %1 caracteres."
 
 #: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "Promote"
 msgstr "Promoción"
 
 #: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "Demote"
 msgstr "Marcha atrás"
 
@@ -10779,9 +10830,39 @@ msgstr "Acciones para el rol %1"
 msgid "Delete Invalid Actions"
 msgstr "Borrar Acciones Inválidas"
 
+#: root/comp/rule_flowchart.js root/site/lifecycle-graph.js
+#: root/site/timeline-graph.js
+msgid "Overview"
+msgstr ""
+
+#: root/comp/rule_flowchart.js
+msgid "Export as SVG"
+msgstr "Exportar como SVG"
+
+#: root/comp/rule_flowchart.js
+msgid "Zoom In"
+msgstr ""
+
+#: root/comp/rule_flowchart.js
+msgid "Zoom Out"
+msgstr ""
+
+#: root/comp/rule_flowchart.js root/comp/rules.js
+msgid "Flowchart"
+msgstr ""
+
 #: root/comp/rule_new.js
 msgid "Event Type"
 msgstr "Tipo de evento"
+
+#: root/comp/rule_new.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_msg.html root/site/common.js root/site/dashboard.js
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: root/comp/rule_new.js
+msgid "Independent"
+msgstr "Independiente"
 
 #: root/comp/rule_new.js root/forms/create_job.js
 msgid "Job Pipeline"
@@ -10794,15 +10875,6 @@ msgstr "Informe"
 #: root/comp/rule_new.js
 msgid "Webservice"
 msgstr ""
-
-#: root/comp/rule_new.js
-msgid "Independent"
-msgstr "Independiente"
-
-#: root/comp/rule_new.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_msg.html root/site/common.js root/site/dashboard.js
-msgid "Dashboard"
-msgstr "Dashboard"
 
 #: root/comp/rule_new.js
 msgid "Compile Mode"
@@ -11221,10 +11293,6 @@ msgid "Start: %1"
 msgstr "Inicio: %1"
 
 #: root/comp/rules.js
-msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
-msgstr ""
-
-#: root/comp/rules.js
 msgid "(%1/%2)"
 msgstr ""
 
@@ -11252,6 +11320,14 @@ msgstr "NO MARCHA ATRÁS"
 msgid "NO RUN"
 msgstr "NO EJECUTAR"
 
+#: root/comp/rules.js root/site/help.js root/site/model.js
+msgid "Back"
+msgstr "Atrás"
+
+#: root/comp/rules.js
+msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
+msgstr ""
+
 #: root/comp/rules.js root/site/main.js
 msgid "Close Tab"
 msgstr "Cerrar Actual"
@@ -11267,6 +11343,10 @@ msgstr "Cerrar Todas"
 #: root/comp/rules.js
 msgid "Palette"
 msgstr "Paleta"
+
+#: root/comp/rules.js
+msgid "Collapse"
+msgstr "Ocultar"
 
 #: root/comp/rules.js
 msgid "Tree view"
@@ -11660,6 +11740,18 @@ msgid "Default Grid"
 msgstr ""
 
 #: root/comp/topic/topic_admin.js
+msgid "Form Rule"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js root/site/model.js
+msgid "Defined in the Workflow Tab"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
+msgid "Workflow Rule: %1"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
 msgid "A brief description of the category"
 msgstr "Una breve descripción de la categoría"
 
@@ -11687,11 +11779,8 @@ msgstr "Editar categoría"
 msgid "Are you sure you want to delete the categories selected?"
 msgstr "¿Seguro que quiere borrar las categorias seleccionadas?"
 
-#: root/comp/topic/topic_admin.js
-msgid "Workflow"
-msgstr "Flujo de Trabajo"
-
-#: root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_admin.js root/forms/workflow_transition.js
+#: root/forms/workflow_transition_match.js
 msgid "To Status"
 msgstr "Estado Destino"
 
@@ -11699,7 +11788,8 @@ msgstr "Estado Destino"
 msgid "select status..."
 msgstr "seleccione un estado..."
 
-#: root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_admin.js root/forms/workflow_if_status.js
+#: root/forms/workflow_transition_match.js
 msgid "From Status"
 msgstr "Estado Origen"
 
@@ -13655,7 +13745,8 @@ msgstr ""
 msgid "Query type"
 msgstr ""
 
-#: root/forms/create_job.js
+#: root/forms/create_job.js root/forms/workflow_transition.js
+#: root/forms/workflow_transition_match.js
 msgid "Static"
 msgstr "Estático"
 
@@ -13948,6 +14039,10 @@ msgstr "Intentos"
 #: root/forms/retry.js
 msgid "Pause (s)"
 msgstr "Pausa (s)"
+
+#: root/forms/rule_list.js
+msgid "Rule To Be Invoked"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 #: root/forms/wait_for_children.js root/forms/windows_service.js
@@ -14344,6 +14439,31 @@ msgstr "reiniciar"
 #: root/forms/windows_service.js
 msgid "stop"
 msgstr "detener"
+
+#: root/forms/workflow_if_project.js root/forms/workflow_if_role.js
+#: root/forms/workflow_if_status.js
+msgid "IF INPUT MATCH..."
+msgstr ""
+
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Deployment Type"
+msgstr ""
+
+#: root/forms/workflow_transition.js
+msgid "SET TOPIC STATUS TO..."
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "Select Topic Categories"
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "IF INPUT MATCH THESE..."
+msgstr ""
+
+#: root/forms/workflow_transition_match.js
+msgid "THEN SET TOPIC STATUS TO..."
+msgstr ""
 
 #: root/forms/write_config.js
 msgid "Input Type"
@@ -15148,10 +15268,6 @@ msgstr "Este navegador no es soportado por %1"
 msgid "Show Help Index"
 msgstr "Mostrar Índice"
 
-#: root/site/help.js root/site/model.js
-msgid "Back"
-msgstr "Atrás"
-
 #: root/site/help.js
 msgid "Forward"
 msgstr "Adelante"
@@ -15207,10 +15323,6 @@ msgstr "Seleccionar Todo"
 #: root/site/lifecycle-graph.js
 msgid "Unselect All"
 msgstr "Deseleccionar Todo"
-
-#: root/site/lifecycle-graph.js root/site/timeline-graph.js
-msgid "Overview"
-msgstr ""
 
 #: root/site/login.js root/site/main.js root/site/tabfu.js
 msgid "Login"
@@ -15309,12 +15421,24 @@ msgid "select users or roles"
 msgstr "seleccione usuarios o roles"
 
 #: root/site/model.js
+msgid "Select Roles"
+msgstr ""
+
+#: root/site/model.js
 msgid "Select CI Role"
 msgstr "Seleccione el Rol CI"
 
 #: root/site/model.js
 msgid "Select CI Classes"
 msgstr ""
+
+#: root/site/model.js
+msgid "Select Statuses"
+msgstr ""
+
+#: root/site/model.js
+msgid "Select Topic Category"
+msgstr "Seleccionar categoría de tópicos"
 
 #: root/site/model.js
 msgid "Invalid or corrupt data for variables"
@@ -15747,6 +15871,27 @@ msgstr "destino"
 
 #~ msgid "Maximum number of topics to list"
 #~ msgstr "Número máximo de tópicos a listar"
+
+#~ msgid "if var"
+#~ msgstr "si variable"
+
+#~ msgid "if user"
+#~ msgstr "si usuario"
+
+#~ msgid "if role"
+#~ msgstr "si rol"
+
+#~ msgid "if project"
+#~ msgstr "si proyecto"
+
+#~ msgid "Job Services"
+#~ msgstr "Servicios de Job"
+
+#~ msgid "Generic Services"
+#~ msgstr "Servicios Genéricos"
+
+#~ msgid "Category id `%1` not found"
+#~ msgstr "Id de categoría `%1` no encontrado"
 
 #~ msgid "Detach Files"
 #~ msgstr "Desligar Ficheros"
@@ -16914,9 +17059,6 @@ msgstr "destino"
 
 #~ msgid "Revision baseline '%1' does not match the job baseline '%2'"
 #~ msgstr "El entorno de '%1' no coincide con el entorno de pase '%2'"
-
-#~ msgid "Collapse"
-#~ msgstr "Ocultar"
 
 #~ msgid "Close All"
 #~ msgstr "Cerrar Todos"

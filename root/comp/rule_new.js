@@ -39,25 +39,30 @@
         ]
     });
     var combo_type = new Ext.form.ComboBox({
-               fieldLabel:_('Type'),
-               name: 'rule_type',
-               hiddenName: 'rule_type',
-               valueField: 'rule_type',
-               value: params.rec.rule_type || 'event',
-               displayField: 'rule_type_name',
-               typeAhead: false, minChars: 1, mode: 'local',
-               cls: 'ui-comp-rule-new-type',
-               store: [
-                  [ 'event', _('Event') ],
-                  [ 'pipeline', _('Job Pipeline') ],
-                  [ 'report', _('Report') ],
-                  [ 'webservice', _('Webservice') ],
-                  [ 'independent', _('Independent') ],
-                  [ 'dashboard', _('Dashboard') ],
-                  [ 'form', _('Form') ]
-               ],
-               editable: false, forceSelection: true, triggerAction: 'all',
-               allowBlank: false
+        fieldLabel: _('Type'),
+        name: 'rule_type',
+        hiddenName: 'rule_type',
+        valueField: 'rule_type',
+        value: params.rec.rule_type || 'event',
+        displayField: 'rule_type_name',
+        typeAhead: false,
+        minChars: 1,
+        mode: 'local',
+        cls: 'ui-comp-rule-new-type',
+        store: [
+            ['dashboard', _('Dashboard')],
+            ['event', _('Event')],
+            ['form', _('Form')],
+            ['independent', _('Independent')],
+            ['pipeline', _('Job Pipeline')],
+            ['report', _('Report')],
+            ['webservice', _('Webservice')],
+            ['workflow', _('Workflow')]
+        ],
+        editable: false,
+        forceSelection: true,
+        triggerAction: 'all',
+        allowBlank: false
     });
     combo_type.on('select', function(){
         var v = combo_type.getValue();
@@ -96,7 +101,7 @@
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
-        } else if( v == 'form' || v == 'dashboard' ) {
+        } else if (v == 'form' || v == 'dashboard' || v == 'workflow') {
             wiz.last = wiz.current;
             wiz.button_setup();
             job_pipeline_form.hide();
