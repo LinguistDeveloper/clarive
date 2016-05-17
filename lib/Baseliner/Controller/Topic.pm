@@ -978,28 +978,40 @@ sub category_list : Local { #this is for ComboCategories
     $c->forward('View::JSON');
 }
 
-
 sub list_category : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
-    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir ||= 'asc';
+
+    my ( $dir, $sort, $cnt ) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir  ||= 'asc';
     $sort ||= 'name';
 
-    my $order = { dir=> $dir, sort=> $sort};
+    my $order = { dir => $dir, sort => $sort };
     my @rows;
 
-    if( !$p->{categoryId} ){
-
+    if ( !$p->{categoryId} ) {
         my @categories;
-        if( $p->{action} && $p->{action} eq 'create' ){
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order, all_fields=>1);
-        } else {
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order, all_fields=>1);
+
+        if ( $p->{categories_filter} || $p->{categories_id_filter} ) {
+            @categories = $self->_filter_categories_permissions(
+                username             => $c->username,
+                categories_id_filter => $p->{categories_id_filter},
+                categories_filter    => $p->{categories_filter}
+            );
+        }
+        else {
+            my $action = $p->{action} && $p->{action} eq 'create' ? 'create' : 'view';
+            @categories = Baseliner::Model::Topic->get_categories_permissions(
+                username   => $c->username,
+                type       => $action,
+                order      => $order,
+                all_fields => 1
+            );
         }
 
-        if(@categories){
-            foreach my $category (@categories){
+        if (@categories) {
+            foreach my $category (@categories) {
                 my @statuses = _array( $category->{statuses} );
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
@@ -1010,45 +1022,48 @@ sub list_category : Local {
                 push @rows, {
                     id            => $category->{id},
                     category      => $category->{id},
-                    name          => $p->{swnotranslate} ? $category->{name}: _loc($category->{name}),
+                    name          => $p->{swnotranslate} ? $category->{name} : _loc( $category->{name} ),
                     acronym       => $category->{acronym},
                     color         => $category->{color},
                     type          => $type,
                     forms         => $forms,
-                    category_name => _loc($category->{name}),
+                    category_name => _loc( $category->{name} ),
                     is_release    => $category->{is_release},
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
                     default_grid  => $category->{default_grid},
-                    default_form  => $category->{default_form} // $category->{default_field}, ## FIXME default_field is legacy
-                    dashboard     => $category->{dashboard},
-                    statuses      => \@statuses,
-                    fields        => \@fieldlets,
+                    default_form  => $category->{default_form}
+                      // $category->{default_field},    ## FIXME default_field is legacy
+                    dashboard => $category->{dashboard},
+                    statuses  => \@statuses,
+                    fields    => \@fieldlets,
+
                     #priorities    => \@priorities
                 };
             }
         }
         $cnt = @rows;
-    }else{
+    }
+    else {
         # Status list for combo and grid in workflow
-        my $cat = mdb->category->find_one({ id=>mdb->in($p->{categoryId}) },{ statuses=>1 });
-        my @statuses = sort { $a->seq <=> $b->seq } ci->status->search_cis( id_status=>mdb->in($$cat{statuses}) );
-        for my $status ( @statuses ) {
+        my $cat = mdb->category->find_one( { id => mdb->in( $p->{categoryId} ) }, { statuses => 1 } );
+        my @statuses = sort { $a->seq <=> $b->seq } ci->status->search_cis( id_status => mdb->in( $$cat{statuses} ) );
+        for my $status (@statuses) {
             for my $bl_status ( _array( $status->bls ) ) {
-                push @rows, {
-                                id      => $status->id_status,
-                                bl      => $bl_status,
-                                name    => $status->name_with_bl( no_common=>1 ),
-                            };
+                push @rows,
+                  {
+                    id   => $status->id_status,
+                    bl   => $bl_status,
+                    name => $status->name_with_bl( no_common => 1 ),
+                  };
             }
         }
         $cnt = @rows;
     }
 
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward('View::JSON');
 }
-
 
 sub list_label : Local {
     my ($self,$c) = @_;
@@ -2047,6 +2062,55 @@ sub report_csv : Local {
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
     $c->forward('/serve_file');
+}
+
+sub _filter_categories_permissions : Local {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $filter = _decode_json_safe( $params{categories_filter} );
+    my $where = $self->_build_category_filter( categories_id_filter => $params{categories_id_filter}, filter => $filter );
+
+    my @category_data;
+
+    my $rs = mdb->category->find($where);
+    my @categories = $rs->sort( { name => 1 } )->all;
+
+    foreach my $category (@categories) {
+        if (
+            scalar Baseliner::Model::Topic->get_categories_permissions(
+                username   => $params{username},
+                type       => 'create',
+                id         => $category->{id},
+                all_fields => 1
+            )
+          )
+        {
+            push @category_data, $category;
+        }
+    }
+
+    return @category_data;
+}
+
+sub _build_category_filter {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $where;
+    my $id_category = join( ",",
+        _array $params{categories_id_filter},
+        _array $params{filter}->{id_category},
+        _array $params{filter}->{category_id},
+        _array $params{filter}->{categories} );
+
+    my $name_category = join( ",", _array $params{filter}->{category_name}, _array $params{filter}->{name_category} );
+
+    $where->{id} = mdb->in( split( ",", $id_category ) ) if ($id_category);
+
+    $where->{name} = mdb->in( split( ",", $name_category ) ) if ($name_category);
+
+    return $where;
 }
 
 sub _export {

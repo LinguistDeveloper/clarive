@@ -6,6 +6,8 @@ icon: combo_box
 
 Allows to add topics to the form.
 
+Also allows to create topics clicking on `Create button`: <img src="/static/images/icons/add.gif" />
+
 There are a list of elements can be configured in the fieldlet:
 
 ### Section to view
@@ -36,14 +38,11 @@ Check if you want the field as mandatory.
 
 Allow to set the type of the field.
 
-- **Single*
-- Allows to select one choice of the options available.
+- **Single** - Allows to select one choice of the options available.
 
-- **Multiple*
-- The user can select multiples choices.
+- **Multiple** - The user can select multiples choices.
 
-- **Grid*
-- The added topics are shown in a table.
+- **Grid** - The added topics are shown in a table.
 
 ### Display field
 
@@ -59,6 +58,7 @@ For example, to show only a category user can use the filter:
 
 Where id is the unique key of the category which can be consulted through the REPL.
 
+
 ### List of columns to show in grid
 
 Select the columns to show in the grid.
@@ -69,33 +69,20 @@ To customize the table, first indicate the data of the column and subsequently t
 
     *name;title;Projects.__project_name_list,**Projects**;name_status,**Status**;Assign.__user_name,**Assign**,ci;priority,**Priority**;complex,**Complex***
 
-**Name**
 
-Displays the number of topic in a column called ID.
+**Name** - Displays the number of topic in a column called ID.
 
-**Title**
+**Title** - Displays the title of the topic in a column called Title.
 
-Displays the title of the topic in a column called Title.
+**Projects** - Displays the name of the projects through the variable:  `_project_name_list`.
 
-**Projects**
+**State** - Displays the name of the state.
 
-Displays the name of the projects through the variable:  `_project_name_list`.
+**Assigned** - Displays the user name assigned to the topic.
 
-**State**
+**Priority** - Displays the priority of the topic.
 
-Displays the name of the state.
-
-**Assigned**
-
-Displays the user name assigned to the topic.
-
-**Priority**
-
-Displays the priority of the topic.
-
-**Complexity**
-
-Sample complexity.
+**Complexity** - Sample complexity.
 
 Only works if Grid is set in the type of field.*
 
@@ -103,7 +90,7 @@ Only works if Grid is set in the type of field.*
 
 Defines the number of elements will appear.
 
-Only works if Grid is set in the type of field.*
+Only works if Grid is set in the type of field.
 
 ### Parent field
 
@@ -125,3 +112,15 @@ Specify a condition to the data.
 **Never**
 
 Only works if Grid is set in the type of field.
+
+### Sort By
+
+Allows to sort the order in combo box.
+
+### Sort Order
+
+Set the order of the sort:
+
+*ASC* - To sort the records in a ascending order.
+
+*DESC* - To sort the records in a descending order.

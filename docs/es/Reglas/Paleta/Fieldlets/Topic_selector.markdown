@@ -3,109 +3,139 @@ title: Topic selector
 index: 400
 icon: combo_box
 ---
-* Permite añadir un tópico existente al nuevo tópico.
-* La lista de elementos que pueden ser configurados dentro del fieldlet.
 
-<br />
+Permite añadir un tópico existente al nuevo tópico.
+
+Permite además crear tópicos desde el formulario pulsando el botón: <img src="/static/images/icons/add.gif" />
+
+La lista de elementos que pueden ser configurados dentro del fieldlet.
+
+
 ### Ubicación del fieldlet
-* Indica en que parte de la vista se pondrá el fieldlet. <br />
+Indica en que parte de la vista se pondrá el fieldlet.
 
-&nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario. <br />
+**Cabecera*- Se muestra en la parte central del formulario.
 
-&nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.<br />
+**Más información*- Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
 
-<br />
+
 ### Anchura en canvas
-* Establece el ancho que ocupará el elemento en el formulario.
-* El valor máximo permitido es de 12 (100% de anchura).
 
-<br />
+Establece el ancho que ocupará el elemento en el formulario.
+
+El valor máximo permitido es de 12 (100% de anchura).
+
+
 ### Ocultar en el modo lectura
-* Indica si el campo se quiere ocultar en modo lectura.
 
-<br />
+Indica si el campo se quiere ocultar en modo lectura.
+
+
 ### Ocultar en el modo edición
-* Indica si el campo se quiere ocultar en modo edición.
 
-<br />
+Indica si el campo se quiere ocultar en modo edición.
+
+
 ### Campo obligatorio
-* Indica si el campo tiene que ser completado obligatoriamente.
 
-<br />
+Indica si el campo tiene que ser completado obligatoriamente.
+
+
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico: <br />
 
-&nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
+Permite definir la apariencia de la tabla en el tópico:
 
-&nbsp; &nbsp;• **Múltiple** - Permite al usuario añadir tantas opciones como desee. <br />
+**Único*- Permite seleccionar unicamente una opción.
 
-&nbsp; &nbsp;• **Tabla** - Las opciones seleccionadas se muestran en una tabla.
+**Múltiple*- Permite al usuario añadir tantas opciones como desee.
+
+**Tabla*- Las opciones seleccionadas se muestran en una tabla.
 
 
-<br />
+
 ### Campo visible
-* En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-* Por defecto, es el titulo lo que se muestra.
+
+En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
+Por defecto, es el titulo lo que se muestra.
 
 
-<br />
+
 ### Filtro avanzado JSON
-* Permite añadir un filtro avanzado JSON
 
-            
-        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25} 
+Permite añadir un filtro avanzado JSON
 
 
-&nbsp;&nbsp;• Donde id es el [MID](Conceptos/mid) de la categoría.
+        {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
 
-<br />
+Donde id es el [MID](Conceptos/mid) de la categoría.
+
+
+
 ### Lista de columnas para mostrar en el grid
-* Permite seleccionar las columnas que serán mostradas en el grid.
-* Por defecto las columnas que se muestran son las de Nombre del tópico (muestra la categoria y el ID) y Título del tópico.
-* Se indica primero el dato de la columna y posteriormente el nombre de la columna, por ejemplo:
+
+Permite seleccionar las columnas que serán mostradas en el grid.
+
+Por defecto las columnas que se muestran son las de Nombre del tópico (muestra la categoria y el ID) y Título del tópico.
+
+Se indica primero el dato de la columna y posteriormente el nombre de la columna, por ejemplo:
     *name;title;Proyectos.__project_name_list,**Proyectos**;name_status,**Estado**;Asignada.__user_name,**Asignada**,ci; prioridad,**Prioridad**;complejidad,**Complejidad***.
 
-&nbsp; &nbsp;• Mostrará las siguientes columnas con el siguiente contenido: <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Name** - Muestra el número de tópico en una columna llamada ID. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Title** - Muestra el título del tópico en una columna llamada Título. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Proyectos** - Muestra el nombre de los proyectos a través de la variable: *_project_name_list*. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Estado** - Muestra el nombre del estado. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Asignada** - Muestra el nombre de usuario asignado al tópico. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Prioridad** - Muestra la prioridad del tópico. <br />
-&nbsp; &nbsp;&nbsp; &nbsp;• **Complejidad** - Muestra la complejidad. <br />
+Mostrará las siguientes columnas con el siguiente contenido:
 
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet.
+**Name*- Muestra el número de tópico en una columna llamada ID.
 
-<br />
+**Title*- Muestra el título del tópico en una columna llamada Título.
+
+**Proyectos*- Muestra el nombre de los proyectos a través de la variable: *_project_name_list*.
+
+**Estado*- Muestra el nombre del estado.
+
+**Asignada*- Muestra el nombre de usuario asignado al tópico.
+
+**Prioridad*- Muestra la prioridad del tópico.
+
+**Complejidad*- Muestra la complejidad.
+
+*Nota:Opción solo disponible en el Tipo Grid del fieldlet.
+
+
 ### Altura del grid en modo edición
-* Cuando se escoja el fieldlet de tipo grid, este campo define la altura del fieldlet.
 
-<br />
+Cuando se escoja el fieldlet de tipo grid, este campo define la altura del fieldlet.
+
+
 ### Tamaño de la página
-* Define el número de elementos que aparecerán en la lista de selección de tópico.
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+
+Define el número de elementos que aparecerán en la lista de selección de tópico.
+
+*Nota:Opción solo disponible en el Tipo Grid del fieldlet
 
 
-<br />
+
 ### Campo padre
-* Permite seleccionar los tópicos disponibles indicando el id de un fieldlet de otra regla de tipo formulario.
 
-<br />
+Permite seleccionar los tópicos disponibles indicando el id de un fieldlet de otra regla de tipo formulario.
+
+
 ### Tamaño de la página en el grid
-* Define el número de tópicos que aparecen en la tabla en modo visualización del tópico.
-* *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+
+Define el número de tópicos que aparecen en la tabla en modo visualización del tópico.
+
+*Nota:Opción solo disponible en el Tipo Grid del fieldlet
 
 
-<br />
+
 ### ¿Mostrar los controles del grid?
-* Permite configurar cuando mostrar los controles del cuadro en modo visualización de tópico.
-* Las opciones son: <br />
 
-&nbsp; &nbsp;• **Solo si hay paginacón** <br />
+Permite configurar cuando mostrar los controles del cuadro en modo visualización de tópico.
 
-&nbsp; &nbsp;• **Siempre** <br />
+Las opciones son:
 
-&nbsp; &nbsp;• **Nunca**
+**Solo si hay paginacón**
 
-&nbsp;&nbsp; * *Nota:* Opción solo disponible en el Tipo Grid del fieldlet
+**Siempre**
+
+**Nunca**
+
+Nota:Opción solo disponible en el Tipo Grid del fieldlet
