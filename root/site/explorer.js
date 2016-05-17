@@ -1054,7 +1054,7 @@ Baseliner.open_kanban_from_folder = function(n){
             return;
         }
         var kanban = new Baseliner.Kanban({ topics: res.topics }); 
-        kanban.fullscreen();
+        kanban.goto_tab();
     });
 }
 
