@@ -5,37 +5,19 @@ use Test::More;
 use Test::MonkeyMock;
 use Test::Deep;
 use Test::TempDir::Tiny;
+use Test::Fatal;
+use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
+use TestUtils ':catalyst';
 use TestSetup;
 use TestUtils ':catalyst';
 use TestGit;
+
 use Cwd qw(realpath);
-use JSON ();
+use Baseliner::Utils qw(_load);
 
-use Test::Fatal;
-
-use Test::MockSleep;
-use Test::TempDir::Tiny;
-
-use TestUtils ':catalyst';
-
-use POSIX ":sys_wait_h";
-use Baseliner::Role::CI;
-use Baseliner::Model::Topic;
-use Baseliner::RuleFuncs;
-use Baseliner::Core::Registry;
-use BaselinerX::Type::Event;
-use BaselinerX::Fieldlets;
-use Baseliner::Queue;
-
-use Baseliner::Model::Topic;
-use Clarive::mdb;
-use Class::Date;
-
-use Storable ();
-use Baseliner::Utils qw(_load _dump);
 use_ok 'Baseliner::Controller::GitSmart';
 
 subtest 'git: ignores requests with empty body' => sub {
@@ -771,7 +753,7 @@ subtest 'git: creates rev ci when does not exist' => sub {
     _setup();
 
     my $repo_dir = TestGit->create_repo;
-    my $sha      = TestGit->commit($repo_dir);
+    my $sha      = TestGit->commit($repo_dir, message => 'my commit message');
 
     my $controller = _build_controller();
 
@@ -798,9 +780,9 @@ subtest 'git: creates rev ci when does not exist' => sub {
     my @rev_cis = ci->GitRevision->find->all;
     is @rev_cis, 1;
 
-    ok $rev_cis[0]->{name};
-    ok $rev_cis[0]->{moniker};
+    like $rev_cis[0]->{name}, qr/^\[.{8}\] my commit message/;
     like $rev_cis[0]->{repo}, qr/GitRepository-\d+/;
+    is $rev_cis[0]->{moniker}, $sha;
     is $rev_cis[0]->{sha},    $sha;
 };
 

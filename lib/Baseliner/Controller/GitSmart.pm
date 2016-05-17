@@ -11,6 +11,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_truncate _debug _error _throw _file _html_escape _loc);
 use Baseliner::Sugar;
 use Baseliner::GitSmartParser;
+use BaselinerX::CI::GitRevision;
 
 sub begin : Private {  #TODO control auth here
      my ($self,$c) = @_;
@@ -427,17 +428,17 @@ sub _create_or_find_rev {
         $mid = $rev->{mid};
     }
     else {
-        my $title   = $commit->message;
-        my $commit2 = substr($sha, 0, 7);
-        my $msg     = substr($commit->message, 0, 15);
-        master_new 'GitRevision' => {
-            name    => "[$commit2] $msg",
-            moniker => $commit2,
+        my $title     = $commit->message;
+        my $sha_short = substr( $sha, 0, 8 );
+
+        my $ci = BaselinerX::CI::GitRevision->new(
+            name    => "[$sha_short] $title",
+            moniker => $sha,
             sha     => $sha,
             repo    => $repo_id,
-          } => sub {
-            $mid = shift;
-          };
+        );
+
+        $mid = $ci->save;
     }
 
     return $mid;
