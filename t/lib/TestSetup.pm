@@ -169,23 +169,30 @@ sub create_user {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_role = delete $params{id_role} or die 'id_role required';
-    my $project = delete $params{project} or die 'project required';
-    my $area = delete $params{area} || '';
+    my $id_role = delete $params{id_role};
+    my $project = delete $params{project};
+    my $area    = delete $params{area};
+
     my $username = delete $params{username} || 'developer';
     my $password = delete $params{password} || 'password';
 
-    my $param_security->{project} =[ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ] ;
+    my $project_security = $params{project_security};
 
-    $param_security->{area} = [map { $_->mid } ( ref $area eq 'ARRAY' ? @$area : ($area) )]  if ( $area );
-
+    if ( !$project_security && ( $id_role && $project ) ) {
+        $project_security = {
+            $id_role => {
+                project => [ map { $_->mid } ( ref $project eq 'ARRAY' ? @$project : ($project) ) ],
+                $area ? ( area => [ map { $_->mid } ( ref $area eq 'ARRAY' ? @$area : ($area) ) ] ) : (),
+            }
+        };
+    }
 
     return TestUtils->create_ci(
         'user',
         name             => $username,
         username         => $username,
-        password         => ci->user->encrypt_password( $username, $password ),
-        project_security => { $id_role => $param_security },
+        password         => ci->user->encrypt_password($username, $password),
+        project_security => $project_security,
         %params
     );
 }
