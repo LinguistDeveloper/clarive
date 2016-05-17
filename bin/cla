@@ -73,7 +73,8 @@ elif [ "$1" == "proveui" ]; then
 elif [ "$1" == "cover" ]; then
     shift
 
-    perl $LOCALDIR/bin/prove -Ilib -It/lib -e 'perl -MDevel::Cover' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
+    cover -delete -silent
+    prove -Ilib -It/lib -e 'bin/cla exec perl -It/lib -Ilib -MDevel::Cover=-coverage,statement,branch,condition,path,subroutine,time' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
     cover
 else
     $PERL $BINDIR/cla-cmd "$@"

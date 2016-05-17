@@ -15,7 +15,8 @@ sub docs_dirs {
 
     $user_lang //= 'en';
 
-    return Clarive->app->paths_to( 'docs/' . $user_lang );
+    return sort { $a=~/plugin|feature/ <=> $b=~/plugin|feature/ }
+        Clarive->app->paths_to( 'docs/' . $user_lang );
 }
 
 sub build_doc_tree {
@@ -45,35 +46,46 @@ sub build_doc_tree {
             my $rel =
               $dir_or_file->relative( $opts->{feature_root} );    # always to main root, be it Clarive's or feature's
             if ( $dir_or_file->is_dir ) {
-                my $dir_markdown = $dir_or_file->basename . '.markdown';
+
                 my @children = $self->build_doc_tree( $opts, $dir_or_file );
-                if ( $dir_or_file->parent->contains( _file( $dir_or_file->parent, $dir_markdown ) ) ) {
-                    my $md_file = _file( $dir_or_file->parent, $dir_markdown );
+
+                # determine if this dir has a .markdown
+                my $dir_markdown = $dir_or_file->basename . '.markdown';
+                my $md_file = _file( $dir_or_file->parent, $dir_markdown );
+                my $dir_has_markdown = $dir_or_file->parent->contains( $md_file );
+                if ( $dir_has_markdown ) {
                     my $data = $self->parse_body( $md_file, $docs_root, { rel=>$rel, %$opts } );
                     my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
                     $data->{rel} = "$rel";
                     $uniq_dirs{ $data->{uniq_id} } = 1;
-                    push @dirs,
-                      {
+                    my $dir_data = {
                         leaf     => \0,
-                        expanded => \1,
+                        expanded => \( $data->{expanded} // 1 ),
                         index    => $data->{index},
                         icon     => $icon,
                         data     => { path => "$rel" },
                         children => \@children,
                         text     => $data->{title},
-                      };
+                    };
+                    $opts->{all_dirs}{$dir_markdown} = $dir_data;
+                    push @dirs, $dir_data;
+                }
+                elsif( exists $opts->{all_dirs}{$dir_markdown} ) {
+                    # the official dir node already exists, add to its children
+                    push @{ $opts->{all_dirs}{$dir_markdown}{children} }, @children;
                 }
                 else {
-                    push @tree,
-                      {
+                    # no previous, dir node present nor documented, create a "raw" (ugly) node
+                    my $dir_data = {
                         leaf     => \0,
                         expanded => \1,
                         icon     => '/static/images/icons/catalog-folder.png',
                         data     => { path => "$rel" },
                         children => \@children,
                         text     => $name,
-                      };
+                    };
+                    $opts->{all_dirs}{$dir_markdown} = $dir_data;
+                    push @tree, $dir_data;
                 }
             }
             else {

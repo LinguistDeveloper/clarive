@@ -89,11 +89,20 @@ after 'setup_finalize' => sub {
     my $app = shift;
 
     my $precompile = $app->config->{rule_precompile};
+
     # Precompile rules?
     $app->model('Rules')->compile_rules( rule_precompile=>$precompile );
 
+    # merge Baseliner config keys into Clarive
     for my $key ( keys %{Baseliner->config}) {
         Clarive->config->{$key}  = Baseliner->config->{$key};
+    }
+    if( Clarive->app->enable_plugins ) {
+        my $plugins = Clarive->app->plugins;
+        foreach my $public_item ( $plugins->locate_all('public') ) {
+            # change static paths
+            push( @{ $app->config->{static}{include_path} }, $public_item->{path} );
+        }
     }
 };
 
@@ -205,6 +214,11 @@ sub build_app {
 
     # cache setup
     cache->remove( qr/registry:/ );
+
+    # load plugins /init
+    if( Clarive->app->enable_plugins ) {
+        Clarive->app->plugins->run_dir( 'init' );
+    }
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};

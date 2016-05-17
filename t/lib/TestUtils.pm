@@ -166,6 +166,22 @@ sub write_file {
     close $fh;
 }
 
+sub create_temp_file {
+    my $class = shift;
+    my ($content, $filename) = @_;
+
+    my $tempdir = tempdir();
+
+    $filename ||= 'file';
+    $filename = "$tempdir/$filename";
+
+    open my $fh, '>', $filename or die $!;
+    print $fh $content;
+    close $fh;
+
+    return $filename;
+}
+
 package FakeLogger;
 sub new {
     my $class = shift;
@@ -246,6 +262,15 @@ sub headers {
     $self->{headers} ||= FakeHeaders->new;
 
     return $self->{headers};
+}
+
+sub header {
+    my $self = shift;
+    my $header = shift;
+
+    $self->{headers} ||= FakeHeaders->new;
+
+    return $self->{headers}{$header};
 }
 
 sub status {

@@ -13,80 +13,42 @@ To do:
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 
+    // This is the code that is loaded with the REPL as an example starter, indentation is important here
+    var example_js = function(){/*var ci = Cla.CI.load('1');
+print(ci.name());
+// files and paths
+print(Cla.Path.basename('/foo/bar.baz'));
+// var fh = Cla.FS.openFile("${tempdir}/foo", "w");
+// fh.write("foobar");
+// fh.close();
+// database
+var db = new Cla.DB;
+var col = db.getCollection('test_collection');
+col.insert({'foo':'bar'});
+col.insert({'foo':'baz'});
+col.findOne({'foo':'bar'});
+// utils
+Cla.parseVars('${foo}',{ foo: 'bar' });
+*/}.heredoc();
+
     // setup defaults
     if( Cla.AceEditor == undefined ) Cla.AceEditor = { theme: 'lesser-dark', mode: { name:'perl' } };
 
-    // editor generator function
-    var editor_gen = function(args) {
-        if( args ) {
-            Cla.AceEditor = Ext.apply( Cla.AceEditor, args );
-        }
-        /*
-        var ret = CodeMirror( function(elt) { 
-            // document.getElementById( fcode.getId() );
-            fcode.getEl().dom.parentNode.replaceChild( elt, fcode.getEl().dom );
-        }, Ext.apply({
-        */
-        var ret = CodeMirror.fromTextArea( fcode.getEl().dom , Ext.apply({
-               lineNumbers: true,
-               tabMode: "indent",
-               smartIndent: true,
-               indentUnit: 4,
-               tabSize: 4,
-               electricChars: false,  // allow editor to reindent according to certain chars
-               matchBrackets: true,
-               extraKeys: { 
-                    "Ctrl-W": function() {
-                      var scroller = editor.getScrollerElement();
-                      if (scroller.className.search(/\bCodeMirror-fullscreen\b/) === -1) {
-                        scroller.className += " CodeMirror-fullscreen";
-                        scroller.style.height = "100%";
-                        scroller.style.width = "100%";
-                        editor.refresh();
-                      } else {
-                        scroller.className = scroller.className.replace(" CodeMirror-fullscreen", "");
-                        scroller.style.height = '';
-                        scroller.style.width = '';
-                        editor.refresh();
-                      }
-                    },
-                    "Esc": function() {
-                      var scroller = editor.getScrollerElement();
-                      if (scroller.className.search(/\bCodeMirror-fullscreen\b/) !== -1) {
-                        scroller.className = scroller.className.replace(" CodeMirror-fullscreen", "");
-                        scroller.style.height = '';
-                        scroller.style.width = '';
-                        editor.refresh();
-                      }
-                    },
-               
-                   "Cmd-E": run_repl, 
-                   "Cmd-Enter": run_repl, 
-                   "Ctrl-Enter": run_repl, 
-                   "Ctrl-E": run_repl, 
-                   "Ctrl-Space": function(cm) {
-                         CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
-                    }
-               }
-            }, Cla.AceEditor )
-        );
-        var hlLine = ret.setLineClass(0, "activeline");
-        // ret.setSize( '100%', fcode.getEl().getHeight() );
-        return ret;
-    };
-    var fcode = new Ext.form.TextArea({
+    var aceditor = new Cla.AceEditor({ 
         name: 'code',
-        value: "$c->model('Topic');\nmdb->topic->find_one({ mid=>'' });\nmdb->master_rel->find({ from_mid=>'', to_mid=>'' })->all;\n",
-        style: style_cons,
-        width: 700,
-        height: 300
+        mode: 'js',
+        tbar: undefined,
+        value: example_js
     });
-
-    var editor;
-
-    // Codemirror 
-    fcode.on( 'afterrender', function(){
-        editor = editor_gen(); 
+    aceditor.on('aftereditor',function(){
+        HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
+        var editor_keys = new HashHandler([{
+            bindKey: "Cmd-Enter|Ctrl-Enter", exec: function(ed){
+                run_repl();
+            }
+        }]);
+        aceditor.editor.keyBinding.addKeyboardHandler(editor_keys);
+        aceditor.focus();
     });
 
     /*
@@ -196,7 +158,7 @@ To do:
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
                 if( res.code ) { 
                     last_name= n.text;
-                    editor.setValue( res.code ); fcode.setValue( res.code );
+                    aceditor.setValue( res.code );
                 }
                 if( res.output ) set_output( res.output );
                 if( res.lang ) change_lang({ lang: res.lang, checked: true });
@@ -211,22 +173,6 @@ To do:
                 }
             });
         }
-        /* else if( n.attributes.need_load ) {
-            var ns = n.attributes.text;
-            last_name = ns;
-            Ext.Ajax.request({
-                url: '/repl/load',
-                params: { ns: ns }, 
-                success: function(xhr) {
-                    var json = Ext.util.JSON.decode( xhr.responseText );
-                    fcode.setValue( json.code );
-                    set_output( json.output );
-                }
-            });
-        } else {
-            fcode.setValue(n.attributes.code);
-            set_output(n.attributes.output);
-        } */
     });
 
     var status = new Ext.form.TextField({
@@ -306,7 +252,6 @@ To do:
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
-            fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
             var f = form.getForm();
             f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
         }
@@ -337,6 +282,87 @@ To do:
     };
 
     var submit = function(parms) {
+        if( parms.last ) {
+            parms = last_mode;
+        }
+        last_mode = parms;
+        parms.code = aceditor.getValue();
+        Cla.mask = function(comp, opts) {
+            var el = comp.el;
+            var unmask_id = el.id || '';
+            if( !opts ) opts={};
+
+            var html = function(){/*
+            <div id="boot" style="background: transparent; margin: -5px -5px 5px 5px;">
+                <p><img src="/static/images/icons/loading-fast.gif" />&nbsp;<b>[%= msg %]</b></p>
+                [% if( cancel ) { %]
+                    <center>
+                        <button class="btn btn-default btn-sm" type="button" onclick="javascript:Cla.unmask('[%= unmask_id %]');">Cancel</button>
+                    </center>
+                [% } %]
+            </div>
+            */}.tmpl( Ext.apply({ msg: _('Loading...'), cancel: false, unmask_id: unmask_id }, opts) );
+
+            el.mask(html);
+
+            if( opts.mask_tab ) {
+                Cla.tabpanel().changeTabIcon( panel, "/static/images/loading-fast.gif" );
+            }
+        }
+        Cla.unmask = function(id_or_cmp){
+            var cmp = Ext.isObject(id_or_cmp) ? id_or_cmp : Ext.getCmp(id_or_cmp);
+            if( cmp ) 
+                cmp.el.unmask();
+        }
+        Cla.mask( panel, { msg:_('Running...'), cancel: true, mask_tab: true });
+        
+        save({ c: aceditor.getValue(), o: output.getValue() });
+
+        Cla.ajax_json('/repl/eval', parms, function(res){
+            var data = 
+                ( res.stdout ?  res.stdout + "\n" : "" ) +  
+                ( res.stderr ?  res.stderr + "\n" : "" ) +  
+                res.result ;
+            if( parms.show == 'table' || parms.show == 'data_editor' ) {
+                try {
+                    var d = Ext.util.JSON.decode( res.result );
+                    if( parms.show == 'table' ) 
+                        show_table( d ); 
+                    else
+                        show_data_editor( d );
+                } catch(e){ set_output( e ) };
+            } else {
+                set_output( data );
+                status.setValue( "OK" );
+                document.getElementById( output.getId() ).style.color = "#10c000"; // green
+            }
+            elapsed.setValue( res.elapsed );
+            aceditor.focus();
+            reload_hist();
+
+            Cla.unmask(panel);
+            Cla.tabpanel().changeTabIcon( panel, IC('console') );
+        },
+        function(res){
+            // failure
+            Cla.unmask(panel);
+            Cla.tabpanel().changeTabIcon( panel, IC('console') );
+            status.setValue( "ERROR" );
+
+            if( !res ) return;
+            elapsed.setValue( res.elapsed );
+            var data = 
+                res.error + "\n" + 
+                res.stdout + "\n" + 
+                res.stderr ;
+            set_output( data );
+            document.getElementById( output.getId() ).style.color = "#f54";  // red
+            aceditor.focus();
+            // TODO show error line to user, if any
+            //   var line = res.line ;
+        });
+    }
+    var submit2 = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
         if( parms.last ) {
             parms = last_mode;
@@ -344,7 +370,6 @@ To do:
         last_mode = parms;
         var f = form.getForm();
         set_output( "" );
-        fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
         parms.lang = btn_lang.lang ;
         f.submit({
             params: parms,
@@ -368,8 +393,8 @@ To do:
                     document.getElementById( output.getId() ).style.color = "#10c000"; // green
                 }
                 elapsed.setValue( action.result.elapsed );
-                save({ c: fcode.getValue(), o: output.getValue() });
-                editor.focus();
+                save({ c: aceditor.getValue(), o: output.getValue() });
+                aceditor.focus();
                 reload_hist();
             },
             failure: function(f,action){
@@ -383,17 +408,15 @@ To do:
                 set_output( data );
                 //output.getEl().style.color = "#f33";
                 document.getElementById( output.getId() ).style.color = "#f54";  // red
-                editor.focus();
+                aceditor.focus();
                 var line = action.result.line ;
-                if( line > 0 ) {
-                    editor.markText({ line:line, ch:1}, {line:line,ch: 100}, "hightlight");
-                }
+                // TODO show error line to user, if any
             }
         });
     };
 
     var save_hist = function(){ // only browser-eval needs this (javascript)
-        Baseliner.ajaxEval( '/repl/save_hist', { code: editor.getValue(), lang: btn_lang.lang }, function(res){ 
+        Baseliner.ajaxEval( '/repl/save_hist', { code: aceditor.getValue(), lang: btn_lang.lang }, function(res){ 
             reload_hist();
         });
     }
@@ -414,14 +437,17 @@ To do:
         else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor' }
 
         if( lang == 'perl' ) {
-            submit({ eval: true, dump: dump, show: show });
+            submit({ eval: true, dump: dump, show: show, lang: 'perl' });
         }
-        else if( lang=='javascript' ) {
+        else if( lang=='js-server' ) {
+            submit({ eval: true, dump: dump, show: show, lang: 'js-server' });
+        }
+        else if( lang=='js-client' ) {
             var d;
             try { 
                 set_output( '' );
                 save_hist();
-                eval("d=(function(){ " + editor.getValue() + " }) ");
+                eval("d=(function(){ " + aceditor.getValue() + " }) ");
                 d = d();
                 if( show == 'table' && d != undefined ) {
                     show_table( d ); 
@@ -443,7 +469,7 @@ To do:
         }
         else if( lang=='css' ) {
             var style = document.createElement('style');
-            style.innerHTML = editor.getValue();
+            style.innerHTML = aceditor.getValue();
             style.type = 'text/css';
             document.getElementsByTagName('head')[0].appendChild(style);
         } else {
@@ -454,37 +480,37 @@ To do:
     };
 
     var change_theme = function(x) {
-        if( x.checked && editor ) { 
-            var txt = editor.getValue();
-            editor.setOption('theme', x.theme );
-            editor.setValue( txt );
+        if( x.checked && aceditor.editor ) { 
+            var txt = aceditor.getValue();
+            aceditor.setTheme( x.theme );
+            aceditor.setValue( txt );
         }
     };
     var default_lang = function(x) { return Cla.AceEditor.mode.name == x; };
     var default_theme = function(x) { return Cla.AceEditor.theme == x; };
     var change_lang = function(x) {
-        if( x.checked && editor ) { 
-            var txt = editor.getValue();
+        if( x.checked && aceditor.editor ) { 
+            var txt = aceditor.getValue();
             if( ! x.syntax ) {
                x.syntax = ( x.lang == 'sql' ? 'plsql' : x.lang ); 
             }
             if( ! x.text ) {
-                x.text = ( x.lang == 'perl' ? 'Perl' : x.lang=='sql' ? 'SQL' : 'JavaScript' );
+                x.text = ( x.lang == 'perl' ? 'Perl' : x.lang=='sql' ? 'SQL' : x.lang=='js-client' ? 'JS Client' : 'JS Server' );
             }
-            editor.setOption('mode', { name: x.syntax });
-            editor.setValue( txt );
+            aceditor.setMode( x.syntax );
+            aceditor.setValue( txt );
             btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );
             btn_lang.setIcon( '/static/images/icons/' + x.lang + '.png' );
             btn_lang.lang = x.lang;
-            editor.focus();
+            aceditor.focus();
         }
     };
     var change_out = function(x) {
-        if( x.checked && editor ) { 
+        if( x.checked && aceditor.editor ) { 
             btn_out.setText( _('Output: %1', '<b>'+x.text+'</b>') );
             btn_out.setIcon( '/static/images/icons/' + x.out + '.png' );
             btn_out.out = x.out;
-            editor.focus();
+            aceditor.focus();
         }
     };
     var config_menu = new Ext.menu.Menu({
@@ -503,8 +529,9 @@ To do:
     });
     var menu_lang = new Ext.menu.Menu({ 
                 items: [
+                    { text:'JS Server', lang:'js-server', checked: true, syntax:'javascript', group:'repl-lang', checkHandler: change_lang },
                     { text:'Perl', lang:'perl', checked: true, syntax:'perl', group:'repl-lang', checkHandler: change_lang },
-                    { text:'JavaScript', lang:'javascript', syntax:'javascript', checked: true, group:'repl-lang', checkHandler: change_lang  },
+                    { text:'JS Client', lang:'js-client', syntax:'javascript', checked: true, group:'repl-lang', checkHandler: change_lang  },
                     { text:'CSS', lang:'css', syntax:'css', checked: true, group:'repl-lang', checkHandler: change_lang  },
                     { text:'SQL', lang:'sql', syntax:'plsql', checked: true, group:'repl-lang', checkHandler: change_lang }
                 ]
@@ -516,8 +543,8 @@ To do:
                 menu: menu_lang 
             });
 
-    fcode.on('afterrender', function(){
-        change_lang({ text:'Perl', lang:'perl', syntax:'perl', checked: true });
+    aceditor.on('aftereditor', function(){
+        change_lang({ text:'JS Server', lang:'js-server', syntax:'javascript', checked: true });
         change_out({ text:'YAML', out:'yaml', checked: true });
     });
     var menu_out = new Ext.menu.Menu({ 
@@ -551,7 +578,7 @@ To do:
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: fcode.getValue(), o: output.getValue(), tx: text, save: true });
+                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true });
                         }
                     }, undefined, false, last_name );
                 }
@@ -600,26 +627,24 @@ To do:
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var lang = btn_lang.lang;
-                    var from = editor.getCursor(true);
-                    var to = editor.getCursor(false);
-                    if( from.line == to.line && from.ch == to.ch ) { // no selection?
-                        // select all
-                        from = editor.posFromIndex(0);
-                        to = editor.posFromIndex(999999);
-                        editor.setSelection( from, to );
-                    }
+                    if( aceditor.editor.getSelection().isEmpty() ) aceditor.editor.selectAll();
+                    var code =  aceditor.editor.getSelectedText();
                     if( lang == 'perl' ) {
-                        var txt = editor.getSelection();
-                        Baseliner.ajaxEval('/repl/tidy', { code: txt }, function(res){
+                        Baseliner.ajaxEval('/repl/tidy', { code: code }, function(res){
                             if( res.success ) {
-                                editor.replaceSelection( res.code );
-                                editor.focus();
+                                aceditor.editor.session.replace(aceditor.editor.selection.getRange(), res.code); 
+                                aceditor.focus();
                             } else {
                                 set_output( res.msg );
                             }
                         });
                     } else {
-                        editor.autoFormatRange(from,to);
+                        // js
+                        Cla.use('/static/jsbeautifier/beautify.js',function(){
+                            code = js_beautify(code,{});
+                            aceditor.editor.session.replace(aceditor.editor.selection.getRange(), code); 
+                            aceditor.focus();
+                        });
                     }
                 }
             },
@@ -644,18 +669,20 @@ To do:
                         $(form.el.dom).css({ width:'', left:0, right:0, 'z-index':9999 });
                         form.setWidth( $(document).width() );
                         form.setHeight( $(document).height() );
+                        aceditor.focus();
                         //form.doLayout();
                     } else {
                         //$(form.el.dom).css({ position:'', top:'', left:'', bottom:'', right:'' });
                         form.$lastParent.appendChild( form.el.dom );
                         form.doLayout();
                         form.ownerCt.doLayout();
+                        aceditor.focus();
                     }
                 }
             }
     ];
 
-    var form = new Ext.FormPanel({
+    var form = new Baseliner.FormPanel({
             layout   : 'fit',
             region   : 'center',
             split    : true,
@@ -663,7 +690,7 @@ To do:
             frame    : false,
             hideLabel: false,
             tbar     : tbar,
-            items    : [ fcode ]
+            items    : [ aceditor ]
         }
     );
     form.setTitle("REPL");

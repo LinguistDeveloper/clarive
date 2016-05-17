@@ -1,22 +1,25 @@
 package Clarive::App;
 use Mouse;
 use v5.10;
+use Try::Tiny;
 
-has env     => qw(is rw required 0);
-has home    => qw(is rw required 1);
-has base    => qw(is rw required 1);
-has lang    => qw(is ro required 1);
-has debug   => qw(is rw default 0);
-has migrate => qw(is rw default 0);
-has verbose => qw(is rw default 0);
-has trace   => qw(is ro default 0);
-has carp_always   => qw(is ro default 0);
+has env          => qw(is rw required 0);
+has home         => qw(is rw required 1);
+has base         => qw(is rw required 1);
+has lang         => qw(is ro required 1);
+has debug        => qw(is rw default 0);
+has migrate      => qw(is rw default 0);
+has verbose      => qw(is rw default 0);
+has trace        => qw(is ro default 0);
+has carp_always  => qw(is ro default 0);
+has enable_plugins => qw(is rw default 1);
+has plugins_home => qw(is rw default), sub { shift->base . '/plugins' };
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
 has pos    => qw(is ro isa ArrayRef required 1);  # positional cmd line arguments
 has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
-has opts   => qw(is ro isa HashRef required 1);  # merged config + args
+has opts   => qw(is rw isa HashRef required 1);  # merged config + args
 
 has version => qw(is ro isa Str lazy 1), default => sub{
     my $self = shift;
@@ -158,19 +161,25 @@ around 'dump' => sub {
     $data ? warn $self->yaml( $data ) : $self->$orig();
 };
 
+sub options {
+    my $self = shift;
+    my ($cmd) = @_;
+    # merge config, args and specific cmd config: cmd config needs to come in between
+    my %args   = %{ $self->args };
+    my %config = %{ $self->opts };  # use opts since it's resolved fully
+    return { %config, %{ ref $config{$cmd} eq 'HASH' ? $config{$cmd} : {} }, %args };
+}
+
 sub do_cmd {
     my ($self, %p)=@_;
     my ($cmd,$altcmd,$altrun,$cmd_pkg) = @p{ qw/cmd altcmd altrun cmd_pkg/ };
     $cmd or die "ERROR: missing or invalid command";
 
-    # merge config, args and specific cmd config: cmd config needs to come in between
-    my %args   = %{ $self->args };
-    my %config = %{ $self->opts };  # use opts since it's resolved fully
-    my %opts = ( %config, %{ ref $config{$cmd} eq 'HASH' ? $config{$cmd} : {} }, %args );
+    my $opts = $self->options($cmd);
 
     if( $cmd =~ /\./ ) {
         $cmd_pkg = 'bali';
-        $opts{service_name} = $cmd;
+        $opts->{service_name} = $cmd;
     }
     elsif( my @cmds = split '-', $cmd  ) {
         $cmd_pkg = join '::', @cmds;
@@ -182,6 +191,21 @@ sub do_cmd {
 
     my $cmd_package = "Clarive::Cmd::$cmd_pkg";
     my $runsub = 'run';
+
+    # run cmd from plugins?
+    for my $lang ( qw(js pl) ) {
+        if( my $first = $self->plugins->locate_first( "cmd/$cmd.$lang" ) ) {
+            require Clarive::Code;
+            my $stash = {};
+            try {
+                Clarive::Code->new( lang=>$lang, app=>$self, options=>$opts )->run_file( $first->{path}, $stash );
+            } catch {
+                my $err = shift;
+                die $err;
+            };
+            exit 0;
+        }
+    }
 
     # load package
     my $second = 0;
@@ -206,7 +230,7 @@ sub do_cmd {
 
     if( $self->verbose ) {
         say "cmd_package: $cmd_package";
-        say "cmd opts: " . $self->yaml( \%opts );
+        say "cmd opts: " . $self->yaml( $opts );
     }
 
     # check if method is available
@@ -217,11 +241,11 @@ sub do_cmd {
     # run command
     if( $cmd_package->can('new') ) {
         # moose class command
-        my $instance = $cmd_package->new( app=>$self, opts=>\%opts, %opts );
-        $instance->$runsub( %opts );
+        my $instance = $cmd_package->new( app=>$self, opts=>$opts, %$opts );
+        $instance->$runsub( %$opts );
     } else {
         # plain perl package, not a class
-        $cmd_package->$runsub( app=>$self, opts=>\%opts );
+        $cmd_package->$runsub( app=>$self, opts=>$opts );
     }
 }
 
@@ -407,6 +431,13 @@ sub paths_to {
 
     my @paths;
 
+    foreach my $plugin ( $self->plugins->all_plugins ) {
+        my $path_to = Path::Class::dir( $plugin, @args);
+        if (-e $path_to) {
+            push @paths, $path_to;
+        }
+    }
+
     foreach my $feature ( $self->features->list ) {
         my $path_to = $feature->path_to(@args);
         if (-e $path_to) {
@@ -430,6 +461,12 @@ sub features {
     my $self = shift;
     require Clarive::Features;
     return Clarive::Features->new(app=>$self);
+}
+
+sub plugins {
+    my $self = shift;
+    require Clarive::Plugins;
+    return Clarive::Plugins->new(app=>$self);
 }
 
 # singleton Clarive package

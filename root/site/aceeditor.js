@@ -8,7 +8,7 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         // buttons
         var btnUndo = new Ext.Button({ icon:IC('undo'), handler: function(){ self.$undo() } });
         var btnRedo = new Ext.Button({ icon:IC('redo'), handler: function(){ self.$redo() } });
-        self.tbar = [
+        if( self.tbar !== undefined ) self.tbar = [
             btnUndo,btnRedo 
         ];
         self.addEvents( 'aftereditor', 'docchange' );

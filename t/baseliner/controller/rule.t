@@ -513,6 +513,47 @@ subtest 'stmts_save: returns error when cannot compile dsl' => sub {
       };
 };
 
+subtest 'default: call a rule as json webservice' => sub{
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'ws1',
+        rule_type => 'webservice',
+        rule_tree => [
+            {
+                "attributes"=> {
+                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "key"=> "statement.code.server",
+                    "text"=> "Server CODE",
+                    "id"=> "rule-ext-gen38276-1456842988061",
+                    "name"=> "Server CODE",
+                    "data"=> {
+                        "lang"=> "js",
+                        "code"=> q{
+                            var ws = require('cla/ws');
+                            var req = ws.request();
+                            var res = ws.response();
+                            res.data('hola', req.headers('accept-language'));
+                            res.content_type('baz');
+                        }
+                    },
+                },
+                "children"=> [],
+            }
+        ]
+    );
+
+    my $controller = _build_controller();
+    my $c = mock_catalyst_c( req => { params => { }, headers=>{ 'accept-language'=>'foo' }, uri=>URI->new('http://localhost') } );
+    $c->{username} = 'root';    # change context to root
+
+    $controller->default($c,'json',$id_rule);
+
+    my $data = $c->stash->{json};
+    is $c->stash->{json}{hola}, 'foo';
+    is $c->res->{content_type}, 'baz';
+};
+
 done_testing;
 
 sub _setup {

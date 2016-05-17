@@ -223,6 +223,16 @@ sub _parse_var {
         return $str;
     }
 
+    if ( $k =~ /^json\(([^\)]+)\)/ ) {
+        $str = Util->_to_json($vars->{$1} || {});
+        return $str;
+    }
+
+    if ( $k =~ /^yaml\(([^\)]+)\)/ ) {
+        $str = Util->_to_json($vars->{$1} || {});
+        return $str;
+    }
+
     if ( $k =~ /^ci\(([^\)]+)\)\.(.+)/ ) {
         my $ci = ci->new( $vars->{$1} );
         $str = $ci->can($2) ? $ci->$2 : $ci->{$2};

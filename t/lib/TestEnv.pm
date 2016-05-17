@@ -22,6 +22,7 @@ sub version { '' }
 
 use Carp qw(longmess);
 use Test::MockTime ();
+use Cwd ();
 use Path::Class    ();
 use Baseliner::Core::Registry;
 
@@ -38,9 +39,13 @@ sub setup {
     my $class = shift;
     my %opts  = @_;
 
+    my $prev_dir = Cwd::getcwd();
+
     require Clarive::App;
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
     Clarive->config->{root} = Path::Class::dir('root')->absolute;
+
+    chdir $prev_dir;
 
     require Clarive::mdb;
     require Clarive::model;

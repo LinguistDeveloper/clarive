@@ -40,6 +40,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
             BaselinerX::CI::job->new;
         };
 
+sub _lang { 'perl' }
 
 before save_data => sub {
     my ($self, $master_row, $data ) = @_;

@@ -7,6 +7,7 @@ use JSON::XS;
 #use IO::CaptureOutput;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Try::Tiny;
+use Clarive::Code;
 
 BEGIN { extends 'Catalyst::Controller' }
 use experimental 'autoderef';
@@ -180,59 +181,72 @@ sub main : Local {
 
 sub eval : Local {
     my ( $self, $c ) = @_;
-    my $p    = $c->req->parameters;
+
+    my $p = $c->req->parameters;
+
     my $code = $p->{code};
     my $eval = $p->{eval};
+    my $lang = $p->{lang};
     my $dump = $p->{dump} || 'yaml';
     my $sql  = $p->{sql};
 
     # save history
     $self->push_to_history( $c->session, $code, $p->{lang} );
 
-    my ( $res, $err );
+    my ( $ret,    $err );
     my ( $stdout, $stderr );
 
     require Capture::Tiny;
     local $ENV{BASELINER_LOGCOLOR} = 0;
-    my $t0; # = [ gettimeofday ];
-    my $elapsed; # = tv_interval( $t0 );
+    my $t0;         # = [ gettimeofday ];
+    my $elapsed;    # = tv_interval( $t0 );
     _log "================================ REPL START ==========================\n";
-    ($stdout, $stderr) = Capture::Tiny::tee(
+    ( $stdout, $stderr ) = Capture::Tiny::tee(
         sub {
-            if ( $sql ) {
-                $t0=[gettimeofday];
-                eval { $res = $self->sql( $sql, $code ); };
-                $elapsed = tv_interval( $t0 );
-            } else {
-                $code = "use v5.10;\$t0=[gettimeofday];$code";
-                $res  = [ eval $code ];
-                $elapsed = tv_interval( $t0 );
-                $res  = $res->[ 0 ] if @$res <= 1;
+            if ($sql) {
+                $t0 = [gettimeofday];
+                eval { $ret = $self->sql( $sql, $code ); };
+                $elapsed = tv_interval($t0);
             }
+            else {
+                my $code_evaler = Clarive::Code->new( benchmark => 1 );
 
-            #my @arr  = eval $code;
-            #$res = @arr > 1 ? \@arr : $arr[0];
-            $err = $@;
+                my $stash = {};    # TODO it would be great if we could set a YAML stash in the REPL
+
+                my $code_lang;
+                if ( $lang eq 'js-server' ) {
+                    $code_lang = 'js';
+                }
+                else {
+                    $code_lang = 'perl';
+                }
+
+                my $eval_ret = $code_evaler->eval_code( $code, lang => $code_lang, stash => $stash );
+
+                $elapsed = $eval_ret->{elapsed};
+                $ret     = $eval_ret->{ret};
+                $err     = $eval_ret->{error} // '';
+            }
         }
     );
     _log "================================ REPL END ============================\n";
 
-    $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
-    $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) )
-        if $dump eq 'json' && ref $res && !blessed $res;
-    my ( $line ) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
+    $ret = _to_utf8( _dump($ret) ) if $dump eq 'yaml';
+    $ret = _to_utf8( JSON::XS->new->pretty->encode( _damn($ret) ) )
+      if $dump eq 'json' && ref $ret && !blessed $ret;
+    my ($line) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
 
     $c->stash->{json} = {
-        stdout  => $stdout,
-        stderr  => $stderr,
-        elapsed => sprintf('%.08f', $elapsed),
-        result  => "$res",
-        error   => "$err",
+        stdout  => Encode::decode( 'UTF-8', $stdout ),
+        stderr  => Encode::decode( 'UTF-8', $stderr ),
+        elapsed => sprintf( '%.08f',        $elapsed ),
+        result  => "$ret",
+        error   => $err,
         line    => $line,
         success => \( $err ? 0 : 1 ),
     };
-    $c->forward( 'View::JSON' );
-} ## end sub eval :
+    $c->forward('View::JSON');
+}
 
 sub sql {
     my ( $self, $sql_out, $code ) = @_;
@@ -399,35 +413,6 @@ sub save_hist : Local {
     $c->forward( 'View::JSON' );
 } ## end sub save_hist :
 
-sub tree_class : Local {
-    my ( $self, $c ) = @_;
-    my $p       = $c->req->parameters;
-    my $query   = $p->{query};
-    my %cl      = Class::MOP::get_all_metaclasses;
-    my @classes = keys %cl;
-    if ( $p->{filter} ) {
-        @classes = grep /$p->{filter}/, @classes;
-    }
-    $c->stash->{json} = [
-        map {
-            {
-                text      => $_,
-                iconCls => 'default_folders',
-                leaf      => \0,
-                url       => '/repl/class_meth',
-                url_click => '/repl/class_pod',
-                data      => {class => $_}
-
-            }
-            }
-            grep {
-            length $query ? /$query/i : 1
-            }
-            sort @classes
-    ];
-    $c->forward( 'View::JSON' );
-} ## end sub tree_class :
-
 sub _file_for_class {
     my ( $self, $class ) = @_;
     ( my $file = $class ) =~ s/::/\//g;
@@ -506,24 +491,6 @@ sub tree_main : Local {
     my $p = $c->req->parameters;
     $c->stash->{json} = [
         {text => 'History', url => '/repl/tree_hist', leaf => \0, expandable => \1, expanded => \0, iconCls => 'default_folders'},
-        {
-            text       => 'Baseliner Classes',
-            url        => '/repl/tree_class',
-            leaf       => \0,
-            iconCls => 'default_folders',
-            expandable => \1,
-            expanded   => \0,
-            data       => {filter => '^Baseliner'}
-        },
-        {
-            text       => 'Other Classes',
-            url        => '/repl/tree_class',
-            iconCls => 'default_folders',
-            leaf       => \0,
-            expandable => \1,
-            expanded   => \0,
-            data       => {filter => '^(?!Baseliner)'}
-        },
         {text => 'Saved', url => '/repl/tree_saved', leaf => \0, expandable => \1, expanded => \0, iconCls => 'default_folders'},
     ];
     $c->forward( 'View::JSON' );
@@ -567,12 +534,11 @@ sub tidy : Local {
         my $tidied;
         Perl::Tidy::perltidy( argv => ' ', source => \$code, destination => \$tidied );
         $c->stash->{json} = {success => \1, code => $tidied};
-    } ## end try
-    catch {
+    } catch {
         $c->stash->{json} = {success => \0, msg => shift};
     };
     $c->forward( 'View::JSON' );
-} ## end sub tidy :
+}
 
 sub push_to_history {
     my ( $self, $session, $code, $lang, $output ) = @_;
