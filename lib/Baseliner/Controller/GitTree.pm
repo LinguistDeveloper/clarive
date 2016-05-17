@@ -5,10 +5,9 @@ BEGIN { extends 'Catalyst::Controller' }
 use Time::Piece;
 use Try::Tiny;
 use Baseliner::Sugar;
-use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape _warn);
+use Baseliner::Utils qw(_array _throw _loc _log _debug _to_utf8 _utf8_on_all _file _dir _html_escape _warn _is_binary);
 
 use Git;
-use File::LibMagic;
 require Git::Wrapper;
 require Girl;
 
@@ -336,12 +335,11 @@ sub is_binary_file {
 
     my ( $fh, $c ) = $repo->command_output_pipe( 'cat-file', '-p', "HEAD:$filename" );
 
-    my $magic = File::LibMagic->new;
-    my $info  = $magic->info_from_handle($fh);
+    my $is_binary = Util->_is_binary( fh => $fh );
 
     $repo->command_close_pipe( $fh, $c );
 
-    return $info->{description} !~ m/ascii|text/i;
+    return $is_binary;
 }
 
 sub view_file : Local {
