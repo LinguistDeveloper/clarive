@@ -107,6 +107,7 @@ use Exporter::Tidy default => [
     _trend_line
     _truncate
     to_base_class
+    _is_binary
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -131,19 +132,21 @@ use strict;
 use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : ();
 use Class::Date;
-use Hash::Diff ();
-use YAML::XS;
-use List::Util qw(sum);
-use List::MoreUtils qw(:all);
-use Try::Tiny;
-use Path::Class;
-use Term::ANSIColor;
-use Scalar::Util qw(looks_like_number);
-use Encode qw( decode_utf8 encode_utf8 is_utf8 );
-use experimental 'switch', 'autoderef';
 use DateTime::TimeZone;
 use Digest::MD5 ();
+use Encode qw( decode_utf8 encode_utf8 is_utf8 );
+use experimental 'switch', 'autoderef';
+use File::LibMagic;
+use Hash::Diff ();
 use HTML::Restrict;
+use List::MoreUtils qw(:all);
+use List::Util qw(sum);
+use Path::Class;
+use Scalar::Util qw(looks_like_number);
+use Term::ANSIColor;
+use Try::Tiny;
+use YAML::XS;
+
 use Baseliner::I18N;
 use Baseliner::VarsParser;
 
@@ -2409,6 +2412,25 @@ sub _truncate {
     }
 
     return $str;
+}
+
+sub _is_binary {
+    my %p = @_;
+
+    _fail( "sub is_bianry needs one parameter" ) if scalar keys %p != 1;
+    my $magic = File::LibMagic->new;
+    my $info;
+
+    if ( $p{data} ) {
+        $info = $magic->info_from_string( $p{data} );
+    } elsif ( $p{fh} ) {
+        $info = $magic->info_from_handle( $p{fh} );
+    } elsif ( $p{path} ) {
+        $info = $magic->info_from_filename( $p{path} );
+    } else {
+        _fail( "_is_binary accept only parameters: data, fh or path" );
+    }
+    return $info->{description} !~ m/ascii|text/i;
 }
 
 1;
