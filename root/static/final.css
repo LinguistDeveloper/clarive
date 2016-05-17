@@ -10,6 +10,7 @@ body {
     list-style: square !important;
     list-style-position: inside !important;
     margin-bottom: 8px !important;
+    margin-left: 1.5em !important;
 }
 
 .help-doc ol {
@@ -837,13 +838,12 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     height: 16px;
     width: 16px;
 }
-
+/*
 .help_docs .x-panel-body ul > li > img {
     height: 16px;
     width: 16px;
-    vertical-align: top;
 }
-
+*/
 .x-item-disabled {
     color: gray;
     cursor: default !important;

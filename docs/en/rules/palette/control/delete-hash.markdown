@@ -1,0 +1,10 @@
+---
+title: DELETE hashkey
+icon: if.gif
+---
+
+To delete an specified stash variable.
+
+Data editor has the following key:
+
+- **Key**: Key to delete, value column has to be filled with the desired stash variable.

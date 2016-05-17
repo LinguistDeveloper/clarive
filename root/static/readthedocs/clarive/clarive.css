@@ -1,0 +1,43 @@
+/**** mobile ***/
+.wy-nav-top img {
+    width: 193px;
+    height: 40px;
+   /* radius overwrite */
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+}
+
+/**** desktop ***/
+.wy-side-nav-search img {
+    width: 100%;
+    height: 100%;
+   /* radius overwrite */
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+}
+
+.wy-nav-content-wrap {
+    background: #fcfcfc;
+}
+
+code {
+    font-size: 100%;
+}
+
+.hljs {
+    font-size: 100%;
+    padding: 15px 20px 15px 20px;
+}
+
+h4 {
+    color: #111;
+    font-size: 110%;
+    font-weight: bold
+}
+
+/* no home house on top */
+.fa-home:before, .icon-home:before {
+    content: none;
+}

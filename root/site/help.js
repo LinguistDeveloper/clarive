@@ -11,6 +11,7 @@ Cla.help_show = function(params) {
         rootVisible: false,
         root: treeRoot
     });
+    docs_tree.getLoader().preloadChildren = true;
 
     var goto_doc = function(path, opts){
         if( !opts ) opts={};
@@ -34,12 +35,17 @@ Cla.help_show = function(params) {
             help_win.setTitle( data.title || path );
             $(doc_reader.el.dom).find('a').each(function(){
                 var link = $(this);
+                var href = link.attr('href');
                 $(this).on('click', function(){
-                    var href = this.href;
-                    if( !href || href.lenght==0 ) return false;
-                    var rr = href.match(/\/\/[^\/]+\/(.+)$/);
+                    if( !href || href.length ==0 ) return false;
+                    if( /^http/.test(href) ) {
+                        // outside links should open outside Clarive
+                        this.target = '_blank';
+                        return true;
+                    }
+                    var rr = href.match(/[^\/]+\/(.+)$/);
                     if( rr && rr[1] ) {
-                        goto_doc( rr[1] + '.markdown' );
+                        goto_doc( href + '.markdown' );
                     }
                     return false;
                 });
@@ -56,12 +62,15 @@ Cla.help_show = function(params) {
         if( lo.baseParams.query ){
             var docs = [];
             docs_tree.root.cascade(function(nd){
-                if( ! nd.isLeaf() ) return;
-                docs.push({ 
-                    title: nd.attributes.text, 
-                    found: nd.attributes.search_results.found, 
-                    matches: nd.attributes.search_results.matches, 
-                    path: nd.attributes.path, 
+                if( ! nd.isLeaf() ) {
+                    nd.expand();
+                    return;
+                }
+                docs.push({
+                    title: nd.attributes.text,
+                    found: nd.attributes.search_results.found,
+                    matches: nd.attributes.search_results.matches,
+                    path: nd.attributes.path,
                     data: nd.attributes.data
                 });
             });
@@ -129,7 +138,7 @@ Cla.help_show = function(params) {
         doc_reader.is_loaded = true;
         help_win.setTitle( _('Help') );
     };
-    var search_box = new Baseliner.SearchSimple({ 
+    var search_box = new Baseliner.SearchSimple({
         width: 240,
         handler: function(){
             var query = search_box.getValue();
@@ -155,14 +164,14 @@ Cla.help_show = function(params) {
         check_btns();
         if( help_win.history_curr <= 0 )  return;
         var path = help_win.history[ --help_win.history_curr ];
-        if( path ) goto_doc( path, { from_hist : true } ); 
+        if( path ) goto_doc( path, { from_hist : true } );
         check_btns();
     }});
     var btn_right = new Ext.Button({ icon: IC('arrow_right.gif'), tooltip: _('Forward'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr >= help_win.history.length ) return;
         var path = help_win.history[ ++help_win.history_curr ];
-        if( path ) goto_doc( path, { from_hist : true } ); 
+        if( path ) goto_doc( path, { from_hist : true } );
         check_btns();
     }});
     var check_btns = function(){
@@ -264,12 +273,12 @@ Cla.help_push = function(params) {
     var item = {
         text: params.title,
         help_path: params.path,
-        handler: function() { 
-            Cla.help_show({ path: params.path +'.markdown' });
+        handler: function() {
+            Cla.help_show({ path: params.path+'.markdown' });
         },
         icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
     };
-    Cla.help_items = Cla.help_items.splice(0,9); 
+    Cla.help_items = Cla.help_items.splice(0,9);
     Cla.help_items.unshift( item );
     Cla.help_menu.removeAll();
     var added={};

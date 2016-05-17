@@ -1454,7 +1454,7 @@
                 autoScroll: true,
                 height:200,         
                 rootVisible: true,
-                preloadChildren: true,
+                preloadChildren: true,  // XXX this doesnt work here, needs to be tree_projects.getLoader().preloadChildren = true;
                 root: treeRoot
             });
             
