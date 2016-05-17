@@ -1,8 +1,8 @@
 <%args>
     $topic_mid
-    $category_name => undef
-    $category_color => undef
-    $category_id => undef
+    $category_name
+    $category_color
+    $category_id
     $swEdit
     $permissionEdit
     $permissionDelete
@@ -48,7 +48,9 @@
         html_buttons: html_buttons,
         status_items_menu: status_items_menu,
         menu_deploy: menu_deploy,
-        id_category: category_id
+        id_category: category_id,
+        category_name: category_name,
+        category_color: category_color
     });
 
     

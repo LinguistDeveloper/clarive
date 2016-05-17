@@ -2170,6 +2170,73 @@ subtest 'view: strips html from fields' => sub {
     is $topic_data->{content},     'Bye, bye!';
 };
 
+subtest 'view: sets correct category name/color' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $id_changeset_rule = _create_changeset_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "description",
+                        "fieldletType" => "fieldlet.system.description",
+                        "id_field"     => "description",
+                    },
+                    "key" => "fieldlet.system.description",
+                    name  => 'Description',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "content",
+                        "fieldletType" => "fieldlet.html_editor",
+                        "id_field"     => "content",
+                    },
+                    "key" => "fieldlet.html_editor",
+                    name  => 'Content',
+                }
+            },
+        ]
+    );
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'user_story',
+        id_rule      => $id_changeset_rule,
+        color        => '#FF0000',
+        id_status    => $status->mid,
+        is_changeset => 1
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        status      => $status,
+        id_category => $id_changeset_category,
+        title       => "Topic",
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    is $stash->{category_color}, '#FF0000';
+    is $stash->{category_name},  'user_story';
+};
+
 subtest 'check_modified_on: check topic was modified before' => sub {
     _setup();
 
