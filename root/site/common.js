@@ -2310,7 +2310,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         }
         return true;
     },
-    click_handler : function(item){
+    click_handler: function(item) {
         var n = item.node;
         var ndata = n.attributes.data;
         if (!ndata) return;
@@ -2318,34 +2318,40 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var c = ndata.click;
         var params = n.attributes.data;
 
-        if( !c ) return;
-        
-        if(n.attributes.text == _('Topics')){
+        if (!c) return;
+
+        if (n.attributes.text == _('Topics')) {
             params.id_project = n.parentNode.attributes.data.id_project;
         }
-        if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-        if( c.type == 'comp' ) {
-            if(n.attributes.topic_name) {
+        if (params.tab_icon == undefined) params.tab_icon = c.icon;
+        if (c.type == 'comp') {
+            if (n.attributes.topic_name) {
                 var topic = n.attributes.topic_name;
-                var title = Baseliner.topic_title( topic.mid, _(topic.category_name), topic.category_color );
-                Baseliner.show_topic( topic.mid, title, { topic_mid: topic.mid, title: title, _parent_grid: undefined } );
-            } else if(n.attributes.category_name) {
+                var title = Baseliner.topic_title(topic.mid, _(topic.category_name), topic.category_color);
+                Baseliner.show_topic(topic.mid, title, {
+                    topic_mid: topic.mid,
+                    title: title,
+                    _parent_grid: undefined
+                });
+            } else if (n.attributes.category_name) {
                 var category = n.attributes.category_name;
-                var title = Baseliner.category_title( category.category_id, category.category_name, category.category_color );
-                Baseliner.show_category( category.category_id, title, { category_id: category.category_id, title: title } );
-            }
+                var title = Baseliner.category_title(category.category_id, category.category_name, category.category_color);
+                Baseliner.show_category(category.category_id, title, {
+                    category_id: category.category_id,
+                    title: title
+                });
+            } else Baseliner.add_tabcomp(c.url, _(c.title), params);
 
-            else Baseliner.add_tabcomp( c.url, _(c.title), params );
-            
-        } else if( c.type == 'html' ) {
-            Baseliner.add_tab( c.url, _(c.title), params );
-        } else if( c.type == 'eval' ) {
-            Baseliner.ajax_json( c.url, params, function(res){
-            });
-        } else if( c.type == 'iframe' ) {
-            Baseliner.add_iframe( c.url, _(c.title), params );
+        } else if (c.type == 'html') {
+            Baseliner.add_tab(c.url, _(c.title), params);
+        } else if (c.type == 'eval') {
+            Baseliner.ajax_json(c.url, params, function(res) {});
+        } else if (c.type == 'iframe') {
+            Baseliner.add_iframe(c.url, _(c.title), params);
+        } else if (c.type == 'download') {
+            Baseliner.download_file(c.url);
         } else {
-            Baseliner.message( 'Invalid or missing click.type', '' );
+            Baseliner.message('Invalid or missing click.type', '');
         }
     },
     refresh : function(callback){

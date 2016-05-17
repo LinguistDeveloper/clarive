@@ -756,6 +756,26 @@ if( Prefs.routing ) {
         };
     };
 
+    Baseliner.download_file = function(url) {
+        var exportUrl = url;
+        var body = Ext.getBody();
+        var frame = body.createChild({
+            tag: 'iframe',
+            cls: 'x-hidden',
+            id: 'hiddenform-iframe',
+            name: 'iframe'
+        });
+
+        var form = body.createChild({
+            tag: 'form',
+            cls: 'x-hidden',
+            id: 'hiddenform-form',
+            action: exportUrl,
+            target: 'iframe'
+        });
+        form.dom.submit();
+    };
+
     Baseliner.add_iframe = function(url,title,params) {
         var info_args = arguments;
         var tabpanel = Baseliner.tabpanel();
