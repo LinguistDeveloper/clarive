@@ -1,9 +1,10 @@
 package Baseliner::JobLogger;
 use Moose;
 
-use Try::Tiny;
-use Encode ();
 use Compress::Zlib qw(compress);
+use Encode ();
+use Try::Tiny;
+
 use Baseliner::Utils qw(_log _dump);
 
 with 'Baseliner::Role::Logger';
@@ -127,7 +128,11 @@ sub common_log {
         $doc->{rule} =  $self->job->id_rule if defined $self->job->id_rule;
 
         if ($data) {
-            my $filtered_data = Util->hide_passwords($data);
+            my $filtered_data = $data;
+            if( !Util->_is_binary(data => $data) ){
+                $filtered_data = Util->hide_passwords($data);
+            }
+
             $filtered_data = try { compress($filtered_data) } catch { $filtered_data };
             my $id_asset = mdb->grid_add(
                 $filtered_data,
