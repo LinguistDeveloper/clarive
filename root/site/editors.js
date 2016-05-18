@@ -5,14 +5,13 @@ Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
         Baseliner.HtmlEditor.superclass.initComponent.call(this);
         if( Ext.isChrome ) {
             this.on('initialize', function(ht){
-                ht.iframe.contentDocument.onpaste = function(e){ 
+                ht.iframe.contentDocument.ondrop = function(e){
+                    var items = e.dataTransfer.items;
+                    render_url(self, items, 'at_cursor');
+                };
+                ht.iframe.contentDocument.onpaste = function(e){
                     var items = e.clipboardData.items;
-                    var blob = items[0].getAsFile();
-                    var reader = new FileReader();
-                    reader.onload = function(event){
-                        self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                    }; 
-                    reader.readAsDataURL(blob); 
+                    render_url(self, items, 'at_cursor');
                 };
             }, this);
         }
@@ -59,7 +58,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                         self.cleditor.refresh();
                         self.cleditor.focus();
                         self.fullscreen = true;
-                        
+
                         // fix the iframe height, otherwise full window text looks awkward
                         var iframe = self.cleditor.$frame;
                         self.iframe_last_height = iframe.height();
@@ -81,14 +80,14 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                 if( this.autofocus ) self.cleditor.focus();
             });
             if( this.autofocus ) this.cleditor.focus();
-            
+
         });
         if( Ext.isChrome ) {
             var foo_load = function(i){
                 if( i < 0 ) return;
             setTimeout( function(){  // TODO detect when the CLEditor is loaded
-            
-                    if( !self.cleditor ) 
+
+                    if( !self.cleditor )
                         foo_load( i-- );
                     else {
                         var iframe = self.editor_iframe() ;
@@ -98,16 +97,13 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                             iframe.contentDocument.documentElement.style.height = '100%'
                             self.fireEvent('aftereditor', self );
                         }
-                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
+                        self.cleditor.$frame[0].contentDocument.ondrop = function(e){
+                            var items = e.dataTransfer.items;
+                            render_url(self, items);
+                        };
+                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){
                             var items = e.clipboardData.items;
-                            var blob = items[0].getAsFile();
-                            var reader = new FileReader();
-                            reader.onload = function(event){
-                                self.cleditor.execCommand('inserthtml',
-                                    String.format('<img src="{0}" />', event.target.result) );
-                                //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                            }; 
-                            reader.readAsDataURL(blob); 
+                            render_url(self, items);
                         };
                     }
                 }, 800);
@@ -131,7 +127,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     show : function(){
         Baseliner.CLEditor.superclass.show.apply(this, arguments);
         var dom = this.editor_dom() ;
-        if( dom ) $( dom ).show(); 
+        if( dom ) $( dom ).show();
     },
     hide : function(){
         Baseliner.CLEditor.superclass.hide.apply(this, arguments);
@@ -143,7 +139,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     }
 });
 
-// in use by GridEditor 
+// in use by GridEditor
 Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
     fullscreen: false,
     autofocus: false,
@@ -197,27 +193,25 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
                 self.cleditor.refresh();
                 if( this.autofocus ) self.cleditor.focus();
             });
-            if( this.autofocus ) 
+            if( this.autofocus )
                 this.cleditor.focus();
         });
         if( Ext.isChrome ) {
             var foo_load = function(i){
                 if( i < 0 ) return;
                 setTimeout( function(){  // TODO detect when the CLEditor is loaded
-                    if( !self.cleditor ) 
+                    if( !self.cleditor ){
                         foo_load( i-- );
-                    else
-                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
-                            var items = e.clipboardData.items;
-                            var blob = items[0].getAsFile();
-                            var reader = new FileReader();
-                            reader.onload = function(event){
-                                self.cleditor.execCommand('inserthtml',
-                                    String.format('<img src="{0}" />', event.target.result) );
-                                //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                            }; 
-                            reader.readAsDataURL(blob); 
+                    }else{
+                        self.cleditor.$frame[0].contentDocument.ondrop = function(e){
+                            var items = e.dataTransfer.items;
+                            render_url(self, items);
                         };
+                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){
+                            var items = e.clipboardData.items;
+                            render_url(self, items);
+                        };
+                    }
                 }, 500);
             };
             foo_load(5);
@@ -229,7 +223,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
     show : function(){
         Baseliner.CLEditorField.superclass.show.apply(this, arguments);
         var dom = this.editor_dom() ;
-        if( dom ) $( dom ).show(); 
+        if( dom ) $( dom ).show();
     },
     hide : function(){
         Baseliner.CLEditorField.superclass.hide.apply(this, arguments);
@@ -245,10 +239,10 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
  *
  * CodeMirror Editor
  *
- *     new Baseliner.CodeMirror({ value: 'my $x = 100;', 
+ *     new Baseliner.CodeMirror({ value: 'my $x = 100;',
  *       run: function(){
  *         alert(this.getValue())
- *       } 
+ *       }
  *     });
  *
  *
@@ -265,10 +259,10 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
         };
         self.addEvents(['aftereditor']);
         self.keys = Ext.apply({
-            "Cmd-E": run, 
-            "Cmd-Enter": run, 
-            "Ctrl-Enter": run, 
-            "Ctrl-E": run, 
+            "Cmd-E": run,
+            "Cmd-Enter": run,
+            "Ctrl-Enter": run,
+            "Ctrl-E": run,
             "Ctrl-Space": function(cm) {
                 CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
             }
@@ -290,7 +284,7 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
            tabSize: 4,
            electricChars: false,  // allow editor to reindent according to certain chars
            matchBrackets: true,
-           extraKeys: self.keys 
+           extraKeys: self.keys
         }, self.editor );
         if( ! Baseliner.CodeMirrorDefaults ) {
             Baseliner.CodeMirrorDefaults = self.editor_defaults;
@@ -307,13 +301,13 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
         });
     },
     get_save_data : function(){
-        return this.editor 
-            ? this.editor.getValue() 
+        return this.editor
+            ? this.editor.getValue()
             : Baseliner.CodeMirror.superclass.getValue.call(this);
     },
     getValue : function(){
-        return this.editor 
-            ? this.editor.getValue() 
+        return this.editor
+            ? this.editor.getValue()
             : Baseliner.CodeMirror.superclass.getValue.call(this);
     },
     run : function(){
@@ -323,14 +317,14 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
         switch( this.theme ) {
             case 'dark' : return 'lesser-dark';
             case 'light' : return '';
-            default: return this.theme; 
+            default: return this.theme;
         }
-    }, 
+    },
     focus : function(){
-        if( this.editor ) 
+        if( this.editor )
             this.editor.focus();
     },
-    setTheme: function(theme) {   
+    setTheme: function(theme) {
         this.editor.setOption('theme', theme );
     },
     setMode: function(mode){
@@ -346,8 +340,8 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
 
 Baseliner.Editor = Ext.extend( Baseliner.CLEditor, {});
 
-Baseliner.CodeEditor = Ext.isIE 
-    ? Ext.extend(Baseliner.CodeMirror,{}) 
+Baseliner.CodeEditor = Ext.isIE
+    ? Ext.extend(Baseliner.CodeMirror,{})
     : Ext.extend( Cla.AceEditor, {});
 
 Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
@@ -374,14 +368,14 @@ Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
                 /* var com = code_field.getEl().dom;
                 code = CodeMirror(function(elt) {
                     com.parentNode.replaceChild( elt, com );
-                }, { 
+                }, {
                     value: comment_field.getValue(),
                     lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true
                 });
                 */
             }
         };
-        Baseliner.MultiEditor.superclass.constructor.call(this,Ext.apply({ 
+        Baseliner.MultiEditor.superclass.constructor.call(this,Ext.apply({
             bbar: [ btn_html, btn_code ]
         },c));
         var self = this;
@@ -407,7 +401,7 @@ Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
 
             var ed = new Baseliner.Pagedown({ fieldLabel: 'Comments', value: 'eee' });
             var w = new Baseliner.Window({
-                width: 800, height: 450, layout:'fit', 
+                width: 800, height: 450, layout:'fit',
                 items: new Ext.FormPanel({
                     items: ed
                 })
@@ -429,20 +423,20 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         var div_btn = document.createElement('div');
         div_btn.id = 'wmd-button-bar-' + self.id;
         this.el.dom.appendChild( div_btn );
-        
+
         var width_parent = self.container.getWidth() - 8;
 
         self.$field = document.createElement('textarea');
         self.$field.className = 'wmd-input';
         self.$field.style['height'] = self.height + 'px';
-        self.$field.style['width'] = width_parent + 'px'; 
-        if( self.font ) 
+        self.$field.style['width'] = width_parent + 'px';
+        if( self.font )
             self.$field.style['font'] = self.font;
         self.$field.id = 'wmd-input-' + self.id;
         self.$field.value =  self.value ;
         self.$field.name =  self.name ;
         this.el.dom.appendChild( self.$field );
-        
+
         self.label_preview = document.createElement('p');
         self.label_preview.innerHTML = _('Preview') + ':';
         this.el.dom.appendChild( self.label_preview );
@@ -453,22 +447,22 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         self.preview = document.createElement('div');
         self.preview.id = "wmd-preview-" + self.id;
         self.preview.className = "well fieldlet-html";
-        self.preview.style['paddingRight'] = '40px'; 
+        self.preview.style['paddingRight'] = '40px';
         // original classes for preview: self.preview.className = "wmd-panel wmd-preview";
-        self.boot.appendChild( self.preview );   
-        this.el.dom.appendChild( self.boot );   
-        
+        self.boot.appendChild( self.preview );
+        this.el.dom.appendChild( self.boot );
+
         self.converter = Markdown.getSanitizingConverter();
         self.converter.hooks.chain("preBlockGamut", function (text, rbg) {
             return text.replace(/^ {0,3}""" *\n((?:.*?\n)+?) {0,3}""" *$/gm, function (whole, inner) {
                 return "<blockquote>" + rbg(inner) + "</blockquote>\n";
             });
-        }); 
+        });
         self.editor = new Markdown.Editor(self.converter, '-' + self.id);
         self.editor.run();
     },
     // private
-    redraw : function(){ 
+    redraw : function(){
     },
     initEvents : function(){
         this.originalValue = this.getValue();
@@ -485,7 +479,7 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         //this.$field.style['width'] = ( w - 200 ) + 'px';
         alert( w );
         var width_parent = self.container.getWidth() - 8;
-        this.$field.style['width'] = width_parent + 'px'; 
+        this.$field.style['width'] = width_parent + 'px';
         this.preview.style['width'] = width_parent + 'px';
     },
     setSize : Ext.emptyFn,
@@ -496,3 +490,16 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
     markInvalid : Ext.emptyFn,
     clearInvalid : Ext.emptyFn
 });
+
+var render_url = function(self, items, at_cursor) {
+    var blob = items[0].getAsFile();
+    var reader = new FileReader();
+    reader.onload = function(event){
+        if(at_cursor){
+            self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
+        }else{
+            self.cleditor.execCommand('inserthtml', String.format('<img src="{0}" />', event.target.result) );
+        }
+    };
+    reader.readAsDataURL(blob);
+}

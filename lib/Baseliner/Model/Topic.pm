@@ -2250,7 +2250,7 @@ sub deal_with_images{
         $img_data = from_base64( $img_data );
         my $img_id = mdb->grid_insert( $img_data, parent_mid=>$topic_mid, content_type=>$ct );
         # my $img_md5 = mdb->grid->get( $img_id )->{md5};
-        $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
+        $field =~ s{<img src="data:image/.*;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
     }
 
     for my $img ( $field =~ m{<img*(.*?)>} ){
