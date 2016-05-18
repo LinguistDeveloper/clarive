@@ -1,5 +1,5 @@
 <%args>
-  $natures_json    => $ARGS{natures_json} 
+  $natures_json    => $ARGS{natures_json}
   $job_states_json => $ARGS{job_states_json}
   $envs_json       => $ARGS{envs_json}
   $types_json      => $ARGS{types_json}
@@ -16,86 +16,86 @@
             path: 'getting-started/monitor'
         });
     if( !params ) params = {};
-    var view_natures = <% $view_natures ? 'false' : 'true' %>; 
+    var view_natures = <% $view_natures ? 'false' : 'true' %>;
     var state_id = 'job-monitor';
     var current_state = params.current_state || {};
-   
+
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
     // Reference: http://es5.github.com/#x15.4.4.19
     if (!Array.prototype.map) {
       Array.prototype.map = function(callback, thisArg) {
-    
+
         var T, A, k;
-    
+
         if (this == null) {
           throw new TypeError(" this is null or not defined");
         }
-    
+
         // 1. Let O be the result of calling ToObject passing the |this| value as the argument.
         var O = Object(this);
-    
+
         // 2. Let lenValue be the result of calling the Get internal method of O with the argument "length".
         // 3. Let len be ToUint32(lenValue).
         var len = O.length >>> 0;
-    
+
         // 4. If IsCallable(callback) is false, throw a TypeError exception.
         // See: http://es5.github.com/#x9.11
         if ({}.toString.call(callback) != "[object Function]") {
           throw new TypeError(callback + " is not a function");
         }
-    
+
         // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
         if (thisArg) {
           T = thisArg;
         }
-    
+
         // 6. Let A be a new array created as if by the expression new Array(len) where Array is
         // the standard built-in constructor with that name and len is the value of len.
         A = new Array(len);
-    
+
         // 7. Let k be 0
         k = 0;
-    
+
         // 8. Repeat, while k < len
         while(k < len) {
-    
+
           var kValue, mappedValue;
-    
+
           // a. Let Pk be ToString(k).
           //   This is implicit for LHS operands of the in operator
           // b. Let kPresent be the result of calling the HasProperty internal method of O with argument Pk.
           //   This step can be combined with c
           // c. If kPresent is true, then
           if (k in O) {
-    
+
             // i. Let kValue be the result of calling the Get internal method of O with argument Pk.
             kValue = O[ k ];
-    
+
             // ii. Let mappedValue be the result of calling the Call internal method of callback
             // with T as the this value and argument list containing kValue, k, and O.
             mappedValue = callback.call(T, kValue, k, O);
-    
+
             // iii. Call the DefineOwnProperty internal method of A with arguments
             // Pk, Property Descriptor {Value: mappedValue, Writable: true, Enumerable: true, Configurable: true},
             // and false.
-    
+
             // In browsers that support Object.defineProperty, use the following:
             // Object.defineProperty(A, Pk, { value: mappedValue, writable: true, enumerable: true, configurable: true });
-    
+
             // For best browser support, use the following:
             A[ k ] = mappedValue;
           }
           // d. Increase k by 1.
           k++;
         }
-    
+
         // 9. return A
         return A;
-      };      
+      };
     }
     // -- END --
-    
+
     var is_portlet = '<% $c->stash->{is_portlet} %>';
     var ps = is_portlet ? 10 : 25; //page_size
     var last_magic = 0;
@@ -104,12 +104,12 @@
     var div2   = '</div>';
     // La fuente de Datos JSON con todos el listado:
     var reader = new Ext.data.JsonReader({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         id: 'id'
-        }, 
-        [ 
+        },
+        [
             {  name: 'id' },
             {  name: 'mid' },
             {  name: 'name' },
@@ -155,7 +155,7 @@
             {  name: 'status' },
             {  name: 'progress' },
             {  name: 'job_family' },
-            {  name: 'natures' }, 
+            {  name: 'natures' },
             {  name: 'subapps' },
             {  name: 'can_restart' },
             {  name: 'can_cancel' },
@@ -172,13 +172,13 @@
            { xtype:'hidden', name:'total_rows' }
         ]
     });
-    
+
     var form_report_submit = function(args) {
         var data = { rows:[], columns:[] };
         // find current columns
         var cfg = grid.getColumnModel().config;
-        
-        if( !args.store_data ) { 
+
+        if( !args.store_data ) {
             var row=0, col=0;
             var gv = grid.getView();
             for( var row=0; row<9999; row++ ) {
@@ -186,13 +186,13 @@
                 var d = {};
                 for( var col=0; col<9999; col++ ) {
                     if( !cfg[col] ) break;
-                    if( cfg[col].hidden || cfg[col]._checker ) continue; 
-                    var cell = gv.getCell(row,col); 
+                    if( cfg[col].hidden || cfg[col]._checker ) continue;
+                    var cell = gv.getCell(row,col);
                     if( !cell ) break;
                     //console.log( cell.innerHTML );
                     d[ cfg[col].dataIndex ] = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
                 }
-                data.rows.push( d ); 
+                data.rows.push( d );
             }
         } else {
             // get the grid store data
@@ -200,18 +200,18 @@
                 var d = rec.data;
                 var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
                 d.topic_name = topic_name;
-                data.rows.push( d ); 
+                data.rows.push( d );
             });
         }
-        
+
         for( var i=0; i<cfg.length; i++ ) {
             //console.log( cfg[i] );
-            if( ! cfg[i].hidden && ! cfg[i]._checker ) 
+            if( ! cfg[i].hidden && ! cfg[i]._checker )
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
-        
+
         // report so that it opens cleanly in another window/download
-        var form = form_report.getForm(); 
+        var form = form_report.getForm();
         form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
         form.findField('title').setValue( _('Monitor') );
         form.findField('rows').setValue( grid.store.getCount() );
@@ -221,7 +221,7 @@
         target.nodeValue = args.target || "_blank";
         el.setAttributeNode(target);
         el.action = args.url;
-        el.submit(); 
+        el.submit();
     };
 
     var btn_csv = {
@@ -238,13 +238,13 @@
         iconCls: 'x-btn-icon',
         menu: [ btn_csv ]
     });
-    
+
     var btn_clear_state = new Ext.Button({
         icon: '/static/images/icons/reset-grey.png',
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
-            // deletes 
+            // deletes
             var cp=new Ext.state.CookieProvider();
             Ext.state.Manager.setProvider(cp);
             Ext.state.Manager.clear( state_id );
@@ -255,14 +255,14 @@
     // Nature Filters
 
     var natures = <% $natures_json %>;
-    
-    
+
+
     var nature_hash = {}; // this is used by the render_nature
     Ext.each( natures, function(nat) {
-        nature_hash[ nat.ns ] = nat; 
+        nature_hash[ nat.ns ] = nat;
     });
-    
-            
+
+
     var nature_menu = [{
           text: _('All-f'),
           handler: function (item) {
@@ -275,7 +275,7 @@
     nature_menu.push( natures.map(function (x) {
 
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
-      var nature_name = x.name == 'ZOS'      ? 'z/OS' 
+      var nature_name = x.name == 'ZOS'      ? 'z/OS'
                       : x.name == 'FICHEROS' ? 'Ficheros'
                       : x.name == 'TODAS'    ? 'Todas'
                       : x.name
@@ -283,7 +283,7 @@
       return {
         text: nature_name,
         //icon: '/static/images/nature/' + x.icon + '.png',
-        handler: function (item) { 
+        handler: function (item) {
           item.parentMenu.ownerCt.setText( '<b>' + _('Natures: %1',  nature_name) + '</b>' );
           //store.baseParams.filter_nature = x.ns ;
           store.baseParams.filter_nature = x.id ;
@@ -292,7 +292,7 @@
         }
       }
     }));
-    
+
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
       tooltip: _('Natures'),
@@ -303,7 +303,7 @@
     // Job Status Filter
 
     var job_states_json = <% $job_states_json %>;
-    
+
     //var job_states_check_state = {
     //  CANCELLED: true,
     //  ERROR: true,
@@ -313,14 +313,14 @@
     //  RUNNING: true,
     //  WAITING: true,
     //};
-    
+
     var job_states_check_state = {};
     for (i=0; i<job_states_json.length;i++){
         job_states_check_state[job_states_json[i].name] = true;
     }
 
     var to_perl_bool = function (obj) { // Object -> Object
-      // Converts Javascript booleans to Perl's C-like notation. Just in case. 
+      // Converts Javascript booleans to Perl's C-like notation. Just in case.
       var ret = obj;
       for (property in ret) {
         ret[property] = ret[property] ? 1 : 0;
@@ -337,19 +337,19 @@
       return;
     };
     var item_job_states = [
-        {  text: _('All'), hideOnClick:false, handler: function(){ 
+        {  text: _('All'), hideOnClick:false, handler: function(){
               menu_job_states.items.each( function(i){
                   if( i.checked===false ) i.setChecked(true,false);
               });
         }},
-        {  text: _('Check None'), hideOnClick:false, handler: function(){ 
+        {  text: _('Check None'), hideOnClick:false, handler: function(){
               menu_job_states.items.each( function(i){
                   if( i.checked===true ) i.setChecked(false,false);
               });
         }},
         '-'
     ];
-    item_job_states.push(  
+    item_job_states.push(
         job_states_json
             .map(function (x) {
               return {
@@ -365,7 +365,7 @@
                   }
               }
             })
-            .sort(function(a,b){ 
+            .sort(function(a,b){
                 if(a.text== b.text) return 0;
                 return a.text > b.text? 1: -1;
             })
@@ -440,7 +440,7 @@
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('static')) + '</b>' );
                store.baseParams.filter_type = 'static';
                store.reload();
-            }            
+            }
           }
       ]
     });
@@ -455,7 +455,7 @@
             //groupField: 'when',
             sortInfo: { field: 'starttime', direction: "DESC" }
     });
-    
+
     // var paging = new Ext.PagingToolbar({
     //         store: store,
     //         pageSize: ps,
@@ -518,14 +518,14 @@
     });
     //---------- Refreshments
     var task_interval_base = 5000;  // start with 5 seconds and grow from there
-    var task_interval_increment = 500;  // grow .5 sec slower 
-    var task_interval_max = 30000;  // max 30 sec refresh 
+    var task_interval_increment = 500;  // grow .5 sec slower
+    var task_interval_max = 30000;  // max 30 sec refresh
     var task_interval = task_interval_base;
     var task = {
         run: function() {
             var ids=[];
             var top_id=0;
-            //var q = store.baseParams['query']; //current search query 
+            //var q = store.baseParams['query']; //current search query
             //if( q != undefined && q !='' ) { return; } //no refresh while querying
             refresh_button_wait_on();
             var flag_running = false;
@@ -546,13 +546,13 @@
             } else {
                 task_interval = task_interval < task_interval_max ? task_interval+task_interval_increment : task_interval_max;
             }
-            
+
             var swRefresh = true;
-            
+
             if(Ext.getCmp('main-panel').getActiveTab().title != 'Monitor' && Ext.isIE8 ){
                 swRefresh = false;
             }
-            
+
             if(swRefresh){
                 var filter = store.baseParams || {};
                 // send from and where, to determine if there's a more recent job
@@ -568,9 +568,9 @@
                         last_magic = res.magic;
                         real_top = res.real_top;
                     }
-                });                
+                });
             }
-            
+
             if( last_interval != task_interval ) {
                 autorefresh.stop(task);
                 task.interval = task_interval;
@@ -584,8 +584,7 @@
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
     var refresh_button = new Ext.Button({ tooltip: _('Refresh'),
-
-        icon: '/static/images/icons/refresh.svg', 
+        icon: '/static/images/icons/refresh.svg',
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -627,27 +626,27 @@
             layoutConfig: { align:'stretch' },
             items: [
                 { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.svg', 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.svg',
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
-                { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.png', 
+                { flex:1, layout:'hbox', padding: 20,
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.png',
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
-                { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete_.png', 
+                { flex:1, layout:'hbox', padding: 20,
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete_.png',
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
-                { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/paused.png', 
+                { flex:1, layout:'hbox', padding: 20,
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/paused.png',
                         handler:function(){trap_do(mid,'pause')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The trap timeout countdown will be paused') }]}
             ]
         });
         trap_win.show();
     }
-                
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif', 
+
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -668,7 +667,7 @@
                     });
                 }
             }
-        } 
+        }
     });
 
     var run_inproc = function(){
@@ -677,9 +676,9 @@
         if( sel ) {
             var cons_inproc = new Baseliner.MonoTextArea({ value:'' });
             var cons_pan = new Ext.Panel({ layout:'fit', items: cons_inproc, wait: _('LOADING') });
-            var win = new Baseliner.Window({ title:_('Run In-process: %1', sel.data.name), 
+            var win = new Baseliner.Window({ title:_('Run In-process: %1', sel.data.name),
                 layout: 'fit', width: 800, height: 600, items: cons_pan });
-            cons_inproc.on('afterrender', function(){ 
+            cons_inproc.on('afterrender', function(){
                 Baseliner.showLoadingMask( cons_pan.el );
                 Baseliner.ci_call( sel.data.mid, 'run_inproc', { mid: sel.data.mid }, function(res){
                     Baseliner.message( _('Run In-Process'), _('Job %1 in-process run finished', sel.data.name ) );
@@ -719,7 +718,7 @@
                         var fd = document.all.FD || document.all.FrameDownload;
                         fd.src =  '/job/export?mid=' + sel.data.mid ;
                     } else {
-                        Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                        Ext.Msg.alert(_('Error'), _('Select a row first'));
                     };
                 }
             }
@@ -730,8 +729,8 @@
         var sm = grid.getSelectionModel();
         var sel = sm.getSelected();
         if( sel ) {
-            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?'), 
-                function(btn){ 
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?'),
+                function(btn){
                     if(btn=='yes') {
                         Baseliner.ajaxEval('/job/rollback', sel.data, function(res){
                                 Baseliner.message( _('Rollback'), res.msg ) ;
@@ -741,7 +740,7 @@
                                 // TODO use an extjs Grid with links that open the job dashboard for each, and cols for Project and BL
                                 var msg = function(){/*
                                       <div id="boot">
-                                      <div class="container_24"> 
+                                      <div class="container_24">
                                         <div class="grid_24">
                                         <h4>
                                             <img src="/static/images/warnmsg.png" style="vertical-align:middle">
@@ -771,7 +770,7 @@
                                 */}.tmpl({ msg: res.msg, deps: res.deps });
                                 var win = new Baseliner.Window({
                                     width: 800, height: 400, layout:'fit', //layout:'vbox', layoutConfig: { align:'stretch' },
-                                    title: _('Dependencies'), 
+                                    title: _('Dependencies'),
                                     items: [
                                         { xtype:'panel', autoScroll: true, padding: 20, html: msg }
                                     ]
@@ -785,13 +784,13 @@
             );
         }
     };
-    
+
     Baseliner.resume_job = function(mid,name) {
-        Ext.Msg.confirm(_('Confirmation'),  '<b>' + name + '</b>: ' + _('Are you sure you want to resume the job?'), 
-            function(btn){ 
+        Ext.Msg.confirm(_('Confirmation'),  '<b>' + name + '</b>: ' + _('Are you sure you want to resume the job?'),
+            function(btn){
                 if(btn=='yes') {
                     Baseliner.ci_call( mid, 'resume',  {}, function(res){
-                        if( !res.msg ) { 
+                        if( !res.msg ) {
                             grid.getStore().reload();
                             Baseliner.message( _('Success'), res.data );
                         } else {
@@ -824,7 +823,7 @@
             }
         }
     });
-    
+
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
@@ -847,8 +846,8 @@
                 msg = _('Are you sure you want to %1 the job?', _('cancel') );
                 mode = 'cancel';
             }
-            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
-                function(btn){ 
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg,
+                function(btn){
                     if(btn=='yes') {
                         Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, mid: sel.data.mid }, function(res){
                             //console.log( res );
@@ -856,7 +855,7 @@
                                 grid.getStore().reload();
                                 if(sel.data.can_cancel){
                                     // button_cancel.enable();
-                                    button_cancel.setText( msg_cancel_delete[1] );    
+                                    button_cancel.setText( msg_cancel_delete[1] );
                                 }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
@@ -884,7 +883,7 @@
         handler: function() {
             var sm = grid.getSelectionModel();
             if ( ! sm.hasSelection()) {
-                Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                Ext.Msg.alert(_('Error'), _('Select a row first'));
             } else {
                 var sel = sm.getSelected();
                 var users = new Ext.data.SimpleStore({
@@ -911,13 +910,49 @@
                 var step_field = sel.data.step_code == 'END' ? 'PRE' : sel.data.step_code;
                 var run_now = sel.data.step_code == 'END' ? true : false;
                 var mid = sel.data.mid;
-                var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
-                    items: ['PRE','RUN','POST','END'].map(function(st){ 
-                        return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
-                            toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st };
-                    })
+                var radio_post = new Ext.form.RadioGroup({
+                  name: 'job_status',
+                  defaults: {
+                        xtype: "radio",
+                        name: "last_finish_status"
+                    },
+                  //anchor:'75%',
+                  fieldLabel: _('Job Status'),
+                  hidden: true,
+                  items: [
+                      { boxLabel: _('OK'), inputValue: '',checked: true},
+                      { boxLabel: _('FAIL'), inputValue: 'ERROR'}
+                  ]
                 });
-                var form_res = new Ext.FormPanel({ 
+                var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
+                    items: ['PRE','RUN','POST','END'].map(function(st){
+                      var step_button = new Ext.Button({
+                        text: st,
+                        enableToggle: true,
+                        width: 45,
+                        style:{ 'font-weight':(step_field==st?'bold':'') },
+                        toggleGroup: 'step_buttons',
+                        allowDepress: false,
+                        pressed: step_field==st,
+                        handler: function() {
+                          if (this.text == 'POST') {
+                            radio_post.show();
+                            form_res.doLayout();
+                          } else {
+                            radio_post.hide();
+                          }
+                        }
+                      });
+                      return step_button;
+
+                      //return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
+                      //      toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st
+                      //  };
+
+                    })
+
+                });
+                var form_res = new Ext.FormPanel({
                     frame: false,
                     height: 150,
                     defaults: { width:'100%' },
@@ -928,18 +963,20 @@
                         { xtype: 'hidden', name:'job_name', value: sel.data.name },
                         { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
                         { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
-                        step_buttons
+                        step_buttons,
+                        radio_post
                     ],
                     buttons: [
-                        {text:_('Rerun'), handler:function(f){ 
+                        {text:_('Rerun'), handler:function(f){
                             var but = this;
                             but.disable();
-                            var form_data = form_res.getForm().getValues();                                     
+                            var form_data = form_res.getForm().getValues();
                             step_buttons.items.each(function(btn){
                                 if( btn.pressed ) form_data.step = btn.text;
                             });
-                            Baseliner.ci_call( 'job', 'reset', form_data, 
-                                function(res){ 
+                            console.log (form_data);
+                            Baseliner.ci_call( 'job', 'reset', form_data,
+                                function(res){
                                     Baseliner.message( sel.data.name, _('Job Restarted') );
                                     but.enable();
                                     try{
@@ -947,7 +984,7 @@
                                     }catch(err){};
                                     win_res.close();
                                 },
-                                function(res) { 
+                                function(res) {
                                     but.enable();
                                     Baseliner.error(_('Error'), _('Could not rerun the job: %1', res.msg) );
                                 }
@@ -965,8 +1002,8 @@
                 });
                 win_res.show();
                 /*
-                Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to rerun the job') %> ' + sel.data.name + '?', 
-                    function(btn){ 
+                Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to rerun the job') %> ' + sel.data.name + '?',
+                    function(btn){
                         if(btn=='yes') {
                             var conn = new Ext.data.Connection();
                             conn.request({
@@ -977,7 +1014,7 @@
                                     store.load();
                                 },
                                 failure: function(resp,opt) { Baseliner.message('<% _loc('Error') %>', '<% _loc('Could not rerun the job.') %>'); }
-                            }); 
+                            });
                         }
                     } );
                 */
@@ -1024,7 +1061,7 @@
                 nat.name = ns;
                 nat.icon = 'nature';
             }
-            ret.push( 
+            ret.push(
                 String.format('<div style="height:20px;"><img style="float:left" src="/static/images/nature/{0}.png" />&nbsp;{1}</div>', nat.icon, nat.name )
             );
         });
@@ -1065,7 +1102,7 @@
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
             icon = 'log_i.png';
-        } 
+        }
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
         }
@@ -1075,20 +1112,20 @@
 
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
 % if( $c->stash->{user_action}->{'action.job.resume'} ) {
         else if( status == 'PAUSED' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name ); 
+            value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name );
         }
 % }
         else if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
-            value = String.format("<a href='javascript:Baseliner.trap_check(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
+            value = String.format("<a href='javascript:Baseliner.trap_check(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
             err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.png" />' : '';
-            return div1 
+            return div1
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
         } else {
@@ -1101,13 +1138,13 @@
         var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';
         return String.format(
                 '<b><a href="javascript:Baseliner.openLogTab(\'{1}\', \'{2}\');" style="font-family: Tahoma;">{0}{3}</a></b><br />',
-                value, record.data.mid, record.data.name, execs ); 
+                value, record.data.mid, record.data.name, execs );
     };
 
     function renderLast(value, p, r){
         return String.format('{0}<br/>by {1}', value.dateFormat('M j, Y, g:i a'), r.data['lastposter']);
     }
-    
+
     var gview = new Ext.grid.GroupingView({
             forceFit: true,
             enableRowBody: true,
@@ -1128,7 +1165,7 @@
                     p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
                     p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
                     p.body += '&nbsp;' + desc + '</div>';
-                    css += ' x-grid3-row-expanded '; 
+                    css += ' x-grid3-row-expanded ';
                 }
                 // console.dir(record.data);
                 var return_value = new Array();
@@ -1158,7 +1195,7 @@
                         p.body += cont[i] + '<br />';
                     }
                     p.body +='</div>';
-                    css += ' x-grid3-row-expanded '; 
+                    css += ' x-grid3-row-expanded ';
                 }
                 css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
                 return css;
@@ -1182,10 +1219,10 @@
            { type: 'date', dataIndex: 'starttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
            { type: 'date', dataIndex: 'endtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
            { type: 'date', dataIndex: 'maxstarttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
-           { type: 'date', dataIndex: 'schedtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') }	
+           { type: 'date', dataIndex: 'schedtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') }
         ]
 	});
-	
+
     // create the grid
     var grid = new Ext.grid.EditorGridPanel({
         title: _('Monitor'),
@@ -1200,50 +1237,50 @@
         stateId: state_id,
         store: store,
         view: gview,
-        selModel: row_sel, 
+        selModel: row_sel,
         columns: [
                 { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true },
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
-                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job },    
+                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job },
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true },
-                { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
+                { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: true },
-                { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
-                { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
-                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
+                { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},
+                { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },
+                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },
                 { header: _('Changesets'), width: 100, dataIndex: 'changesets', renderer: render_contents, sortable: true, hidden: true },
                 { header: _('Releases'), width: 100, dataIndex: 'releases', renderer: render_releases, sortable: true, hidden: true },
-                { header: _('Local Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date , hidden: true},	
-                { header: _('Local Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date , hidden: true},	
-                { header: _('Local Max Start Date'), width: 130, dataIndex: 'maxstarttime', renderer: Cla.render_date, sortable: true, hidden: true }, 
-                { header: _('Local End Date'), width: 130, dataIndex: 'endtime', renderer: Cla.render_date, sortable: true , hidden: true},	
-                { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},	
-                { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},	
-                { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, renderer: Cla.render_date_format, hidden: true }, 
-                { header: _('End Date'), width: 130, dataIndex: 'endtime', sortable: true, renderer: Cla.render_date, hidden: is_portlet ? true : false},	
-                { header: _('Approval expiration'), width: 130, dataIndex: 'approval_expiration', sortable: true, hidden: true },	
-                { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
-                { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
-                { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
-                { header: _('Family'), width: 120, dataIndex: 'job_family', sortable: true, hidden: true },	
-                { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
-                { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
-                { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },	
+                { header: _('Local Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date , hidden: true},
+                { header: _('Local Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date , hidden: true},
+                { header: _('Local Max Start Date'), width: 130, dataIndex: 'maxstarttime', renderer: Cla.render_date, sortable: true, hidden: true },
+                { header: _('Local End Date'), width: 130, dataIndex: 'endtime', renderer: Cla.render_date, sortable: true , hidden: true},
+                { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},
+                { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true, renderer: Cla.render_date_format, hidden: is_portlet ? true : false},
+                { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, renderer: Cla.render_date_format, hidden: true },
+                { header: _('End Date'), width: 130, dataIndex: 'endtime', sortable: true, renderer: Cla.render_date, hidden: is_portlet ? true : false},
+                { header: _('Approval expiration'), width: 130, dataIndex: 'approval_expiration', sortable: true, hidden: true },
+                { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },
+                { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },
+                { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },
+                { header: _('Family'), width: 120, dataIndex: 'job_family', sortable: true, hidden: true },
+                { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },
+                { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },
+                { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true },
-                { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true }, 
-                { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true }, 
-                { header: _('RUN Start Date'), width: 130, dataIndex: 'run_start', sortable: true , hidden: true }, 
+                { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true },
+                { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true },
+                { header: _('RUN Start Date'), width: 130, dataIndex: 'run_start', sortable: true , hidden: true },
                 { header: _('RUN End Date'), width: 130, dataIndex: 'run_end', sortable: true , hidden: true }
 
             ],
-        bbar: paging,        
-        tbar: is_portlet ? [] : [ 
+        bbar: paging,
+        tbar: is_portlet ? [] : [
                 search_field,
                 button_html,
                 menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.svg', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
@@ -1270,7 +1307,7 @@
                             var sel = sm.getSelected();
                             Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid+'&auto_refresh=1', sel.data.name );
                         } else {
-                            Cla.message(_('Error'), _('Select a row first'));   
+                            Cla.message(_('Error'), _('Select a row first'));
                         };
                     }
                 }),
@@ -1295,7 +1332,7 @@
                         {
                             var sel = sm.getSelected();
                             if( sel.data.status_code != 'READY' && sel.data.status_code != 'APPROVAL' ) {
-                                Baseliner.error( _('Reschedule'), 
+                                Baseliner.error( _('Reschedule'),
                                     _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY')+"|"+_('APPROVAL'), _(sel.data.status) ) );
                                 return;
                             }
@@ -1335,7 +1372,7 @@
                                                 store.reload();
                                                 winupdate.close();
                                             });
-                                                                                
+
                                      } }
                                 ],
                                 title: 'Modificar fecha y hora del pase.',
@@ -1343,7 +1380,7 @@
                             });
                             winupdate.show();
                         } else {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                            Ext.Msg.alert(_('Error'), _('Select a row first'));
                         };
                     }
                 }),
@@ -1361,7 +1398,7 @@
             Baseliner.showLoadingMask( grid.getEl());
             Baseliner.openLogTab(r.get('mid') , r.get('name') );
             Baseliner.hideLoadingMaskFade(grid.getEl());
-        });		
+        });
 
 
         grid.on("activate", function(){
@@ -1411,14 +1448,14 @@
     });
     store.load({params:{start:0 , limit: ps }, callback: function(){
       Baseliner.hideLoadingMaskFade(grid.getEl());
-    } }); 
+    } });
 
     grid.on('destroy', function(){
         autorefresh.stop(task);
     });
 
     grid.get_current_state = function(){
-        return { baseParams: grid.store.baseParams } 
+        return { baseParams: grid.store.baseParams }
     }
     return grid;
 })
