@@ -129,7 +129,7 @@ params:
                         // TODO
                     }
                     else if ( ci !=undefined ) {
-                        Baseliner.ajaxEval('/ci/sync', { 
+                        Baseliner.ajaxEval('/ci/attach_revisions', { 
                                 name: ci.name, 
                                 'class': ci['class'], 
                                 ns: ci.ns, 

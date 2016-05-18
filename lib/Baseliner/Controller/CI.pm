@@ -788,7 +788,7 @@ sub children : Local {
 
 ## adds/updates foreign CIs
 
-sub ci_create_or_update {
+sub _ci_create_or_update {
     my $self = shift;
     my %p = @_;
     return $p{mid} if length $p{mid};
@@ -809,7 +809,7 @@ sub ci_create_or_update {
         my $mid;
         $class = "BaselinerX::CI::$p{class}";
 
-        my @same_name_cis = mdb->master->find({ name=>$name, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
+        my @same_name_cis = mdb->master_doc->find({ sha=>$p{data}->{sha}, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
 
         if ( scalar @same_name_cis > 1 ) {
             for ( @same_name_cis ) {
@@ -835,12 +835,12 @@ sub ci_create_or_update {
     }
 };
 
-=head2 sync
+=head2 attach_revisions
 
 Used when external CIs come with no mid, but with ns.
 
 =cut
-sub sync : Local {
+sub attach_revisions : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $collection = delete $p->{collection};
@@ -897,7 +897,7 @@ sub sync : Local {
             while( my ($k,$v) = each %$data ) {
                 if( $k eq 'ci_pre' ) {
                     for my $ci ( _array $v ) {
-                        push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
+                        push @ci_pre_mid, $self->_ci_create_or_update( %$ci, username=>$c->username ) ;
                     }
                 }
                 else {
@@ -914,7 +914,7 @@ sub sync : Local {
                 }
             }
 
-            $mid = $self->ci_create_or_update(
+            $mid = $self->_ci_create_or_update(
                 rel_field  => $collection,
                 name       => $name,
                 class      => $class,

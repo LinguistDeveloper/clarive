@@ -996,7 +996,7 @@ subtest 'user_can_search: checks if user can search cis' => sub {
     ok $controller->user_can_search( $user->username );
 };
 
-subtest 'sync: attaches GitRevision to the changeset' => sub {
+subtest 'attach_revisions: attaches GitRevision to the changeset' => sub {
     _setup();
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
@@ -1052,7 +1052,7 @@ subtest 'sync: attaches GitRevision to the changeset' => sub {
         username => $user->username
     );
 
-    $controller->sync($c);
+    $controller->attach_revisions($c);
 
     my $revision = ci->GitRevision->find_one;
 
@@ -1064,6 +1064,71 @@ subtest 'sync: attaches GitRevision to the changeset' => sub {
             'mid'     => $revision->{mid}
         }
       };
+};
+
+subtest 'attach_revisions: does not create already existing GitRevision' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    TestGit->commit($repo);
+
+    TestUtils->create_ci('GitRevision', name => 'another name', sha => 'master');
+
+    my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $id_rule     = _create_changeset_form();
+    my $id_category = TestSetup->create_category(
+        name         => 'Changeset',
+        id_rule      => $id_rule,
+        is_changeset => 1
+    );
+
+    my $topic_mid =
+      TestSetup->create_topic( username => $user->username, id_category => $id_category, project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                topic_mid => $topic_mid,
+                repo      => $repo->mid,
+                name      => 'master',
+                branch    => 'master',
+                ns        => 'git.revision/master',
+                class     => 'GitRevision',
+                ci_json   => JSON::encode_json(
+                    {
+                        'repo_dir' => $repo->repo_dir,
+                        'ci_pre'   => [
+                            {
+                                'class' => 'GitRepository',
+                                'name'  => $repo->repo_dir,
+                                'mid'   => $repo->mid,
+                                'data'  => {
+                                    'repo_dir' => $repo->repo_dir,
+                                },
+                                'ns' => 'git.repository/' . $repo->repo_dir
+                            }
+                        ],
+                        'repo'    => 'ci_pre:0',
+                        'sha'     => 'master',
+                        'rev_num' => 'master',
+                        'branch'  => 'master'
+                    }
+                )
+            }
+        },
+        username => $user->username
+    );
+
+    $controller->attach_revisions($c);
+
+    my $count = ci->GitRevision->find->count;
+
+    is $count, 1;
 };
 
 subtest 'service_run: throws an error when user does not have access' => sub {
