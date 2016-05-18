@@ -1811,16 +1811,23 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 };
             }
         });
+
+        /* TODO this button has been commented because its behaviour is not correct . When changes are saved, and then
+        refresh is pressed, the values that appear are the values before save
+
         var btn_reload = new Ext.Button({
             disabled: self.readOnly ? self.readOnly : false,
             icon: '/static/images/icons/refresh.png',
             tooltip: _('Refresh'),
             handler: function(){ self.refresh() }
         });
-        self.tbar = [ self.combo, btn_reload, btn_delete ];
+        */
+
+        self.tbar = [ self.combo, btn_delete ];
         self.combo.on('select', function(combo,rec,ix) {
             if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
+            self.combo.setValue("");
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
 
@@ -1882,6 +1889,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                     });
                 }
             }
+            self.combo.setValue("");
         } else {
             // we have data in the grid, reload
             var mids = [];
@@ -1892,11 +1900,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             var p = { mids: mids, topic_child_data : true, _whoami: 'TopicGrid.refresh2' };
             Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
                 self.store.removeAll();
-                Ext.each( res.data, function(r){
+                Ext.each( val, function(r){
                     if( ! r ) return;
                     self.add_to_grid( r );
                 });
             });
+            self.combo.setValue("");
         }
     },
     get_save_data : function(){
