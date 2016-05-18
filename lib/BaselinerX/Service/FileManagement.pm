@@ -591,7 +591,7 @@ sub run_retrieve {
 
     my $remote_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local_orig  = $config->{local_path} // _fail 'Missing parameter local_file';
-    my $user        = $config->{user};
+    my $user        = $config->{user} // '';
 
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
@@ -602,7 +602,7 @@ sub run_retrieve {
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        $log->info( _loc( "Retrieving file '%1' to '%2'", $local, "*$server_str".'*:'.$remote ) );
+        $log->info( _loc( "Retrieving file '%1' to '%2'",  "*$server_str".'*:'.$remote, $local ) );
         $agent->get_file(
             local  => $local,
             remote => $remote,
