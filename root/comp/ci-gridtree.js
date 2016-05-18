@@ -10,7 +10,7 @@
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 
         'name', 'item', 'ci_form', 'active', 'moniker',
-        'class', 'modified_by',
+        'class', 'modified_by', 'created_by',
         'classname', 'versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -426,6 +426,7 @@
             { header: _('Version'), width: 50, dataIndex: 'versionid', sortable: true },
             { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true, renderer: Cla.render_date },
             { header: _('Modified By'), width: 100, dataIndex: 'modified_by', sortable: true },
+            { header: _('Created By'), width: 100, dataIndex: 'created_by', sortable: true },
             { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags, sortable: true },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties, sortable: true },
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv, hidden: true }
