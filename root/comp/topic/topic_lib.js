@@ -1627,6 +1627,7 @@ Baseliner.Topic.delete_topic = function(opts){
 
 Baseliner.Topic.change_status_topic = function(opts){
     var self = opts['this'];
+    self.getEl().mask('');
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
             self.getEl().unmask();
