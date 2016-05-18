@@ -6,11 +6,12 @@ use Test::Deep;
 use Test::Fatal;
 use Test::LongString;
 use Test::More;
-use TestEnv;
-
 use File::Temp qw(tempfile);
+use Test::TempDir::Tiny;
 
+use TestEnv;
 BEGIN { TestEnv->setup }
+use TestUtils;
 
 use Baseliner::Utils qw(
   _pointer
@@ -22,8 +23,13 @@ use Baseliner::Utils qw(
   _trend_line
   _strip_html
   _strip_html_editor
+  _truncate
+  _md5
+  _decode_json_safe
+  _is_binary
+  _file
 );
-use Baseliner::Utils qw(_pointer query_grep _unique _array _to_camel_case parse_vars _trend_line _truncate _md5 _decode_json_safe);
+
 use Clarive::mdb;
 
 ####### _pointer
@@ -529,6 +535,95 @@ subtest '_json_pointer: set non-pointers' => sub {
     Util->_json_pointer($stash,'//aa/bb',88);
     is ( Util->_json_pointer($stash,'//aa/bb'), 88 );
     is ( $stash->{'/aa/bb'}, 88 );
+};
+
+subtest '_is_binary: thows an exception when parameter size is 0' => sub {
+    like exception { _is_binary() }, qr/sub is_bianry needs one parameter/;
+};
+
+subtest '_is_binary: thows an exception when parameter size is greater than 1' => sub {
+    like exception { _is_binary( data =>'data', path =>'/my_path' ) }, qr/sub is_bianry needs one parameter/;
+};
+
+subtest '_is_binary: thows an exception when parameter is not the correct one' => sub {
+    like exception { _is_binary( datas => 'data' ) }, qr/_is_binary accept only parameters: data, fh or path/;
+};
+
+subtest '_is_binary: return false when data is not binary' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+    my $data = scalar $file->slurp;
+
+    my $is_binary = Util->_is_binary( data=> $data );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return false when fh is not from a binary file' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+
+    my $is_binary = Util->_is_binary( fh=> $file->open() );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return false when path is not from a binary file' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+
+    my $is_binary = Util->_is_binary( path=> $filename );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return true when data is binary' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+    my $data = scalar $file->slurp;
+
+    my $is_binary = Util->_is_binary( data=> Util->compress($data) );
+
+    ok $is_binary;
+};
+
+subtest '_is_binary: return true when fh is from a binary file' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/file";
+    my $tar_file = "$tmp/file.tar.gz";
+
+    TestUtils->write_file( "foobar", $filename );
+    system("tar cvzf $tmp/file.tar.gz $tmp/file");
+
+    my $file = Util->_file($tar_file);
+
+    my $is_binary = Util->_is_binary( fh=> $file->open() );
+
+    ok $is_binary;
+};
+
+subtest '_is_binary: return true when path is from a binary file' => sub {
+    my $tmp = tempdir();
+    my $filename = "$tmp/file";
+    my $tar_file = "$tmp/file.tar.gz";
+
+    TestUtils->write_file( "foobar", $filename );
+    system("tar cvzf $tmp/file.tar.gz $tmp/file");
+
+    my $is_binary = Util->_is_binary( path=> $tar_file );
+
+    ok $is_binary;
 };
 
 done_testing;
