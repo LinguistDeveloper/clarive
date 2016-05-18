@@ -8,6 +8,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
+use TestSetup;
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -19,7 +20,7 @@ use Baseliner::Controller::Auth;
 subtest 'authenticate: creates correct event event.auth.attempt' => sub {
     _setup();
 
-    my $ci = ci->user->new( name => 'foo', password => 'admin' );
+    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
@@ -128,29 +129,6 @@ subtest 'login: returns an error when ci not found' => sub {
       };
 };
 
-subtest 'login: logs in local user' => sub {
-    _setup();
-
-    my $ci = ci->user->new( username => 'root' );
-    $ci->save;
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        authenticate => { id => 'root', realm => 'local' },
-        req => { params => { login => 'local/root', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-    );
-
-    $controller->login($c);
-
-    cmp_deeply $c->stash->{json},
-      {
-        success => \1,
-        msg     => 'OK',
-      };
-};
 
 subtest 'login: reduces logins after failed ones' => sub {
     _setup();
@@ -321,6 +299,248 @@ subtest 'login: allows local logins when in maintenance mode' => sub {
         req => { params => { login => 'local/root', password => 'admin' } },
         model =>
           { ConfigStore => FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode'} ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
+subtest 'login: logges in with user_case as uc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        config => { user_case => 'uc'},
+        authenticate => { id => 'FOO', password=>'admin' },
+        req => { params => { login => 'foo', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    $controller->login($c);
+    use Data::Dumper;
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
+subtest 'login: log in with lowercase user with user_case as uc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        config => { user_case => 'uc'},
+        authenticate => { id => 'FOO', password=>'admin' },
+        req => { params => { login => 'foo', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
+subtest 'login: cannot log in with uppercase user without user_case as uc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => 'foo', password=>'admin' },
+        req => { params => { login => 'foo', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \0,
+        msg     => "Login error: User not found: foo\n",
+        errors  => ignore()
+      };
+};
+
+subtest 'login: logges in with lowercase user with user_case as lc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        config => { user_case => 'lc'},
+        authenticate => { id => 'foo', password=>'admin' },
+        req => { params => { login => 'FOO', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
+subtest 'login: cannot log in with uppercase user without user_case as lc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
+    $ci->save;
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => 'FOO', password=>'admin' },
+        req => { params => { login => 'FOO', password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \0,
+        msg     => "Login error: User not found: FOO\n",
+        errors  => ignore()
+      };
+};
+
+subtest 'login: cannot log in with LOCAL/ROOT user' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username => 'root' );
+    $ci->save;
+
+    my $realm = 'LOCAL';
+    my $id = "ROOT";
+    my $login = "$realm/$id";
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => $id, realm => $realm },
+        req => { params => { login => $login, password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \0,
+        msg => "Login error: User not found: $id\n",
+        errors  => ignore(),
+      };
+};
+
+subtest 'login: cannot log in with local/ROOT user' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username => 'root' );
+    $ci->save;
+
+    my $realm = 'local';
+    my $id = 'ROOT';
+    my $login = "$realm/$id";
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => $id, realm => $realm },
+        req => { params => { login => $login, password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \0,
+        msg => "Login error: User not found: $id\n",
+        errors  => ignore(),
+      };
+};
+
+subtest 'login: logges in clarive with local/root user' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username => 'root' );
+    $ci->save;
+
+    my $realm = 'local';
+    my $id = 'root';
+    my $login = "$realm/$id";
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        authenticate => { id => $id, realm => $realm },
+        req => { params => { login => $login, password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        msg     => 'OK',
+      };
+};
+
+subtest 'login: cannot log in with local/root user and user_case uc' => sub {
+    _setup();
+
+    my $ci = ci->user->new( username => 'root' );
+    $ci->save;
+
+    my $realm = 'local';
+    my $id = 'root';
+    my $login = "$realm/$id";
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        config => { user_case => 'uc'},
+        authenticate => { id => $id, realm => $realm },
+        req => { params => { login => $login, password => 'admin' } },
+        model =>
+          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
