@@ -1,5 +1,6 @@
 (function() {
     var default_page_size = 30;
+    var picker_format = Cla.user_js_date_format();
     var hm = function() {
         new Date(Date.now()).format('H:i:s')
     }
@@ -410,7 +411,10 @@
             readOnly: false,
             fieldLabel: _('Date'),
             allowBlank: false,
-            format: 'Y-m-d',
+            dateFormat: picker_format,
+            format: picker_format,
+            submitFormat: 'Y-m-d',
+            submitFormatAddon: '-format',
             value: today(),
             minValue: today(),
             noOfMonth: 2,
