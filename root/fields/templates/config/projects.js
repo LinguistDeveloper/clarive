@@ -4,6 +4,8 @@
     var value_type = Baseliner.generic_list_fields(data);
     ret.push(value_type);
 
+    Cla.help_push({ title:_('List projects'), path:'rules/palette/fieldlets/project-combo' });
+
     var collection = new Ext.form.Hidden({
         name: 'collection',
         value: data.collection
