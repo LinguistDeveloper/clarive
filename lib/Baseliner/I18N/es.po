@@ -8797,3 +8797,12 @@ msgstr "El proyeto %1 no tiene usuarios asignados, desea borrarlo?"
 
 msgid "The project %1 has %2 user(s) assigned, delete this project?"
 msgstr "El proyeto %1 tiene %2 usuarios asignados, desea borrarlo?"
+
+msgid "Role with this name already exists"
+msgstr "Rol con este nombre ya existe"
+
+msgid "Role created"
+msgstr "Rol creado"
+
+msgid "Role modified"
+msgstr "Rol modificado"

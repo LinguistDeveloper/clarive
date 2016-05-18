@@ -147,12 +147,12 @@ subtest 'validates with coersion' => sub {
 subtest 'validates with forcing value on error' => sub {
     my $validator = _build_validator();
 
-    $validator->add_field( 'foo', isa => 'Int', default => 5, default_on_error => 1 );
+    $validator->add_field( 'foo', isa => 'Int', default => 0, default_on_error => 1 );
 
     my $vresult = $validator->validate( { foo => 'on' } );
 
     is $vresult->{is_valid}, 1;
-    is $vresult->{validated_params}->{foo}, 5;
+    is $vresult->{validated_params}->{foo}, 0;
 };
 
 subtest 'validates with more than one value in the array' => sub {
@@ -176,6 +176,17 @@ subtest 'validates with arrayref of elements' => sub {
     my $vresult = $validator->validate( { foo => [ 1, 'abc', 3 ] } );
 
     is $vresult->{is_valid}, 0;
+};
+
+subtest 'validates coercion failures' => sub {
+    my $validator = _build_validator();
+
+    $validator->add_field( 'foo', isa => 'ArrayJSON' );
+
+    my $vresult = $validator->validate( { foo => 'abc' } );
+
+    is $vresult->{is_valid}, 0;
+    like $vresult->{errors}->{foo}, qr/Coercion failed/;
 };
 
 done_testing;

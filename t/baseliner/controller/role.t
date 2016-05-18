@@ -24,7 +24,7 @@ subtest 'action_tree: returns all actions when new role' => sub {
 
     my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
 
-    my $c = _build_c( req => { params => { } }, authenticate => {} );
+    my $c = _build_c( req => { params => {} }, authenticate => {} );
 
     ok $controller->action_tree($c);
 
@@ -124,57 +124,80 @@ subtest 'action_tree: searches through actions' => sub {
       };
 };
 
+subtest 'update: returns validation errors' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => {} } );
+
+    $controller->update($c);
+
+    is_deeply $c->stash,
+      {
+        json => {
+            success => \0,
+            msg     => 'Validation failed',
+            errors  => {
+                name => 'REQUIRED'
+            }
+        }
+      };
+};
+
 subtest 'update: creates new role' => sub {
     _setup();
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    my $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
 
     $controller->update($c);
 
     my $role = mdb->role->find_one();
-    ok($role);
-    is( $role->{role}, 'Developer' );
+
+    ok $role;
+    is $role->{role}, 'Developer';
 
     is_deeply(
         $c->stash,
         {
             json => {
                 success => \1,
-                msg     => "Role created"
+                msg     => "Role created",
+                id      => $role->{id},
             }
         }
     );
 };
 
-subtest 'update: does not create new role with the same name as another' => sub {
+subtest 'update: returns an error when creating a new role with existing name' => sub {
     _setup();
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    my $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
     $controller->update($c);
 
-    $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
     $controller->update($c);
 
     is( mdb->role->find->count, 1 );
 
-    is_deeply(
-        $c->stash,
-        {
-            json => {
-                success => \0,
-                msg     => "Error: role exists"
-            }
+    is_deeply $c->stash,
+      {
+        json => {
+            success => \0,
+            msg     => "Validation failed",
+            errors  => { name => 'Role with this name already exists' }
         }
-    );
+      };
 };
 
-subtest 'update: updates role that exists ' => sub {
+subtest 'update: updates role' => sub {
     _setup();
 
+    local $Baseliner::_no_cache = 1;
+
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    my $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
     $controller->update($c);
 
     my $role = mdb->role->find_one( { role => 'Developer' } );
@@ -182,15 +205,16 @@ subtest 'update: updates role that exists ' => sub {
     $c = _build_c( req => { params => { id => $role->{id}, name => 'Developer_new', role_actions => '[]' } } );
     $controller->update($c);
 
-    my $role_updated = mdb->role->find_one( { id => $role->{id} } );
+    my $role_updated = mdb->role->find_one( { id => "$role->{id}" } );
 
-    is( $role_updated->{role}, 'Developer_new' );
+    is $role_updated->{role}, 'Developer_new';
 
     is_deeply(
         $c->stash,
         {
             json => {
                 success => \1,
+                id      => $role_updated->{id},
                 msg     => "Role modified"
             }
         }
@@ -202,10 +226,10 @@ subtest 'update: does not update role with same name as another' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c( req => { params => { id => '-1', name => 'Developer', role_actions => '[]' } } );
+    my $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
     $controller->update($c);
 
-    $c = _build_c( req => { params => { id => '-1', name => 'Manager', role_actions => '[]' } } );
+    $c = _build_c( req => { params => { name => 'Manager', role_actions => '[]' } } );
     $controller->update($c);
 
     my $role = mdb->role->find_one( { role => 'Developer' } );
@@ -218,7 +242,29 @@ subtest 'update: does not update role with same name as another' => sub {
         {
             json => {
                 success => \0,
-                msg     => "Error: another role exists with same name"
+                msg     => 'Validation failed',
+                errors  => {
+                    name => 'Role with this name already exists'
+                }
+            }
+        }
+    );
+};
+
+subtest 'update: returns an error when unknown role id' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => '123', name => 'Manager', role_actions => '[]' } } );
+    $controller->update($c);
+
+    is_deeply(
+        $c->stash,
+        {
+            json => {
+                success => \0,
+                msg     => 'Unknown role `123`',
             }
         }
     );
@@ -242,8 +288,8 @@ subtest 'delete: asks for confirmation when role has assigned users' => sub {
         $c->stash,
         {
             json => {
-                success    => \1,
-                users => ['developer']
+                success => \1,
+                users   => ['developer']
             }
         }
     );
@@ -294,7 +340,7 @@ subtest 'delete: deletes role without users' => sub {
 };
 
 sub _setup {
-   TestUtils->setup_registry(
+    TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
         'BaselinerX::CI',          'BaselinerX::Events',
         'Baseliner::Model::Rules',
@@ -309,9 +355,6 @@ sub _setup {
     mdb->master_doc->drop;
 
     mdb->role->drop;
-
-    TestUtils->register_ci_events();
-
 }
 
 sub _build_controller {
