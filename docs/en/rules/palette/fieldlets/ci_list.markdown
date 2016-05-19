@@ -74,5 +74,16 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 
 * Specify the class of CI to be shown.
 
+### Description
+
+Selection of type of description to show in the list.
+
+* Name: Show the name.
+
+* Environment: Show the Environment separated by commas.
+
+* Class: Show the type object.
+
+* Moniker: Show the moniker specified in CI configuration.
 
 

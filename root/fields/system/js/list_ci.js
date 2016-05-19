@@ -25,7 +25,7 @@ params:
     var single_mode = !Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
     var tpl;
-    if (meta.display_mode == 'baseline'){
+    if (meta.display_mode == 'bl'){
         tpl = new Ext.XTemplate(
             '<tpl for=".">'
             +  '<div class="search-item ui-ci_box-ci-list"><span id="boot" style="background: transparent">'

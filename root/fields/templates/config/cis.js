@@ -5,7 +5,7 @@
     Cla.help_push({ title:_('CI Combo'), path:'Rules/Palette/Fieldlets/ci_combo' });
     ret.push(value_type);
 
-    Cla.help_push({ title:_('List ci'), path:'rules/palette/fieldlets/list-ci' });
+    Cla.help_push({ title:_('List ci'), path:'rules/palette/fieldlets/ci-combo' });
 
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
