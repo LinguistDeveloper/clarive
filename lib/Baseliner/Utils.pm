@@ -108,6 +108,8 @@ use Exporter::Tidy default => [
     _truncate
     to_base_class
     _is_binary
+    _chdir
+    _timeout
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -149,10 +151,13 @@ use YAML::XS;
 
 use Baseliner::I18N;
 use Baseliner::VarsParser;
+use Cwd qw(getcwd);
+use Sys::AlarmCall qw(alarm_call);
 
 BEGIN {
     # enable a TO_JSON converter
     sub DateTime::TO_JSON  {  $_[0] . '' };
+
 }
 
 # split a namespace resource into domain and item
@@ -2431,6 +2436,48 @@ sub _is_binary {
         _fail( "_is_binary accept only parameters: data, fh or path" );
     }
     return $info->{description} !~ m/ascii|text/i;
+}
+
+sub _timeout {
+    my ( $time, $code, $msg ) = @_;
+
+    $msg //= 'timeout';
+
+    my @result = alarm_call( $time, $code, $msg );
+
+    if ( $result[0] =~ /^TIMEOUT/ ) {
+        _fail($msg);
+    }
+    elsif ( $result[0] eq 'ERROR' ) {
+        _fail( $result[1] );
+    }
+    else {
+        return wantarray ? @result : $result[0];
+    }
+}
+
+sub _chdir {
+    my ( $dir, $code ) = @_;
+
+    my $wantarray = wantarray;
+
+    my $cwd = getcwd();
+    try {
+        CORE::chdir($dir);
+
+        my @result = $code->();
+
+        CORE::chdir($cwd);
+
+        return $wantarray ? @result : $result[0];
+    }
+    catch {
+        my $error = shift;
+
+        CORE::chdir($cwd);
+
+        die $error;
+    };
 }
 
 1;
