@@ -116,10 +116,14 @@ params:
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
                     if (node_data.repo_dir != undefined) { ci.data.repo_dir = node_data.repo_dir };
-
-                    if (!ci.data.sha) {
+                    if(ci.sha){
                         ci.data.sha = ci.sha;
+                    }else{
+                        ci.data.sha = node_data.sha;
                     }
+                    /*if (!ci.data.sha) {
+                        ci.data.sha = ci.sha;
+                    }*/
 
                     var mid = node_data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
@@ -130,6 +134,11 @@ params:
                     }
                     else if ( ci !=undefined ) {
                         Baseliner.ajaxEval('/ci/attach_revisions', { 
+                        // FIND A BETTER SOLUTION FOR THIS IN THE FUTURE
+                        if(ci.class == 'SvnRevision' && ci.name.indexOf('@'+ci.ns) == -1){
+                            ci.name = ci.name+'@'+ci.ns;
+                        }
+                        Baseliner.ajaxEval('/ci/sync', { 
                                 name: ci.name, 
                                 'class': ci['class'], 
                                 ns: ci.ns, 

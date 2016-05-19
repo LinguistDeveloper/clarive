@@ -40,14 +40,16 @@ sub item_match {
     my $match = 0;
     IN: for my $in ( @include ) {
         next unless length $in;
-        if( $item->{path} =~ /$in/ || ($item->{fullpath} && $item->{fullpath} =~ /$in/ )) {
+        if( ( length $item->{nature_path} && $item->{nature_path} =~ /$in/ ) || $item->{path} =~ /$in/ ||
+            ($item->{fullpath} && $item->{fullpath} =~ /$in/ )) {
             $match = 1;
             last IN;
         }
     }
     for my $ex ( @exclude ) {
         next unless length $ex;
-        if( $item->{path} =~ /$ex/ || ($item->{fullpath} && $item->{fullpath} =~ /$ex/ )) {
+        if( ( length $item->{nature_path} && $item->{nature_path} =~ /$ex/ ) || $item->{path} =~ /$ex/ ||
+            ($item->{fullpath} && $item->{fullpath} =~ /$ex/ )) {
             return 0;
         }
     }
