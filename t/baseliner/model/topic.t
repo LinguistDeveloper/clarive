@@ -900,11 +900,12 @@ subtest 'run_query_builder: finds topics by query in a project' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
     my $topic1 = TestSetup->create_topic(
-        project     => $project,
+        project     => $project2,
         id_category => $id_category,
         status      => $status,
         title       => 'Topic1'
@@ -916,7 +917,7 @@ subtest 'run_query_builder: finds topics by query in a project' => sub {
         title       => 'Topic2'
     );
     my $topic3 = TestSetup->create_topic(
-        project     => $project,
+        project     => $project2,
         id_category => $id_category,
         status      => $status,
         title       => 'Topic3'
@@ -925,7 +926,7 @@ subtest 'run_query_builder: finds topics by query in a project' => sub {
     my $model = _build_model();
 
     my $where = {};
-    my (@topics) = $model->run_query_builder( $topic2, $where, $user->username, id_project => $project->mid);
+    my (@topics) = $model->run_query_builder( 'Topic', $where, $user->username, id_project => $project->mid);
 
     is scalar @topics, 1;
     is $topics[0], $topic2;
@@ -997,10 +998,9 @@ subtest 'topics_for_user: topic that does not exist' => sub {
     my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => 'Topic3' } );
 
     is scalar @rows, 0;
-
 };
 
-subtest 'topics_for_user: topic that exist in other project' => sub {
+subtest 'topics_for_user: does not return topic that exist in other project' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form(
@@ -1053,10 +1053,9 @@ subtest 'topics_for_user: topic that exist in other project' => sub {
 
     my $model = _build_model();
 
-    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => $topic2 } );
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid, query => 'Topic2' } );
 
     is scalar @rows, 0;
-
 };
 
 subtest 'topics_for_user: returns topics of project' => sub {
