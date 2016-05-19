@@ -136,6 +136,7 @@ sub dashboard_list: Local {
         push @trees, {
                 text    => $dash->{name},
                 icon    => '/static/images/icons/dashboard.png',
+                draggable => \0,
                 data    => {
                     title => $dash->{name},
                     id => $dash->{id},

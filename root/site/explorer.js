@@ -478,7 +478,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var show_ci = function(callback) {
             if( !self.$tree_ci ) {
-                self.$tree_ci = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', baseParams: { show_ci: true }  });
+                self.$tree_ci = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', enableDD:false, baseParams: { show_ci: true }  });
                 self.add( self.$tree_ci );
                 self.$tree_ci.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
@@ -508,7 +508,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var show_dashboards = function(callback) {
             if( !self.$tree_dashboards ) {
-                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', baseParams: { ordered: true, show_reports: true } });
+                self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', enableDD:false, baseParams: { ordered: true, show_reports: true } });
                 self.add( self.$tree_dashboards );
                 self.$tree_dashboards.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }

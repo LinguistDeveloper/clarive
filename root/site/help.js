@@ -10,6 +10,7 @@ Cla.help_show = function(params) {
         animate: true,
         containerScroll: true,
         rootVisible: false,
+        enableDD: false,
         root: treeRoot
     });
     docs_tree.getLoader().preloadChildren = true;

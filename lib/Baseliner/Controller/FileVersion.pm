@@ -187,6 +187,9 @@ sub build_item_directory {
         leaf    =>\0,
         url     => '/fileversion/tree_file_project',
         iconCls => 'default_folders',
+        allowDrop  => \1,
+        allowDrag  => \1,
+        draggable  => \1,
         data    => {
             id_folder => $folder->{mid},
             id_project => $id_project,
@@ -214,6 +217,9 @@ sub build_item_file {
             id_folder => $id_folder,
             id_parent => 0,
             type => 'file',
+            allowDrop  => \1,
+            allowDrag  => \1,
+            draggable  => \1,
             on_drop => {
                 handler => 'Baseliner.move_folder_item'
             }
