@@ -757,21 +757,18 @@ if( Prefs.routing ) {
     };
 
     Baseliner.download_file = function(url) {
-        var exportUrl = url;
         var body = Ext.getBody();
         var frame = body.createChild({
             tag: 'iframe',
             cls: 'x-hidden',
-            id: 'hiddenform-iframe',
-            name: 'iframe'
+            name: 'download'
         });
 
         var form = body.createChild({
             tag: 'form',
             cls: 'x-hidden',
-            id: 'hiddenform-form',
-            action: exportUrl,
-            target: 'iframe'
+            action: url,
+            target: 'download'
         });
         form.dom.submit();
     };

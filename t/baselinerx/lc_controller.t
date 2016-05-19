@@ -781,39 +781,21 @@ subtest 'status_list: use statuses passed' => sub {
 
 subtest 'tree_topic_get_files: creates click in data json ' => sub {
     _setup();
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+    TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
-
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
-
     my $tempdir = tempdir();
+
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
+    my $file = Util->_file("$tempdir/filename.jpg");
 
-    my $c = mock_catalyst_c(
-        username => $user->username,
-        req      => {
-            params => {
-                extension => 'jpg',
-                topic_mid => $topic_mid,
-                filter    => 'test_file',
-                qqfile    => 'filename.jpg',
-            },
-            body => "$tempdir/filename.jpg"
-        }
-    );
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
 
-    my $controller = Baseliner::Controller::Topic->new( application => '' );
-    $controller->upload($c);
-
-    $controller = _build_controller();
-    $c          = mock_catalyst_c(
-        username => $user->username,
-        req      => {
+    my $controller = _build_controller();
+    my $c          = mock_catalyst_c(
+        req => {
             params => {
                 id_topic     => $topic_mid,
                 sw_get_files => 'true'
@@ -829,36 +811,20 @@ subtest 'tree_topic_get_files: creates click in data json ' => sub {
 
 subtest 'build_topic_tree: creates children if topic has files' => sub {
     _setup();
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'test' );
+    TestSetup->_setup_user();
 
     my $base_params = TestSetup->_topic_setup();
 
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
     my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
-
     my $tempdir = tempdir();
+
     TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
+    my $file = Util->_file("$tempdir/filename.jpg");
 
-    my $c = mock_catalyst_c(
-        username => $user->username,
-        req      => {
-            params => {
-                extension => 'jpg',
-                topic_mid => $topic_mid,
-                filter    => 'test_file',
-                qqfile    => 'filename.jpg',
-            },
-            body => "$tempdir/filename.jpg"
-        }
-    );
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
 
-    my $controller = Baseliner::Controller::Topic->new( application => '' );
-    $controller->upload($c);
-
-    $controller = _build_controller();
+    my $controller = _build_controller();
 
     my $topic = mdb->topic->find_one( { mid => $topic_mid } );
     my @output = $controller->build_topic_tree( mid => $topic_mid, topic => $topic );
