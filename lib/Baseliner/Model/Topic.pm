@@ -352,7 +352,9 @@ sub build_where_clause_with_reg_exp {
 }
 
 sub run_query_builder {
-    my ( $self, $query, $where, $username, %opts ) = @_;
+    my $self = shift;
+    my ( $query, $where, $username, %opts ) = @_;
+
     my @mids_in;
     my $id_project = $opts{id_project};
     my @mids_query;

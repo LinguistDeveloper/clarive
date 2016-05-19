@@ -1277,7 +1277,7 @@ Baseliner.model.RevisionsBoxDD = function(c) {
                 else if ( mid!=undefined ) { // TODO
                 }
                 else if ( ci !=undefined ) {
-                    Baseliner.ajaxEval('/ci/sync',
+                    Baseliner.ajaxEval('/ci/attach_revisions',
                         { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
                         function(res) {
                             if( res.success ) {
@@ -1410,7 +1410,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
                     // TODO
                 }
                 else if ( ci !=undefined ) {
-                    Baseliner.ajaxEval('/ci/sync',
+                    Baseliner.ajaxEval('/ci/attach_revisions',
                         { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
                         function(res) {
                             if( res.success ) {

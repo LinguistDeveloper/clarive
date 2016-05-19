@@ -241,7 +241,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
               "Trying to demote all revisions in a repository, "
               . "can't set tag %1 before %2",
               $tag,
-              substr($last_sha, 0, 7);
+              substr($last_sha, 0, 8);
         };
 
         _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha
@@ -270,7 +270,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
                 "Cannot %1 commit [%2] to %3 since "
                   . "they don't have common history and doing that may cause regressions. "
                   . "You probably need to merge branches",
-                _loc($type), substr($top_rev->{sha}, 0, 6), $tag
+                _loc($type), substr($top_rev->{sha}, 0, 8), $tag
             );
         };
 
@@ -282,7 +282,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
             catch {
                 _error _loc(
                     "Revision [%1] is not in the top revision's history",
-                    substr($sha, 0, 6));
+                    substr($sha, 0, 8));
                 $valid = 0;
             };
         }
@@ -291,7 +291,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
             _fail _loc(
                 "Not all commits are in [%1] history. "
                   . "You probably need to merge branches",
-                substr($dest, 0, 6)
+                substr($dest, 0, 8)
             );
         }
     }

@@ -36,19 +36,22 @@ sub show {
 sub rev_list {
     my ($self)=@_;
     my @show = $self->repo->git->exec(qw/rev-list --parents --header --max-count=1/, $self->sha );
+
+    my $is_header = 1;
     my $d={};
     my $first = 1;
     for(@show){
        my ($f,$v) = /^(\w+) (.*)$/;
        if( $f ) {
           if( $f eq 'committer' ) { # get the commit date
+            $is_header = 0;
              my ($email,$date,$tz) = $v=~ /^(.+>) (\d+) (.+)$/;
              $v = $email;
              $d->{date} = $date;
              $d->{tz} = $tz;
           }
           $d->{ $f } = $v;
-       } else {
+       } elsif (!$is_header) {
           my $lin = $_;
           $lin =~ s{^\s+}{}g;
           next if ( $first && ! length $lin ) || $lin eq "\0";
