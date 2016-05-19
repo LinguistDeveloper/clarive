@@ -1,7 +1,7 @@
 ---
-title: List CI
+title: CI combo
 index: 400
-icon: grid
+icon: combo_box
 ---
 
 Allows to introduce a combo box with the projects in the form.

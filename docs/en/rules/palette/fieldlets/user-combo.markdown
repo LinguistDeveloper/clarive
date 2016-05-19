@@ -33,18 +33,21 @@ Check if you want the field as mandatory.
 
 Allow to set the type of the field.
 
-- **Single**
+- **Single** - Allows to select one choice of the options available
 
-Allows to select one choice of the options available
+- **Multiple** - The user can select multiples choices
 
-- **Multiple**
-
-The user can select multiples choices
 
 ### Display field
 
-Set the field to show.
+Set the field to show. By default shows the name of the role
+
 
 ### Advanced filter JSON
 
-The user can filter by role. `Developer` : Only shows the users with that specific role.
+The user can filter by a JSON filter to show only determinated users or filter by project for example.
+
+### Roles
+
+You can filter by roles to show only determinated users.
+

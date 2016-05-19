@@ -1197,7 +1197,7 @@ subtest 'list_users: returns users by roles' => sub {
         username => 'test_user',
         req      => {
             params => {
-                roles => 'TestRole'
+                roles => $id_role
             }
         }
     );
@@ -1253,7 +1253,7 @@ subtest 'list_users: returns users by roles and topic projects' => sub {
         username => $user->username,
         req      => {
             params => {
-                roles => 'TestRole'
+                roles => $id_role
             }
         }
     );
@@ -1353,7 +1353,7 @@ subtest 'list_users: returns users filtered by query' => sub {
         username => 'test_user',
         req      => {
             params => {
-                roles => 'TestRole',
+                roles => $id_role,
                 query => 'h'
             }
         }
@@ -1403,7 +1403,7 @@ subtest 'list_users: returns users paged' => sub {
         username => 'test_user',
         req      => {
             params => {
-                roles => 'TestRole',
+                roles => $id_role,
                 start => 1,
                 limit => 1,
             }
@@ -2293,6 +2293,58 @@ subtest 'check_modified_on: check topic was not modified before' => sub {
             'msg'                      => "Test"
         }
     );
+};
+
+subtest 'list_users: returns users by id roles' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole', id => '21' );
+    my $id_role2   = TestSetup->create_role( role => 'TestRole2', id => '22' );
+    my $id_role3   = TestSetup->create_role( role => 'TestRole3', id => '23' );
+
+    my $user = TestSetup->create_user(
+        username => 'test_user',
+        realname => 'Test User',
+        id_role  => '21',
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'test_user2',
+        realname => 'Test User2',
+        id_role  => '22',
+        project  => $project
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'test_user3',
+        realname => 'Test User3',
+        id_role  => '23',
+        project  => $project
+    );
+
+
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => ['21', '22']
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => ignore(),
+            data       => [
+                { id => ignore(), realname => 'Test User',  username => 'test_user' },
+                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+            ]
+        }
+      };
 };
 
 done_testing;

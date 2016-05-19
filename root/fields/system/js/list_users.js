@@ -36,7 +36,7 @@ params:
     var user_box_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true,
         baseParams: {projects:[],
-					 roles: meta.filter,
+					 roles: meta.roles_filter,
                      topic_mid: data.topic_mid,
                      limit: 999999,
                     }

@@ -3,49 +3,52 @@ title: User combo
 index: 400
 icon: combo_box
 ---
-* Permite introducir un combo donde las opciones son los usuarios existentes en la herramienta.
-* La lista de elementos que pueden ser configurados dentro del fieldlet.
+Permite introducir un combo donde las opciones son los usuarios existentes en la herramienta.
 
-<br />
+La lista de elementos que pueden ser configurados dentro del fieldlet.
+
 ### Ubicación del fieldlet
-* Indica en que parte de la vista se pondrá el fieldlet. <br />
+Indica en que parte de la vista se pondrá el fieldlet.
 
-&nbsp; &nbsp;• **Detalles** - Se muestra en la parte derecha del formulario, debajo de la sección de detalles.<br />
+* **Detalles** - Se muestra en la parte derecha del formulario, debajo de la sección de detalles.
 
-<br />
+
 ### Anchura en canvas
-* Establece el ancho que ocupará el elemento en el formulario.
-* El valor máximo permitido es de 12 (100% de anchura).
+Establece el ancho que ocupará el elemento en el formulario.
 
-<br />
+El valor máximo permitido es de 12 (100% de anchura).
+
+
 ### Ocultar en el modo lectura
-* Indica si el campo se quiere ocultar en modo lectura.
+Indica si el campo se quiere ocultar en modo lectura.
 
-<br />
+
 ### Ocultar en el modo edición
-* Indica si el campo se quiere ocultar en modo edición.
+Indica si el campo se quiere ocultar en modo edición.
 
-<br />
+
 ### Campo obligatorio
-* Indica si el campo tiene que ser completado obligatoriamente.
+Indica si el campo tiene que ser completado obligatoriamente.
 
-<br />
+
 ### Tipo
-* Permite definir la apariencia de la tabla en el tópico:
+Permite definir la apariencia de la tabla en el tópico:
 
-&nbsp; &nbsp;• **Único** - Permite seleccionar unicamente una opción. <br />
+* **Único** - Permite seleccionar unicamente una opción.
 
-&nbsp; &nbsp;• **Múltiple** - Permite al usuario añadir tantas opciones como desee. <br />
+* **Múltiple** - Permite al usuario añadir tantas opciones como desee.
 
-&nbsp; &nbsp;• **Tabla** - Las opciones seleccionadas se muestran en una tabla.
+* **Tabla** - Las opciones seleccionadas se muestran en una tabla.
 
 
-<br />
 ### Campo visible
-* En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
-* Por defecto, es el titulo lo que se muestra.
+En caso de no haber seleccionado el tipo Tabla en la opción anterior, se establece el texto para mostrar en la opción seleccionada.
 
-<br />
+Por defecto, es el nombre del rol lo que se muestra.
+
 ### Filtro avanzado JSON
-* Permite añadir un filtro adicional que permite mostrar solo los usuarios de determinados roles.
-* Los roles han de estar separados por ;. Solo se mostrarán los usuarios que tengan todos los roles indicados.
+
+Es posible filtrar la lista de usuarios a mostrar, por ejemplo, para excluir usuarios o mostrar usuarios que pertenezcan a projectos determinados.
+
+### Roles
+Permite añadir un filtro adicional que permite mostrar solo los usuarios de determinados roles.
