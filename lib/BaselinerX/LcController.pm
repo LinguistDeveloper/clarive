@@ -797,7 +797,7 @@ sub status_list {
         @user_roles = map { $_->{id} } mdb->role->find->fields({_id => 0, id => 1})->all;
     }
     else {
-        @user_roles = ci->user->roles($username);
+        @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $username, mid => $topic->{mid}  );
     }
 
     my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
