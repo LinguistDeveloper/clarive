@@ -1659,7 +1659,7 @@ Baseliner.Topic.change_status_topic = function(opts){
 };
 
 
-Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
+Baseliner.TopicCombo = Ext.extend(Ext.form.ComboBox, {
     minChars: 2,
     name: 'topic',
     // displayField: 'short_name',
@@ -1676,20 +1676,20 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     displayField: 'name',
     triggerAction: 'all',
     itemSelector: 'div.search-item',
-    initComponent: function(){
+    initComponent: function() {
         var self = this;
         self.listeners = {
-            beforequery: function(qe){
+            beforequery: function(qe) {
                 delete qe.combo.lastQuery;
             }
         };
 
-        self.tpl = new Ext.XTemplate( '<tpl for=".">',
+        self.tpl = new Ext.XTemplate('<tpl for=".">',
             '<div class="search-item">',
-            '<span class="bl-label" style="background: {color}">{short_name}</span>',
-            ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
+            '<span class="bl-label" style="background: {color}">{short_name}</span>', (self.display_field == undefined || self.display_field == "" ||
+                self.display_field == 'title' ? '' : '&nbsp;[{' + self.display_field + '}]'),
             '<span style="padding-left:4px"><b>{title}</b></span>',
-            '</div></tpl>' );
+            '</div></tpl>');
 
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
