@@ -50,9 +50,9 @@
         { xtype:'panel', layout:'column', items:[
             {layout:'form', columnWidth: .02, items: cb_date},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('From date'), anchor:'100%', format:'Y-m-d', name: 'from_date', value: data.from_date }},
+                { xtype:'xdatefield', fieldLabel: _('From date'), anchor:'100%', name: 'from_date', value: data.from_date }},
             {layout:'form', columnWidth: .49, items:
-                { xtype:'datefield', fieldLabel: _('To date'), anchor:'100%', format:'Y-m-d', name: 'to_date', value: data.to_date }}
+                { xtype:'xdatefield', fieldLabel: _('To date'), anchor:'100%', name: 'to_date', value: data.to_date }}
             ]
         },
         { xtype:'panel', layout:'column', items:[
