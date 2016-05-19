@@ -1284,11 +1284,16 @@ Cla.topic_grid = function(params){
     });
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
-        _checker: true,
-        singleSelect: false,
-        hidden: id_report,
-        sortable: false,
-        checkOnly: true
+        listeners: {
+            selectionchange: function() {
+                var hd = Ext.fly(this.grid.getView().innerHd).child('div.x-grid3-hd-checker');
+                if (this.getCount() < this.grid.getStore().getCount()) {
+                    hd.removeClass('x-grid3-hd-checker-on');
+                } else {
+                    hd.addClass('x-grid3-hd-checker-on');
+                }
+            }
+        }
     });
 
     var force_fit = true;
