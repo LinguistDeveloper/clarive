@@ -1,4 +1,5 @@
 (function(params){
+    Cla.help_push({ title:_('Topic Grid'), path:'rules/palette/fieldlets/topic-grid' });
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
