@@ -320,18 +320,20 @@ sub monitor_json : Path('/job/monitor_json') {
     my $p = $c->request->parameters;
 
     my ( $count, @rows ) = Baseliner::Model::Jobs->new->monitor(
-        {
-            start    => $p->{start},
-            limit    => $p->{limit},
-            sort     => $p->{sort},
-            dir      => $p->{dir},
-            query    => $p->{query},
-            query_id => $p->{query_id},
-            groupBy  => $p->{groupBy},
-            groupDir => $p->{groupDir},
-
-            username => $c->username,
-            language => $c->languages->[0],
+        {   start            => $p->{start},
+            limit            => $p->{limit},
+            sort             => $p->{sort},
+            dir              => $p->{dir},
+            query            => $p->{query},
+            query_id         => $p->{query_id},
+            groupBy          => $p->{groupBy},
+            groupDir         => $p->{groupDir},
+            filter_type      => $p->{filter_type},
+            filter_bl        => $p->{filter_bl},
+            filter_nature    => $p->{filter_nature},
+            job_state_filter => $p->{job_state_filter},
+            username         => $c->username,
+            language         => $c->languages->[0],
         }
     );
 
