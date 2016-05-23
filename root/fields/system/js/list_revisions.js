@@ -116,14 +116,14 @@ params:
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
                     if (node_data.repo_dir != undefined) { ci.data.repo_dir = node_data.repo_dir };
-                    if(ci.sha){
-                        ci.data.sha = ci.sha;
-                    }else{
-                        ci.data.sha = node_data.sha;
+
+                    if (typeof ci.data.sha === 'undefined') {
+                        if (typeof ci.sha !== 'undefined'){
+                            ci.data.sha = ci.sha;
+                        }else{
+                            ci.data.sha = node_data.sha;
+                        }
                     }
-                    /*if (!ci.data.sha) {
-                        ci.data.sha = ci.sha;
-                    }*/
 
                     var mid = node_data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
@@ -133,20 +133,19 @@ params:
                         // TODO
                     }
                     else if ( ci !=undefined ) {
-                        Baseliner.ajaxEval('/ci/attach_revisions', { 
                         // FIND A BETTER SOLUTION FOR THIS IN THE FUTURE
                         if(ci.class == 'SvnRevision' && ci.name.indexOf('@'+ci.ns) == -1){
                             ci.name = ci.name+'@'+ci.ns;
                         }
-                        Baseliner.ajaxEval('/ci/sync', { 
-                                name: ci.name, 
-                                'class': ci['class'], 
-                                ns: ci.ns, 
-                                ci_json: Ext.util.JSON.encode( ci.data ), 
-                                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid, 
-                                topic_mid: topic_data.topic_mid, 
+                        Baseliner.ajaxEval('/ci/attach_revisions', {
+                                name: ci.name,
+                                'class': ci['class'],
+                                ns: ci.ns,
+                                ci_json: Ext.util.JSON.encode( ci.data ),
+                                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
+                                topic_mid: topic_data.topic_mid,
                                 branch: node_data.branch,
-                                repo_dir: node_data.repo_dir,
+                                repo_dir: node_data.repo_dir
                             }, function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
