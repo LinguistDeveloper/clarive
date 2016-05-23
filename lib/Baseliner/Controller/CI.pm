@@ -870,7 +870,7 @@ sub attach_revisions : Local {
                 $c->stash->{json} = { success=>\0, msg=>_loc('The revision does not belong to any of the changeset projects' ) };
                 $valid_repo = 0;
             } else {
-                if ( $branch ) {
+                if ( $branch && $repo->can('git') ) {
                     my $git = $repo->git;
                     my @branches;
                     for ( $git->exec( 'branch', '--contains',  $data->{sha} ) ) {
