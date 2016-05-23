@@ -770,12 +770,16 @@ sub update {
                     $return_options->{reload_tab} = 1 if $workflow;
 
                     my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title // '');
-                    { mid => $topic->mid, title => $topic->title,
-                        topic=>$topic->title,
-                        name_category=>$category->{name},
-                        category=>$category->{name},
-                        category_name=>$category->{name},
-                        notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
+                    {   mid             => $topic->mid,
+                        title           => $topic->title,
+                        topic           => $topic->title,
+                        name_category   =>$category->{name},
+                        category        =>$category->{name},
+                        projects        => [map { $_->{name} } $topic->projects],
+                        category_name   =>$category->{name},
+                        notify_default  =>\@users,
+                        subject         =>$subject,
+                        notify          =>$notify }   # to the event
 
                 });
                 $return_options->{reload} = 0;

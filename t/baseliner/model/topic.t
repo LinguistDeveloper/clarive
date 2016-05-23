@@ -281,6 +281,15 @@ subtest 'update: creates correct event.topic.create' => sub {
     my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
     my $category = mdb->category->find_one;
 
+    my @project_names = ();
+    my @project_mids = $topic->{project};
+    foreach my $project_mid (@project_mids){
+        my $project_ci = ci->new($project_mid);
+        if( $project_ci && $project_ci->name){
+            push @project_names, $project_ci->name;
+        }
+    }
+
     is $event_data->{mid},           $topic_mid;
     is $event_data->{title},         $topic->{title};
     is $event_data->{topic},         $topic->{title};
@@ -288,6 +297,7 @@ subtest 'update: creates correct event.topic.create' => sub {
     is $event_data->{category},      $category->{name};
     is $event_data->{category_name}, $category->{name};
     is_deeply $event_data->{notify_default}, [];
+    is_deeply $event_data->{projects}, \@project_names;
     like $event_data->{subject}, qr/New topic: Category #\d+/;
     is_deeply $event_data->{notify},
       {
@@ -357,6 +367,7 @@ subtest 'update: creates correct event.topic.modify' => sub {
             id_category => $topic->{category_id},
             id_category_status => $topic->{id_category_status},
             is_changeset => ignore(),
+            username => ignore(),
             is_release => ignore(),
             mid => ignore(),
             username => ignore(),
