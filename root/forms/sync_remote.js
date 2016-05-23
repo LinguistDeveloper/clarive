@@ -20,6 +20,7 @@
             fieldLabel: _('Direction'),
             name: 'direction',
             allowBlank: false,
+            value: params.data.direction,
             data: [
                 ['local-to-remote', _('Local to remote')],
                 ['remote-to-local', _('Remote to local')]
