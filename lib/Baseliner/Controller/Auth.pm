@@ -169,7 +169,7 @@ sub authenticate : Private {
     my $auth;
     _debug "AUTH START login=$login, username=$username, realm=$realm";
 
-    my $maintenance = $c->model('ConfigStore')->get('config.maintenance');
+    my $maintenance = BaselinerX::Type::Model::ConfigStore->new->get('config.maintenance');
     if ( $maintenance->{enabled} && $realm ne 'local' ) {
         $c->logout;
         $c->stash->{auth_message} = $maintenance->{message};
@@ -296,7 +296,7 @@ sub login : Global {
 
     # configure user login case
     my $case = $c->config->{user_case} // '';
-    my $config_login = $c->model('ConfigStore')->get('config.login');
+    my $config_login = BaselinerX::Type::Model::ConfigStore->new->get('config.login');
     $c->log->info( "LOGIN: " . $login );
     #_log "PW   : " . $password; #XXX only for testing!
     my $msg;

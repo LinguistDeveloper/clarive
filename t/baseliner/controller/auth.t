@@ -1,33 +1,27 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
 use TestSetup;
 
-use Clarive::ci;
-use Clarive::mdb;
-use Baseliner::Core::Registry;
-use BaselinerX::Type::Event;
-use BaselinerX::CI;
-use Baseliner::Controller::Auth;
+use_ok 'Baseliner::Controller::Auth';
 
 subtest 'authenticate: creates correct event event.auth.attempt' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
+    my $ci = ci->user->new( username => 'foo', name => 'foo', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        authenticate => { id          => 'foo', password => 'admin' },
-        model        => { ConfigStore => FakeConfigStore->new() },
+        authenticate => { id => 'foo', password => 'admin' },
         stash        => {
             login    => 'foo',
             password => 'admin',
@@ -68,8 +62,7 @@ subtest 'authenticate: creates correct event event.auth.attempt when user not fo
     _setup();
 
     my $c = _build_c(
-        authenticate => { id          => 'foo', password => 'admin' },
-        model        => { ConfigStore => FakeConfigStore->new() },
+        authenticate => { id => 'foo', password => 'admin' },
         stash        => {
             login    => 'foo',
             password => 'admin',
@@ -115,8 +108,6 @@ subtest 'login: returns an error when ci not found' => sub {
     my $c = _build_c(
         authenticate => { id => 'root', realm => 'local' },
         req => { params => { login => 'local/root', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -129,7 +120,6 @@ subtest 'login: returns an error when ci not found' => sub {
       };
 };
 
-
 subtest 'login: reduces logins after failed ones' => sub {
     _setup();
 
@@ -138,11 +128,10 @@ subtest 'login: reduces logins after failed ones' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c(
-        req => { params => { login => 'local/root', password => 'wrong' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-    );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_attempts', value => 5 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_duration', value => 5 );
+
+    my $c = _build_c( req => { params => { login => 'local/root', password => 'wrong' } } );
 
     $controller->login($c);
 
@@ -166,12 +155,11 @@ subtest 'login: blocks user after failed attempts' => sub {
 
     my $controller = _build_controller();
 
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_attempts', value => 5 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_duration', value => 5 );
+
     for ( 1 .. 5 ) {
-        my $c = _build_c(
-            req => { params => { login => 'local/wrong', password => 'wrong' } },
-            model =>
-              { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-        );
+        my $c = _build_c( req => { params => { login => 'local/wrong', password => 'wrong' } }, );
 
         $controller->login($c);
 
@@ -187,11 +175,7 @@ subtest 'login: blocks user after failed attempts' => sub {
           };
     }
 
-    my $c = _build_c(
-        req => { params => { login => 'local/wrong', password => 'wrong' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-    );
+    my $c = _build_c( req => { params => { login => 'local/wrong', password => 'wrong' } }, );
 
     $controller->login($c);
 
@@ -207,11 +191,7 @@ subtest 'login: blocks user after failed attempts' => sub {
         }
       };
 
-    $c = _build_c(
-        req => { params => { login => 'local/wrong', password => 'wrong' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-    );
+    $c = _build_c( req => { params => { login => 'local/wrong', password => 'wrong' } }, );
 
     $controller->login($c);
 
@@ -236,12 +216,11 @@ subtest 'login: logges in after block is expired' => sub {
 
     my $controller = _build_controller();
 
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_attempts', value => 5 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_duration', value => 5 );
+
     for ( 1 .. 7 ) {
-        my $c = _build_c(
-            req => { params => { login => 'local/wrong', password => 'wrong' } },
-            model =>
-              { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
-        );
+        my $c = _build_c( req => { params => { login => 'local/wrong', password => 'wrong' } }, );
 
         $controller->login($c);
     }
@@ -252,8 +231,6 @@ subtest 'login: logges in after block is expired' => sub {
     my $c = _build_c(
         authenticate => { id => 'root', realm => 'local' },
         req => { params => { login => 'local/wrong', password => 'wrong' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -270,15 +247,12 @@ subtest 'login: denies logins when in maintenance mode' => sub {
 
     my $controller = _build_controller();
 
-    my $c = _build_c(
-        req   => { params => { login => 'remote/users', password => 'password' } },
-        model => {
-            ConfigStore => FakeConfigStore->new(
-                'config.login'       => { delay_attempts => 5, delay_duration => 5 },
-                'config.maintenance' => { enabled        => 1, message        => 'Maintenance mode' }
-            )
-        }
-    );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_attempts', value => 5 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.login.delay_duration', value => 5 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.maintenance.enabled',  value => 1 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.maintenance.message',  value => 'Maintenance mode' );
+
+    my $c = _build_c( req => { params => { login => 'remote/users', password => 'password' } }, );
 
     $controller->login($c);
 
@@ -294,11 +268,12 @@ subtest 'login: allows local logins when in maintenance mode' => sub {
 
     my $controller = _build_controller();
 
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.maintenance.enabled', value => 1 );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.maintenance.message', value => 'Maintenance mode' );
+
     my $c = _build_c(
         authenticate => { id => 'root', realm => 'local' },
         req => { params => { login => 'local/root', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.maintenance' => { enabled => 1, message => 'Maintenance mode'} ) }
     );
 
     $controller->login($c);
@@ -313,23 +288,19 @@ subtest 'login: allows local logins when in maintenance mode' => sub {
 subtest 'login: logges in with user_case as uc' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    my $ci = ci->user->new( username => 'FOO', name => 'FOO', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        config => { user_case => 'uc'},
-        authenticate => { id => 'FOO', password=>'admin' },
-        req => { params => { login => 'foo', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+        config       => { user_case => 'uc' },
+        authenticate => { id        => 'FOO', password => 'admin' },
+        req          => { params    => { login => 'foo', password => 'admin' } },
     );
 
     $controller->login($c);
 
-    $controller->login($c);
-    use Data::Dumper;
     cmp_deeply $c->stash->{json},
       {
         success => \1,
@@ -340,17 +311,15 @@ subtest 'login: logges in with user_case as uc' => sub {
 subtest 'login: log in with lowercase user with user_case as uc' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    my $ci = ci->user->new( username => 'FOO', name => 'FOO', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        config => { user_case => 'uc'},
-        authenticate => { id => 'FOO', password=>'admin' },
-        req => { params => { login => 'foo', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+        config       => { user_case => 'uc' },
+        authenticate => { id        => 'FOO', password => 'admin' },
+        req          => { params    => { login => 'foo', password => 'admin' } },
     );
 
     $controller->login($c);
@@ -365,16 +334,14 @@ subtest 'login: log in with lowercase user with user_case as uc' => sub {
 subtest 'login: cannot log in with uppercase user without user_case as uc' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'FOO', name => 'FOO', password => 'admin' );
+    my $ci = ci->user->new( username => 'FOO', name => 'FOO', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        authenticate => { id => 'foo', password=>'admin' },
+        authenticate => { id => 'foo', password => 'admin' },
         req => { params => { login => 'foo', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -390,17 +357,15 @@ subtest 'login: cannot log in with uppercase user without user_case as uc' => su
 subtest 'login: logges in with lowercase user with user_case as lc' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
+    my $ci = ci->user->new( username => 'foo', name => 'foo', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        config => { user_case => 'lc'},
-        authenticate => { id => 'foo', password=>'admin' },
-        req => { params => { login => 'FOO', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+        config       => { user_case => 'lc' },
+        authenticate => { id        => 'foo', password => 'admin' },
+        req          => { params    => { login => 'FOO', password => 'admin' } },
     );
 
     $controller->login($c);
@@ -415,16 +380,14 @@ subtest 'login: logges in with lowercase user with user_case as lc' => sub {
 subtest 'login: cannot log in with uppercase user without user_case as lc' => sub {
     _setup();
 
-    my $ci = ci->user->new( username=>'foo', name => 'foo', password => 'admin' );
+    my $ci = ci->user->new( username => 'foo', name => 'foo', password => 'admin' );
     $ci->save;
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        authenticate => { id => 'FOO', password=>'admin' },
+        authenticate => { id => 'FOO', password => 'admin' },
         req => { params => { login => 'FOO', password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -444,7 +407,7 @@ subtest 'login: cannot log in with LOCAL/ROOT user' => sub {
     $ci->save;
 
     my $realm = 'LOCAL';
-    my $id = "ROOT";
+    my $id    = "ROOT";
     my $login = "$realm/$id";
 
     my $controller = _build_controller();
@@ -452,8 +415,6 @@ subtest 'login: cannot log in with LOCAL/ROOT user' => sub {
     my $c = _build_c(
         authenticate => { id => $id, realm => $realm },
         req => { params => { login => $login, password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -461,7 +422,7 @@ subtest 'login: cannot log in with LOCAL/ROOT user' => sub {
     cmp_deeply $c->stash->{json},
       {
         success => \0,
-        msg => "Login error: User not found: $id\n",
+        msg     => "Login error: User not found: $id\n",
         errors  => ignore(),
       };
 };
@@ -473,7 +434,7 @@ subtest 'login: cannot log in with local/ROOT user' => sub {
     $ci->save;
 
     my $realm = 'local';
-    my $id = 'ROOT';
+    my $id    = 'ROOT';
     my $login = "$realm/$id";
 
     my $controller = _build_controller();
@@ -481,8 +442,6 @@ subtest 'login: cannot log in with local/ROOT user' => sub {
     my $c = _build_c(
         authenticate => { id => $id, realm => $realm },
         req => { params => { login => $login, password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -490,7 +449,7 @@ subtest 'login: cannot log in with local/ROOT user' => sub {
     cmp_deeply $c->stash->{json},
       {
         success => \0,
-        msg => "Login error: User not found: $id\n",
+        msg     => "Login error: User not found: $id\n",
         errors  => ignore(),
       };
 };
@@ -502,7 +461,7 @@ subtest 'login: logges in clarive with local/root user' => sub {
     $ci->save;
 
     my $realm = 'local';
-    my $id = 'root';
+    my $id    = 'root';
     my $login = "$realm/$id";
 
     my $controller = _build_controller();
@@ -510,8 +469,6 @@ subtest 'login: logges in clarive with local/root user' => sub {
     my $c = _build_c(
         authenticate => { id => $id, realm => $realm },
         req => { params => { login => $login, password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
     );
 
     $controller->login($c);
@@ -530,17 +487,15 @@ subtest 'login: cannot log in with local/root user and user_case uc' => sub {
     $ci->save;
 
     my $realm = 'local';
-    my $id = 'root';
+    my $id    = 'root';
     my $login = "$realm/$id";
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        config => { user_case => 'uc'},
-        authenticate => { id => $id, realm => $realm },
-        req => { params => { login => $login, password => 'admin' } },
-        model =>
-          { ConfigStore => FakeConfigStore->new( 'config.login' => { delay_attempts => 5, delay_duration => 5 } ) }
+        config       => { user_case => 'uc' },
+        authenticate => { id        => $id, realm => $realm },
+        req          => { params    => { login => $login, password => 'admin' } },
     );
 
     $controller->login($c);
@@ -580,25 +535,4 @@ sub _build_events_model {
 
 sub _build_c {
     mock_catalyst_c(@_);
-}
-
-package FakeConfigStore;
-
-sub new {
-    my $class = shift;
-    my (%params) = @_;
-
-    my $self = {};
-    bless $self, $class;
-
-    $self->{params} = \%params;
-
-    return $self;
-}
-
-sub get {
-    my $self = shift;
-    my ($key) = @_;
-
-    return $self->{params}->{$key};
 }
