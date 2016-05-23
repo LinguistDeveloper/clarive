@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::MonkeyMock;
+use Test::Deep;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
@@ -107,7 +108,7 @@ subtest 'sync_dir: creates correct rsync command' => sub {
 
     my (@cmd) = $command_runner->mocked_call_args('run');
 
-    is_deeply \@cmd, [ 'rsync', '-avz', '/foo/bar', 'foo@bar:/foo/bar' ];
+    cmp_deeply \@cmd, [ 'rsync', '-avz', '-e', ignore(), '/foo/bar', 'foo@bar:/foo/bar' ];
 };
 
 subtest 'sync_dir: creates correct rsync command in opposite direction' => sub {
@@ -124,7 +125,7 @@ subtest 'sync_dir: creates correct rsync command in opposite direction' => sub {
 
     my (@cmd) = $command_runner->mocked_call_args('run');
 
-    is_deeply \@cmd, [ 'rsync', '-avz', 'foo@bar:/foo/bar', '/foo/bar' ];
+    cmp_deeply \@cmd, [ 'rsync', '-avz', '-e', ignore(), 'foo@bar:/foo/bar', '/foo/bar' ];
 };
 
 subtest 'sync_dir: creates correct rsync command with delete extraneous' => sub {
@@ -141,7 +142,7 @@ subtest 'sync_dir: creates correct rsync command with delete extraneous' => sub 
 
     my (@cmd) = $command_runner->mocked_call_args('run');
 
-    is_deeply \@cmd, [ 'rsync', '-avz', '--delete', '/foo/bar', 'foo@bar:/foo/bar' ];
+    cmp_deeply \@cmd, [ 'rsync', '-avz', '-e', ignore(), '--delete', '/foo/bar', 'foo@bar:/foo/bar' ];
 };
 
 sub _mock_command_runner {

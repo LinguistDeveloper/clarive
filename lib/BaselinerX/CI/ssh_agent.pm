@@ -23,16 +23,8 @@ has ssh     => (
 
         my $uri = $self->_build_uri;
 
-        my $master_opts = [
-            -F => '/dev/null',
-            -o => 'StrictHostKeyChecking=no',
-            -o => 'PasswordAuthentication=no',
-            -o => 'UserKnownHostsFile=/dev/null'
-        ];
-        push @$master_opts, -i => $self->private_key if $self->{private_key};
-
         my $n = $self->_build_openssh( $uri,
-            master_opts      => [ @$master_opts ],
+            master_opts      => [ @{ $self->_options } ],
             default_ssh_opts => [ -F => '/dev/null' ]
         );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
@@ -43,6 +35,20 @@ has ssh     => (
 has _method => qw(is ro isa Any default scp);  # for replacing scp with rsync on inheritance
 
 with 'Baseliner::Role::CI::Agent';
+
+sub _options {
+    my $self = shift;
+
+    my $options = [
+        -F => '/dev/null',
+        -o => 'StrictHostKeyChecking=no',
+        -o => 'PasswordAuthentication=no',
+        -o => 'UserKnownHostsFile=/dev/null'
+    ];
+    push @$options, -i => $self->private_key if $self->private_key;
+
+    return $options;
+}
 
 sub rel_type {
     {
@@ -261,10 +267,14 @@ sub sync_dir {
 
     my $command_runner = $self->_build_command_runner;
 
-    my @options;
+    my @ssh_opts = @{ $self->_options };
     if ($port) {
-        push @options, '-e', "ssh -p $port";
+        push @ssh_opts, '-p', $port;
     }
+
+    my @options;
+    push @options, '-e', "ssh @ssh_opts";
+
     if ($delete_extraneous) {
         push @options, '--delete';
     }

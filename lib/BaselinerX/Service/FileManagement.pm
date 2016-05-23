@@ -95,7 +95,7 @@ register 'service.fileman.retrieve' => {
 };
 
 register 'service.fileman.sync_remote' => {
-    name        => 'Sync a Remote Directory',
+    name        => 'Sync Local and Remote Directories',
     icon        => $ICON_DEFAULT,
     form        => '/forms/sync_remote.js',
     job_service => 1,
