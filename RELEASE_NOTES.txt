@@ -1,3 +1,8 @@
+---------------------------------------------- 6.4.6 May 2016 ----------------------------------------------
+- Improved JavaScript API
+- Improved Rule version selection
+- Advanced JSON filter in all CI fieldlets
+
 ---------------------------------------------- 6.4.5 April 2016 ----------------------------------------------
 - New UI flat theme
 - Job execution by version
