@@ -17,8 +17,7 @@ params:
 	var data = params.topic_data;
 	var date_format = Cla.user_js_date_format();
 
-    var value = data ? data[meta.id_field]: ''; 
-
+    var value = data ? (data[meta.id_field] ? data[meta.id_field] : '' ): '';
     if( !value && meta.default_today && (meta.default_today == 'true' || meta.default_today == 'on') ) {
         value = new Date();
     };
