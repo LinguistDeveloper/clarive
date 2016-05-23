@@ -7,7 +7,6 @@
     use utf8;
     my $iid = "div-" . _nowstamp;
     my $now = _dt();
-    my $date_format = $c->user_ci->cdate_format;
 
     my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
@@ -24,12 +23,11 @@
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
-    var date_format = '<% $date_format %>';  // %Y-%m-%d 
-    var picker_format = Cla.user_js_date_format(); 
+    var picker_format = Cla.user_js_date_format();
     var today = Cla.user_date_timezone().toDate();
-    var min_chars = 3; 
+    var min_chars = 3;
     var rel_cals = [];
-    
+
     var data_any_time = function() {
         var arr = [];
         var name = _('no calendar window');
@@ -288,6 +286,7 @@
         fieldLabel: _('Date'),
         allowBlank: false,
         usePickerPlus: true,
+        dateFormat: picker_format,
         format: picker_format,
         value: today,
         minValue: today,
@@ -333,7 +332,7 @@
         }
         if( jc_grid_remove ) jc_store.removeAll();
         topics = [];
-        var topics_json = '[]';                
+        var topics_json = '[]';
         store_transitions.baseParams.topics= topics_json;
         store_transitions.reload();
         jc_store_topics = {};
@@ -415,12 +414,12 @@
             combo_time.fireEvent('change');
 
             if( cnt > 0 ) {
-                var job_date_v = str_date ? str_date : job_date.getRawValue()
+                var job_date_v = str_date ? str_date : job_date.getRawValue();
                 var bl  = hidden_baseline.getValue();
                 var json_res = job_grid_data({ warn: false });
 
                 Baseliner.ajaxEval( '/job/build_job_window',
-                    { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: date_format  },
+                    { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: picker_format  },
                     function(res){
                         if( res.success ) {
                             // debugger;
