@@ -73,3 +73,11 @@ If Class selection is selected, the value in this field must be ci.
 Select only works if *Class selection* is selected as a method.
 
 Specify the class of CI to be shown.
+
+### Default Value
+
+To show a default value in the grid.
+
+This field will be active when CI Class is selected.
+
+### Show class
