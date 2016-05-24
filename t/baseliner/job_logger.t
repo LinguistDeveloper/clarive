@@ -48,6 +48,7 @@ subtest 'common_log: logs data' => sub {
         'pid'         => ignore(),
         'prefix'      => '/prefix/',
         'milestone'   => 'milestone',
+        'no_trim'     => 0,
         'rule'        => '1',
         'section'     => 'general',
         'service_key' => 'some.service',
@@ -94,6 +95,21 @@ subtest 'common_log: correctly saves long text into grid' => sub {
     my $grid = mdb->grid->find_one;
     my $data = Baseliner::Utils::uncompress( $grid->slurp );
     like Encode::decode( 'UTF-8', $data ), qr/====\n\x{1F603}/;
+};
+
+subtest 'common_log: does not trim data with no_trim option' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $logger = _build_logger( job => $job, jobid => 1, exec => 1, current_service => 'some.service' );
+
+    capture {
+        $logger->common_log( 'info', "\x{1F603}" x 2050, data => 'DATA', no_trim => 1 );
+    };
+
+    my $job_log = mdb->job_log->find_one;
+    isnt length $job_log->{text}, 2000;
 };
 
 subtest 'common_log: correctly saves unicode data into grid' => sub {

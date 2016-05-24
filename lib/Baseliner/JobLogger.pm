@@ -77,6 +77,7 @@ sub common_log {
     my $stmt_level = int( $p{stmt_level} // 0 );
     my $username   = $p{username};
     my $return_row = $p{return_row};
+    my $no_trim    = $p{no_trim};
 
     my ($package, $filename, $line);
     if( ref $lev eq 'ARRAY' ) {
@@ -103,7 +104,7 @@ sub common_log {
         $self->max_step_level( $log_level ) if $log_level > $self->max_step_level;
     }
 
-    if( length($text) > 2000 ) {
+    if( !$no_trim && length($text) > 2000 ) {
         # publish exceeding log to data
         $data.= '=' x 50;
         $data.= "\n" . Encode::encode('UTF-8', $text);
@@ -126,6 +127,7 @@ sub common_log {
         $doc->{stmt_level} = $stmt_level;
         $doc->{service_key} = $self->current_service;
         $doc->{rule} =  $self->job->id_rule if defined $self->job->id_rule;
+        $doc->{no_trim}     = $no_trim ? 1 : 0;
 
         if ($data) {
             my $filtered_data = $data;
