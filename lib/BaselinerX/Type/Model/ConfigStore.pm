@@ -98,7 +98,7 @@ sub get {
     #
     my $v = Clarive->config->{ $key };
     if( ! defined $v ) {
-        my $config_eval = sprintf 'Baseliner->config->{%s}', join('}{', split /\./, $key );
+        my $config_eval = sprintf 'Clarive->config->{%s}', join('}{', split /\./, $key );
         $v =  eval $config_eval;
     }
     $values{ $key } = [ { key=>$key, ns=>'/', bl=>'*', value=>$v } ] if defined $v ;

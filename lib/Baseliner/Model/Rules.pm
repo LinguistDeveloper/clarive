@@ -1,12 +1,11 @@
 package Baseliner::Model::Rules;
-use Moose;
+use Baseliner::Moose;
 BEGIN { extends 'Catalyst::Model' }
 
 use Perl::Tidy ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Baseliner::CompiledRule;
 use BaselinerX::CI::variable;
 use Try::Tiny;
 use v5.10;
@@ -351,10 +350,15 @@ sub compile_rules {
     my @rules = mdb->rule->find( { rule_active => mdb->true, $rule_precompile ne 'always' ? (rule_compile_mode=>'precompile') : () } )
       ->sort( mdb->ixhash( rule_seq => 1, id => 1 ) )->all;
 
+    require Baseliner::RuleRunner;
     foreach my $rule (@rules) {
         try {
-            my $cr = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
-            $cr->compile;
+            my $rule_runner = Baseliner::RuleRunner->new;
+            $rule_runner->compile_rule(rule => $rule);
+        } catch {
+            my $error = shift;
+
+            _log _loc('Error during rule precompilation: %1', $error);
         };
     }
 }
@@ -1387,6 +1391,70 @@ sub save_rule {
     }
     return { id_rule=>$id_rule, rule_name => $params{rule_name} };
 }
+
+sub list_versions {
+    my $self = shift;
+    my ($id_rule, %params) = @_;
+
+    _fail _loc('Unknown rule `%1`', $id_rule) unless mdb->rule->find_one({id => $id_rule}, {_id => 1});
+
+    my %cond;
+    if ( $params{only_tags} ) {
+        %cond = ( version_tag => { '$exists' => 1, '$ne' => undef, '$ne' => '' } );
+    }
+
+    my @versions = mdb->rule_version->find( { id_rule => $id_rule, %cond } )->sort( { ts => -1 } )->all;
+
+    return @versions;
+}
+
+method find_version_by_tag(:$id_rule, :$version_tag) {
+    _fail _loc('Unknown rule `%1`', $id_rule) unless mdb->rule->find_one({id => $id_rule}, {_id => 1});
+
+    return mdb->rule_version->find_one( { id_rule => $id_rule, version_tag => $version_tag } );
+}
+
+method tag_version(:$version_id, :$version_tag) {
+    my $version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+    _fail _loc( 'Version not found: %1', $version_id ) unless $version;
+
+    my $exists =
+      mdb->rule_version->find_one(
+        { id_rule => $version->{id_rule}, _id => { '$ne' => mdb->oid($version_id) }, version_tag => $version_tag } );
+    _fail _loc('Version tag already exists') if $exists;
+
+    mdb->rule_version->update( { _id => mdb->oid($version_id) }, { '$set' => { version_tag => $version_tag } } );
+
+    return 1;
+}
+
+method untag_version(:$version_id) {
+    my $version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+    _fail _loc( 'Version not found: %1', $version_id ) unless $version;
+
+    mdb->rule_version->update( { _id => mdb->oid($version_id) }, { '$unset' => { version_tag => '' } } );
+
+    return 1;
+}
+
+method resolve_rule(:$id_rule, :$version_id = undef, :$version_tag = undef) {
+    my $rule = mdb->rule->find_one( { '$or' => [ { id => "$id_rule" }, { rule_name => "$id_rule" } ] } );
+    _fail _loc( 'Rule with id or name `%1` not found', $id_rule ) unless $rule;
+
+    my $id_rule = $rule->{id};
+
+    if ($version_id) {
+        $rule = mdb->rule_version->find_one( { id_rule => $id_rule, _id => mdb->oid($version_id) } );
+        _fail _loc( 'Version `%1` of rule `%2` not found', $version_id, $id_rule ) unless $rule;
+    }
+    elsif ($version_tag) {
+        $rule = mdb->rule_version->find_one( { id_rule => $id_rule, version_tag => $version_tag } );
+        _fail _loc( 'Version tag `%1` of rule `%2` not found', $version_tag, $id_rule ) unless $rule;
+    }
+
+    return $rule;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

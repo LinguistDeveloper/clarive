@@ -1,5 +1,5 @@
 package Baseliner::RuleRunner;
-use Moose;
+use Baseliner::Moose;
 
 use Time::HiRes ();
 use Try::Tiny;
@@ -7,8 +7,9 @@ use Capture::Tiny qw(tee_merged);
 use Baseliner::Sugar;
 use Baseliner::Sem;
 use BaselinerX::CI::variable;
-use Baseliner::Utils qw(_fail _loc _debug _error);
 use Baseliner::Model::Rules;
+use Baseliner::RuleCompiler;
+use Baseliner::Utils qw(_fail _loc _debug _error);
 
 has tidy_up => qw(is ro), default => sub { 1 };
 
@@ -56,7 +57,7 @@ sub run_rules {
             ($runner_output) = tee_merged(
                 sub {
                     try {
-                        $ret = $self->dsl_run( id_rule => $id_rule, stash => $stash, simple_error => $simple_error );
+                        $ret = $self->_dsl_run( rule => $rule, stash => $stash, simple_error => $simple_error );
                     }
                     catch {
                         $err = shift // _loc( 'Unknown error running rule: %1', $id_rule );
@@ -76,6 +77,7 @@ sub run_rules {
                         output    => $runner_output
                     } => sub { };
                 }
+
                 if ($simple_error) {
                     _error( _loc( "Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) )
                       unless $simple_error > 1;
@@ -136,26 +138,79 @@ sub run_rules {
     return { stash => $stash, rule_log => \@rule_log };
 }
 
-sub run_single_rule {
-    my ( $self, %p ) = @_;
+method compile_rule(:$rule, :$logging = 0, :$simple_error = 0) {
+    my $id_rule = $rule->{id};
 
+    my $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
+
+    my $compiler = $self->_build_rule_compiler(
+        dsl          => $dsl,
+        id_rule      => $rule->{id},
+        version_id   => '' . $rule->{_id},
+        simple_error => $simple_error,
+        logging      => $logging,
+    );
+    $compiler->compile;
+
+    return $compiler;
+}
+
+method find_and_run_rule(:$id_rule, :$version_id = '', :$version_tag = '', :$stash = {}, :$logging = 0, :$simple_error = 0) {
+    my $rule = $self->_resolve_rule(
+        id_rule      => $id_rule,
+        version_id   => $version_id,
+        version_tag  => $version_tag
+    );
+
+    return $self->run_rule(
+        rule         => $rule,
+        stash        => $stash,
+        logging      => $logging,
+        simple_error => $simple_error
+    );
+}
+
+method run_rule(:$rule, :$stash = {}, :$logging = 0, :$simple_error = 0) {
     local $Baseliner::_no_cache = 0;
 
-    my $id_rule = $p{id_rule} or _fail 'id_rule required';
-    my $stash = $p{stash} // {};
-    my $rule_version = $p{rule_version};
+    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash );
 
-    my $rule = $self->_find_rule_by_id_or_name($id_rule);
-    _fail _loc 'Rule with id `%1` not found', $id_rule unless $rule;
+    my $compiler = $self->compile_rule(
+        rule         => $rule,
+        logging      => $logging,
+        simple_error => $simple_error
+    );
 
     my $ret = try {
-        $self->dsl_run( rule_version => $rule_version, stash => $stash, %p, id_rule => $rule->{id} );
+        $compiler->run( stash => $stash );
+
+        my $rules_model = Baseliner::Model::Rules->new;
+        if ( my $err = $compiler->errors ) {
+            if ($simple_error) {
+                _error( _loc( "Error during DSL Execution: %1", $err ) ) unless $simple_error > 1;
+                _fail $err;
+            }
+            else {
+                _fail( _loc( "Error during DSL Execution: %1", $err ) );
+            }
+            _debug "DSL:\n", $rules_model->dsl_listing( $compiler->dsl );
+        }
+        else {
+            _debug "DSL:\n", $rules_model->dsl_listing( $compiler->dsl ) if $logging;
+        }
+
+        { stash => $stash }
     }
     catch {
-        _fail( _loc( "Error running rule '%1': %2", $rule->{rule_name}, shift() ) );
+        my $error = shift;
+
+        _fail( _loc( "Error running rule '%1': %2", $rule->{id}, $error ) );
     };
 
-    return { ret => $ret, dsl => '' };
+    return {
+        ret  => $ret,
+        rule => { id => $rule->{id}, version_id => '' . $rule->{_id}, version_tag => $rule->{version_tag} }
+    };
 }
 
 sub run_dsl {
@@ -171,7 +226,7 @@ sub run_dsl {
           unless exists $stash->{$default_var};
     }
 
-    my $rule = Baseliner::CompiledRule->new( dsl => $dsl );
+    my $rule = $self->_build_rule_compiler( dsl => $dsl );
     $rule->compile;
 
     local $Baseliner::no_log_color = 1;
@@ -185,13 +240,18 @@ sub run_dsl {
 }
 
 sub dsl_build_and_test {
-    my ($self,$stmts, %p )=@_;
+    my $self = shift;
+    my ( $stmts, %p ) = @_;
+
+    my $id_rule = $p{id_rule};
+    my $ts      = $p{ts};
 
     my $rules_model = Baseliner::Model::Rules->new;
+    my $dsl = $rules_model->dsl_build( $stmts, id_rule => $id_rule );
 
-    my $dsl = $rules_model->dsl_build( $stmts, id_rule=>$p{id_rule}, %p );
+    # send ts so its stored as this rule save timestamp
+    my $rule = $self->_build_rule_compiler( id_rule => $id_rule, dsl => $dsl, ts => $ts );
 
-    my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
     $rule->compile;
 
     die $rule->errors if $rule->errors;
@@ -199,43 +259,50 @@ sub dsl_build_and_test {
     return $dsl;
 }
 
-sub dsl_run {
+sub _dsl_run {
     my ( $self, %p ) = @_;
-    my $id_rule = $p{id_rule};
-    my $rule_version = $p{rule_version};
+
+    my $rule         = $p{rule};
+    my $simple_error = $p{simple_error};
+    my $stash        = $p{stash} // {};
+
     local $@;
-    my $ret;
-    my $stash = $p{stash} // {};
 
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash );
 
-    ## local $Baseliner::Utils::caller_level = 3;
-    ############################## EVAL DSL Tasks
-    my $rule = Baseliner::CompiledRule->new( ( $id_rule ? ( id_rule => $id_rule, rule_version => $rule_version ) : () ),
-        dsl => $p{dsl} );
-    $rule->compile;
-    $rule->run( stash => $stash );    # if there's a compile error it wont run
-    ##############################
+    my $compiler = $self->compile_rule(
+        rule         => $rule,
+        simple_error => $simple_error
+    );
 
     my $rules_model = Baseliner::Model::Rules->new;
 
-    if ( my $err = $rule->errors ) {
-        if ( $p{simple_error} ) {
-            _error( _loc( "Error during DSL Execution: %1", $err ) ) unless $p{simple_error} > 1;
-            _fail $err;
+    my $ret = try {
+        $compiler->run( stash => $stash );
+
+        if ( my $err = $compiler->errors ) {
+            if ( $p{simple_error} ) {
+                _error( _loc( "Error during DSL Execution: %1", $err ) ) unless $p{simple_error} > 1;
+                _fail $err;
+            }
+            else {
+                _fail( _loc( "Error during DSL Execution: %1", $err ) );
+            }
+            _debug "DSL:\n", $rules_model->dsl_listing( $compiler->dsl );
         }
         else {
-            _fail( _loc( "Error during DSL Execution: %1", $err ) );
+            _debug "DSL:\n", $rules_model->dsl_listing( $compiler->dsl ) if $p{logging};
         }
-        _debug "DSL:\n", $rules_model->dsl_listing( $rule->dsl );
+
+        { stash => $stash, dsl => $compiler->dsl }
     }
-    else {
-        _debug "DSL:\n", $rules_model->dsl_listing( $rule->dsl ) if $p{logging};
-    }
-    return {
-        stash => $stash,
-        dsl   => ( $rule->dsl || $rule->package )
-    };    # TODO storing dsl everywhere maybe a waste of space
+    catch {
+        my $error = shift;
+
+        _fail( _loc( "Error running rule '%1': %2", $rule->{id}, $error ) );
+    };
+
+    return $ret;
 }
 
 sub merge_into_stash {
@@ -247,11 +314,54 @@ sub merge_into_stash {
     return $stash;
 }
 
+method _resolve_rule(:$id_rule, :$version_id, :$version_tag) {
+    my $rule = $self->_find_rule_by_id_or_name($id_rule);
+    _fail _loc( 'Rule with id or name `%1` not found', $id_rule ) unless $rule;
+
+    $id_rule = $rule->{id};
+
+    if ($version_id) {
+        $rule = mdb->rule_version->find_one( { id_rule => $rule->{id}, _id => mdb->oid($version_id) } );
+        _fail _loc( 'Version `%1` of rule `%2` not found', $version_id, $id_rule ) unless $rule;
+    }
+    elsif ($version_tag) {
+        $rule = mdb->rule_version->find_one( { id_rule => $rule->{id}, version_tag => $version_tag } );
+        _fail _loc( 'Version tag `%1` of rule `%2` not found', $version_tag, $id_rule ) unless $rule;
+    }
+
+    return $rule;
+}
+
 sub _find_rule_by_id_or_name {
     my $self = shift;
     my ($param) = @_;
 
     return mdb->rule->find_one( { '$or' => [ { id => "$param" }, { rule_name => "$param" } ] } );
+}
+
+sub _build_dsl_from_rule {
+    my $self = shift;
+    my ($id_rule, $rule) = @_;
+
+    my $rules_model = Baseliner::Model::Rules->new;
+    my @tree = $rules_model->build_tree( $rule, undef );
+
+    my $dsl = try {
+        $rules_model->dsl_build( \@tree, no_tidy => 0, id_rule => $id_rule, rule_name => $rule->{name} );
+    }
+    catch {
+        my $error = shift;
+
+        _fail( _loc( "Error building DSL for rule `%1`: %2", $id_rule, $error ) );
+    };
+
+    return $dsl;
+}
+
+sub _build_rule_compiler {
+    my $self = shift;
+
+    return Baseliner::RuleCompiler->new(@_);
 }
 
 1;

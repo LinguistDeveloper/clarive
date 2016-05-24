@@ -2,6 +2,8 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Deep;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
@@ -52,6 +54,83 @@ subtest 'start_task: creates job_log entry' => sub {
     is $job_log->{stmt_level}, 123;
 };
 
+subtest 'new: creates job and runs CHECK & INIT' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+
+    my $job;
+    capture { $job = TestUtils->create_ci('job', changesets => [$changeset]) };
+
+    is_deeply $job->step_status,
+      {
+        INIT  => 'FINISHED',
+        CHECK => 'FINISHED',
+      };
+};
+
+subtest 'new: saves rule versions for INIT & CHECK' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+
+    my $job;
+    capture {
+        $job = TestUtils->create_ci('job', changesets => [$changeset]);
+    };
+
+    cmp_deeply $job->rule_versions,
+      [
+        {
+            INIT  => ignore(),
+            CHECK => ignore(),
+        }
+      ];
+};
+
+subtest 'run: runs rule with version tag' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule  => '1',
+        username => 'newuser',
+    );
+
+    my @versions = Baseliner::Model::Rules->new->list_versions('1');
+
+    my $version_id = $versions[0]->{_id};
+
+    my $rules = Baseliner::Model::Rules->new;
+    $rules->tag_version( version_id => $version_id, version_tag => 'production' );
+
+    my $job;
+    capture {
+        $job = TestUtils->create_ci('job', changesets => [$changeset], rule_version_tag => 'production');
+    };
+
+    cmp_deeply $job->rule_versions,
+      [
+        {
+            INIT  => "$version_id (production)",
+            CHECK => "$version_id (production)",
+        }
+      ];
+};
+
 done_testing;
 
 sub _setup {
@@ -66,6 +145,7 @@ sub _setup {
     TestUtils->cleanup_cis;
 
     mdb->rule->drop;
+    mdb->rule_version->drop;
     mdb->job_log->drop;
 
     mdb->rule->insert(

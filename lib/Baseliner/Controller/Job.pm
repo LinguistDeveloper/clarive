@@ -12,6 +12,7 @@ use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Jobs;
 use Baseliner::Model::Permissions;
+use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils;
 
 BEGIN {
@@ -89,20 +90,26 @@ sub pipeline_versions : Local {
 
     my $id_rule = $p->{id_rule};
 
-    my @rule_versions = mdb->rule_version->find( { id_rule => $id_rule } )->sort( { ts => -1 } )->all;
+    my @tagged_versions = Baseliner::Model::Rules->new()->list_versions($id_rule, only_tags => 1);
 
     my @data;
-    foreach my $rule_version (@rule_versions) {
-        my $version = @data ? $rule_version->{ts} : _loc('Latest');
+    push @data,
+      {
+        id    => '',
+        label => _loc('Latest'),
+      };
 
-        if ($rule_version->{username}) {
-            $version .= sprintf ' (%s)', $rule_version->{username};
+    foreach my $rule_version (@tagged_versions) {
+        my $label = $rule_version->{version_tag};
+
+        if ( $rule_version->{username} ) {
+            $label .= sprintf ' (%s)', $rule_version->{username};
         }
 
         push @data,
           {
-            id           => $rule_version->{_id} . '',
-            rule_version => $version
+            id    => $rule_version->{version_tag},
+            label => $label
           };
     }
 
@@ -403,7 +410,7 @@ register 'event.job.cancel_running' => {
 sub submit : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $config = model->ConfigStore->get( 'config.job', bl=>$p->{bl});
+    my $config = BaselinerX::Type::Model::ConfigStore->new->get( 'config.job', bl=>$p->{bl});
     my $runner = $config->{runner};
     my $job_name;
     my $username = $c->username;
@@ -443,16 +450,17 @@ sub submit : Local {
             $c->stash->{json} = { success => \1, msg => _loc( $msg, $job_name) };
         }
         else { # new job
-            my $bl = $p->{bl};
-            my $comments = $p->{comments};
-            my $job_date = $p->{job_date};
-            my $job_time = $p->{job_time};
-            my $job_type = $p->{job_type};
-            my $bl_to    = $p->{bl_to};
-            my $state_to    = $p->{state_to};
-            my $id_rule = $p->{id_rule};
-            my $rule_version = $p->{rule_version};
-            my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { undef };
+            my $bl                   = $p->{bl};
+            my $comments             = $p->{comments};
+            my $job_date             = $p->{job_date};
+            my $job_time             = $p->{job_time};
+            my $job_type             = $p->{job_type};
+            my $bl_to                = $p->{bl_to};
+            my $state_to             = $p->{state_to};
+            my $id_rule              = $p->{id_rule};
+            my $rule_version_tag     = $p->{rule_version_tag};
+            my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
+            my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
 
             my $contents = $p->{changesets};
             if( !defined $contents ) {
@@ -465,20 +473,21 @@ sub submit : Local {
             # create job
             my $approval = undef;
             my $job_data = {
-                    bl           => $bl,
-                    job_type     => $job_type,
-                    window_type  => $p->{window_type},  # $p->{check_no_cal} has 'on' if no job window available
-                    approval     => $approval,
-                    username     => $username,
-                    runner       => $runner,
-                    id_rule      => $id_rule,
-                    rule_version => $rule_version,
-                    description  => $comments,
-                    comments     => $comments,
-                    stash_init   => $job_stash, # only used to create the stash
-                    changesets   => $contents,
-                    bl_to        => $bl_to,
-                    state_to        => $state_to
+                bl                   => $bl,
+                job_type             => $job_type,
+                window_type          => $p->{window_type},      # $p->{check_no_cal} has 'on' if no job window available
+                approval             => $approval,
+                username             => $username,
+                runner               => $runner,
+                id_rule              => $id_rule,
+                rule_version_tag     => $rule_version_tag,
+                rule_version_dynamic => $rule_version_dynamic,
+                description          => $comments,
+                comments             => $comments,
+                stash_init           => $job_stash,             # only used to create the stash
+                changesets           => $contents,
+                bl_to                => $bl_to,
+                state_to             => $state_to
             };
 
             if ( length $job_date && length $job_time ) {

@@ -9,11 +9,11 @@ use v5.10;
 use BaselinerX::CI::variable;
 use Baseliner::RuleRunner;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::CompiledRule;
 use Baseliner::Model::Rules;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 
+with 'Baseliner::Role::ControllerValidator';
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
@@ -671,6 +671,51 @@ sub rollback_version : Local {
     $c->forward("View::JSON");
 }
 
+sub tag_version : Local {
+    my ( $self, $c ) = @_;
+
+    return
+      unless my $p = $self->validate_params(
+        $c,
+        version_id => { isa => 'Str' },
+        tag        => { isa => 'Str' }
+      );
+
+    my $version_id = $p->{version_id};
+    my $tag        = $p->{tag};
+
+    my $rules = Baseliner::Model::Rules->new;
+
+    try {
+        $rules->tag_version(version_id => $version_id, version_tag => $tag);
+
+        $c->stash->{json} = { success => \1, msg => _loc('Rule version tagged') };
+    } catch {
+        my $error = shift;
+
+        $c->stash->{json} = { success => \0, msg => 'Validation failed', errors => { tag => $error } };
+        $c->forward("View::JSON");
+    };
+
+    $c->forward("View::JSON");
+}
+
+sub untag_version : Local {
+    my ( $self, $c ) = @_;
+
+    return
+      unless my $p = $self->validate_params( $c, version_id => { isa => 'Str' } );
+
+    my $version_id = $p->{version_id};
+
+    my $rules = Baseliner::Model::Rules->new;
+
+    $rules->untag_version(version_id => $version_id);
+
+    $c->stash->{json} = { success => \1, msg => _loc('Rule version untagged') };
+    $c->forward("View::JSON");
+}
+
 sub stmts_load : Local {
     my ( $self, $c ) = @_;
 
@@ -703,18 +748,20 @@ sub stmts_load : Local {
             );
 
             while ( my $rv = $rs->next ) {
-                my @ver_tree = Baseliner::Model::Rules->new->load_tree(rule => $rv);
+                my @ver_tree = Baseliner::Model::Rules->new->load_tree( rule => $rv );
 
-                my $text     = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                my $text = _loc( 'Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                $text .= " [ $rv->{version_tag} ]" if $rv->{version_tag};
                 $text .= ' was: ' . $rv->{was} if $rv->{was};
                 push @tree,
                   +{
-                    text       => $text,
-                    icon       => '/static/images/icons/history.png',
-                    is_version => \1,
-                    version_id => '' . $rv->{_id},
-                    leaf       => \0,
-                    children   => \@ver_tree
+                    text        => $text,
+                    icon        => '/static/images/icons/history.png',
+                    is_version  => \1,
+                    version_id  => '' . $rv->{_id},
+                    version_tag => $rv->{version_tag} // '',
+                    leaf        => \0,
+                    children    => \@ver_tree
                   };
             }
         }
@@ -828,7 +875,7 @@ sub run_rule : Local {
     my $stash = $p->{stash};
 
     my $rule_runner = Baseliner::RuleRunner->new;
-    my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+    my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash );
 
     $c->stash->{json} = { stash=>$stash, ret=>$ret_rule };
     $c->forward("View::JSON");
@@ -914,7 +961,7 @@ sub default : Path {
             _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
 
             my $rule_runner = Baseliner::RuleRunner->new;
-            my $ret_rule = $rule_runner->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
+            my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash);
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
             $ret = defined $stash->{ws_response}
                 ? $stash->{ws_response}

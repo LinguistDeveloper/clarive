@@ -4,7 +4,6 @@ use Class::Date;
 use Time::Local ();
 use Baseliner::Utils;
 use Moose::Util::TypeConstraints;
-use Clarive::ci;
 
 subtype BoolCheckbox => as 'Bool';
 subtype Date         => as 'Class::Date';

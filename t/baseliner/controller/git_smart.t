@@ -913,7 +913,7 @@ subtest 'git: if pre-online event fails return an error' => sub {
     $controller->git( $c, '.git', 'info', 'refs' );
 
     #is $c->res->status, 500;
-    like $c->res->body, qr/CLARIVE ERROR: GIT ERROR\n\(rule 1\): here/;
+    like $c->res->body, qr/CLARIVE ERROR: GIT ERROR\n\(rule 1\): .*here/;
 };
 
 subtest 'git: when forcing authorization fail' => sub {
@@ -1377,7 +1377,7 @@ sub _setup {
     my @rules = mdb->rule->find->all;
 
     foreach my $rule (@rules) {
-        my $rule = Baseliner::CompiledRule->new( id_rule => $rule->{id} );
+        my $rule = Baseliner::RuleCompiler->new( id_rule => $rule->{id}, version_id => '' . $rule->{_id} );
         $rule->unload;
     }
 

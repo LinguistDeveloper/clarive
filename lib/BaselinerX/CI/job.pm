@@ -68,7 +68,27 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
         _fail _loc 'Could not find a default %1 job chain rule', $type;
     }
 };
-has rule_version => qw(is ro isa Any);
+
+has
+  rule_version_id => qw(is ro isa Maybe[Str] lazy 1),
+  default         => sub {
+    my $self = shift;
+
+    if ( $self->rule_version_tag && !$self->rule_version_dynamic ) {
+        my $version = Baseliner::Model::Rules->new->find_version_by_tag(
+            id_rule     => $self->id_rule,
+            version_tag => $self->rule_version_tag
+        );
+        _fail _loc( 'Cannot resolve version tag `%1` of rule `%2`', $self->rule_version_tag, $self->id_rule )
+          unless $version;
+        return '' . $version->{_id};
+    }
+
+    return;
+  };
+has rule_version_tag     => qw(is ro isa Maybe[Str]);
+has rule_version_dynamic => qw(is ro isa Bool), default => sub { 0 };
+has rule_versions        => qw(is ro isa ArrayRef[HashRef]), default => sub { [ {} ] };
 
 has_cis 'releases';
 has_cis 'changesets';
@@ -1091,15 +1111,27 @@ sub run {
         if ( $self->last_finish_status eq 'REJECTED' ) {
             _fail(_loc("Job rejected.  Treated as failed"));
         }
+
         my $rule_runner = Baseliner::RuleRunner->new;
-        my $ret = $rule_runner->run_single_rule(
-            id_rule => $self->id_rule,
-            rule_version => $self->rule_version,
-            logging => 1,
-            stash   => $stash,
-            simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
+
+        my $ret = $rule_runner->find_and_run_rule(
+            id_rule     => $self->id_rule,
+            version_id  => $self->rule_version_id,
+            version_tag => $self->rule_version_tag,
+            logging     => 1,
+            stash       => $stash,
+
+            # hide "Error Running Rule...Error DSL" even as _error
+            simple_error => 2,
         );
-        $self->job_stash( $stash ); # saves stash to table
+
+        $self->job_stash($stash);    # saves stash to table
+
+        my $rule_version =
+          $ret->{rule}->{version_tag}
+          ? "$ret->{rule}->{version_id} ($ret->{rule}->{version_tag})"
+          : $ret->{rule}->{version_id};
+        $self->rule_versions->[$self->exec - 1]->{$self->step} = $rule_version;
 
         $end_status = $self->final_status || 'FINISHED';
     } catch {

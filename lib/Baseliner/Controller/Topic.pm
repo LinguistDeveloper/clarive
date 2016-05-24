@@ -9,6 +9,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Users;
 use Baseliner::DataView::Topic;
+use Baseliner::RuleRunner;
 use DateTime;
 use Try::Tiny;
 use Text::Unaccent::PurePerl;
@@ -194,7 +195,6 @@ sub get_items {
         }
 
     } elsif( my $id = $p->{id_report_rule} ) {
-        my $cr = Baseliner::CompiledRule->new( id_rule=>$p->{id_report_rule} );
         my $stash = {
             report_data => { data=>[], count=>0 },
             report_params => {
@@ -205,8 +205,10 @@ sub get_items {
                 dir         => uc($p->{dir}) eq 'DESC' ? -1 : 1,
             }
         };
-        $cr->compile;
-        $cr->run( stash=>$stash );
+
+        my $rule_runner = Baseliner::RuleRunner->new;
+        $rule_runner->find_and_run_rule( id_rule => $p->{id_report_rule}, stash => $stash );
+
         my $report_data = ref $$stash{report_data} eq 'CODE' ? $$stash{report_data}->(%$p) : $$stash{report_data};
         _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
         $data = {
