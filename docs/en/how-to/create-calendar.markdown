@@ -32,4 +32,4 @@ In the next window there are the following options:
 
 To finish, click the <img src="/static/images/icons/save.png" /> Save button.
 
-To edit the calendar, go to the [Edit calendar](howto/edit-calendar) section.
+To edit the calendar, go to the [Edit calendar](how-to/edit-calendar) section.

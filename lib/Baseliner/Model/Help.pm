@@ -55,6 +55,7 @@ sub build_doc_tree {
                 my $dir_has_markdown = $dir_or_file->parent->contains( $md_file );
                 if ( $dir_has_markdown ) {
                     my $data = $self->parse_body( $md_file, $docs_root, { rel=>$rel, %$opts } );
+                    next if exists $data->{active} && !$data->{active};
                     my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
                     $data->{rel} = "$rel";
                     $uniq_dirs{ $data->{uniq_id} } = 1;
@@ -90,6 +91,7 @@ sub build_doc_tree {
             }
             else {
                 my $data = $self->parse_body( $dir_or_file, $docs_root, { rel=>$rel, %$opts } );
+                next if exists $data->{active} && !$data->{active};
                 next if exists $uniq_dirs{ $data->{uniq_id} }; ## prevent dir markdown descriptors from showing up twice
                 next unless $self->doc_matches( $data, $query );
                 $data->{rel} = "$rel";
@@ -190,10 +192,17 @@ sub parse_body {
     my ( $yaml, $body ) = $contents =~ /(---.+?)---\n(.*)/s;
 
     # convert
-    my $html =
-        !defined $type || $type eq 'html' ? $body
-      : $type eq 'markdown' ? markdown($body)
-      :                       die "File type `$type` (extension) not found!";
+    my $html;
+    if ( !defined $type || $type eq 'html' ) {
+        $html = $body;
+    }
+    elsif ( $type eq 'markdown' ) {
+        (my $body_processed = $body ) =~ s{\n```([\S]+)(.*?)```\s*\n}{my $h2 = Util->_html_escape($2); qq{\n<pre class="$1 hljs">$h2</pre>\n\n}}sge;
+        $html = markdown($body_processed);
+    }
+    else {
+        die "File type `$type` (extension) not found!";
+    }
 
     my $data = try {
         YAML::XS::Load($yaml);

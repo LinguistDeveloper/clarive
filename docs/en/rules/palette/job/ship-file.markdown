@@ -15,15 +15,11 @@ Form to configure has the following fields:
 
 **Local mode**: Specifies what files are part of the list to get from remote server. They can be:
 
- • **Exist Mode Local**: Choose kill the process if the file does not exist.
-
- • **Rel mode**: Relative path to place files in local server. Options are:
-    
- • File only: To take only file names.
-
 - Local files: All files found.
 
 - Nature items: Files involved in current nature.
+
+- Exist Mode Local: Choose kill the process if the file does not exist.
 
 **Rel mode**: Relative path to place files in local server. Options are:
 

@@ -38,6 +38,15 @@ subtest 'docs_dirs: finds all base and home docs dirs by language' => sub {
     cmp_deeply [ map { "$_" } @dirs ], [ re(qr{app-home/docs/es}), re(qr{features/testfeature/docs/es}) ];
 };
 
+subtest 'build_doc_tree: no inactive docs' => sub {
+    _setup();
+
+    my $help = Baseliner::Model::Help->new;
+    my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/en") );
+
+    ok ! grep { $_->{text} eq 'InactiveTest' } @tree;
+};
+
 subtest 'build_doc_tree: help tree is built from directory and in correct order' => sub {
     _setup();
 

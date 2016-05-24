@@ -17,14 +17,14 @@ the option `--env mypersonal` will tell `cla` to load the
 configuration options from any file called `config/mypersonal.yml`
 in the config search hierarchy.
 
-Do not confuse this with Clarive environments.
+Do not confuse this with Clarive [environments](concepts/environment).
 
-### --load-plugins
+### --enable-plugins
 
 This flag indicates if Clarive
 should load plugins at initialization.
 
-Use `--no-load-plugins` to prevent Clarive
+Use `--no-enable-plugins` to prevent Clarive
 from loading plugins from the `init/` directory at startup.
 
 ### --debug

@@ -127,7 +127,6 @@ The issue of notification option is activated when you select one from the list 
 
 Access the same window with the same fields as the Create menu.
 
-When we mark the checkbox "All", to the right of the fields, the condition is satisfied for any value of the data in the event.
 
 ### <img src = "/static/images/icons/start.png" /> Activate / <img src = "/static/images/icons/stop.png" /> Deactivate
 

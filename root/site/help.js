@@ -1,5 +1,6 @@
 /****** Clarive Help context methods *******/
 Cla.help_show = function(params) {
+
     var treeRoot = new Ext.tree.AsyncTreeNode({ draggable: false, checked: false });
     var docs_tree = new Cla.Tree({
         region: 'west', width: 300,
@@ -33,6 +34,13 @@ Cla.help_show = function(params) {
             doc_reader.doLayout();
             doc_reader.is_loaded = true;
             help_win.setTitle( data.title || path );
+
+            // configure div/code blocks highlighting
+            $('.hljs').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+
+            // setup intra help links
             $(doc_reader.el.dom).find('a').each(function(){
                 var link = $(this);
                 var href = link.attr('href');
