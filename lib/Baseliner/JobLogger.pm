@@ -65,9 +65,6 @@ sub common_log {
     $data = _dump $data if ref $data;
     $data = Encode::encode('UTF-8', $data) if Encode::is_utf8($data);
 
-    $p{no_trim} ||= 0;
-    my $no_trim = delete $p{no_trim};
-
     if (my $dump = $p{dump}) {
         $dump = _dump $dump if ref $dump;
         $data = $dump;
@@ -80,6 +77,7 @@ sub common_log {
     my $stmt_level = int( $p{stmt_level} // 0 );
     my $username   = $p{username};
     my $return_row = $p{return_row};
+    my $no_trim    = $p{no_trim};
 
     my ($package, $filename, $line);
     if( ref $lev eq 'ARRAY' ) {
@@ -106,7 +104,7 @@ sub common_log {
         $self->max_step_level( $log_level ) if $log_level > $self->max_step_level;
     }
 
-    if( length($text) > 2000 && !$no_trim ) {
+    if( !$no_trim && length($text) > 2000 ) {
         # publish exceeding log to data
         $data.= '=' x 50;
         $data.= "\n" . Encode::encode('UTF-8', $text);
