@@ -1,13 +1,13 @@
 package Baseliner::Controller::Search;
 use Moose;
+BEGIN {  extends 'Catalyst::Controller' }
+
+use 5.010;
+use Try::Tiny;
+use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
-use 5.010;
-use experimental 'autoderef';
-
-BEGIN {  extends 'Catalyst::Controller' }
 
 register 'config.search' => {
     metadata => [
@@ -22,16 +22,19 @@ register 'config.search' => {
 };
 
 sub providers : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
-    my @provs = packages_that_do('Baseliner::Role::Search');
-#    my $config = config_get 'config.search';
-#    if( my $filter = $config->{provider_filter} ) {
-#        _debug "PROV FILTER=$filter";
-        @provs = grep { $_->user_can_search($c->username) } @provs;
-#    }
+
+    my @providers = packages_that_do('Baseliner::Role::Search');
+    @providers = grep { $_->user_can_search( $c->username ) } @providers;
+
+    my %order = ( 'Jobs' => 1, 'Topics' => 2, 'CIs' => 3 );
+    @providers = sort { $order{ $a->search_provider_name } <=> $order{ $b->search_provider_name } } @providers;
+
     $c->stash->{json} =
-        { providers => [ map { {pkg => $_, type => $_->search_provider_type, name => $_->search_provider_name } } @provs ] };
+      { providers =>
+          [ map { { pkg => $_, type => $_->search_provider_type, name => $_->search_provider_name } } @providers ] };
     $c->forward('View::JSON');
 }
 
