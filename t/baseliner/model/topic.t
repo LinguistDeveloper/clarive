@@ -1,17 +1,18 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
 use Test::TempDir::Tiny;
 use Test::Deep;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup qw(_topic_setup _setup_clear _setup_user);
 use TestUtils qw(mock_time);
 
 use List::MoreUtils qw(pairwise);
+use Capture::Tiny qw(capture);
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
@@ -305,6 +306,65 @@ subtest 'update: creates correct event.topic.create' => sub {
         'category_status' => $category->{statuses}->[0],
         'category'        => $category->{id}
       };
+};
+
+subtest 'update: creates topic when rule fails' => sub {
+    _setup();
+
+    TestSetup->_setup_user();
+
+    my $status_id = ci->status->new( name => 'New', type => 'I' )->save;
+
+    my $id_rule1 = mdb->seq('id');
+    mdb->rule->insert(
+        {   id          => "$id_rule1",
+            ts          => '2015-08-06 09:44:30',
+            rule_event  => "event.topic.create",
+            rule_active => '1',
+            rule_type   => 'event',
+            rule_when   => "post-online",
+            rule_seq    => $id_rule1,
+            rule_tree   => JSON::encode_json(
+                [   {   "attributes" => {
+                            "data"   => { "msg" => "abort here" },
+                            "key"    => "statement.fail",
+                            "text"   => "FAIL",
+                            "name"   => "FAIL",
+                            "active" => 1,
+                            "nested" => "0"
+                        },
+                        "children" => []
+                    }
+                ]
+                )
+
+        }
+    );
+    my $id_rule = TestSetup->create_rule_form();
+    my $cat_id  = mdb->seq('id');
+    mdb->category->insert(
+        { id => "$cat_id", name => 'Category', statuses => [$status_id], default_form => "$id_rule" } );
+
+    my $project = ci->project->new( name => 'Project' );
+    my $project_mid = $project->save;
+
+    my $base_params = {
+        'project'         => $project_mid,
+        'category'        => "$cat_id",
+        'status_new'      => "$status_id",
+        'status'          => "$status_id",
+        'category_status' => { id => "$status_id" },
+        'title'           => 'Topic Create',
+        'username'        => 'test',
+    };
+
+    capture { like
+            exception { Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } ) }
+        , qr/Error adding Topic: \(rule $id_rule1\): Error running rule '$id_rule1': abort here/;
+    };
+
+    my $topic = mdb->topic->find_one();
+    is $topic->{title}, 'Topic Create';
 };
 
 subtest 'update: reload topic when have deploy in initial status' => sub {
@@ -1759,7 +1819,8 @@ sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'Baseliner::Model::Topic', 'Baseliner::Model::Rules',
+        'BaselinerX::Type::Statement'
     );
 
     TestUtils->cleanup_cis;
