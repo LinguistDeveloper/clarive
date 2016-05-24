@@ -1099,7 +1099,7 @@ subtest 'attach_revisions: does not create already existing GitRevision' => sub 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     TestGit->commit($repo);
 
-    TestUtils->create_ci('GitRevision', name => 'another name', sha => 'master');
+    TestUtils->create_ci('GitRevision', name => 'master', sha => 'master');
 
     my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );

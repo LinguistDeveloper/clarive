@@ -134,8 +134,11 @@ params:
                     }
                     else if ( ci !=undefined ) {
                         // FIND A BETTER SOLUTION FOR THIS IN THE FUTURE
-                        if(ci.class == 'SvnRevision' && ci.name.indexOf('@'+ci.ns) == -1){
-                            ci.name = ci.name+'@'+ci.ns;
+                        if(ci.class == 'SvnRevision'){
+                            var location = '@'+ci.data.branch+'-'+ci.ns;
+                            if(ci.name.indexOf(location) == -1){
+                                ci.name = ci.name+location;
+                            }
                         }
                         Baseliner.ajaxEval('/ci/attach_revisions', {
                                 name: ci.name,
