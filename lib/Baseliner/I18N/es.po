@@ -8806,3 +8806,30 @@ msgstr "Rol creado"
 
 msgid "Role modified"
 msgstr "Rol modificado"
+
+msgid "List of columns to show in grid"
+msgstr "Lista de columnas para mostrar en el grid"
+
+msgid "Height of grid in edit mode"
+msgstr "Altura del grid en modo edición"
+
+msgid "Page size"
+msgstr "Tamaño de la página"
+
+msgid "Parent field"
+msgstr "Campo padre"
+
+msgid "Show Grid Controls?"
+msgstr "¿Mostrar los controles del grid?"
+
+msgid "Grid Page Size"
+msgstr "Tamaño de la página en el grid"
+
+msgid "Always"
+msgstr "Siempre"
+
+msgid "Only if paging"
+msgstr "Solo si hay paginación"
+
+msgid "Never"
+msgstr "Nunca"
