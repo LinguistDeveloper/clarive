@@ -5,7 +5,7 @@ Baseliner Models - commonly used data classes and functors
 Copyright(c) 2006-2011 Authors of baseliner.org
 http://baseliner.org/license
 
-*/ 
+*/
 
 //Ext.ns('Baseliner.store');
 //Ext.ns('Baseliner.model');
@@ -41,21 +41,21 @@ Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
 
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: false,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: {},
-        id: 'id', 
+        id: 'id',
         url: '/project/all_projects',
-        fields: ['mid','ns','name','description'] 
+        fields: ['mid','ns','name','description', 'bl', 'moniker', 'icon']
      }, c));
 };
 Ext.extend( Baseliner.store.AllProjects, Baseliner.JsonStore );
 
 Baseliner.store.UserProjects = function(c) {
     Baseliner.store.UserProjects.superclass.constructor.call(this, Ext.apply({
-        url: '/project/user_projects'
+        url: '/project/user_projects',
     },c));
 };
 Ext.extend( Baseliner.store.UserProjects, Baseliner.store.AllProjects );
@@ -68,7 +68,7 @@ Baseliner.model.Projects = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
@@ -120,8 +120,8 @@ Baseliner.PagingProjects = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     initComponent: function(){
         var self = this;
         if( !self.store ) self.store = Baseliner.store.UserProjects(Ext.apply({},self.store_config));
-        self.tpl = self.tpl || new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>' );
-        self.displayFieldTpl = self.displayFieldTpl || new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+        self.tpl = self.tpl || new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name}</strong> <span class="x-combo-name-list-description">{description} </span></div></tpl>' );
+        self.displayFieldTpl = self.displayFieldTpl || new Ext.XTemplate( '<div class="x-combo-name-list"><img src="{icon}" /><strong>{name} </strong> </div>' );
         Baseliner.PagingProjects.superclass.initComponent.call(this);
     }
 });
@@ -133,7 +133,7 @@ Baseliner.model.Users = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
@@ -172,7 +172,7 @@ Baseliner.ComboUsers = Ext.extend( Baseliner.model.Users,{
     singleMode: false,
     allowBlank: true,
     name: 'users',
-    hiddenName: 'users',		
+    hiddenName: 'users',
     initComponent: function(){
         var self = this;
         self.store = new Baseliner.Topic.StoreUsers({
@@ -200,7 +200,7 @@ Baseliner.model.Revisions = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         emptyText: _('select or drop repository revisions'),
         triggerAction: 'all',
         resizable: true,
@@ -234,11 +234,11 @@ Baseliner.UserAndRoleBox = function(c) {
     var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id', 
-        totalProperty: 'totalCount', 
+        id: 'id',
+        totalProperty: 'totalCount',
         //baseParams: c.request || {},
         url: '/message/to_and_cc',
-        fields: ['id','ns','name','long', 'type'] 
+        fields: ['id','ns','name','long', 'type']
     });
     if( ! c.hiddenName && c.name ) {
         c.hiddenName = c.name;
@@ -252,7 +252,7 @@ Baseliner.UserAndRoleBox = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         // emptyText: _('select users or roles'),
         triggerAction: 'all',
         resizable: true,
@@ -271,11 +271,11 @@ Baseliner.DashboardBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id', 
-        totalProperty: 'totalCount', 
+        id: 'id',
+        totalProperty: 'totalCount',
         baseParams: c.baseParams || {},
         url: '/dashboard/json',
-        fields: ['id','name'] 
+        fields: ['id','name']
     });
     Baseliner.DashboardBox.superclass.constructor.call(this, Ext.apply({
         name: c.name || 'dashboards',
@@ -286,7 +286,7 @@ Baseliner.DashboardBox = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
@@ -308,7 +308,7 @@ function returnOpposite(hexcolor) {
     var yiq = ((r*299)+(g*587)+(b*114))/1000;
     return (yiq >= 128) ? '#000000' : '#FFFFFF';
 }
-    
+
 Baseliner.model.Labels = function(c) {
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
         '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: {[returnOpposite(values.color.substr(1))]};background: {color}">{name}</span></span>',
@@ -316,12 +316,12 @@ Baseliner.model.Labels = function(c) {
     var tpl_field = new Ext.XTemplate( '<tpl for=".">',
         '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: {[returnOpposite(values.color.substr(1))]};background: {color}">{name}</span></span>',
         '</tpl>');
-    
+
     Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         resizable: true,
         mode: 'local',
@@ -353,25 +353,25 @@ Ext.extend( Baseliner.model.Labels, Ext.ux.form.SuperBoxSelect );
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'id', 
+        id: 'id',
         url: '/baseline/json',
-        fields: ['id','name','description', 'active'] 
+        fields: ['id','name','description', 'active']
     });
     var valueField = params.valueField || 'id';
     var combo = new Ext.form.ComboBox({
            fieldLabel: params.fieldLabel || _("Baseline"),
            name: params.name || 'bl',
            hiddenName: params.hiddenName || 'bl',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -384,7 +384,7 @@ Baseliner.combo_baseline = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -403,36 +403,36 @@ Baseliner.load_first = function( combo ) {
 
 Baseliner.project_select_trees = function(params) {
     var Tree = Ext.tree;
-    
+
     // yui-ext tree
     var tree = new Tree.TreePanel({
         columnWidth: .50,
-        animate:true, 
+        animate:true,
         autoScroll:true,
         loader: new Tree.TreeLoader({dataUrl:'get-nodes.php'}),
         enableDD:true,
         containerScroll: true,
         dropConfig: {appendOnly:true}
     });
-    
+
     // add a tree sorter in folder mode
     new Tree.TreeSorter(tree, {folderSort:true});
-    
+
     // set the root node
     var root = new Tree.AsyncTreeNode({
-        text: 'Ext JS', 
+        text: 'Ext JS',
         draggable:false, // disable root node dragging
         id:'source'
     });
     tree.setRootNode(root);
-    
+
     // render the tree
     //tree.render();
-    
+
     root.expand(false, /*no anim*/ false);
-    
+
     //-------------------------------------------------------------
-    
+
     var tree2 = new Tree.TreePanel({
         columnWidth: .50,
         animate:true,
@@ -446,20 +446,20 @@ Baseliner.project_select_trees = function(params) {
         enableDD:true,
         dropConfig: {appendOnly:true}
     });
-    
+
     // add a tree sorter in folder mode
     new Tree.TreeSorter(tree2, {folderSort:true});
-    
+
     // add the root node
     var root2 = new Tree.AsyncTreeNode({
-        text: 'My Files', 
-        draggable:false, 
+        text: 'My Files',
+        draggable:false,
         id:'yui'
     });
 
     tree2.setRootNode(root2);
     //tree2.render();
-    
+
     root2.expand(false, /*no anim*/ false);
     var panel = new Ext.Panel({
         layout: 'column',
@@ -480,25 +480,25 @@ Baseliner.project_select_trees = function(params) {
 Baseliner.combo_project = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: false,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'ns', 
+        id: 'ns',
         url: '/project/user_projects',
-        fields: ['ns','name','description'] 
+        fields: ['ns','name','description']
     });
     var valueField = params.valueField || 'ns';
     var combo = new Ext.form.ComboBox({
            fieldLabel: _("Project"),
            name: params.name || 'ns',
            hiddenName: params.hiddenName || 'ns',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -511,7 +511,7 @@ Baseliner.combo_project = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -532,28 +532,28 @@ Baseliner.combo_revision = function(params) {
         base.does    = 'Baseliner::Role::Namespace::Checkin';
     }
     var rev_store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'ns', 
+        totalProperty:"totalCount",
+        id: 'ns',
         url: '/revision/list_simple',
         baseParams: base,
-        fields: [ 
+        fields: [
             {  name: 'item' },
             {  name: 'ns' }
         ]
     });
     var combo = new Ext.form.ComboBox({
-       name: 'ns', 
+       name: 'ns',
        hiddenName: 'ns',
-       fieldLabel: params.fieldLabel || _('Revision'), 
-       mode: 'remote', 
-       store: rev_store, 
+       fieldLabel: params.fieldLabel || _('Revision'),
+       mode: 'remote',
+       store: rev_store,
        valueField: 'ns',
        value: params.value || '',
        typeAhead: true,
        minChars: params.minChars || 2,
-       displayField:'item', 
+       displayField:'item',
        editable: true,
        forceSelection: true,
        triggerAction: 'all',
@@ -567,21 +567,21 @@ Baseliner.combo_revision = function(params) {
 Baseliner.combo_tasks = function(params) {
     if( params == undefined ) params = {};
     var store_tasks =new Baseliner.JsonStore({
-        root: 'data', 
+        root: 'data',
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/tasks/json',
         fields: [ 'name', 'category', 'assigned', 'description' ]
     });
-    
+
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var conf;
     Ext.apply( conf, params, {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
@@ -613,12 +613,12 @@ Baseliner.combo_tasks = function(params) {
 Baseliner.combo_services = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: false,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'id', 
+        id: 'id',
         url: '/service/combo',
         fields: [ 'id', 'name' ]
     });
@@ -627,11 +627,11 @@ Baseliner.combo_services = function(params) {
            fieldLabel: params.fieldLabel || _("Service"),
            name: params.name || 'service',
            hiddenName: params.hiddenName || 'service',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -644,7 +644,7 @@ Baseliner.combo_services = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -654,31 +654,31 @@ Baseliner.combo_services = function(params) {
     return combo;
 };
 
-/* 
+/*
 
     Generic CI Store, SuperBox and ComboBox
 
     var server_store = new Baseliner.store.CI({ baseParams: { role:'Server' } });
-    var servers = new Baseliner.model.CISelect({ store: server_store, 
-        singleMode: true, 
-        fieldLabel:_('Server'), 
-        name:'server', 
-        hiddenName:'server', 
-        allowBlank:false }); 
+    var servers = new Baseliner.model.CISelect({ store: server_store,
+        singleMode: true,
+        fieldLabel:_('Server'),
+        name:'server',
+        hiddenName:'server',
+        allowBlank:false });
     server_store.on('load',function(){
-        if( params.server != undefined ) 
-            servers.setValue( params.server ) ;            
+        if( params.server != undefined )
+            servers.setValue( params.server ) ;
     });
 */
 Baseliner.store.CI = function(c) {
      Baseliner.store.CI.superclass.constructor.call(this, Ext.apply({
-        id: 'mid', 
+        id: 'mid',
         url: '/ci/store',
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','bl','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
+        totalProperty: 'totalCount',
+        fields: ['mid','item', 'name','bl','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker']
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -719,7 +719,7 @@ Baseliner.model.CISelect = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         singleMode: true,
         pageSize: 20,
         loadingText: _('Searching...'),
@@ -796,7 +796,7 @@ Baseliner.ci_box = function(c) {
     var firstload = true;
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
-    var show_class = c.showClass; delete c.showClass;
+    var show_class = c.showClass || 'collection'; delete c.showClass;
     var with_vars = c.with_vars; delete c.with_vars;
     var from_mid = c.from_mid; delete c.from_mid;
     var to_mid = c.to_mid; delete c.to_mid;
@@ -815,48 +815,51 @@ Baseliner.ci_box = function(c) {
     if( security != undefined ) bp.security = 1;
 	if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp });
-    var tpl = new Ext.XTemplate( 
-        '<tpl for=".">'
-       +  '<div class="search-item ui-ci_box-' + c.name + '"><span id="boot" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong>'
-       +  '<tpl if="this.showClass">'
-       +  ' <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
-       +  '</tpl>'
-       +  '</span></div>'
-       +'</tpl>', {showClass : show_class}
-    );
-    var displayFieldTpl = new Ext.XTemplate( 
+    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp }); 
+    var tpl = c.tpl; delete c.tpl;
+    if (!tpl) {
+        tpl = new Ext.XTemplate(
+            '<tpl for=".">'
+            +  '<div class="search-item ui-ci_box-' + c.name + '"><span id="boot" style="background: transparent">'
+            +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
+            +  '<tpl if="this.showClass">'
+            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.class) ]}</span>'
+            +  '</tpl> '
+            + '</div>'
+            +'</tpl>'
+        );
+    }
+    var displayFieldTpl = new Ext.XTemplate(
         '<tpl for=".">'
        +  '<span id="boot" class="ui-ci_box-' + c.name + '" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong>'
+       +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
        +  '<tpl if="this.showClass">'
-       +  '<span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
-       +  '</tpl>'
+       +  '<span class="x-combo-name-list-description">{[ Cla.ci_loc(values.collection) ]}</span>'
+       +  '</tpl> </span>'
        +  '</span>'
-       +'</tpl>', {showClass : show_class}
+       +'</tpl>'
     );
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
-        store: store, 
-        singleMode: true, 
+        store: store,
+        singleMode: true,
         mode: 'remote',
         fieldLabel: _('CI'),
         name: 'ci',
-        hiddenName: 'ci', 
+        hiddenName: 'ci',
         allowBlank: true,
-        tpl: tpl, 
+        tpl: tpl,
         displayFieldTpl: displayFieldTpl,
         showClass: show_class
-    }, c )); 
+    }, c ));
     store.on('load', function(){
         if( c.force_set_value && firstload ) { // For default value purpose
             firstload = false;
            ci_box.setValue( value );
-        } 
+        }
     });
     if( autoload ) {
         if( value != undefined && value.length > 0 )  {
-            store.load({ params: { mids: value } }); 
+            store.load({ params: { mids: value } });
         } else {
             store.load();
         }
@@ -871,17 +874,17 @@ Baseliner.variable_box = function(c) {
     var data_wizard = c.data_wizard || '';
 
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        baseParams: { 'bl': bl, 'mid_project' : mid_project, 'name_variable' : name_variable, 'data_wizard': data_wizard}, 
-        totalProperty:"totalCount", 
-        id: 'ns', 
+        baseParams: { 'bl': bl, 'mid_project' : mid_project, 'name_variable' : name_variable, 'data_wizard': data_wizard},
+        totalProperty:"totalCount",
+        id: 'ns',
         url: '/variable/json',
-        fields: ['value'] 
+        fields: ['value']
     });
 
-    var variable_box = new Baseliner.SuperBox({ 
+    var variable_box = new Baseliner.SuperBox({
         anchor: '100%',
         id: Ext.id(),
         name: 'variable',
@@ -902,16 +905,16 @@ Baseliner.CIClassComboSimple = Ext.extend(Baseliner.ComboSingleRemote, {
     field: 'name',
     fields: [ 'classname', 'name', 'icon' ],
     itemSelector: 'div.search-item',
-    tpl: new Ext.XTemplate( 
+    tpl: new Ext.XTemplate(
         '<tpl for=".">'
        +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
        +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
        +  '</span></div>'
-       +'</tpl>'  
+       +'</tpl>'
     ),
     url: '/ci/classes'
 });
-    
+
 Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
     fieldLabel: _('CI Class'),
     firstload: true,
@@ -920,10 +923,10 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
         self.store = new Baseliner.JsonStore({
             url: '/ci/classes',
             fields: [ 'classname', 'name', 'name_loc', 'icon' ],
-            root: 'data', 
+            root: 'data',
             remoteSort: true,
             autoLoad: false,
-            totalProperty: 'totalCount', 
+            totalProperty: 'totalCount',
             baseParams: {  start: 0, limit: self.ps || 99999999 },
             id: 'id'
         });
@@ -931,29 +934,29 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
             if( self.firstload ) { // For default value purpose
                 self.firstload = false;
                 self.setValue( self.value );
-            } 
+            }
         });
         Baseliner.CIClassCombo.superclass.initComponent.call(this);
     },
     itemSelector: 'div.search-item',
-    tpl: new Ext.XTemplate( 
+    tpl: new Ext.XTemplate(
         '<tpl for=".">'
        +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
        +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
        +  '</span></div>'
-       +'</tpl>'  
+       +'</tpl>'
     ),
-    displayFieldTpl: new Ext.XTemplate( 
+    displayFieldTpl: new Ext.XTemplate(
         '<tpl for=".">'
        +  '<span id="boot" class="ui-ci-class" style="background: transparent">'
        +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
        +  '</span>'
-       +'</tpl>'  
+       +'</tpl>'
     ),
     allowBlank: true,
     resizable: true,
     allowAddNewData: true,
-    addNewDataOnBlur: true, 
+    addNewDataOnBlur: true,
     singleMode: false,
     typeAhead: true,
     forceSelection: false,
@@ -971,8 +974,8 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
     valueField: 'name',
     extraItemCls: 'x-tag'
 });
-    
-/* 
+
+/*
      Baseliner.form components
 */
 Baseliner.form = {};
@@ -992,7 +995,7 @@ Baseliner.form.ComboList = function(c) {
         fields: ['tipo_pet'],
         data:[ arr ]
     });
-    
+
     Baseliner.form.ComboList.superclass.constructor.call(this, Ext.apply({
             store: s,
             displayField: 'tipo_pet',
@@ -1002,7 +1005,7 @@ Baseliner.form.ComboList = function(c) {
             editable: false,
             mode: 'local',
             forceSelection: true,
-            triggerAction: 'all', 
+            triggerAction: 'all',
             fieldLabel: 'ComboList',
             emptyText: '',
             selectOnFocus: true
@@ -1010,17 +1013,17 @@ Baseliner.form.ComboList = function(c) {
 };
 Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
 
-Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, { 
+Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
     mode: 'local',
     fieldLabel: _("Baseline"),
     name: 'bl',
     hiddenName: 'bl',
-    valueField: 'bl', 
+    valueField: 'bl',
     displayField: 'bl_name',
     allowBlank: false,
     msgTarget: 'under',
     allowAddNewData: true,
-    addNewDataOnBlur: true, 
+    addNewDataOnBlur: true,
     singleMode: false,
     loadingText: _('Searching...'),
     resizable: true,
@@ -1029,14 +1032,14 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
     typeAhead: true,
     initComponent: function(){
         var store = new Baseliner.JsonStore({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
             autoLoad: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             baseParams: {}, //{ no_common: true },
-            id: 'id', 
+            id: 'id',
             url: '/baseline/json',
-            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
+            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active']
         });
         this.store = store;
         var tpl_list = new Ext.XTemplate(
@@ -1051,17 +1054,17 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
 });
 
 Baseliner.store.Baseline = Ext.extend( Baseliner.JsonStore, {
-    root: 'data' , 
+    root: 'data' ,
     remoteSort: true,
     autoLoad: false,
-    totalProperty:"totalCount", 
-    id: 'id', 
+    totalProperty:"totalCount",
+    id: 'id',
     url: '/baseline/json',
     constructor: function(c){
         Baseliner.store.Baseline.superclass.constructor.call(this,Ext.apply({
-            root: 'data', 
-            baseParams:{}, 
-            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
+            root: 'data',
+            baseParams:{},
+            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active']
         }, c) );
     }
 });
@@ -1075,14 +1078,14 @@ Baseliner.model.SelectBaseline = function(c) {
     );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">{[ values.bl == "*" ? _("Common") : values.bl ]}</tpl>' );
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: {}, //{ no_common: true },
-        id: 'id', 
+        id: 'id',
         url: '/baseline/json',
-        fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
+        fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active']
     });
     store.on( 'load', function(){
         self.setValue( self.value );
@@ -1091,13 +1094,13 @@ Baseliner.model.SelectBaseline = function(c) {
        fieldLabel: _("Baseline"),
            name: 'bl',
            hiddenName: 'bl',
-           valueField: 'bl', 
+           valueField: 'bl',
            displayField: 'name',
         store: store,
         allowBlank: false,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         singleMode: false,
         loadingText: _('Searching...'),
         resizable: true,
@@ -1119,7 +1122,7 @@ Baseliner.model.Status = function(c) {
         allowBlank: false,
         msgTarget: 'under',
         allowAddNewData: false,
-        addNewDataOnBlur: false, 
+        addNewDataOnBlur: false,
         //emptyText: _('Enter or select topics'),
         triggerAction: 'all',
         resizable: true,
@@ -1145,11 +1148,11 @@ Baseliner.StatusBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id_status', 
-        totalProperty: 'totalCount', 
+        id: 'id_status',
+        totalProperty: 'totalCount',
         baseParams: c.baseParams || {},
         url: '/ci/status/combo_list',
-        fields: ['id_status','name'] 
+        fields: ['id_status','name']
     });
     Baseliner.StatusBox.superclass.constructor.call(this, Ext.apply({
         name: c.name || 'status',
@@ -1160,7 +1163,7 @@ Baseliner.StatusBox = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
@@ -1177,11 +1180,11 @@ Baseliner.CategoryBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id', 
-        totalProperty: 'totalCount', 
+        id: 'id',
+        totalProperty: 'totalCount',
         baseParams: c.baseParams || {},
         url: '/topic/category_list',
-        fields: ['id','name'] 
+        fields: ['id','name']
     });
     Baseliner.CategoryBox.superclass.constructor.call(this, Ext.apply({
         name: c.name || 'categories',
@@ -1192,7 +1195,7 @@ Baseliner.CategoryBox = function(c) {
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
@@ -1220,20 +1223,20 @@ Baseliner.model.RevisionsBoxDD = function(c) {
     if( c==undefined ) c = {};
     //c.panelConfig = {};
     var revision_box_store = new Baseliner.JsonStore({
-        root: 'data' , 
-        id: 'id', 
+        root: 'data' ,
+        id: 'id',
         fields: [
             {  name: 'id' },
             {  name: 'name' }
         ]
     });
-    
+
     var hidden = c.hidden;
 
     var revision_box = new Baseliner.model.Revisions(Ext.apply({
-        store: revision_box_store 
+        store: revision_box_store
     }, c));
-    
+
     Baseliner.model.RevisionsBoxDD.superclass.constructor.call(this, Ext.apply({
         layout: 'form',
         enableDragDrop: true,
@@ -1260,7 +1263,7 @@ Baseliner.model.RevisionsBoxDD = function(c) {
     });
 
     revision_box.on('afterrender', function(){
-        var el = revision_box.el.dom; 
+        var el = revision_box.el.dom;
         var revision_box_dt = new Baseliner.DropTarget(el, {
             comp: revision_box,
             ddGroup: 'explorer_dd',
@@ -1271,9 +1274,9 @@ Baseliner.model.RevisionsBoxDD = function(c) {
                 var data = attr.data || {};
                 var ci = data.ci;
                 var mid = data.mid;
-                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) {
                     Baseliner.message( _('Error'), _('Node is not a revision'));
-                } 
+                }
                 else if ( mid!=undefined ) { // TODO
                 }
                 else if ( ci !=undefined ) {
@@ -1306,7 +1309,7 @@ Baseliner.model.RevisionsBoxDD = function(c) {
                         }
                     );
                 }
-                return (true); 
+                return (true);
              }
         });  //droptarget
     });
@@ -1326,11 +1329,11 @@ A Revision draganddrop grid that is form-ready
 */
 Baseliner.model.RevisionsGridDD = function(c) {
     if( c==undefined ) c = {};
-    
+
     var revision_store = new Ext.data.SimpleStore(Ext.apply({
         fields: ['mid','name','id']
     },c.storeConfig));
-    
+
     var revision_grid = this;
     Baseliner.model.RevisionsGridDD.superclass.constructor.call(this, Ext.apply({
         store: revision_store,
@@ -1359,7 +1362,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
           }
         ]
     }, c ));
-    
+
     this.mid_data = {};
     Baseliner.delete_revision = function( id_grid, mid ) {
         var g = Ext.getCmp( id_grid );
@@ -1389,9 +1392,9 @@ Baseliner.model.RevisionsGridDD = function(c) {
     };
     revision_grid.on( 'afterrender', function(){
         if( c.value != undefined ) {
-            // TODO no loader from mids yet 
+            // TODO no loader from mids yet
         }
-        var el = this.el.dom; 
+        var el = this.el.dom;
         var revision_box_dt = new Baseliner.DropTarget(el, {
             comp: this,
             ddGroup: 'explorer_dd',
@@ -1403,9 +1406,9 @@ Baseliner.model.RevisionsGridDD = function(c) {
                 var data = attr.data || {};
                 var ci = data.ci;
                 var mid = data.mid;
-                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) {
                     Baseliner.message( _('Error'), _('Node is not a revision'));
-                } 
+                }
                 else if ( mid!=undefined ) {
                     // TODO
                 }
@@ -1425,10 +1428,10 @@ Baseliner.model.RevisionsGridDD = function(c) {
                         }
                     );
                 }
-                return (true); 
+                return (true);
              }
         });
-    }); 
+    });
 };
 Ext.extend( Baseliner.model.RevisionsGridDD, Ext.grid.GridPanel );
 
@@ -1478,23 +1481,23 @@ Baseliner.flot.Donut = function(c) {
         data=[];
         for( var i = 0; i<series; i++)
         {
-            data[i] = { label: "Series "+(i+1), data: Math.floor(Math.random()*100)+1 } 
+            data[i] = { label: "Series "+(i+1), data: Math.floor(Math.random()*100)+1 }
         }
     }
     Baseliner.flot.Donut.superclass.constructor.call(this, Ext.apply({
         plotConfig: Ext.apply({
            colors: ["#F90", "#222", "#777", "#AAA"],
             series: {
-                pie: { 
+                pie: {
                     innerRadius: 0.5,
                     show: true
                 }
             }
         }, c.plotConfig),
-        data: data    
+        data: data
     }, c ));
 };
-Ext.extend( Baseliner.flot.Donut, Baseliner.flot.Base ); 
+Ext.extend( Baseliner.flot.Donut, Baseliner.flot.Base );
 
 Baseliner.flot.Area = function(c) {
     if( c==undefined ) c={};
@@ -1528,8 +1531,8 @@ Baseliner.flot.Area = function(c) {
         xaxis: { min: 0, max: 100 },
         colors: ["#F90", "#222", "#666", "#BBB"],
         series: {
-                   lines: { 
-                        lineWidth: 2, 
+                   lines: {
+                        lineWidth: 2,
                         fill: true,
                         fillColor: { colors: [ { opacity: 0.6 }, { opacity: 0.2 } ] },
                         steps: false
@@ -1537,13 +1540,13 @@ Baseliner.flot.Area = function(c) {
                     }
                }
     };
-    
+
     Baseliner.flot.Area.superclass.constructor.call(this, Ext.apply({
         plotConfig: Ext.apply( options, c.plotConfig),
-        data: data    
+        data: data
     }, c));
 };
-Ext.extend( Baseliner.flot.Area, Baseliner.flot.Base ); 
+Ext.extend( Baseliner.flot.Area, Baseliner.flot.Base );
 
 /*
 
@@ -1577,7 +1580,7 @@ Baseliner.Wizard = function(config) {
             bnext.show();
         }
         self.button_setup();
-        this.getLayout().setActiveItem( self.current ); 
+        this.getLayout().setActiveItem( self.current );
     };
     var bback = new Ext.Button({
                 text: _('Back'),
@@ -1606,17 +1609,17 @@ Baseliner.Wizard = function(config) {
     }, config ));
     this.on( 'afterrender', function(){ self.button_setup() });
 };
-Ext.extend( Baseliner.Wizard, Ext.Panel ); 
+Ext.extend( Baseliner.Wizard, Ext.Panel );
 
 /*
 
  Baseliner.DataEditor - a Registry like data editor
 
  Usage:
-    
+
     var tree = new Baseliner.DataEditor({
         data: { aa: 11, bb: [ 'x','y','z' ], cc: [{ mm:99 },{ nn:88 }] },
-        metadata: { 
+        metadata: {
             aa: { value: [ 1, 2, 3 ], read_only: true },
             'cc.mm': { value: { 'Young': 18, 'Old': 70 } }
         }
@@ -1672,7 +1675,7 @@ Baseliner.DataEditor = function(c) {
            var myid = id++;
            var v = flatten(d[k], myid, k);
            var key_long = parent_key ? parent_key + '.' + k : k;
-           var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent }; 
+           var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent };
            data.push(row);
            cnt++;
          });
@@ -1691,11 +1694,11 @@ Baseliner.DataEditor = function(c) {
     }
 
     set_data( c.data );
-    
+
     var ci_mids = [];
-    
+
     var proxy = new Ext.data.MemoryProxy(data);
-    var store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+    var store = new Ext.ux.maximgb.tg.AdjacencyListStore({
         autoLoad : true,
         reader: new Ext.data.JsonReader({id: '_id'}, Record),
         // WARN: sorting breaks hashing and array rendering
@@ -1726,7 +1729,7 @@ Baseliner.DataEditor = function(c) {
         } else if( ty == 'CI' ) {
             return v;
         } else {
-            return ''; //Ext.encode( v );  // hide 
+            return ''; //Ext.encode( v );  // hide
         }
     };
 
@@ -1775,7 +1778,7 @@ Baseliner.DataEditor = function(c) {
 
     var view_json = function(){
         var ret = collapse_data( store.getRange(), 0 );
-        json_text.setValue( Ext.util.JSON.encode( ret ) ); 
+        json_text.setValue( Ext.util.JSON.encode( ret ) );
         self.getLayout().setActiveItem( 1 );
     };
     var btn_json = new Ext.Button({
@@ -1805,14 +1808,14 @@ Baseliner.DataEditor = function(c) {
         store.add( rec );
     }
     var add_row = function(){
-        var sel = tree.getSelectionModel().getSelected(); 
+        var sel = tree.getSelectionModel().getSelected();
         if( sel ) {
             if( sel.data.type == 'Hash' ) {
                 var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
                 sel.data._is_leaf = false;
                 store.add( rec );
                 store.expandNode( sel );
-            } 
+            }
             else if( sel.data.type == 'Array' ) {
                 var rec = new Record({ key: '[...]', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
                 sel.data._is_leaf = false;
@@ -1832,7 +1835,7 @@ Baseliner.DataEditor = function(c) {
     };
 
     self.del_row = function(){
-       var rec = tree.getSelectionModel().getSelected(); 
+       var rec = tree.getSelectionModel().getSelected();
        if( rec ) {
           store.remove( rec );
        }
@@ -1843,7 +1846,7 @@ Baseliner.DataEditor = function(c) {
         '-',
         { icon:'/static/images/icons/add.gif',  tooltip: _('Create'), handler: add_row },
         { icon:'/static/images/icons/delete_.png',  tooltip: _('Delete'), handler: self.del_row },
-        '->' 
+        '->'
     ];
 
     if( c.name || self.name ) {
@@ -1865,7 +1868,7 @@ Baseliner.DataEditor = function(c) {
     }
 
     var cm = new Ext.grid.ColumnModel({
-      columns: cols,      
+      columns: cols,
       getCellEditor: function( col, row) {
         //config[col].setCellEditor( textedit );
         var editor;
@@ -1898,14 +1901,14 @@ Baseliner.DataEditor = function(c) {
                         store: arr
                      });
                  }
-              } 
+              }
            }
         }
         if( ! editor ) {
             if( col == 0 ) {
                 var rec = store.getAt(row);
                 editor = new Ext.form.TextField({ value: rec.get('key'), selectOnFocus: true });
-            } 
+            }
             else if( col == 1 && !c.hide_type) {
                 var rec = store.getAt(row);
                 editor = new Baseliner.ComboSingle({ value: rec.get('type'), data:['Value', 'Hash','Array', 'CI'] });
@@ -1914,12 +1917,12 @@ Baseliner.DataEditor = function(c) {
                 var rec = store.getAt(row);
                 if( rec.get('type') == 'Value' ) {
                     editor = new Ext.form.TextArea({ value: rec.get('value'),
-                        style:{ 'font-family':'Consolas, Courier New' }, 
+                        style:{ 'font-family':'Consolas, Courier New' },
                         selectOnFocus: true, readOnly: read_only });
                 } else {
                     (function(){
                     var st = new Baseliner.store.CI({ baseParams:{ role: 'Infrastructure' } });
-                    editor = new Baseliner.model.CICombo({ 
+                    editor = new Baseliner.model.CICombo({
                         store: st, value: rec.get('value'), singleMode: true, allowBlank: false
                     });
                     })();
@@ -1950,11 +1953,11 @@ Baseliner.DataEditor = function(c) {
             forceFit: true,
             enableRowBody : true,
             getRowClass: function(record, rowIndex, rowParams, store){
-                return 'de-grid'; 
+                return 'de-grid';
             }
         }
     }, c.editorConfig ));
-	
+
     self.editor = tree;
 
     var json_text = new Ext.form.TextArea({ });
@@ -1980,7 +1983,7 @@ Baseliner.DataEditor = function(c) {
         return true;
     }); */
 };
-Ext.extend( Baseliner.DataEditor, Ext.Panel ); 
+Ext.extend( Baseliner.DataEditor, Ext.Panel );
 
 Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
     open_win: function(){
@@ -2029,7 +2032,7 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
            { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } ,
            new Baseliner.button.CSVExport({ grid: self, store: s })
         ];
-        self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
+        self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar;
         Baseliner.AutoGrid.superclass.initComponent.call(self);
     }
 });
@@ -2158,7 +2161,7 @@ Ext.extend(Baseliner.CBTreeNodeUI_system, Ext.tree.TreeNodeUI, {
 });
 
 /*
-    MetaForm : dynamic form for arbitrary data and standard metadata    
+    MetaForm : dynamic form for arbitrary data and standard metadata
 
     var mf = new Baseliner.MetaForm({
         meta: [
@@ -2182,7 +2185,7 @@ Ext.extend(Baseliner.CBTreeNodeUI_system, Ext.tree.TreeNodeUI, {
         anchor: '100%' - field anchor
 
         options: [...] array of options for combo
-        role: '' ci role name 
+        role: '' ci role name
         classname: '' ci class name (has precedence over role)
 */
 Baseliner.MetaForm = Ext.extend( Ext.Panel, {
@@ -2211,7 +2214,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 self.tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ self.done(false) } } );
         }
         Baseliner.MetaForm.superclass.initComponent.call(this);
-        
+
         // add fields, if any
         Ext.each( self.meta, function(meta){
             self.add_field_from_meta( meta );
@@ -2290,20 +2293,20 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                     field.setValue( self.data[id] );
             });
             field = new Baseliner.model.CISelect(Ext.apply({
-                store: store, 
+                store: store,
                 anchor: meta.anchor || '100%',
                 submitValue: false,
-                singleMode: true, 
+                singleMode: true,
                 fieldLabel: _( meta.label || id),
                 id: Ext.id(),
                 name: id,
                 hiddenName: id,
                 value: self.data[id],
                 allowBlank: false
-            }, meta.field_attributes )); 
+            }, meta.field_attributes ));
         }
         else if( meta.type == 'combo' ) {
-            field = new Baseliner.ComboSingle(Ext.apply({ 
+            field = new Baseliner.ComboSingle(Ext.apply({
                 anchor: meta.anchor || '100%',
                 fieldLabel: _( meta.label || id),
                 id: Ext.id(),
@@ -2311,19 +2314,19 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 allowBlank: false,
                 submitValue: false,
                 value: self.data[id],
-                data: meta.options 
+                data: meta.options
             }, meta.field_attributes ));
         }
         else if( meta.type == 'array' ) {
             var vv = self.data[id];
-            field = new Baseliner.ArrayGrid({ 
+            field = new Baseliner.ArrayGrid({
                 height: 150,
                 fieldLabel: _( meta.label || id),
                 name: id,
                 value: vv || [],
                 description: '',
-                default_value:'???' 
-            }); 
+                default_value:'???'
+            });
         }
         if( field ) {
             field.on('blur', function(){
@@ -2338,14 +2341,14 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         if ( field.fieldLabel.length > 30){
             field.fieldLabel = "<span ext:qwidth=500 ext:qtip="+field.fieldLabel+">"+field.fieldLabel.substr(0,28) +"... </span>";
         }
-        var pn = new Ext.Panel({ 
+        var pn = new Ext.Panel({
             layout:'column',
             width: '100%',
             frame: false,
             border: false,
             items:[
                 { layout:'form', border: false, columnWidth:.9, items:[field], labelWidth: 200, labelAlign: 'right' },
-                { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({ 
+                { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({
                         icon:'/static/images/icons/delete_.png',
                         handler: function(){
                             self.deleting = true;
@@ -2360,7 +2363,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         });
         field.pn = pn.id;
         return pn;
-    }, 
+    },
     clear_form : function(){
         var self =this;
         self.removeAll();
@@ -2368,10 +2371,10 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
     // adds a field to the form
     add_field_from_meta : function(meta){
         var self = this;
-        
+
         // set default data
         if( ! self.data ) self.data = {};
-        if( self.data[meta.id]===undefined ) { 
+        if( self.data[meta.id]===undefined ) {
             // set default value, othewise a null
             self.data[meta.id] = meta['default']!==undefined ? meta['default'] : null;
         }
@@ -2379,9 +2382,9 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         // create field
         var field = self.to_field( meta );
         if( field ) {
-            field.on('beforedestroy', function(){ 
+            field.on('beforedestroy', function(){
                 if( self.deleting ) return;  // no need to rebuild data on field delete
-                self.serialize(); 
+                self.serialize();
             });
             var field_container = self.to_field_container( field );
             self.add( field_container );
@@ -2389,7 +2392,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             self.doLayout(false,true);
             return field;
         }
-    }, 
+    },
     remove_field : function(id){
         var self = this;
         self.cascade( function(obj){
@@ -2403,7 +2406,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
 });
 
 Baseliner.VariableForm = Ext.extend( Ext.Panel, {
-    bl: '*', 
+    bl: '*',
     frame: true,
     layout: 'card',
     forceLayout: true,
@@ -2428,7 +2431,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         }
         self.vars_cache = {};
         self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'name' } });
-        self.combo_vars = new Ext.form.ComboBox({ 
+        self.combo_vars = new Ext.form.ComboBox({
                width: 350,
                submitValue: false,
                id: self.id + '-combo',
@@ -2439,11 +2442,11 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                mode: !self.type_in ? 'remote' : 'local',
                emptyText: _('<select variable>'),
                typeAhead: false,
-               minChars: 1, 
-               store: !self.type_in ? self.store_vars : new Ext.data.SimpleStore({ fields:[] }), 
-               editable: true, 
+               minChars: 1,
+               store: !self.type_in ? self.store_vars : new Ext.data.SimpleStore({ fields:[] }),
+               editable: true,
                hidden: !!self.variable_name,
-               forceSelection: !self.type_in, 
+               forceSelection: !self.type_in,
                triggerAction: 'all',
                allowBlank: true
         });
@@ -2482,14 +2485,14 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 }
             }
         }});
-        
+
         if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del ];
         else self.tbar = [];
-        
+
         Baseliner.VariableForm.superclass.initComponent.call(this);
 
         // load baselines
-        var bls = new Baseliner.store.Baseline(); 
+        var bls = new Baseliner.store.Baseline();
         bls.load({
             callback: function(records){
                 var tbar = self.getTopToolbar();
@@ -2502,40 +2505,40 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 }
                 var def_bl = self.force_bl || '*';
                 Ext.each(records, function(bl){
-                    var name = bl.id == '*' ? 'Common' : bl.id; 
+                    var name = bl.id == '*' ? 'Common' : bl.id;
                     // create metaform
                     var data;
                     if( self.variable_name ) {
                         data = {};
                         data[self.variable_name] = self.data[bl.id];
-                    } else { 
-                        data = self.data[bl.id] || {}; 
+                    } else {
+                        data = self.data[bl.id] || {};
                     }
-                    var mf = new Baseliner.MetaForm({ 
+                    var mf = new Baseliner.MetaForm({
                         bl: bl.id,
-                        data: data, 
+                        data: data,
                         tbar: false,
                         autoScroll: true
                     });
-                    mf.on('beforedestroy', function(){ 
+                    mf.on('beforedestroy', function(){
                         self.data[bl.id] = mf.serialize();
                     });
-                    mf.on('field_changed', function(mf, fi){ 
+                    mf.on('field_changed', function(mf, fi){
                         self.data[bl.id] = mf.serialize();
                         //self.combo_vars.reset();
                     });
-                    mf.on('delete_field', function(mf){ 
+                    mf.on('delete_field', function(mf){
                         self.data[bl.id] = mf.serialize();
                         //self.combo_vars.reset();
                     });
                     // add to card
-                    self.add( mf ); 
+                    self.add( mf );
                     // add to toolbar
                     tbar.add({ xtype:'button', enableToggle: true, allowDepress: false,
-                        pressed: (bl.id==def_bl ?true:false), 
+                        pressed: (bl.id==def_bl ?true:false),
                         width: '30',
                         bl_id: bl.id,
-                        toggleGroup: 'vf-bls-'+self.id, 
+                        toggleGroup: 'vf-bls-'+self.id,
                         handler: function(btn){
                             self.getLayout().setActiveItem( mf );
                         },
@@ -2550,12 +2553,12 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 self.deferredRender = false;
             }
         });
-        
+
         // get metadata from data variable names
     },
     load_initial_var : function(varname) {
         var self = this;
-        var ix = self.store_vars.find( 'name', varname ); 
+        var ix = self.store_vars.find( 'name', varname );
         if( ix==undefined || ix==-1 ) {
             Baseliner.error( _('Variable'), _('Variable `%1` not found', varname) );
         } else {
@@ -2608,8 +2611,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var var_ci_multiple;
         var_ci_mandatory = ci.var_ci_mandatory != 1;
         var_ci_multiple  = ci.var_ci_multiple != 1;
-        var default_value = Ext.isObject(ci.variables) 
-                ? ( ci.variables[bl]==undefined  ? ci.variables['*'] : ci.variables[bl]) 
+        var default_value = Ext.isObject(ci.variables)
+                ? ( ci.variables[bl]==undefined  ? ci.variables['*'] : ci.variables[bl])
                 : ci.var_default;  // FIXME var_default is legacy
 
         var meta = {
@@ -2639,21 +2642,21 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 bl_data = {};
                 bl_data[self.variable_name] = self.data[bl];
             }
-        } else { 
+        } else {
             bl_data = self.data[bl];
         }
         mf.data = bl_data;
         // get variable names from hash keys
         for( v in bl_data ) {
-            vars.push( v ); 
+            vars.push( v );
         }
         if( vars.length > 0 ) {
             /*
             var vars_no_cache = [];
             Ext.each( vars, function(v) {
-                if( self.vars_cache[v] !== undefined ) 
+                if( self.vars_cache[v] !== undefined )
                     self.add_var_ci_field( mf, bl, self.vars_cache[v] );
-                else 
+                else
                     vars_no_cache.push(v);
             });
             */
@@ -2663,7 +2666,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     self.add_var_ci_field( mf, bl, { name: varname });
                 });
             } else {
-                // get variable CI metadata 
+                // get variable CI metadata
                 Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
                     Ext.each( res, function(var_ci){
                         self.add_var_ci_field( mf, bl, var_ci );
@@ -2679,7 +2682,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             self.data[ mf.bl ] = mf.serialize({ name: self.variable_name });
         });
         return self.data;
-    }, 
+    },
     getValue : function(){
         alert( 'Not Implemented' );
     }

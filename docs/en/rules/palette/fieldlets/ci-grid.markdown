@@ -30,15 +30,13 @@ Check if you want the field as mandatory.
 
 ### Type
 
-* The type of the field is **Grid** by default. It means that the added topics are shown in a table.
+The type of the field is **Grid** by default. It means that the added topics are shown in a table.
 
 ### Display field
 
 Set the field to show.
 
 ### Advanced filter JSON
-
-* Allows to use a JSON format to add a condition. 
 
 Allows to use a JSON format to add a condition.
 
@@ -52,11 +50,9 @@ Allows to use a JSON format to add a condition.
 
 ### Selection method
 
-**Role selection**
-
 Choose between selections.
 
-- **Role selection*
+- **Role selection**
 
 - **Class selection**
 
@@ -64,9 +60,9 @@ Choose between selections.
 
 Selection of roles to show in the grid.
 
-* Select only works if *Class selection* is selected as a method.
+Select only works if *Class selection* is selected as a method.
 
-* Specify the class of CI to be shown.
+Specify the class of CI to be shown.
 
 
 ### Show class

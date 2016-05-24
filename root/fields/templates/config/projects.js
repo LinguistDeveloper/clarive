@@ -1,23 +1,32 @@
-(function(params){
+(function(params) {
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
     ret.push(value_type);
 
-    var collection = new Ext.form.Hidden({ name: 'collection', value: data.collection });
+    Cla.help_push({ title:_('List projects'), path:'rules/palette/fieldlets/project-combo' });
+
+    var collection = new Ext.form.Hidden({
+        name: 'collection',
+        value: data.collection
+    });
 
     var ci_store = new Ext.data.JsonStore({
-        root: 'data', 
+        root: 'data',
         remoteSort: true,
-        totalProperty: 'totalCount', 
-        id: 'id', 
-        baseParams: Ext.apply({  start: 0, limit: 9999, role: 'Baseliner::Role::CI::Project' }, this.baseParams ),
+        totalProperty: 'totalCount',
+        id: 'id',
+        baseParams: Ext.apply({
+            start: 0,
+            limit: 9999,
+            role: 'Baseliner::Role::CI::Project'
+        }, this.baseParams),
         url: '/ci/classes',
-        fields: [ 'name', 'classname' ],
-        listeners:{
-            'load': function (){
+        fields: ['name', 'classname'],
+        listeners: {
+            'load': function() {
                 //console.log(this);
-            } 
+            }
         }
     });
 
@@ -33,18 +42,54 @@
         singleMode: true,
         mode: 'remote',
         value: data.collection || 'project',
-        listeners:{
-            'change': function(elem,value){
+        listeners: {
+            'change': function(elem, value) {
                 collection.setValue(value);
             }
         }
     });
 
-    ret.push([ 
-    	ci_class_box,
-    	collection,
-        { xtype:'textfield', fieldLabel: _('Default Value'), name:'default_value', value: data.default_value || '' },
-    	{ xtype:'textfield', fieldLabel: _('Roles (comma separated)'), name:'roles', value: data.roles || '' },
+    var store_display_mode = new Ext.data.SimpleStore({
+        fields: ['display_mode', 'name'],
+        data: [
+            ['none', _('Name')],
+            ['description', _('Description')],
+            ['baseline', _('Baseline')],
+            ['moniker', _('Moniker')],
+        ]
+    });
+
+    var display_mode = new Ext.form.ComboBox({
+        store: store_display_mode,
+        displayField: 'name',
+        value: data.display_mode || 'none',
+        valueField: 'display_mode',
+        hiddenName: 'display_mode',
+        name: 'display_mode',
+        editable: false,
+        mode: 'local',
+        allowBlank: false,
+        forceSelection: true,
+        triggerAction: 'all',
+        fieldLabel: _('Description'),
+        emptyText: _('Select one'),
+        autoLoad: true
+    });
+
+    ret.push([
+        ci_class_box,
+        collection, {
+            xtype: 'textfield',
+            fieldLabel: _('Default Value'),
+            name: 'default_value',
+            value: data.default_value || ''
+        }, {
+            xtype: 'textfield',
+            fieldLabel: _('Roles (comma separated)'),
+            name: 'roles',
+            value: data.roles || ''
+        },
+        display_mode,
     ]);
     return ret;
 })

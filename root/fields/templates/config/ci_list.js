@@ -2,7 +2,9 @@
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
-    Cla.help_push({ title:_('CI List'), path:'Rules/Palette/Fieldlets/ci_list' });
+
+    Cla.help_push({ title:_('List ci'), path:'rules/palette/fieldlets/list-ci' });
+
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
@@ -101,7 +103,7 @@
         store: ci_store,
         valueField: 'name',
         displayField: 'name',
-        singleMode: true,
+        singleMode: false,
         autoLoad: false,
         mode: 'local',
         value: data.ci_class_box,
@@ -126,6 +128,33 @@
         ci_class_box.allowBlank = false;
         ci_class_box.enable();
     }
+
+    var store_display_mode = new Ext.data.SimpleStore({
+        fields: ['display_mode', 'name'],
+        data: [
+            ['collection', _('Name')],
+            ['bl', _('Baseline')],
+            ['class', _('Class')],
+            ['moniker', _('Moniker')],
+        ]
+    });
+
+    var display_mode = new Ext.form.ComboBox({
+        store: store_display_mode,
+        displayField: 'name',
+        value: data.display_mode || 'collection',
+        valueField: 'display_mode',
+        hiddenName: 'display_mode',
+        name: 'display_mode',
+        editable: false,
+        mode: 'local',
+        allowBlank: false,
+        forceSelection: true,
+        triggerAction: 'all',
+        fieldLabel: _('Description'),
+        emptyText: _('Select one'),
+        autoLoad: true
+    });
 
     ret.push([ 
       {
@@ -166,6 +195,7 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
+        display_mode,
         { xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height }
     ]);
     return ret;

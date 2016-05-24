@@ -345,6 +345,17 @@ sub tree_objects {
             // ( $icons{$row_class} = $row_class
                 ? try { $row_class->icon } catch { $generic_icon }
                 : $generic_icon );
+
+        my $bls;
+        if ( $row->{bls} ) {
+            $bls = join ',',
+              map { $_->{name} }
+              mdb->master_doc->find( { mid => mdb->in( $row->{bls} ) } )->fields( { name => 1, _id => 0 } )->all;
+        }
+        else {
+            $bls = ( $row->{bl} );
+        }
+
         +{
             _id               => $row->{mid},
             _parent           => $p{parent} || undef,
@@ -362,7 +373,7 @@ sub tree_objects {
             ts                => $row->{ts},
             modified_by       => $row->{modified_by},
             created_by        => $row->{created_by},
-            bl                => $row->{bl},
+            bl                => $bls,
             description       => $data->{description} // '',
             active            => ( $row->{active} eq 1 ? \1 : \0 ),
             data              => $data,

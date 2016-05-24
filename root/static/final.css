@@ -759,11 +759,34 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     left: 55%;
 }
 
-
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
 }
+
+.x-form-text.x-superboxselect.x-superboxselect-display-btns .x-superboxselect-item.x-tag.x-superboxselect-item div > img {
+    width:16px;
+    height:16px;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+.x-combo-list .x-combo-list-inner span > img {
+    width:16px;
+    height:16px;
+}
+
+.x-combo-name-list{
+    float:left;
+    margin-right: 5px;
+    margin-top: -2px;
+}
+
+.x-combo-name-list-description{
+    color:#808080;
+    font-size: .9em;
+}
+
 
 table.table-bordered.table-condensed.dashboard td > div > img {
 height: 16px;

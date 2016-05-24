@@ -78,6 +78,33 @@ subtest 'tree_objects: returns created_by' => sub {
     is $tree[0]->{created_by}, 'MyUser';
 };
 
+subtest 'tree_objects: returns bls from bl' => sub {
+    _setup();
+
+    TestUtils->create_ci('generic_server', hostname => 'foo', bl => 'DEV');
+
+    my $controller = _build_controller();
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    is $tree[0]->{bl}, 'DEV';
+};
+
+subtest 'tree_objects: converts bls mids to bl list' => sub {
+    _setup();
+
+    my $bl1 = TestUtils->create_ci('bl', bl => 'DEV', name => 'DEV');
+    my $bl2 = TestUtils->create_ci('bl', bl => 'PROD', name => 'PROD');
+
+    TestUtils->create_ci( 'status', bls => [ $bl1->mid, $bl2->mid ] );
+
+    my $controller = _build_controller();
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    my ($status) = grep { $_->{classname} eq 'BaselinerX::CI::status' } @tree;
+
+    is $status->{bl}, 'DEV,PROD';
+};
+
 subtest 'tree_roles: returns no roles when user has no permissions' => sub {
     _setup();
 

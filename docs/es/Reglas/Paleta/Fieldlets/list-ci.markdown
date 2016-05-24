@@ -1,8 +1,9 @@
 ---
-title: Project combo
+title: List CI
 index: 400
-icon: combo_box
+icon: grid
 ---
+
 * Añade al tópico una lista desplegable de proyectos.
 * La lista de elementos que pueden ser configurados dentro del fieldlet.
 
