@@ -213,6 +213,7 @@ sub new {
     $self->{headers}    = $params{headers} || {};
     $self->{path}       = $params{path} || '/';
     $self->{body}       = $params{body} || '';
+    $self->{uploads}    = $params{uploads} || {};
     $self->{user_agent} = $params{user_agent} || '';
 
     foreach my $key (keys %{$self->{headers}}) {
@@ -233,6 +234,7 @@ sub path             { shift->{path} }
 sub headers          { shift->{headers} }
 sub method           { shift->{method} }
 sub body             { shift->{body} }
+sub uploads          { shift->{uploads} }
 
 sub header {
     my $self = shift;
