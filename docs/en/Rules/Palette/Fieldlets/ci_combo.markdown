@@ -1,9 +1,9 @@
 ---
-title: CI Grid
+title: CI Combo
 index: 400
-icon: grid
+icon: combo_box
 ---
-* Allows to introduce a CI grid in the form.
+* Allows to introduce a CI combo in the form.
 * There are a list of elements can be configured in the fieldlet:
 
 
@@ -28,8 +28,13 @@ icon: grid
 
 
 ### Type
+* Allow to set the type of the field.  
 
-* The type of the field is **Grid** by default. It means that the added topics are shown in a table.
+**Single** - Allows to select one choice of the options available.
+
+**Multiple** - The user can select multiples choices.
+
+**Grid** - The added topics are shown in a table. 
 
 
 ### Display field
@@ -54,12 +59,6 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 
 **Class selection**
 
-### Selection method
-* Choose between selections.
-
-&nbsp; &nbsp;• **Role selection**
-
-
 ### Roles
 
 * Selection of roles to show in the grid.
@@ -77,4 +76,3 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 
 
 ### Show class
-

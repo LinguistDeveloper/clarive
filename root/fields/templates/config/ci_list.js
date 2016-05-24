@@ -2,6 +2,7 @@
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
+    Cla.help_push({ title:_('CI List'), path:'Rules/Palette/Fieldlets/ci_list' });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
@@ -67,7 +68,7 @@
         valueField: 'name',
         displayField: 'name',
         singleMode: false,
-        value: data.var_ci_role,
+        value: data.var_ci_role || 'CI',
         allowBlank: Boolean(ci_class_field.value),
         mode: 'remote',
         listeners:{
@@ -145,6 +146,7 @@
                             ci_class_box.setValue('');
                             if(checked.id == 'rdoRole'){
                                 ci_class_box.allowBlank = true;
+                                role_box_multiselect.allowBlank = false;
                                 class_selected = false;
                                ci_class_box.disable();
                             }else{

@@ -9,7 +9,7 @@
         value: data.ci_role || ''
     });
     ci_role_field.hide();
-
+    Cla.help_push({ title:_('CI Grid'), path:'Rules/Palette/Fieldlets/ci_grid' });
     var ci_class_field = new Ext.form.Field({
         name: 'ci_class',
         xtype: "textfield",
@@ -67,7 +67,7 @@
         valueField: 'name',
         displayField: 'name',
         singleMode: false,
-        value: data.var_ci_role,
+        value: data.var_ci_role || 'CI',
         allowBlank: Boolean(ci_class_field.value),
         mode: 'remote',
         listeners:{
@@ -145,6 +145,7 @@
                             ci_class_box.setValue('');
                             if(checked.id == 'rdoRole'){
                                 ci_class_box.allowBlank = true;
+                                role_box_multiselect.allowBlank = false;
                                 class_selected = false;
                                ci_class_box.disable();
                             }else{
