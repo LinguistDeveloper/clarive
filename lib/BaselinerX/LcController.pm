@@ -23,48 +23,54 @@ register 'config.releases' => {
 };
 
 sub tree_topic_get_files : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
     my @tree;
 
-    my $id_topic = $c->req->params->{id_topic} ;
-    my $sw_get_files = $c->req->params->{sw_get_files} ;
+    my $id_topic     = $c->req->params->{id_topic};
+    my $sw_get_files = $c->req->params->{sw_get_files};
+    if ($sw_get_files) {
+        my @files = mdb->joins(
+            master_rel => { from_mid => $id_topic, rel_type => 'topic_asset' },
+            to_mid => mid => master_doc => [ {}, { fields => { yaml => 0 } } ]
+        );
 
-    if ($sw_get_files){
-        my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
-            to_mid=>mid=>master_doc=>[{},{ fields=>{ yaml=>0 }}] );
-        for my $file ( @files ) {
-            push @tree, {
-                text       => $file->{filename} . '(v' . $file->{versionid} . ')',
+        for my $file (@files) {
+            push @tree,
+                {
+                text    => $file->{name} . '(v' . $file->{versionid} . ')',
                 iconCls => 'default_folders',
-                #url        => '/lifecycle/tree_topic_get_files',
-                data       => {
-                   id_file => $file->{mid},
-                   #sw_get_files =>\1
+                data    => {
+                    id_file => $file->{mid},
+                    click   => {
+                        url   => sprintf( '/topic/download_file/' . $file->{mid} . '/' . $file->{name} ),
+                        type  => 'download',
+                        title => sprintf( $file->{name} . '(v' . $file->{versionid} . ')' ),
+                    }
                 },
-                #icon       => '/static/images/icons/project_small.png',
                 leaf       => \1,
                 expandable => \0
-            };
+                };
         }
     }
-    else{
-        my $files = mdb->master_rel->find({ from_mid=>"$id_topic", rel_type=>'topic_asset' })->count;
-        if ($files > 0){
-            push @tree, {
-               text       => _loc ('Files'),
-               url        => '/lifecycle/tree_topic_get_files',
-               data       => {
-                  id_topic => $id_topic,
-                  sw_get_files =>\1
-               },
-               icon       => '/static/images/icons/delete_red.png',
-               leaf       => \0,
-               expandable => \1
-           };
+    else {
+        my $files = mdb->master_rel->find( { from_mid => "$id_topic", rel_type => 'topic_asset' } )->count;
+        if ( $files > 0 ) {
+            push @tree,
+                {
+                text => _loc('Files'),
+                url  => '/lifecycle/tree_topic_get_files',
+                data => {
+                    id_topic     => $id_topic,
+                    sw_get_files => \1
+                },
+                icon       => '/static/images/icons/delete_red.png',
+                leaf       => \0,
+                expandable => \1
+                };
         }
     }
-    $c->stash->{ json } = \@tree;
-    $c->forward( 'View::JSON' );
+    $c->stash->{json} = \@tree;
+    $c->forward('View::JSON');
 }
 
 sub tree_project_releases : Local {
@@ -1511,15 +1517,16 @@ sub click_category {
     };
 }
 
-
 sub build_topic_tree {
-    my $self = shift;
-    my %p    = @_;
+    my $self         = shift;
+    my %p            = @_;
     my @menu_related = $self->menu_related();
-    my $category = $p{category} // $p{topic}{category} // $p{topic}{categories};
-    my $topic_title = $p{topic}{title};   ## TODO use meta_type eq 'title'
+    my $category     = $p{category} // $p{topic}{category} // $p{topic}{categories};
+    my $topic_title  = $p{topic}{title};
+    my @tree;
 
-    return +{
+    push @tree,
+        {
         text     => $topic_title,
         calevent => {
             mid    => $p{mid},
@@ -1531,32 +1538,39 @@ sub build_topic_tree {
         topic_name => {
             mid            => $p{mid},
             category_color => $category->{color},
-            category_name  => _loc($category->{name}),
+            category_name  => _loc( $category->{name} ),
             is_release     => $p{is_release} // $category->{is_release},
             is_changeset   => $p{is_changeset} // $category->{is_changeset},
         },
-        moniker => ($p{moniker} || Util->_name_to_id($topic_title)),
-        children => [
-            {
-                text     => _loc('Files'),
-                iconCls  => 'default_folders',
-                url      => '/lifecycle/tree_topic_get_files',
-                leaf     => \0,
-                data     => {
-                    id_topic     => $p{mid},
-                    sw_get_files => \1
-                },
-            }
-        ],
+        moniker => ( $p{moniker} || Util->_name_to_id($topic_title) ),
         data => {
             topic_mid => $p{mid},
             click     => $self->click_for_topic( $category->{name}, $p{mid} )
         },
-        icon       => $p{icon} // q{/static/images/icons/topic.png},
-        leaf       => \0,
-        expandable => \1,
-        menu => \@menu_related
-    };
+        icon => $p{icon} // q{/static/images/icons/topic.png},
+        leaf => \0,
+        expandable => \0,
+        menu       => \@menu_related
+        };
+    my @files = mdb->joins(
+        master_rel => { from_mid => $p{mid}, rel_type => 'topic_asset' },
+        to_mid => mid => master_doc => [ {}, { fields => { yaml => 0 } } ]
+    );
+
+    if (@files) {
+        $tree[0]->{children} = [
+            {   text    => _loc('Files'),
+                iconCls => 'default_folders',
+                url     => '/lifecycle/tree_topic_get_files',
+                leaf    => \0,
+                data    => {
+                    id_topic     => $p{mid},
+                    sw_get_files => \1
+                },
+            }
+        ];
+    }
+    return @tree;
 }
 
 sub topics_for_release : Local {

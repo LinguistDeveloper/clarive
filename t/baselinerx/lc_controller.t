@@ -9,6 +9,7 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils qw(:catalyst);
 use TestSetup;
+use Test::TempDir::Tiny;
 
 use JSON ();
 
@@ -778,6 +779,75 @@ subtest 'status_list: use statuses passed' => sub {
     is $statuses[0]->{mid}, $status_finished->mid;
 };
 
+subtest 'tree_topic_get_files: creates click in data json ' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+    my $tempdir = tempdir();
+
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
+    my $file = Util->_file("$tempdir/filename.jpg");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
+
+    my $controller = _build_controller();
+    my $c          = mock_catalyst_c(
+        req => {
+            params => {
+                id_topic     => $topic_mid,
+                sw_get_files => 'true'
+            }
+        }
+    );
+    $controller->tree_topic_get_files($c);
+
+    is $c->stash->{json}[0]{data}{click}{type},  'download';
+    is $c->stash->{json}[0]{data}{click}{title}, 'filename.jpg' . '(v1)';
+
+};
+
+subtest 'build_topic_tree: creates children if topic has files' => sub {
+    _setup();
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
+    my $tempdir = tempdir();
+
+    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
+    my $file = Util->_file("$tempdir/filename.jpg");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
+
+    my $controller = _build_controller();
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+    my @output = $controller->build_topic_tree( mid => $topic_mid, topic => $topic );
+
+    ok $output[0]{children};
+};
+
+subtest 'build_topic_tree: does not create children if topic has not files' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project;
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $topic_mid = TestSetup->create_topic( username => $user->username );
+
+    my $controller = _build_controller();
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+    my @output = $controller->build_topic_tree( mid => $topic_mid, topic => $topic );
+
+    ok !$output[0]{children};
+};
+
 done_testing;
 
 sub _build_controller {
@@ -788,7 +858,8 @@ sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::CI',
         'BaselinerX::Events',      'BaselinerX::Type::Fieldlet',
-        'Baseliner::Model::Topic', 'BaselinerX::Fieldlets'
+        'Baseliner::Model::Topic', 'BaselinerX::Fieldlets',
+        'Baseliner::Controller::Topic', 'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;
