@@ -25,8 +25,8 @@ params:
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var columns = meta.columns;
     if( !columns ) {
-        var headers = Ext.isString(meta.headers) ? [ meta.headers.split(';') ] : [ _('Milestone'), _('Planned Date'), _('Real Date') ];
-        columns = String.format('{0}[slotname],textfield,400;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
+        var headers = Ext.isString(meta.headers) ? [ meta.headers.split(';') ] : [ _('Milestone'), _('Planned End Date'), _('End Date') ];
+        columns = String.format('{0}[slotname],textfield,250;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
     } else {
         var arr_columns = columns.split(';');
         var found = false;
@@ -36,7 +36,7 @@ params:
             }
         };
         if ( !found ) {
-            arr_columns.unshift('Milestone[slotname],textfield,200');
+            arr_columns.unshift('Milestone[slotname],textfield,250');
             columns = arr_columns.join(';');
         };
     }
