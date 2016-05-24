@@ -262,7 +262,7 @@ subtest 'submit: creates a new job without version id when dynamic' => sub {
                 changesets           => $changeset_mid,
                 window_type          => 'N',
                 rule_version_tag     => 'tag',
-                rule_version_dynamic => 1
+                rule_version_dynamic => 'on'
             }
         }
     );

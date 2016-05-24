@@ -459,7 +459,7 @@ sub submit : Local {
             my $state_to             = $p->{state_to};
             my $id_rule              = $p->{id_rule};
             my $rule_version_tag     = $p->{rule_version_tag};
-            my $rule_version_dynamic = $p->{rule_version_dynamic};
+            my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
             my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
 
             my $contents = $p->{changesets};
