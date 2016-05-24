@@ -254,6 +254,7 @@
         hidden: <% $has_chain_perm ? 'false':'true' %>,
         listeners: {
             select: function(combo, row, index) {
+                versions_flag.hide();
                 store_versions.baseParams.id_rule = row.data.id;
                 store_versions.load();
             }
