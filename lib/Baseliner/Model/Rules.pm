@@ -1428,6 +1428,15 @@ method tag_version(:$version_id, :$version_tag) {
     return 1;
 }
 
+method untag_version(:$version_id) {
+    my $version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+    _fail _loc( 'Version not found: %1', $version_id ) unless $version;
+
+    mdb->rule_version->update( { _id => mdb->oid($version_id) }, { '$unset' => { version_tag => '' } } );
+
+    return 1;
+}
+
 method resolve_rule(:$id_rule, :$version_id = undef, :$version_tag = undef) {
     my $rule = mdb->rule->find_one( { '$or' => [ { id => "$id_rule" }, { rule_name => "$id_rule" } ] } );
     _fail _loc( 'Rule with id or name `%1` not found', $id_rule ) unless $rule;

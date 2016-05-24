@@ -1290,6 +1290,16 @@
 
             return;
         }
+        var untag_version = function( btn, node ) {
+            Baseliner.ajax_json('/rule/untag_version', {
+                version_id: node.attributes.version_id
+            }, function(res) {
+                rule_load( null, true );
+            }, function() {
+            });
+
+            return;
+        }
         var short_name = name.length > 10 ? name.substring(0,20) : name;
         var node_dbl_click = function(node,event){
             edit_node( node );
@@ -1298,12 +1308,15 @@
             if( node.attributes.is_current ) return false;
             if( node.attributes.is_version ) {
                 node.select();
-                var stmts_menu = new Ext.menu.Menu({
-                    items: [
-                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
-                        { text: _('Tag'), handler: function(){ tag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
-                    ]
-                });
+                var has_version_tag = node.attributes.hasOwnProperty('version_tag') && node.attributes.version_tag;
+                var items = [
+                    { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
+                    { text: has_version_tag ? _('Change tag') : _('Add tag'), handler: function(){ tag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' }
+                ];
+                if (has_version_tag) {
+                    items.push({ text: _('Delete tag'), handler: function(){ untag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' });
+                }
+                var stmts_menu = new Ext.menu.Menu({ items: items });
                 stmts_menu.showAt(event.xy);
                 return;
             }

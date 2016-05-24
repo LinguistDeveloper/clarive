@@ -844,6 +844,44 @@ subtest 'tag_version: does not throw when saving same tag with same version' => 
     ok $model->tag_version( version_id => $version_id, version_tag => 'tag' );
 };
 
+subtest 'untag_version: untags version' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = '1';
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id = mdb->rule_version->find_one->{_id} . '';
+
+    my $model = _build_model();
+
+    $model->tag_version( version_id => $version_id, version_tag => 'production' );
+
+    $model->untag_version( version_id => $version_id);
+
+    my $rule_version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+
+    ok !exists $rule_version->{version_tag};
+};
+
 subtest 'list_versions: returns rule versions' => sub {
     _setup();
 

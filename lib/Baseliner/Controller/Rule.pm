@@ -700,6 +700,22 @@ sub tag_version : Local {
     $c->forward("View::JSON");
 }
 
+sub untag_version : Local {
+    my ( $self, $c ) = @_;
+
+    return
+      unless my $p = $self->validate_params( $c, version_id => { isa => 'Str' } );
+
+    my $version_id = $p->{version_id};
+
+    my $rules = Baseliner::Model::Rules->new;
+
+    $rules->untag_version(version_id => $version_id);
+
+    $c->stash->{json} = { success => \1, msg => _loc('Rule version untagged') };
+    $c->forward("View::JSON");
+}
+
 sub stmts_load : Local {
     my ( $self, $c ) = @_;
 

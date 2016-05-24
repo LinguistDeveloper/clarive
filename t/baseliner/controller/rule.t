@@ -393,6 +393,54 @@ subtest 'tag_version: returns validation errors' => sub {
       };
 };
 
+subtest 'untag_version: removes tags version' => sub {
+    _setup();
+
+    my $rule_tree = [
+        {
+            "attributes" => {
+                "disabled" => 0,
+                "active"   => 1,
+                "key"      => "statement.step",
+                "text"     => "CHECK",
+                "expanded" => 1,
+                "leaf"     => \0,
+            },
+            "children" => []
+        },
+    ];
+    my $id_rule = _create_rule( rule_tree => $rule_tree );
+
+    $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
+    Baseliner::Model::Rules->new->write_rule(
+        id_rule    => $id_rule,
+        username   => 'newuser',
+        stmts_json => JSON::encode_json($rule_tree)
+    );
+
+    my $version_id =
+      mdb->rule_version->find->sort( { ts => 1 } )->next->{_id} . '';
+
+    my $c =
+      mock_catalyst_c( req => { params => { version_id => $version_id } } );
+
+    my $controller = _build_controller();
+
+    $controller->untag_version($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'Rule version untagged',
+            'success' => \1
+        }
+      };
+
+    my $rule_version = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
+
+    ok !exists $rule_version->{version_tag};
+};
+
 subtest 'dsl: returns rule dsl' => sub {
     _setup();
 
