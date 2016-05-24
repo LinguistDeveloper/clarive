@@ -1143,7 +1143,7 @@ sub delete : Local {
                       };
                 }
 
-                $c->stash->{json} = { success => \1, info => \@data };
+                $c->stash->{json} = { success => \1, info => \@data , needs_confirmation => $needs_confirmation};
             }
             else {
                 my @all_users = grep { values %{ $_->{project_security} } }

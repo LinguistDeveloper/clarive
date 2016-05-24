@@ -625,7 +625,8 @@ subtest 'delete: asks user before deleting a project' => sub {
                     'number_user'  => '1'
                 }
             ],
-            'success' => \1
+            'success' => \1,
+            'needs_confirmation' => 1
         }
       };
 };
@@ -754,7 +755,8 @@ subtest 'delete: deletes area when confirmed' => sub {
                     'number_user' => '1'
                 }
             ],
-            'success' => \1
+            'success' => \1,
+            'needs_confirmation' => 1
         }
         };
 };

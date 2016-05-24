@@ -121,7 +121,7 @@
                     }
                 };
 
-                if (res.success && (checked.collection === 'project' || checked.collection === 'area')) {
+                if (res.success && res.needs_confirmation) {
                     var num_ci = res.info.length;
                     var message = '';
 
