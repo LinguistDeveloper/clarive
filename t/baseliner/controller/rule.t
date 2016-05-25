@@ -603,6 +603,44 @@ subtest 'webservice: returns result' => sub {
     is_deeply $stash->{ws_params}, { username => 'user' };
 };
 
+subtest 'webservice: setups correct stash values' => sub {
+    _setup();
+
+    my $id_rule = _create_rule(
+        rule_active => 1,
+        rule_type   => 'independent',
+        rule_name   => 'Rule',
+        rule_tree   => [
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "CHECK",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => []
+            },
+        ]
+    );
+
+    my $c = mock_catalyst_c( username => 'user', req => { uploads => { file => { basename => 'upload.file' } } } );
+
+    my $controller = _build_controller();
+
+    $controller->default( $c, 'json', $id_rule, 'foo', 'bar' );
+
+    my $stash = $c->stash->{json}->{stash};
+
+    is $stash->{WSURL}, 'http://localhost';
+    is_deeply $stash->{ws_params}, { username => 'user' };
+    is_deeply $stash->{ws_arguments}, [qw/foo bar/];
+    is $stash->{ws_uploads}->{file}->basename, 'upload.file';
+    is_deeply $stash->{ws_headers}, {};
+    is $stash->{ws_body}, '';
+};
+
 subtest 'stmts_save: saves statements' => sub {
     _setup();
 

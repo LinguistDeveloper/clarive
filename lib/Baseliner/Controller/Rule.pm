@@ -947,10 +947,12 @@ sub default : Path {
     my $body = $body_file && -e $body_file ? $body_file->slurp : '';
     my $uri = $c->req->uri;
     my $wsurl = sprintf '%s://%s%s', $uri->scheme, $uri->authority, $uri->path;  # http://www.perl.com:8080/xxx/yyy, everything minus the query & fragments
+
     my $stash = {
         ws_body      => $body,
         ws_headers   => Util->_clone( $c->req->headers ),
         ws_params    => Util->_clone($p),
+        ws_uploads   => Util->_clone($c->req->uploads),
         WSURL        => $wsurl,
         ws_arguments => \@args,
     };

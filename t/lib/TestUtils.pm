@@ -219,6 +219,13 @@ sub new {
         $self->{headers}->{lc($key)} = delete $self->{headers}->{$key};
     }
 
+    $self->{uploads} //= {};
+    if ( $params{uploads} ) {
+        foreach my $key ( keys %{ $params{uploads} } ) {
+            $self->{uploads}->{$key} = FakeRequestUpload->new( %{ $params{uploads}->{$key} } );
+        }
+    }
+
     return $self;
 }
 
@@ -233,6 +240,7 @@ sub path             { shift->{path} }
 sub headers          { shift->{headers} }
 sub method           { shift->{method} }
 sub body             { shift->{body} }
+sub uploads          { shift->{uploads} }
 
 sub header {
     my $self = shift;
@@ -240,6 +248,27 @@ sub header {
 
     return $self->{headers}->{$key};
 }
+
+package FakeRequestUpload;
+
+use strict;
+use warnings;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    $self->{fh}       = $params{fh};
+    $self->{basename} = $params{basename};
+
+    return $self;
+}
+
+sub fh       { shift->{fh} }
+sub basename { shift->{basename} }
 
 package FakeResponse;
 
