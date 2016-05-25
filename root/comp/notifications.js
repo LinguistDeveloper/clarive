@@ -2,7 +2,7 @@
     var ps = 30;
     Cla.help_push({
         title: _('Notifications'),
-        path: 'Administration/notifications'
+        path: 'admin/notifications'
     });
 
     var fields = ['id', 'event_key', 'action', 'data', 'is_active', 'username', 'subject',

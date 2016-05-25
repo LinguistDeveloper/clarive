@@ -857,16 +857,21 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     margin-top: 7px;
 }
 
-.more_info td > img { 
+.more_info td > img {
     height: 16px;
     width: 16px;
 }
-/*
-.help_docs .x-panel-body ul > li > img {
+
+.help_docs .x-panel-body img {
     height: 16px;
     width: 16px;
 }
-*/
+
+.img_help {
+  height: 100% !important;
+  width: 100% !important;
+}
+
 .x-item-disabled {
     color: gray;
     cursor: default !important;
