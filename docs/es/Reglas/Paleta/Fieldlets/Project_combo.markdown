@@ -65,8 +65,6 @@ Donde id es el [MID](Conceptos/mid) de la categoría.
 
 ### Valor por defecto
 * Permite mostrar un valor por defecto en el combo.
-* El o los proyectos que se quieran poner por defecto tienen que estar especficados por el ID del CI.
-
 
 ### Roles
 * Selecciona los roles que se mostrarán en el grid.
