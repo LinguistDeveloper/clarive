@@ -20,10 +20,26 @@ subtest 'executes perl' => sub {
     is $ret, 2;
 };
 
+subtest 'no error when not a true value' => sub {
+    my $code = _build_code();
+
+    my $ret = $code->eval_code('0');
+
+    is $ret, 0;
+};
+
 subtest 'rethrows errors' => sub {
     my $code = _build_code();
 
     like exception { $code->eval_code('die "here"') }, qr/here at EVAL line 1/;
+};
+
+subtest 'rethrows errors with zeroish exceptions' => sub {
+    my $code = _build_code();
+
+    like exception { $code->eval_code('die ""') }, qr/Died at EVAL line 1/;
+    like exception { $code->eval_code('die 0') }, qr/0 at EVAL line 1/;
+    like exception { $code->eval_code('die undef') }, qr/Died at EVAL line 1/;
 };
 
 subtest 'rethrows errors with filename' => sub {
