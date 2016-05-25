@@ -141,10 +141,11 @@ sub run_rules {
 method compile_rule(:$rule, :$logging = 0, :$simple_error = 0) {
     my $id_rule = $rule->{id};
 
-    my $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
+    #my $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
 
     my $compiler = $self->_build_rule_compiler(
-        dsl          => $dsl,
+        #dsl          => $dsl,
+        ts           => $rule->{ts},
         id_rule      => $rule->{id},
         version_id   => '' . $rule->{_id},
         simple_error => $simple_error,
@@ -337,25 +338,6 @@ sub _find_rule_by_id_or_name {
     my ($param) = @_;
 
     return mdb->rule->find_one( { '$or' => [ { id => "$param" }, { rule_name => "$param" } ] } );
-}
-
-sub _build_dsl_from_rule {
-    my $self = shift;
-    my ($id_rule, $rule) = @_;
-
-    my $rules_model = Baseliner::Model::Rules->new;
-    my @tree = $rules_model->build_tree( $rule, undef );
-
-    my $dsl = try {
-        $rules_model->dsl_build( \@tree, no_tidy => 0, id_rule => $id_rule, rule_name => $rule->{name} );
-    }
-    catch {
-        my $error = shift;
-
-        _fail( _loc( "Error building DSL for rule `%1`: %2", $id_rule, $error ) );
-    };
-
-    return $dsl;
 }
 
 sub _build_rule_compiler {

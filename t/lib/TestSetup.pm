@@ -58,7 +58,7 @@ sub create_rule {
 
     my $id_rule  = mdb->seq('rule');
     my $seq_rule = 0 + mdb->seq('rule_seq');
-    my $ts       = $params{ts} || '2016-01-01 00:00:00';
+    my $ts       = delete $params{ts} || '2016-01-01 00:00:00';
     mdb->rule->insert(
         {
             id          => "$id_rule",

@@ -47,7 +47,28 @@ subtest 'compile: compiles rule with passed ts' => sub {
 subtest 'compile: compiles rule' => sub {
     _setup();
 
-    my $rule_compiler = _build_rule_compiler( dsl => 'do { return "hello"; }', id_rule => '123' );
+    my $id_rule = TestSetup->create_rule(
+        rule_tree => [
+            {
+                "attributes"=> {
+                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "key"=> "statement.code.server",
+                    "text"=> "Server CODE",
+                    "id"=> "rule-ext-gen38276-1456842988061",
+                    "name"=> "Server CODE",
+                    "data"=> {
+                        "lang"=> "perl",
+                        "code"=> q{
+                            return 'hello';
+                        }
+                    },
+                },
+                "children"=> [],
+            }
+        ]
+    );
+
+    my $rule_compiler = _build_rule_compiler( id_rule => $id_rule );
 
     $rule_compiler->compile;
 
@@ -56,7 +77,7 @@ subtest 'compile: compiles rule' => sub {
 
     my $package = $rule_compiler->package;
 
-    is $package, 'Clarive::RULE_123';
+    is $package, "Clarive::RULE_$id_rule";
 
     is $package->run, 'hello';
 
@@ -66,7 +87,28 @@ subtest 'compile: compiles rule' => sub {
 subtest 'compile: compiles rule with version id' => sub {
     _setup();
 
-    my $rule_compiler = _build_rule_compiler( dsl => 'do { return "hello"; }', id_rule => '123', version_id => 'haha' );
+    my $id_rule = TestSetup->create_rule(
+        rule_tree => [
+            {
+                "attributes"=> {
+                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "key"=> "statement.code.server",
+                    "text"=> "Server CODE",
+                    "id"=> "rule-ext-gen38276-1456842988061",
+                    "name"=> "Server CODE",
+                    "data"=> {
+                        "lang"=> "perl",
+                        "code"=> q{
+                            return 'hello';
+                        }
+                    },
+                },
+                "children"=> [],
+            }
+        ]
+    );
+
+    my $rule_compiler = _build_rule_compiler( id_rule => $id_rule, version_id => 'haha' );
 
     $rule_compiler->compile;
 
@@ -75,7 +117,7 @@ subtest 'compile: compiles rule with version id' => sub {
 
     my $package = $rule_compiler->package;
 
-    is $package, 'Clarive::RULE_123_haha';
+    is $package, "Clarive::RULE_${id_rule}_haha";
 
     is $package->run, 'hello';
 
@@ -112,6 +154,44 @@ subtest 'compile: builds package with call method' => sub {
     ok $stash->{_rule_elapsed};
 
     $rule_compiler->unload;
+};
+
+subtest 'compile: does not recompile already compiled rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(rule_tree => []);
+
+    my $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    $rule_compiler->unload;
+
+    is $rule_compiler->compile_status, 'fresh';
+};
+
+subtest 'compile: recompiles modifed rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule();
+
+    my $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    mdb->rule->update({id => "$id_rule"}, {'$set' => {ts => '2016-01-01 00:00:01'}});
+
+    $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    $rule_compiler->unload;
+
+    is $rule_compiler->compile_status, 'recompiling';
 };
 
 subtest 'catches compile errors' => sub {
@@ -177,9 +257,10 @@ subtest 'unloads temp rule on DESTROY' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry('BaselinerX::Type::Event', 'Baseliner::Model::Rules');
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Type::Statement', 'Baseliner::Model::Rules' );
 
     mdb->rule->drop;
+    mdb->rule_version->drop;
 }
 
 sub _build_rule_compiler {
