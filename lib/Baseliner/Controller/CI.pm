@@ -1104,78 +1104,72 @@ sub new_ci : Local {
 
 sub delete : Local {
     my ( $self, $c ) = @_;
-    my $p              = $c->req->params;
-    my $mids           = delete $p->{mids};
-    my $ci_collection  = delete $p->{collection};
-    my $delete_confirm = delete $p->{delete_confirm} // 0;
-    my $permissions    = $self->_build_permissions;
+
+    my $p = $c->req->params;
+
+    my $mids           = $p->{mids};
+    my $ci_collection  = $p->{collection};
+    my $delete_confirm = $p->{delete_confirm} // 0;
+
+    my $permissions = $self->_build_permissions;
 
     _fail( _loc( 'User %1 not authorized to delete CI %2', $c->username, $ci_collection ) )
         unless $permissions->user_can_admin_ci( $c->username, $ci_collection );
 
     my @ci_project_packages = Baseliner::Utils->packages_that_do('Baseliner::Role::CI::Project');
     my $class_package       = 'BaselinerX::CI::' . $ci_collection;
-    my $match               = grep { $_ eq $class_package } @ci_project_packages;
+    my $needs_confirmation  = grep { $_ eq $class_package } @ci_project_packages;
+
     try {
-        if ($match) {
-
+        if ($needs_confirmation) {
             if ( !$delete_confirm ) {
-
                 my @all_users = grep { values $_->{project_security} }
                     ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
                 my %ps_users = map {
                     $_->{name} => [ _unique map { _array( $_->{$ci_collection} ) } values $_->{project_security} ]
                 } @all_users;
 
-                my $info_ci;
-                my $count_user = 0;
                 my @data;
-
                 foreach my $ci_mids ( _array $mids ) {
-
-                    $info_ci->{ci_name} = _ci($ci_mids)->{name};
+                    my $count_user = 0;
                     foreach my $user ( keys %ps_users ) {
-
                         $count_user++ if ( $ci_mids ~~ $ps_users{$user} );
                     }
 
-                    $info_ci->{number_user} = $count_user;
-                    push @data, $info_ci;
-
-                    $count_user = 0;
-                    undef $info_ci;
+                    push @data,
+                      {
+                        ci_name     => _ci($ci_mids)->{name},
+                        number_user => $count_user,
+                      };
                 }
 
                 $c->stash->{json} = { success => \1, info => \@data };
             }
             else {
-                if ($delete_confirm) {
-                    my @all_users = grep { values $_->{project_security} }
-                        ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
+                my @all_users = grep { values %{ $_->{project_security} } }
+                    ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
 
-                    foreach my $user (@all_users) {
+                foreach my $user (@all_users) {
+                    my $security_level = $user->{project_security};
+                    foreach my $user_role ( keys $security_level ) {
+                        my $role_ci_mids = $security_level->{$user_role}->{$ci_collection};
+                        foreach my $ci_mid_delete ( _array $mids) {
+                            if ( $ci_mid_delete ~~ $role_ci_mids ) {
+                                my @new_proj = grep { $_ ne $ci_mid_delete } _array($role_ci_mids);
 
-                        my $security_level = $user->{project_security};
-                        foreach my $user_role ( keys $security_level ) {
+                                my $ci_update = ci->new( $user->{mid} );
+                                $ci_update->{project_security}->{$user_role}->{project} = \@new_proj;
+                                $ci_update->update;
 
-                            my $role_ci_mids = $security_level->{$user_role}->{$ci_collection};
-                            foreach my $ci_mid_delete ( _array $mids) {
-
-                                if ( $ci_mid_delete ~~ $role_ci_mids ) {
-
-                                    my @new_proj = grep { $_ ne $ci_mid_delete } _array($role_ci_mids);
-                                    my $ci_update = ci->new( $user->{mid} );
-                                    $ci_update->{project_security}->{$user_role}->{project} = \@new_proj;
-                                    $ci_update->update;
-                                    $role_ci_mids = \@new_proj;
-                                }
+                                $role_ci_mids = \@new_proj;
                             }
                         }
                     }
                 }
             }
         }
-        if ( $delete_confirm || !$match ) {
+
+        if ( $delete_confirm || !$needs_confirmation ) {
             cache->clear;
             for ( grep {length} _array($mids) ) {
                 my $ci = ci->find($_);
