@@ -150,122 +150,122 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
     is_deeply $args, { output => '123' };
 };
 
-subtest 'dsl_build: semaphore key test with fork' => sub {
-    _setup();
-
-    mdb->_test_sem->drop;
-
-    TestUtils->setup_registry(
-        'BaselinerX::Type::Service', 'BaselinerX::Type::Event',
-        'BaselinerX::Events',        'BaselinerX::Type::Statement',
-        'Baseliner::Model::Rules'
-    );
-    {
-
-        package DummyPKGSemaphore;
-        sub new { }
-    };
-    Baseliner::Core::Registry->add(
-        'DummyPKGSemaphore',
-        'service.test.op' => {
-            name    => 'Test Op',
-            handler => sub {
-                my ( $self, $c, $config ) = @_;
-                my $stash = $c->stash;
-                mdb->_test_sem->update( {}, { '$inc' => { cnt => 1 } }, { upsert => 1 } );
-                Time::HiRes::usleep( int rand 500000 );
-                $stash->{sem_cnt} = mdb->_test_sem->find_one->{cnt};
-                mdb->_test_sem->update( {}, { '$inc' => { cnt => -1 } } );
-            }
-        }
-    );
-
-    my $rules = _build_model();
-
-    my $dsl = $rules->dsl_build(
-        [
-            {
-                "attributes" => {
-                    "key"  => "statement.perl.for",
-                    "text" => "FOR eval",
-                    "data" => {
-                        "varname" => "kk",
-                        "code"    => "1..10",
-                        "config"  => { "varname" => "x", "code" => "()" }
-                    },
-                },
-                "children" => [
-                    {
-                        "attributes" => {
-                            'icon'                => '/static/images/icons/script-local.png',
-                            'palette'             => 0,
-                            'disabled'            => 0,
-                            'who'                 => 'root',
-                            'timeout'             => '',
-                            'text'                => 'Find *.c',
-                            'expanded'            => 1,
-                            'semaphore_key'       => 'test-sem',
-                            'id'                  => 'xnode-2995',
-                            'ts'                  => '2014-12-06T11:49:36',
-                            'trap_timeout_action' => 'abort',
-                            'parallel_mode'       => 'fork',
-                            'name'                => 'Run a local script',
-                            'active'              => 1,
-                            'trap_rollback'       => 1,
-                            'error_trap'          => 'none',
-                            'needs_rollback_mode' => 'none',
-                            'note'                => '',
-                            'run_rollback'        => 1,
-                            'data_key'            => 'find_c_files',
-                            'trap_timeout'        => 0,
-                            'run_forward'         => 1,
-                            "data"                => {
-                                'stdin'          => '',
-                                'output_capture' => [],
-                                'errors'         => 'fail',
-                                'rc_warn'        => '',
-                                'args'           => [],
-                                'path'           => 'ls',
-                                'output_error'   => [],
-                                'output_ok'      => [],
-                                'environment'    => {},
-                                'rc_ok'          => '',
-                                'rc_error'       => '',
-                                'output_files'   => [],
-                                'output_warn'    => [],
-                                'home'           => '',
-                            },
-                            "key" => "service.test.op",
-                        }
-                    }
-                ]
-            },
-            {
-                attributes => {
-                    icon     => "/static/images/icons/time.png",
-                    key      => "statement.parallel.wait",
-                    active   => 1,
-                    name     => "WAIT for children",
-                    data_key => 'foo',
-                    data     => {
-                        parallel_stash_keys => ['sem_cnt']
-                    },
-                },
-                children => []
-            }
-        ]
-    );
-
-    my $package = 'test_sem_rule_' . int rand 9999;
-    my $code    = eval sprintf q{
-        package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars';
-        my $stash = {}; sub { %s; $stash } }, $package, $dsl;
-
-    my $stash = $code->();
-
-    is scalar( @{ $stash->{foo} } ), 10;
-    is $_->{sem_cnt}, 1 for @{ $stash->{foo} };
-};
+#subtest 'dsl_build: semaphore key test with fork' => sub {
+#    _setup();
+#
+#    mdb->_test_sem->drop;
+#
+#    TestUtils->setup_registry(
+#        'BaselinerX::Type::Service', 'BaselinerX::Type::Event',
+#        'BaselinerX::Events',        'BaselinerX::Type::Statement',
+#        'Baseliner::Model::Rules'
+#    );
+#    {
+#
+#        package DummyPKGSemaphore;
+#        sub new { }
+#    };
+#    Baseliner::Core::Registry->add(
+#        'DummyPKGSemaphore',
+#        'service.test.op' => {
+#            name    => 'Test Op',
+#            handler => sub {
+#                my ( $self, $c, $config ) = @_;
+#                my $stash = $c->stash;
+#                mdb->_test_sem->update( {}, { '$inc' => { cnt => 1 } }, { upsert => 1 } );
+#                Time::HiRes::usleep( int rand 500000 );
+#                $stash->{sem_cnt} = mdb->_test_sem->find_one->{cnt};
+#                mdb->_test_sem->update( {}, { '$inc' => { cnt => -1 } } );
+#            }
+#        }
+#    );
+#
+#    my $rules = _build_model();
+#
+#    my $dsl = $rules->dsl_build(
+#        [
+#            {
+#                "attributes" => {
+#                    "key"  => "statement.perl.for",
+#                    "text" => "FOR eval",
+#                    "data" => {
+#                        "varname" => "kk",
+#                        "code"    => "1..10",
+#                        "config"  => { "varname" => "x", "code" => "()" }
+#                    },
+#                },
+#                "children" => [
+#                    {
+#                        "attributes" => {
+#                            'icon'                => '/static/images/icons/script-local.png',
+#                            'palette'             => 0,
+#                            'disabled'            => 0,
+#                            'who'                 => 'root',
+#                            'timeout'             => '',
+#                            'text'                => 'Find *.c',
+#                            'expanded'            => 1,
+#                            'semaphore_key'       => 'test-sem',
+#                            'id'                  => 'xnode-2995',
+#                            'ts'                  => '2014-12-06T11:49:36',
+#                            'trap_timeout_action' => 'abort',
+#                            'parallel_mode'       => 'fork',
+#                            'name'                => 'Run a local script',
+#                            'active'              => 1,
+#                            'trap_rollback'       => 1,
+#                            'error_trap'          => 'none',
+#                            'needs_rollback_mode' => 'none',
+#                            'note'                => '',
+#                            'run_rollback'        => 1,
+#                            'data_key'            => 'find_c_files',
+#                            'trap_timeout'        => 0,
+#                            'run_forward'         => 1,
+#                            "data"                => {
+#                                'stdin'          => '',
+#                                'output_capture' => [],
+#                                'errors'         => 'fail',
+#                                'rc_warn'        => '',
+#                                'args'           => [],
+#                                'path'           => 'ls',
+#                                'output_error'   => [],
+#                                'output_ok'      => [],
+#                                'environment'    => {},
+#                                'rc_ok'          => '',
+#                                'rc_error'       => '',
+#                                'output_files'   => [],
+#                                'output_warn'    => [],
+#                                'home'           => '',
+#                            },
+#                            "key" => "service.test.op",
+#                        }
+#                    }
+#                ]
+#            },
+#            {
+#                attributes => {
+#                    icon     => "/static/images/icons/time.png",
+#                    key      => "statement.parallel.wait",
+#                    active   => 1,
+#                    name     => "WAIT for children",
+#                    data_key => 'foo',
+#                    data     => {
+#                        parallel_stash_keys => ['sem_cnt']
+#                    },
+#                },
+#                children => []
+#            }
+#        ]
+#    );
+#
+#    my $package = 'test_sem_rule_' . int rand 9999;
+#    my $code    = eval sprintf q{
+#        package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars';
+#        my $stash = {}; sub { %s; $stash } }, $package, $dsl;
+#
+#    my $stash = $code->();
+#
+#    is scalar( @{ $stash->{foo} } ), 10;
+#    is $_->{sem_cnt}, 1 for @{ $stash->{foo} };
+#};
 
 subtest 'meta key with attributes sent to service op' => sub {
     TestUtils->cleanup_cis();
