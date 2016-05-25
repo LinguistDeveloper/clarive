@@ -411,8 +411,8 @@
         
         tree_projects.getLoader().on("beforeload", function(treeLoader, node) {
             var loader = tree_projects.getLoader();
-        
             loader.baseParams = node.attributes.data;
+            loader.dataUrl = window.location.origin + "/" + tree_projects.dataUrl;
             node.attributes.data.parent_checked = (node.attributes.checked)?1:0;
         });
         
