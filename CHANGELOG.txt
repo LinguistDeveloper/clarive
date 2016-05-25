@@ -1,3 +1,101 @@
+---------------------------------------------- 6.4.6 ----------------------------------------------
+[ENHANCEMENTS]
+- #32494 Edit Numberfield library to select currency type
+- #32604 Cover Login page with UI tests
+- #32714 Implement documentation generator
+- #32747 Adapt Subversion feature 6.4 version
+- #32757 When pushing system tags make sure tags_mode project is also supported
+- #32797 Continue review clarive-flat theme
+- #32802 The JavaScript API
+- #32853 When retrieving file check that the source directory actually exists
+- #32893 Remove password in event.auth.attempt
+- #32898 Add Advanced Filter JSON to all CI fieldlets
+- #32967 Textarea for variables is too small
+- #32971 Scheduler Buttons
+- #32981 Ship tar
+- #32988 Create new utility functions for changing directory and Timeout
+- #33007 Update logo and tables in HTML email templates
+- #33016 Update stew with improved memory and speed
+- #33024 Implement sync remote directory operation
+- #33025 Flat Theme improvements
+- #33033 Add missing translations for palette elements
+- #33043 Improve configuration mocking in tests
+- #33047 When deleting a role, show the affected users
+- #33048 Calendar permissions improvements (#32471)
+- #33427 Resize create/update rule window
+- #33439 Improve tests that work with time
+- #33488 Show branch log if revision is created from a branch (#31914)
+- #33646 Grid improvements in reports
+- #33667 Remove git formats message in git branch view
+- #33676 Filter notifications by Action and State in the notification grid
+- #33684 Improve message when removing project with users
+- #33693 Update howto about how to publish reports
+- #33701 Cleanup test warnings
+- #33708 Center customized logo in container with sub-logo
+- #33728 Update documentation for list_topic dashlets
+- #33740 Improve bootstrapping speed
+- #33755 Improve smoke testing
+- #33830 Set loading mask in change topic status
+- #33906 Publish uploaded files information from the request into the webservice rule stash
+
+[FIXES]
+- #32728 Fix Search Combo in Notification Grid
+- #32950 Make sure the user filter in dashlet.topic_list is not language sensitive
+- #32959 Fix md5 so it works with Unicode
+- #32961 Make sure admin.ci.view doesn't allow admin actions (#32936)
+- #32972 Grid fieldlets have to show only grid option
+- #32974 In Fieldlets, Hidden from view mode is not working
+- #32977 attach_file extension undefined by default
+- #32979 List topics dashlet not working with multiple ci
+- #33028 Make sure service.topic.get_with_condition works with status filter
+- #33031 Make sure that avatar is shown properly in diff revision
+- #33032 Make sure modified relations are not shown when they shouldn't (#8836)
+- #33275 Make sure all revisions are shown for Git repositories configured as individual commits
+- #33277 Make sure modify_field event is fired when the field does not exist
+- #33451 Make sure job logger correctly logs unicode data
+- #33457 Make sure environment fieldlet "Environment ID" field is mandatory
+- #33483 Make sure title is not displayed duplicated in topic combo_box
+- #33486 Update tab name when role name is changed
+- #33492 Make sure topic modified_on test is not dependant on real time
+- #33507 Make sure images in description fields can be zoomed
+- #33509 Make sure -R/-r does not produce unknown files warnings
+- #33513 "More Info" column splitted in four columns in CSV export functionality
+- #33536 Fix scroll bar in Events grid
+- #33551 Fieldlet datetime show combo with date format options
+- #32654 Search fieldlet in rigth button of topics and releases filters wrong.
+- #33613 Make sure ci_grid and ci_list fieldlets grid type support multiple data
+- #33621 Eliminate warnings in topics when comparing field values
+- #33632 Check Title and Status fieldlet as mandatory
+- #33633 Make sure calendar delete calendar button is deleting calendars
+- #33634 Make sure topic grid exporter create correct title
+- #33636 The project_combo fieldlet show only security CIs
+- #33637 Make sure update topics in Topic_Selector fieldlet grid-mode refreshes current topics
+- #33640 Make sure project is attached in notifications
+- #33641 Make sure display_field is not shown in topic_list fieldlets if the value is title
+- #33643 Make sure open branch from topic is the correct one
+- #33644 Make sure register help works with help language sensitive
+- #33649 When topic_selector fieldlet is not configured, shows an error trying to create a new topic
+- #33658 Make sure "Blame By Time" of Rules is working
+- #33674 Add opacity in Type field when the fieldlet only has one option
+- #33675 Topic category change color implies change all topics category.color information
+- #33686 Make sure core functions work correctly in utils
+- #33691 Make sure hide_passwords is not used on binary files & strings
+- #33725 Make sure run retrieve shows the correct message
+- #33747 Make sure topic tab is colorful when is opened from email
+- #33756 Open topic kanban as tab by default
+- #33762 Add created_by column filter in Ci Grid
+- #33773 Make sure the notification refresh keeps fields order
+- #33786 Make sure date format is not taken into account in core
+- #33795 Make sure cache is correctly managed for roles
+- #33815 Make sure GitRevision not double created when attaching a branch/commit to a changeset (#33794)
+- #33841 Make sure topic next deployable transitions are correct
+- #33866 Make sure ssh rsync uses the same options as ssh
+- #33871 Make sure revision fieldlet can be opened
+- #33879 Make sure svn revisions can be attached
+- #33881 Make sure date-format is correct for scheduler and jobs
+- #33897 Make sure subversion revisions can be created (#33850)
+- #33914 Make sure REPL doesn't treat returned false value as an error
+
 ---------------------------------------------- 6.4.5 ----------------------------------------------
 [ENHANCEMENTS]
 
