@@ -5,6 +5,7 @@ use Try::Tiny;
 use Module::Loaded qw();
 use Class::Unload;
 use Digest::MD5 ();
+use Baseliner::Model::Rules;
 use Baseliner::Utils qw(:logging _now _md5);
 
 has dsl        => qw(is ro isa Str),        default => '';
@@ -71,21 +72,19 @@ sub compile {
 
     my $ts = $self->ts;
 
-    my $dsl = $self->dsl;
-
     my $pkg = $self->package;
     if ( $self->is_loaded ) {
         if ($self->id_rule) {
             my $id_rule = '' . $self->id_rule;
-            my $doc     = mdb->rule->find_one(
+            my $rule     = mdb->rule->find_one(
                 { '$or' => [  { _id     => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] },
-                { _id   => 0, rule_tree => 0 } );
+                { _id   => 0, ts => 1 } );
 
-            if ($doc && $doc->{ts} eq $pkg->ts ) {
+            if ($rule && $rule->{ts} eq $pkg->ts ) {
                 _debug("Cached rule $id_rule is fresh, no need to recompile");
 
                 $self->compile_status('fresh');
-                $self->ts( $doc->{ts} );
+                $self->ts( $rule->{ts} );
 
                 return { err => '', t => '' };
             }
@@ -98,6 +97,13 @@ sub compile {
     else {
         _debug("Compiling and loading rule $pkg...");
         $self->compile_status('compiling');
+    }
+
+    my $dsl = $self->dsl;
+    if (my $id_rule = $self->id_rule) {
+        my $rule = mdb->rule->find_one(
+            { '$or' => [ { _id => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] } );
+        $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
     }
 
     my $warnings_str =
@@ -213,6 +219,25 @@ sub DESTROY {
         _debug( 'Destroying temporary rule: ' . $self->package );
         $self->unload;
     }
+}
+
+sub _build_dsl_from_rule {
+    my $self = shift;
+    my ($id_rule, $rule) = @_;
+
+    my $rules_model = Baseliner::Model::Rules->new;
+    my @tree = $rules_model->build_tree( $rule, undef );
+
+    my $dsl = try {
+        $rules_model->dsl_build( \@tree, no_tidy => 0, id_rule => $id_rule, rule_name => $rule->{name} );
+    }
+    catch {
+        my $error = shift;
+
+        _fail( _loc( "Error building DSL for rule `%1`: %2", $id_rule, $error ) );
+    };
+
+    return $dsl;
 }
 
 no Moose;
