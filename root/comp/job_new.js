@@ -25,6 +25,7 @@
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
     var picker_format = Cla.user_js_date_format();
+    var date_format = Cla.js_date_to_moment_hash[picker_format];
     var today = Cla.user_date_timezone().toDate();
     var min_chars = 3;
     var rel_cals = [];
@@ -435,9 +436,9 @@
                 var job_date_v = str_date ? str_date : job_date.getRawValue();
                 var bl  = hidden_baseline.getValue();
                 var json_res = job_grid_data({ warn: false });
-
+                var job_date_standard_formatted = moment(job_date_v, date_format).format("YYYY-MM-DD");
                 Baseliner.ajaxEval( '/job/build_job_window',
-                    { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: picker_format  },
+                    { bl: bl, job_date: job_date_standard_formatted, job_contents: json_res, date_format: '%Y-%m-%d' },
                     function(res){
                         if( res.success ) {
                             // debugger;
