@@ -25,9 +25,9 @@ subtest 'tree_object_depend: returns dependencies tree correctly' => sub {
 
     my $project = TestUtils->create_ci('project');
     my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser');
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser' );
 
-    my $variable = TestUtils->create_ci( 'variable', name => 'My variable');
+    my $variable = TestUtils->create_ci( 'variable', name => 'My variable' );
     my $mid = $variable->mid;
 
     my $variable2 = TestUtils->create_ci( 'variable', name => 'My other variable', created_by => $user->username );
@@ -53,7 +53,7 @@ subtest 'tree_object_depend: returns dependencies tree correctly' => sub {
             'mid'         => "$mid2",
             'modified_by' => undef,
             'created_by'  => 'MyUser',
-            'bl'          => [ '*' ],
+            'bl'          => ['*'],
             'type'        => 'object',
             'collection'  => 'variable',
             'moniker'     => undef,
@@ -67,10 +67,10 @@ subtest 'tree_object_depend: returns dependencies tree correctly' => sub {
 subtest 'tree_objects: returns created_by' => sub {
     _setup();
 
-    my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser');
-    my $variable = TestUtils->create_ci('folder', mid => '222', created_by => $user->username);
+    my $project    = TestUtils->create_ci('project');
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser' );
+    my $variable   = TestUtils->create_ci( 'folder', mid => '222', created_by => $user->username );
     my $controller = _build_controller();
 
     my ( $count, @tree ) = $controller->tree_objects();
@@ -81,7 +81,7 @@ subtest 'tree_objects: returns created_by' => sub {
 subtest 'tree_objects: returns bls from bl' => sub {
     _setup();
 
-    TestUtils->create_ci('generic_server', hostname => 'foo', bl => 'DEV');
+    TestUtils->create_ci( 'generic_server', hostname => 'foo', bl => 'DEV' );
 
     my $controller = _build_controller();
     my ( $count, @tree ) = $controller->tree_objects();
@@ -92,8 +92,8 @@ subtest 'tree_objects: returns bls from bl' => sub {
 subtest 'tree_objects: converts bls mids to bl list' => sub {
     _setup();
 
-    my $bl1 = TestUtils->create_ci('bl', bl => 'DEV', name => 'DEV');
-    my $bl2 = TestUtils->create_ci('bl', bl => 'PROD', name => 'PROD');
+    my $bl1 = TestUtils->create_ci( 'bl', bl => 'DEV',  name => 'DEV' );
+    my $bl2 = TestUtils->create_ci( 'bl', bl => 'PROD', name => 'PROD' );
 
     TestUtils->create_ci( 'status', bls => [ $bl1->mid, $bl2->mid ] );
 
@@ -454,6 +454,66 @@ subtest 'edit: sets save to true when has permission' => sub {
       };
 };
 
+subtest 'update: updates status names' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $id_rule     = _create_changeset_form();
+    my $id_category = TestSetup->create_category(
+        name         => 'Changeset',
+        id_rule      => $id_rule,
+        is_changeset => 1
+    );
+
+    my $status = TestUtils->create_ci( 'status', name => 'Current_Name', moniker => 'CA', type => 'I' );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_category,
+        project     => $project,
+        status      => $status
+    );
+
+    my $c = _build_c(
+        req => {
+            params => {
+                mid       => $status->mid,
+                form_data => {
+                    name    => 'New_Name',
+                    moniker => 'CN',
+                    active  => 'on',
+                },
+                action     => 'edit',
+                collection => 'status'
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->update($c);
+
+    my $updated_topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    is $updated_topic->{category_status_name}, 'New_Name';
+    is $updated_topic->{category_status}->{_sort}->{name}, 'New_Name';
+    is $updated_topic->{category_status}->{moniker}, 'CN';
+    is $updated_topic->{category_status}->{name},    'New_Name';
+    is $updated_topic->{name_status}, 'New_Name';
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            'success' => \1,
+            'msg'     => 'CI New_Name saved ok',
+            'mid'     => $status->mid
+        }
+      };
+};
+
 subtest 'load: throws when no mid' => sub {
     _setup();
 
@@ -617,15 +677,15 @@ subtest 'delete: asks user before deleting a project' => sub {
         'json' => {
             'info' => [
                 {
-                    'ci_name' => 'Project1',
-                    'number_user'  => '3'
+                    'ci_name'     => 'Project1',
+                    'number_user' => '3'
                 },
                 {
-                    'ci_name' => 'Project2',
-                    'number_user'  => '1'
+                    'ci_name'     => 'Project2',
+                    'number_user' => '1'
                 }
             ],
-            'success' => \1,
+            'success'            => \1,
             'needs_confirmation' => 1
         }
       };
@@ -748,17 +808,18 @@ subtest 'delete: deletes area when confirmed' => sub {
     $controller->delete($c);
 
     cmp_deeply $c->stash,
-        {
+      {
         'json' => {
             'info' => [
-                {   'ci_name'     => 'AREA 2',
+                {
+                    'ci_name'     => 'AREA 2',
                     'number_user' => '1'
                 }
             ],
-            'success' => \1,
+            'success'            => \1,
             'needs_confirmation' => 1
         }
-        };
+      };
 };
 
 subtest 'delete: throws error when no permission to delete ci' => sub {
@@ -1075,7 +1136,7 @@ subtest 'tree_object_depend: returns dependencies tree' => sub {
             'mid'         => "$mid2",
             'modified_by' => undef,
             'created_by'  => undef,
-            'bl'          => [ '*' ],
+            'bl'          => ['*'],
             'type'        => 'object',
             'collection'  => 'variable',
             'moniker'     => undef,
@@ -1230,7 +1291,7 @@ subtest 'attach_revisions: does not create already existing GitRevision' => sub 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     TestGit->commit($repo);
 
-    TestUtils->create_ci('GitRevision', name => 'master', sha => 'master');
+    TestUtils->create_ci( 'GitRevision', name => 'master', sha => 'master' );
 
     my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
@@ -1301,17 +1362,17 @@ subtest 'service_run: throws an error when user does not have access' => sub {
 
     my $controller = _build_controller();
 
-       my $c = mock_catalyst_c(
+    my $c = mock_catalyst_c(
         req => {
             params => {
-                mid         => $repo->mid,
-                classname   => 'BaselinerX::CI::GitRepository',
-                key         => "service.gitrepository.create_tags",
-                data   => JSON::encode_json(
+                mid       => $repo->mid,
+                classname => 'BaselinerX::CI::GitRepository',
+                key       => "service.gitrepository.create_tags",
+                data      => JSON::encode_json(
                     {
-                        'existing'      => 'detect',
-                        'tag_filter'    => '',
-                        'ref'           => ''
+                        'existing'   => 'detect',
+                        'tag_filter' => '',
+                        'ref'        => ''
                     }
                 )
             }
@@ -1319,7 +1380,7 @@ subtest 'service_run: throws an error when user does not have access' => sub {
         username => $user->username
     );
 
-    like exception{
+    like exception {
         $controller->service_run($c);
     }, qr/User user not authorized to admin CIs of class GitRepository/;
 };
@@ -1327,7 +1388,7 @@ subtest 'service_run: throws an error when user does not have access' => sub {
 subtest 'service_run: service is run if user have permissions to do it' => sub {
     _setup();
 
-    TestUtils->create_ci('bl', bl => 'TEST');
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
 
     my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
     TestGit->commit($repo);
@@ -1338,13 +1399,13 @@ subtest 'service_run: service is run if user have permissions to do it' => sub {
 
     my $controller = _build_controller();
 
-       my $c = mock_catalyst_c(
+    my $c = mock_catalyst_c(
         req => {
             params => {
-                mid         => $repo->mid,
-                classname   => "BaselinerX::CI::GitRepository",
-                key         => "service.gitrepository.create_tags",
-                data   => {}
+                mid       => $repo->mid,
+                classname => "BaselinerX::CI::GitRepository",
+                key       => "service.gitrepository.create_tags",
+                data      => {}
             }
         },
         username => $user->username
@@ -1352,15 +1413,16 @@ subtest 'service_run: service is run if user have permissions to do it' => sub {
 
     $controller->service_run($c);
 
-    cmp_deeply $c->stash, {
+    cmp_deeply $c->stash,
+      {
         json => {
-            success     => \1,
-            console     => ignore(),
-            data        => ignore(),
-            js_output   => ignore(),
-            ret         => ignore()
+            success   => \1,
+            console   => ignore(),
+            data      => ignore(),
+            js_output => ignore(),
+            ret       => ignore()
         }
-    }
+      };
 };
 
 subtest 'json_tree: returns selected data' => sub {
