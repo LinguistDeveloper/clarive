@@ -14,7 +14,7 @@
     if(controller == 'gittree'){
         params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: params.repo_mid };
     }else{
-        params_file_revisions = { repo_dir: params.repo_dir, filepath: path, filename: file, rev_num: rev_num, branch: branch, repo_mid: params.repo_mid };
+        params_file_revisions = { first_level: params.first_level, repo_dir: params.repo_dir, filepath: path, filename: file, rev_num: rev_num, branch: branch, repo_mid: params.repo_mid };
     }
     var revisionsStore = new Baseliner.JsonStore({
         autoLoad: true,
@@ -33,7 +33,7 @@
         if(controller == 'gittree'){
             params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl, branch: branch, repo_mid: params.repo_mid };
         }else{
-            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir,repo_mid: params.repo_mid };
+            params_view_file = { first_level: params.first_level,filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir,repo_mid: params.repo_mid };
         }
         Baseliner.ajax_json('/'+controller+'/view_file', params_view_file, function(res){
             revid = res.revid;
@@ -70,7 +70,7 @@
                 if(controller == 'gittree'){
                     params_file_history = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl };
                 }else{
-                    params_file_history = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid, branch: branch, repo_dir: params.repo_dir };
+                    params_file_history = { first_level: params.first_level, filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid, branch: branch, repo_dir: params.repo_dir };
                 }
                 Baseliner.ajax_json('/'+controller+'/get_file_history', params_file_history, function(res){
                     var store = new Ext.data.ArrayStore({
@@ -128,7 +128,7 @@
                 if(controller == 'gittree'){
                     params_view_diff = { repo_dir: params.repo_dir, file: file, rev_num: rev_num, bl: params.bl, controller: controller, file_diff: '_file', repo_mid: params.repo_mid };
                 }else{
-                    params_view_diff = { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch, repo_mid: params.repo_mid };
+                    params_view_diff = { first_level: params.first_level, repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch, repo_mid: params.repo_mid };
                 }
                 cons.destroy();
                 Baseliner.ajaxEval('/comp/view_diff.js', params_view_diff, function(comp){
@@ -146,7 +146,7 @@
                 if(controller == 'gittree'){
                     params_blame = { repo_mid: repo_mid, repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
                 }else{
-                    params_blame = { repo_mid: repo_mid, filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
+                    params_blame = { first_level: params.first_level, repo_mid: repo_mid, filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
                 }
                 Baseliner.ajax_json('/'+controller+'/get_file_blame', params_blame, function(res){
                     if(!res.suported)

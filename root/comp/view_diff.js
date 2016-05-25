@@ -75,7 +75,7 @@
     if(controller == 'gittree'){
         params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: repo_mid };
     }else{
-        params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file, repo_mid: repo_mid };
+        params_view_diff = { first_level: params.first_level, repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file, repo_mid: repo_mid };
     }
 
     var generate_diff = function(res){
