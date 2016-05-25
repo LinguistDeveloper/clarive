@@ -951,41 +951,72 @@ Create or update a CI.
 
 =cut
 sub update : Local {
-    my ($self, $c, $action) = @_;
+    my ( $self, $c, $action ) = @_;
     my $p = $c->req->params;
 
     my $form_data = $p->{form_data};
     _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
+
     # cleanup
     for my $k ( keys %$form_data ) {
-        delete $p->{$k} if $k =~ /^ext-comp-/
+        delete $p->{$k} if $k =~ /^ext-comp-/;
     }
+
     # don't store in yaml
-    my $name = delete $form_data->{name};
-    my $bl = delete $form_data->{bl};
+    my $name   = delete $form_data->{name};
+    my $bl     = delete $form_data->{bl};
     my $active = $form_data->{active};
     $form_data->{active} = $active = $active eq 'on' ? 1 : 0;
 
-    if( $form_data->{password} && $form_data->{password} eq $Baseliner::CI::password_hide_str ) {
+    if ( $form_data->{password} && $form_data->{password} eq $Baseliner::CI::password_hide_str ) {
         delete $form_data->{password};
     }
-    my $mid = delete $p->{mid};
+    my $mid        = delete $p->{mid};
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
-    my $chi = delete $form_data->{children};   # XXX deprecate this? who uses it?
-    delete $form_data->{version}; # form should not set version
+    my $chi   = delete $form_data->{children};    # XXX deprecate this? who uses it?
+    delete $form_data->{version};                 # form should not set version
 
     try {
-        if( $action eq 'add' ) {
-            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, created_by=>$c->username );
+        if ( $action eq 'add' ) {
+            my $ci = $class->new(
+                name    => $name,
+                bl      => $bl,
+                active  => $active,
+                moniker => delete( $form_data->{moniker} ),
+                %$form_data, created_by => $c->username
+            );
             $ci->save;
             $mid = $ci->mid;
-            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data );
         }
-        elsif( $action eq 'edit' && defined $mid ) {
-            my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
-            $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
+        elsif ( $action eq 'edit' && defined $mid ) {
+            my $ci = ci->find($mid) || _fail _loc 'CI %1 not found', $mid;
+
+            if ( $collection eq 'status' ) {
+                mdb->topic->update(
+                    { 'category_status.mid' => "$mid" },
+                    {
+                        '$set' => {
+                            'name_status'                => $name,
+                            'category_status.name'       => $name,
+                            'category_status._sort.name' => $name,
+                            'category_status.moniker'    => $form_data->{moniker},
+                            'category_status_name'       => $name
+                        }
+                    },
+                    { multiple => 1 }
+                );
+            }
+
+            $ci->update(
+                mid     => $mid,
+                name    => $name,
+                bl      => $bl,
+                active  => $active,
+                moniker => delete( $form_data->{moniker} ),
+                %$form_data, modified_by => $c->username
+            );
             $mid = $ci->mid;
         }
         else {
@@ -993,23 +1024,25 @@ sub update : Local {
         }
 
         # XXX deprecate this?
-        if( $chi ) {
+        if ($chi) {
             my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ];
-            mdb->master_rel->remove({ from_mid=>"$mid" });
-            for my $to_mid ( _array( $cis ) ) {
-                my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js
-                my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
+            mdb->master_rel->remove( { from_mid => "$mid" } );
+            for my $to_mid ( _array($cis) ) {
+                my $rel_type
+                    = $collection . '_' . ci->new($to_mid)->collection;    # XXX consider sending the rel_type from js
+                my $doc = { from_mid => "$mid", to_mid => "$to_mid", rel_type => $rel_type };
                 mdb->master_rel->insert($doc);
-                cache->remove({ mid=>"$to_mid" }); # qr/:$to_mid:/ );
+                cache->remove( { mid => "$to_mid" } );                     # qr/:$to_mid:/ );
             }
         }
-        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+        $c->stash->{json} = { success => \1, msg => _loc( 'CI %1 saved ok', $name ) };
         $c->stash->{json}{mid} = $mid;
-    } catch {
+    }
+    catch {
         my $err = shift;
         $err = $err->message if $err->can('message');
-        _error( $err );
-        $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
+        _error($err);
+        $c->stash->{json} = { success => \0, msg => _loc( 'CI error: %1', $err ) };
     };
 
     $c->forward('View::JSON');
