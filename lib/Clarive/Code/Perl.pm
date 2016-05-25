@@ -24,7 +24,9 @@ EOF
 
     $code = $preamble . $code;
 
-    my $ret = eval $code or die $@;
+    local $@;
+    my $ret = eval $code;
+    die $@ if $@;
 
     return $ret;
 }
