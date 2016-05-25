@@ -145,6 +145,7 @@ method compile_rule(:$rule, :$logging = 0, :$simple_error = 0) {
 
     my $compiler = $self->_build_rule_compiler(
         dsl          => $dsl,
+        ts           => $rule->{ts},
         id_rule      => $rule->{id},
         version_id   => '' . $rule->{_id},
         simple_error => $simple_error,

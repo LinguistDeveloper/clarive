@@ -114,6 +114,44 @@ subtest 'compile: builds package with call method' => sub {
     $rule_compiler->unload;
 };
 
+subtest 'compile: does not compile already compiled rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule();
+
+    my $rule_compiler = _build_rule_compiler(dsl => 'do {}', id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    $rule_compiler = _build_rule_compiler(dsl => 'do {}', id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    $rule_compiler->unload;
+
+    is $rule_compiler->compile_status, 'fresh';
+};
+
+subtest 'compile: recompiles modifed rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule();
+
+    my $rule_compiler = _build_rule_compiler(dsl => 'do {}', id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    mdb->rule->update({id => "$id_rule"}, {'$set' => {ts => '2016-01-01 00:00:01'}});
+
+    $rule_compiler = _build_rule_compiler(dsl => 'do {1}', id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    $rule_compiler->unload;
+
+    is $rule_compiler->compile_status, 'recompiling';
+};
+
 subtest 'catches compile errors' => sub {
     _setup();
 

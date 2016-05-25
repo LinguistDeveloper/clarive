@@ -5,7 +5,7 @@ use Try::Tiny;
 use Module::Loaded qw();
 use Class::Unload;
 use Digest::MD5 ();
-use Baseliner::Utils qw(:logging _now);
+use Baseliner::Utils qw(:logging _now _md5);
 
 has dsl        => qw(is ro isa Str),        default => '';
 has id_rule    => qw(is ro isa Maybe[Str]), default => '';
@@ -75,6 +75,22 @@ sub compile {
 
     my $pkg = $self->package;
     if ( $self->is_loaded ) {
+        if ($self->id_rule) {
+            my $id_rule = '' . $self->id_rule;
+            my $doc     = mdb->rule->find_one(
+                { '$or' => [  { _id     => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] },
+                { _id   => 0, rule_tree => 0 } );
+
+            if ($doc && $doc->{ts} eq $pkg->ts ) {
+                _debug("Cached rule $id_rule is fresh, no need to recompile");
+
+                $self->compile_status('fresh');
+                $self->ts( $doc->{ts} );
+
+                return { err => '', t => '' };
+            }
+        }
+
         _debug("Recompiling loaded rule $pkg...");
         $self->compile_status('recompiling');
         $self->unload;
