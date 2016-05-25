@@ -19,7 +19,7 @@ has compile_error => qw(is rw isa Any);
 has runtime_error => qw(is rw isa Any);
 has return_value  => qw(is rw isa Any);
 has compile_status => qw(is rw isa Str), default => 'none';
-has ts => qw(is rw isa Str), default => sub { mdb->ts };
+has ts => qw(is rw isa Maybe[Str]), default => sub { mdb->ts };
 
 has
   package => qw(is ro isa Str lazy 1),
