@@ -59,6 +59,12 @@ sub setup {
         };
     };
 
+    mdb->sem->drop;
+    mdb->sem_queue->drop;
+
+    mdb->index_all('sem');
+    mdb->index_all('master_seq');
+
     $SIG{__WARN__} = sub {
         push @WARNINGS, longmess( $_[0] );
         warn @_;

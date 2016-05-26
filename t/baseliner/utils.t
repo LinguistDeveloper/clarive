@@ -666,6 +666,18 @@ subtest '_is_binary: return true when path is from a binary file' => sub {
     ok $is_binary;
 };
 
+subtest '_timeout: does nothing when timeout is zero' => sub {
+    my $output = _timeout(
+        0,
+        sub {
+            return 'foo';
+        },
+        'alarm timeout'
+    );
+
+    is $output, 'foo';
+};
+
 subtest '_timeout: returns the scalar return value' => sub {
     my $output = _timeout(
         3,

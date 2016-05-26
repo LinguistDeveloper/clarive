@@ -117,8 +117,6 @@ sub delete_expired_sessions {
     $self->collection->remove({ 'expires' => { '$lt' => time() } });
 }
 
-__PACKAGE__->meta->make_immutable;
-
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

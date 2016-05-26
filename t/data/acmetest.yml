@@ -2,6 +2,9 @@ mongo:
    dbname: acmetest
    client:
       host: 'localhost:27017'
+      timeout: 61000
+      wtimeout: 62000
+      query_timeout: 63000
 cache:
 foo: baz
 baseliner:

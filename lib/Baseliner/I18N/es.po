@@ -3396,15 +3396,7 @@ msgid " . $not_found{$_} . "
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
-msgid "Timeout wating for semaphore: %1s"
-msgstr ""
-
-#: lib/Baseliner/Sem.pm
 msgid "Waiting for semaphore %1 (%2)"
-msgstr ""
-
-#: lib/Baseliner/Sem.pm
-msgid "Cancelled semaphore %1 due to missing record"
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
@@ -3416,15 +3408,19 @@ msgid "Cancelled semaphore %1 due to status %2"
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
-msgid "Taken semaphore %1 (%2), seq %3 from min %4"
+msgid "Timeout waiting for semaphore: %1s"
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
-msgid "Released busy semaphore %1 (%2)"
+msgid "Released semaphore %1 (%2)"
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
-msgid "Released not busy semaphore %1 (%2)"
+msgid "Released cancelled semaphore %1 (%2)"
+msgstr ""
+
+#: lib/Baseliner/Sem.pm
+msgid "Released granted semaphore %1 (%2)"
 msgstr ""
 
 #: lib/Baseliner/Utils.pm
