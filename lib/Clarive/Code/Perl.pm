@@ -16,6 +16,7 @@ sub eval_code {
 use utf8;
 binmode STDOUT, ':utf8';
 binmode STDERR, ':utf8';
+use v5.10;
 use Baseliner::Utils;
 EOF
 
