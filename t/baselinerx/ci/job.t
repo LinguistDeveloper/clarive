@@ -7,6 +7,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
+use Baseliner::Utils qw(_load);
 
 use Capture::Tiny qw(capture);
 
@@ -131,6 +132,62 @@ subtest 'run: runs rule with version tag' => sub {
       ];
 };
 
+subtest 'finish: create notify in event.job.end_step' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $job = _build_ci( changesets => [$changeset], bl => 'QA', projects => $project );
+
+    capture {
+        $job->finish('FINISHED');
+    };
+
+    my @event  = mdb->event->find_one( { event_key => 'event.job.end_step' } );
+    my $event  = _load( $event[0]->{event_data} );
+    my $notify = $event->{notify};
+
+    is_deeply $notify,
+        {
+        status  => 'FINISHED',
+        bl      => $bl->{mid},
+        project => [ $project->{mid} ]
+        };
+
+};
+
+subtest 'finish: creates notify in event.job.end' => sub {
+    _setup();
+    use Data::Dumper;
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $job = _build_ci( changesets => [$changeset], bl => 'QA', step => 'POST', projects => $project );
+
+    capture {
+        $job->finish('CANCELLED');
+    };
+
+    my @event  = mdb->event->find_one( { event_key => 'event.job.end' } );
+    my $event  = _load( $event[0]->{event_data} );
+    my $notify = $event->{notify};
+
+    is_deeply $notify,
+        {
+        status  => 'CANCELLED',
+        bl      => $bl->{mid},
+        project => [ $project->{mid} ]
+        };
+
+};
+
 done_testing;
 
 sub _setup {
@@ -147,6 +204,7 @@ sub _setup {
     mdb->rule->drop;
     mdb->rule_version->drop;
     mdb->job_log->drop;
+    mdb->event->drop;
 
     mdb->rule->insert(
         {

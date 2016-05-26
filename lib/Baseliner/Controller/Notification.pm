@@ -69,6 +69,8 @@ sub list_notifications : Local {
                 data.scopes.category.name
                 data.scopes.category_status.name
                 data.scopes.project.name
+                data.scopes.bl.name
+                data.scopes.status.name
                 data.scopes.field
                 username
                 template_path
@@ -120,6 +122,17 @@ sub list_events : Local {
      } sort $c->registry->starts_with('event.');
 
     $c->stash->{json} = \@events;
+    $c->forward('View::JSON');
+}
+
+sub list_status_end : Local {
+    my ( $self, $c ) = @_;
+
+    my @status = ( 'REJECTED', 'CANCELLED', 'TRAPPED', 'TRAPPED_PAUSED', 'ERROR', 'FINISHED', 'KILLED', 'EXPIRED' );
+
+    my @names_status = map { +{ name => $_ } } @status;
+
+    $c->stash->{json} = { data => \@names_status };
     $c->forward('View::JSON');
 }
 
@@ -208,7 +221,7 @@ sub save_notification : Local {
     try{
         if($p->{event}){
             if (Baseliner::Core::Registry->get( $p->{event} )->notify){
-                my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
+                my $scope = Baseliner::Core::Registry->get( $p->{event} )->notify->{scope};
 
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
             }

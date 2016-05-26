@@ -400,6 +400,12 @@ sub decode_data {
         if($data->{scopes}->{field}){
             $data->{scopes}->{field} = $self->decode_scopes($data,'field');
         }
+        if($data->{scopes}->{bl}){
+            $data->{scopes}->{bl} = $self->decode_scopes($data,'bl');
+        }
+        if($data->{scopes}->{status}){
+            $data->{scopes}->{status} = $self->decode_scopes($data,'status');
+        }
     }
     return $data;
 }
@@ -469,35 +475,51 @@ sub encode_data {
 }
 
 sub encode_scopes {
-    my ($self,$scopes) = @_;
-    if($scopes->{project}){
+    my ( $self, $scopes ) = @_;
+    if ( $scopes->{project} ) {
         my %hash;
-        foreach (_array $scopes->{project}){
+        foreach ( _array $scopes->{project} ) {
             $hash{ $_->{mid} } = $_->{name};
         }
         $scopes->{project} = \%hash;
     }
-    if($scopes->{category_status}){
+    if ( $scopes->{category_status} ) {
         my %hash;
-        foreach (_array $scopes->{category_status}){
+        foreach ( _array $scopes->{category_status} ) {
             $hash{ $_->{mid} } = $_->{name};
         }
         $scopes->{category_status} = \%hash;
     }
-    if($scopes->{category}){
+    if ( $scopes->{category} ) {
         my %hash;
-        foreach (_array $scopes->{category}){
+        foreach ( _array $scopes->{category} ) {
             $hash{ $_->{mid} } = $_->{name};
         }
         $scopes->{category} = \%hash;
     }
-    if($scopes->{field}){
+    if ( $scopes->{field} ) {
         my %hash;
-        foreach (_array $scopes->{field}){
-            $hash{ $_ } = $_;
+        foreach ( _array $scopes->{field} ) {
+            $hash{$_} = $_;
         }
         $scopes->{field} = \%hash;
     }
+    if ( $scopes->{bl} ) {
+        my %hash;
+        foreach ( _array $scopes->{bl} ) {
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $scopes->{bl} = \%hash;
+    }
+    if ( $scopes->{status} ) {
+        my %hash;
+        foreach ( _array $scopes->{status} ) {
+
+            $hash{$_->{mid} } = $_->{name};
+        }
+        $scopes->{status} = \%hash;
+    }
+
     return $scopes;
 }
 
