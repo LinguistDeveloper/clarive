@@ -8866,3 +8866,6 @@ msgstr "FALLO"
 
 msgid "Show Time?"
 msgstr "¿Mostrar hora?"
+
+msgid "Revision %1 has already been selected"
+msgstr "La revisión %1 ya ha sido seleccionada"
