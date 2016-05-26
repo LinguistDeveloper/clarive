@@ -110,6 +110,7 @@ use Exporter::Tidy default => [
     _is_binary
     _chdir
     _timeout
+    _capture_pipe
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2478,6 +2479,124 @@ sub _chdir {
 
         die $error;
     };
+}
+
+sub _capture_pipe {
+    my ( $cb, %params ) = @_;
+
+    my $stdout = '';
+    my $stderr = '';
+    my $ret;
+
+    use Socket;
+    use IO::Socket;
+    use IO::Select;
+    use POSIX ":sys_wait_h";
+
+    socketpair( my $stdout_child_sock, my $stdout_parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+    socketpair( my $stderr_child_sock, my $stderr_parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+    socketpair( my $retval_child_sock, my $retval_parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+
+    $stdout_child_sock->autoflush(1);
+    $stdout_parent_sock->autoflush(1);
+
+    $stderr_child_sock->autoflush(1);
+    $stderr_parent_sock->autoflush(1);
+
+    $retval_child_sock->autoflush(1);
+    $retval_parent_sock->autoflush(1);
+
+    my $s = IO::Select->new();
+    $s->add( $stdout_child_sock );
+    $s->add( $stderr_child_sock );
+    $s->add( $retval_child_sock );
+
+    if ( my $pid = fork ) {
+        close $stdout_parent_sock;
+        close $stderr_parent_sock;
+        close $retval_parent_sock;
+
+        while (1) {
+            my $res = waitpid( $pid, WNOHANG );
+
+            if ( $res == -1 ) {
+                say "Some error occurred ", $? >> 8;
+                last;
+            }
+
+            if ($res) {
+                say "stdout_child_sock $res ended with ", $? >> 8;
+                last;
+            }
+
+            if ( my @fh = $s->can_read(0.1) ) {
+                foreach my $fh (@fh) {
+                    my $rcount = sysread $fh, my $buffer, 1024;
+
+                    if ($fh eq $stdout_child_sock) {
+                        $stdout .= $buffer;
+
+                        $params{stdout}->($buffer) if $params{stdout};
+                    }
+                    elsif ($fh eq $stderr_child_sock) {
+                        if ($params{merge}) {
+                            $stdout .= $buffer;
+
+                            $params{stdout}->($buffer) if $params{stdout};
+                        }
+                        else {
+                            $stderr .= $buffer;
+
+                            $params{stderr}->($buffer) if $params{stderr};
+                        }
+                    }
+                    else {
+                        $ret .= $buffer;
+                    }
+                }
+            }
+        }
+
+        close $stdout_child_sock;
+        close $stderr_child_sock;
+        close $retval_child_sock;
+
+        {
+            no strict;
+
+            $ret = eval $ret;
+        }
+
+        return {
+            stdout    => $stdout,
+            stderr    => $stderr,
+            ret       => $ret->{ret},
+            exit_code => $ret->{error} ? 255 : $? >> 8,
+            $ret->{error} ? ( error => $ret->{error} ) : (),
+          }
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        open *STDOUT, '>&', $stdout_parent_sock;
+        open *STDERR, '>&', $stderr_parent_sock;
+
+        local $@;
+        my $ret = eval { $cb->() };
+        use Data::Dumper;
+        my $dump = Dumper( { ret => $ret, error => "$@" } );
+
+        print $retval_parent_sock $dump;
+
+        close $stdout_child_sock;
+        close $stderr_child_sock;
+        close $retval_child_sock;
+
+        exit;
+    }
 }
 
 1;

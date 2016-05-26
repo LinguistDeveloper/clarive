@@ -31,6 +31,7 @@ use Baseliner::Utils qw(
   _file
   _chdir
   _timeout
+  _capture_pipe
 );
 use Clarive::mdb;
 
@@ -64,146 +65,145 @@ subtest '_pointer throws on invalid structures' => sub {
 ####### query_grep
 
 my @rows = (
-    { id=>'bart', name=>'Bart Simpson' },
-    { id=>'lisa', name=>'Lisa Simpson' },
-    { id=>'moe', name=>'Moe' },
-    { id=>'kasim', name=>'Kasim' },
+    { id => 'bart',  name => 'Bart Simpson' },
+    { id => 'lisa',  name => 'Lisa Simpson' },
+    { id => 'moe',   name => 'Moe' },
+    { id => 'kasim', name => 'Kasim' },
 );
 
 subtest 'query_grep finds rows single field' => sub {
-    is scalar query_grep( query=>'bart', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'"Bart"', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'simpson', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'Simpson', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'"sim"', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'"Sim"', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'"Sim" -bart', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'+Si', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'ba +Si', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'li ba +Si', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'ba?t', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query => 'bart',        fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Bart"',      fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => 'simpson',     fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simpson',     fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '"sim"',       fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Sim"',       fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '"Sim" -bart', fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '+Si',         fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'ba +Si',      fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => 'li ba +Si',   fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'ba?t',        fields => ['name'], rows => \@rows ), 1;
+
     #is scalar query_grep( query=>'"Sim" -"Bart"', fields=>['name'], rows=>\@rows ), 1;
 };
 
 subtest 'query_grep finds rows single field masked' => sub {
-    is scalar query_grep( query=>'S?mp', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'Simp*', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'+lisa Simp*', fields=>['name'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'+lisa Simp*', fields=>['name'], rows=>\@rows ), 1;
+    is scalar query_grep( query => 'S?mp',        fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simp*',       fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
 };
 
 subtest 'query_grep all fields' => sub {
-    is scalar query_grep( query=>'Simp', all_fields=>1, rows=>\@rows ), 2;
-    is scalar query_grep( query=>'bart', all_fields=>1, rows=>\@rows ), 1;
+    is scalar query_grep( query => 'Simp', all_fields => 1, rows => \@rows ), 2;
+    is scalar query_grep( query => 'bart', all_fields => 1, rows => \@rows ), 1;
 };
 
 subtest 'query_grep finds rows single field regexp' => sub {
-    is scalar query_grep( query=>'/S..p/', fields=>['name'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'/S.*ps/', fields=>['name'], rows=>\@rows ), 2;
+    is scalar query_grep( query => '/S..p/',  fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '/S.*ps/', fields => ['name'], rows => \@rows ), 2;
 };
 
 subtest 'query_grep finds rows multi-field' => sub {
-    is scalar query_grep( query=>'bart', fields=>['name','id'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'bart Bart', fields=>['name','id'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'simpson', fields=>['name','id'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'Simpson', fields=>['name','id'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'"sim"', fields=>['name','id'], rows=>\@rows ), 1;
-    is scalar query_grep( query=>'"Sim"', fields=>['name','id'], rows=>\@rows ), 2;
-    is scalar query_grep( query=>'"Sim" -bart', fields=>['name','id'], rows=>\@rows ), 1;
+    is scalar query_grep( query => 'bart',        fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => 'bart Bart',   fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => 'simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => '"sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => '"Sim" -bart', fields => [ 'name', 'id' ], rows => \@rows ), 1;
 };
 
 subtest 'query_grep finds none' => sub {
-    is scalar query_grep( query=>'hank', fields=>['name','id'], rows=>\@rows ), 0;
-    is scalar query_grep( query=>'"bart"', fields=>['name'], rows=>\@rows ), 0;
-    is scalar query_grep( query=>'-k -m -l -b', fields=>['name'], rows=>\@rows ), 0;
+    is scalar query_grep( query => 'hank', fields => [ 'name', 'id' ], rows => \@rows ), 0;
+    is scalar query_grep( query => '"bart"',      fields => ['name'], rows => \@rows ), 0;
+    is scalar query_grep( query => '-k -m -l -b', fields => ['name'], rows => \@rows ), 0;
 };
 
 subtest '_unique: returns unique fields' => sub {
-    is_deeply [_unique()], [()];
-    is_deeply [_unique('')], [('')];
-    is_deeply [_unique('', undef)], [('', undef)];
-    is_deeply [_unique(undef, undef)], [(undef)];
+    is_deeply [ _unique() ],   [ () ];
+    is_deeply [ _unique('') ], [ ('') ];
+    is_deeply [ _unique( '', undef ) ], [ ( '', undef ) ];
+    is_deeply [ _unique( undef, undef ) ], [ (undef) ];
 
-    is_deeply [_unique('foo', undef, 'foo')], [('foo', undef)];
-    is_deeply [_unique('foo', 'foo')], [('foo')];
-    is_deeply [_unique('foo', 'bar', 'foo')], [('foo', 'bar')];
+    is_deeply [ _unique( 'foo', undef, 'foo' ) ], [ ( 'foo', undef ) ];
+    is_deeply [ _unique( 'foo', 'foo' ) ], [ ('foo') ];
+    is_deeply [ _unique( 'foo', 'bar', 'foo' ) ], [ ( 'foo', 'bar' ) ];
 };
 
 subtest '_array' => sub {
-    is_deeply [_array(undef, '', 0)], [0];
-    is_deeply [_array([undef, '', 0])], [0];
+    is_deeply [ _array( undef, '', 0 ) ], [0];
+    is_deeply [ _array( [ undef, '', 0 ] ) ], [0];
 
-    is_deeply [_array(qw/foo bar baz/)], [(qw/foo bar baz/)];
-    is_deeply [_array([qw/foo bar baz/])], [(qw/foo bar baz/)];
+    is_deeply [ _array(qw/foo bar baz/) ], [ (qw/foo bar baz/) ];
+    is_deeply [ _array( [qw/foo bar baz/] ) ], [ (qw/foo bar baz/) ];
 
-    is_deeply [_array({}, undef, {})], [{}, {}];
-    is_deeply [_array([{}, undef, {}])], [{}, {}];
+    is_deeply [ _array( {}, undef, {} ) ], [ {}, {} ];
+    is_deeply [ _array( [ {}, undef, {} ] ) ], [ {}, {} ];
 };
 
 subtest '_to_camel_case: camelize strings' => sub {
-    is _to_camel_case(''), '';
-    is _to_camel_case('foo'), 'foo';
-    is _to_camel_case('foo_bar'), 'fooBar';
-    is _to_camel_case('foo_bar_'), 'fooBar_';
-    is _to_camel_case('_foo_bar'), '_fooBar';
+    is _to_camel_case(''),                    '';
+    is _to_camel_case('foo'),                 'foo';
+    is _to_camel_case('foo_bar'),             'fooBar';
+    is _to_camel_case('foo_bar_'),            'fooBar_';
+    is _to_camel_case('_foo_bar'),            '_fooBar';
     is _to_camel_case('____foo_____bar____'), '_fooBar_';
 };
 
-
 subtest 'parse_vars: parses vars' => sub {
     is parse_vars('foo'), 'foo';
-    is parse_vars('${foo}', {foo => 'bar'}), 'bar';
+    is parse_vars( '${foo}', { foo => 'bar' } ), 'bar';
 };
 
 subtest 'ns_split: splits namespace' => sub {
-    is_deeply( [Util->ns_split('')], ['', '']);
-    is_deeply( [Util->ns_split('foo/bar')], ['foo', 'bar']);
-    is_deeply( [Util->ns_split('/bar')], ['', 'bar']);
-    is_deeply( [Util->ns_split('foo/')], ['foo', '']);
+    is_deeply( [ Util->ns_split('') ],        [ '',    '' ] );
+    is_deeply( [ Util->ns_split('foo/bar') ], [ 'foo', 'bar' ] );
+    is_deeply( [ Util->ns_split('/bar') ],    [ '',    'bar' ] );
+    is_deeply( [ Util->ns_split('foo/') ],    [ 'foo', '' ] );
 };
 
-
-subtest 'in_range: checks that numbers are in range' =>  sub {
-    ok !(Util->in_range());
-    ok (Util->in_range( 0, '0-'));
-    ok (Util->in_range(11, '1,2,3,10-'));
-    ok (Util->in_range(999999, '1,2,3,10-'));
-    ok !(Util->in_range(7, '1,2,3,10-'));
+subtest 'in_range: checks that numbers are in range' => sub {
+    ok !( Util->in_range() );
+    ok( Util->in_range( 0,      '0-' ) );
+    ok( Util->in_range( 11,     '1,2,3,10-' ) );
+    ok( Util->in_range( 999999, '1,2,3,10-' ) );
+    ok !( Util->in_range( 7, '1,2,3,10-' ) );
 };
 
 subtest 'icon_path: builds absolute icon path' => sub {
-    is (Util->icon_path('foo/'),'foo/');
-    is (Util-> icon_path('/foo'), '/foo');
-    is (Util-> icon_path('foo.bar'), '/static/images/icons/foo.bar');
-    is (Util-> icon_path('foo'), '/static/images/icons/foo.png' );
+    is( Util->icon_path('foo/'),    'foo/' );
+    is( Util->icon_path('/foo'),    '/foo' );
+    is( Util->icon_path('foo.bar'), '/static/images/icons/foo.bar' );
+    is( Util->icon_path('foo'),     '/static/images/icons/foo.png' );
 };
 
 subtest '_replace_tags: change < and >' => sub {
-    is (Util->_replace_tags('<'),'&lt;');
-    is (Util->_replace_tags('>'),'&gt;');
-    is (Util->_replace_tags(''),'');
-    is (Util->_replace_tags('<string>'),'&lt;string&gt;');
+    is( Util->_replace_tags('<'),        '&lt;' );
+    is( Util->_replace_tags('>'),        '&gt;' );
+    is( Util->_replace_tags(''),         '' );
+    is( Util->_replace_tags('<string>'), '&lt;string&gt;' );
 };
 
 subtest '_name_to_id: converts name to id' => sub {
-    is (Util->_name_to_id(undef), undef);
-    is (Util->_name_to_id(''), '');
-    is (Util->_name_to_id('ab    foo'), 'ab_foo');
-    is (Util->_name_to_id('foo?bar'), 'foo_bar');
-    is (Util->_name_to_id('ab_____foo'),'ab_foo');
-    is (Util->_name_to_id('foobar__'),'foobar');
-    is (Util->_name_to_id('_foobar'),'foobar');
-    is (Util->_name_to_id('foobar'),'foobar');
-    is (Util->_name_to_id('__foo__  ?bar__'),'foo_bar');
-    is (Util->_name_to_id('FOO'),'foo');
+    is( Util->_name_to_id(undef),             undef );
+    is( Util->_name_to_id(''),                '' );
+    is( Util->_name_to_id('ab    foo'),       'ab_foo' );
+    is( Util->_name_to_id('foo?bar'),         'foo_bar' );
+    is( Util->_name_to_id('ab_____foo'),      'ab_foo' );
+    is( Util->_name_to_id('foobar__'),        'foobar' );
+    is( Util->_name_to_id('_foobar'),         'foobar' );
+    is( Util->_name_to_id('foobar'),          'foobar' );
+    is( Util->_name_to_id('__foo__  ?bar__'), 'foo_bar' );
+    is( Util->_name_to_id('FOO'),             'foo' );
 };
 
 subtest '_size_unit: human readable format' => sub {
-    is_deeply ( [Util->_size_unit()], ['0','bytes']);
-    is_deeply ( [Util->_size_unit(500)], ['500','bytes']);
-    is_deeply ( [Util->_size_unit(1050)], ['1','KB']);
-    is_deeply ( [Util->_size_unit(10000000)], ['9.54','MB']);
-    is_deeply ( [Util->_size_unit(10000000000)], ['9.31','GB']);
+    is_deeply( [ Util->_size_unit() ],            [ '0',    'bytes' ] );
+    is_deeply( [ Util->_size_unit(500) ],         [ '500',  'bytes' ] );
+    is_deeply( [ Util->_size_unit(1050) ],        [ '1',    'KB' ] );
+    is_deeply( [ Util->_size_unit(10000000) ],    [ '9.54', 'MB' ] );
+    is_deeply( [ Util->_size_unit(10000000000) ], [ '9.31', 'GB' ] );
 };
 
 subtest 'job_icon: builds and icon from status' => sub {
@@ -221,65 +221,65 @@ subtest 'job_icon: builds and icon from status' => sub {
 };
 
 subtest '_cut: joins paths' => sub {
-    is (Util->_cut(0,'\foo','\static\images'),'\static\images');
-    is (Util->_cut(1,'\foo','\static\images'),'\static\images\foo');
-    is (Util->_cut(2,'\bar', '\static\images'),'\static\images\bar\bar');
+    is( Util->_cut( 0, '\foo', '\static\images' ), '\static\images' );
+    is( Util->_cut( 1, '\foo', '\static\images' ), '\static\images\foo' );
+    is( Util->_cut( 2, '\bar', '\static\images' ), '\static\images\bar\bar' );
 };
 
 subtest 'is_number: checks if is a number' => sub {
-    is (Util->is_number('123'),1);
-    is (Util->is_number(123),1);
-    is (Util->is_number('abc'),'');
-    ok (Util->is_number('1.8'));
+    is( Util->is_number('123'), 1 );
+    is( Util->is_number(123),   1 );
+    is( Util->is_number('abc'), '' );
+    ok( Util->is_number('1.8') );
 };
 
 subtest 'is_int: checks if is an integer' => sub {
-    is (Util->is_int('abc'),'');
-    is (Util->is_int(12.11),'');
-    is (Util->is_int('1234'),1);
-    is (Util->is_int(1234),1);
+    is( Util->is_int('abc'),  '' );
+    is( Util->is_int(12.11),  '' );
+    is( Util->is_int('1234'), 1 );
+    is( Util->is_int(1234),   1 );
 };
 
 subtest '_trim: remove whitespaces at the beginning and at the end' => sub {
-    is (Util->_trim(),'');
-    is (Util->_trim('   a'),'a');
-    is (Util->_trim('       foo'),'foo');
-    is (Util->_trim('ab   cd'),'ab   cd');
-    is (Util->_trim('    text    '), 'text');
+    is( Util->_trim(),               '' );
+    is( Util->_trim('   a'),         'a' );
+    is( Util->_trim('       foo'),   'foo' );
+    is( Util->_trim('ab   cd'),      'ab   cd' );
+    is( Util->_trim('    text    '), 'text' );
 };
 
 subtest '_bool: converts value to 0 or 1' => sub {
-    is (Util->_bool(),'0');
-    is (Util->_bool('foo'),'1');
-    is (Util->_bool(10),'1');
-    is (Util->_bool('true'),'1');
-    is (Util->_bool('on'),'1');
-    is (Util->_bool('off'),'0');
-    is (Util->_bool('false'),'0');
+    is( Util->_bool(),        '0' );
+    is( Util->_bool('foo'),   '1' );
+    is( Util->_bool(10),      '1' );
+    is( Util->_bool('true'),  '1' );
+    is( Util->_bool('on'),    '1' );
+    is( Util->_bool('off'),   '0' );
+    is( Util->_bool('false'), '0' );
 };
 
 subtest '_markdown_escape: escapes special symbols' => sub {
-    is (Util->_markdown_escape('(foo.bar'),'\(foo\.bar');
-    is (Util->_markdown_escape('(foo__bar'),'\(foo\_\_bar');
+    is( Util->_markdown_escape('(foo.bar'),  '\(foo\.bar' );
+    is( Util->_markdown_escape('(foo__bar'), '\(foo\_\_bar' );
 };
 
 subtest '_markup_escape: encodes special symbols' => sub {
-    is (Util->_markup_escape('\*'),'&#42;');
-    is (Util->_markup_escape('\`'),'&#96;');
-    is (Util->_markup_escape('\]'),'&#93;');
+    is( Util->_markup_escape('\*'), '&#42;' );
+    is( Util->_markup_escape('\`'), '&#96;' );
+    is( Util->_markup_escape('\]'), '&#93;' );
 };
 
 subtest '_markup_unescape: decodes special symbols' => sub {
-    is (Util->_markup_unescape('&#42;'),'*');
-    is (Util->_markup_unescape('&#96;'),'`');
-    is (Util->_markup_unescape('&#92;'),'\\');
+    is( Util->_markup_unescape('&#42;'), '*' );
+    is( Util->_markup_unescape('&#96;'), '`' );
+    is( Util->_markup_unescape('&#92;'), '\\' );
 };
 
 subtest '_markup: converts markup to html' => sub {
-    is (Util->_markup('**$foo**'),'<span><b>$foo</b></span>');
-    is (Util->_markup('*$foo*'),'<b>$foo</b>');
-    is (Util->_markup('`$foo`'),'<code>$foo</code>');
-    is (Util->_markup('`*$foo*`'),'<code><b>$foo</b></code>');
+    is( Util->_markup('**$foo**'), '<span><b>$foo</b></span>' );
+    is( Util->_markup('*$foo*'),   '<b>$foo</b>' );
+    is( Util->_markup('`$foo`'),   '<code>$foo</code>' );
+    is( Util->_markup('`*$foo*`'), '<code><b>$foo</b></code>' );
 };
 
 subtest '_trend_line: calculates trend' => sub {
@@ -295,7 +295,7 @@ subtest '_trend_line: calculates trend with special cases' => sub {
 
 subtest '_strip_html: strips html' => sub {
     is _strip_html('<b>Bold</b>'), 'Bold';
-    is _strip_html('<b><script>alert!</script>Bold</b>', rules => {b => []}), '<b>Bold</b>';
+    is _strip_html( '<b><script>alert!</script>Bold</b>', rules => { b => [] } ), '<b>Bold</b>';
 };
 
 subtest '_strip_html_editor: strips html preserving allowed html formatting' => sub {
@@ -437,8 +437,8 @@ subtest '_md5: calculates md5 of a random string when no args' => sub {
 
 subtest '_md5: calculates md5 of a string' => sub {
     like _md5('hello'), qr/^[a-f0-9]{32}$/;
-    like _md5('hello', 'there'), qr/^[a-f0-9]{32}$/;
-    like _md5('привет', 'there'), qr/^[a-f0-9]{32}$/;
+    like _md5( 'hello',        'there' ), qr/^[a-f0-9]{32}$/;
+    like _md5( 'привет', 'there' ), qr/^[a-f0-9]{32}$/;
 };
 
 subtest '_md5: calculates md5 of a file' => sub {
@@ -451,7 +451,7 @@ subtest '_md5: calculates md5 of a file' => sub {
 
 subtest '_md5: calculates md5 of a with unicode' => sub {
     my $fh = tempfile();
-    print $fh Encode::encode('UTF-8', 'привет');
+    print $fh Encode::encode( 'UTF-8', 'привет' );
     seek $fh, 0, 0;
 
     is _md5($fh), '608333adc72f545078ede3aad71bfe74';
@@ -460,7 +460,6 @@ subtest '_md5: calculates md5 of a with unicode' => sub {
 subtest 'hash_diff_ignore_empty: returns modified field' => sub {
     my $old_values = { a => 'old_value', b => 'b', c => 'c' };
     my $new_values = { a => 'new_value', b => 'b', c => 'c' };
-
 
     my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
 
@@ -505,38 +504,38 @@ subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
 
 subtest 'decode_json_safe: catches json errors and sets default value' => sub {
     is_deeply _decode_json_safe('asdfasdf'), {};
-    is_deeply _decode_json_safe('asdfasdf', 'default_value'), 'default_value';
-    is_deeply _decode_json_safe('{"foo":"bar"}'), {foo => 'bar'};
+    is_deeply _decode_json_safe( 'asdfasdf', 'default_value' ), 'default_value';
+    is_deeply _decode_json_safe('{"foo":"bar"}'), { foo => 'bar' };
 };
 
 subtest '_json_pointer: get' => sub {
-    my $stash = { aa=>{ bb=>22 } };
-    is (Util->_json_pointer($stash,'/aa/bb'), 22);
+    my $stash = { aa => { bb => 22 } };
+    is( Util->_json_pointer( $stash, '/aa/bb' ), 22 );
 };
 
 subtest '_json_pointer: set' => sub {
-    my $stash = { aa=>{ bb=>22 } };
-    Util->_json_pointer($stash,'/aa/bb',33);
-    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
+    my $stash = { aa => { bb => 22 } };
+    Util->_json_pointer( $stash, '/aa/bb', 33 );
+    is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
 };
 
 subtest '_json_pointer: get/set arrays' => sub {
-    my $stash = { aa=>{ bb=>[33,{ zz=>22 }] } };
-    Util->_json_pointer($stash,'/aa/bb/1/zz',99);
-    is ( Util->_json_pointer($stash,'/aa/bb/1/zz'), 99 );
-    is ( Util->_json_pointer($stash,'/aa/bb/0'), 33 );
+    my $stash = { aa => { bb => [ 33, { zz => 22 } ] } };
+    Util->_json_pointer( $stash, '/aa/bb/1/zz', 99 );
+    is( Util->_json_pointer( $stash, '/aa/bb/1/zz' ), 99 );
+    is( Util->_json_pointer( $stash, '/aa/bb/0' ),    33 );
 };
 
 subtest '_json_pointer: set non-pointers' => sub {
-    my $stash = { aa=>{ bb=>22 } };
+    my $stash = { aa => { bb => 22 } };
 
-    Util->_json_pointer($stash,'aa/bb',77);
-    is ( Util->_json_pointer($stash,'aa/bb'), 77 );
-    is ( $stash->{'aa/bb'}, 77 );
+    Util->_json_pointer( $stash, 'aa/bb', 77 );
+    is( Util->_json_pointer( $stash, 'aa/bb' ), 77 );
+    is( $stash->{'aa/bb'}, 77 );
 
-    Util->_json_pointer($stash,'//aa/bb',88);
-    is ( Util->_json_pointer($stash,'//aa/bb'), 88 );
-    is ( $stash->{'/aa/bb'}, 88 );
+    Util->_json_pointer( $stash, '//aa/bb', 88 );
+    is( Util->_json_pointer( $stash, '//aa/bb' ), 88 );
+    is( $stash->{'/aa/bb'}, 88 );
 };
 
 subtest '_is_binary: thows an exception when parameter size is 0' => sub {
@@ -544,7 +543,7 @@ subtest '_is_binary: thows an exception when parameter size is 0' => sub {
 };
 
 subtest '_is_binary: thows an exception when parameter size is greater than 1' => sub {
-    like exception { _is_binary( data =>'data', path =>'/my_path' ) }, qr/sub is_bianry needs one parameter/;
+    like exception { _is_binary( data => 'data', path => '/my_path' ) }, qr/sub is_bianry needs one parameter/;
 };
 
 subtest '_is_binary: thows an exception when parameter is not the correct one' => sub {
@@ -552,56 +551,56 @@ subtest '_is_binary: thows an exception when parameter is not the correct one' =
 };
 
 subtest '_is_binary: return false when data is not binary' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/foo";
 
     TestUtils->write_file( "foobar", $filename );
     my $file = Util->_file($filename);
     my $data = scalar $file->slurp;
 
-    my $is_binary = Util->_is_binary( data=> $data );
+    my $is_binary = Util->_is_binary( data => $data );
 
     ok !$is_binary;
 };
 
 subtest '_is_binary: return false when fh is not from a binary file' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/foo";
 
     TestUtils->write_file( "foobar", $filename );
     my $file = Util->_file($filename);
 
-    my $is_binary = Util->_is_binary( fh=> $file->open() );
+    my $is_binary = Util->_is_binary( fh => $file->open() );
 
     ok !$is_binary;
 };
 
 subtest '_is_binary: return false when path is not from a binary file' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/foo";
 
     TestUtils->write_file( "foobar", $filename );
 
-    my $is_binary = Util->_is_binary( path=> $filename );
+    my $is_binary = Util->_is_binary( path => $filename );
 
     ok !$is_binary;
 };
 
 subtest '_is_binary: return true when data is binary' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/foo";
 
     TestUtils->write_file( "foobar", $filename );
     my $file = Util->_file($filename);
     my $data = scalar $file->slurp;
 
-    my $is_binary = Util->_is_binary( data=> Util->compress($data) );
+    my $is_binary = Util->_is_binary( data => Util->compress($data) );
 
     ok $is_binary;
 };
 
 subtest '_is_binary: return true when fh is from a binary file' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/file";
     my $tar_file = "$tmp/file.tar.gz";
 
@@ -610,20 +609,20 @@ subtest '_is_binary: return true when fh is from a binary file' => sub {
 
     my $file = Util->_file($tar_file);
 
-    my $is_binary = Util->_is_binary( fh=> $file->open() );
+    my $is_binary = Util->_is_binary( fh => $file->open() );
 
     ok $is_binary;
 };
 
 subtest '_is_binary: return true when path is from a binary file' => sub {
-    my $tmp = tempdir();
+    my $tmp      = tempdir();
     my $filename = "$tmp/file";
     my $tar_file = "$tmp/file.tar.gz";
 
     TestUtils->write_file( "foobar", $filename );
     system("tar cvzf $tmp/file.tar.gz $tmp/file");
 
-    my $is_binary = Util->_is_binary( path=> $tar_file );
+    my $is_binary = Util->_is_binary( path => $tar_file );
 
     ok $is_binary;
 };
@@ -644,12 +643,12 @@ subtest '_timeout: returns the list return value' => sub {
     my @output = _timeout(
         3,
         sub {
-            return (1, 2, 3);
+            return ( 1, 2, 3 );
         },
         'alarm timeout'
     );
 
-    is_deeply \@output, [1, 2, 3];
+    is_deeply \@output, [ 1, 2, 3 ];
 };
 
 subtest '_timeout: rethrows exception' => sub {
@@ -769,6 +768,75 @@ subtest '_chdir: changes back to previous directory in case of error' => sub {
     }, qr/Error/;
 
     is $cwd, getcwd();
+};
+
+subtest 'capture_pipe: returns correct results' => sub {
+    my $output = '';
+
+    my $ret = Util->_capture_pipe(
+        sub {
+            print 'hello';
+            print STDERR 'bye';
+            return 123;
+        }
+    );
+
+    is_deeply $ret,
+      {
+        exit_code => 0,
+        stdout    => 'hello',
+        stderr    => 'bye',
+        ret       => 123
+      };
+};
+
+subtest 'capture_pipe: captures merge outputs' => sub {
+    my $output = '';
+
+    my $ret = Util->_capture_pipe(
+        sub {
+            print 'hello';
+            print STDERR 'bye';
+            return 123;
+        },
+        merge => 1
+    );
+
+    is_deeply $ret,
+      {
+        exit_code => 0,
+        stdout    => 'hellobye',
+        stderr    => '',
+        ret       => 123
+      };
+};
+
+subtest 'capture_pipe: calls a callback on stdout' => sub {
+    my $output = '';
+
+    Util->_capture_pipe(
+        sub {
+            for ( 1 .. 5 ) {
+                print "$_\n";
+            }
+        },
+        stdout => sub {
+            $output .= $_[0] if defined $_[0];
+        }
+    );
+
+    is $output, "1\n2\n3\n4\n5\n";
+};
+
+subtest 'capture_pipe: returns error exit code' => sub {
+    my $ret = Util->_capture_pipe(
+        sub {
+            die 'here';
+        }
+    );
+
+    like $ret->{error}, qr/here/;
+    isnt $ret->{exit_code}, 0;
 };
 
 done_testing;
