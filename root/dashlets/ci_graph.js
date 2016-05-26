@@ -14,6 +14,10 @@
     var div = document.getElementById(id);
     div.style.clear = "left";
 
+    if (mid == "") {
+        mid = undefined;
+    }
+
     if( mid ) {
         div.innerHTML = '';
         var graph = new Baseliner.CIGraph({

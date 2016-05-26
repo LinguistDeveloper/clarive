@@ -4,6 +4,7 @@ index: 400
 icon: ci-grey
 ---
 * Muestra un gráfico de relación entre CIs
+* Se debe seleccionar al menos un elemento.
 * La lista de componentes configurables dentro del dashlet son los siguientes:
 
 <br />
