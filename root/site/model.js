@@ -48,7 +48,7 @@ Baseliner.store.AllProjects = function(c) {
         baseParams: {},
         id: 'id',
         url: '/project/all_projects',
-        fields: ['mid','ns','name','description', 'bl', 'moniker', 'icon']
+        fields: ['mid','ns','name','description']
      }, c));
 };
 Ext.extend( Baseliner.store.AllProjects, Baseliner.JsonStore );
@@ -357,7 +357,7 @@ Baseliner.combo_baseline = function(params) {
         remoteSort: true,
         autoLoad: true,
         totalProperty:"totalCount",
-        baseParams: params.request || {},
+        baseParams: params.request || params,
         id: 'id',
         url: '/baseline/json',
         fields: ['id','name','description', 'active']
@@ -815,20 +815,17 @@ Baseliner.ci_box = function(c) {
     if( security != undefined ) bp.security = 1;
 	if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp }); 
-    var tpl = c.tpl; delete c.tpl;
-    if (!tpl) {
-        tpl = new Ext.XTemplate(
-            '<tpl for=".">'
-            +  '<div class="search-item ui-ci_box-' + c.name + '"><span id="boot" style="background: transparent">'
-            +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
-            +  '<tpl if="this.showClass">'
-            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.class) ]}</span>'
-            +  '</tpl> '
-            + '</div>'
-            +'</tpl>'
-        );
-    }
+    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp });
+    var tpl = new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci_box-' + c.name + '"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong>'
+       +  '<tpl if="this.showClass">'
+       +  ' <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc(values.collection) ]}</span>'
+       +  '</tpl>'
+       +  '</span></div>'
+       +'</tpl>', {showClass : show_class}
+    );
     var displayFieldTpl = new Ext.XTemplate(
         '<tpl for=".">'
        +  '<span id="boot" class="ui-ci_box-' + c.name + '" style="background: transparent">'
