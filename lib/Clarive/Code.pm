@@ -12,6 +12,7 @@ has benchmark   => qw(is rw isa Bool default 0);
 my %LANGS = (
     js   => 'JS',
     perl => 'Perl',
+    sql  => 'SQL',
 );
 
 sub eval_file {

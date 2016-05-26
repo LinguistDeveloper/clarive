@@ -289,140 +289,6 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         } catch(e) { set_output( e ); }
     };
 
-    var submit = function(parms) {
-        if( parms.last ) {
-            parms = last_mode;
-        }
-        last_mode = parms;
-        parms.code = aceditor.getValue();
-        Cla.mask = function(comp, opts) {
-            var el = comp.el;
-            var unmask_id = el.id || '';
-            if( !opts ) opts={};
-
-            var html = function(){/*
-            <div id="boot" style="background: transparent; margin: -5px -5px 5px 5px;">
-                <p><img src="/static/images/icons/loading-fast.gif" />&nbsp;<b>[%= msg %]</b></p>
-                [% if( cancel ) { %]
-                    <center>
-                        <button class="btn btn-default btn-sm" type="button" onclick="javascript:Cla.unmask('[%= unmask_id %]');">Cancel</button>
-                    </center>
-                [% } %]
-            </div>
-            */}.tmpl( Ext.apply({ msg: _('Loading...'), cancel: false, unmask_id: unmask_id }, opts) );
-
-            el.mask(html);
-
-            if( opts.mask_tab ) {
-                Cla.tabpanel().changeTabIcon( panel, "/static/images/loading-fast.gif" );
-            }
-        }
-        Cla.unmask = function(id_or_cmp){
-            var cmp = Ext.isObject(id_or_cmp) ? id_or_cmp : Ext.getCmp(id_or_cmp);
-            if( cmp ) 
-                cmp.el.unmask();
-        }
-        Cla.mask( panel, { msg:_('Running...'), cancel: true, mask_tab: true });
-        
-        save({ c: aceditor.getValue(), o: output.getValue() });
-
-        Cla.ajax_json('/repl/eval', parms, function(res){
-            var data = 
-                ( res.stdout ?  res.stdout + "\n" : "" ) +  
-                ( res.stderr ?  res.stderr + "\n" : "" ) +  
-                res.result ;
-            if( parms.show == 'table' || parms.show == 'data_editor' ) {
-                try {
-                    var d = Ext.util.JSON.decode( res.result );
-                    if( parms.show == 'table' ) 
-                        show_table( d ); 
-                    else
-                        show_data_editor( d );
-                } catch(e){ set_output( e ) };
-            } else {
-                set_output( data );
-                status.setValue( "OK" );
-                document.getElementById( output.getId() ).style.color = "#10c000"; // green
-            }
-            elapsed.setValue( res.elapsed );
-            aceditor.focus();
-            reload_hist();
-
-            Cla.unmask(panel);
-            Cla.tabpanel().changeTabIcon( panel, IC('console') );
-        },
-        function(res){
-            // failure
-            Cla.unmask(panel);
-            Cla.tabpanel().changeTabIcon( panel, IC('console') );
-            status.setValue( "ERROR" );
-
-            if( !res ) return;
-            elapsed.setValue( res.elapsed );
-            var data = 
-                res.error + "\n" + 
-                res.stdout + "\n" + 
-                res.stderr ;
-            set_output( data );
-            document.getElementById( output.getId() ).style.color = "#f54";  // red
-            aceditor.focus();
-            // TODO show error line to user, if any
-            //   var line = res.line ;
-        });
-    }
-    var submit2 = function(parms) {
-        //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
-        if( parms.last ) {
-            parms = last_mode;
-        }
-        last_mode = parms;
-        var f = form.getForm();
-        set_output( "" );
-        parms.lang = btn_lang.lang ;
-        f.submit({
-            params: parms,
-            waitMsg: _('Running...'),
-            success: function(f,action){
-                var data = 
-                    ( action.result.stdout ?  action.result.stdout + "\n" : "" ) +  
-                    ( action.result.stderr ?  action.result.stderr + "\n" : "" ) +  
-                    action.result.result ;
-                if( parms.show == 'table' || parms.show == 'data_editor' ) {
-                    try {
-                        var d = Ext.util.JSON.decode( action.result.result );
-                        if( parms.show == 'table' ) 
-                            show_table( d ); 
-                        else
-                            show_data_editor( d );
-                    } catch(e){ set_output( e ) };
-                } else {
-                    set_output( data );
-                    status.setValue( "OK" );
-                    document.getElementById( output.getId() ).style.color = "#10c000"; // green
-                }
-                elapsed.setValue( action.result.elapsed );
-                save({ c: aceditor.getValue(), o: output.getValue() });
-                aceditor.focus();
-                reload_hist();
-            },
-            failure: function(f,action){
-                status.setValue( "ERROR" );
-                elapsed.setValue( action.result.elapsed );
-                if( action.result==undefined ) return;
-                var data = 
-                    action.result.error + "\n" + 
-                    action.result.stdout + "\n" + 
-                    action.result.stderr ;
-                set_output( data );
-                //output.getEl().style.color = "#f33";
-                document.getElementById( output.getId() ).style.color = "#f54";  // red
-                aceditor.focus();
-                var line = action.result.line ;
-                // TODO show error line to user, if any
-            }
-        });
-    };
-
     var save_hist = function(){ // only browser-eval needs this (javascript)
         Baseliner.ajaxEval( '/repl/save_hist', { code: aceditor.getValue(), lang: btn_lang.lang }, function(res){ 
             reload_hist();
@@ -435,7 +301,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             hist.reload();
         }
     }
-     
+
     var run_repl = function(){
         var lang = btn_lang.lang;
         var dump = 'yaml', show = 'cons';
@@ -444,11 +310,67 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' }
         else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor' }
 
-        if( lang == 'perl' ) {
-            submit({ eval: true, dump: dump, show: show, lang: 'perl' });
-        }
-        else if( lang=='js-server' ) {
-            submit({ eval: true, dump: dump, show: show, lang: 'js-server' });
+        if( lang == 'perl' || lang == 'js-server' || lang == 'sql' ) {
+            Cla.tabpanel().changeTabIcon(panel, "/static/images/loading-fast.gif");
+
+            output.setValue('');
+
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "text";
+            var params = "lang=" + lang + "&dump=" + dump + "&code=" + encodeURIComponent(aceditor.getValue());
+
+            var response = '';
+            var offset = 0;
+            xhr.open("POST", "/repl/eval", true);
+            xhr.onprogress = function(e) {
+                var message = xhr.responseText.substr(offset);
+                offset += message.length;
+
+                var messages = message.split("\n");
+                for (var i = 0; i < messages.length; i++) {
+                    var packet = messages[i];
+
+                    if (!packet.length) {
+                        continue;
+                    }
+
+                    packet = JSON.parse(packet);
+
+                    if (packet.type === 'output') {
+                        response = response + packet.data;
+                        output.setValue(response);
+                    } else if (packet.type === 'result') {
+                        Cla.tabpanel().changeTabIcon(panel, IC('console'));
+                        elapsed.setValue(packet.data.elapsed);
+
+                        if (!packet.data.error) {
+                            if (show == 'table' || show == 'data_editor') {
+                                if (show == 'table') {
+                                    show_table(packet.data.result);
+                                } else {
+                                    show_data_editor(packet.data.result);
+                                }
+                            } else {
+                                output.setValue($.grep([response, packet.data.result], Boolean).join("\n"));
+
+                                status.setValue("OK");
+                                document.getElementById(output.getId()).style.color = "#10c000"; // green
+                            }
+                        } else {
+                            output.setValue($.grep([response, packet.data.error], Boolean).join("\n"));
+
+                            status.setValue("ERROR");
+                            document.getElementById(output.getId()).style.color = "#f54"; // red
+                        }
+
+                        save_hist();
+                        aceditor.focus();
+                        reload_hist();
+                    }
+                }
+            };
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send(params);
         }
         else if( lang=='js-client' ) {
             var d;
@@ -468,22 +390,12 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             } catch(e) {
                 set_output( e + "" );
             }
-            /* window
-                    eval( "var code_evaled = " + editor.getValue() );
-                    var win = new Ext.Window( code_evaled );
-                    if( win.width == undefined ) { win.width = '90%' }
-                    win.show();
-            */
         }
         else if( lang=='css' ) {
             var style = document.createElement('style');
             style.innerHTML = aceditor.getValue();
             style.type = 'text/css';
             document.getElementsByTagName('head')[0].appendChild(style);
-        } else {
-            submit({ sql: 'array', dump: dump, show: show });
-            //submit({ sql: 'array', dump: 'json', show:'table' });
-            //submit({ sql: 'hash', dump: 'yaml' });
         }
     };
 

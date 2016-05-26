@@ -1594,7 +1594,7 @@ sub _dbis {
     $ENV{NLS_LANG} = 'AMERICAN_AMERICA.AL32UTF8';  # needed when called from a Clarive Cmd
     require DBIx::Simple;
     my $conn = DBIx::Simple->connect( ref $dbh eq 'ARRAY' ? @$dbh : $dbh );
-    $conn->dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
+    $conn->dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'") unless $conn->dbh->{Driver}->{Name} =~ m/sqlite/i;
     return $conn;
 }
 
@@ -2523,18 +2523,17 @@ sub _capture_pipe {
             my $res = waitpid( $pid, WNOHANG );
 
             if ( $res == -1 ) {
-                say "Some error occurred ", $? >> 8;
                 last;
             }
 
             if ($res) {
-                say "stdout_child_sock $res ended with ", $? >> 8;
                 last;
             }
 
             if ( my @fh = $s->can_read(0.1) ) {
                 foreach my $fh (@fh) {
                     my $rcount = sysread $fh, my $buffer, 1024;
+                    next unless $rcount;
 
                     if ($fh eq $stdout_child_sock) {
                         $stdout .= $buffer;
