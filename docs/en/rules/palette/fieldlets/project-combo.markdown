@@ -64,8 +64,6 @@ Specify the class of CI to be shown. Tipically the CI Class to use in this field
 
 To show a default project in the box.
 
-The value indicated will be the ID of the CI.
-
 ### Roles
 
 Selection of roles to show in the grid.
