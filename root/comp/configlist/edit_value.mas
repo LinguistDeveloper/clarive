@@ -50,10 +50,11 @@ var edit_config = function(rec) {
     ]
 });
 
-    var baselines = new Ext.data.SimpleStore({ 
-       fields: ['bl', 'name'], 
+
+    var baselines = new Ext.data.SimpleStore({
+       fields: ['bl', 'name'],
        data : <% js_dumper( $c->stash->{baselines} ) %>
-    }); 
+    });
 
     var win = new Ext.Window({
         layout: 'fit',
@@ -64,26 +65,26 @@ var edit_config = function(rec) {
         maximizable: true,
         closeAction: 'close',
         autoDestroy: true,
-        title: rec==undefined ? '<% _loc("New Config Key") %>' : config_name,
+        title: rec==undefined ? _("New Config Key") : config_name,
         items : [
               form
           ],
         buttons: [{
-            text: '<% _loc('Save') %>', 
-            icon: '/static/images/icons/save.png', 
+            text: _('Save') ,
+            icon: '/static/images/icons/save.png',
             handler: function() {
                 var ff = form.getForm();
                 ff.submit({
-                        success: function(form, action) { 
+                        success: function(form, action) {
                             grid.getStore().load();
-                            win.close(); 
+                            win.close();
                         },
                         failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }
                 });
             }
         },{
-            text: '<% _loc('Reset') %>',
-            icon: '', 
+            text: _('Reset') ,
+            icon: '',
             handler: function() {
                 if( rec!=undefined ) {
                     form.getForm().loadRecord(rec);

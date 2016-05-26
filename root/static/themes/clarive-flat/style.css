@@ -1035,10 +1035,10 @@ textarea.x-form-textarea.x-form-field {
 }*/
 
 .job_new_main_form {
-   background-color: #eee;
+   background-color: #fff;
 }
 .job_new_main_form_general {
-   background-color: #eee;
+   background-color: #fff;
    padding: 10px 10px 10px 10px;
 }
 
@@ -1047,7 +1047,7 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_when_column {
-   background-color: #eee;
+   background-color: #fff;
    padding: 0 25px 0 0;
 }
 
