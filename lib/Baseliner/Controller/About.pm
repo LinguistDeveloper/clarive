@@ -70,9 +70,18 @@ sub show : Local {
         $c->stash->{tlc} = $Baseliner::TLC;
     }
     $c->stash->{about} = \@about;
+
+
     $c->stash->{licenses} = [
         map {
-           { name=>$_, text=>scalar _file( $_ )->slurp };
+            my $date = DateTime->now();
+            my $year = $date->year();
+            my $file_year = _file( $_ )->slurp;
+            $file_year =~s/\(CURRENT_DATE\)/2010-$year/g;
+            {
+                name=> $_,
+                text=> $file_year
+            };
         }
         grep { -e }
         glob( 'LICENSE* features/*/LICENSE' )
