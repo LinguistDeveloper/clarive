@@ -1,0 +1,1 @@
+require Clarive::PSGI::Web;
