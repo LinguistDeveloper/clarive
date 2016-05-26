@@ -24,36 +24,24 @@ params:
 
     var single_mode = !Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
-    var tpl;
+    var tpl, field;
     if (meta.display_mode == 'bl'){
-        tpl = new Ext.XTemplate(
-            '<tpl for=".">'
-            +  '<div class="search-item ui-ci_box-ci-list"><span id="boot" style="background: transparent">'
-            +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
-            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.bl) ]}</span>'
-            + '</div>'
-            +'</tpl>'
-        );
+        field = 'values.bl';
     } else if (meta.display_mode == 'moniker'){
-        tpl = new Ext.XTemplate(
-            '<tpl for=".">'
-            +  '<div class="search-item ui-ci_box-ci-list"><span id="boot" style="background: transparent">'
-            +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
-            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.moniker) ]}</span>'
-            + '</div>'
-            +'</tpl>'
-        );
+        field = 'values.moniker';
     } else if (meta.display_mode == 'class'){
-        tpl = new Ext.XTemplate(
-            '<tpl for=".">'
-            +  '<div class="search-item ui-ci_box-ci-list"><span id="boot" style="background: transparent">'
-            +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
-            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.collection) ]}</span>'
-            + '</div>'
-            +'</tpl>'
-        );
+        field = 'values.collection';
         meta.show_class = true;
     }
+
+    tpl = new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci_box-ci-list"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{name}</strong>'
+       +  ' <span style="color:#808080; font-size: .9em">{[ Cla.ci_loc('+ field +') ]}</span>'
+       +  '</span></div>'
+       +'</tpl>'
+    );
 
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;

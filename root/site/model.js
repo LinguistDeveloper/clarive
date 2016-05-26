@@ -48,7 +48,6 @@ Baseliner.store.AllProjects = function(c) {
         baseParams: {},
         id: 'id',
         url: '/project/all_projects',
-
         fields: ['mid','ns','name','description', 'bl', 'moniker', 'icon']
      }, c));
 };
