@@ -11,7 +11,7 @@ width: 1px;\
 background: #e8e8e8\
 }\
 .ace-clouds {\
-background-color: #FFFFFF;\
+background-color: #FFFFFF !important;\
 color: #000000\
 }\
 .ace-clouds .ace_cursor {\

@@ -40,9 +40,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 */}.heredoc();
 
     // setup defaults
-    if( Cla.AceEditor == undefined ) Cla.AceEditor = { theme: 'lesser-dark', mode: { name:'perl' } };
+    if( Cla.AceEditor == undefined ) Cla.AceEditor = { theme: 'eclipse', mode: { name:'perl' } };
 
-    var aceditor = new Cla.AceEditor({ 
+    var aceditor = new Cla.AceEditor({
         name: 'code',
         mode: 'js',
         tbar: undefined,
@@ -250,7 +250,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     function set_output( data ) {
         output.setValue( data );
         cons.setActiveTab( output );
-        if( data && data != '' ) 
+        if( data && data != '' )
             cons.expand(true);
     }
 
@@ -261,7 +261,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
             var f = form.getForm();
-            f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
+            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o } });
         }
     }
 
@@ -525,17 +525,18 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         items: [
             {
                 text: _('Theme'),
-                menu: { items: [ 
-                        { text: 'Lesser-Dark', theme: 'lesser-dark', checked: default_theme('lesser-dark'), group: 'theme', checkHandler: change_theme },
-                        { text: 'Eclipse', theme: 'eclipse', checked: default_theme('eclipse'), group: 'theme', checkHandler: change_theme },
-                        { text: 'CodeMirror', theme: 'default', checked: default_theme('default'), group: 'theme', checkHandler: change_theme },
-                        { text: 'Night', theme: 'night', checked: default_theme('night'), group: 'theme', checkHandler: change_theme },
-                        { text: 'Elegant', theme: 'elegant', checked: default_theme('elegant'), group: 'theme', checkHandler: change_theme }
+                icon:'/static/images/icons/wrench.gif',
+                menu: { items: [
+                        { text: 'Eclipse', theme: 'eclipse', checked: true, group: 'theme', checkHandler: change_theme },
+                        { text: 'Chaos', theme: 'chaos', checked: true, group: 'theme', checkHandler: change_theme },
+                        { text: 'Idle Fingers', theme: 'idle_fingers', checked: true, group: 'theme', checkHandler: change_theme },
+                        { text: 'Clouds', theme: 'clouds', checked: true, group: 'theme', checkHandler: change_theme },
+                        { text: 'Terminal', theme: 'terminal', checked: true, group: 'theme', checkHandler: change_theme }
                 ]}
             }
         ]
     });
-    var menu_lang = new Ext.menu.Menu({ 
+    var menu_lang = new Ext.menu.Menu({
                 items: [
                     { text:'JS Server', lang:'js-server', checked: true, syntax:'javascript', group:'repl-lang', checkHandler: change_lang },
                     { text:'Perl', lang:'perl', checked: true, syntax:'perl', group:'repl-lang', checkHandler: change_lang },

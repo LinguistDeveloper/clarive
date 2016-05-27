@@ -11,7 +11,7 @@ width: 1px;\
 background: #3b3b3b\
 }\
 .ace-idle-fingers {\
-background-color: #323232;\
+background-color: #323232 !important;\
 color: #FFFFFF\
 }\
 .ace-idle-fingers .ace_cursor {\

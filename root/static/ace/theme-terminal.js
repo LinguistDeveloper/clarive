@@ -11,8 +11,8 @@ width: 1px;\
 background: #1a1a1a\
 }\
 .ace-terminal-theme {\
-background-color: black;\
-color: #DEDEDE\
+background-color: black !important;\
+color: #DEDEDE !important\
 }\
 .ace-terminal-theme .ace_cursor {\
 color: #9F9F9F\
