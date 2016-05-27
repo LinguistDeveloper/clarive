@@ -5,6 +5,7 @@ use Test::More;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
+use TestUtils;
 
 use JSON ();
 use Capture::Tiny qw(capture);
@@ -18,13 +19,13 @@ subtest 'monitor: returns progress 100% when job finished' => sub {
 
     my $changeset_mid = _create_changeset();
 
-    my $job = _create_job(changesets => [$changeset_mid]);
+    my $job = _create_job( changesets => [$changeset_mid] );
     $job->status('FINISHED');
     $job->save;
 
     my $model = _build_model();
 
-    my ($count, @rows) = $model->monitor({username => 'root', query_id => -1});
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
 
     is $rows[0]->{progress}, '100%';
 };
@@ -34,11 +35,11 @@ subtest 'monitor: returns progress start' => sub {
 
     my $changeset_mid = _create_changeset();
 
-    my $job = _create_job(changesets => [$changeset_mid]);
+    my $job = _create_job( changesets => [$changeset_mid] );
 
     my $model = _build_model();
 
-    my ($count, @rows) = $model->monitor({username => 'root', query_id => -1});
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
 
     is $rows[0]->{progress}, ' 0% (0/4)';
 };
@@ -48,11 +49,10 @@ subtest 'monitor: returns progress in beetween' => sub {
 
     my $changeset_mid = _create_changeset();
 
-    my $job = _create_job(changesets => [$changeset_mid]);
+    my $job = _create_job( changesets => [$changeset_mid] );
 
     mdb->job_log->insert(
-        {
-            mid        => $job->mid,
+        {   mid        => $job->mid,
             lev        => 'debug',
             stmt_level => 1,
         }
@@ -60,9 +60,94 @@ subtest 'monitor: returns progress in beetween' => sub {
 
     my $model = _build_model();
 
-    my ($count, @rows) = $model->monitor({username => 'root', query_id => -1});
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
 
     is $rows[0]->{progress}, ' 25% (1/4)';
+};
+
+subtest 'monitor: return the job filtered by status' => sub {
+    _setup();
+
+    my $changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->status('FINISHED');
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$changeset_mid] );
+    $other_job->status('APPROVAL');
+    $other_job->save;
+
+    my $model = _build_model();
+    my ( $count, @rows )
+        = $model->monitor( { username => 'root', query_id => -1, job_state_filter => '{"FINISHED":1}' } );
+
+    is @rows, 1;
+    is $rows[0]->{status_code}, 'FINISHED';
+};
+
+subtest 'monitor: return the job filtered by type' => sub {
+    _setup();
+
+    my $changeset_mid       = _create_changeset();
+    my $other_changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->job_type('demote');
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$other_changeset_mid] );
+    $other_job->job_type('promote');
+    $other_job->save;
+
+    my $model = _build_model();
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1, filter_type => 'demote' } );
+
+    is @rows, 1;
+    is $rows[0]->{type}, 'demote';
+};
+
+subtest 'monitor: return the job filtered by bl' => sub {
+    _setup();
+
+    my $changeset_mid       = _create_changeset();
+    my $other_changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->bl('PROD');
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$other_changeset_mid] );
+    $other_job->bl('QA');
+    $other_job->save;
+
+    my $model = _build_model();
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1, filter_bl => 'QA' } );
+
+    is @rows, 1;
+    is $rows[0]->{bl}, 'QA';
+};
+
+subtest 'monitor: return the job filtered by natures' => sub {
+    _setup();
+
+    my $changeset_mid       = _create_changeset();
+    my $other_changeset_mid = _create_changeset();
+
+    my $nature       = TestUtils->create_ci( 'nature', name => 'JAR' );
+    my $other_nature = TestUtils->create_ci( 'nature', name => 'FOO' );
+
+    my $job = _create_job( changesets => [$changeset_mid], natures => [ $nature->mid ] );
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$other_changeset_mid], natures => [ $other_nature->mid ] );
+    $other_job->save;
+
+    my $model = _build_model();
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1, filter_nature => $nature->mid } );
+
+    is @rows, 1;
+    is $rows[0]->{natures}[0], 'JAR';
 };
 
 done_testing;
@@ -73,7 +158,6 @@ sub _setup {
         'BaselinerX::Type::Statement', 'BaselinerX::CI',
         'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
-        'Baseliner::Model::Rules',
     );
 
     TestUtils->cleanup_cis;

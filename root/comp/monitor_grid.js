@@ -10,7 +10,11 @@
     use Baseliner::Sugar;
     my $view_natures = config_value('job_new.view_natures');
 </%perl>
-(function(params){
+(function(params) {
+        Cla.help_push({
+            title: _('Monitor'),
+            path: 'getting-started/monitor'
+        });
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>; 
     var state_id = 'job-monitor';

@@ -62,13 +62,14 @@ our $group_keys = {
 };
 
 sub monitor {
-    my ($self,$p) = @_;
-    my $perm = Baseliner::Model::Permissions->new;
+    my ( $self, $p ) = @_;
+
     my $username = $p->{username};
 
-    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
-    $start||=0;
-    $limit||=50;
+    my ( $start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt )
+        = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
+    $start ||= 0;
+    $limit ||= 50;
     $groupby //= '';
 
     $sort ||= 'starttime';
@@ -78,108 +79,121 @@ sub monitor {
     if ( length($groupby) ) {
         $groupdir = $groupdir eq 'ASC' ? 1 : -1;
         @order_by = (
-            $group_keys->{$groupby} => ($groupby eq 'when'?-1:$groupdir),
+            $group_keys->{$groupby} => ( $groupby eq 'when' ? -1 : $groupdir ),
             $group_keys->{$sort} => $dir
         );
-    } else {
+    }
+    else {
         @order_by = ( $group_keys->{$sort} => $dir );
     }
 
-    $start=$p->{next_start} if $p->{next_start} && $start && $query;
+    $start = $p->{next_start} if $p->{next_start} && $start && $query;
 
-    my $page = to_pages( start=>$start, limit=>$limit );
+    my $page = to_pages( start => $start, limit => $limit );
 
-    ### WHERE
     my $where = {};
     my @mid_filters;
-    if( length($query) ) {
+    if ( length($query) ) {
         _debug "Job QUERY=$query";
         my @mids_query;
-        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
-            $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-            $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
+        if ( $query !~ /\+|\-|\"|\:/ ) {
+            $query =~ s{(\w+)\*}{job "$1"}g;
+            $query =~ s{([\w\-\.]+)}{"$1"}g;
             $query =~ s{\+(\S+)}{"$1"}g;
             $query =~ s{""+}{"}g;
-            @mids_query = map { $_->{obj}{mid} }
-                _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
+            @mids_query = map { $_->{obj}{mid} } _array(
+                mdb->master_doc->search(
+                    query   => $query,
+                    limit   => 1000,
+                    project => { mid => 1 },
+                    filter  => { collection => 'job' }
+                )->{results}
+            );
         }
-        if( !@mids_query ) {
-            mdb->query_build( where=>$where, query=>$query, fields=>[ keys %$group_keys ] );
-        } else {
-            push @mid_filters, { mid=>mdb->in(@mids_query) };
+        if ( !@mids_query ) {
+            mdb->query_build( where => $where, query => $query, fields => [ keys %$group_keys ] );
+        }
+        else {
+            push @mid_filters, { mid => mdb->in(@mids_query) };
         }
     }
 
-    my $is_root = Baseliner::Model::Permissions->new->is_root($username);
+    my $permissions = Baseliner::Model::Permissions->new;
 
-    if( !$is_root ) {
-        my $user = ci->user->find_one({ name=>$username });
+    if ( !$permissions->is_root($username) ) {
+        my $user  = ci->user->find_one( { name => $username } );
         my @roles = keys $user->{project_security};
-        my @bl = map { map { $_->{bl} } grep { $_->{bl} if($_->{action} eq 'action.job.viewall') } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all if(@roles);
-        my @ids_project = $perm->user_projects_with_action(username => $username, action => 'action.job.viewall', level => 1, bl=>\@bl);
+        my @bl    = map {
+            map { $_->{bl} }
+                grep { $_->{bl} if ( $_->{action} eq 'action.job.viewall' ) }
+                _array( $_->{actions} )
+        } mdb->role->find( { id => { '$in' => \@roles } } )->fields( { actions => 1, _id => 0 } )->all if (@roles);
+        my @ids_project = $permissions->user_projects_with_action(
+            username => $username,
+            action   => 'action.job.viewall',
+            level    => 1,
+            bl       => \@bl
+        );
 
-        $where->{bl} = mdb->in(@bl) if(@bl && !('*' ~~ @bl));
+        $where->{bl} = mdb->in(@bl) if ( @bl && !( '*' ~~ @bl ) );
         $where->{projects} = mdb->in( sort @ids_project );
     }
 
-    if( length $p->{job_state_filter} ) {
+    if ( length $p->{job_state_filter} ) {
         my @job_state_filters = do {
-                my $job_state_filter = Util->_decode_json( $p->{job_state_filter} );
-                _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+            my $job_state_filter = Util->_decode_json( $p->{job_state_filter} );
+            _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
         };
         $where->{status} = mdb->in( \@job_state_filters );
     }
 
-    # Filter by nature
-    if (length $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
-        # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+    if ( length $p->{filter_nature} ) {
         $where->{natures} = mdb->in( _array( $p->{filter_nature} ) );
     }
 
-    # Filter by environment name:
-    if (exists $p->{filter_bl}) {
-      $where->{bl} = $p->{filter_bl};
+    if ( length $p->{filter_bl} ) {
+        $where->{bl} = $p->{filter_bl};
     }
 
-    # Filter by job_type
-    if (exists $p->{filter_type}) {
-      $where->{job_type} = $p->{filter_type};
+    if ( length $p->{filter_type} ) {
+        $where->{job_type} = $p->{filter_type};
     }
 
-    $query_id ||='';
-    if($query_id ne '-1'){
-        #Cuando viene por el dashboard
-        my @jobs = split(",",$query_id);
+    $query_id ||= '';
+    if ( $query_id ne '-1' ) {
+        my @jobs = split( ",", $query_id );
         $where->{'mid'} = mdb->in( \@jobs );
     }
 
-    $where->{'$and'} =\@mid_filters if @mid_filters;
+    $where->{'$and'} = \@mid_filters if @mid_filters;
 
-    if( $filter ) {
-        $filter = Util->_decode_json( $filter );
+    if ($filter) {
+        $filter = Util->_decode_json($filter);
         my $where_filter = {};
-        for my $fi ( _array( $filter ) ) {
+        for my $fi ( _array($filter) ) {
             my $val = $fi->{value};
-            if( $fi->{type} eq 'date' ) {
-                $val = Class::Date->new( $val )->string ;
+            if ( $fi->{type} eq 'date' ) {
+                $val = Class::Date->new($val)->string;
                 my $oper = $fi->{comparison};
-                if( $oper eq 'eq' ) {
-                    $where_filter->{$fi->{field}}={ '$gt'=>$val, '$lt'=>(Class::Date->new($val)+'1D')->string };
-                } else {
-                    $where_filter->{$fi->{field}}{'$'.$oper }=$val;
+                if ( $oper eq 'eq' ) {
+                    $where_filter->{ $fi->{field} }
+                        = { '$gt' => $val, '$lt' => ( Class::Date->new($val) + '1D' )->string };
+                }
+                else {
+                    $where_filter->{ $fi->{field} }{ '$' . $oper } = $val;
                 }
             }
-            elsif( $fi->{type} eq 'string' ) {
-                $where_filter->{$fi->{field}} = qr/$val/i;
+            elsif ( $fi->{type} eq 'string' ) {
+                $where_filter->{ $fi->{field} } = qr/$val/i;
             }
         }
         $where = { %$where, %$where_filter };
     }
 
-    my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(mdb->ixhash( @order_by ));
+    my $rs = mdb->master_doc->find( { collection => 'job', %$where } )->sort( mdb->ixhash(@order_by) );
 
-    if( $p->{list_only} ) {    # used by the refresh auto, for speed
-        return (0, $rs->fields({ mid=>1 })->next );
+    if ( $p->{list_only} ) {
+        return ( 0, $rs->fields( { mid => 1 } )->next );
     }
 
     $cnt = $rs->count;
@@ -189,110 +203,107 @@ sub monitor {
 
     my @rows;
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ;
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ;
+    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0);
+    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second );
 
     local $Baseliner::CI::mid_scope = {};
 
     for my $job ( $rs->all ) {
-        my $step = _loc( $job->{step} );
-        my $status = _loc( $job->{status} );
-        my $type = _loc($job->{job_type});
-        my @changesets = (); #_array $job_items{ $job->{id} };
-        my $job_contents = $job->{job_contents} // {};
-
+        my $step             = _loc( $job->{step} );
+        my $status           = _loc( $job->{status} );
+        my $type             = _loc( $job->{job_type} );
+        my @changesets       = ();
+        my $job_contents     = $job->{job_contents} // {};
         my $last_log_message = $job->{last_log_message};
 
-        # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
-        my $when='';
+        my $when = '';
         my $day;
-        my $sdt = parse_dt( '%Y-%m-%d %H:%M:%S', $job->{starttime} // $job->{ts}  );
-        my $dur =  $today - $sdt;
-        $sdt->{locale} = DateTime::Locale->load( $p->{language} || 'en' ); # day names in local language
-        $day =
-            $dur->{months} > 3 ? [ 90, _loc('Older') ]
-          : $dur->{months} > 2 ? [ 80, _loc( '%1 Months', 3 ) ]
-          : $dur->{months} > 1 ? [ 70, _loc( '%1 Months', 2 ) ]
-          : $dur->{months} > 0 ? [ 60, _loc( '%1 Month',  1 ) ]
-          : $dur->{days} >= 21  ? [ 50, _loc( '%1 Weeks',  3 ) ]
-          : $dur->{days} >= 14  ? [ 40, _loc( '%1 Weeks',  2 ) ]
-          : $dur->{days} >= 7   ? [ 30, _loc( '%1 Week',   1 ) ]
-          : $dur->{days} == 6   ? [ 7,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 5   ? [ 6,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 4   ? [ 5,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 3   ? [ 4,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 2   ? [ 3,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 1   ? [ 2,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 0  ? $sdt < $today ? [ 2,  _loc( $sdt->day_name ) ]
-                               : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
-          :                      [ 0,  _loc('Upcoming') ];
+        my $sdt = parse_dt( '%Y-%m-%d %H:%M:%S', $job->{starttime} // $job->{ts} );
+        my $dur = $today - $sdt;
+        $sdt->{locale} = DateTime::Locale->load( $p->{language} || 'en' );
+        $day
+            = $dur->{months} > 3 ? [ 90, _loc('Older') ]
+            : $dur->{months} > 2 ? [ 80, _loc( '%1 Months', 3 ) ]
+            : $dur->{months} > 1 ? [ 70, _loc( '%1 Months', 2 ) ]
+            : $dur->{months} > 0 ? [ 60, _loc( '%1 Month',  1 ) ]
+            : $dur->{days} >= 21 ? [ 50, _loc( '%1 Weeks',  3 ) ]
+            : $dur->{days} >= 14 ? [ 40, _loc( '%1 Weeks',  2 ) ]
+            : $dur->{days} >= 7  ? [ 30, _loc( '%1 Week',   1 ) ]
+            : $dur->{days} == 6  ? [ 7,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 5  ? [ 6,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 4  ? [ 5,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 3  ? [ 4,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 2  ? [ 3,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 1  ? [ 2,  _loc( $sdt->day_name ) ]
+            : $dur->{days} == 0  ? $sdt < $today
+                ? [ 2, _loc( $sdt->day_name ) ]
+                : $sdt > $ahora ? [ 0, _loc('Upcoming') ]
+            : [ 1, _loc('Today') ]
+            : [ 0, _loc('Upcoming') ];
         $when = $day->[0];
-        my ($last_exec) = sort { $b cmp $a } keys %{$job->{milestones}};
+        my ($last_exec) = sort { $b cmp $a } keys %{ $job->{milestones} };
 
-        my $permissions = Baseliner::Model::Permissions->new;
+        my $can_restart
+            = $permissions->user_has_action( username => $username, action => 'action.job.restart', bl => $job->{bl} );
+        my $can_cancel
+            = $permissions->user_has_action( username => $username, action => 'action.job.cancel', bl => $job->{bl} );
+        my $can_delete
+            = $permissions->user_has_action( username => $username, action => 'action.job.delete', bl => $job->{bl} );
 
-        my $can_restart =
-          $permissions->user_has_action( username => $username, action => 'action.job.restart', bl => $job->{bl} );
-        my $can_cancel =
-          $permissions->user_has_action( username => $username, action => 'action.job.cancel', bl => $job->{bl} );
-        my $can_delete =
-          $permissions->user_has_action( username => $username, action => 'action.job.delete', bl => $job->{bl} );
-
-        push @rows, {
-            id           => $job->{jobid},
-            mid          => $job->{mid},
-            name         => $job->{name},
-            bl           => $job->{bl},
-            bl_text      => $job->{bl},  #TODO resolve bl name
-            ts           => $job->{ts},
-            # show only date if when
-            starttime    => ( $groupby eq 'starttime' ? substr($job->{starttime},0,10) : $job->{starttime} ),
-            schedtime    => ( $groupby eq 'schedtime' ? substr($job->{schedtime},0,10) : $job->{schedtime} ),
-            maxstarttime => ( $groupby eq 'maxstarttime' ? substr($job->{maxstarttime},0,10) : $job->{maxstarttime} ),
-            endtime      => ( $groupby eq 'endtime' ? substr($job->{endtime},0,10) : $job->{endtime} ),
-            comments     => $job->{comments},
-            username     => $job->{username},
-            rollback     => $job->{rollback},
-            has_errors   => $job->{has_errors},
-            has_warnings => $job->{has_warnings},
+        push @rows,
+            {
+            id        => $job->{jobid},
+            mid       => $job->{mid},
+            name      => $job->{name},
+            bl        => $job->{bl},
+            bl_text   => $job->{bl},
+            ts        => $job->{ts},
+            starttime => ( $groupby eq 'starttime' ? substr( $job->{starttime}, 0, 10 ) : $job->{starttime} ),
+            schedtime => ( $groupby eq 'schedtime' ? substr( $job->{schedtime}, 0, 10 ) : $job->{schedtime} ),
+            maxstarttime =>
+                ( $groupby eq 'maxstarttime' ? substr( $job->{maxstarttime}, 0, 10 ) : $job->{maxstarttime} ),
+            endtime => ( $groupby eq 'endtime' ? substr( $job->{endtime}, 0, 10 ) : $job->{endtime} ),
+            comments            => $job->{comments},
+            username            => $job->{username},
+            rollback            => $job->{rollback},
+            has_errors          => $job->{has_errors},
+            has_warnings        => $job->{has_warnings},
             approval_expiration => $job->{maxapprovaltime},
-            key          => $job->{job_key},
-            last_log     => $last_log_message,
-            when         => $when,
-            ago          => Util->ago($job->{schedtime}),
-            day          => ucfirst( $day->[1] ),
-            step         => $step,
-            step_code    => $job->{step},
-            exec         => $job->{'exec'},
-            pid          => $job->{pid},
-            owner        => $job->{owner},
-            host         => $job->{host},
-            status       => $status,
-            status_code  => $job->{status},
-            type_raw     => $job->{job_type},
-            type         => $type,
-            runner       => $job->{runner},
-            job_family   => $job->{job_family} ||'pipeline',
-            id_rule      => $job->{id_rule},
-            rule_name    => _loc('Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ),
-            contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
-            changesets   => $job_contents->{list_changesets} || [],
-            changeset_cis   => $job_contents->{list_changeset_cis} || [],
-            cs_comments  => $job_contents->{cs_comments} || {},
-            releases     => $job_contents->{list_releases} || [],
-            applications => $job_contents->{list_apps} || [],
-            natures      => $job_contents->{list_natures} || [],
-            pre_start      => $last_exec?$job->{milestones}->{$last_exec}->{PRE}->{start} || " ":" ",
-            pre_end         => $last_exec?$job->{milestones}->{$last_exec}->{PRE}->{end}|| " ":" ",
-            run_start      => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{start}|| " ":" ",
-            run_end         => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{end}|| " ":" ",
-            can_restart    => $can_restart,
-            can_cancel    => $can_cancel,
-            can_delete    => $can_delete,
-            progress      => $self->_calculate_progress($job),
-
-            #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
-          }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
+            key                 => $job->{job_key},
+            last_log            => $last_log_message,
+            when                => $when,
+            ago                 => Util->ago( $job->{schedtime} ),
+            day                 => ucfirst( $day->[1] ),
+            step                => $step,
+            step_code           => $job->{step},
+            exec                => $job->{'exec'},
+            pid                 => $job->{pid},
+            owner               => $job->{owner},
+            host                => $job->{host},
+            status              => $status,
+            status_code         => $job->{status},
+            type_raw            => $job->{job_type},
+            type                => $type,
+            runner              => $job->{runner},
+            job_family          => $job->{job_family} || 'pipeline',
+            id_rule             => $job->{id_rule},
+            rule_name           => _loc( 'Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ),
+            contents => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
+            changesets    => $job_contents->{list_changesets}    || [],
+            changeset_cis => $job_contents->{list_changeset_cis} || [],
+            cs_comments   => $job_contents->{cs_comments}        || {},
+            releases      => $job_contents->{list_releases}      || [],
+            applications  => $job_contents->{list_apps}          || [],
+            natures       => $job_contents->{list_natures}       || [],
+            pre_start => $last_exec ? $job->{milestones}->{$last_exec}->{PRE}->{start} || " " : " ",
+            pre_end   => $last_exec ? $job->{milestones}->{$last_exec}->{PRE}->{end}   || " " : " ",
+            run_start => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{start} || " " : " ",
+            run_end   => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{end}   || " " : " ",
+            can_restart => $can_restart,
+            can_cancel  => $can_cancel,
+            can_delete  => $can_delete,
+            progress    => $self->_calculate_progress($job),
+            };
     }
     return ( $cnt, @rows );
 }
