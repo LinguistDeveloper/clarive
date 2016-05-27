@@ -8801,11 +8801,11 @@ msgstr "Entornos"
 msgid "Inactive"
 msgstr "Desactivado"
 
-msgid "The project %1 does not have users asigned, delete this project?"
-msgstr "El proyeto %1 no tiene usuarios asignados, desea borrarlo?"
+msgid "The %1 %2 does not have users asigned, delete this %3?"
+msgstr "El %1 %2 no tiene usuarios asignados, ¿desea borrar el %3?"
 
 msgid "The project %1 has %2 user(s) assigned, delete this project?"
-msgstr "El proyeto %1 tiene %2 usuarios asignados, desea borrarlo?"
+msgstr "El proyeto %1 tiene %2 usuarios asignados, ¿desea borrarlo?"
 
 msgid "Role with this name already exists"
 msgstr "Rol con este nombre ya existe"
@@ -8854,3 +8854,6 @@ msgstr "Mostrar Gráfico"
 
 msgid "bl"
 msgstr "Entorno"
+
+msgid "The %1 %2 has %3 user(s) assigned, delete this %4?"
+msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"

@@ -617,17 +617,148 @@ subtest 'delete: asks user before deleting a project' => sub {
         'json' => {
             'info' => [
                 {
-                    'name_project' => 'Project1',
+                    'ci_name' => 'Project1',
                     'number_user'  => '3'
                 },
                 {
-                    'name_project' => 'Project2',
+                    'ci_name' => 'Project2',
                     'number_user'  => '1'
                 }
             ],
+            'success' => \1,
+            'needs_confirmation' => 1
+        }
+      };
+};
+
+subtest 'delete: deletes project when confirmed' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci( 'project', name => 'Project1' );
+    my $project2 = TestUtils->create_ci( 'project', name => 'Project2' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user1 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo1' );
+    my $user2 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo2' );
+    my $user3 = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'foo3' );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req =>
+          { params => { collection => 'project', delete_confirm => 1, mids => [ $project->mid, $project2->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    like exception { ci->new( $project->mid ) }, qr/not found/;
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'CIs deleted ok',
             'success' => \1
         }
       };
+};
+
+subtest 'delete: updates user security when deleting a project' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project1' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $variable = TestUtils->create_ci('variable');
+
+    my $c = _build_c(
+        req      => { params => { collection => 'project', delete_confirm => 1, mids => [ $project->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    $user = ci->new( $user->mid );
+
+    is_deeply $user->{project_security}->{$id_role}->{project}, [];
+};
+
+subtest 'delete: asks user before deleting an area' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+    my $area    = TestUtils->create_ci( 'area',    name => 'AREA' );
+    my $area2   = TestUtils->create_ci( 'area',    name => 'AREA 2' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user1 = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        area     => [ $area, $area2 ],
+        username => 'foo1'
+    );
+
+    my $c = _build_c(
+        req      => { params => { collection => 'area', delete_confirm => 1, mids => $area2->mid } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    like exception { ci->new( $area2->mid ) }, qr/not found/;
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => 'CIs deleted ok',
+            'success' => \1
+        }
+      };
+};
+
+subtest 'delete: deletes area when confirmed' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+    my $area    = TestUtils->create_ci( 'area',    name => 'AREA' );
+    my $area2   = TestUtils->create_ci( 'area',    name => 'AREA 2' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user1 = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        area     => [ $area, $area2 ],
+        username => 'foo1'
+    );
+
+    my $c = _build_c(
+        req      => { params => { collection => 'area', mids => $area2->mid } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            'info' => [
+                {   'ci_name'     => 'AREA 2',
+                    'number_user' => '1'
+                }
+            ],
+            'success' => \1,
+            'needs_confirmation' => 1
+        }
+        };
 };
 
 subtest 'delete: throws error when no permission to delete ci' => sub {
