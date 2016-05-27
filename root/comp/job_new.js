@@ -15,6 +15,7 @@
     my $has_chain_perm = $c->is_root || $c->has_action( 'action.job.chain_change' ) // 1;
 </%perl>
 (function(opts){
+    Cla.help_push({ title:_('New Job'), path:'concepts/job' });
     if( !opts ) opts = {};
     var topics = [];
     var job_type;
