@@ -9,6 +9,7 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils qw(:catalyst);
 use TestSetup;
+use TestGit;
 use Test::TempDir::Tiny;
 
 use JSON ();
@@ -398,6 +399,100 @@ subtest 'tree_project_releases: build releases tree' => sub {
             }
         ]
       };
+
+};
+
+subtest 'branches: rejects if project missing' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'developer', req => { params => {} } );
+
+    like exception { $controller->branches($c) }, qr/missing project/;
+
+};
+
+subtest 'branches: rejects if id_project missing' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'developer', req => { params => { project => 'project' } } );
+
+    like exception { $controller->branches($c) }, qr/missing project id/;
+
+};
+
+subtest 'branches: rejects if id_repo missing' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c =
+      _build_c( username => 'developer', req => { params => { project => 'project', id_project => 'id_project' } } );
+
+    like exception { $controller->branches($c) }, qr/missing repo id/;
+
+};
+
+subtest 'branches: return branches from repository' => sub {
+    _setup();
+
+    my $repo    = TestUtils->create_ci_GitRepository();
+    my $project = TestUtils->create_ci_project;
+    my $user    = TestSetup->create_user( name => 'developer' );
+
+    TestGit->commit($repo);
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => { params => { project => $project->name, id_project => $project->mid, id_repo => $repo->mid } }
+    );
+
+    $controller->branches($c);
+
+    my @data = $c->stash->{json};
+
+    is scalar @data, 1;
+    cmp_deeply $data[0],
+      [
+        {
+            expandable  => ignore(),
+            leaf        => ignore(),
+            data        => ignore(),
+            menu        => ignore(),
+            icon        => ignore(),
+            url         => '/gittree/branch',
+            text        => 'master',
+            parent_data => {
+                project    => $project->name,
+                id_project => $project->mid
+            }
+        }
+      ];
+};
+
+subtest 'branches: rejects if project missing' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->{username}, req => { params => {} } );
+
+    like exception { $controller->branches($c) }, qr/missing project/;
 
 };
 
@@ -916,6 +1011,10 @@ done_testing;
 
 sub _build_controller {
     BaselinerX::LcController->new( application => '' );
+}
+
+sub _build_c {
+    mock_catalyst_c( username => 'test', @_ );
 }
 
 sub _setup {

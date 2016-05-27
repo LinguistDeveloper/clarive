@@ -5674,15 +5674,11 @@ msgid "Config lifecycle releases"
 msgstr ""
 
 #: lib/BaselinerX/LcController.pm
-msgid "---- provider \".$repo->name.\" has %1 changesets"
+msgid "---- provider %1 has %2 changesets"
 msgstr ""
 
 #: lib/BaselinerX/LcController.pm
 msgid "Error detected: %1"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
-msgid "---- provider $provider has %1 changesets"
 msgstr ""
 
 #: lib/BaselinerX/LcController.pm

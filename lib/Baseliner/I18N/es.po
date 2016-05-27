@@ -5752,8 +5752,8 @@ msgid "Config lifecycle releases"
 msgstr "Configurar releases de ciclo de vida"
 
 #: lib/BaselinerX/LcController.pm
-msgid "---- provider \".$repo->name.\" has %1 changesets"
-msgstr "---- el proveedor \".$repo->name.\" tiene %1 changesets"
+msgid "---- provider %1 has %2 changesets"
+msgstr "---- proveedor %1 tiene %2 cambios"
 
 #: lib/BaselinerX/LcController.pm
 msgid "Error detected: %1"
