@@ -228,7 +228,7 @@ Baseliner.logout = function() {
             document.location.href='/';
         },
         failure: function(xhr) {
-           Baseliner.errorWin( 'Logout Error', xhr.responseText );
+           Baseliner.errorWin( _('Logout Error'), xhr.responseText );
         }
     });
 };
