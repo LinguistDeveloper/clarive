@@ -130,22 +130,27 @@
         var names_priorities = {};
         var names_baselines = {};
         var names_status = {};
+        var names_steps = {};
 
         cb_events.on('additem', function(combo, value, record) {
-            var panel = Ext.getCmp('pnl_projects');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_categories');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_category_status');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_priority');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_baseline');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_status');
-            if (panel) panel.destroy();
-            panel = Ext.getCmp('pnl_field');
-            if (panel) panel.destroy();
+            var panelsToDestroy = [
+                'pnl_projects',
+                'pnl_categories',
+                'pnl_category_status',
+                'pnl_priority',
+                'pnl_baseline',
+                'pnl_status',
+                'pnl_field',
+                'pnl_steps'
+            ];
+
+            for (var i = 0; i < panelsToDestroy.length; i++) {
+                var panel = Ext.getCmp(panelsToDestroy[i]);
+                if (panel) {
+                    panel.destroy();
+                }
+            }
+
             Baseliner.ajaxEval('/notification/get_scope?key=' + value, {}, function(res) {
                 if (res.success) {
                     var scopes = new Array();
@@ -596,6 +601,83 @@
                                     };
                                     form_notification.insert(indice++, columns);
                                     store_status.load();
+                                    break;
+
+                                case 'step':
+                                    var store_step = new Baseliner.JsonStore({
+                                        root: 'data',
+                                        remoteSort: true,
+                                        totalProperty: "totalCount",
+                                        url: '/job/steps',
+                                        fields: ['name']
+                                    });
+
+                                    store_step.on('load', function(ds, records, o) {
+                                        if (rec && rec.data) {
+                                            var ids_steps = [];
+                                            if (rec.data.data.scopes.step && rec.data.data.scopes.step[0]['name']['*']) {
+                                                chk_step.setValue(true);
+                                            } else {
+                                                for (var i = 0; i < rec.data.data.scopes.step.length; i++) {
+                                                    ids_steps.push(rec.data.data.scopes.step[i]['name']);
+                                                }
+                                                cb_step.setValue(ids_steps);
+                                            }
+                                        }
+                                    });
+
+                                    var cb_step = new Ext.ux.form.SuperBoxSelect({
+                                        mode: 'local',
+                                        triggerAction: 'all',
+                                        forceSelection: true,
+                                        fieldLabel: _('Steps'),
+                                        name: 'step',
+                                        hiddenName: 'step',
+                                        displayField: 'name',
+                                        valueField: 'name',
+                                        store: store_step,
+                                        tpl: '<tpl for=".">' +
+                                            '<div class="x-combo-list-item">' +
+                                            '<span id="boot" style="background: transparent">' +
+                                            '<strong>{name}</strong></span></div></tpl>'
+                                    });
+
+                                    cb_step.on('additem', function(combo, value, record) {
+                                        names_steps[value] = record.data.name;
+                                    });
+
+                                    var chk_step = new Ext.form.Checkbox({
+                                        name: 'step',
+                                        boxLabel: _('All'),
+                                        listeners: {
+                                            check: function(obj, checked) {
+                                                if (checked) {
+                                                    cb_step.setValue('');
+                                                    cb_step.disable();
+                                                } else {
+                                                    cb_step.enable();
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    columns = {
+                                        id: 'pnl_steps',
+                                        layout: 'column',
+                                        defaults: {
+                                            layout: 'form'
+                                        },
+                                        items: [{
+                                            columnWidth: 0.85,
+                                            items: cb_step
+                                        }, {
+                                            columnWidth: 0.15,
+                                            labelWidth: 5,
+                                            items: chk_step
+                                        }]
+                                    };
+                                    form_notification.insert(indice++, columns);
+                                    store_step.load();
                                     break;
 
                                 case 'field':
@@ -1132,16 +1214,25 @@
                     var status = form.findField('status').getValue().split(',');
                     var status_names = {};
                     Ext.each(status, function(status) {
-
                         status_names[status] = names_status[status];
-
-
                     });
 
                     params.status_names = Ext.util.JSON.encode(status_names);
                 };
 
                 delete names_status;
+
+                if (form.findField('step') && form.findField('step').getValue() != '') {
+                    var step = form.findField('step').getValue().split(',');
+                    var step_names = [];
+                    Ext.each(step, function(step) {
+                        step_names.push(names_steps[step]);
+                    });
+
+                    params.step_names = Ext.util.JSON.encode(step_names);
+                };
+
+                delete names_steps;
 
                 if (form.findField('field') && form.findField('field').getValue() != '') {
                     var fields = form.findField('field').getValue().split(',');
@@ -1518,14 +1609,22 @@
     var show_scopes = function(value, metadata, rec, rowIndex, colIndex, store) {
         var items = new Array();
         var ret = '<table>';
-
         var scopeKeys = Object.keys(value.scopes).sort();
         var scopeLength = scopeKeys.length;
         for (var i = 0; i < scopeLength; i++) {
             var scope = scopeKeys[i];
             ret += '<tr>';
             ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(scope) + '</td>';
-            if (value.scopes[scope]) {
+
+            if (scope === 'step') {
+                if (value.scopes[scope][0]['name']['*']) {
+                    items.push(value.scopes[scope][0]['name']['*']);
+                } else {
+                    for (var k = 0; k < value.scopes[scope].length; k++) {
+                        items.push(value.scopes[scope][k]['name']);
+                    }
+                }
+            } else {
                 var nameKeys = Object.keys(value.scopes[scope]).sort();
                 var nameLength = nameKeys.length;
                 for (var j = 0; j < nameLength; j++) {

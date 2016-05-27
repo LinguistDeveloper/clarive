@@ -14,6 +14,7 @@ use Baseliner::Model::Jobs;
 use Baseliner::Model::Permissions;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils;
+use BaselinerX::CI::job;
 
 BEGIN {
     ## Oracle needs this
@@ -948,6 +949,16 @@ sub job_stats : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
     };
+    $c->forward('View::JSON');
+}
+
+sub steps : Local {
+    my ( $self, $c ) = @_;
+
+    my @steps = BaselinerX::CI::job->steps;
+    my @names_steps = map { +{ name => $_ } } @steps;
+
+    $c->stash->{json} = { data => \@names_steps };
     $c->forward('View::JSON');
 }
 

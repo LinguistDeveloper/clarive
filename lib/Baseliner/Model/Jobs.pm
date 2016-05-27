@@ -21,9 +21,9 @@ register 'action.search.job' => { name => 'Search jobs' };
 register 'event.job.rerun' => { name=>'Rerun a job', notify=>{ scope=>['project','bl'] }  };
 register 'event.job.reschedule' => { name=>'Reschedule a job', notify=>{ scope=>['project','bl'] }  };
 register 'event.job.start' => { name=>'Job start', notify=>{ scope=>['project','bl'] } };
-register 'event.job.start_step' => { name=>'Job step start', notify=>{ scope=>['project','bl'] } };
+register 'event.job.start_step' => { name=>'Job step start', notify=>{ scope=>['project','bl','step'] } };
 register 'event.job.end' => { name=>'Job end, after POST', notify=>{ scope=>['project','bl','status'] } };
-register 'event.job.end_step' => { name=>'Job step end', notify=>{ scope=>['project','bl','status'] } };
+register 'event.job.end_step' => { name=>'Job step end', notify=>{ scope=>['project','bl','status','step'] } };
 
 our $group_keys = {
     id           => 'jobid',

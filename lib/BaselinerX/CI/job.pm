@@ -1099,10 +1099,22 @@ sub run {
             rollback       => $self->rollback,
             username       => $self->username,
             changesets     => $self->changesets,
-#            needs_rollback => $self->needs_rollback //,
     };
 
-    event_new 'event.job.start_step' => { job=>$self, job_stash=>$prev_stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
+    my $bl     = ci->bl->find_one( { name => $self->bl } );
+    my $bl_mid = $bl ? $bl->{mid} : undef;
+    my $notify = {
+        bl      => $bl_mid,
+        step    => $self->step
+    };
+    event_new 'event.job.start_step' => {
+        notify    => $notify,
+        job       => $self,
+        job_stash => $prev_stash,
+        status    => $self->status,
+        bl        => $self->bl,
+        step      => $self->step
+    };
 
     ROLLBACK:
     my $job_error = 0;
@@ -1281,7 +1293,8 @@ sub finish {
     my $notify = {
         project => \@projects,
         status  => $status,
-        bl      => $bl_mid
+        bl      => $bl_mid,
+        step    => $self->step
     };
     event_new 'event.job.end_step' => {
         notify    => $notify,
@@ -1421,6 +1434,14 @@ sub parse_job_vars {
 
     # substitute vars
     Baseliner::Utils::parse_vars( $data, $vars, throw=>0 );
+}
+
+sub steps {
+    my ($self) = @_;
+
+    my @steps = ( 'CHECK', 'INIT', 'PRE', 'RUN', 'POST' );
+
+    return @steps;
 }
 
 1;

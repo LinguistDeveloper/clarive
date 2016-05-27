@@ -580,6 +580,18 @@ subtest 'submit: creates a new job without version id when dynamic' => sub {
     is $job->{rule_version_tag}, 'tag';
 };
 
+subtest 'steps: returns job steps' => sub {
+    _setup();
+
+    my $c          = mock_catalyst_c();
+    my $controller = _build_controller();
+
+    $controller->steps($c);
+
+    is_deeply $c->stash->{json},
+      { data => [ { name => 'CHECK' }, { name => 'INIT' }, { name => 'PRE' }, { name => 'RUN' }, { name => 'POST' } ] };
+};
+
 done_testing;
 
 sub _setup {

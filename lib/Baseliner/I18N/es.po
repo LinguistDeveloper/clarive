@@ -3703,7 +3703,7 @@ msgid "category"
 msgstr "Categoría"
 
 msgid "status"
-msgstr "Estado"
+msgstr "estado"
 
 msgid "priority"
 msgstr "Prioridad"
@@ -4617,7 +4617,7 @@ msgid "Scopes"
 msgstr "Ámbitos"
 
 msgid "project"
-msgstr "Proyecto"
+msgstr "proyecto"
 
 msgid "field"
 msgstr "Campo"
@@ -8853,7 +8853,7 @@ msgid "Show Graph"
 msgstr "Mostrar Gráfico"
 
 msgid "bl"
-msgstr "Entorno"
+msgstr "entorno"
 
 msgid "The %1 %2 has %3 user(s) assigned, delete this %4?"
 msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"
@@ -8869,3 +8869,9 @@ msgstr "¿Mostrar hora?"
 
 msgid "Revision %1 has already been selected"
 msgstr "La revisión %1 ya ha sido seleccionada"
+
+msgid "Steps"
+msgstr "Pasos"
+
+msgid "step"
+msgstr "paso"
