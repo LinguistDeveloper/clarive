@@ -14,21 +14,29 @@ To do:
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 
     // This is the code that is loaded with the REPL as an example starter, indentation is important here
-    var example_js = function(){/*var ci = Cla.CI.load('1');
-print(ci.name());
+    var example_js = function(){/*var ci = require("cla/ci");
+
+var obj = ci.load('1');
+print(obj.name());
+
 // files and paths
-print(Cla.Path.basename('/foo/bar.baz'));
-// var fh = Cla.FS.openFile("${tempdir}/foo", "w");
+var path = require("cla/path");
+var fs = require("cla/fs");
+
+print(path.basename('/foo/bar.baz'));
+// var fh = fs.openFile("${tempdir}/foo", "w");
 // fh.write("foobar");
 // fh.close();
+
 // database
-var db = new Cla.DB;
+var db = require("cla/db");
 var col = db.getCollection('test_collection');
 col.insert({'foo':'bar'});
 col.insert({'foo':'baz'});
 col.findOne({'foo':'bar'});
+
 // utils
-Cla.parseVars('${foo}',{ foo: 'bar' });
+cla.parseVars('${foo}',{ foo: 'bar' });
 */}.heredoc();
 
     // setup defaults
