@@ -183,6 +183,7 @@ sub tree_project_jobs : Local {
             text => sprintf('%s [%s]', $_->{name}, $_->{endtime}) ,
             icon => '/static/images/icons/'.$icon,
             leaf => \1,
+            draggable => \0,
             menu => [
                 {
                   icon => '/static/images/icons/open.png',
@@ -237,6 +238,7 @@ sub tree_topics_project : Local {
             text => $_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
+            draggable => \1,
             topic_name => {
                 mid            => $_->{mid},
                 category_color => $_->{category}->{color},
@@ -329,6 +331,7 @@ sub topic_contents : Local {
             icon       => $icon,
             leaf       => $leaf,
             expandable => !$leaf,
+            draggable => \1,
             menu => \@menu_related
         };
     }
@@ -389,6 +392,7 @@ sub tree_projects : Local {
                 },
             },
             icon       => '/static/images/icons/project.png',
+            draggable  => \0,
             leaf       => \0,
             expandable => \1
         };
@@ -612,6 +616,7 @@ sub changeset : Local {
                 push @tree, {
                     url  => '/lifecycle/repository',
                     icon => '/static/images/icons/repo.gif',
+                    draggable => \0,
                     text => $d->{name},
                     leaf => \1,
                     data => {
@@ -626,7 +631,7 @@ sub changeset : Local {
                             icon  => '/static/images/icons/repo.gif',
                             title => "$d->{name} - $bl",
                         }
-                      },
+                      }
                 }
             }
         }

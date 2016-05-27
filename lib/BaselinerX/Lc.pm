@@ -60,6 +60,7 @@ sub lc_for_project {
     my @nodes = (
           {
             node => 'Topics',
+            draggable => \0,
             icon => '/static/images/icons/topic.png',
             url => '/lifecycle/tree_topics_project',
             has_query => 1,
@@ -75,6 +76,7 @@ sub lc_for_project {
           },
           {
             node => 'Releases',
+            draggable => \0,
             icon => '/static/images/icons/release_explorer.png',
             url => '/lifecycle/tree_project_releases',
             type => 'component',
@@ -84,6 +86,7 @@ sub lc_for_project {
     push @nodes,
     {
         node => 'Dashboards',
+        draggable => \0,
         icon => '/static/images/icons/dashboard.png',
         url => '/dashboard/dashboard_list',
         has_query => 1,
@@ -95,6 +98,7 @@ sub lc_for_project {
 
         push @nodes, {
             'node' => 'Jobs',
+            draggable => \0,
             'icon' => '/static/images/icons/job.png',
             'url' => '/lifecycle/tree_project_jobs',
             'type' => 'component',
@@ -121,6 +125,7 @@ sub lc_for_project {
                     }
                   ],
         'url' => '/fileversion/tree_file_project',
+        draggable => \0,
         'data' => {
                     id_folder => '',
                     'on_drop' => {
@@ -140,6 +145,7 @@ sub lc_for_project {
                 my $repo = ci->new( $id_repo );
                 push @nodes, {
                   node   => $repo->name,
+                  draggable => \0,
                   type   => 'changeset',
                   url    => $repo->content_url,
                   active => 1,
@@ -156,6 +162,7 @@ sub lc_for_project {
                 push @nodes, {
                   node    => substr($msg,0,80),
                   active  => 1,
+                  draggable => \0,
                   leaf    => \1,
                   icon    => '/static/images/icons/error.png',
                   data    => { id_repo => $id_repo }
@@ -196,6 +203,7 @@ sub lc_for_project {
                 +{  node   => !$bls_text || $bls_text eq '*' ? $_->{name}:"$_->{name} [$bls_text]",
                 type   => 'state',
                 active => 1,
+                draggable => \0,
                 data => { id_status => $_->{id_status}, },
                 bl     => $bls[0],
                 bl_to  => $bls[0],                               # XXX
@@ -214,6 +222,7 @@ sub lc_for_project {
         push @nodes, {
           node    => $msg,
           active  => 1,
+          draggable => \0,
           leaf    => \1,
           icon    => '/static/images/icons/error.png',
         };
