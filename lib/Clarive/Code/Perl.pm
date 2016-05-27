@@ -27,7 +27,7 @@ EOF
 
     local $@;
     my @ret = eval $code;
-    die $@ if $@;
+    die "$@" if $@;
 
     return @ret == 1 ? $ret[0] : \@ret;
 }

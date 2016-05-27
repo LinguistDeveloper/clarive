@@ -10,6 +10,8 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
 
+use Capture::Tiny qw(capture);
+
 use_ok 'Clarive::Code::Perl';
 
 subtest 'executes perl' => sub {
@@ -50,16 +52,36 @@ subtest 'rethrows errors' => sub {
     like exception { $code->eval_code('die "here"') }, qr/here at EVAL line 1/;
 };
 
+subtest 'rethrows errors with object exceptions' => sub {
+    my $code = _build_code();
+
+    my $e = exception {
+        $code->eval_code(<<'EOF') };
+package X;
+use overload
+    '""' => sub { 'error' };
+sub new { bless { }, $_[0] }
+
+die X->new
+EOF
+
+    ok !ref $e;
+    like $e, qr/error/;
+};
+
 subtest 'rethrows errors with zeroish exceptions' => sub {
     my $code = _build_code();
 
     like exception { $code->eval_code('die ""') }, qr/Died at EVAL line 1/;
-    like exception { $code->eval_code('die 0') }, qr/0 at EVAL line 1/;
-    like exception { $code->eval_code('die undef') }, qr/Died at EVAL line 1/;
+    like exception { $code->eval_code('die 0') },  qr/0 at EVAL line 1/;
+
+    capture {
+        like exception { $code->eval_code('die undef') }, qr/Died at EVAL line 1/;
+    };
 };
 
 subtest 'rethrows errors with filename' => sub {
-    my $code = _build_code(filename => 'some-file.pl');
+    my $code = _build_code( filename => 'some-file.pl' );
 
     like exception { $code->eval_code('die "here"') }, qr/here at some-file.pl line 1/;
 };
