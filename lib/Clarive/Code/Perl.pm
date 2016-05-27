@@ -16,6 +16,7 @@ sub eval_code {
 use utf8;
 binmode STDOUT, ':utf8';
 binmode STDERR, ':utf8';
+use v5.10;
 use Baseliner::Utils;
 EOF
 
@@ -25,10 +26,10 @@ EOF
     $code = $preamble . $code;
 
     local $@;
-    my $ret = eval $code;
+    my @ret = eval $code;
     die $@ if $@;
 
-    return $ret;
+    return @ret == 1 ? $ret[0] : \@ret;
 }
 
 1;

@@ -20,6 +20,22 @@ subtest 'executes perl' => sub {
     is $ret, 2;
 };
 
+subtest 'returns multiple values as array ref' => sub {
+    my $code = _build_code();
+
+    my $ret = $code->eval_code('(1, 2, 3)');
+
+    is_deeply $ret, [1, 2, 3];
+};
+
+subtest 'executes perl > 5.10' => sub {
+    my $code = _build_code();
+
+    my $ret = $code->eval_code('say "hi"');
+
+    is $ret, 1;
+};
+
 subtest 'no error when not a true value' => sub {
     my $code = _build_code();
 
