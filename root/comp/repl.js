@@ -261,7 +261,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
             var f = form.getForm();
-            f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
+            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o } });
         }
     }
 
