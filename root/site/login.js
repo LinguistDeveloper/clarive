@@ -94,15 +94,17 @@ Ext.onReady(function() {
             xtype: 'textfield',
             name: 'login',
             width: "95%",
-            fieldLabel: "<% _loc('Username') %>",
+            height: '24px',
+            fieldLabel: _('Username'),
             selectOnFocus: true,
             allowBlank: false
         }, {
             xtype: 'textfield',
             name: 'password',
+            height: '24px',
             width: "95%",
             inputType: 'password',
-            fieldLabel: "<% _loc('Password') %>",
+            fieldLabel: _('Password'),
             selectOnFocus: true
         }],
         listeners: {
