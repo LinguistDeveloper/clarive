@@ -12,6 +12,7 @@
     var days_from = params.data.days_from || 0;
     var days_from_format_date = params.data.days_from_format_date || 0;
     var graph_type = params.data.type || 'area';
+    var format = '%Y/%m/%d';
 
     Cla.ajax_json('/dashboard/topics_burndown_ng', {
             topic_mid: topic_mid,
@@ -39,10 +40,21 @@
             _ignore_conn_errors: true
         },
         function(res) {
+            var xFormat;
+            if (params.data.scale == 'hour') {
+                xFormat = '%Y-%m-%d %H';
+            } else if (params.data.scale == 'day') {
+                xFormat = '%Y-%m-%d';
+            } else if (params.data.scale == 'month') {
+                xFormat = '%Y-%m';
+            } else if (params.data.scale == 'year') {
+                xFormat = '%Y';
+            }
             graph = c3.generate({
                 bindto: '#' + id,
                 data: {
                     x: 'x',
+                    xFormat: xFormat,
                     columns: res.data,
                     types: {
                         Topics: graph_type,
@@ -51,10 +63,8 @@
                 },
                 bar: {
                     width: {
-                        ratio: 0.4 // this makes bar width 50% of length between ticks
+                        ratio: 0.4
                     }
-                    // or
-                    //width: 100 // this makes bar width 100px
                 },
                 point: {
                     show: false
@@ -69,16 +79,16 @@
                 },
                 axis: {
                     x: {
-                        type: 'category',
+                        type: 'timeseries',
                         tick: {
                             rotate: 90,
+                            format: format,
                             multiline: false
                         },
                         label: {
                             text: res.date,
                             position: 'outer-center'
                         }
-
                     },
                     y: {
                         label: {
@@ -89,8 +99,7 @@
                 },
                 regions: [{
                     axis: 'x',
-                    start: 8,
-                    end: 18,
+                    start: new Date(),
                     class: 'workhours'
                 }]
             });
