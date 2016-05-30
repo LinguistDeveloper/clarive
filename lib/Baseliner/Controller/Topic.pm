@@ -822,7 +822,6 @@ sub comment : Local {
                     $text->{username} = $post->{created_by};
                     $text->{created_on} = $post->{created_on};
                     $text->{text} = $post->text;
-                    print $text->{text};
                     push @old_post, $text if($text);
                 }
                 @old_post = sort { $b->{created_on} cmp $a->{created_on} } @old_post;

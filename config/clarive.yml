@@ -105,6 +105,13 @@ baseliner:
     header_init:
         show_lifecycle: 1
     # toolbar_height: 45
+
+#   Allow either case sensitive in login:
+##   Users saved with "UPPERCASE" in database
+#    user_case: uc
+##   Users saved with "lowercase" in database
+#    user_case: lc
+
 # CAS authentication
     # cas_auth: 
     #   active: 1

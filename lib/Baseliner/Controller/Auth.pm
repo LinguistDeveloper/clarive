@@ -157,13 +157,19 @@ sub authenticate : Private {
     my ( $self, $c ) = @_;
     my $login = $c->stash->{login} // _throw _loc('Missing login');
     my $password = $c->stash->{password};
+    my $user_case = $c->stash->{user_case} // '';
     my ( $realm, $username ) = $login =~ m{^(\w+)/(.+)$};
     $username //= $login;
     $realm //= '';
+    if( $realm ne 'local' and $user_case ne '' ){
+        $username = $user_case eq 'uc' ? uc($username) : ( $user_case eq 'lc' ) ? lc($username) : $username;
+        $realm = $realm ? ( $user_case eq 'uc' ? uc($realm) : ( $user_case eq 'lc' ) ? lc($realm) : $realm ) : $realm;
+        $login = $user_case eq 'uc' ? uc($login) : ( $user_case eq 'lc' ) ? lc($login) : $login;
+    }
     my $auth;
     _debug "AUTH START login=$login, username=$username, realm=$realm";
 
-    my $maintenance = $c->model('ConfigStore')->get('config.maintenance');
+    my $maintenance = BaselinerX::Type::Model::ConfigStore->new->get('config.maintenance');
     if ( $maintenance->{enabled} && $realm ne 'local' ) {
         $c->logout;
         $c->stash->{auth_message} = $maintenance->{message};
@@ -177,7 +183,8 @@ sub authenticate : Private {
         username   => $username,
         login_data => { login_ok => undef }
     };
-    if ( !ci->user->find_one( { name => "$username" } ) && $username ne 'local/root' ) {
+
+    if ( !ci->user->find_one( { username => "$username" } ) && $login ne 'local/root' ) {
         $auth_stash->{login} = $login . " (user not exists)";
     }
     event_new 'event.auth.attempt' => $auth_stash;
@@ -226,8 +233,8 @@ sub authenticate : Private {
     }
     else {
         # default realm authentication:
-        $auth = $c->authenticate( { id => $login, password => $password } );
 
+        $auth = $c->authenticate( { id => $login, password => $password } );
         if ( lc( $c->config->{authentication}->{default_realm} // '' ) eq 'none' ) {
 
             # User (internal) auth when realm is 'none'
@@ -276,7 +283,7 @@ sub authenticate : Private {
 sub login : Global {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $login= $c->stash->{login} // $p->{login};
+    my $login = $c->stash->{login} // $p->{login};
     my $password = $c->stash->{password} // $p->{password};
 
     if ( !$login ) {
@@ -289,9 +296,7 @@ sub login : Global {
 
     # configure user login case
     my $case = $c->config->{user_case} // '';
-    my $config_login = $c->model('ConfigStore')->get('config.login');
-    $login= $case eq 'uc' ? uc($login)
-     : ( $case eq 'lc' ) ? lc($login) : $login;
+    my $config_login = BaselinerX::Type::Model::ConfigStore->new->get('config.login');
     $c->log->info( "LOGIN: " . $login );
     #_log "PW   : " . $password; #XXX only for testing!
     my $msg;
@@ -314,6 +319,7 @@ sub login : Global {
             # go to the main authentication worker
             $c->stash->{login} = $login;
             $c->stash->{password} = $password;
+            $c->stash->{user_case} = $case;
             my $auth_ok = $self->authenticate($c);
             $msg = $c->stash->{auth_message};
             # check if user logins correctly into corresponding realm
