@@ -383,6 +383,22 @@ subtest 'grid: set save to true when has admin permissions' => sub {
       };
 };
 
+subtest 'grid: use customized grid when it exists' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { collection => 'test_area' } }, username => 'root' );
+
+    my $controller = _build_controller();
+
+    $controller->grid($c);
+
+    is_deeply $c->stash,
+      {
+        'save'     => 'true',
+        'template' => '/comp/ci-custom_grid_area.js'
+      };
+};
+
 subtest 'edit: cannot save when not admin' => sub {
     _setup();
 
@@ -1735,7 +1751,8 @@ sub _setup {
         'BaselinerX::Type::Event',   'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',            'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',   'Baseliner::Model::Rules',
-        'BaselinerX::Type::Service', 'BaselinerX::CI::GitRepository'
+        'BaselinerX::Type::Service', 'BaselinerX::CI::GitRepository',
+        'BaselinerX::CI::area'
     );
 
     TestUtils->cleanup_cis();
@@ -1745,4 +1762,13 @@ sub _setup {
     mdb->topic->drop;
     mdb->rule->drop;
     mdb->master_rel->drop;
+}
+
+package BaselinerX::CI::test_area;
+{
+
+    sub icon        {'/static/images/icons/area.svg'}
+    sub custom_grid {'/comp/ci-custom_grid_area.js'}
+
+    1;
 }

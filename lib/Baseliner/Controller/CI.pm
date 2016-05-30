@@ -1713,14 +1713,18 @@ sub grid : Local {
 
     my $permissions = $self->_build_permissions;
 
-    my $has_permission_to_save = $permissions->user_can_admin_ci($c->username, $collection);
+    my $has_permission_to_save = $permissions->user_can_admin_ci( $c->username, $collection );
+
+    my $class = Util->to_ci_class($collection);
+
+    my $template =  $class->can('custom_grid') ?  $class->custom_grid : '/comp/ci-gridtree.js';
 
     $c->stash->{save} = $has_permission_to_save ? 'true' : 'false';
-    $c->stash->{template} = '/comp/ci-gridtree.js';
+    $c->stash->{template} = $template;
 }
 
 sub index_sync : Local {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
     _debug 'Deprecated';
 }
 
