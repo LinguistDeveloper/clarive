@@ -4316,15 +4316,13 @@ Baseliner.generic_list_fields = function(params,opts){
         ret.push({ xtype:'hidden', name:'fieldletType', value: rec.data.value_type == 'single' });
     });
     var filter_name = _(opts.filter_name) || _('Advanced Filter JSON');
-    var json_field = new Ext.form.TextArea({ name:'filter', vtype: 'json', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
+    var json_field = new Ext.form.TextArea({ name:'filter' ,vtype: 'json', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
     var display_field = new Ext.form.TextField({ name:'display_field', fieldLabel: _('Display Field'), anchor:'100%', value: data.display_field==undefined?'title':data.display_field });
     var ret = [
         value_combo,
         list_type,
         display_field,
-        json_field //,
-        // { xtype: 'button', icon: IC('wrench.gif'), style:{ width: 50 }, fieldLabel:' ', text:_('Generate JSON Statement'),
-        //     handler: function(){ Cla.json_filter_builder(json_field) } }
+        json_field
     ];
     return ret;
 };

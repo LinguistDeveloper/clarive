@@ -1799,12 +1799,11 @@ sub list_users : Local {
         }
 
         if ( $roles && $roles ne 'none' ) {
-            my @name_roles = _array $roles;
-            my @id_roles = map { $_->{id} } mdb->role->find( { role => mdb->in(@name_roles) } )->all;
+            my @roles = _array $roles;
 
-            if (@id_roles) {
+            if (@roles) {
                 $users_friends = Baseliner::Model::Users->new->get_users_from_mid_roles(
-                    roles    => \@id_roles,
+                    roles    => \@roles,
                     projects => \@topic_projects
                 );
             }
