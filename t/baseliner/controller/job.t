@@ -620,6 +620,45 @@ subtest 'submit: creates a new job' => sub {
       };
 };
 
+subtest 'submit: deletes job_log when ci job is deleted' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $id_rule = TestSetup->create_rule(rule_type => "pipeline",rule_when => "promote");
+
+    my $job;
+
+    capture {
+        $job = TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets => [$changeset]
+        );
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'developer',
+        req      => { params => { action => 'delete', mid => $job->{mid}, mode => 'delete' } }
+    );
+
+    my $job_log = mdb->job_log->find_one( { mid => $job->{mid} } );
+
+    my $controller = _build_controller();
+
+    $controller->submit($c);
+
+    my $count_doc_log = mdb->master_doc->count({ collection => 'job',mid => $job->{mid}});;
+    my $data_grid = mdb->grid->find_one({_id => $job_log->{data}});
+
+    ok !defined $data_grid;
+    is $count_doc_log, 0;
+};
+
 subtest 'submit: creates a new job with rule version tag' => sub {
     _setup();
 
@@ -742,6 +781,8 @@ sub _setup {
         'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',
         'Baseliner::Model::Jobs',
+        'BaselinerX::CI::job',
+        'BaselinerX::Type::Statement'
     );
 
     TestUtils->cleanup_cis;
@@ -749,6 +790,7 @@ sub _setup {
     mdb->rule->drop;
     mdb->rule_version->drop;
     mdb->role->drop;
+    mdb->job_log->drop;
 
     TestUtils->create_ci('bl', name => 'Common', bl => '*');
     TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');
