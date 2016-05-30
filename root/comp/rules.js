@@ -988,7 +988,8 @@
                             "bd_field": id_field,
                             "fieldletType": node.attributes.key,
                             "editable": "1",
-                            "hidden": "0"
+                            "hidden": "0",
+                            "active": "1"
                         };
                         node.setText(name_field);
 
