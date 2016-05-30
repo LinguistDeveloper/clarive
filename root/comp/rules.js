@@ -675,6 +675,7 @@
             var copy = clipboard.mode=='copy' ? clone_node( clipboard.node ) : clipboard.node;
             var field_name_is_ok = true;
             if (/fieldlet./.test(copy.attributes.key) && clipboard.mode=='copy'){
+                delete copy.attributes.data.id_field;
                 var root = node.getOwnerTree().getRootNode();
                 configureTextField(root, copy, {
                     name_field: copy.attributes.data.name_field
