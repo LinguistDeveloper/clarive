@@ -8,32 +8,40 @@
 <%perl>
 my $iid = Util->_md5;
 my @topics;
-if( ! $meta->{hidden} ) { 
-    my $names = { name=>'ID', name=>'ID', title=>'Title', name_status=>'Status', created_by=>'Created By', created_on=>'Created On', modified_by=>'Modified By', modified_on=>'Modified On' };
-    
-    my $ix = 0;
-    @topics = Util->_array( $data->{$meta->{id_field}} );
-    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
-        [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
+if( ! $meta->{hidden} ) {
+    my $names = {
+        name        => 'ID',
+        name        => 'ID',
+        title       => 'Title',
+        name_status => 'Status',
+        created_by  => 'Created By',
+        created_on  => 'Created On',
+        modified_by => 'Modified By',
+        modified_on => 'Modified On'
     };
-    
-    my @head =  map { 
-    my $nid= $_->[0];
-        +{ key=>$nid, name=>( $names->{$nid} // $_->[1] || $_->[0] ), width=>$_->[3], type=>$_->[2] }
-    } @$cols; 
-    if( ! @head ) {
-        @head = map { +{ key=>$_, name=>( $names->{$_} // $_ )  } } qw/name title name_status created_by created_on modified_by modified_on/
+
+    my $ix = 0;
+    @topics = Util->_array( $data->{ $meta->{id_field} } );
+    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
+        [ map { [ split /,/ ] } split /;/, $meta->{columns} ];
+    };
+
+    my @head = map {
+        my $nid = $_->[0];
+        +{ key => $nid, name => ( $names->{$nid} // $_->[1] || $_->[0] ), width => $_->[3], type => $_->[2] }
+    } @$cols;
+    if ( !@head ) {
+        @head = map { +{ key => $_, name => ( $names->{$_} // $_ ) } }
+          qw/name title name_status created_by created_on modified_by modified_on/;
     }
     my @hide_list_statuses;
     @hide_list_statuses = map { [ split /,/ ] } $meta->{hide_list_statuses} if $meta->{hide_list_statuses};
 
     my @topics_mids = map { $_->{mid} } @topics;
-    my @related_mids = map { $_->{to_mid} } mdb->master_rel->find({ 'from_mid' => mdb->in(@topics_mids) })->all;
-    push @related_mids, map { $_->{from_mid} } mdb->master_rel->find({ 'to_mid' => mdb->in(@topics_mids) })->all;
+    my @related_mids = map { $_->{to_mid} } mdb->master_rel->find( { 'from_mid' => mdb->in(@topics_mids) } )->all;
+    push @related_mids, map { $_->{from_mid} } mdb->master_rel->find( { 'to_mid' => mdb->in(@topics_mids) } )->all;
 
-    my %related_cis = map { $_->{mid} => $_->{name} } mdb->master->find({ mid => mdb->in(@related_mids)})->all;
-
-_warn \%related_cis;
+    my %related_cis = map { $_->{mid} => $_->{name} } mdb->master->find( { mid => mdb->in(@related_mids) } )->all;
 </%perl>
     
     <tr>
@@ -52,10 +60,24 @@ _warn \%related_cis;
         </th>
     </tr>
     <tr>
-% if (@hide_list_statuses && scalar @hide_list_statuses > 0){ for my $status (_array @hide_list_statuses){ @topics = grep { $_->{"category_status"}{type} ne "$status" } @topics } };
+
+% if ( @hide_list_statuses && scalar @hide_list_statuses > 0 ) {
+%     for my $status ( _array @hide_list_statuses ) {
+%         @topics = grep { $_->{"category_status"}{type} ne "$status" } @topics;
+%     }
+% }
+
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 
-% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username => $c->username, topic_security=>$_->{_project_security}, user_security=>$user_security) } @topics;
+% @topics = grep {
+%     $c->model('Permissions')->user_can_topic_by_project(
+%         mid            => $_->{mid},
+%         username       => $c->username,
+%         topic_security => $_->{_project_security},
+%         user_security  => $user_security
+%       )
+% } @topics;
+
 % if( @topics && scalar @topics > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>
@@ -79,19 +101,24 @@ _warn \%related_cis;
 %    } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
 %    } elsif( $$h{type} eq 'ci' ) {
-            <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% ref $val ? Util->_markdown(join("<br>", map {$related_cis{$_}} _array($val)), { tab_width=>2 }) : Util->_markdown($related_cis{$val}, { tab_width=>2 }) %></td>
+%        $val = ref $val
+%          ? Util->_markdown( join( "<br>", map { $related_cis{$_} } _array($val) ), { tab_width => 2 } )
+%          : Util->_markdown( $related_cis{$val}, { tab_width => 2 } );
+            <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $val %></td>
 %    } elsif( $$h{key} eq 'name_status' ) {
             <& /partial/topic_status.html, topic=>$topic &>
 %    } else {
             <td style="font-size: <% $meta->{td_font_size} // 10 %>px" class="fieldlet-html">
 <%
-                            ( defined $$h{type} && $$h{type} eq 'checkbox' )
-                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.svg">' : '<img src="/static/images/icons/checkbox.svg">')
-                            : ( defined $$h{type} && $$h{type}  eq 'index')
-                            ? ++$ix
-                            : ref $val ? Util->_markdown(join("<br>", _array($val)), { tab_width=>2 }) : Util->_markdown($val, { tab_width=>2 })
+        ( defined $$h{type} && $$h{type} eq 'checkbox' )
+          ? ( !$val || $val eq 'false'
+            ? '<img src="/static/images/icons/close.svg">'
+            : '<img src="/static/images/icons/checkbox.svg">' )
+          : ( defined $$h{type} && $$h{type} eq 'index' ) ? ++$ix
+          : ref $val ? Util->_markdown( join( "<br>", _array($val) ), { tab_width => 2 } )
+          : Util->_markdown( $val, { tab_width => 2 } )
+%>
 
-                        %>
 %    }
              </td>
 % }
