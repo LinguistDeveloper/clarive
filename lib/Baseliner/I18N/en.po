@@ -3302,18 +3302,6 @@ msgstr ""
 msgid "\" . $reg_fieldlet->{name} . \""
 msgstr ""
 
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Skipping migration %1 on user request"
-msgstr ""
-
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Running migration %1 (%2)..."
-msgstr ""
-
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Migration source not found: %1. Rolling back..."
-msgstr ""
-
 #: lib/Baseliner/Sem.pm
 msgid "Timeout wating for semaphore: %1s"
 msgstr ""

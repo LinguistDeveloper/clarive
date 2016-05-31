@@ -3335,18 +3335,6 @@ msgstr ""
 msgid "\" . $reg_fieldlet->{name} . \""
 msgstr ""
 
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Skipping migration %1 on user request"
-msgstr ""
-
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Running migration %1 (%2)..."
-msgstr ""
-
-#: lib/Baseliner/Schema/Migrator.pm
-msgid "Migration source not found: %1. Rolling back..."
-msgstr "Fuente de la migración no encontrada: %1. Marcha atrás..."
-
 #: lib/Baseliner/Sem.pm
 msgid "Timeout wating for semaphore: %1s"
 msgstr ""
@@ -14018,6 +14006,9 @@ msgstr "destino"
 
 #~ msgid "Relationship deleted ok"
 #~ msgstr "Relación borrada correctamente"
+
+#~ msgid "Migration source not found: %1. Rolling back..."
+#~ msgstr "Fuente de la migración no encontrada: %1. Marcha atrás..."
 
 #~ msgid "Rule not found"
 #~ msgstr "Regla no encontrada"

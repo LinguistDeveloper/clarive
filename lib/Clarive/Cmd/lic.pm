@@ -4,7 +4,7 @@ extends 'Clarive::Cmd';
 use v5.10;
 
 my $ss = join '', qw(l i c e n s e);
-our $CAPTION = $ss . ' verification';
+our $CAPTION = 'license verification';
 
 our $t0;
 

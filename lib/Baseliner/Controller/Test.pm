@@ -11,7 +11,8 @@ sub setup : Local {
     if ( $ENV{CLARIVE_TEST} ) {
         my $dbname = Clarive->config->{mongo}->{dbname};
 
-        die "Database '$dbname' doesn't look like a test database to me" unless $dbname && $dbname =~ m/^test/;
+        die "Database '$dbname' doesn't look like a test database to me"
+          unless $dbname && ( $dbname eq 'acmetest' || $dbname =~ m/^test/ );
 
         if (my $profile = $c->req->params->{profile}) {
             $self->_create_profile($profile)->setup;

@@ -12,6 +12,8 @@ our $INIT;
 our $INSTALLED_LANGUAGES = {};
 our $LANGUAGES           = ['en'];
 
+sub file { __FILE__ }
+
 sub setup {
     my ( $class, %options ) = @_;
 
@@ -27,7 +29,7 @@ sub setup {
             push @$paths, @feature_paths;
         }
 
-        my ($path) = __FILE__ =~ m/^(.*)\.pm$/;
+        my ($path) = $class->file =~ m/^(.*)\.pm$/;
         push @$paths, $path;
     }
 
@@ -53,7 +55,7 @@ sub installed_languages {
 
     return $INSTALLED_LANGUAGES if %$INSTALLED_LANGUAGES;
 
-    my ($path) = __FILE__ =~ m/^(.*)\.pm$/;
+    my ($path) = $class->file =~ m/^(.*)\.pm$/;
 
     my $languages_list = {};
     if ( opendir my $langdir, $path ) {
@@ -93,7 +95,7 @@ sub language {
 sub localize {
     my $class = shift;
 
-    my @args = map { defined ? $_ : '' } @_;
+    my @args = map { defined($_) ? $_ : '' } @_;
 
     my $handle = $class->_get_handle();
 
@@ -149,9 +151,10 @@ sub _get_handle {
 
     my @langtags = @{ $class->languages };
     my $handle   = $class->get_handle(@langtags);
-    $handle->fail_with('failure_handler_auto');
 
     croak "Can't get language handle for @langtags" unless $handle;
+
+    $handle->fail_with('failure_handler_auto');
 
     return $handle;
 }

@@ -45,7 +45,7 @@ subtest 'process.title: returns title' => sub {
         process.title();
 EOF
 
-    my $file = __FILE__;
+    my $file = $0;
     like $ret, qr/$file/;
 };
 
