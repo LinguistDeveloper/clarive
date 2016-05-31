@@ -270,11 +270,11 @@ sub update : Local {
     return
       unless my $p = $self->validate_params(
         $c,
-        id          => { isa => 'Str', default => undef },
+        id          => { isa => 'Str',           default => undef },
         name        => { isa => 'Str' },
-        description => { isa => 'Str', default => undef },
-        mailbox     => { isa => 'Str', default => undef },
-        dashboards  => { isa => 'Str', default => [] },
+        description => { isa => 'Str',           default => undef },
+        mailbox     => { isa => 'Str',           default => undef },
+        dashboards  => { isa => 'StrOrArrayRef', default => [] },
         role_actions => { isa => 'ArrayJSON', default => [], default_on_error => 1 },
       );
 

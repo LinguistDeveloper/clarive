@@ -37,6 +37,10 @@ subtype 'TimeStr', as 'Str', where {
     return 1;
 };
 
+subtype 'StrOrArrayRef', as 'ArrayRef[Str]';
+coerce 'StrOrArrayRef' =>
+  from 'Str' => via { [$_] };
+
 subtype 'ID', as 'Str';
 
 subtype 'GitBranch', as 'Str', where { m/^[[:alnum:]\-_#\.]+$/ };
