@@ -1,9 +1,9 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
+use Test::TempDir::Tiny;
 
 use TestEnv;
 
@@ -16,6 +16,8 @@ BEGIN {
 
     TestEnv->setup();
 }
+use TestUtils;
+use TestGit;
 
 use_ok 'Clarive::App';
 
@@ -103,6 +105,71 @@ subtest 'paths_to: returns all available existings files' => sub {
 
     is scalar @paths, 1;
     like $paths[0], qr{app-base/features/testfeature/docs/en};
+};
+
+subtest 'version: detects version from VERSION file' => sub {
+    my $cwd = Cwd::getcwd();
+
+    my $tempdir = tempdir();
+
+    mkdir "$tempdir/config";
+    mkdir "$tempdir/clarive";
+
+    TestUtils->write_file("---\n", "$tempdir/config/acmetest.yml");
+    TestUtils->write_file("1.2.3", "$tempdir/clarive/VERSION");
+
+    my $app = Clarive::App->new(
+        base   => "$tempdir",
+        home   => "$tempdir/clarive"
+    );
+
+    is $app->version, '1.2.3';
+
+    chdir $cwd;
+};
+
+subtest 'version: detects version from .git' => sub {
+    my $cwd = Cwd::getcwd();
+
+    my $tempdir = tempdir();
+
+    my $repo = TestGit->create_repo(dir => "$tempdir/clarive");
+    TestGit->commit($repo);
+    TestGit->tag($repo);
+
+    mkdir "$tempdir/config";
+
+    TestUtils->write_file("---\n", "$tempdir/config/acmetest.yml");
+
+    my $app = Clarive::App->new(
+        base   => "$tempdir",
+        home   => "$tempdir/clarive"
+    );
+
+    ok $app->version;
+
+    chdir $cwd;
+};
+
+subtest 'version: returns nothing when cannot detect version' => sub {
+    my $cwd = Cwd::getcwd();
+
+    my $tempdir = tempdir();
+
+    mkdir "$tempdir/config";
+
+    TestUtils->write_file("---\n", "$tempdir/config/acmetest.yml");
+
+    chdir "$tempdir/clarive";
+
+    my $app = Clarive::App->new(
+        base   => "$tempdir",
+        home   => "$tempdir/clarive"
+    );
+
+    is $app->version, '';
+
+    chdir $cwd;
 };
 
 done_testing;
