@@ -1,143 +1,24 @@
 package Baseliner::Model::Permissions;
 use Moose;
-use Baseliner::Core::Registry ':dsl';
-extends qw/Catalyst::Model/;
-use Baseliner::Utils;
-use Data::Dumper;
-use Baseliner::Sugar;
-use Baseliner::Model::Users;
+BEGIN { extends 'Catalyst::Model' }
+
 use Array::Utils qw(intersect);
 use Try::Tiny;
-use experimental 'autoderef', 'smartmatch';
-=head1 NAME
+use experimental 'autoderef', 'smartmatch', 'signatures';
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Utils;
+use Baseliner::Sugar;
+use BaselinerX::Type::Model::Actions;
 
-Baseliner::Model::Permissions - Role and action management
-
-=head1 DESCRIPTION
-
-This module has several utilities to manage users' actions and roles.
-
-=head1 ACTIONS
-
-=head2 action.admin.root
-
-This is the master action that allows a user to do anything in the system.
-
-=cut
-
-register 'action.admin.root' => { name=>'Root action - can do anything' };
-
-=head1 METHODS
-
-=head2 create_role $name, $description
-
-Creates a Role
-
-=cut
-# XXX deprecated - not used anywhere? strange role name based creation
-sub create_role {
-    my ($self, $name, $description ) = @_;
-
-    $description ||= _loc( 'The %1 role', $name );
-    my $role = mdb->role->find_one({ role=>$name });
-    if($role ){
-        mdb->role->update({ role=>$name }, {'$set' => { id=>$role->{id}, role=>$name, description=>$description } } );
-    } else {
-        mdb->role->insert({ id=>mdb->seq('role'), role=>$name, description=>$description });
-    }
-    return mdb->role->find_one({ role=>$name });
+sub role_exists ($self, $role_name) {
+    return !!mdb->role->find_one( { role => $role_name }, { _id => 1 } );
 }
 
-=head2 role_exists $role_name
+sub has_role_action ($self, %p) {
+    _check_parameters( \%p, qw/role action/ );
 
-Returns a role row or undef if it doesn't exist.
-
-=cut
-sub role_exists {
-    my ($self, $role_name ) = @_;
-    return !! mdb->role->find_one({ role=>$role_name },{ _id=>1 });  # faster than count
-}
-
-=head2 add_action $action, $role_name
-
-Adds an action to a role.
-
-=cut
-# XXX deprecated - not used anywhere? strange role name based creation
-sub add_action {
-    my ($self, $action, $role_name, %p ) = @_;
-    my $bl = $p{bl} || '*';
-    my $role = mdb->role->find_one({ role=>$role_name });
-    if( ref $role ) {
-        if(grep { $_->{action} eq $action } @{$role->{actions}}) {
-            die _loc( 'Action %1 already belongs to role %2', $action, $role_name );
-        } else {
-            push @{ $role->{actions} }, { action => $action, bl=>$bl };
-            mdb->role->update({ role=>$role->{role} }, $role );
-            return $role;
-        }
-    } else {
-        die _loc( 'Role %1 not found', $role_name );
-    }
-}
-
-=head2 remove_action $action, $role_name
-
-Removes an action from a role.
-
-=cut
-# XXX deprecated - not used anywhere? strange role name based creation
-sub remove_action {
-    my ($self, $action, $role_name, %p ) = @_;
-    my $bl = $p{bl} || '*';
-    my $role = mdb->role->find_one({ role=>$role_name });
-    if( ref $role ) {
-        #my $actions = $role->bali_roleactions->search({ action=>$action })->delete;
-        my @actions = grep { !($action eq $_->{action} && $bl eq $_->{bl}) } @{$role->{actions}};
-        $role->{actions} = \@actions;
-        mdb->role->update({ id=>$role->{id} }, $role);
-    } else {
-        die _loc( 'Role %1 not found', $role_name );
-    }
-}
-
-=head2 delete_role [ id=>Int or role=>Str ]
-
-Deletes a role by role id or by role name.
-
-=cut
-# XXX deprecated - not used anywhere? strange role name based creation
-sub delete_role {
-    my ( $self, %p ) = @_;
-
-    if( $p{id} ) {
-        my $role = mdb->role->find_one({ id=>$p{id} });
-        die _loc( 'Role with id "%1" not found', $p{id} ) unless ref $role;
-        my $role_name = $role->{role};
-        mdb->role->remove({ role=>$role_name, id=>$p{id} });
-        return $role_name;
-    } else {
-        my @role_names;
-        my @roles = mdb->role->find({ role=>$p{role} })->all;
-        unless( @roles ) {
-            die _loc( "Role with id '%1' or name '%2' not found", $p{id}, $p{role} );
-        } else {
-            foreach my $role (@roles){
-                push @role_names, $role->{role};
-                mdb->role->remove({ id=>$role->{id} });
-            }
-        }
-        return @role_names;
-    }
-}
-
-sub has_role_action {
-    my $self = shift;
-    my ( %params ) = @_;
-
-    my $action = $params{action} or _fail 'action required';
-    my $role = $params{role} or _fail 'role required';
-    return 0 unless $role;
+    my $role   = $p{role};
+    my $action = $p{action};
 
     if ( grep { $_->{action} eq $action } @{ $role->{actions} } ) {
         return 1;
@@ -147,27 +28,23 @@ sub has_role_action {
     }
 }
 
-=head2 user_has_action username=>Str, action=>Str
-
-Returns true if a user has a given action.
-
-=cut
-sub user_has_action {
-    my ($self, %p ) = @_;
+sub user_has_action ($self, %p) {
     _check_parameters( \%p, qw/username action/ );
+
     my $username = $p{username};
     my $action = delete $p{action};
-    my $ret = 0;
+
     return 1 if $self->is_root( $username );
 
+    my $ret = 0;
     if ( $p{mid} ) {
         my @return = grep { /$action/ } _array($self->user_actions_by_topic(%p)->{positive});
         $ret = !!@return;
     } else {
-        push my @bl, _array $p{bl}, '*';
-        return 1 if $username eq 'root';  # root can surrogate always
-        return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
-        $ret = scalar grep {$action eq $_ } Baseliner::Model::Users->new()->get_actions_from_user($username, @bl);
+        my @bl = _array $p{bl};
+        push @bl, '*' if !@bl || !grep { $_ eq '*' } @bl;
+
+        $ret = scalar grep {$action eq $_ } $self->_get_actions_from_user($username, @bl);
     }
     if( $p{fail} && !$ret ) {
         _fail _loc 'User %1 does not have permissions to action %2', $username, $action;
@@ -175,18 +52,14 @@ sub user_has_action {
     return $ret;
 }
 
-=head2 user_has_action username=>Str, action=>Str
-
-Returns true if a user has a given action.
-
-=cut
-sub user_has_read_action {
-    my ($self, %p ) = @_;
+sub user_has_read_action ($self, %p) {
     _check_parameters( \%p, qw/username action/ );
+
     my $username = $p{username};
     my $action = $p{action};
 
     return 0 if $self->is_root( $username );
+
     my @roles = keys ci->user->find_one({username => $username},{ project_security=>1 })->{project_security};
 
     my @actions;
@@ -213,9 +86,9 @@ sub user_has_read_action {
     return $has_action;
 }
 
-sub user_has_any_action {
-    my ($self, %p ) = @_;
+sub user_has_any_action ($self, %p) {
     _check_parameters( \%p, qw/username action/ );
+
     my $username = $p{username};
     my $action = $p{action};
     my $bl = $p{bl} // '*';
@@ -224,39 +97,47 @@ sub user_has_any_action {
     return scalar @actions;
 }
 
-sub user_actions_list {
-    my ( $self, %p ) = @_;
+sub user_actions_list ($self, %p) {
     _check_parameters( \%p, qw/username/ );
+
     my $username = $p{username};
-    my $actionSQL = $p{action};
     my $action   = delete $p{action} // qr/.*/;
-    my $mid = $p{mid};
+    my $mid      = $p{mid};
+
     my $regexp_action;
 
     if ( !ref $action ) {
         $action =~ s/\./\\\./g;
         $action =~ s/%/\.\*/g;
         $regexp_action = qr/$action/;
-    } elsif ( ref $action eq 'Regexp' ) {
+    }
+    elsif ( ref $action eq 'Regexp' ) {
         $regexp_action = $action;
-    } else {
+    }
+    else {
         return ();
     }
-    push my @bl, _array $p{bl}, '*';
+
     my @actions;
-    if ( $self->is_root( $username ) ) {
-        @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
-    } elsif ( $mid ) {
-        @actions = _array($self->user_actions_by_topic( %p )->{positive});
-    } else {
-        @actions = Baseliner::Model::Users->new->get_actions_from_user( $username, @bl );
-    } ## end else [ if ( $self->is_root( $username...))]
-    return grep { $_ =~ $regexp_action } @actions;
-} ## end sub user_actions_list
+    if ( $self->is_root($username) ) {
+        @actions = map { $_->{key} } BaselinerX::Type::Model::Actions->new->list;
+    }
+    elsif ($mid) {
+        @actions = _array( $self->user_actions_by_topic(%p)->{positive} );
+    }
+    else {
+        my @bl = _array $p{bl};
+        push @bl, '*' if !@bl || !grep { $_ eq '*' } @bl;
 
-sub user_actions_by_topic {
-    my ( $self, %p ) = @_;
+        @actions = $self->_get_actions_from_user( $username, @bl );
+    }
 
+    @actions = grep { $_ =~ $regexp_action } @actions;
+
+    return @actions;
+}
+
+sub user_actions_by_topic ($self, %p) {
     my @return;
 
     my @roles = $self->user_roles_for_topic( %p );
@@ -278,88 +159,44 @@ sub user_actions_by_topic {
         }
         @negative_actions = _unique(@negative_actions);
     }
-    #map {} mdb->role->find({ id => mdb->in(@roles)},{ id => 1, actions => 1})->all
-    # my %roles_actions = map { $$_{id}=>[ map { $$_{action} } grep { defined } _array($$_{actions}) ] }
-    #     mdb->role->find({ id=>mdb->in(@roles) },{ id=>1, actions=>1 })->all;
 
-    # for my $role ( @roles ) {
-    #     my @actions = _array(cache->get(":role:actions:$role:"));
-    #     try{
-    #         if ( !@actions ) {
-    #            @actions = _array( $roles_actions{$role} );
-    #            cache->set(":role:actions:$role:",\@actions);
-    #         }
-    #     }catch{};
-    #     push @return, @actions;
-    # }
     return { positive => \@positive_actions, negative => \@negative_actions};
 }
 
-=head2 user_has_project( username=>Str, project_name=>Str | project_id )
-
-Returns an array of ns for the projects the user has access to.
-
-=cut
-sub user_has_project {
-    my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{username};
-    my $qr=qr{^\/$};
-    return 1 if $self->is_root( $p{username} );
-    if( my $name = delete $p{project_name} or delete $p{project}) {
-        my @ns=$self->user_projects_names( %p );
-        return 1 if scalar grep /$qr/, @ns;
-        return scalar grep /^$name$/, @ns;
-    } elsif( my $id = delete $p{project_id} ) {
-        my @ns=$self->user_projects_ids( %p );
-        return 1 if scalar grep /$qr/, @ns;
-        return scalar grep /$id/,@ns
-    } # añadir el if para project
-    return 0;
-}
-
-=head2 user_projects( username=>Str )
-
-Returns an array of ns for the projects the user has access to,
-ie, if the user has ANY role in them.
-
-=cut
-sub user_projects {
-    my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{username};
+sub user_projects ($self, %p) {
+    _check_parameters( \%p, qw/username/ );
     _throw 'with_role not supported anymore' if exists $p{with_role};
-    return map{ "project/$$_{mid}" } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
+
+    return map { "project/$$_{mid}" } ci->project->find->fields( { mid => 1 } )->all if $self->is_root( $p{username} );
+
     my @ret;
-    my $project_security = ci->user->find_one({ username=>$p{ username } },{ project_security=>1 })->{project_security};
-    my @id_roles = keys $project_security;
-    foreach my $id_role (@id_roles){
+    my $project_security =
+      ci->user->find_one( { username => $p{username} }, { project_security => 1 } )->{project_security};
+    my @id_roles = keys %{$project_security};
+    foreach my $id_role (@id_roles) {
         my @project_types = keys $project_security->{$id_role};
-        foreach my $project_type (@project_types){
+        foreach my $project_type (@project_types) {
             push @ret, "project/$_" for _unique _array( $project_security->{$id_role}->{$project_type} );
         }
     }
-    return _unique( @ret );
+
+    return _unique(@ret);
 }
 
-=head2 user_projects_ids( username=>Str )
+sub user_projects_ids ($self, %p) {
+    _check_parameters( \%p, qw/username/ );
 
-Returns an array of project ids for the projects the user has access to.
+    return map { $$_{mid} } ci->project->find->fields( { _id => 0, mid => 1 } )->all if $self->is_root( $p{username} );
 
-=cut
-sub user_projects_ids {
-    my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{username};
-    return map{ $$_{mid} } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
-
-    #return _unique map { values $_->{project} } values ci->user->find_one({ username=>$p{username} })->{project_security};
-    my $user = ci->user->find_one({ username=>$p{username} });
+    my $user = ci->user->find_one( { username => $p{username}, project_security => { '$exists' => 1, '$type' => 3 } },
+        { _id => 0, project_security => 1 } );
     if ($user) {
-        my $project_security = $user->{project_security} ? $user->{project_security} : undef;
-        if ($project_security){
-            my @projects;
-            return _unique map {  values $_->{project}  } grep { $_->{project} } values %{$project_security};
-        }
-    }else{
-        return undef
+        my $project_security = $user->{project_security};
+        return _unique map { ref $_->{project} eq 'ARRAY' ? @{ $_->{project} } : $_->{project} }
+          grep { $_->{project} } values %{$project_security};
+    }
+    else {
+        return ();
     }
 }
 
@@ -372,32 +209,40 @@ Returns an array of project ids for the projects the user has access to with the
 
 sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
-    my $cache_key = { %p, d=>'topic' };
-    my $with_role = $p{with_role} // 0;
-    defined && return( $with_role ? $_ : values(%$_) ) for cache->get($cache_key);
-    my $sec_projects;
+
     my $username = $p{username};
+    my $with_role = $p{with_role} // 0;
     $p{roles} //= '';
-    my @roles = split(/,/, $p{roles} );
+
+    my $cache_key = { %p, d => 'topic' };
+    defined && return ( $with_role ? $_ : values(%$_) ) for cache->get($cache_key);
+
+    my $sec_projects;
+
     my %ret;
-    my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
+    my $user = ci->user->find_one( { username => $username }, { project_security => 1 } );
     my $project_security = $user->{project_security};
-    if(!@roles){
+
+    my @roles = split( /,/, $p{roles} );
+    if ( !@roles ) {
         @roles = keys %$project_security;
     }
-    my @user_roles = keys %{$user->{project_security}};
+    my @user_roles = keys %{ $user->{project_security} };
 
-    foreach my $id_role (@user_roles){
-        foreach my $actual_id (@roles){
-            if($id_role eq $actual_id){
+    foreach my $id_role (@user_roles) {
+        foreach my $actual_id (@roles) {
+            if ( $id_role eq $actual_id ) {
                 my @project_types = keys $project_security->{$id_role};
-                foreach my $project_type (@project_types){
-                    map { $ret{$id_role}{$project_type}{$_} = 1 } @{$project_security->{$id_role}->{$project_type}};
+                foreach my $project_type (@project_types) {
+                    $project_security->{$id_role}->{$project_type} = [ $project_security->{$id_role}->{$project_type} ]
+                      unless ref $project_security->{$id_role}->{$project_type} eq 'ARRAY';
+
+                    map { $ret{$id_role}{$project_type}{$_} = 1 } @{ $project_security->{$id_role}->{$project_type} };
                 }
             }
         }
     }
-    cache->set($cache_key,\%ret);
+    cache->set( $cache_key, \%ret );
     return $with_role ? \%ret : values %ret;
 }
 
@@ -418,8 +263,10 @@ categories only. So we have to multiply:
 =cut
 sub build_project_security {
     my ($self,$where,$username,$is_root, @filter_categories) = @_;
+
     $is_root //= $self->is_root( $username );
     return if !$username || $is_root;
+
     # TODO stop using category names in permissions
     my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->fields({ name=>1, id=>1 })->all;
     my $user_security = $self->user_projects_ids_with_collection( username => $username, with_role=>1);
@@ -475,38 +322,26 @@ sub build_project_security {
     }
 }
 
-sub user_can_topic_by_project {
-    my ($self,%p)=@_;
+sub user_can_topic_by_project ($self, %p) {
+    _check_parameters( \%p, qw/username mid/ );
+
     my $username = $p{username};
-    my $mid = $p{mid} // _fail('Missing mid');
+    my $mid = $p{mid};
 
     return 1 if $self->is_root($username);
-    my @actions = _array($self->user_actions_by_topic( %p )->{positive});
-    my $action = "action.topics."._name_to_id(mdb->topic->find_one({mid=>"$mid"},{category=>1})->{category}->{name});
 
-    return grep { /^$action\./ } @actions;
+    my @actions = _array( $self->user_actions_by_topic(%p)->{positive} );
+    my $action  = "action.topics."
+      . _name_to_id( mdb->topic->find_one( { mid => "$mid" }, { category => 1 } )->{category}->{name} );
 
+    my @actions_found = grep { /^$action\./ } @actions;
 }
-# sub user_can_topic_by_project {
-#     my ($self,%p)=@_;
-#     my $username = $p{username};
-#     my $mid = $p{mid} // _fail('Missing mid');
-#     return 1 if $self->is_root($username);
-#     my $where = {};
-#      my $is_root = $self->is_root( $username );
-#      my @categories;
-#      push @categories, mdb->topic->find_one({mid=>"$mid"})->{id_category};
-#      $where->{'category.id'} = { '$in' => [ _unique @categories ] };
-#      $where->{mid} = $mid;
-#      if( $username && ! $is_root){
-#          $self->build_project_security( $where, $username, $is_root, @categories );
-#      }
-#     return !!mdb->topic->find_one($where,{ _id=>1 });  # faster than count
-# }
 
-sub user_roles_for_topic {
-    my ($self,%p)=@_;
-    my $username = $p{username} // _fail "Missing username";
+sub user_roles_for_topic ($self, %p) {
+    _check_parameters( \%p, qw/username/ );
+
+    my $username = $p{username};
+
     my $mid = $p{mid} // '';#_fail "Missing mid" ;
     my $user_security = $p{user_security} // ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
     my $topic_security = $p{topic_security};
@@ -518,14 +353,7 @@ sub user_roles_for_topic {
         my @topic_sec = keys %$topic_security;
         ROLE: for my $role ( keys %$user_security ) {
             my $role_sec_all = $user_security->{$role};
-            my $role_ok = 1;
             my @role_sec = keys %$role_sec_all;
-            # if ( Array::Utils::array_minus(@role_sec, @topic_sec) ) {
-            #     #say "El role $role no tiene derechos";
-            #     next;
-            # } else {
-            #     #say "El role $role puede que sí tenga derechos";
-            # }
             my @common_sec = intersect(@role_sec, @topic_sec);
             for my $sec ( @common_sec ) {
                 my @sec_for_role = _array($role_sec_all->{$sec});
@@ -544,69 +372,35 @@ sub user_roles_for_topic {
     return @roles_for_topic;
 }
 
-sub user_roles_for_topic_old {
-    my ($self,%p)=@_;
-    my $username = $p{username};
-    my $mid = $p{mid} // '';
-    my $is_root = $self->is_root( $username );
-    my $proj_coll_roles = $self->user_projects_ids_with_collection(%p, with_role => 1);
-    my @roles;
-    for my $role ( keys %{$proj_coll_roles} ) {
-        my $where = { mid=>"$mid" };
-        my @categories;
-        if ($mid){
-            my $id_category = mdb->topic->find_one({mid=>"$mid"},{ id_category=>1 })->{id_category};
-            push @categories, $id_category if ($id_category);
-        }
-        $where->{'category.id'} = { '$in' => [ _unique @categories ] };
-        if( $username && ! $is_root){
-            $self->build_project_security( $where, $username, $is_root, @categories );
-        }
-        push @roles, $role if !!mdb->topic->find_one($where,{ _id=>1 });
-    }
-    return @roles;
-}
-
-=head2 user_projects_with_action( username=>Str, action=>[ ... ] )
-
-List of projects for which a user has a given action.
-
-=cut
-
-sub user_projects_with_action {
-    my ( $self, %p ) = @_;
+sub user_projects_with_action ($self, %p) {
     _check_parameters( \%p, qw/username action/ );
-    my $username  = $p{username};
-    my $action    = $p{action};
-    my @bl        = $p{bl} || ('*');
-    if( $self->is_root($username) ) {
-        return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
+
+    my $username = $p{username};
+    my $action   = $p{action};
+    my @bl       = $p{bl} || ('*');
+
+    if ( $self->is_root($username) ) {
+        return map { $$_{mid} } ci->project->find->fields( { mid => 1, _id => 0 } )->all;
     }
-    my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
-    my @id_roles = keys %{ $user->{project_security} || {}};
+
+    my $user = ci->user->find_one( { username => $username }, { project_security => 1 } );
+
+    my @id_roles = keys %{ $user->{project_security} || {} };
     @id_roles = map { $_ } @id_roles;
-    my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
+
+    my @roles = mdb->role->find( { id => { '$in' => \@id_roles } } )->fields( { _id => 0 } )->all;
+
     my @res;
-    foreach my $role (@roles){
-        if(grep { $_->{action} eq $action && $_->{bl} ~~ @bl } @{$role->{actions}}){
-            push @res, values $user->{project_security}->{$role->{id}};
+    foreach my $role (@roles) {
+        if ( grep { $_->{action} eq $action && $_->{bl} ~~ @bl } @{ $role->{actions} } ) {
+            push @res, map { ref $_ eq 'ARRAY' ? @$_ : $_ } values %{ $user->{project_security}->{ $role->{id} } };
         }
     }
-    return _unique map { values $_ } @res;
+
+    return _unique @res;
 }
 
-
-sub all_projects {
-    map { $_->{mid} } ci->project->find()->fields({ _id=>0, mid=>1 })->all;
-}
-
-=head2 user_grants $username [ action=>Str, ns=>Str ]
-
-Returns a list of roles a user has.
-
-=cut
-sub user_grants {
-    my ($self, $username, %p ) = @_;
+sub user_grants ($self, $username, %p) {
     my @ret;
     my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
     my $project_security = $user->{project_security};
@@ -615,6 +409,9 @@ sub user_grants {
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0, actions=>0 } )->all;
     foreach my $id_role (keys $project_security ){
         foreach my $project_type (keys $project_security->{$id_role}){
+            $project_security->{$id_role}->{$project_type} = [ $project_security->{$id_role}->{$project_type} ]
+              unless ref $project_security->{$id_role}->{$project_type} eq 'ARRAY';
+
             foreach my $id_project (@{$project_security->{$id_role}->{$project_type}}){
                 my ($actual_role) = grep { $_->{id} eq $id_role } @roles;
                 my %role_hash = %$actual_role;
@@ -625,14 +422,7 @@ sub user_grants {
     return @ret;
 }
 
-=head2 user_namespaces
-
-Returns a list of ns from roleuser,
-which means that there's some role in there
-
-=cut
-sub user_namespaces {
-    my ($self, $username ) = @_;
+sub user_namespaces ($self, $username) {
     my @perms = $self->user_grants( $username );
     return sort { $a cmp $b } _unique( map { $_->{ns} } @perms );
 }
@@ -648,8 +438,9 @@ List users that have an action
      username=>Str, [ bl=>Str ]
 
 =cut
-sub list {
-    my ( $self, %p ) = @_;
+sub list ($self, %p) {
+    $p{username} //= '';
+
     my @ret;
     my $cache_key = ["user:permission:list:$p{username}:", %p ];
     my $cached = cache->get( $cache_key );
@@ -670,7 +461,7 @@ sub list {
     }
 
     if($username){
-        @ret = Baseliner->model('Users')->get_actions_from_user($username, (@bl));
+        @ret = $self->_get_actions_from_user($username, (@bl));
     }else{
         my @users = ci->user->find->fields({ mid=>1, project_security=>1 })->all;
         my @roles = mdb->role->find->all;
@@ -680,16 +471,16 @@ sub list {
             my @user_roles = grep { $_->{id} ~~ @id_roles } @roles;
             foreach my $user_role (@user_roles){
                 my @actions;
-                if(@bl ~~ 'any'){
+                if(grep {$_ eq 'any'} @bl){
                     @actions = map { $_->{action} } @{$user_role->{actions}};
                 }else{
                     foreach my $act (@{$user_role->{actions}}){
-                        if($act->{bl} ~~ @bl){
+                        if(grep { $_ eq $act->{bl} } @bl){
                             push @actions, $act->{action};
                         }
                     }
                 }
-                if($action ~~ @actions){
+                if(grep {$_ eq $action} @actions){
                     push @ret, $user->{mid};
                 }
             }
@@ -706,16 +497,16 @@ Or if its username is 'root'
 =cut
 our $root_username;
 
-sub is_root {
-    my ( $self, $username ) = @_;
-    $username or die _loc('Missing username');
+sub is_root ($self, $username) {
     my $cached_key = "user:is_root:$username:";
     my $cached = cache->get($cached_key);
     return $cached if defined $cached;
-    my $is_root =
-        $username eq 'root'
-        || scalar( grep { 'action.admin.root' eq $_ } Baseliner::Model::Users->new()->get_actions_from_user($username) );
+
+    my $is_root = $username eq 'root'
+      || scalar( grep { 'action.admin.root' eq $_ } $self->_get_actions_from_user($username) );
+
     cache->set( $cached_key, $is_root );
+
     return $is_root;
 }
 
@@ -724,8 +515,7 @@ sub is_root {
 Returns everything a user has.
 
 =cut
-sub user_roles {
-    my ( $self, $username ) = @_;
+sub user_roles ($self, $username) {
     my @id_roles = $self->user_role_ids($username);
     my @roles;
     foreach my $id (@id_roles){
@@ -736,107 +526,38 @@ sub user_roles {
     return @roles;
 }
 
-sub user_role_ids {
-    my ( $self, $username ) = @_;
-    $username or _throw 'Missing parameter username';
-    my $u = ci->user->find_one({ username=>$username },{ project_security=>1 });
+sub user_role_ids ($self, $username) {
+    my $u = ci->user->find_one({ username=>$username, project_security => {'$exists' => 1, '$type' => 3} },{ project_security=>1 });
     return $u ? keys $u->{project_security} : ();
 }
 
-=head2 all_users
+sub users_with_roles ($self, %p) {
+    _check_parameters( \%p, qw/roles/ );
 
-List all users that have roles
-
-=cut
-sub all_users {
-    my ( $self ) = @_;
-    my @ret;
-    my @users = ci->user->find->fields({ mid=>1, username=>1, project_security=>1 })->all;
-    foreach my $user (@users){
-        if (keys $user->{project_security}){
-            push @ret, $user->{username};
-        }
-    }
-    @ret;
-}
-
-sub users_with_roles {
-    my ( $self, %p ) = @_;
     my @roles = _array $p{roles};
-    my $include_root = $p{include_root} // 1;
-    my $mid = $p{mid};
-    my @users;
 
-    my $topic = $mid ? mdb->topic->find_one( { mid => $mid } ): {};
-    my $proj_coll_roles = $topic->{_project_security} || '';
-
-#    _warn $proj_coll_roles;
-
-    my $where;
     my @ors;
-
-    if ( $proj_coll_roles ) {
-        for my $role (@roles) {
-            my @ands;
-            my $wh = {};
-            $wh->{"project_security.$role"} = { '$ne' => undef };
-            push @ands, $wh;
-            for my $proj ( keys %{$proj_coll_roles} ) {
-                $wh->{"project_security.$role.$proj"} =
-                  { '$in' => [ undef, _array $proj_coll_roles->{$proj} ] };
-                push @ands, $wh;
-            }
-            push @ors, { '$and' => \@ands };
-        }
-    } else {
-        for my $role ( @roles ) {
-            my $wh;
-            $wh->{"project_security.$role"} = {'$exists'=> '1' };
-            push @ors, $wh;
-        }
+    for my $role (@roles) {
+        push @ors, { "project_security.$role" => { '$exists' => '1' } };
     }
-    $where->{'$or'} = \@ors;
-#    _warn $where;
-    @users = map { $_->{name} } ci->user->find($where)->fields({ name=>1 })->all;
 
-    my @root_users;
-    if ( $include_root ) {
-        my @root_ids;
-        my @all_roles = mdb->role->find->all;
-        foreach my $role (@all_roles){
-             if(grep { $_->{action} eq 'action.admin.root' } @{$role->{actions}}){
-                push @root_ids, $role->{id};
-             }
-        }
-        my @where = map { { "project_security.$_"=>{'$exists'=> '1' } } } @root_ids;
-        @root_users = map { $_->{name} } ci->user->find({'$or' =>\@where})->fields({ name=>1 })->all;
-
-    }
-    return @users, @root_users;
+    my @users = map { $_->{name} } ci->user->find( { '$or' => \@ors } )->fields( { name => 1 } )->all;
+    return @users;
 }
 
-sub user_can_search_ci {
-    my $self = shift;
-    my ($username) = @_;
-
+sub user_can_search_ci ($self, $username) {
     return 1 if $self->user_is_ci_admin($username);
 
     return $self->user_has_action( username => $username, action => 'action.search.ci' );
 }
 
-sub user_is_ci_admin {
-    my $self = shift;
-    my ($username) = @_;
-
+sub user_is_ci_admin ($self, $username) {
     return 1 if $self->is_root($username);
 
     return $self->user_has_action( action => 'action.ci.admin', username => $username );
 }
 
-sub user_can_view_ci {
-    my $self = shift;
-    my ( $username, $collection ) = @_;
-
+sub user_can_view_ci ($self, $username, $collection = undef) {
     return 1 if $self->user_is_ci_admin($username);
 
     if ($collection) {
@@ -854,10 +575,7 @@ sub user_can_view_ci {
     return 0;
 }
 
-sub user_can_admin_ci {
-    my $self = shift;
-    my ( $username, $collection ) = @_;
-
+sub user_can_admin_ci ($self, $username, $collection = undef) {
     return 1 if $self->user_is_ci_admin($username);
 
     if ($collection) {
@@ -870,10 +588,7 @@ sub user_can_admin_ci {
     return 0;
 }
 
-sub user_can_view_ci_group {
-    my $self = shift;
-    my ( $username, $collection ) = @_;
-
+sub user_can_view_ci_group ($self, $username, $collection = undef) {
     return 1 if $self->user_is_ci_admin($username);
 
     if ($collection) {
@@ -884,6 +599,32 @@ sub user_can_view_ci_group {
     }
 
     return 0;
+}
+
+sub _get_actions_from_user ($self, $username, @bl) {
+    my @final;
+    if($username eq 'root' || $username eq 'local/root'){
+        @final = Baseliner->model( 'Actions' )->list;
+    }else{
+        my $user = ci->user->find_one({ name=>$username });
+        _fail _loc 'User %1 not found', $username unless $user;
+        my @roles = keys %{ $user->{project_security} };
+        #my @id_roles = map { $_ } @roles;
+        my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
+        @actions = grep {%{$_}} @actions; ######### DELETE RESULTS OF ACTIONS OF ROLES WITHOUT ACTIONS
+        foreach my $f (map { values $_->{actions} } @actions){
+            if(@bl){
+                if(@bl == 1 && grep {$_ eq '*'} @bl){
+                    push @final, $f->{action};
+                } elsif (grep {$_ eq $f->{bl}} @bl) {
+                    push @final, $f->{action};
+                }
+            }else{
+                push @final, $f->{action};
+            }
+        }
+    }
+    return _unique @final;
 }
 
 no Moose;

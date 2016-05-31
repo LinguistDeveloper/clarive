@@ -96,9 +96,8 @@ sub get_users_from_actions {
 sub get_users_from_mid_roles {
     my ( $self, %p ) = @_;
     my @roles = _array $p{roles} or _throw 'Missing parameter roles';
-    my @projects = _array $p{projects};
 
-    my @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, projects => \@projects, include_root => 0);
+    my @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles );
 
     return wantarray ? @users : \@users;
 }
@@ -198,36 +197,9 @@ sub get_users_from_mid_roles_topic {
         $mega_where->{'$or'} = \@mega_ors;
         @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
     } else {
-        @users = Baseliner::Model::Permissions->new->users_with_roles( roles => \@roles, include_root => 0);
+        @users = Baseliner::Model::Permissions->new->users_with_roles(roles => \@roles);
     }
     return wantarray ? @users : \@users;
-}
-
-sub get_actions_from_user{
-    my ($self, $username, @bl) = @_;
-    my @final;
-    if($username eq 'root' || $username eq 'local/root'){
-        @final = Baseliner->model( 'Actions' )->list;
-    }else{
-        my $user = ci->user->find_one({ name=>$username });
-        _fail _loc 'User %1 not found', $username unless $user;
-        my @roles = keys $user->{project_security};
-        #my @id_roles = map { $_ } @roles;
-        my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
-        @actions = grep {%{$_}} @actions; ######### DELETE RESULTS OF ACTIONS OF ROLES WITHOUT ACTIONS
-        foreach my $f (map { values $_->{actions} } @actions){
-            if(@bl){
-                if(scalar(@bl) eq 1 && '*' ~~ @bl){
-                    push @final, $f->{action};
-                } elsif ($f->{bl} ~~ @bl) {
-                    push @final, $f->{action};
-                }
-            }else{
-                push @final, $f->{action};
-            }
-        }
-    }
-    return _unique @final;
 }
 
 sub get_users_from_project{
