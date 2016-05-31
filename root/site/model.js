@@ -1172,12 +1172,6 @@ Baseliner.model.Status = function(c) {
 };
 Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
 
-Baseliner.ComboJobStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
-    allowBlank: true,
-    url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',
-    fields: [ 'id_status', 'name' ]
-});
-
 Baseliner.StatusBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
@@ -1194,6 +1188,7 @@ Baseliner.StatusBox = function(c) {
         displayField: 'name',
         valueField: 'id_status',
         store: store,
+        minChars: 3,
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
@@ -1208,7 +1203,7 @@ Baseliner.StatusBox = function(c) {
         extraItemCls: 'x-tag'
     }, c));
 };
-Ext.extend( Baseliner.StatusBox, Ext.ux.form.SuperBoxSelect );
+Ext.extend(Baseliner.StatusBox, Ext.ux.form.SuperBoxSelect);
 
 Baseliner.CategoryBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
@@ -1226,6 +1221,7 @@ Baseliner.CategoryBox = function(c) {
         displayField: 'name',
         valueField: 'id',
         store: store,
+        minChars: 3,
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
@@ -1240,8 +1236,7 @@ Baseliner.CategoryBox = function(c) {
         extraItemCls: 'x-tag'
     }, c));
 };
-Ext.extend( Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect );
-
+Ext.extend(Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect);
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.

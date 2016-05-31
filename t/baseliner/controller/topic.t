@@ -29,6 +29,128 @@ use Clarive::mdb;
 
 use_ok 'Baseliner::Controller::Topic';
 
+subtest 'category_list: returns categories when filter on category name' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category( name => 'MyCategory', color => '#FFFFFF' );
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => { params => { query => 'mycategory' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->category_list($c);
+
+    cmp_deeply(
+        $c->stash->{json},
+        {
+            data => [
+                {
+                    'name'  => 'MyCategory',
+                    'color' => '#FFFFFF',
+                    'id'    => $category_1
+                }
+            ],
+            totalCount => 1
+        }
+    );
+};
+
+subtest 'category_list: returns categories when filter on id' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category( name => 'Category_1', color => '#FFFFFF' );
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category( name => 'Category_2', color => '#FFFFFF' );
+
+    my $query = "$category_1|$category_3";
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { query => $query, valuesqry => 'true' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->category_list($c);
+
+    cmp_deeply(
+        $c->stash->{json},
+        {
+            data => [
+                {
+                    'name'  => 'Category_1',
+                    'color' => '#FFFFFF',
+                    'id'    => $category_1
+                },
+                {
+                    'name'  => 'Category_2',
+                    'color' => '#FFFFFF',
+                    'id'    => $category_3
+                },
+            ],
+            totalCount => 2
+        }
+    );
+};
+
+subtest 'category_list: returns categories when filter on category name with special symbols' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category( name => 'My$Category', color => '#FFFFFF' );
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => { params => { query => 'my$category' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->category_list($c);
+
+    cmp_deeply(
+        $c->stash->{json},
+        {
+            data => [
+                {
+                    'name'  => 'My$Category',
+                    'color' => '#FFFFFF',
+                    'id'    => $category_1
+                }
+            ],
+            totalCount => 1
+        }
+    );
+};
+
 subtest 'kanban config save' => sub {
     _setup();
     TestSetup->_setup_user();
