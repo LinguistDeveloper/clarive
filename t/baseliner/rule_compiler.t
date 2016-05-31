@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::Deep;
+use Test::Fatal;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
@@ -153,6 +154,23 @@ subtest 'compile: builds package with call method' => sub {
     ok $ret;
     ok $stash->{_rule_elapsed};
     is $stash->{foo}, 2;
+
+    $rule_compiler->unload;
+};
+
+subtest 'compile: fails when called rule fails' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_with_code( code => '_fail "error"' );
+
+    my $rule_compiler = _build_rule_compiler();
+
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    my $stash = {};
+    like exception { $package->call($id_rule, $stash) }, qr/Error running rule.*error/;
 
     $rule_compiler->unload;
 };

@@ -1,17 +1,43 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
-use TestEnv;
 use Test::Fatal;
+
+use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
 use_ok 'BaselinerX::Service::FileManagement';
+
+subtest 'run_ship: fails when no server was configured' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward' } );
+
+    my $user_ci = TestUtils->create_ci('user');
+
+    like exception {
+        $service->run_ship(
+            $c,
+            {
+                local_path       => '',
+                remote_path      => '',
+                backup_mode      => '',
+                server           => '',
+                exist_mode_local => '',
+                user             => $user_ci
+            }
+        );
+    }, qr/Server not configured/;
+};
 
 subtest 'run_ship: fails when no local files were found in fail local mode' => sub {
     _setup();
