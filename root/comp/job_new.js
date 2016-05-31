@@ -15,6 +15,7 @@
     my $has_chain_perm = $c->is_root || $c->has_action( 'action.job.chain_change' ) // 1;
 </%perl>
 (function(opts){
+    Cla.help_push({ title:_('New Job'), path:'concepts/job' });
     if( !opts ) opts = {};
     var topics = [];
     var job_type;
@@ -952,47 +953,84 @@
         //tb.el.parent().setStyle({ 'padding':'-10px' });
     });
 
-    Baseliner.CalendarViewer = function(c){
-        var store = new Ext.data.Store({});
-        Ext.each( c.calendars, function( row ) {
-            var rec = new Ext.data.Record( row );
-            store.add( rec );
+    Baseliner.show_calendar = function(id_or_rec, ix) {
+        var r = (typeof id_or_rec == 'object') ? id_or_rec : Ext.getCmp(id_or_rec).getStore().getAt(ix);
+        Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id'), r.get('name'), {
+            tab_icon: '/static/images/icons/calendar_view_month.png'
         });
-
-        Baseliner.CalendarViewer.superclass.constructor.call(this, Ext.apply({
-            store: store,
-            viewConfig: { forceFit: true },
-            columns: [
-                { header:_('Calendar'), dataIndex:'name', width: 140, renderer: function(v){ return '<b>'+v+'</b>' } },
-                { header:_('Description'), dataIndex:'description', width: 200, renderer: Baseliner.render_wrap },
-                { header:_('Baseline'), dataIndex:'bl' },
-                { header:_('Scope'), dataIndex:'ns' }
-            ]
-        }, c) );
     };
-    Ext.extend( Baseliner.CalendarViewer, Ext.grid.GridPanel );
 
     var button_show_cals = new Ext.Button({
         cls: 'x-btn-icon',
         layout: 'form',
         tooltip: _('View Applied Slots'),
         icon: '/static/images/icons/calendar_view_month.png',
-        handler: function(){
-            if( rel_cals.length == 0 ) {
-                Baseliner.alert( _('No slots selected') );
+        handler: function() {
+            if (rel_cals.length == 0) {
+                Baseliner.alert(_('No slots selected'));
             } else {
                 var cals = [];
-                Ext.each( rel_cals, function( cal ) {
-                    cals.push( cal );
+                var store = new Ext.data.Store({});
+                Ext.each(rel_cals, function(cal) {
+                    cals.push(cal);
+                    var rec = new Ext.data.Record(cal);
+                    store.add(rec);
                 });
-                var cal_viewer = new Baseliner.CalendarViewer({ calendars: cals });
+
+                var cal_viewer = new Ext.grid.GridPanel({
+                    renderTo: 'main-panel',
+                    header: false,
+                    stripeRows: true,
+                    store: store,
+                    viewConfig: {
+                        enableRowBody: true,
+                        forceFit: true
+                    },
+                    selModel: new Ext.grid.RowSelectionModel({
+                        singleSelect: true
+                    }),
+                    loadMask: true,
+                    columns: [{
+                        header: _('Calendar'),
+                        dataIndex: 'name',
+                        width: 140,
+                        renderer: function(v) {
+                            return '<b>' + v + '</b>'
+                        }
+                    }, {
+                        header: _('Description'),
+                        dataIndex: 'description',
+                        width: 200,
+                        renderer: Baseliner.render_wrap
+                    }, {
+                        header: _('Baseline'),
+                        dataIndex: 'bl'
+                    }, {
+                        header: _('Scope'),
+                        dataIndex: 'ns'
+                    }]
+                });
+                cal_viewer.getView().forceFit = true;
+                cal_viewer.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
+                    var sm = grid.getSelectionModel();
+                    if (sm.hasSelection()) {
+                        var sel = sm.getSelected();
+                        Baseliner.show_calendar(sel);
+                    }
+                });
                 var win_cals = new Ext.Window({
-                    width: 800, height: 400, layout:'fit', title: _('Applied Calendar Slots'),
-                    items: cal_viewer, maximizable: true });
+                    width: 800,
+                    height: 400,
+                    layout: 'fit',
+                    title: _('Applied Calendar Slots'),
+                    items: cal_viewer,
+                    maximizable: true
+                });
                 win_cals.show();
             }
         }
     });
+
     var button_refresh_cals = new Ext.Button({
         cls: 'x-btn-icon',
         layout: 'form',

@@ -482,6 +482,34 @@ subtest 'calendar: check permissions in the stash to view calendar' => sub {
 
 };
 
+subtest 'permissions_calendar: returns an error when the user does not have permissions' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my $params = {
+        id       => '',
+        id_cal   => $id_cal,
+        cmd      => 'A',
+        ven_dia  => '4',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '24:00',
+        date     => ''
+    };
+
+    my $c = _build_c( req => { params => $params }, username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->permissions_calendar($c);
+
+    cmp_deeply $c->stash->{json}, { success => \0, msg => 'You do not have permissions to open this calendar' };
+};
+
 done_testing;
 
 sub _create_initial_slots {

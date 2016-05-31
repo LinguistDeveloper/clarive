@@ -11,8 +11,8 @@ they always have a schedule and are run by the job daemon.
 Jobs can be executed many times through [reruns](concepts/rerun). 
 
 Unlike Jenkins, jobs are not a statically scheduled entity. You cannot schedule
-repeateable jobs. Jobs are *schedule-once
-and *run-once
+repeateable jobs. Jobs are *schedule-once*
+and *run-once*
 (even though you may manually
 reschedule or rerun them as many times as you like). 
 

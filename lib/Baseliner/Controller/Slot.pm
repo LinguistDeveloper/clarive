@@ -798,6 +798,14 @@ sub permissions_calendar {
 
     $c->stash->{can_edit} = $c->model('Permissions')
         ->user_has_action( username => $c->username, action => 'action.calendar.edit', bl => '*' );
+
+    $c->stash->{can_view} = $c->model('Permissions')
+        ->user_has_action( username => $c->username, action => 'action.calendar.view', bl => '*' );
+
+    if ( !$c->stash->{can_view} && !$c->stash->{can_edit} && !$c->stash->{can_admin} ) {
+        $c->stash->{json} = { success => \0, msg => _loc("You do not have permissions to open this calendar") };
+        $c->forward('View::JSON');
+    }
 }
 
 
