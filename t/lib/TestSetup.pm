@@ -74,6 +74,33 @@ sub create_rule {
     return "$id_rule";
 }
 
+sub create_rule_with_code {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $lang = delete $params{lang} || 'perl';
+    my $code = delete $params{code};
+
+    my $id_rule = $class->create_rule(
+        %params,
+        rule_tree => [
+            {
+                "attributes" => {
+                    "key"  => "statement.code.server",
+                    "text" => "Server CODE",
+                    "name" => "Server CODE",
+                    "data" => {
+                        "lang" => $lang,
+                        "code" => $code
+                    },
+                },
+            }
+        ]
+    );
+
+    return "$id_rule";
+}
+
 sub create_rule_form {
     my $class = shift;
     my (%params) = @_;

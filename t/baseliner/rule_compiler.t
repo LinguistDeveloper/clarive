@@ -139,7 +139,7 @@ subtest 'compile: returns info' => sub {
 subtest 'compile: builds package with call method' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule();
+    my $id_rule = TestSetup->create_rule_with_code( code => '$stash->{foo}++' );
 
     my $rule_compiler = _build_rule_compiler();
 
@@ -147,11 +147,12 @@ subtest 'compile: builds package with call method' => sub {
 
     my $package = $rule_compiler->package;
 
-    my $stash = {};
-    my $ret = $package->call($id_rule, $stash);
+    my $stash = { foo => 1 };
+    my $ret = $package->call( $id_rule, $stash );
 
     ok $ret;
     ok $stash->{_rule_elapsed};
+    is $stash->{foo}, 2;
 
     $rule_compiler->unload;
 };
