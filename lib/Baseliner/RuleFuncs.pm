@@ -116,7 +116,7 @@ sub wait_for_children {
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
                 if( $res->{err} ) {
                     _error( $res->{err} );
-                    push @failed, $pid;
+                    push @failed, {pid => $pid, err => $res->{err}};
                 } else {
                     push @oks, $pid;
                 }
@@ -130,7 +130,14 @@ sub wait_for_children {
             }
         }
         if( @failed ) {
-            my $error_msg = _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) );
+            my $error_msg = _loc(
+                'Error detected in children, pids failed: %1. Ok: %2',
+                join( ',', map { $_->{pid} } @failed ),
+                join( ',', @oks )
+            );
+
+            $error_msg .= "\nErrors:\n";
+            $error_msg .= join "\n", map { $_->{pid} . ': ' . $_->{err} } @failed;
 
             if ($errors eq 'fail') {
                 _fail( $error_msg );
