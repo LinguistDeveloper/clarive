@@ -148,7 +148,12 @@ subtest 'update: creates new role' => sub {
     _setup();
 
     my $controller = _build_controller();
-    my $c = _build_c( req => { params => { name => 'Developer', role_actions => '[]' } } );
+    my $c = _build_c(
+        req => {
+            params =>
+              { name => 'Developer', description => 'New Role', dashboards => 1, role_actions => '[]' }
+        }
+    );
 
     $controller->update($c);
 
@@ -156,6 +161,8 @@ subtest 'update: creates new role' => sub {
 
     ok $role;
     is $role->{role}, 'Developer';
+    is $role->{description}, 'New Role';
+    is_deeply $role->{dashboards}, [1];
 
     is_deeply(
         $c->stash,
@@ -167,6 +174,24 @@ subtest 'update: creates new role' => sub {
             }
         }
     );
+};
+
+subtest 'update: creates new role with multiple dashboards' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c = _build_c(
+        req => {
+            params =>
+              { name => 'Developer', dashboards => [ 1, 2, 3 ], role_actions => '[]' }
+        }
+    );
+
+    $controller->update($c);
+
+    my $role = mdb->role->find_one();
+
+    is_deeply $role->{dashboards}, [1, 2, 3];
 };
 
 subtest 'update: returns an error when creating a new role with existing name' => sub {
