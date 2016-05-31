@@ -18,7 +18,7 @@ Ext.onReady(function(){
     });
 
     Cla.help_button = new Ext.Button({
-       icon: '/static/images/icons/lightbulb_off.png',
+       icon: '/static/images/icons/lightbulb_off.svg',
        cls: 'x-btn-icon',
        hidden: false,
        tooltip: _('Clarive Help'),
@@ -27,7 +27,7 @@ Ext.onReady(function(){
 
    Cla.help_button.on('click', function(ev,hp){
         // when the user sees the menu, switch the bulb off
-        Cla.help_button.setIcon(IC('lightbulb_off.png'));
+        Cla.help_button.setIcon(IC('lightbulb_off.svg'));
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
@@ -72,7 +72,7 @@ Ext.onReady(function(){
         }
         var tabfav = info.favorite_this(); 
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite.svg');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -84,7 +84,6 @@ Ext.onReady(function(){
                     type:'eval'
                 }
             };
-            //console.log( tabfav );
             Cla.ajaxEval( '/lifecycle/favorite_add',
                 {
                     text: title_field.getValue(),
@@ -132,7 +131,7 @@ Ext.onReady(function(){
         });
         var tab = tabpanel.add( cal );
         tabpanel.setActiveTab( tab );
-        tabpanel.changeTabIcon( tab, '/static/images/icons/calendar.png' );
+        tabpanel.changeTabIcon( tab, '/static/images/icons/calendar.svg' );
         tab.setTitle( '&nbsp;' );
     };
     Cla.help_button.on('click', Cla.help_off );
@@ -176,7 +175,7 @@ Ext.onReady(function(){
     Prefs.site.show_calendar = true;
     if( Prefs.site.show_calendar ) {
         var south_panel = new Ext.Button({
-            icon: "/static/images/icons/calendar.png",
+            icon: "/static/images/icons/calendar.svg",
             tooltip: _('Calendar'),
             enableToggle: true,
             pressed: false, handler: function(){
@@ -186,7 +185,7 @@ Ext.onReady(function(){
         tbar_items.push( south_panel ); 
     }
     Cla.share_button = new Ext.Button({
-       icon: '/static/images/icons/share_this.png',
+       icon: '/static/images/icons/share_this.svg',
        cls: 'x-btn-icon',
        tooltip: _('Share'),
        handler: function(){
@@ -196,7 +195,7 @@ Ext.onReady(function(){
     tbar_items.push( Cla.share_button );
 
     Cla.print_button = new Ext.Button({
-       icon: '/static/images/icons/printer.png',
+       icon: '/static/images/icons/printer.svg',
        cls: 'x-btn-icon',
        tooltip: _('Print'),
        handler: function(){
@@ -206,7 +205,7 @@ Ext.onReady(function(){
     tbar_items.push( Cla.print_button );
 
     Cla.duplicate_button = new Ext.Button({
-       icon: '/static/images/icons/detach.png',
+       icon: '/static/images/icons/detach.svg',
        cls: 'x-btn-icon',
        tooltip: _('Duplicate active tab'),
        handler: function(){
@@ -216,7 +215,7 @@ Ext.onReady(function(){
     tbar_items.push( Cla.duplicate_button );
 
     Cla.JSreload_button = new Ext.Button({
-       icon: '/static/images/icons/js-reload.png',
+       icon: '/static/images/icons/js-reload.svg',
        cls: 'x-btn-icon',
        tooltip: _('JS reload'),
        handler: function(){
@@ -227,7 +226,7 @@ Ext.onReady(function(){
         tbar_items.push( Cla.JSreload_button );
 
      Cla.refresh_button = new Ext.Button({
-       icon: '/static/images/icons/refresh.png',
+       icon: '/static/images/icons/refresh.svg',
        cls: 'x-btn-icon',
        tooltip: _('Refresh'),
        handler: function(){

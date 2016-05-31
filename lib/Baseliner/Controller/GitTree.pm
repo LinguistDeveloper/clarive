@@ -52,7 +52,7 @@ sub branch : Local {
         {
             url  => '/gittree/branch_commits',
             text => _loc('revisions'),
-            icon       => '/static/images/icons/commite_new_.png',
+            icon       => '/static/images/icons/commite_new.svg',
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
@@ -130,7 +130,7 @@ sub branch_commits : Local {
             my $text = "[$sha8] $rev_txt";
             +{
                 text => $text,
-                icon => '/static/images/icons/commit.gif',
+                icon => '/static/images/icons/commit.svg',
                 data => {
                     click => {
                         url      => '/comp/view_diff.js',
@@ -271,7 +271,7 @@ sub branch_tree : Local {
                         },
                         repo_mid   => $repo_ci->mid,
                         branch   => $node->{branch},
-                        tab_icon => '/static/images/icons/properties.png',
+                        tab_icon => '/static/images/icons/properties.svg',
                         file     => "$f",
                         rev_num  => $sha,
                         controller => 'gittree',

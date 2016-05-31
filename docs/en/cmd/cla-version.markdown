@@ -1,6 +1,6 @@
 ---
 title: cla version - Clarive version check
-icon: console
+icon: console.svg
 ---
 
 Shows Clarive version. 

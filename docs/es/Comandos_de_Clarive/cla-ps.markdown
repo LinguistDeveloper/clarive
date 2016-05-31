@@ -1,6 +1,6 @@
 ---
 title: cla ps - Monitor de procesos
-icon: console
+icon: console.svg
 ---
 * `cla ps`: Lista los procesos que está directamente relacionados con servicios de Clarive, clasificándolos en función del tipo de proceso. Estos pueden ser: <br /> 
 

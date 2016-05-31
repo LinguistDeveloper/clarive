@@ -278,7 +278,7 @@
         
         var btn_cerrar = new Ext.Toolbar.Button({
             text: _('Close'),
-            icon:'/static/images/icons/close.png',
+            icon:'/static/images/icons/close.svg',
             cls: 'ui-comp-users-edit-window-close',
             width: 70,
             handler: function() {
@@ -824,7 +824,7 @@
 
     var btn_edit = new Ext.Toolbar.Button({
         text: _('Edit'),
-        icon:'/static/images/icons/edit.gif',
+        icon:'/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon ui-comp-users-edit',
         disabled: true,
         handler: function() {

@@ -16,8 +16,8 @@ register 'menu.admin.topic' => {
     title    => _loc ('Admin Topics'),
     action   => 'action.admin.topics',
     url_comp => '/topicadmin/grid',
-    icon     => '/static/images/icons/topic.png',
-    tab_icon => '/static/images/icons/topic.png'
+    icon     => '/static/images/icons/topic.svg',
+    tab_icon => '/static/images/icons/topic.svg'
 };
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };

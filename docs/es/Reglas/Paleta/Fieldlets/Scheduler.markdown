@@ -1,7 +1,7 @@
 ---
 title: Planificador
 index: 400
-icon: clock
+icon: clock.svg
 ---
 * Permite añadir una tabla como planificadora de eventos.
 * Su funcionamiento es similar a los [hitos](Reglas/Paleta/Fieldlets/Milestones)

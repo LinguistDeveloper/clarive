@@ -43,10 +43,10 @@
 
     var render_data = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
-        arr.push( String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex ) );
+        arr.push( String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.svg" /></a>', grid.id, rowIndex ) );
         if( rec.data.type == 'rule' ) {
-            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application_go.png" /></a>', grid.id, rowIndex ) );
-            arr.push( String.format('<a href="javascript:Baseliner.event_output(\'{0}\', {1})"><img src="/static/images/icons/application_edit.png" /></a>', grid.id, rowIndex ) );
+            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application_go.svg" /></a>', grid.id, rowIndex ) );
+            arr.push( String.format('<a href="javascript:Baseliner.event_output(\'{0}\', {1})"><img src="/static/images/icons/application_edit.svg" /></a>', grid.id, rowIndex ) );
         }
         return arr.join(' ');
     };
@@ -167,7 +167,7 @@
         ],
         tbar: [  _('Search') + ': ', ' ',
             search_field,' ',' ',
-            { icon:'/static/images/icons/refresh.png', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
+            { icon:'/static/images/icons/refresh.svg', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
             { icon:'/static/images/icons/delete_.png', handler: del_event , 
             //text:_('Delete event')},
             text:_('Delete')},

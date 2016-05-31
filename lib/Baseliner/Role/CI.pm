@@ -67,7 +67,7 @@ sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method suppor
 # methods
 sub has_bl { 1 }
 sub has_description { 1 }
-sub icon_class { '/static/images/icons/class.gif' }
+sub icon_class { '/static/images/icons/class.svg' }
 sub rel_type { +{} }   # { field => rel_type, ... }
 
 sub dump {

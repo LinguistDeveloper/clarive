@@ -87,7 +87,7 @@
                     },
                     {
                     text: _('Close'),
-                    icon:'/static/images/icons/close.png',
+                    icon:'/static/images/icons/close.svg',
                     handler: function(){ 
                             win.close();
                         }
@@ -160,7 +160,7 @@
     
     var btn_edit_status = new Ext.Toolbar.Button({
         text: _('Edit'),
-        icon:'/static/images/icons/edit.gif',
+        icon:'/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -607,7 +607,7 @@
                 '->', 
                     {
                     text: _('Close'),
-                    icon: IC('close'),
+                    icon: IC('close.svg'),
                     handler: function(){ 
                             win.close();
                         }
@@ -674,7 +674,7 @@
     
     var btn_edit_category = new Ext.Toolbar.Button({
         text: _('Edit'),
-        icon:'/static/images/icons/edit.gif',
+        icon:'/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -1169,7 +1169,7 @@
     };
     
     var btn_tools_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.gif',
+        icon:'/static/images/icons/wrench.svg',
         cls: 'x-btn-text-icon',
         disabled: false,
         menu: [
@@ -1319,7 +1319,7 @@
 
     var btn_edit_label = new Ext.Toolbar.Button({
         text: _('Edit'),
-        icon:'/static/images/icons/edit.gif',
+        icon:'/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -1407,7 +1407,7 @@
 
     var btn_by_project = new Ext.Toolbar.Button({
         text: _('By project'),
-        icon:'/static/images/icons/project.png',
+        icon:'/static/images/icons/project.svg',
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: false, allowDepress: true,
         handler: function() {
@@ -1422,12 +1422,11 @@
     
     
     var btn_choose_projects = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/add_new_form_16.png',
+        icon:'/static/images/icons/add_new_form_16.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
-        //enableToggle: true, pressed: false, allowDepress: true,
         handler: function() {
-            
+
             var treeRoot = new Ext.tree.AsyncTreeNode({
                 text: _('All'),
                 draggable: false,
@@ -1439,7 +1438,7 @@
                     parent_checked: ''
                 }
             });
-        
+
 
             var tree_projects = new Ext.tree.TreePanel({
                 title: _('Available Projects'),

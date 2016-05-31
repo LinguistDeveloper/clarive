@@ -55,7 +55,7 @@ register 'event.ws.wsdl_error' => {
 
 sub init_job_tasks {
     my ($self)=@_;
-    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png',
+    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.svg',
             children=>[], leaf=>\0, expanded=>\1 }
     } qw(CHECK INIT PRE RUN POST);
 }
@@ -641,7 +641,7 @@ register 'statement.foreach.split' => {
 register 'statement.step' => {
     text => 'JOB STEP',
     description=> 'a job step section: PRE,RUN,POST...',
-    icon => '/static/images/icons/job.png',
+    icon => '/static/images/icons/job.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -659,8 +659,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB");
     },
-    icon => '/static/images/icons/cog_perl.png',
-    #icon => '/static/images/icons/shortcut.png',
+    icon => '/static/images/icons/cog_perl.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -739,7 +738,7 @@ register 'service.echo' => {
 register 'service.get_date' => {
     data => { date => '' },
     form => '/forms/get_date.js',
-    icon => '/static/images/icons/calendar.png',
+    icon => '/static/images/icons/calendar.svg',
     name => 'Get date',
     handler=>sub{
         my ($self, $c, $data ) = @_;
@@ -869,7 +868,7 @@ register 'statement.project.block' => {
 register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
     form => '/forms/stmt_eval.js',
-    icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/cog_perl.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -885,7 +884,7 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/cog_perl.svg',
     form => '/forms/stmt_eval.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -901,7 +900,7 @@ register 'statement.perl.do' => {
 
 register 'statement.perl.group' => {
     text => 'GROUP',data => { },
-    icon => '/static/images/icons/cog_gears.png',
+    icon => '/static/images/icons/cog_gears.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -919,7 +918,7 @@ register 'statement.perl.group' => {
 register 'statement.perl.for' => {
     text => 'FOR eval', data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/cog_perl.svg',
     form => '/forms/stmt_for.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -936,7 +935,7 @@ register 'statement.code.server' => {
     text           => 'Server CODE',
     data           => {code => ''},
     type           => 'loop',
-    icon           => '/static/images/icons/cog_perl.png',
+    icon           => '/static/images/icons/cog_perl.svg',
     holds_children => 0,
     form           => '/forms/server_code.js',
     dsl            => sub {
@@ -960,7 +959,7 @@ register 'statement.code.server' => {
 register 'statement.perl.code' => {
     text => 'CODE (Perl)', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/cog_perl.svg',
     holds_children => 0,
     form => '/forms/stmt_eval.js',
     dsl => sub {
@@ -1061,7 +1060,7 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text => 'INCLUDE rule',
-    icon => '/static/images/icons/cog_perl.png',
+    icon => '/static/images/icons/cog_perl.svg',
     holds_children => 0,
     data => { id_rule=>'', },
     dsl => sub {
@@ -1075,7 +1074,7 @@ register 'statement.include' => {
 
 register 'statement.call' => {
     text => 'CALL rule',
-    icon => '/static/images/icons/cog.png',
+    icon => '/static/images/icons/cog.svg',
     holds_children => 0,
     data => { id_rule=>'', },
     dsl => sub {

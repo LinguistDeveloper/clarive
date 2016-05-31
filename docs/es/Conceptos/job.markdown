@@ -1,6 +1,6 @@
 ---
 title: Trabajo
-icon: job
+icon: job.svg
 ---
 * Los trabajos (o pases) son reglas ejecutadas por el servidor de Clarive.
 * Se ejecutarán siempre que estén planificados, si el usuario quiere ejecutar 'ahora' un trabajo o en 3 meses, siempre se incluye en la planificador antes de que el demonio de trabajos haga su función y lo ejecute.

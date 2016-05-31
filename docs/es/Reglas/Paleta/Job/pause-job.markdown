@@ -1,6 +1,6 @@
 ---
 title: Pause a Job
-icon: job
+icon: job.svg
 ---
 * Paraliza un trabajo hasta que le usuario decida que se reanude. Esta pausa tiene un tiempo de espera máximo establecido en 1 día.
 * Un job se puede pausar en el estado INIT y CHECK. Si un job se cancela mientras está parado, el job fallará.

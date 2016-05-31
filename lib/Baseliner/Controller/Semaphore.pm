@@ -21,7 +21,7 @@ BEGIN { extends 'Catalyst::Controller' }
 
 register 'action.admin.semaphore' => { name => 'Semaphore Administration' };
 register 'menu.admin.semaphore' => {
-    label => 'Semaphores', url_comp=>'/semaphore/grid', title=>'Semaphores', icon=>'/static/images/icons/semaphore.gif',
+    label => 'Semaphores', url_comp=>'/semaphore/grid', title=>'Semaphores', icon=>'/static/images/icons/semaphore.svg',
     action=>'action.admin.semaphore'
 };
 

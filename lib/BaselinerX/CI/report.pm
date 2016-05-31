@@ -20,7 +20,7 @@ has mode        => qw(is rw isa Maybe[Str] default lock);
 has owner       => qw(is rw isa Maybe[Str]);
 has_ci 'user';
 
-sub icon { '/static/images/icons/report.png' }
+sub icon { '/static/images/icons/report.svg' }
 
 sub rel_type {
     {
@@ -74,7 +74,7 @@ sub report_list {
     my @trees = (
             {
                 text => _loc('My Reports'),
-                icon => '/static/images/icons/report.png',
+                icon => '/static/images/icons/report.svg',
                 mid => -1,
                 draggable => \0,
                 children => $mine,
@@ -90,7 +90,7 @@ sub report_list {
             },
             {
                 text => _loc('Public Reports'),
-                icon => '/static/images/icons/report.png',
+                icon => '/static/images/icons/report.svg',
                 url => '/ci/report/public_searches',
                 mid => -1,
                 draggable => \0,
@@ -104,7 +104,7 @@ sub report_list {
         my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
         push @trees, ({
                 text => _loc('All') . " (Root)",
-                icon => '/static/images/icons/report.png',
+                icon => '/static/images/icons/report.svg',
                 url => '/ci/report/root_reports',
                 mid => -1,
                 draggable => \0,
@@ -216,11 +216,11 @@ sub reports_from_rule {
             my $node = {
                 key  => "$rule->{id}",
                 text => $rule->{rule_name},
-                icon => '/static/images/icons/rule.png',
+                icon => '/static/images/icons/rule.svg',
                 leaf => \1,
                 data => {
                     click => {
-                        icon  => '/static/images/icons/rule.png',
+                        icon  => '/static/images/icons/rule.svg',
                         url   => '/comp/topic/topic_report.js',
                         type  => 'eval',
                         title => $rule->{rule_name},
@@ -298,7 +298,7 @@ sub my_searches {
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
-                        icon   => '/static/images/icons/edit.gif',
+                        icon   => '/static/images/icons/edit.svg',
                         eval   => { handler => 'Baseliner.edit_search' }
                     },
                     {
@@ -512,7 +512,7 @@ sub all_fields {
                 push @tree, {
                     text => _loc('Dynamic'),
                     leaf => \0,
-                    icon     => '/static/images/icons/all.png',
+                    icon     => '/static/images/icons/all.svg',
                     url  => '/ci/report/dynamic_fields',
                     draggable => \0,
                     children => [

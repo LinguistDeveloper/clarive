@@ -7,7 +7,7 @@ use BaselinerX::CI::variable;
 with 'Baseliner::Role::CI::Project';
 with 'Baseliner::Role::CI::VariableStash';
 
-sub icon { '/static/images/icons/project.png' }
+sub icon { '/static/images/icons/project.svg' }
 
 has_cis 'bls';
 has_cis 'repositories';

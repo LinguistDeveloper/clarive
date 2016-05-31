@@ -1,6 +1,6 @@
 ---
 title: Dashboards
-icon: dashboard.png
+icon: dashboard.svg
 ---
 * Los dashboards representan un papel fundamental en el buen uso de Clarive.
 * En ellos se puede representar la situación de la herramienta de manera que se pueda visualizar mucha información en un solo lugar.

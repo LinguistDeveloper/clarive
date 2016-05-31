@@ -11,7 +11,7 @@
                 editor.parms = res.parms || {};
             }
             panel.enable();
-            panel.ownerCt.changeTabIcon( panel, IC('file.png') );
+            panel.ownerCt.changeTabIcon( panel, IC('file.svg') );
         }, function(res){
             Cla.error( _('Editor'), _('Could not open file `%1`: %2', filename, res?res.msg:'') );
         });
@@ -41,7 +41,7 @@
             width: 800, height: 400,
             tbar: [ 
                 '->',
-                { text:_('Close'), icon: IC('close'), handler:function(){ win.close() } },
+                { text:_('Close'), icon: IC('close.svg'), handler:function(){ win.close() } },
                 btn_parms_save 
             ],
             items: [ parms ]
@@ -55,7 +55,7 @@
     });
 
     var btn_parms = new Ext.Button({
-        icon: IC('properties'), text: _('Parameters'), handler: function(){ parms_edit() }
+        icon: IC('properties.svg'), text: _('Parameters'), handler: function(){ parms_edit() }
     });
 
     var panel = new Ext.Panel({ 

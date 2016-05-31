@@ -1,6 +1,6 @@
 ---
 title: Load files/items
-icon: file
+icon: file.svg
 ---
 
 

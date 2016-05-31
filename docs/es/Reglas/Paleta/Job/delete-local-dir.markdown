@@ -1,6 +1,6 @@
 ---
 title: Delete Local File
-icon: file.gif
+icon: file.svg
 ---
 * Elimina el fichero especificado en la configuración del elemento.
 * La lista de configuración del elemento incluye las siguientes opciones: <br />

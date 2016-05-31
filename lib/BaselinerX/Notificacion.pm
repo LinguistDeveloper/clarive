@@ -12,8 +12,8 @@ register 'menu.admin.notifications' => {
     title    => _loc ('Notifications'),
     action   => 'action.admin.notification',
     url_comp => '/comp/notifications.js',
-    icon     => '/static/images/icons/email.png',
-    tab_icon => '/static/images/icons/email.png'
+    icon     => '/static/images/icons/email.svg',
+    tab_icon => '/static/images/icons/email.svg'
 };
 
 register 'config.notifications' => {

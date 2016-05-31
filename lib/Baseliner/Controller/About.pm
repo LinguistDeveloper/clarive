@@ -11,13 +11,13 @@ register 'menu.help' => { label => 'Help', index => 999 };
 register 'menu.help.help_main' => {
     label => 'Clarive Help',
     title => 'Clarive Help',
-    icon  => '/static/images/icons/help.png',
+    icon  => '/static/images/icons/help.svg',
     url_eval => '/site/help-show.js',
     index => 10
 };
 register 'menu.help.about' => {
     label => 'About...',
-    icon  => '/static/images/icons/about.png',
+    icon  => '/static/images/icons/about.svg',
     url   => '/about/show',
     title => 'About ' . ( Baseliner->config->{app_name} // 'Baseliner' ),
     index => 999

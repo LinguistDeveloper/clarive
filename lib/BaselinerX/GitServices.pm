@@ -35,7 +35,7 @@ register 'service.git.newjob' => {
 
 register 'service.git.checkout' => {
     name    =>_loc('Checkout a Git Revision'),
-    icon    => '/static/images/icons/git.png',
+    icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&checkout,
@@ -43,7 +43,7 @@ register 'service.git.checkout' => {
 
 register 'service.git.job_elements' => {
     name    =>_loc('Fill job_elements'),
-    icon    => '/static/images/icons/git.png',
+    icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&job_elements,
@@ -51,7 +51,7 @@ register 'service.git.job_elements' => {
 
 register 'service.git.link_revision_to_topic' => {
     name    =>_loc('Link a git revision to the changesets in title'),
-    icon    => '/static/images/icons/git.png',
+    icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&link_revision,
@@ -60,7 +60,7 @@ register 'service.git.link_revision_to_topic' => {
 
 register 'service.git.create_tag' => {
     name    => 'Create a tag in a Git repository',
-    icon    => '/static/images/icons/git.png',
+    icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     form    => '/forms/git_create_tag.js',
     handler => \&create_tag,
@@ -68,7 +68,7 @@ register 'service.git.create_tag' => {
 
 register 'service.git.create_branch' => {
     name    => 'Create a branch in a Git repository',
-    icon    => '/static/images/icons/git.png',
+    icon    => '/static/images/icons/git.svg',
     form    => '/forms/git_create_branch.js',
     handler => \&create_branch,
 };

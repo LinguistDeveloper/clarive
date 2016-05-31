@@ -103,7 +103,7 @@ sub rel_type {
         natures    => [ from_mid => 'job_nature' ] ,
     };
 }
-sub icon { '/static/images/icons/job.png' }
+sub icon { '/static/images/icons/job.svg' }
 
 before new_ci => sub {
     my ($self, $master_row, $master_doc ) = @_;

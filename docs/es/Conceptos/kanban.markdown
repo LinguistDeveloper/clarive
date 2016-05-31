@@ -1,7 +1,7 @@
 ---
 title: Tablero Kanban
 index: 5000
-icon: kanban
+icon: kanban.svg
 ---
 * El tablero Kanban es basicamente una tabla donde visualizar el flujo de trabajo. También puede definirse como un tablero donde situar las cartas.
 * El método Kanban es un conjunto de principios y prácticas para la gestión y mejora del flujo de trabajo.
@@ -9,7 +9,7 @@ icon: kanban
 * Hay varias formas de visualizar el tablero Kanban dentro de la aplicación. Generalmente la opción está disponible en: <br />
 
 
-&nbsp; &nbsp;• Desde la tabla de [tópicos](Conceptos/topic) se podrá acceder al tablero a través del botón <img src="/static/images/icons/kanban.png" /> situado arriba a la derecha de la tabla. <br />
+&nbsp; &nbsp;• Desde la tabla de [tópicos](Conceptos/topic) se podrá acceder al tablero a través del botón <img src="/static/images/icons/kanban.svg" /> situado arriba a la derecha de la tabla. <br />
 
 &nbsp; &nbsp;• Desde un tópico que pertenezca a una categoría de tipo Release.
 

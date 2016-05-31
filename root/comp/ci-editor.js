@@ -150,7 +150,7 @@
         
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
-            icon:'/static/images/icons/close.png',
+            icon:'/static/images/icons/close.svg',
             cls: 'x-btn-icon-text ui-comp-ci-editor-close',
             type: 'submit',
             handler: function() { cardpanel.destroy() }
@@ -169,7 +169,7 @@
         });
 
         var text_button = can_save ?  _('Edit') : _('View');
-        var text_img = can_save ? '/static/images/icons/edit.png' : '/static/images/icons/views.png';
+        var text_img = can_save ? '/static/images/icons/edit.svg' : '/static/images/icons/views.svg';
 
         var btn_edit = new Ext.Button({
             text: text_button,
@@ -197,7 +197,7 @@
 
         var btn_form_calendar = new Ext.Button({
             text: _('Calendar'),
-            icon:'/static/images/icons/calendar.png',
+            icon:'/static/images/icons/calendar.svg',
             cls: 'x-btn-icon-text',
             disabled: !can_save,
             pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 

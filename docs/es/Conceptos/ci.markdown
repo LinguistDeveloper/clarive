@@ -1,6 +1,6 @@
 ---
 title: CI (Elemento de configuracion)
-icon: class.gif
+icon: class.svg
 ---
 * La Wikipedia asocia el término CI a la estructura fundamental de la unidad de un sistema de gestión de la configuración. Clarive, como herramienta de gestión de configuración permite hacer seguimiento de toda la configuración de los elementos en su base de datos.
 * En Clarive, los CIs pueden ser tópicos (Releases, Cambios, Requerimientos, etc...), servidores, ID de usuarios, Agentes, Middleware (JBoss o Apache por ejemplo), instancias en la nube, etc...

@@ -369,12 +369,12 @@ sub job_icon {
         when( 'RUNNING' ) { 'gears.gif'; }
         when( 'READY' ) { 'waiting.png'; }
         when( 'APPROVAL' ) { 'user_delete.gif'; }
-        when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.png' } }
+        when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.svg' } }
         when( 'IN-EDIT' ) { 'log_w.png'; }
         when( 'WAITING' ) { 'waiting.png'; }
         when( 'PAUSED' ) { 'paused.png'; }
         when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
-        when( 'CANCELLED' ) { 'close.png'; }
+        when( 'CANCELLED' ) { 'close.svg'; }
         default { 'log_e.png' }
     }
 }

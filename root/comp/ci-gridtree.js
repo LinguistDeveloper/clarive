@@ -431,7 +431,7 @@
             },
 	       '->',
             btn_graph
-             ],
+        ],
         viewConfig: {
             enableRowBody: true,
             scrollOffset: 2,

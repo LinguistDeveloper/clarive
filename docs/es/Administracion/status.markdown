@@ -34,7 +34,7 @@ icon: status
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax).
 
 <br />
-#### <img src="/static/images/icons/add.gif" /> Crear
+#### <img src="/static/images/icons/add.svg" /> Crear
 * Pulsando en Crear, se abre una nueva ventana con las opciones necesarias para configurarlo: <br />
 
 &nbsp; &nbsp;• **Nombre**: El nombre que define el estado.<br />

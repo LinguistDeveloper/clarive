@@ -47,7 +47,7 @@ register 'menu.admin.users' => {
     actions  => ['action.admin.users'],
     title    => 'Users',
     index    => 80,
-    icon     => '/static/images/icons/user.gif'
+    icon     => '/static/images/icons/user.svg'
 };
 
 register 'event.user.create' => {
@@ -1017,7 +1017,7 @@ sub avatar : Local {
         $username       = $c->username;
     }
 
-    my $default_icon = "root/static/images/icons/user.png";
+    my $default_icon = "root/static/images/icons/user.svg";
 
     my $file = try {
         my $file = _dir( $c->path_to("/root/identicon") );

@@ -61,12 +61,12 @@ sub lc_for_project {
           {
             node => 'Topics',
             draggable => \0,
-            icon => '/static/images/icons/topic.png',
+            icon => '/static/images/icons/topic.svg',
             url => '/lifecycle/tree_topics_project',
             has_query => 1,
             data => {
                         'click' => {
-                                     'icon' => '/static/images/icons/topic.png',
+                                     'icon' => '/static/images/icons/topic.svg',
                                      'url' => '/topic/grid',
                                      'title' => $name_prj,
                                      'type' => 'comp'
@@ -77,7 +77,7 @@ sub lc_for_project {
           {
             node => 'Releases',
             draggable => \0,
-            icon => '/static/images/icons/release_explorer.png',
+            icon => '/static/images/icons/release_explorer.svg',
             url => '/lifecycle/tree_project_releases',
             type => 'component',
             has_query => 1,
@@ -87,7 +87,7 @@ sub lc_for_project {
     {
         node => 'Dashboards',
         draggable => \0,
-        icon => '/static/images/icons/dashboard.png',
+        icon => '/static/images/icons/dashboard.svg',
         url => '/dashboard/dashboard_list',
         has_query => 1,
         type => 'component'
@@ -99,12 +99,12 @@ sub lc_for_project {
         push @nodes, {
             'node' => 'Jobs',
             draggable => \0,
-            'icon' => '/static/images/icons/job.png',
+            'icon' => '/static/images/icons/job.svg',
             'url' => '/lifecycle/tree_project_jobs',
             'type' => 'component',
             'menu' => [
                 {
-                  icon => '/static/images/icons/open.png',
+                  icon => '/static/images/icons/open.svg',
                   text => _loc('Open...'),
                   comp => { url => '/job/monitor' },
                 }
@@ -113,7 +113,7 @@ sub lc_for_project {
     };
     push @nodes,{
         'node' => 'Views',
-        'icon' => '/static/images/icons/views.png',
+        'icon' => '/static/images/icons/views.svg',
         'menu' => [
                     {
                       'icon' => '/static/images/icons/folder_new.gif',
@@ -207,7 +207,7 @@ sub lc_for_project {
                 data => { id_status => $_->{id_status}, },
                 bl     => $bls[0],
                 bl_to  => $bls[0],                               # XXX
-                icon   => '/static/images/icons/state.gif',
+                icon   => '/static/images/icons/state.svg',
                 seq => $_->{seq}
                 };
             } sort {

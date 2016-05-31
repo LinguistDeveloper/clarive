@@ -950,13 +950,12 @@
                 }],
                 buttons: [{
                     text: _('Cancel'),
-                    icon: '/static/images/icons/close.png',
+                    icon: '/static/images/icons/close.svg',
                     handler: function() {
                         win_recipients.close();
                     }
                 }, {
                     text: _('Save'),
-                    //text: _('Accept') , 
                     icon: '/static/images/icons/save.png',
                     handler: function() {
                         add_recipients();
@@ -1229,7 +1228,7 @@
             ],
             buttons: [{
                 text: _('Close'),
-                icon: '/static/images/icons/close.png',
+                icon: '/static/images/icons/close.svg',
                 handler: function() {
                     win.close();
                 }
@@ -1459,7 +1458,7 @@
     };
 
     var btn_tools_notify = new Ext.Toolbar.Button({
-        icon: '/static/images/icons/wrench.gif',
+        icon:'/static/images/icons/wrench.svg',
         cls: 'x-btn-text-icon',
         disabled: false,
         menu: [{

@@ -1697,14 +1697,17 @@ input.combo_box_fieldlet {
 }
 .new_rule_window td.x-toolbar-right {
     padding-right: 10px;
-}
 */
-/*
+.icon_standar_size {
+    height: 16px;
+    width:  16px;
+}
+
 .help_docs .x-panel-body img {
   height: 16px;
   width: 16px;
  }
- */
+
 .x-tab-panel-body .events_grid.ux-maximgb-tg-panel {
     max-width: 100% !important;
 }

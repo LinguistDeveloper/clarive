@@ -63,14 +63,14 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             }
         };
         self.tbar = [ 
-            '<img src="/static/images/icons/kanban.png" />',
+            '<img src="/static/images/icons/kanban.svg" />',
             'KANBAN',
             '-',
-            { icon:'/static/images/icons/refresh.png',tooltip: _('Refresh Node'), iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
+            { icon:'/static/images/icons/refresh.svg',tooltip: _('Refresh Node'), iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
             self.status_btn, self.btn_save,
             '->',
             self.tab_btn,
-            { icon:'/static/images/icons/close.png', iconCls:'x-btn-icon', handler: function(){ 
+            { icon:'/static/images/icons/close.svg', iconCls:'x-btn-icon', handler: function(){ 
                     if( self.fireEvent('beforeclose') === false ) {
                         return;
                     }
@@ -182,7 +182,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     goto_tab : function(){
         var self = this;
         self.is_tab = true;
-        var params = { tab_icon: '/static/images/icons/kanban.png' };  
+        var params = { tab_icon: '/static/images/icons/kanban.svg' };  
         self.tab_info = { type: 'object', params: params }; // XXX this should be simplified
         var id = Baseliner.addNewTabItem( self, self.title, params );
         if( self.is_fullscreen ) {

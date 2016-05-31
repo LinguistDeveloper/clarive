@@ -31,7 +31,7 @@ has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1,
     default=>sub{ [ Util->_array(Clarive->config->{default_lang} // 'en') ] });
 
-sub icon { '/static/images/icons/user.gif' }
+sub icon { '/static/images/icons/user.svg' }
 
 sub has_description { 0 }
 

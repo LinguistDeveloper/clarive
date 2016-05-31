@@ -50,14 +50,14 @@
     };
 
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.gif' />" ;
+	    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.svg' />" ;
     };
 
     var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'icons/bulb/green.gif' 
+		    value == '1' ? 'icons/green.svg' 
 		    : ( value == -1 ? 'indicator.gif'
-		    : 'icons/bulb/gray.gif' );
+		    : 'icons/gray.svg' );
 		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
     };
 
@@ -138,7 +138,7 @@
     
         var btn_edit = new Ext.Toolbar.Button({
 	    text: _('Edit'),
-                icon:'/static/images/icons/edit.gif',
+                icon:'/static/images/icons/edit.svg',
                 cls: 'x-btn-text-icon',
 	    disabled: true,
                 handler: function() {
@@ -251,7 +251,7 @@
                 }
             }, {
                 text: _('Close'),
-                icon: '/static/images/icons/close.png',
+                icon: '/static/images/icons/close.svg',
                 handler: function() {
                     win.close();
                 }

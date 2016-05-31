@@ -8,7 +8,7 @@ use Try::Tiny;
 use experimental 'autoderef';
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/file.gif';
+our $ICON_DEFAULT = '/static/images/icons/file.svg';
 
 register 'service.fileman.foreach' => {
     name => 'Load files/items into stash',

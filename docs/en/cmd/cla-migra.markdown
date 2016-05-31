@@ -1,6 +1,6 @@
 ---
 title: cla migra - Migrations
-icon: console
+icon: console.svg
 ---
 
 `cla migra`: Runs database migrations, which are needed to level the database version with the current version of Clarive after installing patches. 

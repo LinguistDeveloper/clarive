@@ -2,8 +2,10 @@
 title: Notificaciones
 icon: email
 ---
+
 * Para acceder es necesario tener permisos de administración de la herramienta.
-* Para la configuración de las notificaciones se accede a través de Administración → <img class = "bali-topic-editor-image" src = "/static/images/icons/email.png" /> Notificaciones.
+* Para la configuración de las notificaciones se accede a través de Administración → <img class = "bali-topic-editor-image" src = "/static/images/icons/email.svg" /> Notificaciones.
+
 * Esta ventana muestra una lista con las notificaciones existentes y un menú de acciones.
 * La información se presenta de la siguiente manera:
 
@@ -48,11 +50,8 @@ icon: email
 
 ## Acciones disponibles
 
-
-#### <img src = "/static/images/icons/add.gif" /> Crear
-* Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros:
-
-`Evento` - Indica el tipo de evento, los nombres son intuitivos y vienen definidos por una regla nemotécnica:
+#### <img src = "/static/images/icons/add.svg" /> Crear
+* Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros: <br />
 
 Ejemplo: event.topic.create
 
@@ -120,10 +119,14 @@ Que el asunto sea breve.
 El asunto puede ser dinámico utilizando variables stash, por ejemplo `$ {username}`.
 
 
+<<<<<<< HEAD
 
 `Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.gif" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
 
 Primera selección - Establece de qué manera aparecerán los destinatarios. 
+=======
+&nbsp; &nbsp;• `Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.svg" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
+>>>>>>> enh: change icons to svg - add.gif in markdown
 
 *To* 
 
@@ -167,8 +170,8 @@ Cuando se marca la casilla "Todos", a la derecha de los campos, la condición se
 
 
 
+#### <img src = "/static/images/icons/edit.svg" /> Editar
 
-#### <img src = "/static/images/icons/edit.gif" /> Editar
 * Para habilitar la opción de editar una notificación, es necesario seleccionar una notificación ya existente.
 * La ventana que se abre para la edición es la misma que para la creación.
 
@@ -182,7 +185,7 @@ Cuando se marca la casilla "Todos", a la derecha de los campos, la condición se
 
 
 #### <img src = "/static/images/icons/import.png" /> Importar / <img src = "/static/images/icons/export.png" /> Exportar
-* Dentro de las opciones del icono <img src = "/static/images/icons/wrench.gif" /> se encuentran las opciones para importar o exportar notificaciones.
+* Dentro de las opciones del icono <img src = "/static/images/icons/wrench.svg" /> se encuentran las opciones para importar o exportar notificaciones.
 * Para la **exportación**, es necesario seleccionar al menos una fila, una vez seleccionadas las notificaciones que se deseen exportar, el sistema generará un fichero YAML con los datos del evento.
 * La opción de **importar** abrirá una ventana donde añadir el YAML de la notificación. Una vez añadido el código es necesario importarlo a través del botón <img src = "/static/images/icons/import.png" /> Importar que aparece en la parte superior de la ventana activa. Debajo, aparecerá el resultado de la importación.
 * Si ha ido de manera correcta el sistema informará con un mensaje:

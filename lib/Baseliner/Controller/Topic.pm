@@ -40,8 +40,7 @@ register 'registor.menu.topics' => {
                 "action.topics.$id.delete","action.topics.$id.comment","action.topics.$id.jobs",
                 "action.topics.$id.activity"],
                 url_comp => "/topic/grid?category_id=" . $data->{id},
-                #icon     => '/static/images/icons/topic.png',
-                tab_icon => '/static/images/icons/topic.png'
+                tab_icon => '/static/images/icons/topic.svg'
            }
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
@@ -56,8 +55,7 @@ register 'registor.menu.topics' => {
                 actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/view?swEdit=1',
                 comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                #icon     => '/static/images/icons/topic.png',
-                tab_icon => '/static/images/icons/topic.png'
+                tab_icon => '/static/images/icons/topic.svg'
            }
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
@@ -73,9 +71,8 @@ register 'registor.menu.topics' => {
                 hideOnClick => 0,
                 #actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/grid?status_id=' . $data->{id_status},
-                #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                icon     => $data->{status_icon}||'/static/images/icons/state.gif',
-                tab_icon => $data->{status_icon}||'/static/images/icons/state.gif',
+                icon     => $data->{status_icon}||'/static/images/icons/state.svg',
+                tab_icon => $data->{status_icon}||'/static/images/icons/state.svg',
            }
        } sort { lc $a->{name} cmp lc $b->{name} }
            ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
@@ -92,9 +89,9 @@ register 'registor.menu.topics' => {
                     title    => _loc ('Topics'),
                     actions  => ['action.topics.%.view'],
                     url_comp => '/topic/grid',
-                    comp_data => { tabTopic_force => 1 }, #force modify name and icon only for Topics Tab
-                    icon     => '/static/images/icons/topic.png',
-                    tab_icon => '/static/images/icons/topic.png'
+                    comp_data => { tabTopic_force => 1 },
+                    icon     => '/static/images/icons/topic.svg',
+                    tab_icon => '/static/images/icons/topic.svg'
             },
             'menu.topic._sep_' => { index=>3, separator=>1 },
             %menu_create,
@@ -103,13 +100,13 @@ register 'registor.menu.topics' => {
        };
        $menus->{'menu.topic.status'} = {
                     label    => _loc('Status'),
-                    icon     => '/static/images/icons/state.gif',
+                    icon     => '/static/images/icons/state.svg',
                     index => 2,
                     #actions  => ['action.topics.%.create'],
              } if %menu_statuses;
        $menus->{'menu.topic.create'} = {
                     label    => _loc('Create'),
-                    icon     => '/static/images/icons/add.gif',
+                    icon     => '/static/images/icons/add.svg',
                     index => 2,
                     actions  => ['action.topics.%.create'],
              } if %menu_create;
@@ -2103,7 +2100,7 @@ sub img : Local {
         $c->res->body( $img->slurp );
     } else {
         $c->res->content_type( 'image/png');
-        my $broken = $c->path_to('/root/static/images/icons/help.png')->slurp;
+        my $broken = $c->path_to('/root/static/images/icons/help.svg')->slurp;
         $c->res->body( $broken );
     }
 }

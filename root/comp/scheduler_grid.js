@@ -93,7 +93,7 @@
     var button_new_schedule = new Ext.Toolbar.Button({
         text: _('Create'),
         hidden: false,
-        icon: '/static/images/icons/add.gif',
+        icon: '/static/images/icons/add.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var next_exec = new Date(Date.now()).format('Y-m-d H:i:s');
@@ -106,7 +106,7 @@
     var button_edit_schedule = new Ext.Toolbar.Button({
         text: _('Edit'),
         hidden: true,
-        icon: '/static/images/icons/edit.gif',
+        icon: '/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -230,7 +230,7 @@
     var button_kill_schedule = new Ext.Toolbar.Button({
         text: _('Kill'),
         hidden: true,
-        icon: '/static/images/icons/close.png',
+        icon: '/static/images/icons/close.svg',
         cls: 'x-btn-text-icon',
         handler: kill_schedule_handler
     });
@@ -257,7 +257,7 @@
     });
 
     var name_renderer = function(value, metadata, rec, rowIndex, colIndex, store) {
-        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img src="/static/images/icons/moredata.gif" /></a>', rec.data.id_last_log);
+        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img src="/static/images/icons/moredata.svg" /></a>', rec.data.id_last_log);
         return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>";
     };
 
@@ -525,7 +525,7 @@
             buttons: [
                 btn_submit, {
                     text: _('Close'),
-                    icon: '/static/images/icons/close.png',
+                    icon: '/static/images/icons/close.svg',
                     handler: function() {
                         win.close();
                     }

@@ -9,7 +9,7 @@ May be attached to topics.
 package BaselinerX::CI::asset;
 use Baseliner::Moose;
 
-sub icon { '/static/images/icons/post.png' }
+sub icon { '/static/images/icons/post.svg' }
 
 with 'Baseliner::Role::CI::Item';
 with 'Baseliner::Role::CI::CCMDB';

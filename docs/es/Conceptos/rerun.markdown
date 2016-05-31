@@ -1,6 +1,6 @@
 ---
 title: Reejecucion de un trabajo
-icon: job
+icon: job.svg
 ---
 * Una reejecuciones no es más que una nueva ejecución de un [trabajo](Conceptos/job) que ya ha sido procesado.
 * Normalmente los trabajos se reejecutan cuando éste ha fallado por alguna razón.

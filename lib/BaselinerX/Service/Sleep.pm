@@ -12,8 +12,7 @@ register 'service.job.sleep' => {
     name => 'Sleep for a number of seconds',
     job_service  => 1,
     form => '/forms/sleep_job.js',
-    #icon => '/static/images/silk/clock_stop.png',
-    icon => '/static/images/icons/job.png',
+    icon => '/static/images/icons/job.svg',
     handler => \&run_sleep, };
 
 sub run_sleep {

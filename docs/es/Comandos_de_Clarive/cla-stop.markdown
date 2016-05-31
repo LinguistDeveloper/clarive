@@ -1,6 +1,6 @@
 ---
 title: cla stop - Detiene todos los procesos
-icon: console
+icon: console.svg
 ---
 * `cla stop`: Detiene todos los procesos del servidor. Esto es, intentará detener todos los sistemas que Clarive necesita para operar.
 * Estos son: <br />

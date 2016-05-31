@@ -1,7 +1,7 @@
 ---
 title: Calendario
 index: 400
-icon: calendar
+icon: calendar.svg
 ---
 * Muestra un calendario en el dashboard.
 * En la configuración del dashlet existen varias opciones para personalizarlo:

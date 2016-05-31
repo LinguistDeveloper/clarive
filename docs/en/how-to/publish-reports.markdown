@@ -1,7 +1,8 @@
+
 ---
 title: Publish a report
 index: 1
-icon: wrench.gif
+icon: wrench.svg
 ---
 
 Every time a user makes an export (topic grid or a report) a new event is generated. This event calls *event.topic_list.export*, contains all information related to the export; format, parameters, title, author and the temporaly file generated.
@@ -26,3 +27,4 @@ Now we configure the service:
 * **Origin**: Set the file source. As we told before, the event created a temporal file, so we need to set this field as a reference to that parameter *${export_temp_file}*
 
 Having done that, and after save the rule, we export a report or a topic grid with filter to one of the available formats (HTML, CSV o YAML). To check if the rule is correct, go to Tools - Artifacts to verify if in the public repostory is saved the report with the name we gave in the Rule config. In case you want to share the report, just copy public URL.
+

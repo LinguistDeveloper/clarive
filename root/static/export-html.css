@@ -1,0 +1,12 @@
+body {
+    position: relative;
+    padding-top: 20px;
+    background-color: #fff;
+    background-image: url(../img/grid-18px-masked.png);
+    background-repeat: repeat-x;
+    background-position: 0 40px;
+}
+img.force_size_in_icon {
+    height: 16px;
+    width: 16px;
+}

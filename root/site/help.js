@@ -165,18 +165,18 @@ Cla.help_show = function(params) {
         //docs_tree.refresh();
     }});
 
-    var btn_refresh = new Ext.Button({ icon: IC('refresh'), tooltip: _('Refresh'), handler: function(){
+    var btn_refresh = new Ext.Button({ icon: IC('refresh.svg'), tooltip: _('Refresh'), handler: function(){
         docs_tree.refresh();
     }});
 
-    var btn_left = new Ext.Button({ icon: IC('arrow_left.gif'), tooltip: _('Back'), disabled: true, handler: function(){
+    var btn_left = new Ext.Button({ icon: IC('arrow_left.svg'), tooltip: _('Back'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr <= 0 )  return;
         var path = help_win.history[ --help_win.history_curr ];
         if( path ) goto_doc( path, { from_hist : true } );
         check_btns();
     }});
-    var btn_right = new Ext.Button({ icon: IC('arrow_right.gif'), tooltip: _('Forward'), disabled: true, handler: function(){
+    var btn_right = new Ext.Button({ icon: IC('arrow_right.svg'), tooltip: _('Forward'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr >= help_win.history.length ) return;
         var path = help_win.history[ ++help_win.history_curr ];
@@ -237,7 +237,6 @@ Cla.help_on = function() {
     Cla.help_button.setIconClass('help-on');
 };
 Cla.help_off = function() {
-    //Cla.help_button.setIcon('/static/images/icons/lightbulb_off.png');
     Cla.help_button.setIconClass('help-off');
 };
 Cla.help_handler = function(params) {
@@ -272,7 +271,7 @@ Cla.help_button_flash = function(params) {
 }
 
 Cla.help_base_items = [
-    { text:_('Clarive Help'), icon: IC('help'), handler:function(){ Cla.help_show() } },
+    { text:_('Clarive Help'), icon: IC('help.svg'), handler:function(){ Cla.help_show() } },
     '-'
 ];
 Cla.help_items = [];
@@ -285,7 +284,7 @@ Cla.help_push = function(params) {
         handler: function() {
             Cla.help_show({ path: params.path+'.markdown' });
         },
-        icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
+        icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.svg')
     };
     Cla.help_items = Cla.help_items.splice(0,9);
     Cla.help_items.unshift( item );

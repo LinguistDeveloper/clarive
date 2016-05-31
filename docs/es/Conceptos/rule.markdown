@@ -1,6 +1,6 @@
 ---
 title: Regla
-icon: rule
+icon: rule.svg
 ---
 * En Clarive, una regla es un árbol de decision utilizado para personalizar los aspectos más importantes de Clarive.
 * Una regla puede ser de varios tipos en función de la finalidad por la que va a ser creada: <br />

@@ -1,6 +1,6 @@
 ---
 title: cla proxy - Cliente proxy
-icon: console
+icon: console.svg
 ---
 * `cla proxy`: Es un cliente proxy que ayuda a depurar el tráfico de la red.
 * Depura todo el tráfico que sale o entra del servidor web de Clarive.

@@ -482,7 +482,7 @@
     });
 
     var render_icon = function( v ) {
-        return String.format('<img style="float:left;vertical-align:top;width:16px;" src="{0}" />', v || '/static/images/icons/class.gif' );
+        return String.format('<img style="float:left;vertical-align:top;width:16px;" src="{0}" />', v || '/static/images/icons/class.svg' );
     };
 
     var button_remove_item = new Ext.Button({
@@ -762,7 +762,7 @@
 
     var button_submit = new Ext.Button({
         xtype:'button', text: _('Create'),
-        icon:'/static/images/icons/edit.gif',
+        icon:'/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         handler: function(){
             if( check_no_cal.checked && comments.getValue().length == 0 ) {
@@ -942,7 +942,7 @@
             '->',
             {
                 xtype:'button', text: _('Reset'),
-                icon:'/static/images/icons/wipe_cache.png',
+                icon:'/static/images/icons/wipe_cache.svg',
                 cls: 'x-btn-text-icon',
                 handler: form_reset_all
             },
@@ -1035,7 +1035,7 @@
         cls: 'x-btn-icon',
         layout: 'form',
         tooltip: _('Reload Calendar Slots'),
-        icon: '/static/images/icons/refresh.png',
+        icon: '/static/images/icons/refresh.svg',
         handler: function(){ calendar_reload(); }
     });
     combo_time.on('enable', function(){ button_show_cals.enable(); });
@@ -1053,7 +1053,7 @@
 
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
-        tab_icon: '/static/images/icons/job.png',
+        tab_icon: '/static/images/icons/job.svg',
         height: '50%',
         bodyCssClass: 'job_new_main_form_general',
         forceFit: true,

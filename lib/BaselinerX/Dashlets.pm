@@ -44,7 +44,7 @@ register 'dashlet.job.day_distribution' => {
 register 'dashlet.ci.graph' => {
     form=> '/dashlets/ci_graph_config.js',
     name=> 'CI Graph',
-    icon=> '/static/images/icons/ci-grey.png',
+    icon=> '/static/images/icons/ci-grey.svg',
     js_file => '/dashlets/ci_graph.js',
     no_boot => 1,
 };
@@ -103,7 +103,6 @@ register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap',
     icon=> '/static/images/icons/roadmap.png',
-    #icon=> '/static/images/icons/calendar.gif',
     js_file => '/dashlets/topic_roadmap.js',
     no_boot => 1,
 };
@@ -111,7 +110,7 @@ register 'dashlet.topic.topic_roadmap' => {
 register 'dashlet.topic.calendar' => {
     form=> '/dashlets/calendar_config.js',
     name=> 'Calendar',
-    icon=> '/static/images/icons/calendar.png',
+    icon=> '/static/images/icons/calendar.svg',
     js_file => '/dashlets/calendar.js',
     no_boot => 1,
 };
@@ -119,8 +118,7 @@ register 'dashlet.topic.calendar' => {
 register 'dashlet.iframe' => {
     form=> '/dashlets/iframe_config.js',
     name=> 'Internet frame',
-    icon=> '/static/images/icons/webservice.png',
-    #icon=> '/static/images/icons/world.png',
+    icon=> '/static/images/icons/webservice.svg',
     js_file => '/dashlets/iframe.js'
 };
 

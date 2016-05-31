@@ -495,7 +495,7 @@ subtest 'save_rule: saves the tree' => sub {
         rule_tree => [
             {
                 "attributes"=> {
-                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "icon"=> "/static/images/icons/cog_perl.svg",
                     "key"=> "statement.code.server",
                     "text"=> "Server CODE",
                     "id"=> "rule-ext-gen38276-1456842988061",

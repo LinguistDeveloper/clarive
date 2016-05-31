@@ -60,7 +60,7 @@ subtest 'action_tree: returns action tree' => sub {
       {
         json => [
             {
-                'icon'     => '/static/images/icons/action_folder.gif',
+                'icon'     => '/static/images/icons/action_folder.svg',
                 'text'     => 'topics',
                 'children' => [
                     {

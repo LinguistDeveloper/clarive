@@ -653,7 +653,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         self.btn_to_img = new Ext.Button({
             tooltip: _('Generate Image'),
-            icon:'/static/images/icons/printer.png', hidden: Ext.isIE9m, handler: function(){ self.to_img(); }
+            icon:'/static/images/icons/printer.svg', hidden: Ext.isIE9m, handler: function(){ self.to_img(); }
         });
         self.btn_st = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,

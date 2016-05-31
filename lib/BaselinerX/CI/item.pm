@@ -1,7 +1,7 @@
 package BaselinerX::CI::item;
 use Baseliner::Moose;
 
-sub icon { '/static/images/icons/post.png' }
+sub icon { '/static/images/icons/post.svg' }
 
 with 'Baseliner::Role::CI::CCMDB';
 with 'Baseliner::Role::CI::Item';

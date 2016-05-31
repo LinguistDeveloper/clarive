@@ -1,11 +1,11 @@
 ---
 title: Mensajes del sistema
-icon: sms
+icon: sms.svg
 ---
 
 * Los mensajes del sistema son notificaciones globales que se publican a todos los usuarios registrados en Clarive.
 * Son útiles para notificar a los usuarios eventos como puedan ser una inoperatividad del sistema a causa de mantenimiento, un cambio de comportamiento o un aviso de mejora en el ciclo de vida.
-* Se puede acceder a los mensajes del sistema a través del menú de Administración → <img src="/static/images/icons/sms.gif" /> Mensajes de sistema.
+* Se puede acceder a los mensajes del sistema a través del menú de Administración → <img src="/static/images/icons/sms.svg" /> Mensajes de sistema.
 
 
 <br />
@@ -33,7 +33,7 @@ icon: sms
 ## Opciones
 
 <br />
-### <img src="/static/images/icons/edit.gif" /> Componer
+### <img src="/static/images/icons/edit.svg" /> Componer
 * Para crear una nueva alerta, hay que componer el mensaje que se emitirá. Para ello, hay que completar los siguientes campos: <br />
 
 &nbsp; &nbsp;• **Título**: El título del mensaje aparecerá en la barra superior. es recomendable que sea breve como 'Nueva release 5.X.X' o 'Mantenimiento planificado'.  <br />
@@ -64,7 +64,7 @@ icon: sms
 * Elimina el mensaje. La difusión del mismo también pararía.
 
 <br />
-#### <img src="/static/images/icons/close.png" /> Cancelar
+#### <img src="/static/images/icons/close.svg" /> Cancelar
 * Cierra la ventana de mensajes del sistema.
 
 <br />

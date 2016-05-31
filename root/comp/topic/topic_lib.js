@@ -650,7 +650,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
     });
     var btn_submit = new Ext.Button({
         xtype: 'button',
-        icon:'/static/images/icons/comment_new.gif',
+        icon:'/static/images/icons/comment_new.svg',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
@@ -843,7 +843,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
-            icon:'/static/images/icons/comment_new.gif',
+            icon:'/static/images/icons/comment_new.svg',
             cls: 'x-btn-icon-text',
             hidden: !self.permComment,
             handler: function() {
@@ -866,7 +866,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_edit = new Ext.Toolbar.Button({
             name: 'edit',
             text:_('Edit'),
-            icon:'/static/images/icons/edit.gif',
+            icon:'/static/images/icons/edit.svg',
             cls: 'x-btn-text-icon',
             enableToggle: true,
             pressed: self.topic_mid==undefined,
@@ -907,7 +907,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.menu_deploy
         });
 
-        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), icon: IC('job.png'), menu: self.menu_deploy_final, hidden: true });
+        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), icon: IC('job.svg'), menu: self.menu_deploy_final, hidden: true });
 
         if (self.menu_deploy.length <= 0){
             self.btn_deploy.hide();
@@ -930,7 +930,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
 
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.gif'), menu: self.status_menu, hidden: true });
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.svg'), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
@@ -943,7 +943,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_kanban = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/kanban.png',
+            icon:'/static/images/icons/kanban.svg',
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Show Kanban'),
@@ -973,7 +973,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/ci-grey.png',
+            icon:'/static/images/icons/ci-grey.svg',
             cls: 'x-btn-icon',
             tooltip: _('Show CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,
@@ -1818,7 +1818,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
 
         var btn_reload = new Ext.Button({
             disabled: self.readOnly ? self.readOnly : false,
-            icon: '/static/images/icons/refresh.png',
+            icon: '/static/images/icons/refresh.svg',
             tooltip: _('Refresh'),
             handler: function(){ self.refresh() }
         });

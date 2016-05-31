@@ -33,14 +33,14 @@ register 'menu.development.repl' => {
     url_comp => '/repl/main',
     title    => 'REPL',
     action   => 'action.development.repl',
-    icon     => '/static/images/icons/console.png',
+    icon     => '/static/images/icons/console.svg',
     index    => 10,
 };
 register 'menu.development.js_reload' => {
     label    => 'JS Reload',
     url_eval => '/site/js-reload.js',
     title    => 'JS Reload',
-    icon     => '/static/images/icons/js-reload.png',
+    icon     => '/static/images/icons/js-reload.svg',
     action   => 'action.development.js_reload',
     index      => 20,
 };
@@ -50,7 +50,7 @@ register 'menu.development.cache_clear' => {
     url_run  => '/cache_clear',
     title    => 'Wipe Cache',
     action   => 'action.development.cache_clear',
-    icon     => '/static/images/icons/wipe_cache.png',
+    icon     => '/static/images/icons/wipe_cache.svg',
     index      => 30,
 };
 
@@ -59,7 +59,7 @@ register 'menu.development.ext_api' => {
     url_iframe => '/static/ext/docs/index.html',
     title      => 'ExtJS API',
     action     => 'action.development.ext_api',
-    icon     => '/static/images/icons/extjs.png',
+    icon     => '/static/images/icons/extjs.svg',
     index      => 1000,
 };
 register 'menu.development.ext_examples' => {
@@ -67,7 +67,7 @@ register 'menu.development.ext_examples' => {
     url_iframe => '/static/ext/examples/index.html',
     title      => 'ExtJS Examples',
     action     => 'action.development.ext_examples',
-    icon     => '/static/images/icons/extjs_examples.png',
+    icon     => '/static/images/icons/extjs_example.svg',
     index      => 1000,
 };
 # register 'menu.development.gui_designer' => {
@@ -93,7 +93,7 @@ register 'menu.development.sequences' =>{
     url_comp => '/repl/sequences',
     title    => 'Sequences',
     action   => 'action.development.sequences',
-    icon     => '/static/images/icons/sequence.png',
+    icon     => '/static/images/icons/sequence.svg',
     #index    => 10,
 };
 

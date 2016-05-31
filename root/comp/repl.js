@@ -132,7 +132,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         tbar: [ search,
             {   xtype: 'button',
                 tooltip:_('Refresh Node'),
-                icon:'/static/images/icons/refresh.png',
+                icon:'/static/images/icons/refresh.svg',
                 cls: 'x-btn-icon',
                 handler: function(){
                     tree.removeAll();
@@ -216,8 +216,8 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         height: 350,
         items: [ output ],
         tbar: [
-            Baseliner.button('Clear', '/static/images/icons/clear.gif', function(b) { set_output("") } ),
-            Baseliner.button('Close All', '/static/images/icons/clear.gif', function(b) { 
+            Baseliner.button('Clear', '/static/images/icons/clear.svg', function(b) { set_output("") } ),
+            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) { 
                 cons.items.each(function(comp) {
                     if( comp.initialConfig.closable ) {
                         cons.remove( comp );
@@ -225,7 +225,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     }
                 });
             }),
-            Baseliner.button(_('Maximize'), '/static/images/icons/detach.png', function(b) { 
+            Baseliner.button(_('Maximize'), '/static/images/icons/detach.svg', function(b) { 
                 var tab = cons.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -234,7 +234,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     Baseliner.addNewTabItem( to , '' );
                 }
             }),
-            Baseliner.button(_('Raw'), '/static/images/icons/detach.png', function(b) { 
+            Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function(b) { 
                 var tab = cons.getActiveTab();
                 var ww = window.open('about:blank', '_blank' );
                 ww.document.title = _('REPL');
@@ -242,7 +242,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 ww.document.close();
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { cons.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { cons.collapse(true) } )
         ],
         region: 'south'
     });
@@ -660,7 +660,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             '->',
             _('Elapsed')+': ', elapsed,
             {   
-                icon:'/static/images/icons/wrench.gif',
+                icon:'/static/images/icons/wrench.svg',
                 cls: 'x-btn-text-icon',
                 menu: config_menu
             },

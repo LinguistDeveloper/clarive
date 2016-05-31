@@ -8,7 +8,7 @@ use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Item';
 
-sub icon { '/static/images/icons/file.gif' }
+sub icon { '/static/images/icons/file.svg' }
 sub ci_form { '/ci/item.js' }
 
 has _lines => qw(is rw isa ArrayRef lazy 1), default=>sub{

@@ -1,6 +1,6 @@
 ---
 title: Topico
-icon: topic
+icon: topic.svg
 ---
 * El tópico representa la entidad central del ciclo de vida en Clarive.
 * Una **categoría de tópico** es una instancia que define la organización que tiene asociado un [flujo de trabajo](Conceptos/workflow).

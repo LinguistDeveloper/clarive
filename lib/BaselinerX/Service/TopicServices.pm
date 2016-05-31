@@ -14,8 +14,7 @@ register 'service.topic.change_status' => {
     name => 'Change topic status',
     handler => \&change_status,
     job_service  => 1,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/folder_go.png',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_status.js'
 };
 
@@ -23,8 +22,7 @@ register 'service.topic.create' => {
     name => 'Create a new topic',
     handler => \&create,
     job_service  => 1,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/add.gif',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_create.js'
 };
 
@@ -32,8 +30,7 @@ register 'service.topic.update' => {
     name => 'Update topic data',
     handler => \&update,
     job_service  => 1,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/edit.gif',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_update.js'
 };
 
@@ -41,8 +38,7 @@ register 'service.topic.upload' => {
     name => 'Attach file to a topic',
     handler => \&upload,
     job_service  => 0,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/upload.gif',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/asset_file.js'
 };
 
@@ -50,8 +46,7 @@ register 'service.topic.load' => {
     name => 'Load topic data',
     handler => \&load,
     job_service  => 0,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/document.png',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_load.js'
 };
 
@@ -59,14 +54,13 @@ register 'service.topic.related' => {
     name => 'Load topic related',
     handler => \&related,
     job_service  => 0,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/spacetree.png',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_related.js'
 };
 
 register 'service.topic.inactivity_daemon' => {
     name    => 'Watch for topics without activity in statuses',
-    icon => '/static/images/icons/daemon.gif',
+    icon => '/static/images/icons/daemon.svg',
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&inactivity_daemon,
@@ -76,8 +70,7 @@ register 'service.topic.get_with_condition' => {
     name => 'Get topics that matches conditions',
     handler => \&get_with_condition,
     job_service  => 0,
-    icon => '/static/images/icons/topic.png',
-    #icon => '/static/images/icons/report_default.png',
+    icon => '/static/images/icons/topic.svg',
     form => '/forms/topic_get_with_condition.js'
 };
 

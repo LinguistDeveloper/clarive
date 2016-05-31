@@ -108,10 +108,11 @@ sub build_doc_tree {
                 push @tree, $doc;
                 next;
             }
-            my $icon = Util->icon_path( $doc->{icon} || '/static/images/icons/page.png' );
+            my $icon = Util->icon_path( $doc->{icon} || '/static/images/icons/page.svg' );
             my $node_data = { path => "" . $doc->{rel} };
             $node_data->{html} = $doc->{html} if $opts->{include_html};
             $node_data->{body} = $doc->{body} if $opts->{include_body};
+
             push @tree,
               {
                 leaf           => \1,

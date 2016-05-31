@@ -69,7 +69,7 @@ Baseliner.GridArrayField = Ext.extend( Ext.grid.EditorGridPanel, {
             self.field_container,
             {
                 text: _('Add'),
-                icon: '/static/images/icons/add.gif',
+                icon: '/static/images/icons/add.svg',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     var ___record = Ext.data.Record.create([{

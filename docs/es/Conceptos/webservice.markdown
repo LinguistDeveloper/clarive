@@ -1,6 +1,6 @@
 ---
 title: Servicio Web
-icon: webservice
+icon: webservice.svg
 ---
 * En Clarive, un webservice es un tipo de [regla](Conceptos/rule) que pueden ser llamados desde fuera de Clarive.
 * Los servicios web son la mejor forma de automatizar operaciones de Clarive desde fuera de la herramienta.

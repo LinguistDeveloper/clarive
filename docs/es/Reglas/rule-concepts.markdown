@@ -1,7 +1,7 @@
 ---
 title: Conceptos de regla
 index: 200
-icon: rule
+icon: rule.svg
 ---
 * Una vez que las diferentes necesidades se registran y se gestionan a tavés de los distintos estados que componen su ciclo de vida, estos deben de ser desplegados y entregados como operación final del ciclo. 
 * La gestión de reglas permite automatizar el despligue entre sistemas.

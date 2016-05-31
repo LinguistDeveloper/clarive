@@ -10,8 +10,7 @@ use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;
 
-#our $ICON_DEFAULT = '/static/images/icons/step_run.png';
-our $ICON_DEFAULT = '/static/images/icons/cog_java.png';
+our $ICON_DEFAULT = '/static/images/icons/cog_java.svg';
 
 register 'service.scripting.local' => {
     name => 'Run a local script',

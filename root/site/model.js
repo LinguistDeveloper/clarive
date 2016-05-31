@@ -1770,7 +1770,7 @@ Baseliner.DataEditor = function(c) {
         self.getLayout().setActiveItem( 0 );
     };
     var btn_editor = new Ext.Button({
-        tooltip: _('Edit'), icon:'/static/images/icons/edit.gif', handler: view_editor,
+        tooltip: _('Edit'), icon:'/static/images/icons/edit.svg', handler: view_editor,
         pressed: true, allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
 
     var view_json = function(){
@@ -1841,7 +1841,7 @@ Baseliner.DataEditor = function(c) {
         btn_editor,
         btn_json,
         '-',
-        { icon:'/static/images/icons/add.gif',  tooltip: _('Create'), handler: add_row },
+        { icon:'/static/images/icons/add.svg',  tooltip: _('Create'), handler: add_row },
         { icon:'/static/images/icons/delete_.png',  tooltip: _('Delete'), handler: self.del_row },
         '->'
     ];
@@ -1851,7 +1851,7 @@ Baseliner.DataEditor = function(c) {
         self.get_save_data = function(){ return collapse_data( store.getRange(), 0 ) };
     }
 
-    if( ! c.hide_cancel )  tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } } );
+    if( ! c.hide_cancel )  tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ close_comp(false) } } );
     if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } } );
 
     var cols = [];
@@ -2026,7 +2026,7 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.columns = cols;
         self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
         var tbar = [
-           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } ,
+           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.svg', handler: function(){ self.open_win.call(self) } } ,
            new Baseliner.button.CSVExport({ grid: self, store: s })
         ];
         self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar;
@@ -2208,7 +2208,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             if( ! self.hide_save )
                 self.tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ self.done(true) } } );
             if( ! self.hide_cancel )
-                self.tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ self.done(false) } } );
+                self.tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ self.done(false) } } );
         }
         Baseliner.MetaForm.superclass.initComponent.call(this);
 
@@ -2454,7 +2454,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 self.add_field_from_rec( rec );
             });
         }
-        self.btn_add = new Ext.Button({ icon:'/static/images/icons/add.gif', handler:function(){
+        self.btn_add = new Ext.Button({ icon:'/static/images/icons/add.svg', handler:function(){
             if( self.variable_name ) {
                 self.load_initial_var(self.variable_name);
             } else {

@@ -25,7 +25,7 @@ my $iid = Util->_md5;
         else if( status=='APPROVAL' ) icon='verify.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.png';
-        else if( status=='CANCELLED' ) icon='close.png';
+        else if( status=='CANCELLED' ) icon='close.svg';
         else { icon='log_e.png'; bold=true; };
         
         var value = (bold?'<b>' + _(status) + '</b>': _(status));

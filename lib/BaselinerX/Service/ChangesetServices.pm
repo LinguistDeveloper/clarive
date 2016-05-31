@@ -61,7 +61,6 @@ register 'service.changeset.checkout.bl_all_repos' => {
 
 register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
-    #icon    => '/static/images/nature/nature.png',
     icon    => '/static/images/icons/changesets.png',
     form    => '/forms/nature_items.js',
     job_service  => 1,
@@ -71,7 +70,6 @@ register 'service.changeset.natures' => {
 register 'service.changeset.update' => {
     name    => 'Update Changesets',
     icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/topic.png',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
     handler => \&changeset_update,
@@ -79,7 +77,7 @@ register 'service.changeset.update' => {
 
 register 'service.topic.status' => {
     name    => '(DEPRECATED) Change Topic Status',
-    icon    => '/static/images/icons/topic.png',
+    icon    => '/static/images/icons/topic.svg',
     form    => '/forms/topic_status.js',
     job_service  => 1,
     handler => \&topic_status,
@@ -88,7 +86,6 @@ register 'service.topic.status' => {
 register 'service.changeset.update_bls' => {
     name    => 'Update Changesets BLs',
     icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/topic.png',
     job_service  => 1,
     handler => \&update_changesets_bls,
 };

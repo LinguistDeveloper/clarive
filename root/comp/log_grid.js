@@ -112,7 +112,7 @@
 
     // AutoRefresh
     var button_autorefresh = new Ext.Button({ tooltip: _('Refresh'),
-        icon: '/static/images/icons/refresh.png', 
+        icon: '/static/images/icons/refresh.svg', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -282,13 +282,11 @@
 
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
-        //if( value=='debug' ) icon='log_d.gif';
         if( value=='debug' ) icon='debug_view.png';
         else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
-        //else if( value=='comment' ) icon='post.gif';
-        else if( value=='comment' ) icon='sms.png';
+        else if( value=='comment' ) icon='sms.svg';
         if( icon!=undefined ) {
             return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
         } else {
@@ -323,9 +321,7 @@
                }
            }
            if( value.more=='jes' ) {
-             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&jobId=" + rec.data.mid + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
-//           if( value.more=='jes' ) {
-//               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&jobId=" + rec.data.mid + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/icons/host.svg'/></a> " ;
            } else if( value.more=='link'  ) {
                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
            } else if( value.more!='' && value.more!=undefined && value.data ) {
@@ -342,7 +338,7 @@
                    if( data_name==undefined || data_name.length<1 ) {
                        data_name = "Log Data " + rec.data.id;
                    }
-                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/moredata.gif'/></a> " + datalen ;
+                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
                    ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
@@ -378,8 +374,8 @@
         menu_exec_list.push({ text: exec, value: exec, checked: (exec==job_exec?true:false), group: 'exec', checkHandler: menu_exec_change });
     }
     var menu_exec = new Ext.Toolbar.Button({ text : _('Execution %1/%2', job_exec, job_exec_max), menu: { items: menu_exec_list } });
-    var menu_exec_left  = new Ext.Toolbar.Button({tooltip: _('Demote'),icon: '/static/images/icons/arrow_left.gif', cls: 'x-btn-text-icon', handler: exec_left  });
-    var menu_exec_right = new Ext.Toolbar.Button({tooltip: _('Promote'), icon: '/static/images/icons/arrow_right.gif', cls: 'x-btn-text-icon', handler: exec_right  });
+    var menu_exec_left  = new Ext.Toolbar.Button({tooltip: _('Demote'),icon: '/static/images/icons/arrow_left.svg', cls: 'x-btn-text-icon', handler: exec_left  });
+    var menu_exec_right = new Ext.Toolbar.Button({tooltip: _('Promote'), icon: '/static/images/icons/arrow_right.svg', cls: 'x-btn-text-icon', handler: exec_right  });
     var menu_exec_review = function() {
         if( job_exec <= 1 ) menu_exec_left.disable();
            else menu_exec_left.enable();
@@ -431,7 +427,7 @@
                  }
     };
 
-    var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/post.png', cls: 'x-btn-text-icon', hidden: false,
+    var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/post.svg', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
                     var mid = current_job().mid;
                     Baseliner.add_tabcomp( "/comp/job_logfile.js", _("Logfile %1", mid ), { mid: mid } );
@@ -514,7 +510,7 @@
                 menu_exec_right,
                 {
                     text: _('Annotate'),
-                    icon: '/static/images/icons/comment_new.png', 
+                    icon: '/static/images/icons/comment_new.svg', 
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
@@ -542,7 +538,7 @@
                 '->',
                 button_autorefresh
                 ],
-                tab_icon: '/static/images/icons/moredata.gif'
+                tab_icon: '/static/images/icons/moredata.svg'
         });
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {

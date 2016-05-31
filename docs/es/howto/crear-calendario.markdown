@@ -1,10 +1,10 @@
 ---
 title: Crear Calendario
 index: 1
-icon: wrench.gif
----
+icon: wrench.svg
 
-Seleccionar <img src="/static/images/icons/slot.png" /> **Ventanas de pases** en
+
+Seleccionar <img src="/static/images/icons/slot.svg" /> **Ventanas de pases** en
 el menu principal `Pases`. A continuación seleccionar la opción <img
 src="/static/images/icons/add.gif" /> Crear.
 

@@ -1,7 +1,7 @@
 ---
 title: Reglas de autenticacion personalizadas
 index: 200
-icon: rule
+icon: rule.svg
 ---
 * Es posible escribir reglas de autenticación personalizada usando el editor de reglas de Clarive.
 * Para crear su propia regla de autenticación es necesario hacer lo siguiente:

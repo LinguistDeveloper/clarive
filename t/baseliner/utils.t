@@ -211,12 +211,12 @@ subtest 'job_icon: builds and icon from status' => sub {
     is (Util->job_icon ('READY'),'waiting.png');
     is (Util->job_icon ('APPROVAL'),'user_delete.gif');
     is (Util->job_icon ('FINISHED'),'log_i.png');
-    is (Util->job_icon ('FINISHED','1'),'close.png');
+    is (Util->job_icon ('FINISHED','1'),'close.svg');
     is (Util->job_icon ('IN-EDIT'),'log_w.png');
     is (Util->job_icon ('WAITING'),'waiting.png');
     is (Util->job_icon ('PAUSED'),'paused.png');
     is (Util->job_icon ('TRAPPED_PAUSED'),'paused.png');
-    is (Util->job_icon ('CANCELLED'),'close.png');
+    is (Util->job_icon ('CANCELLED'),'close.svg');
     is (Util->job_icon (),'log_e.png');
 };
 

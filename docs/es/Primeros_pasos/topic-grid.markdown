@@ -1,7 +1,7 @@
 ---
 title: Tabla de topicos
 index: 5000
-icon: topic
+icon: topic.svg
 ---
 * La tabla de tópicos es la lista de tópicos que el usuario puede visualizar. El concepto está basado como si fuera una bandeja de entrada de e-mail.
 * La tabla puede ser vista desde tres modos diferentes: <br />
@@ -10,7 +10,7 @@ icon: topic
 
 &nbsp; &nbsp;• **Por categoría** - Acceso a través de selecionar una categoría dentro del menú de tópicos. <br />
 
-&nbsp; &nbsp;• **Por proyecto** - Por último también se puede acceder a través del explorador de proyectos <img src="/static/images/icons/project.png" /> situado en el panel de la izquierda.
+&nbsp; &nbsp;• **Por proyecto** - Por último también se puede acceder a través del explorador de proyectos <img src="/static/images/icons/project.svg" /> situado en el panel de la izquierda.
 
 <br />
 ### Ordenación 
@@ -58,12 +58,12 @@ icon: topic
 * En el grid de tópicos tambien se puede buscar resultados utilizando el [buscador](Primeros_pasos/search-syntax).
 
 <br /> 
-#### <img src = "/static/images/icons/add.gif" alt='Nuevo tópico' /> Crear
+#### <img src = "/static/images/icons/add.svg" alt='Nuevo tópico' /> Crear
 * Permite crear un nuevo tópico.
 * En el caso en que se estén visualizado más de una categoria, la herramienta te permite escoger la categoría del nuevo tópico antes de acceder al formulario.
 
 <br />
-#### <img src = "/static/images/icons/edit.gif" alt='Editar tópico' /> Editar
+#### <img src = "/static/images/icons/edit.svg" alt='Editar tópico' /> Editar
 * Permite editar un tópico.
 * El botón se habilitará de manera automática una vez seleccionado el tópico que se quiere modificar.
 
@@ -74,7 +74,7 @@ icon: topic
 * Está permitido borrar más de un tópico a la vez.
 
 <br />
-#### <img src = "/static/images/icons/state.gif" alt='Cambiar estado' /> Cambiar estado
+#### <img src = "/static/images/icons/state.svg" alt='Cambiar estado' /> Cambiar estado
 * Permite transitar el tópico entre estados sin necesidad de acceder al detalle del mismo.
 * Es posible modificar el estado de varios tópicos siempre y cuando tengan estados futuros comunes, independientemente de la categoría de los mismos. En caso contrario, el botón aparacerá deshabilitado indicando que no hay estados comunes.
 
@@ -87,7 +87,7 @@ icon: topic
 * Permite exportar la lista y su estado (en caso de que haya ordenación y/o filtros) en HTML, CSV o YAML 
 
 <br />
-#### <img src = "/static/images/icons/kanban.png" alt='Kanban' /> Kanban
+#### <img src = "/static/images/icons/kanban.svg" alt='Kanban' /> Kanban
 * Permite ver el estado de los tópicos en la [tabla Kanban](Primeros_pasos/kanban)
 
 
