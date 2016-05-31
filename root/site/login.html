@@ -4,27 +4,37 @@
     <& '/site/includes/headers.html' &>
 
     <style type="text/css" media="screen">
+        input, textarea {
+        }
+        input:focus, textarea:focus {
+            box-shadow: 0 0 3px rgba(164, 110, 192, 1);
+            border: 1px solid rgba(164, 110, 192, 1);
+        }
+
         body {
             height: 100%;
             padding: 0;
             margin: 0;
-            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background-repeat: repeat-x;
             background-image: url(/static/themes/clarive/images/gradient.gif);
         }
-        .logo {
+        .centered {
             position: absolute;
+            margin-top: 18px;
             top: 60px;
             left: 35%;
-            width: 346px;
-            height: 70px;
+            width: 30%;
+            background-color: transparent;
             padding: 5px;
         }
+        .logos {
+            text-align: right;
+        }
+        .logo {
+            padding: 8px;
+        }
         .logo-powered {
-            position: absolute;
-            top: 105px;
-            left: 55%;
-            width: 10%;
             height: 30px;
             padding: 5px;
         }
@@ -39,20 +49,16 @@
             width: 150px;
         }
         .copyright {
-            position: absolute;
-            font-family: Calibri, Arial;
+            text-align: right;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 9px;
             padding: 5px;
-            top: 260px;
-            left: 53%;
+            margin-top: 18px;
+            line-height: 16px;
         }
-        .centered {
-            position: absolute;
-            top: 140px;
-            left: 35%;
-            width: 30%;
-            background-color: transparent;
-            padding: 5px;
+        .x-form-item-label {
+            margin-left: 30px;
+            text-align: right;
         }
         .x-form-item {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -62,31 +68,48 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 11pt;
             line-height: 18px;
+            -webkit-transition: all 0.20s ease-in-out;
+            -moz-transition: all 0.20s ease-in-out;
+            -ms-transition: all 0.20s ease-in-out;
+            -o-transition: all 0.20s ease-in-out;
+            outline: none;
+            border: 1px solid #DDDDDD;
         }
         button.x-btn-text {
             font-size: 9pt;
+        }
+        #login_btn button.x-btn-text {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <& '/site/includes/loading.html' &>
 
+    <div id="login-box" class="centered">
+        <div class='logos'>
+%   if ($c->config->{login_logo}) {
+            <img class='logo' src="<% $c->config->{login_logo} %>" />
+            <img class='logo-powered' src="/static/images/powered_by_clarive_login.png" />
+%   } else {
+            <img class='logo' src="/static/themes/clarive/images/clarive-logo-app.png" />
+%   }
+        </div>
+        <div id="login-form"></div>
+        <div class="copyright"></div>
+    </div>
+
     <script type="text/javascript">
     <& '/site/login.js' &>
     </script>
 
-    <div class='band-white'></div>
-%   if ($c->config->{login_logo}) {
-        <img class='logo' src="<% $c->config->{login_logo} %>" />
-        <img class='logo-powered' src="/static/images/powered_by_clarive_login.png" />
-%   } else {
-        <img class='logo' src="/static/themes/clarive/images/clarive-logo-black.png" />
-%   }
 
-    <div class="copyright"> </div>
     <script>
     $(document).ready(function() {
-        $( ".copyright" ).text( 'Copyright(C) 2010-' + new Date().getFullYear() + ', Clarive Software, Inc.' );
+        $( ".copyright" ).html(
+            'Copyright(C) 2010-' + new Date().getFullYear() + ', Clarive Software, Inc.<br />' +
+            'Version: <% Clarive->version %>'
+        );
     });
     </script>
 </body>

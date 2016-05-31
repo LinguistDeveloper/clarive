@@ -35,8 +35,14 @@ has version => qw(is ro isa Str lazy 1), default => sub{
     my $FULL_VERSION = do {
         my $v = eval {
             my $branch = `git rev-parse --abbrev-ref HEAD`;
+
+            return ['r6','r6'] if $?;
+
             chomp $branch;
             my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
+
+            return [ "r6-$branch", "r6-$branch" ] if $?;
+
             my $version = $x[0];
             chomp $version;
             if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
@@ -45,9 +51,9 @@ has version => qw(is ro isa Str lazy 1), default => sub{
                 [ "r$branch v$version", "${branch}_${version}", ''];
             }
         };
-        !$v ?  ['r6','??'] : $v;
+        !$v ?  ['r6','r6'] : $v;
     };
-    $FULL_VERSION->[0];
+    $FULL_VERSION->[1];
 };
 
 has db => qw(is rw lazy 1 default), sub {

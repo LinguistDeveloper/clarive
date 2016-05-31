@@ -5,7 +5,7 @@ Ext.onReady(function() {
     var after_login = Base64.decode("<% Util->to_base64( $c->stash->{after_login}, '' ) %>");
     var after_login_query = Base64.decode("<% Util->to_base64( $c->stash->{after_login_query}, '' ) %>");
 
-    var login_txt = '<% _loc("Login") %>';
+    var login_txt = _("Login");
 
     Baseliner.doLoginForm = function() {
         /*
@@ -44,8 +44,8 @@ Ext.onReady(function() {
                 } else if (action.result.attempts_duration && action.result.block_datetime != 0) {
                     var interval = action.result.attempts_duration * 100;
                     Ext.Msg.show({
-                        title: '<% _loc("Login Failed") %>',
-                        msg: '<% _loc("Attempts exhausted, please wait") %>',
+                        title: _("Login Failed"),
+                        msg: _("Attempts exhausted, please wait"),
                         width: 300,
                         wait: true,
                         waitConfig: {
@@ -72,28 +72,29 @@ Ext.onReady(function() {
         id: 'lf',
         url: '/login',
         frame: false,
-        bodyStyle: 'padding:5px 5px 0; background: transparent; border-color:transparent;',
-        cls: 'centered',
+        border: false,
+        bodyStyle: 'text-align: right; padding:5px 7px 0px 0px; background: transparent;',
         labelAlign: 'right',
         timeout: 120, // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something
         defaults: {
             msgTarget: 'under'
         },
         buttons: [
-            login_button, {
+            {
                 id: 'reset_btn',
-                text: '<% _loc("Reset") %>',
+                text: _("Reset"),
                 cls: 'login_button',
                 handler: function() {
                     login_form.getForm().findField('login').focus('', 100);
                     login_form.getForm().reset()
                 }
-            }
+            },
+            login_button
         ],
         items: [{
             xtype: 'textfield',
             name: 'login',
-            width: "95%",
+            width: 280,
             height: '24px',
             fieldLabel: _('Username'),
             selectOnFocus: true,
@@ -101,8 +102,8 @@ Ext.onReady(function() {
         }, {
             xtype: 'textfield',
             name: 'password',
+            width: 280,
             height: '24px',
-            width: "95%",
             inputType: 'password',
             fieldLabel: _('Password'),
             selectOnFocus: true
@@ -130,5 +131,5 @@ Ext.onReady(function() {
         }
     });
 
-    login_form.render(document.body);
+    login_form.render('login-form');
 });
