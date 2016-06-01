@@ -2423,7 +2423,7 @@ sub _is_binary {
     my %p = @_;
 
     _fail( "sub is_bianry needs one parameter" ) if scalar keys %p != 1;
-    my $magic = File::LibMagic->new;
+    my $magic = File::LibMagic->new(magic_file => "$ENV{CLARIVE_BASE}/local/share/misc/magic.mgc");
     my $info;
 
     if ( $p{data} ) {
