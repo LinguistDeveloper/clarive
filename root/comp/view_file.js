@@ -180,7 +180,11 @@
     var source_button = new Ext.Button({ pane: 'source', text: _('source'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: toggleHandler, pressed: true });
     var file_path = path+file;
     if(controller == 'svntree'){
-        file_path = path+'/'+branch+'/'+file;
+        if (file) {
+            file_path = path+'/'+branch+'/'+file;
+        } else {
+            file_path = path+'/'+branch;
+        }
     }
     var pnl = new Ext.Panel({ 
         layout:'fit',
