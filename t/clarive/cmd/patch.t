@@ -20,6 +20,7 @@ subtest 'run_create: creates patch distribution' => sub {
 
     my $cmd = _build_cmd();
     $cmd->run_create(
+        'quiet'  => 1,
         'old'    => '1.0',
         'new'    => '2.0',
         'diff'   => [ "$tempdir/my.patch", "$tempdir/my2.patch" ],
@@ -75,13 +76,14 @@ subtest 'run_apply: apply patches' => sub {
     TestUtils->write_file( $diff, "$tempdir/file1.new.patch" );
 
     $cmd->run_create(
+        'quiet'  => 1,
         'old'    => '1.0',
         'new'    => '2.0',
         'diff'   => ["$tempdir/file1.new.patch"],
         'output' => "$tempdir/patch.tar.gz"
     );
 
-    $cmd->run_apply( patch => "$tempdir/patch.tar.gz" );
+    $cmd->run_apply( quiet => 1, patch => "$tempdir/patch.tar.gz" );
 
     like( TestUtils->slurp_file("$tempdir/clarive/file1"),   qr/update/ );
     like( TestUtils->slurp_file("$tempdir/clarive/VERSION"), qr/2\.0/ );
@@ -109,13 +111,14 @@ subtest 'run_apply: does not apply in dry-run mode' => sub {
     TestUtils->write_file( $diff, "$tempdir/file1.new.patch" );
 
     $cmd->run_create(
+        'quiet'  => 1,
         'old'    => '1.0',
         'new'    => '2.0',
         'diff'   => ["$tempdir/file1.new.patch"],
         'output' => "$tempdir/patch.tar.gz",
     );
 
-    $cmd->run_apply( patch => "$tempdir/patch.tar.gz", 'dry-run' => 1 );
+    $cmd->run_apply( quiet => 1, patch => "$tempdir/patch.tar.gz", 'dry-run' => 1 );
 
     like( TestUtils->slurp_file("$tempdir/clarive/file1"),   qr/content1/ );
     like( TestUtils->slurp_file("$tempdir/clarive/VERSION"), qr/1\.0/ );
@@ -140,15 +143,16 @@ subtest 'run_rollback: rollbacks patches' => sub {
     TestUtils->write_file( $diff, "$tempdir/file1.new.patch" );
 
     $cmd->run_create(
+        'quiet'  => 1,
         'old'    => '1.0',
         'new'    => '2.0',
         'diff'   => ["$tempdir/file1.new.patch"],
         'output' => "$tempdir/patch.tar.gz"
     );
 
-    $cmd->run_apply( patch => "$tempdir/patch.tar.gz" );
+    $cmd->run_apply( quiet => 1, patch => "$tempdir/patch.tar.gz" );
 
-    $cmd->run_rollback( patch => "$tempdir/patch.tar.gz" );
+    $cmd->run_rollback( quiet => 1, patch => "$tempdir/patch.tar.gz" );
 
     like( TestUtils->slurp_file("$tempdir/clarive/file1"),   qr/content1/ );
     like( TestUtils->slurp_file("$tempdir/clarive/VERSION"), qr/1\.0/ );
@@ -173,15 +177,16 @@ subtest 'run_rollback: does not rollback when dry-run mode' => sub {
     TestUtils->write_file( $diff, "$tempdir/file1.new.patch" );
 
     $cmd->run_create(
+        'quiet'  => 1,
         'old'    => '1.0',
         'new'    => '2.0',
         'diff'   => ["$tempdir/file1.new.patch"],
         'output' => "$tempdir/patch.tar.gz"
     );
 
-    $cmd->run_apply( patch => "$tempdir/patch.tar.gz" );
+    $cmd->run_apply( quiet => 1, patch => "$tempdir/patch.tar.gz" );
 
-    $cmd->run_rollback( patch => "$tempdir/patch.tar.gz", 'dry-run' => 1 );
+    $cmd->run_rollback( quiet => 1, patch => "$tempdir/patch.tar.gz", 'dry-run' => 1 );
 
     like( TestUtils->slurp_file("$tempdir/clarive/file1"),   qr/update/ );
     like( TestUtils->slurp_file("$tempdir/clarive/VERSION"), qr/2\.0/ );

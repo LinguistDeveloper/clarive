@@ -15,6 +15,7 @@ sub run_apply {
     my (%opts) = @_;
 
     my $opt_dry_run = $opts{'dry-run'};
+    my $opt_quiet   = $opts{'quiet'};
 
     my $file = $opts{patch} or die "--patch required\n";
 
@@ -35,13 +36,13 @@ sub run_apply {
         die "Can't apply patch when $current_version != $old_version\n";
     }
 
-    warn "Applying patches for '$new_version'\n";
+    warn "Applying patches for '$new_version'\n" unless $opt_quiet;
 
     my @patches = glob "$tempdir/*patch";
     foreach my $patch (@patches) {
         my $basename = basename $patch;
 
-        warn "Checking '$basename'...\n";
+        warn "Checking '$basename'...\n" unless $opt_quiet;
 
         my $exit_code = $self->_run_patch_cmd($patch, dry_run => 1);
         die "ERROR\n" if $exit_code;
@@ -51,14 +52,14 @@ sub run_apply {
         foreach my $patch (@patches) {
             my $basename = basename $patch;
 
-            warn "Applying '$basename'...\n";
+            warn "Applying '$basename'...\n" unless $opt_quiet;
 
             my $exit_code = $self->_run_patch_cmd($patch);
             die "ERROR\n" if $exit_code;
         }
     }
 
-    warn "Updating VERSION\n";
+    warn "Updating VERSION\n" unless $opt_quiet;
 
     if (!$opt_dry_run) {
         copy( File::Spec->catfile( $home, 'VERSION' ), File::Spec->catfile( $home, 'VERSION.orig' ) );
@@ -73,6 +74,7 @@ sub run_rollback {
     my (%opts) = @_;
 
     my $opt_dry_run = $opts{'dry-run'};
+    my $opt_quiet   = $opts{'quiet'};
     my $file = $opts{patch} or die "--patch required\n";
 
     die "Can't open file '$file'\n" unless -f $file;
@@ -92,13 +94,13 @@ sub run_rollback {
         die "Can't rollback patch when $current_version != $new_version\n";
     }
 
-    warn "Rollbacking patches for '$old_version'\n";
+    warn "Rollbacking patches for '$old_version'\n" unless $opt_quiet;
 
     my @patches = glob "$tempdir/*patch";
     foreach my $patch (@patches) {
         my $basename = basename $patch;
 
-        warn "Checking reverse '$basename'...\n";
+        warn "Checking reverse '$basename'...\n" unless $opt_quiet;
 
         my $exit_code = $self->_run_patch_reverse_cmd($patch, dry_run => 1);
         die "ERROR\n" if $exit_code;
@@ -108,14 +110,14 @@ sub run_rollback {
         foreach my $patch (@patches) {
             my $basename = basename $patch;
 
-            warn "Applying reverse '$basename'...\n";
+            warn "Applying reverse '$basename'...\n" unless $opt_quiet;
 
             my $exit_code = $self->_run_patch_reverse_cmd($patch);
             die "ERROR\n" if $exit_code;
         }
     }
 
-    warn "Updating VERSION\n";
+    warn "Updating VERSION\n" unless $opt_quiet;
 
     if (!$opt_dry_run) {
         $self->_write_version( File::Spec->catfile( $home, 'VERSION' ), $old_version );
@@ -127,6 +129,8 @@ sub run_rollback {
 sub run_create {
     my $self = shift;
     my (%opts) = @_;
+
+    my $opt_quiet = $opts{'quiet'};
 
     my $old_version = $opts{old} or die "--old required\n";
     my $new_version = $opts{new} or die "--new required\n";
@@ -152,7 +156,7 @@ sub run_create {
 
     my $output = $opts{output} || "clarive_$old_version-$new_version.patch.tar.gz";
 
-    warn "Creating '$output'...\n";
+    warn "Creating '$output'...\n" unless $opt_quiet;
 
     system("tar czf '$output' -C '$tempdir' '.'");
 
