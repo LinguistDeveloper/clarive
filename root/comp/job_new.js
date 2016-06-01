@@ -372,7 +372,7 @@
         '<tpl for=".">',
         '<div class="search-item">',
         '<span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span>',
-        '<span style="margin-left:8px; color: #333;font-weight:bold">@{[ Cla.user_date(values.env_date) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
+        '<span style="margin-left:8px; color: #333;font-weight:bold">@{[ Cla.user_date_job(values.env_date, Cla.js_date_to_moment_hash[Cla.user_js_date_format()]) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
         '</div>',
         '</tpl>'
     );

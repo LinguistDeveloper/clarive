@@ -2927,11 +2927,11 @@ Cla.user_date_format = function(dt,date_format,time_format) {
     var format = '';
     if(date_format) {
         format += date_format;
-    } else {
-        format += (Prefs.date_format == 'format_from_local' 
+    } else if( date_format!==null ) {
+        format += (Prefs.date_format == 'format_from_local'
             ? _('momentjs_date_format')
             : Prefs.date_format);
-    } 
+    }
     if(time_format) {
         format += ' ' + time_format;
     } else if( time_format!==null ) {
@@ -2947,6 +2947,16 @@ Cla.user_js_date_format = function(){
     return jsd;
 }
 
+Cla.user_js_time_format = function(){
+    var jsd = Cla.moment_to_js_time_hash[ Cla.user_date_format(undefined,null,undefined) ] || _('js_time_format');
+    return jsd;
+}
+
+Cla.user_js_date_time_format = function(){
+    var date = Cla.user_js_date_format();
+    var time = Cla.user_js_time_format();
+    return date + time;
+}
 
 Cla.user_date_formatted = function(dt,date_format,time_format) {
     return moment(dt).format(Cla.user_date_format(date_format,time_format));
@@ -2955,6 +2965,12 @@ Cla.user_date_formatted = function(dt,date_format,time_format) {
 Cla.user_date = function(dt,date_format,time_format,tz) {
     var tz_dt = Cla.user_date_timezone( dt, tz );
     return Cla.user_date_formatted(tz_dt, date_format, time_format);
+}
+
+Cla.user_date_job = function(dt,date_format, current_format) {
+    var date = (dt.split(" "))[0];
+    var current_format = "YYYY-MM-DD";
+    return moment(date, current_format).format(date_format);
 }
 
 Cla.render_date = function(v){
@@ -4384,8 +4400,8 @@ Ext.apply(Ext.form.VTypes, {
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {
-    submitFormat: 'Y-m-d',
-    dateFormat: 'Y-m-d',
+    submitFormat: 'Y-m-d H:i:s',
+    dateFormat: 'Y-m-d H:i:s',
     onRender:function() {
         Ext.ux.form.XDateField.superclass.onRender.apply(this, arguments);
 

@@ -69,6 +69,13 @@ Cla.use = function(urls, callback, cache){
     }
 };
 
+Cla.moment_to_js_time_hash = {
+    ' H:mm' : ' H:i',
+    ' HH:mm' : ' H:i',
+    ' h:mma' : ' h:i',
+    ' hh:mma' : ' h:i'
+}
+
 Cla.moment_to_js_date_hash = {
     'DD-MM-YY' : 'd-m-y',
     'DD-MM-YYYY' : 'd-m-Y',

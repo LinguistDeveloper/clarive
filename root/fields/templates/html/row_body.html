@@ -9,6 +9,9 @@
             ? $data->{ $meta->{display_field} }
             : "";
     $val = join( ',', @$val ) if ref $val eq 'ARRAY';
+    if ($meta->{key} eq 'fieldlet.datetime' && !($meta->{show_time} && $meta->{show_time} eq 'on')){
+        $val = (split(" ",$val))[0];
+    }
 </%perl>
 % if(  ($meta->{section} ne 'head' && $meta->{section} ne 'more') && length($val) && !$meta->{hidden} ) {  # This is the 'Status' right column field:
     <tr>
