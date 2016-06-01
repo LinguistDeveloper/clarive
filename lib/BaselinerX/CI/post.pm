@@ -3,7 +3,7 @@ use Baseliner::Moose;
 with 'Baseliner::Role::CI::Internal';
 with 'Baseliner::Role::CI::Asset';
 
-sub icon { '/static/images/icons/post.png' }
+sub icon { '/static/images/icons/post.svg' }
 
 has content_type => qw(is rw isa Any default text);
 has created_on => qw(is rw isa Any), default => sub { mdb->ts };

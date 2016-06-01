@@ -27,7 +27,7 @@ sub rel_type {
 }
 
 
-sub icon { '/static/images/icons/topic.png' }
+sub icon { '/static/images/icons/topic.svg' }
 
 before save => sub {
     my ($self, $master_row, $data ) = @_;

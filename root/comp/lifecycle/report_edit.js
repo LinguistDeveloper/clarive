@@ -416,11 +416,11 @@
         var its = [];
         var type = node.attributes.type;
         if( type =='categories_field' )
-            its.push({ text: _('Edit'), handler: function(item){ edit_categories(node) }, icon:'/static/images/icons/edit.gif' });
+            its.push({ text: _('Edit'), handler: function(item){ edit_categories(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='select_field' ) 
-            its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.gif' });
+            its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='value' ) 
-            its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.gif' });
+            its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='sort_field' ) {
             its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.gif' });
             its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.gif' });
@@ -609,11 +609,11 @@
             { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.png' }
         ]);
     };
-    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.png', handler: function(){ 
+    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){ 
         tree_all.getLoader().load( tree_all.root );
         tree_all.root.expand();
     }});
-    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.png', handler: function(){ 
+    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', handler: function(){ 
         var n;
         while (n = tree_selected.root.childNodes[0])
             tree_selected.root.removeChild(n);
@@ -689,7 +689,7 @@
             { 
                 id:'btnClose' 
                 ,text: _('Close'),
-                icon:'/static/images/icons/close.png', 
+                icon:'/static/images/icons/close.svg', 
                 handler: function(){ win.close() } 
             } 
             ,{ 

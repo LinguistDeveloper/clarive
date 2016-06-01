@@ -35,7 +35,7 @@ register 'service.ci.update' => {
         $ci->update( %{ $args->{update} || _fail('Missing parameter: update') } );
         _log _loc "Update user ok";
     },
-     icon => '/static/images/icons/class.gif',
+     icon => '/static/images/icons/class.svg',
 };
 no Moose;
 __PACKAGE__->meta->make_immutable;

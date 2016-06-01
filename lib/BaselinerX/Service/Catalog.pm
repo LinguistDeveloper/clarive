@@ -26,7 +26,7 @@ register 'config.catalog.settings' => {
 register 'statement.catalog.if.var' => {
     text => 'Catalogue - IF var THEN',
     type => 'if',
-    icon => '/static/images/icons/catalogue.png',
+    icon => '/static/images/icons/catalogue.svg',
     #icon => '/static/images/icons/if.gif',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
@@ -48,8 +48,7 @@ register 'statement.catalog.if.var' => {
 register 'statement.catalog.folder' => {
     text => 'Folder',
     data => { },
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/catalog-folder.png',
+    icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
     form => '/forms/catalog_folder.js',
     filter => 1,
@@ -164,8 +163,7 @@ register 'statement.catalog.folder' => {
 register 'statement.catalog.service' => {
     text => 'Service',
     data => { },
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/catalog-light.png',
+    icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
     form => '/forms/catalog_service.js',
     filter => 1,
@@ -188,8 +186,7 @@ register 'statement.catalog.service' => {
 register 'statement.catalog.task_group' => {
     text => 'Task Group',
     data => { },
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/task_group.png',
+    icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
     filter => 0,
     dsl => sub {
@@ -229,8 +226,7 @@ register 'statement.catalog.task_group' => {
 register 'statement.catalog.task' => {
     text => 'Task',
     data => { },
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/catalog-target.png',
+    icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
     form => '/forms/catalog_task.js',
     filter => 1,
@@ -253,8 +249,7 @@ register 'statement.catalog.task' => {
 register 'statement.catalog.step' => {
     text => 'CATALOG STEP',
     description=> 'a task step section: MENU,WIZZARD,RUN...',
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/job.png',
+    icon => '/static/images/icons/catalogue.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -316,8 +311,7 @@ register 'service.catalog.service' => {
             type        => 'service',
             id_task     => $id_task,
             parent      => $stash->{catalog_parent},
-            icon        => '/static/images/icons/catalogue.png',
-            #icon        => '/static/images/icons/catalog-light.png',
+            icon        => '/static/images/icons/catalogue.svg',
             _is_leaf    => $attributes->{split_task} ? \0 : \1,
         };
 
@@ -367,13 +361,13 @@ register 'service.catalog.service' => {
             }
         }
     },
-    icon        => '/static/images/icons/catalogue.png'  #new icons for clarive 6.3
+    icon        => '/static/images/icons/catalogue.svg'
 };
 
 
 register 'service.catalog.task' => {
     parse_vars=>0,
-    icon        => '/static/images/icons/catalogue.png' , #new icons for clarive 6.3
+    icon        => '/static/images/icons/catalogue.svg' ,
     handler=>sub{
         my ( $self, $c, $config ) = @_;
 
@@ -406,8 +400,7 @@ register 'service.catalog.task' => {
                 type        => 'task',
                 id_task      => $id_task,
                 parent      => $stash->{catalog_parent},
-                icon        => '/static/images/icons/catalogue.png',
-                #icon        => '/static/images/icons/catalog-target.png',
+                icon        => '/static/images/icons/catalogue.svg',
                 _is_leaf    =>  $is_leaf,
             };
 
@@ -616,7 +609,7 @@ register 'service.catalog.task' => {
 
 register 'service.catalog.task_group' => {
     parse_vars => 0,
-    icon        => '/static/images/icons/catalogue.png',  #new icons for clarive 6.3
+    icon        => '/static/images/icons/catalogue.svg',
     handler=>sub{
         my ( $self, $c, $config ) = @_;
 
@@ -642,8 +635,7 @@ register 'service.catalog.task_group' => {
                 type        => 'task_group',
                 id_task     => $id_task,
                 parent      => $stash->{catalog_parent},
-                icon        => '/static/images/icons/catalogue.png',
-                #icon        => '/static/images/icons/task_group.png',
+                icon        => '/static/images/icons/catalogue.svg',
                 _is_leaf    => $is_leaf,
             };
 
@@ -672,8 +664,7 @@ register 'service.catalog.task_group' => {
 
 register 'service.catalog.form' => {
     name => 'Form',
-    icon => '/static/images/icons/catalogue.png',
-    #icon => '/static/images/icons/catalog-form.png',
+    icon => '/static/images/icons/catalogue.svg',
     form => '/forms/catalog_form.js',
     parse_vars => 0,
     handler => sub{
@@ -1068,8 +1059,7 @@ sub build_catalog_folder {
             active  => 1,
             data        => $task_children->{$ci_task->{mid}} ? $task_children->{$ci_task->{mid}}->{data} : {task => [$ci_task->{mid}]},
             id_rule     => $id_rule,
-            icon        => '/static/images/icons/catalogue.png',
-            #icon        => '/static/images/icons/catalog-target.png',
+            icon        => '/static/images/icons/catalogue.svg',
             key         => 'statement.catalog.task',
             leaf        => \0,
             name        => '_task',
@@ -1096,8 +1086,7 @@ sub build_catalog_folder {
         $folder = {
             children => \@children,
             data => {},
-            icon => '/static/images/icons/catalogue.png',
-            #icon => '/static/images/icons/catalog-folder.png',
+            icon => '/static/images/icons/catalogue.svg',
             key => 'statement.catalog.folder',
             leaf => \0,
             name=> '_catalog_folder',

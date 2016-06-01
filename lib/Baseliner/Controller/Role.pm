@@ -16,7 +16,7 @@ with 'Baseliner::Role::ControllerValidator';
 
 register 'action.admin.role' => { name=>'Admin Roles' };
 register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
-    icon=>Util->icon_path('role') };
+    icon=>Util->icon_path('role.svg') };
 register 'menu.admin.user_role_separator' => { separator=>1, index=>85 };
 
 sub role_detail_json : Local {
@@ -200,7 +200,7 @@ sub action_tree : Local {
                 text      => $folder,
                 leaf      => \0,
                 draggable => \0,
-                icon      => '/static/images/icons/action_folder.gif',
+                icon      => '/static/images/icons/action_folder.svg',
                 parents   => \@kp
             };
 
@@ -236,7 +236,7 @@ sub action_tree : Local {
                 $folders{$parent} //= {
                     key       => $parent,
                     text      => $parent_name,
-                    icon      => '/static/images/icons/action_folder.gif',
+                    icon      => '/static/images/icons/action_folder.svg',
                     draggable => \0,
                     leaf      => \0,
                     parents   => $parents

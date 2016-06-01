@@ -13,6 +13,7 @@
     <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" /> 
     <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap-responsive.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="/static/themes/clarive-flat/style.css" />
     <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
     <style>
         body {
@@ -47,7 +48,8 @@
             <div class ="row" style="color: #999">
 % if( exists $title->{$key}->{positive}) {
                <div class ="span7" style="margin-bottom: 1%">
-                  <img src="/static/images/icons/add.png" />
+                  <img class = "icon_standar_size"
+                  src="/static/images/icons/add_green.svg" />
 % my $topics = join (", " , @{$title->{$key}->{positive}});
                   <% _loc( $topics ) %>
 

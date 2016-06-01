@@ -84,7 +84,7 @@
                 }),' ',' ',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/icons/add.gif',
+                    icon:'/static/images/icons/add.svg',
                     cls: 'x-btn-text-icon ui-comp-role-create',
                     handler: function() {
                         role_detail();
@@ -92,7 +92,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Edit'),
-                    icon:'/static/images/icons/edit.gif',
+                    icon:'/static/images/icons/edit.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

@@ -135,14 +135,14 @@ sub dashboard_list: Local {
         $dash_name .= ' - '.$p->{project} if $p->{project};
         push @trees, {
                 text    => $dash->{name},
-                icon    => '/static/images/icons/dashboard.png',
                 draggable => \0,
+                icon    => '/static/images/icons/dashboard.svg',
                 data    => {
                     title => $dash->{name},
                     id => $dash->{id},
                     project_id => $p->{id_project},
                     click   => {
-                        icon    => '/static/images/icons/dashboard.png',
+                        icon    => '/static/images/icons/dashboard.svg',
                         url  => '/comp/dashboard.js',
                         type    => 'comp',
                         title   => $dash_name,

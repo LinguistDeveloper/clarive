@@ -263,7 +263,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             if( click != undefined && click.url != undefined ) {
                 var menu_item = new Ext.menu.Item({
                     text: _( 'Open...' ),
-                    icon: '/static/images/icons/open.png',
+                    icon: '/static/images/icons/open.svg',
                     node: node,
                     handler: self.click_handler
                 });
@@ -379,7 +379,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             tree_menu.add( this.menu_favorite_add() );
         }
         if( Baseliner.DEBUG ) {
-            tree_menu.add({ text: _('Properties'), icon:'/static/images/icons/properties.png', handler: function(n){
+            tree_menu.add({ text: _('Properties'), icon:'/static/images/icons/properties.svg', handler: function(n){
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
                 var d = node.attributes;
@@ -396,7 +396,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             xtype: 'menuitem',
             text: _('Refresh Node'),
             cls: 'x-btn-text-icon',
-            icon: '/static/images/icons/refresh.png',
+            icon: '/static/images/icons/refresh.svg',
             handler: function() {
                 self.refresh();
             }
@@ -519,7 +519,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_projects = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/project_grey.png',
+            icon: '/static/images/icons/project_grey.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -578,7 +578,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_ci = new Ext.Button({
             cls: 'x-btn-icon ui-explorer-ci',
-            icon: '/static/images/icons/class_grey.gif',
+            icon: '/static/images/icons/class_grey.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -598,7 +598,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var button_releases = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/release_explorer.png',
+            icon: '/static/images/icons/release_explorer.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -618,7 +618,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_search_folders = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/report.png',
+            icon: '/static/images/icons/report.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -638,7 +638,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_dashboards = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/dashboard_grey.png',
+            icon: '/static/images/icons/dashboard_grey.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -658,7 +658,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
 	var button_collapseall = new Ext.Button({
 	    cls: 'x-btn-icon',
-            icon: '/static/images/icons/collapseall.png',
+            icon: '/static/images/icons/collapseall.svg',
             handler: function(){
                 if( self.$tree_releases ) self.$tree_releases.collapseAll();
                 if( self.$tree_ci ) self.$tree_ci.collapseAll();
@@ -689,14 +689,14 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                             text: folder,
                             id_folder: folder,
                             data: Ext.util.JSON.encode({ on_drop: on_drop }),
-                            icon: '/static/images/icons/favorite.png'
+                            icon: '/static/images/icons/favorite.svg'
                         },
                         function(res) {
                             Baseliner.message( _('Favorite'), res.msg );
                             if( res.success ) {
                                 var new_node = self.$tree_favorites.getLoader().createNode({
                                     text: folder + ' ('+res.id_folder+')',
-                                    icon: '/static/images/icons/favorite.png',
+                                    icon: '/static/images/icons/favorite.svg',
                                     data: { on_drop: on_drop },
                                     url: '/lifecycle/tree_favorite_folder?id_folder=' + res.id_folder
                                 });
@@ -713,16 +713,10 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         };
 
         var button_menu = new Ext.Button({
-            //cls: 'x-btn-icon',
-            //icon: '/static/images/icons/wrench.gif',
             tooltip: _('Config'),
             menu: [
-                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
+                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.svg', handler: add_to_fav_folder }
             ]
-            // menu: [
-            //     { text: _('Add Workspace'), icon: '/static/images/icons/workspaces.png', handler: add_workspace },
-            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
-            // ]
         });
 
         var button_collapse = new Ext.Component({
@@ -739,7 +733,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
 
         var button_refresh = new Ext.Button({
-            cls: 'x-btn-text-icon',
+            cls: 'x-btn-icon',
             tooltip: _('Refresh All Nodes'),
             icon: '/static/images/icons/refresh-grey.gif',
             id: 'button_refresh',
@@ -769,10 +763,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             
             enable_all: function() {
                 refresh_count--;
-                // alert('ena:' + refresh_count);
                 if ( refresh_count <= 0 ) {
                     refresh_count = 0;
-                    button_refresh.setIcon( IC('refresh.png') );
+                    button_refresh.setIcon( IC('refresh.svg') );
                     tool_bar.enable();
                 }
             },
@@ -973,7 +966,7 @@ Baseliner.open_topic_grid_from_folder = function(n){
     var name = n.text;
     var id_folder = n.attributes.data.id_folder;
     Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_folder: id_folder }, function(res){
-        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.svg' });
     });
 }
 
@@ -982,7 +975,7 @@ Baseliner.open_topic_grid_from_release = function(n){
     var id_release = n.attributes.data.topic_mid;
     //console.dir(n);
     Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
-        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { clear_filter: 1, topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { clear_filter: 1, topic_list: res.topics, tab_icon: '/static/images/icons/topic.svg' });
     });
 }
 
@@ -1014,7 +1007,7 @@ Baseliner.open_apply_filter_from_release = function(n){
                 report_rows: n.attributes.data.report_rows, 
                 hide_tree: n.attributes.data.hide_tree, 
                 topic_list: res.topics,
-                tab_icon: '/static/images/icons/topic.png' }, 
+                tab_icon: '/static/images/icons/topic.svg' }, 
                 function(res){
                     //N/D
             });

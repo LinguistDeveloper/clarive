@@ -1,12 +1,12 @@
 ---
 title: Editar Calendario
 index: 1
-icon: wrench.gif
+icon: wrench.svg
 ---
 
-Seleccionamos <img src="/static/images/icons/slot.png" /> **Ventana de pases**
+Seleccionamos <img src="/static/images/icons/slot.svg" /> **Ventana de pases**
 en el menu principal `Pases`. A continuación seleccionamos la opción <img
-src="/static/images/icons/edit.gif" /> Editar. También podemos hacer doble clic
+src="/static/images/icons/edit.svg" /> Editar. También podemos hacer doble clic
 en el calendario que queremos editar.
 
 En la siguiente ventana nos encontramos dos secciones:

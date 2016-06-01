@@ -1,6 +1,6 @@
 ---
 title: Link a git revision to the changesets in title
-icon: git
+icon: git.svg
 ---
 * La configuración de la revisión se añade al campo del tópico deseado, el tópico se encuentra a través del titulo introducido en el formulario.
 * El elemento se configura mediante los siguientes campos.

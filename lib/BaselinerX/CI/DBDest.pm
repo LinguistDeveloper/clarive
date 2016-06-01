@@ -11,7 +11,7 @@ has tables => qw(is rw isa Maybe[ArrayRef] default), sub { [] };
 sub rel_type { { projects => [ from_mid => 'dbdest_project' ] } }
 
 sub has_bl { 1 }
-sub icon { '/static/images/icons/local.png' }
+sub icon { '/static/images/icons/local.svg' }
 sub ci_form {  '/ci/DBDest.js' }
 
 

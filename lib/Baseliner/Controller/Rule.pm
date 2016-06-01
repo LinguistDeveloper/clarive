@@ -33,8 +33,8 @@ register 'menu.admin.rule' => {
     title    => _loc ('Rules'),
     action   => 'action.admin.rules',
     url_comp => '/comp/rules.js',
-    icon     => '/static/images/icons/rule.png',
-    tab_icon => '/static/images/icons/rule.png'
+    icon     => '/static/images/icons/rule.svg',
+    tab_icon => '/static/images/icons/rule.svg'
 };
 
 register 'event.ws.soap_ready' => {
@@ -264,7 +264,7 @@ sub tree : Local {
           {
             id => $cnt++,
             leaf => \0,
-            icon => '/static/images/icons/rule.png',
+            icon => '/static/images/icons/rule.svg',
             text => $rule->{rule_name},
           };
     }
@@ -352,7 +352,7 @@ sub palette : Local {
             $n->{on_drop_js} = $s->{on_drop_js};
             $n->{nested} = $s->{nested} // 0;
             $n->{icon} = $s->icon // ( !$s->{type}
-                ? '/static/images/icons/help.png'
+                ? '/static/images/icons/help.svg'
                 : do{
                     my $type = $types{ $s->{type} };
                     "/static/images/icons/$s->{type}.gif";
@@ -376,7 +376,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Job Services'),
-        icon => '/static/images/icons/job.png',
+        icon => '/static/images/icons/job.svg',
         draggable => \0,
         expanded => \1,
         children=> [
@@ -408,7 +408,6 @@ sub palette : Local {
         leaf=>\0,
         text=>_loc('Generic Services'),
         icon => '/static/images/icons/services_new.png',
-        #icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [
@@ -441,7 +440,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Dashlets'),
-        icon => '/static/images/icons/dashboard.png',
+        icon => '/static/images/icons/dashboard.svg',
         draggable => \0,
         expanded => \1,
         children=> [
@@ -471,7 +470,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Rules'),
-        icon => '/static/images/icons/rule.png',
+        icon => '/static/images/icons/rule.svg',
         draggable => \0,
         expanded => \1,
         children=> [
@@ -482,7 +481,7 @@ sub palette : Local {
                 isTarget => \0,
                 leaf=>\1,
                 key => 'statement.include',
-                icon => '/static/images/icons/rule.png',
+                icon => '/static/images/icons/rule.svg',
                 palette => \1,
                 id_rule => $_->{id},
                 data=>{ id_rule => $_->{id} },

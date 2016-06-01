@@ -99,7 +99,7 @@
                  ' ',' ',
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/icons/add.gif',
+                    icon:'/static/images/icons/add.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         edit_config();
@@ -107,7 +107,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Edit'),
-                    icon:'/static/images/icons/edit.gif',
+                    icon:'/static/images/icons/edit.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
@@ -143,7 +143,7 @@
                 //'-',
                 ' ',
                 new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.gif',
+        icon:'/static/images/icons/wrench.svg',
         cls: 'x-btn-text-icon',
         disabled: false,
         menu: [{  text: _('Export'),

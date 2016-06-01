@@ -26,16 +26,16 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
         });
         var cal;
         var tbarr = [
-              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_left.gif', handler:function(){ 
+              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_left.svg', handler:function(){ 
                   cal.fullCalendar("prev"); 
                   load_cal_events();
               }},
-              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_right.gif', handler:function(){ 
+              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_right.svg', handler:function(){ 
                   cal.fullCalendar("next"); 
                   load_cal_events();
               }},
               '-',
-              { xtype:'button', text:_('Today'), icon: IC('calendar'),
+              { xtype:'button', text:_('Today'), icon: IC('calendar.svg'),
                   handler:function(){ cal.fullCalendar("today"); load_cal_events() } },
               '-',
               { xtype:'button', text:_('Day1'), allowDepress: false, pressed:self.default_view=='basicDay', toggleGroup:'cal-view',
@@ -49,7 +49,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
               { xtype:'button', text:_('Month'), allowDepress: false, pressed:self.default_view=='month', toggleGroup:'cal-view', 
                       handler:function(){ cal.fullCalendar("changeView", "month") } } ,
               '-',
-              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.png', handler:function(){ 
+              { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.svg', handler:function(){ 
                     // cal.fullCalendar("refetchEvents") 
                     // refresh: delete everything and start over
                     load_cal_events();

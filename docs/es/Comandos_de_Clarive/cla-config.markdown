@@ -1,6 +1,6 @@
 ---
 title: cla config - Herramienta de configuracion
-icon: console
+icon: console.svg
 ---
 * `cla config`:  Herramienta para generar un fichero de configuración o para mostrar la configuración actual de Clarive.
 * Ejecutando el comando sin parámetros, pregunta al usuario si desea generar un nuevo fichero de configuración a través de una plantilla.

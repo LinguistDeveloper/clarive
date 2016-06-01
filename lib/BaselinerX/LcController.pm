@@ -178,7 +178,7 @@ sub tree_project_jobs : Local {
     );
 
     my @tree = map {
-        my $icon   = Util->job_icon($_->{status},$_->{rollback}) || 'job.png';
+        my $icon   = Util->job_icon($_->{status},$_->{rollback}) || 'job.svg';
        +{
             text => sprintf('%s [%s]', $_->{name}, $_->{endtime}) ,
             icon => '/static/images/icons/'.$icon,
@@ -186,7 +186,7 @@ sub tree_project_jobs : Local {
             draggable => \0,
             menu => [
                 {
-                  icon => '/static/images/icons/open.png',
+                  icon => '/static/images/icons/open.svg',
                   text => _loc('Open...'),
                   page => {
                       url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->{mid}, $_->{name} ),
@@ -308,7 +308,7 @@ sub topic_contents : Local {
         my $is_changeset = $_->{category}{is_changeset};
 
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
-            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
+            : $is_changeset ? '/static/images/icons/changeset_lc.svg' :'/static/images/icons/topic.svg' ;
 
         my @menu_related = $self->menu_related();
 
@@ -385,14 +385,14 @@ sub tree_projects : Local {
                 project    => $r->{name},
                 desc       => $r->{description},
                 click      => {
-                    'icon' => '/static/images/icons/topic.png',
+                    'icon' => '/static/images/icons/topic.svg',
                     'url' => '/topic/grid',
                     'title' => $r->{name},
                     'type' => 'comp'
                 },
             },
-            icon       => '/static/images/icons/project.png',
             draggable  => \0,
+            icon       => '/static/images/icons/project.svg',
             leaf       => \0,
             expandable => \1
         };
@@ -679,7 +679,7 @@ sub changeset : Local {
             };
             my $node = {
                 url  => '/lifecycle/topic_contents',
-                icon => '/static/images/icons/changeset_lc.png',
+                icon => '/static/images/icons/changeset_lc.svg',
                 text => $topic->{title},
                 leaf => \1,
                 menu => $menu,
@@ -909,7 +909,7 @@ sub promotes_and_demotes {
                         status_to_name => _loc($status->{name}),
                     },
                     id_status_from => $id_status_from_lc,
-                    icon => '/static/images/silk/arrow_right.gif'
+                    icon => '/static/images/icons/arrow_right.svg'
                 };
             }
         }
@@ -1507,7 +1507,7 @@ sub click_for_topic {
     +{
         url   => sprintf('/topic/view?topic_mid='.$mid),
         type  => 'comp',
-        icon  => '/static/images/icons/topic.png',
+        icon  => '/static/images/icons/topic.svg',
         title => sprintf( "%s #%d", _loc($catname), $mid ),
     };
 }
@@ -1517,7 +1517,7 @@ sub click_category {
     +{
         url   => sprintf("/topic/grid?category_id=".$id),
         type  => 'comp',
-        icon  => '/static/images/icons/topic.png',
+        icon  => '/static/images/icons/topic.svg',
         title => sprintf( "%s #%d", _loc($catname), $id ),
     };
 }
@@ -1552,7 +1552,7 @@ sub build_topic_tree {
             topic_mid => $p{mid},
             click     => $self->click_for_topic( $category->{name}, $p{mid} )
         },
-        icon => $p{icon} // q{/static/images/icons/topic.png},
+        icon => $p{icon} // q{/static/images/icons/topic.svg},
         leaf => \0,
         expandable => \0,
         menu       => \@menu_related
@@ -1600,13 +1600,13 @@ sub menu_related {
     my ($self, $mid ) = @_;
     my @menu;
         push @menu, {  text => _loc('Related'),
-                        icon => '/static/images/icons/topic.png',
+                        icon => '/static/images/icons/topic.svg',
                         eval => {
                             handler => 'Baseliner.open_topic_grid_from_release'
                         }
                     };
         push @menu, {  text => _loc('Apply filter'),
-                        icon => '/static/images/icons/topic.png',
+                        icon => '/static/images/icons/topic.svg',
                         eval => {
                             handler => 'Baseliner.open_apply_filter_from_release'
                         }

@@ -1,7 +1,7 @@
 ---
 title: Tablero Kanban de topicos
 index: 6000
-icon: kanban
+icon: kanban.svg
 ---
 * Clarive dispone de tableros Kanban los cuales están disponibles en dos escenarios: <br />
 
@@ -9,7 +9,7 @@ icon: kanban
 
 &nbsp; &nbsp;• Dentro de un tópico que tiene dependencias con otros tópicos.
 
-* La tabla Kanban se abre pulsando el icono <img src="/static/images/icons/kanban.png" />.
+* La tabla Kanban se abre pulsando el icono <img src="/static/images/icons/kanban.svg" />.
 
 
 <br />

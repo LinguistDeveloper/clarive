@@ -127,7 +127,7 @@
                     properties.items.getCount()==0 && properties.collapse();
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/detach.png', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) { 
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -137,7 +137,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });
@@ -171,7 +171,7 @@
                 comp.closable = true;
                 properties.add(comp);
                 properties.setActiveTab(comp);
-                properties.changeTabIcon( '/static/images/moredata.gif' ); 
+                properties.changeTabIcon( '/static/images/icons/moredata.svg' ); 
                 properties.expand();
             });
         //}
@@ -259,7 +259,7 @@
         tbar: [
             button['h'], //' ', button['d'], ' ', button['s'],
             '->',
-            Baseliner.button('Close All', '/static/images/icons/clear.gif', function(b) { 
+            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) {
                 properties.items.each(function(comp) {
                     if( comp.initialConfig.closable ) {
                         properties.remove( comp );
@@ -267,7 +267,7 @@
                     }
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/detach.png', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) { 
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -277,7 +277,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });

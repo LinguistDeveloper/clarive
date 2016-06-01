@@ -1,8 +1,8 @@
 ---
 title: Administracion de topicos
-icon: topic
+icon: topic.svg
 ---
-* La administración de tópicos se ubica dentro de las opciones de **Administración → <img src="/static/images/icons/topic.png" /> Tópicos**.
+* La administración de tópicos se ubica dentro de las opciones de **Administración → <img src="/static/images/icons/topic.svg" /> Tópicos**.
 * Dentro de la ventana de Administración de tópicos, se mostrarán dos partes diferenciadas. La primera está orientada para los tópicos, con el listado de las categorías existentes. En la segunda, en la parte inferior, se muestran las etiquetas y sus diferentes opciones.
 
 <br />
@@ -35,7 +35,7 @@ icon: topic
 ### Opciones
 
 <br />
-#### <img src = "/static/images/icons/add.gif" alt='Nueva categoría' /> Crear
+#### <img src = "/static/images/icons/add.svg" alt='Nueva categoría' /> Crear
 * Permite crear una nueva categoría. 
 * Al pulsar en `Crear` se abre una nueva ventana con todas las opciones para crear una categoría a medida.
 
@@ -72,7 +72,7 @@ icon: topic
 
 
 <br/>
-#### <img src = "/static/images/icons/edit.gif" alt='Editar categoría' /> Editar
+#### <img src = "/static/images/icons/edit.svg" alt='Editar categoría' /> Editar
 * Permite editar la categoría seleccionada.
 * En modo Editar, aparece una nueva pestaña `Flujo de trabajo`. En ella se especifica el flujo de estados que el tópico podrá transitar siempre en función de los roles.
 
@@ -107,7 +107,7 @@ icon: topic
 * Tras duplicar una categoría es **recomendable** editarla y cambiar el nombre, descripción y demás elementos que pueden provocar confusión entre la categoría original y la duplicada.
 
 <br/>
-### <img src = "/static/images/icons/wrench.gif" alt='Import_export' /> Importar/Exportar
+### <img src = "/static/images/icons/wrench.svg" alt='Import_export' /> Importar/Exportar
 * El sistema permite importar y exportar los tópicos seleccionados en caso de que querer copiar las categorías existentes de un sistema a otro.
 * Al pulsar en  <img src = "/static/images/icons/export.png" alt='Exportar' /> Exportar, se abrirá una nueva ventana con el código YAML de las categorías seleccionadas.
 * Al pulsar en <img src = "/static/images/icons/import.png" alt='Import' /> Importar, se abrirá una nueva ventana donde pegar el código generado durante la exportación. 

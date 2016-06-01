@@ -113,7 +113,7 @@
                     }
                 }, {
                     text: _('Close'),
-                    icon: '/static/images/icons/close.png',
+                    icon: '/static/images/icons/close.svg',
                     handler: function() {
                         win.close()
                     }
@@ -208,7 +208,7 @@
 
     var btn_edit = new Ext.Toolbar.Button({
         text: _('Edit'),
-        icon: '/static/images/icons/edit.gif',
+        icon: '/static/images/icons/edit.svg',
         cls: 'x-btn-text-icon',
         hidden: true,
         handler: function() {
@@ -224,7 +224,7 @@
 
     var btn_view = new Ext.Toolbar.Button({
         text: _('View'),
-        icon: '/static/images/icons/views.png',
+        icon: '/static/images/icons/views.svg',
         cls: 'x-btn-text-icon',
         hidden: true,
         handler: function() {
@@ -387,7 +387,7 @@
 
             new Ext.Toolbar.Button({
                 text: _('Previsualizar'),
-                icon: '/static/gui/extjs/resources/images/default/shared/calendar.gif',
+                icon: '/static/images/icons/calendar.svg',
                 hidden: true, // Eric -- We won't need this once the project namespace is disabled from calendar creation.
                 cls: 'x-btn-text-icon',
                 handler: function() {

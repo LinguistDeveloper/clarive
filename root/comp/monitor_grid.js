@@ -296,8 +296,7 @@
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
       tooltip: _('Natures'),
-      icon: '/static/images/icons/nature.png',
-      //icon: '/static/images/nature/nature.png',
+      icon: '/static/images/icons/nature.svg',
       menu: nature_menu
     });
 
@@ -389,7 +388,7 @@
     menu_list.push( <%$envs_json%>.map(function (x) {
           return {
             text: String.format('{0}: {1}', x.bl, x.name ),
-            icon: '/static/images/icons/baseline.gif',
+            icon: '/static/images/icons/baseline.svg',
             handler: function (item) {
               item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
               store.baseParams.filter_bl = x.bl;
@@ -401,7 +400,7 @@
     var menu_bl = new Ext.Button({
       //text: _("Baseline"),
       tooltip: _("Baseline"),
-      icon: '/static/images/icons/baseline.gif',
+      icon: '/static/images/icons/baseline.svg',
       menu: menu_list
     });
 
@@ -421,7 +420,7 @@
           '-',
           {
             text: _('promote'),
-            icon: '/static/images/icons/arrow_right.gif',
+            icon: '/static/images/icons/arrow_right.svg',
             handler: function (item) {
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('promote')) + '</b>' );
                store.baseParams.filter_type = 'promote';
@@ -429,7 +428,7 @@
             }
           },{
             text: _('demote'),
-            icon: '/static/images/icons/arrow_left.gif',
+            icon: '/static/images/icons/arrow_left.svg',
             handler: function (item) {
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('demote')) + '</b>' );
                store.baseParams.filter_type = 'demote';
@@ -437,7 +436,6 @@
             }
           },{
             text: _('static'),
-            //icon: '/static/images/icons/arrow_left.gif',
             handler: function (item) {
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('static')) + '</b>' );
                store.baseParams.filter_type = 'static';
@@ -587,7 +585,7 @@
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
     var refresh_button = new Ext.Button({ tooltip: _('Refresh'),
 
-        icon: '/static/images/icons/refresh.png', 
+        icon: '/static/images/icons/refresh.svg', 
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -629,7 +627,7 @@
             layoutConfig: { align:'stretch' },
             items: [
                 { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.png', 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.svg', 
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
                 { flex:1, layout:'hbox', padding: 20, 
@@ -702,11 +700,11 @@
     }
     var menu_tools = new Ext.Button({
       tooltip: _('Tools'),
-      icon: '/static/images/icons/wrench.gif',
+      icon: '/static/images/icons/wrench.svg',
       menu: [
 % if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
             { text: _('Run In-process'), handler:function(){ run_inproc() },
-              icon: '/static/images/icons/job.png'
+              icon: '/static/images/icons/job.svg'
             },
 % }
             {
@@ -1059,7 +1057,7 @@
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
         else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
-        else if( status=='CANCELLED' ) icon='close.png';
+        else if( status=='CANCELLED' ) icon='close.svg';
         else { icon='log_e.png'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
@@ -1193,7 +1191,7 @@
         title: _('Monitor'),
         plugins: [ filters ],
         header: false,
-        tab_icon: '/static/images/icons/television.gif',
+        tab_icon: '/static/images/icons/television.svg',
         autoScroll: true,
         family: 'jobs',
         loadMask: true,
@@ -1248,21 +1246,21 @@
         tbar: is_portlet ? [] : [ 
                 search_field,
                 button_html,
-                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.gif', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
+                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.svg', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
                     text: _('New'),
-                    icon:'/static/images/icons/job.png',
+                    icon:'/static/images/icons/job.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
-                        Baseliner.add_tabcomp('/job/create', _('New Job'), { tab_icon: '/static/images/icons/job.png' } );
+                        Baseliner.add_tabcomp('/job/create', _('New Job'), { tab_icon: '/static/images/icons/job.svg' } );
                     }
                 }),
 % }
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
-                    icon:'/static/images/icons/moredata.gif',
+                    icon:'/static/images/icons/moredata.svg',
                     text: _('Full log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -1329,8 +1327,8 @@
                                 height: 150, width: 380,
                                 tbar: [
                                     '->',
-                                    {  text: _('Cancel'), icon: IC('close'), handler: function(){ winupdate.close(); } },
-                                    {  text: _('Update'), icon: IC('edit'), handler: function(){ 
+                                    {  text: _('Cancel'), icon: IC('close.svg'), handler: function(){ winupdate.close(); } },
+                                    {  text: _('Update'), icon: IC('edit.svg'), handler: function(){ 
                                             var d = fupdatepanel.getValues();
                                             Baseliner.ci_call( sel.data.mid, 'reschedule', d, function(res){
                                                 Baseliner.message( _('Reschedule'), res.msg );

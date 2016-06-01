@@ -3,7 +3,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
     closable: true,
     cls: 'tab-style',
     style: 'background-color: #FFF; padding: 0;',
-    tab_icon: '/static/images/icons/dashboard.png',
+    tab_icon: '/static/images/icons/dashboard.svg',
     initComponent : function(){
         var self = this;
         Cla.Dashboard.superclass.initComponent.call(this);
@@ -136,7 +136,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                        'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
                     '/>',
                     '<img class="dashboard-buttons"',
-                        'src="/static/images/icons/refresh.gif"',
+                        'src="/static/images/icons/refresh.svg"',
                         'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.refresh_dashlet(\'{id_dashlet}\')"',
                     '/></td></tr></table>'
                 );

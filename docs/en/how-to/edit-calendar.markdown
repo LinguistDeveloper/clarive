@@ -1,10 +1,12 @@
 ---
 title: Edit Calendar
 index: 1
-icon: wrench.gif
+icon: wrench.svg
 ---
-Select <img src="/static/images/icons/slot.png" /> **Jobs Slots** in the menu
-bar `JOBS`. Then select the <img src="/static/images/icons/edit.gif" /> Edit
+Select <img src="/static/images/icons/slot.svg" /> **Jobs Slots** in the menu
+
+bar `JOBS`. Then select the <img src="/static/images/icons/edit.svg" /> Edit
+
 option. Also you can click on the name of the calendar to open Edit mode.
 
 In the next window there are two sections:

@@ -575,7 +575,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.sm = new Ext.grid.RowSelectionModel({ singleSelect: true });
         self.tbar = [{
                 text: _('Add'),
-                icon: '/static/images/icons/add.gif',
+                icon: '/static/images/icons/add.svg',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     self.push_item( self.name, self.default_value );
@@ -997,8 +997,7 @@ Baseliner.merge = function() {
 };
 
 Baseliner.openLogTab = function(id, name) {
-    //Baseliner.addNewTabComp('/job/log/list?mid=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-    Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
+    Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.svg' });
 };
 
 Baseliner.openDashboardTab = function(id_job,title) {
@@ -1084,7 +1083,7 @@ Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Create'),
-            icon: IC('add.gif'),
+            icon: IC('add.svg'),
             cls: 'x-btn-text-icon'
         }, config);
         Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
@@ -1095,7 +1094,7 @@ Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Edit'),
-            icon: IC('edit.gif'),
+            icon: IC('edit.svg'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1153,8 +1152,8 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
 //Baseliner.loadFile('/static/pdfjs/build/pdf.js', 'js' );
 Baseliner.PDFJS = function(config){
     var self = this;
-    var prev = new Ext.Button({ icon: '/static/images/icons/arrow_left_black.png' });
-    var next = new Ext.Button({ icon: '/static/images/icons/arrow_right_black.png' });
+    var prev = new Ext.Button({ icon: '/static/images/icons/arrow_left_black.svg' });
+    var next = new Ext.Button({ icon: '/static/images/icons/arrow_right_black.svg' });
   var page_num = new Ext.form.TextField({ width:'30', readOnly:true  });
   var page_count = new Ext.form.TextField({ width:'30', readOnly:true });
 
@@ -1350,7 +1349,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
         if( Baseliner.main_toolbar ) {
             self.min_obj = new Ext.Button({
                 xtype: 'button',
-                icon: '/static/images/icons/window_min.png',
+                icon: '/static/images/icons/window_min.svg',
                 tooltip: self.title,
                 handler: function(){
                     self.show();
@@ -1655,10 +1654,10 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
 
        var tbar = [
            { text:_('Remote'), pressed: true,
-                icon: '/static/images/icons/cloud.png',
+                icon: '/static/images/icons/cloud.svg',
                allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_remote() } },
            { text:_('Local'), pressed: false,
-                icon: '/static/images/icons/local.png',
+                icon: '/static/images/icons/local.svg',
                allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_local() } },
            { text:_('Installed'), pressed: false,
                 icon: '/static/images/icons/perl.png',
@@ -3136,10 +3135,10 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
         var button_load = new Baseliner.Grid.Buttons.Add({ text: _('Add Rows'),
             handler: function() { self.load(ta.getValue()) }
         });
-        var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.png',
+        var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.svg',
             handler: function() { self.load(ta.getValue(), true) }
         });
-        var button_close = new Ext.Button({ text: '', text: _('Close'), icon:'/static/images/icons/close.png',
+        var button_close = new Ext.Button({ text: '', text: _('Close'), icon:'/static/images/icons/close.svg',
             handler: function() { win.close() }
         });
         var win = new Baseliner.Window({
@@ -4055,8 +4054,7 @@ Baseliner.request_approval = function(mid,id_grid){
         //var bom = new Baseliner.BOM({ mid: mid, hidden: true });
         var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments ] });
         tab_approve.on('afterrender', function(){
-            //tab_approve.changeTabIcon( bom, '/static/images/icons/log_16.png' );
-            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.gif' );
+            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.svg' );
         });
         var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit',
             title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'),
@@ -4334,7 +4332,7 @@ Cla.json_filter_builder = function(json_field){
             grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev);
         }
         delete grid.title;
-        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit'), handler:function(){
+        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit.svg'), handler:function(){
             var curr_filter = grid.get_grid().store.baseParams;
             delete curr_filter.last_count;
             var json = Ext.util.JSON.encode( curr_filter );

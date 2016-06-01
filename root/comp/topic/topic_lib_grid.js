@@ -27,7 +27,7 @@ var shorten_title = function(t){
 }
 
 Baseliner.open_topic_grid = function(dir,title,mid){
-   var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
+   var gridp ={ tab_icon: '/static/images/icons/topic.svg' } ;
    if( dir ) {
        gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
        gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
@@ -232,7 +232,7 @@ Cla.topic_grid = function(params){
     }
 
     var button_no_filter = new Ext.Button({
-        icon:'/static/images/icons/clear-all.png',
+        icon:'/static/images/icons/clear-all.svg',
         tooltip: _('Clear filters'),
         hidden: false,
         cls: 'x-btn-icon',
@@ -317,7 +317,8 @@ Cla.topic_grid = function(params){
     var status_menu = new Ext.menu.Menu({ items: [] });
     var btn_change_status = new Ext.Toolbar.Button({
         text: _("Change Status"),
-        icon:IC('state.gif'),
+        icon:IC('state.svg'),
+        icon:IC('state.svg'),
         menu: status_menu,
         disabled: true,
         hidden: id_report,
@@ -719,7 +720,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_kanban = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/kanban.png',
+        icon:'/static/images/icons/kanban.svg',
         tooltip:_('Open Kanban'),
         cls: 'x-btn-text-icon',
         //enableToggle: true,
@@ -1114,7 +1115,7 @@ Cla.topic_grid = function(params){
         }
         if(rec.data.numcomment){
             swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' style='height:16px;width:16px;'/> ");
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.svg' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
             actions_html.push("</span>");
         }
@@ -1658,7 +1659,7 @@ Cla.topic_grid = function(params){
                     var node = new Ext.tree.TreeNode({
                         text: data.title,
                         leaf: true,
-                        icon: "/static/images/icons/topic.png",
+                        icon: "/static/images/icons/topic.svg",
                         data: {
                             topic_mid: mid
                         },
@@ -2066,7 +2067,7 @@ Cla.topic_grid = function(params){
             /* Changing node text
             node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
                 node.text,
-                '<img src="/static/images/icons/wrench.gif" onclick="Baseliner.aaa()" />'  )
+                '<img src="/static/images/icons/wrench.svg" onclick="Baseliner.aaa()" />'  )
             );
             */
             if(node.attributes.id == 'C' || node.attributes.id == 'L'){
@@ -2119,7 +2120,6 @@ Cla.topic_grid = function(params){
         layout : "border",
         defaults: {layout:'fit'},
         title: _('Topics'),
-        //tab_icon: '/static/images/icons/topic.png',
         items : [
             grid_topics,
             custom_panel,
@@ -2129,7 +2129,7 @@ Cla.topic_grid = function(params){
     /* change style for 'Topics' tab! */
     if( params.tabTopic_force==1 ) {
         panel.tab_icon = ''; // removes icon
-        panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 13px"><img src="/static/images/icons/topic.png" /></span>'; // removes title
+        panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 13px"><img src="/static/images/icons/topic.svg" /></span>'; // removes title
     }
 
     grid_topics.on('afterrender', function(){

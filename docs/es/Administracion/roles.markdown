@@ -1,6 +1,6 @@
 ---
 title: Administracion de roles
-icon: role
+icon: role.svg
 ---
 * La seguridad de Clarive se gestiona a través del [sistema de roles](Conceptos/roles).
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
@@ -9,7 +9,7 @@ icon: role
 &nbsp; &nbsp;• **Ejemplo**: Un rol de administrador puede estar definido con todos los privilegios que puede tener un administrador estandar, [administrador de tópicos](Administracion/topics), [administración de notificaciones](Administracion/notifications), [acceso al planificador](Administracion/scheduler), [gestión de usuarios](Administracion/user), etc...Un gestor de incidencias puede estar definido por ejemplo con acceso completo a la categoría Incidencia pero sin accesos a otros tópicos como 'Factura' que podrá ser administrador por otro rol tipo "Jefe de RRHH".
 
 * Un usuario puede tener mas de un rol de tal manera que pueda acceder a más temas donde trabajar.
-* La administración de roles se realiza a través de la ruta Administración → <img src="/static/images/icons/role.png" /> Roles. Esto mostrará un listado con todos los roles creados y una barra de acciones. 
+* La administración de roles se realiza a través de la ruta Administración → <img src="/static/images/icons/role.svg" /> Roles. Esto mostrará un listado con todos los roles creados y una barra de acciones. 
 
 <br />
 ## Columnas
@@ -32,7 +32,7 @@ icon: role
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
-#### <img src="/static/images/icons/add.gif" /> Crear
+#### <img src="/static/images/icons/add.svg" /> Crear
 * Pulsando en crear, se abre una nueva ventana con las opciones necesarias para configurarlo:<br />
 
 &nbsp; &nbsp;• **Nombre del rol**: El nombre que define el rol, por ejemplo, *desarrollador*, *Release manager*, etc...<br />
@@ -103,7 +103,7 @@ icon: role
 <br />
 
 <br />
-#### <img src="/static/images/icons/edit.gif" /> Editar
+#### <img src="/static/images/icons/edit.svg" /> Editar
 * Permite editar el rol selecionado. Una vez realizados los cambios, seleccionar `Aceptar`.
 * Si no desea guardar tras editar un rol, seleccione `Cerrar`.
 

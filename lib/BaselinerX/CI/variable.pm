@@ -27,7 +27,7 @@ after save => sub {
     }
 };
 
-sub icon { '/static/images/icons/element_copy.png' }
+sub icon { '/static/images/icons/element_copy.svg' }
 
 sub unique_keys {
     [

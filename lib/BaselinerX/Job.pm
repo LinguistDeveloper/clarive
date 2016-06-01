@@ -60,7 +60,7 @@ register 'menu.job.create' => {
     label    => 'Create a new Job',
     url_comp => '/job/create',
     title    => 'New Job',
-    icon     => '/static/images/icons/job.png',
+    icon     => '/static/images/icons/job.svg',
     actions  => ['action.job.create'],
     index    => 10,
 };
@@ -68,7 +68,7 @@ register 'menu.job.list' => {
     label    => 'Monitor',
     url_comp => '/job/monitor',
     title    => 'Monitor',
-    icon     => '/static/images/icons/television.gif',
+    icon     => '/static/images/icons/television.svg',
     actions  => ['action.job.view_monitor'],
     index    => 20,
 };

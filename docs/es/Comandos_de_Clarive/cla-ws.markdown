@@ -1,6 +1,6 @@
 ---
 title: cla ws - Invocar servicios web
-icon: console
+icon: console.svg
 ---
 * `cla ws`: Herramientas REST Clarive REST. Encuentra todos los métodos públicos disponibles a un [CI](Conceptos/ci) dado.
 * Se pueden pasar los siguientes parámetros: <br />

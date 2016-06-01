@@ -237,7 +237,7 @@ sub get_menu_folder {
     my $username = shift;
     my @menu_folder;
     push @menu_folder, {  text => _loc('Topics'),
-                                icon => '/static/images/icons/topic.png',
+                                icon => '/static/images/icons/topic.svg',
                                 eval => {
                                     handler => 'Baseliner.open_topic_grid_from_folder'
                                 }
@@ -255,7 +255,7 @@ sub get_menu_folder {
                                 };
     }
     push @menu_folder, {  text => _loc('Kanban'),
-                                icon => '/static/images/icons/kanban.png',
+                                icon => '/static/images/icons/kanban.svg',
                                 eval => {
                                     handler => 'Baseliner.open_kanban_from_folder'
                                 }

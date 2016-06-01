@@ -2,7 +2,7 @@ package BaselinerX::CI::group;
 use Baseliner::Moose;
 with 'Baseliner::Role::CI::Group';
 
-sub icon { '/static/images/icons/group.gif' }
+sub icon { '/static/images/icons/group.svg' }
 
 has rollback  => qw(is rw isa BoolCheckbox default 0);
 has_cis 'contents';

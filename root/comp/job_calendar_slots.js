@@ -46,7 +46,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 
             my $date_icon =
               $col->{date}
-              ? ' <img height=12 onmouseover="$(this).tooltip()" src="/static/images/icons/calendar.png" />'
+              ? ' <img height=12 onmouseover="$(this).tooltip()" src="/static/images/icons/calendar.svg" />'
               : '';
 
             print qq[ $col->{duration}$date_icon</TD>];

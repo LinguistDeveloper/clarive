@@ -10,7 +10,7 @@ with 'Baseliner::Role::Service';
 register 'service.validate.stash_variables' => {
     name => 'Validate stash variables',
     handler => \&validate,
-    icon => '/static/images/icons/webservice.png',
+    icon => '/static/images/icons/webservice.svg',
     form => '/forms/validate_stash_variables.js',
 };
 

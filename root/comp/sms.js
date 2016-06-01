@@ -34,7 +34,7 @@
             });
         }
     } });
-    var btn_cancel = new Ext.Button({ icon:IC('close.png'), hidden: false, text:_('Cancel'), handler:function(){
+    var btn_cancel = new Ext.Button({ icon:IC('close.svg'), hidden: false, text:_('Cancel'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -74,10 +74,9 @@
         }
     };
     var btn_grid = new Ext.Button({ text:_('View Messages'),
-     //icon:IC('catalog.gif'), 
-     icon:IC('sms.png'), 
+     icon:IC('sms.svg'), 
      pressed: true, toggleGroup:'sms-btn', handler:function(){ card_show(true) } });
-    var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('edit.gif'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
+    var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('edit.svg'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
     Baseliner.sms_read = function(ix,grid_id){
         var gr = Ext.getCmp(grid_id);
         if( gr ) {

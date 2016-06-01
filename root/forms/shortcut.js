@@ -67,7 +67,7 @@
     
         //if( source_key && source_key!='statement.shortcut' ) config_window(source_key);
     var btn_config = new Ext.Button({ hidden: (!source_key || source_key=='statement.shortcut'), 
-        icon: IC('edit.gif'),
+        icon: IC('edit.svg'),
         fieldLabel:_('Config Data'), width: 150, text:_('Open Config Window'), handler: function(){
         config_window(source_key);
     } });

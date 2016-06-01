@@ -16,7 +16,7 @@ register 'menu.admin.upgrade' => {
     action => 'action.admin.upgrade',
     title => 'Upgrades',
     label => 'Upgrades',
-    icon  => '/static/images/icons/upgrade.png',
+    icon  => '/static/images/icons/upgrade.svg',
     url_comp => '/comp/feature.js',
     index => 1000,
 };

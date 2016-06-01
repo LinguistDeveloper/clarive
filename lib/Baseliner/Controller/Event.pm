@@ -16,8 +16,8 @@ register 'menu.admin.events' => {
     title    => _loc ('Events'),
     action   => 'action.admin.event',
     url_comp => '/comp/events.js',
-    icon     => '/static/images/icons/event.png',
-    tab_icon => '/static/images/icons/event.png'
+    icon     => '/static/images/icons/event.svg',
+    tab_icon => '/static/images/icons/event.svg'
 };
 
 

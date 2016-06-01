@@ -17,7 +17,7 @@ register 'menu.job.calendar' => {
     url_comp => '/job/calendar_grid',
     title    => _loc('Job Slots'),
     actions  => ['action.calendar.%'],
-    icon     => '/static/images/icons/slot.png'
+    icon     => '/static/images/icons/slot.svg'
 };
 register 'action.calendar.view' => { name => 'View Job Calendar' };
 register 'action.calendar.edit' => { name => 'Edit Job Calendar' };

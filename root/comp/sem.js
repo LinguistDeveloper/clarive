@@ -53,7 +53,6 @@
 
     var button_grant = new Ext.Button({
         text: _('Grant'),
-        //icon:'/static/images/icons/add.png',
         icon:'/static/images/icons/start.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -120,7 +119,7 @@
 
     var button_deactivate = new Ext.Button({
         text: _('Deactivate'),
-        icon:'/static/images/icons/lightbulb_off.png',
+        icon:'/static/images/icons/lightbulb_off.svg',
         cls: 'x-btn-text-icon',
         handler: function() { sem_req_activate(0); }
     });
@@ -132,7 +131,7 @@
         });
      };
      var button_add = new Ext.Button({
-        icon:'/static/images/icons/add.png',
+        icon:'/static/images/icons/add_green.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
@@ -149,14 +148,14 @@
     });
 
     var button_sem_refresh = new Ext.Button({
-        icon:'/static/images/icons/refresh.png',
+        icon:'/static/images/icons/refresh.svg',
          tooltip:_('Refresh'),
         cls: 'x-btn-text-icon',
         handler: function() { store_sem.load(); }
     });
 
     var button_queue_refresh = new Ext.Button({
-        icon:'/static/images/icons/refresh.png',
+        icon:'/static/images/icons/refresh.svg',
          tooltip:_('Refresh'),
         cls: 'x-btn-text-icon',
         handler: function() { store_queue.load(); }
@@ -281,7 +280,7 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.gif" width="16px"/>' } },    
+            { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.svg" width="16px"/>' } },    
             { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem }, 
             { width: 50, dataIndex: 'key', renderer: render_sem_actions  }
         ]
@@ -319,16 +318,11 @@
         tbar: tbar_queue,
         bbar: [
             _('Legend') + ': ',
-            //'<img src="/static/images/icons/waiting.png" />', _('Waiting'),
-            '<img src="/static/images/icons/busy.png" />', _('Waiting'),
+            '<img class="icon_standar_size" src="/static/images/icons/busy.svg" />', _('Waiting'),
             '<img src="/static/images/icons/small_loading_static.png" />', _('Busy'),
-            //'<img src="/static/images/icons/asterisk_orange.gif" />', _('Granted'),
             '<img src="/static/images/icons/start.png" />', _('Granted'),
-            //'<img src="/static/images/icons/cancel.png" />', _('Cancelled'),
             '<img src="/static/images/icons/stop.png" />', _('Cancelled'),
-            //'<img src="/static/images/icons/drop-yes.gif" />', _('Done'),
             '<img src="/static/images/icons/log_i.gif" />', _('Done'),
-            //'<img src="/static/images/icons/help.png" />', _('Killed')
             '<img src="/static/images/icons/log_e.png" />', _('Killed')
         ],
         view: gview,

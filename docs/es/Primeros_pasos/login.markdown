@@ -1,7 +1,7 @@
 ---
 title: Login
 index: 3000
-icon: user.gif
+icon: user.svg
 ---
 * Antes de poder acceder a la herramienta, el Administrador de Clarive debe de registrar al usuario desde la [Administración de usuarios](Administracion/user)
 * El administrador tiene que suministrar al usuario la siguiente información: <br />

@@ -5,6 +5,6 @@ use Baseliner::Utils;
 #with 'Baseliner::Role::CI::Project';
 extends 'BaselinerX::CI::project';
 
-sub icon { '/static/images/icons/area.png' }
+sub icon { '/static/images/icons/area.svg' }
 
 1;

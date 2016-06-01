@@ -332,14 +332,14 @@ subtest 'tree_project_releases: build releases tree' => sub {
                 'text' => 'New Topic',
                 'menu' => [
                     {
-                        'icon' => '/static/images/icons/topic.png',
+                        'icon' => '/static/images/icons/topic.svg',
                         'text' => 'Related',
                         'eval' => {
                             'handler' => 'Baseliner.open_topic_grid_from_release'
                         }
                     },
                     {
-                        'icon' => '/static/images/icons/topic.png',
+                        'icon' => '/static/images/icons/topic.svg',
                         'text' => 'Apply filter',
                         'eval' => {
                             'handler' => 'Baseliner.open_apply_filter_from_release'
@@ -349,7 +349,7 @@ subtest 'tree_project_releases: build releases tree' => sub {
                 'url'  => '/lifecycle/topic_contents',
                 'data' => {
                     'click' => {
-                        'icon'  => '/static/images/icons/topic.png',
+                        'icon'  => '/static/images/icons/topic.svg',
                         'url'   => re(qr{/topic/view\?topic_mid=$topic_mid}),
                         'title' => "Release #$topic_mid",
                         'type'  => 'comp'

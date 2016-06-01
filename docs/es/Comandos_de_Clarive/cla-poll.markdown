@@ -1,6 +1,6 @@
 ---
 title: cla poll - Monitorizacion
-icon: console
+icon: console.svg
 ---
 * `cla poll`: Herramienta de monitorización.  Monitoring tool. Without any option checks.
 * Ejecutando `cla poll` sin ningun argumento se comprueba:

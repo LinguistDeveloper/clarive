@@ -1,7 +1,7 @@
 ---
 title: cla disp - Gestion del Dispatcher
 index: 20
-icon: console
+icon: console.svg
 ---
 * `cla disp`: Realiza operaciones relacionadas con el dispatcher.
 * Ejecutandolo sin ningún argumento, se inicia el servicio del dispatcher, encargado de iniciar todos los demonios.La manera en la que se inicie, esté duplicado o no, es utilizando la configuración de servicio.

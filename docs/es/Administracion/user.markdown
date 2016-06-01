@@ -1,9 +1,9 @@
 ---
 title: Administracion de usuarios
-icon: user.gif
+icon: user.svg
 ---
 * Los usuarios de Clarive se almacenan directamente en la base de datos. Aunque el sistema de autentificación sea de tipo externo,los usuarios deben crearse en la base de datos de Clarive para que puedas ser usados.
-* El administrador de usuarios puede acceder a la configuración de los mismos a través de Administración → <img src="/static/images/icons/user.gif" /> Usuarios. Se abrirá una nueva pestaña con una tabla con todos los usuarios existentes en Clarive.
+* El administrador de usuarios puede acceder a la configuración de los mismos a través de Administración → <img src="/static/images/icons/user.svg" /> Usuarios. Se abrirá una nueva pestaña con una tabla con todos los usuarios existentes en Clarive.
 
 
 ## Columnas
@@ -35,7 +35,7 @@ icon: user.gif
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax)
 
 <br />
-#### <img src="/static/images/icons/add.gif" /> Crear
+#### <img src="/static/images/icons/add.svg" /> Crear
 * Pulsando en crear, se abre una nueva ventana con las opciones necesarias para configurarlo: <br />
 
 &nbsp; &nbsp;• `Usuario`: El nombre del usuario con el que se dará el alta en la herramienta. Usado para acceder a Clarive y con el que se identifica la actividad del usuario dentro de la aplicación. <br />
@@ -77,7 +77,7 @@ icon: user.gif
 
 
 <br />
-#### <img src="/static/images/icons/edit.gif" /> Editar
+#### <img src="/static/images/icons/edit.svg" /> Editar
 
 * Permite editar el usuarios seleccionado.
 * Al seleccionar un usuario, el botón `Editar` se habilitará. Una vez pulsado, se abrirá la ventana de creación de usuario con los datos del formulario completados.

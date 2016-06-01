@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<g id="Layer_1" display="none">
+	
+		<image display="inline" overflow="visible" width="499" height="558" xlink:href="Screen Shot 2016-05-09 at 17.21.44.png"  transform="matrix(3.443818e-02 0 0 2.772026e-02 0.8515 1.1985)">
+	</image>
+</g>
+<g id="Layer_2">
+	<polygon fill="#404040" points="2.2,1.2 3.6,1.3 11,1.9 11,11.1 8.9,11.1 8.9,4.1 2.2,1.9 	"/>
+	<polygon fill="none" stroke="#404040" stroke-miterlimit="10" points="2.6,1.9 8.9,4.1 9,13.6 2.6,11.1 	"/>
+	<rect x="6.3" y="7.9" fill="#404040" width="1.2" height="1.2"/>
+	<rect fill="none" width="16" height="16"/>
+	<g>
+		<g>
+			<line fill="none" stroke="#4FBC78" stroke-width="1.5" stroke-miterlimit="10" x1="9.1" y1="8" x2="12.1" y2="8"/>
+			<g>
+				<polygon fill="#4FBC78" points="11.9,6.2 11.9,9.8 13.7,8 				"/>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

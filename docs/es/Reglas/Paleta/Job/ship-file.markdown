@@ -1,6 +1,6 @@
 ---
 title: Ship File Remotely
-icon: file.gif
+icon: file.svg
 ---
 * Obtiene uno o varios ficheros de un servidor remoto. 
 * Los elementos configurables son los siguientes.

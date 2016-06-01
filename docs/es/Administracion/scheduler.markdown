@@ -1,6 +1,6 @@
 ---
 title: Planificador
-icon: calendar
+icon: calendar.svg
 ---
 * El planificador es una utilidad que permite al administrador a planificar de manera sencilla la ejecución de las reglas en intervalos establecidos.
 * Permite planificar, habilitar, deshabilitar o ejecutar reglas independientes en segundo plano, por frecuencia de tiempo o ejecutar a una hora de un día determinado.
@@ -42,7 +42,7 @@ icon: calendar
 * Como todas las tablas de Clarive, el cuadro de búsqueda interno permite realizar búsquedas y/o filtros de manera personalizada. Estas búsquedas están descritas en [Búsqueda avanzada](Primeros_pasos/search-syntax).
 
 <br />
-#### <img src="/static/images/icons/add.gif" /> Crear
+#### <img src="/static/images/icons/add.svg" /> Crear
 * Al pulsar en crear una nueva planificación, se abre una nueva ventana con los siguientes campos: <br />
 
 &nbsp; &nbsp;• *Nombre*: Nombre de la tarea. <br />
@@ -61,7 +61,7 @@ icon: calendar
 &nbsp; &nbsp;• *Sólo días de diario*: Si se quiere que la ejecución se lleve a cabo solo entresemana (de Lunes a Viernes) hay que activar esta opción
 
 <br />
-#### <img src="/static/images/icons/edit.gif" /> Editar
+#### <img src="/static/images/icons/edit.svg" /> Editar
 * Permite editar la tarea seleccionada. 
 * La ventana de edición es la misma que la de creación de tarea.
 

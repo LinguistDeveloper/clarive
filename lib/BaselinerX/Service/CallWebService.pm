@@ -11,7 +11,7 @@ register 'service.web.request' => {
     name => 'Web Request',
     handler => \&web_request,
     job_service  => 1,
-    icon => '/static/images/icons/webservice.png',
+    icon => '/static/images/icons/webservice.svg',
     form => '/forms/web_request.js',
 };
 

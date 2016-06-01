@@ -1,11 +1,11 @@
 ---
 title: Create Calendar
 index: 1
-icon: wrench.gif
+icon: wrench.svg
 ---
 
-Select <img src="/static/images/icons/slot.png" /> **Jobs Slots** at the menu
-option `JOBS`. Then select the <img src="/static/images/icons/add.gif" /> Create
+Select <img src="/static/images/icons/slot.svg" /> **Jobs Slots** at the menu
+option `JOBS`. Then select the <img src="/static/images/icons/add.svg" /> Create
 button.
 
 In the next window there are the following options:

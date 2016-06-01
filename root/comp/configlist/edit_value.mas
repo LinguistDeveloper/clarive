@@ -91,7 +91,7 @@ var edit_config = function(rec) {
             }
         },{
             text: '<% _loc('Close') %>',
-            icon: '/static/images/icons/close.png', 
+            icon: '/static/images/icons/close.svg', 
             handler: function() {
                 win.close();
             }

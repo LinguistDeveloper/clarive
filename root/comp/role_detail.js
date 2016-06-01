@@ -470,7 +470,7 @@
     var panel_title = params.id_role ? _('Role: %1', params.role) : _('New Role');
     var rolePanel = new Ext.Panel({
         layout: 'border',
-        tab_icon: IC('role'),
+        tab_icon: IC('role.svg'),
         tbar: [
             '->', {
                 text: _('Save'),
@@ -512,7 +512,7 @@
             }, {
                 text: _('Close'),
                 cls: 'ui-comp-role-edit-close',
-                icon: IC('close'),
+                icon: IC('close.svg'),
                 handler: function() {
                     rolePanel.destroy()
                 }

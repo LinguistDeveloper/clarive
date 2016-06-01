@@ -2,7 +2,7 @@ package Baseliner::Role::CI::Item;
 use Moose::Role;
 with 'Baseliner::Role::CI';
 
-sub icon { '/static/images/icons/page.png' }
+sub icon { '/static/images/icons/page.svg' }
 
 has dir          => qw(is rw isa Str default /);           # my parent
 has path    => qw(is rw isa Str), lazy => 1, default=> sub{           # path includes the filename

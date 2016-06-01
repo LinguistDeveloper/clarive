@@ -24,7 +24,7 @@
             layout: 'fit',
             tbar: [
                 { xtype: 'button', icon: '/static/images/icons/html.gif', cls: 'x-btn-icon', handler: function(){ Baseliner.open_pre_page( panel.title, logfile.getValue() ) } },
-                { xtype: 'button', text: _('Reload'), handler: load_logfile, icon:'/static/images/icons/refresh.png', cls:'x-btn-text-icon' }
+                { xtype: 'button', text: _('Reload'), handler: load_logfile, icon:'/static/images/icons/refresh.svg', cls:'x-btn-text-icon' }
             ],
             tab_icon: '/static/images/icons/page.gif',
             items: [ logfile ]

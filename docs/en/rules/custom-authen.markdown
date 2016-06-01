@@ -1,6 +1,6 @@
 ---
 title: Writing Custom Authentication Rules
-icon: rule
+icon: rule.svg
 ---
 
 It's possible to write custom authentication rules
