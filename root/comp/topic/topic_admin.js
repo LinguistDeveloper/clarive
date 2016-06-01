@@ -625,7 +625,6 @@
                                     statuses_checked.push(rec.get('id'));
                                 });
 
-
                                 form.submit({
                                     submitEmptyText: false,
                                     params: {action: action, idsstatus: statuses_checked},
@@ -634,6 +633,14 @@
                                         form.findField("id").setValue(a.result.category_id);
                                         store_category.load();
                                         win.setTitle(_('Edit category'));
+                                        var activeTab = tabpanel.getActiveTab();
+
+                                        if (statusGridPanel.isVisible()){
+                                            combo_status.setValue('');
+                                            statusGridPanel.getStore().removeAll();
+                                        }
+                                        combo_status.getStore().setBaseParam('categoryId', rec.id);
+                                        combo_status.getStore().load();
                                     },
                                     failure: function(f,a){
                                         Ext.Msg.show({
@@ -745,14 +752,16 @@
         }
     });
 
+    var combo_status;
+    var statusGridPanel;
     var add_workflow = function(rec) {
         if( ! rec ) return [];
         var win;
         var title = _('Workflow' );
         var id = Ext.id();
 
-        var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
-        var store_admin_status = new Baseliner.Topic.StoreCategoryStatus({
+        var categoryStatusStore = new Baseliner.Topic.StoreCategoryStatus();
+        var statusStore = new Baseliner.Topic.StoreCategoryStatus({
                 listeners: {
                     'load': function( store, rec, obj ) {
                         statusCbx = Ext.getCmp('status-combo_' + id);
@@ -766,7 +775,7 @@
         });
 
         store_roles.load();
-        store_category_status.load({params:{categoryId: rec.data.id}});
+        categoryStatusStore.load({params:{categoryId: rec.data.id}});
 
         var ta = new Ext.form.TextArea({
             name: 'description',
@@ -811,9 +820,9 @@
         });
 
 
-        var grid_admin_status = new Ext.grid.GridPanel({
+        statusGridPanel = new Ext.grid.GridPanel({
             sm: check_admin_status_sm,
-            store: store_admin_status,
+            store: statusStore,
             header: false,
             height: 157,
             stripeRows: true,
@@ -837,10 +846,10 @@
            layout:'fit',
            defaults:{anchor:'98%'},
            columnWidth:0.50,
-           items: grid_admin_status
+           items: statusGridPanel
         };
 
-        var combo_status = new Ext.form.ComboBox({
+        combo_status = new Ext.form.ComboBox({
             mode: 'local',
             id: 'status-combo_' + id,
             forceSelection: true,
@@ -851,17 +860,17 @@
             hiddenName: 'status_from',
             displayField: 'name',
             valueField: 'id',
-            allowBlank:false,
-            store: store_category_status,
+            allowBlank:true,
+            store: categoryStatusStore,
             listeners:{
                 'select': function(combo, r, idx) {
-                    if(store_admin_status.getCount()) {
-                        // store_admin_status.filter( {    fn   : function(record) {
+                    if(statusStore.getCount()) {
+                        // statusStore.filter( {    fn   : function(record) {
                         //                                             return record.get('name') != r.data.name;
                         //                                         },scope:this
                         //                             });
                     }else{
-                        store_admin_status.load({params:{categoryId: rec.data.id}});
+                        statusStore.load({params:{categoryId: rec.data.id}});
                     }
 
                     // show job_type combo ?
