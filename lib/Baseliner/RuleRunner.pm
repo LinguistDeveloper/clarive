@@ -221,11 +221,7 @@ sub run_dsl {
     my $dsl = $params{dsl} or _fail 'dsl required';
     my $stash = $params{stash} // {};
 
-    my $default_vars = BaselinerX::CI::variable->default_hash;
-    foreach my $default_var ( keys %$default_vars ) {
-        $stash->{$default_var} = $default_vars->{$default_var}
-          unless exists $stash->{$default_var};
-    }
+    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash );
 
     my $rule = $self->_build_rule_compiler( dsl => $dsl );
     $rule->compile;
@@ -310,7 +306,7 @@ sub merge_into_stash {
     my ( $stash, $data ) = @_;
     return unless ref $data eq 'HASH';
     while ( my ( $k, $v ) = each %$data ) {
-        $stash->{$k} = $v;
+        $stash->{$k} = $v unless exists $stash->{$k};
     }
     return $stash;
 }

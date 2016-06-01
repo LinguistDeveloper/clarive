@@ -377,8 +377,8 @@ subtest 'wait_for_children: throws when one of the forks fails in fail errors mo
     }
 
     like
-      exception { wait_for_children( $stash, config => { errors => 'fail', parallel_stash_keys => ['fork_result'] } ) },
-      qr/^Error detected in children, pids failed: \d+\./;
+      exception { wait_for_children( $stash, config => { errors => 'fail' } ) },
+      qr/^Error detected in children, pids failed: \d+\. Ok: \d+\nErrors:\n\d+: error at/;
 };
 
 subtest 'eval_code: evals code' => sub {
